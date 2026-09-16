@@ -1,0 +1,140 @@
+extends Node
+## Estado global do jogo: personagem escolhido, dificuldade, fluxo e input.
+## Autoload (singleton) acessível de qualquer lugar como `GameManager`.
+
+signal state_changed(new_state: int)
+
+enum State { BOOT, MENU, PLAYING, PAUSED, UPGRADE, GAME_OVER }
+enum Difficulty { NORMAL, HARD, VERY_HARD, CHAMPION }
+
+var state: State = State.BOOT
+var difficulty: Difficulty = Difficulty.NORMAL
+var selected_character: CharacterData = null
+var current_screen: int = 1              # tela/fase atual (balanceamento)
+var end_title: String = ""               # texto da tela de fim (game over/vitória)
+var end_subtitle: String = ""
+
+
+func _ready() -> void:
+	_load_patches()
+	_load_gamepad_db()
+	_register_inputs()
+	set_state(State.MENU)
+
+
+## Updates leves: carrega patch_*.pck da pasta do executável por cima do jogo
+## base (só no build exportado). Ordem alfabética = patch mais novo por último.
+func _load_patches() -> void:
+	if not OS.has_feature("standalone"):
+		return
+	var dir := DirAccess.open(OS.get_executable_path().get_base_dir())
+	if dir == null:
+		return
+	var patches: Array[String] = []
+	for f in dir.get_files():
+		if f.begins_with("patch_") and f.ends_with(".pck"):
+			patches.append(f)
+	patches.sort()
+	for p in patches:
+		ProjectSettings.load_resource_pack(dir.get_current_dir().path_join(p))
+
+
+func set_state(new_state: State) -> void:
+	state = new_state
+	state_changed.emit(state)
+
+
+## Multiplicador aplicado a HP/dano/recompensa dos inimigos.
+func difficulty_multiplier() -> float:
+	match difficulty:
+		Difficulty.NORMAL: return 1.0
+		Difficulty.HARD: return 1.5
+		Difficulty.VERY_HARD: return 2.2
+		Difficulty.CHAMPION: return 3.5
+	return 1.0
+
+
+func difficulty_name() -> String:
+	match difficulty:
+		Difficulty.NORMAL: return "Normal"
+		Difficulty.HARD: return "Difícil"
+		Difficulty.VERY_HARD: return "Muito Difícil"
+		Difficulty.CHAMPION: return "Campeão"
+	return "Normal"
+
+
+## Registramos os inputs por código (mais confiável do que serializar no
+## project.godot na mão). Editável aqui num lugar só.
+#
+# LAYOUT DE CONTROLE (Xbox · DualShock/DualSense · genéricos via SDL DB) —
+# pensado pela ERGONOMIA de um beat-em-up 2D, não copiado do GoW 3D (lá os
+# ataques vivem nos ombros porque o polegar direito segura a câmera; aqui não
+# há câmera, então a ação mais repetida do jogo — atacar — fica no polegar):
+#   POLEGAR DIREITO (ritmo): X/□ leve · Y/△ forte (vizinhos: combos L/H fluem
+#     num rolar de polegar) · A/✕ pulo · B/○ esquiva (convenção do gênero).
+#   INDICADOR ESQUERDO: L1 = bloqueio/parry (segurável SEM tirar o polegar dos
+#     ataques — é a graça do parry) · L2 = trocar Anel (raro, fora do combate).
+#   INDICADOR DIREITO: R1 = Anel equipado (magia frequente, clique rápido) ·
+#     R2 = Esfera Solar (é um PROJÉTIL: gatilho = disparo, mapeamento mental).
+#   Start = pausa · Back/Share = Anel anterior.
+#   Movimento: analógico esq. (deadzone 0.25, resposta rápida) + D-pad.
+# Teclado: A/D setas · Espaço · J/K · L/Shift · I · U/O · Q/E · 1–7 · Esc.
+func _register_inputs() -> void:
+	_add_action("move_left",    [KEY_A, KEY_LEFT],  [JOY_BUTTON_DPAD_LEFT],  [[JOY_AXIS_LEFT_X, -1.0]], 0.25)
+	_add_action("move_right",   [KEY_D, KEY_RIGHT], [JOY_BUTTON_DPAD_RIGHT], [[JOY_AXIS_LEFT_X, 1.0]], 0.25)
+	_add_action("move_up",      [KEY_W, KEY_UP],    [JOY_BUTTON_DPAD_UP],    [[JOY_AXIS_LEFT_Y, -1.0]], 0.25)
+	_add_action("move_down",    [KEY_S, KEY_DOWN],  [JOY_BUTTON_DPAD_DOWN],  [[JOY_AXIS_LEFT_Y, 1.0]], 0.25)
+	_add_action("jump",         [KEY_SPACE],        [JOY_BUTTON_A])
+	_add_action("attack_light", [KEY_J],            [JOY_BUTTON_X])
+	_add_action("attack_heavy", [KEY_K],            [JOY_BUTTON_Y])
+	_add_action("dodge",        [KEY_L, KEY_SHIFT], [JOY_BUTTON_B])
+	_add_action("block",        [KEY_I],            [JOY_BUTTON_LEFT_SHOULDER])
+	_add_action("skill1",       [KEY_U],            [JOY_BUTTON_RIGHT_SHOULDER])   # Anel equipado
+	_add_action("skill2",       [KEY_O],            [],                      [[JOY_AXIS_TRIGGER_RIGHT, 1.0]])   # Esfera Solar
+	_add_action("ring_next",    [KEY_E],            [],                      [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
+	_add_action("ring_prev",    [KEY_Q],            [JOY_BUTTON_BACK])
+	var num_keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7]
+	for i in 7:
+		_add_action("ring_%d" % (i + 1), [num_keys[i]])
+	_add_action("pause",        [KEY_ESCAPE, KEY_P], [JOY_BUTTON_START])
+
+
+## SDL_GameControllerDB (github.com/mdqinc/SDL_GameControllerDB, licença zlib):
+## o melhor banco open source de mapeamentos de gamepad — o mesmo que a SDL e a
+## Steam usam. O Godot já traz um DB embutido; este ATUALIZA e amplia (DualShock,
+## DualSense, Xbox de todas as gerações e centenas de controles genéricos).
+func _load_gamepad_db() -> void:
+	var path := "res://assets/input/gamecontrollerdb.txt"
+	if not FileAccess.file_exists(path):
+		return
+	var os_name := OS.get_name()
+	var tag := "platform:" + ("Mac OS X" if os_name == "macOS" else os_name)
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return
+	var n := 0
+	while not f.eof_reached():
+		var line := f.get_line().strip_edges()
+		if line.is_empty() or line.begins_with("#") or not tag in line:
+			continue
+		Input.add_joy_mapping(line, true)   # true = atualiza controles já ligados
+		n += 1
+	print("Gamepad DB: %d mapeamentos carregados (%s)" % [n, os_name])
+
+
+func _add_action(action: String, keys: Array, buttons: Array = [], motions: Array = [], deadzone: float = 0.5) -> void:
+	if not InputMap.has_action(action):
+		InputMap.add_action(action, deadzone)
+	for k in keys:
+		var ev := InputEventKey.new()
+		ev.physical_keycode = k
+		InputMap.action_add_event(action, ev)
+	for b in buttons:
+		var ev := InputEventJoypadButton.new()
+		ev.button_index = b
+		InputMap.action_add_event(action, ev)
+	for m in motions:            # m = [eixo, valor]  (analógico e gatilhos)
+		var ev := InputEventJoypadMotion.new()
+		ev.axis = m[0]
+		ev.axis_value = m[1]
+		InputMap.action_add_event(action, ev)

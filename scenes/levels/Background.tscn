@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/scenery.gd" id="1"]
+
+; Fundo 2.5D procedural por Éon — TODAS as camadas são montadas em runtime por
+; scripts/levels/scenery.gd (céu + astro, skyline, props, névoa). Sem filhos fixos.
+
+[node name="Background" type="ParallaxBackground"]
+layer = -1
+script = ExtResource("1")

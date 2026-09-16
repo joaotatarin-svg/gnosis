@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Bg" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.08, 0.06, 0.11, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Center/VBox"]
+layout_mode = 2
+text = "GNOSIS"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/VBox"]
+layout_mode = 2
+text = "Liberte a luz. Ascenda ao Pleroma."
+horizontal_alignment = 1
+
+[node name="Play" type="Button" parent="Center/VBox"]
+layout_mode = 2
+text = "Jogar"
+
+[node name="Gallery" type="Button" parent="Center/VBox"]
+layout_mode = 2
+text = "Codex"
+
+[node name="Options" type="Button" parent="Center/VBox"]
+layout_mode = 2
+text = "Opções"
+
+[node name="Quit" type="Button" parent="Center/VBox"]
+layout_mode = 2
+text = "Sair"

@@ -1,0 +1,46 @@
+; Configuração do projeto Godot 4.
+; Renderer "gl_compatibility" = leve, roda em PC fraco (lembrando do seu contexto).
+; Resolução base pequena + filtro "nearest" = pixel art nítido.
+
+config_version=5
+
+[application]
+
+config/name="GNOSIS"
+config/version="0.1.0"
+run/main_scene="res://scenes/ui/MainMenu.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+GameManager="*res://scripts/autoload/game_manager.gd"
+GameContent="*res://scripts/autoload/game_content.gd"
+Bestiary="*res://scripts/autoload/bestiary.gd"
+Progression="*res://scripts/autoload/progression_manager.gd"
+Audio="*res://scripts/autoload/audio_manager.gd"
+SaveManager="*res://scripts/autoload/save_manager.gd"
+SceneManager="*res://scripts/autoload/scene_manager.gd"
+Juice="*res://scripts/autoload/juice.gd"
+RunManager="*res://scripts/autoload/run_manager.gd"
+Narrative="*res://scripts/autoload/narrative.gd"
+FpsOverlay="*res://scripts/autoload/fps_overlay.gd"
+
+[display]
+
+window/size/viewport_width=640
+window/size/viewport_height=360
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0

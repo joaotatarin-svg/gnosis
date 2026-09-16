@@ -1,0 +1,64 @@
+{
+	"foot_center": [
+		260.0,
+		950.0
+	],
+	"parts": [
+		{
+			"file": "res://assets/characters/sophia/parts/corpo.png",
+			"name": "corpo",
+			"off": [
+				100,
+				300
+			],
+			"pivot": [
+				255.0,
+				430.0
+			],
+			"z": 0
+		},
+		{
+			"file": "res://assets/characters/sophia/parts/saia.png",
+			"name": "saia",
+			"off": [
+				100,
+				560
+			],
+			"pivot": [
+				255.0,
+				560.0
+			],
+			"z": 1
+		},
+		{
+			"file": "res://assets/characters/sophia/parts/cabeca.png",
+			"name": "cabeca",
+			"off": [
+				132,
+				72
+			],
+			"pivot": [
+				250.0,
+				300.0
+			],
+			"z": 2
+		},
+		{
+			"file": "res://assets/characters/sophia/parts/cajado.png",
+			"name": "cajado",
+			"off": [
+				0,
+				0
+			],
+			"pivot": [
+				72.0,
+				445.0
+			],
+			"z": 3
+		}
+	],
+	"source": [
+		670,
+		1075
+	]
+}
