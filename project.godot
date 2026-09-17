@@ -29,6 +29,7 @@ Juice="*res://scripts/autoload/juice.gd"
 RunManager="*res://scripts/autoload/run_manager.gd"
 Narrative="*res://scripts/autoload/narrative.gd"
 FpsOverlay="*res://scripts/autoload/fps_overlay.gd"
+Gnosis="*res://scripts/autoload/gnosis.gd"
 
 [display]
 
