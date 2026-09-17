@@ -234,10 +234,22 @@ func _physics_process(delta: float) -> void:
 		rooted_timer -= delta
 
 	# ANTI-SOFTLOCK: inimigo que caiu pra fora da arena (empurrado por
-	# knockback/teleporte) volta pro meio — senão a wave nunca fecha.
-	if estate != EState.DEAD and (global_position.y > 560.0 or absf(global_position.x - 640.0) > 1500.0):
-		global_position = Vector2(640.0, 200.0)
-		velocity = Vector2.ZERO
+	# knockback/teleporte) volta pro meio — senão a wave nunca fecha. Os
+	# limites vêm da ZONA trancada (Level.arena_bounds), não de um x fixo:
+	# a travessia vai até x≈4300 e a zona 3 nasce longe do 640.
+	if estate != EState.DEAD:
+		var lo := -800.0
+		var hi := 1800.0
+		var mid := 640.0
+		var lv := get_parent()
+		if lv != null and lv.has_method("arena_bounds"):
+			var b: Vector2 = lv.arena_bounds()
+			lo = b.x - 60.0
+			hi = b.y + 60.0
+			mid = (b.x + b.y) * 0.5
+		if global_position.y > 560.0 or global_position.x < lo or global_position.x > hi:
+			global_position = Vector2(mid, 200.0)
+			velocity = Vector2.ZERO
 
 	match estate:
 		EState.CHASE:   _process_chase(delta)

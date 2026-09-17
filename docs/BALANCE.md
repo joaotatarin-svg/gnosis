@@ -4,7 +4,12 @@
 > compra na loja) e mede POR TELA: tempo, dano tomado e "quase-mortes" (vida
 > < 45% → conta 1 morte e cura, pra medição nunca parar). **O bot NÃO bloqueia
 > nem faz parry** — o dano dele é TETO, não média: um humano mediano toma ~1/3.
-> Rodar: `& $godot --headless --path . res://tools/BalanceBot.tscn -- 1 54 4`
+> Rodar: `& $godot --headless --path . res://tools/BalanceBot.tscn -- 1 68 4`
+> (passa de 10 min: dispare em background com a saída redirecionada pra um
+> log — ex.: `Start-Process $godot -ArgumentList "--headless","--path",".",
+> "res://tools/BalanceBot.tscn","--","1","68","4" -RedirectStandardOutput
+> shotsalance.log` — e leia o log). Desde a r4 o bot ANDA pra direita entre
+> as zonas de combate e o timeout é por ZONA (100 s parada → mata a zona).
 
 ## Rodada 1 (2026-09-11, antes do balance) — moedor de carne
 - **Morte real na tela 17.** 19 quase-mortes até lá. Tela 8 (1º Arconte): 208
