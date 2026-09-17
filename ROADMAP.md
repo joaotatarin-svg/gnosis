@@ -1,4 +1,9 @@
 # ROADMAP — GNOSIS
+
+> **PLANO-MESTRE ATUAL (17/09/2026): `docs/PLANO_FINAL.md`** — rumo à versão
+> 1.0 em ondas de agentes (comprimento + Gnose · cinema/UX/áudio/visual ·
+> fechamento). Este arquivo guarda o histórico; o estado vivo está lá.
+
 ## Edição isolada Codex — 2026-09-17
 
 O histórico abaixo é do projeto de origem. Esta sessão só altera Gnosis-Codex.
