@@ -80,3 +80,13 @@ func _do_velkar() -> void:
 	# Velkar fica — mancando pro canto dele. Só escurece um pouco.
 	var t := create_tween()
 	t.tween_property(self, "modulate", Color(0.7, 0.7, 0.7, 1.0), 1.0)
+
+
+## Ouro indica encontro, nunca hostilidade. A sombra ancora os pés no palco.
+func _draw() -> void:
+	draw_set_transform(Vector2(0,26),0,Vector2(1,0.25))
+	draw_circle(Vector2.ZERO,21,Color(0,0,0,0.26))
+	draw_arc(Vector2.ZERO,25,0,TAU,48,Color(0.77,0.65,0.42,0.4),1,true)
+	draw_set_transform(Vector2.ZERO)
+	var col := Color("e0c48c") if kind == "soter" else Color("aa9890")
+	draw_polyline(PackedVector2Array([Vector2(-3,-40),Vector2(0,-44),Vector2(3,-40),Vector2(0,-36),Vector2(-3,-40)]),col,0.7,true)

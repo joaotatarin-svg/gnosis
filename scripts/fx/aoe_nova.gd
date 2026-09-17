@@ -51,6 +51,6 @@ func _draw() -> void:
 	var r := radius * ease(t, 0.4)
 	var fade := 1.0 - t
 	# anel principal + eco + clarão central
-	draw_arc(Vector2.ZERO, r, 0, TAU, 40, Color(color.r, color.g, color.b, 0.85 * fade), 4.0 * (1.0 - t * 0.5))
-	draw_arc(Vector2.ZERO, r * 0.72, 0, TAU, 32, Color(color.r, color.g, color.b, 0.35 * fade), 2.0)
-	draw_circle(Vector2.ZERO, r * 0.3 * (1.0 - t), Color(1, 1, 1, 0.5 * fade))
+	draw_arc(Vector2.ZERO, r, 0, TAU, 64, Color(color.r, color.g, color.b, 0.85 * fade), 2.0 * (1.0 - t * 0.5))
+	draw_arc(Vector2.ZERO, r * 0.72, 0, TAU, 64, Color(color.r, color.g, color.b, 0.35 * fade), 2.0)
+	draw_circle(Vector2.ZERO, r * 0.3 * (1.0 - t), Color(1, 1, 1, 0.24 * fade))

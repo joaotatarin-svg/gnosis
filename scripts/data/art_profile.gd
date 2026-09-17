@@ -1,7 +1,7 @@
 extends Resource
 class_name ArtProfile
 ## "Receita" visual de um personagem. O CharacterArt desenha a partir disso.
-## Tudo vetorial/procedural — nenhum asset externo.
+## Perfil compartilhado entre a arte ilustrada ativa e o fallback procedural.
 
 enum Body { HUMANOID, BRUTE, WRAITH, BEAST, COLOSSUS }
 
@@ -16,6 +16,7 @@ enum Body { HUMANOID, BRUTE, WRAITH, BEAST, COLOSSUS }
 ## "pauldrons","bracers","blade","staff","claws","tail","aura","hero","shield",
 ## "hair","face","hood","tatters" + assinaturas dos Arcontes (eyelid, maw,
 ## chains, sewn, mirror, rot, bigcrown) + "cracked" (cacos da face do Rei).
+@export var painted_id: String = ""
 @export var features: PackedStringArray = []
 
 

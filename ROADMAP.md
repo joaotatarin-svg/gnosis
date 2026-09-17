@@ -1,4 +1,18 @@
 # ROADMAP — GNOSIS
+## Edição isolada Codex — 2026-09-17
+
+O histórico abaixo é do projeto de origem. Esta sessão só altera Gnosis-Codex.
+Guia: docs/CODEX_ENTREGA.md; prompts: docs/ARTE_PROMPTS.md.
+
+- [x] Cópia com Git, saves e lançadores independentes.
+- [x] Menu, ateliê e desafio com três encontros e sete opções de chefe.
+- [x] Sophia com seis poses ilustradas; chefes, criaturas, NPCs e Demiurgo novos.
+- [x] Nove pinturas de ambientes, objetos, plataformas e camadas de profundidade.
+- [x] Câmera, HUD, menus, loja com rolagem, efeitos e fragmentação ilustrada.
+- [x] QA de fluxo e isolamento; partida vencida por inputs; capturas reais.
+- [ ] Animação exclusiva mais extensa das criaturas e refinamento das bordas.
+- [ ] Fundos individuais em resolução maior; playtest humano das 54 telas.
+- [ ] Áudio final e exportação independente.
 
 > **Plano mestre rumo à versão final (escrito em 2026-09-09 após diagnóstico
 > com capturas de tela reais — ver §"Diagnóstico").** As fases são executadas em

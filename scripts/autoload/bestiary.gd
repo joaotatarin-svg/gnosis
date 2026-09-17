@@ -84,14 +84,14 @@ func types_for_screen(screen: int) -> Array:
 func soter_profile() -> ArtProfile:
 	return _profile(ArtProfile.Body.HUMANOID, 50.0,
 		Color(0.93, 0.9, 0.82), Color(0.85, 0.72, 0.38), Color(1.0, 0.96, 0.75),
-		["cape", "aura"])
+		["cape", "aura", "face", "hair", "soter"])
 
 
 ## Velkar, o Arrependido: Arconte caído — chifre quebrado, sem coroa, olho fraco.
 func velkar_profile() -> ArtProfile:
 	return _profile(ArtProfile.Body.BRUTE, 56.0,
 		Color(0.4, 0.32, 0.44), Color(0.24, 0.18, 0.26), Color(0.75, 0.6, 0.5),
-		["horns", "pauldrons"])
+		["horns", "pauldrons", "velkar"])
 
 
 ## Aparência do herói — muda conforme o nível da arma e os itens adquiridos.
@@ -99,14 +99,14 @@ func velkar_profile() -> ArtProfile:
 func player_profile(character: CharacterData, weapon_level: int, owned_items: Array = []) -> ArtProfile:
 	var body := ArtProfile.Body.HUMANOID
 	var feats: Array = []
-	var primary: Color = character.sprite_color if character else Color(0.82, 0.3, 0.28)
+	var primary: Color = Color("e2dac2")
 	var secondary := Color(0.85, 0.72, 0.38)      # ouro do gear
 	var eye := Color(1.0, 0.92, 0.55)
 
 	# Sophia (única): humanoide (anima bem, ganha o núcleo no peito e o gear), cajado,
 	# rosto e cabelo comprido (a faísca em forma de gente).
 	feats = ["staff", "hair"]
-	eye = Color(0.85, 0.82, 1.0)
+	eye = Color("a3eee2")
 
 	# Evolução por nível de arma (fica mais "foda" a cada tier).
 	if weapon_level >= 2: feats.append("pauldrons")
@@ -123,7 +123,7 @@ func player_profile(character: CharacterData, weapon_level: int, owned_items: Ar
 	feats.append("hero")   # detalhe extra (núcleo de luz no peito) só no herói
 	var p := _profile(body, 46.0, primary, secondary, eye, feats)
 	p.skin = Color(0.96, 0.90, 0.86)
-	p.hair = Color(0.82, 0.74, 0.96)     # lilás-prata: cabelo de luz
+	p.hair = Color("e8eee5")     # lilás-prata: cabelo de luz
 	return p
 
 
@@ -146,6 +146,7 @@ func _profile(body: int, height: float, primary: Color, secondary: Color, eye: C
 ## behavior: comportamento de wave (shield/teleport/exploder/summoner/slowshot/
 ##   leech/chainshot/silencer/dodger/spores/guard).
 func _wt(id: String, name: String, tier: int, hp: int, dmg: int, spd: float, spark: int, profile: ArtProfile, style: String = "melee", kit: String = "", behavior: String = "") -> Dictionary:
+	profile.painted_id = id
 	return {
 		"id": id, "name": name, "tier": tier, "base_health": hp,
 		"base_damage": dmg, "move_speed": spd, "spark": spark, "profile": profile,

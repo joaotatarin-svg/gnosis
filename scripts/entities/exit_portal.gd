@@ -28,15 +28,23 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	var glow := 0.55 + sin(_t * 4.0) * 0.3
-	var col := Color(1.0, 0.9, 0.5)
-	# fenda de luz
-	draw_rect(Rect2(-16, -92, 32, 92), Color(col.r, col.g, col.b, 0.14 * glow))
-	draw_line(Vector2(-16, -92), Vector2(-16, 0), Color(col.r, col.g, col.b, 0.8), 2.0)
-	draw_line(Vector2(16, -92), Vector2(16, 0), Color(col.r, col.g, col.b, 0.8), 2.0)
-	draw_line(Vector2(-16, -92), Vector2(16, -92), Color(col.r, col.g, col.b, 0.8), 2.0)
-	# setas pulsando pra direita (dica de avançar)
-	for i in 3:
-		var x := -2.0 + i * 9.0
-		var a := clampf(glow - i * 0.18, 0.15, 1.0)
-		draw_colored_polygon(PackedVector2Array([Vector2(x, -54), Vector2(x + 7, -46), Vector2(x, -38)]), Color(col.r, col.g, col.b, a))
+	var light := Color("dcc68a")
+	var cyan := Color("9de0d1")
+	var arch := PackedVector2Array([Vector2(-20,0),Vector2(-20,-63)])
+	for i in 33:
+		var a: float = PI + PI * i / 32.0
+		arch.append(Vector2(cos(a)*20,-63+sin(a)*29))
+	arch.append(Vector2(20,0))
+	draw_polyline(arch,Color("122e37"),8,true)
+	draw_polyline(arch,Color(light,0.75),1.0,true)
+	for i in 5:
+		var p: float = float(i)/5.0
+		draw_line(Vector2(lerpf(-14,14,p),-76),Vector2(lerpf(-14,14,p),-5),Color(cyan,0.05+sin(_t*2+i)*0.025),5.0,true)
+	for i in 12:
+		var ph: float = fposmod(_t*0.18+i*0.137,1.0)
+		var at := Vector2(sin(i*4.7)*13,-ph*83)
+		draw_circle(at,0.7,Color(light,sin(ph*PI)*0.8))
+	var glyph := Vector2(0,-43)
+	draw_arc(glyph,10,0,TAU,40,Color(cyan,0.7),0.8,true)
+	draw_polyline(PackedVector2Array([glyph+Vector2(-3,-5),glyph+Vector2(3,0),glyph+Vector2(-3,5)]),light,1.5,true)
+	draw_line(Vector2(-25,1),Vector2(25,1),Color(light,0.4),1.0,true)

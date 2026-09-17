@@ -7,6 +7,9 @@ class_name Gib
 
 const GRAV := 950.0
 
+var painted_texture: Texture2D
+var painted_size: Vector2
+var painted_flip: float = 1.0
 var pts: PackedVector2Array
 var col: Color = Color(0.5, 0.5, 0.5)
 var ink: Color = Color(0.1, 0.1, 0.1)
@@ -42,6 +45,11 @@ static func burst(parent: Node, origin: Vector2, parts: Array, facing: float, gr
 			local.append(q)
 			rad = maxf(rad, q.length())
 		var g := Gib.new()
+		if part.has("tex"):
+			g.painted_texture = part.tex
+			g.painted_size = part.size
+			g.painted_flip = part.flip*facing
+			g.material = PaintedLibrary.material()
 		g.pts = local
 		g.col = part.col
 		g.ink = ink_col
@@ -102,6 +110,10 @@ func _draw() -> void:
 		draw_circle(Vector2.ZERO, drop_r * 1.8, Color(glow.r, glow.g, glow.b, 0.25 * fade))
 		draw_circle(Vector2.ZERO, drop_r, Color(glow.r, glow.g, glow.b, fade))
 		draw_circle(Vector2.ZERO, drop_r * 0.45, Color(1, 1, 1, 0.9 * fade))
+		return
+	if painted_texture != null:
+		draw_set_transform(Vector2.ZERO,0,Vector2(painted_flip,1))
+		draw_texture_rect(painted_texture,Rect2(-painted_size*0.5,painted_size),false,Color(1,1,1,fade))
 		return
 	var c := Color(col.r, col.g, col.b, fade)
 	draw_colored_polygon(pts, c)

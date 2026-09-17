@@ -8,9 +8,23 @@ var screen: int = 1
 var opened: bool = false
 var _hurt: Hurtbox
 var _wobble: float = 0.0
+var painted_chest: Sprite2D
+var painted_lid: Sprite2D
 
 
 func _ready() -> void:
+	painted_chest = PaintedLibrary.sprite(1,32.0)
+	painted_chest.texture = PaintedLibrary.region("architecture",Rect2(575,337,360,173))
+	painted_chest.offset.y = -86.5
+	painted_chest.position.y = 12
+	add_child(painted_chest)
+	painted_lid = Sprite2D.new()
+	painted_lid.texture = PaintedLibrary.region("architecture",Rect2(575,205,360,132))
+	painted_lid.material = PaintedLibrary.material()
+	painted_lid.scale = Vector2.ONE*32.0/305.0
+	painted_lid.offset = Vector2(0,-66)
+	painted_lid.position.y = 12-173*32.0/305.0
+	add_child(painted_lid)
 	_hurt = Hurtbox.new()
 	_hurt.team = "enemy"           # golpes do player acertam
 	var shape := CollisionShape2D.new()
@@ -31,23 +45,18 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	var gold := Color(0.85, 0.70, 0.35)
-	var dark := Color(0.32, 0.24, 0.12)
-	var glow := 0.5 + sin(Time.get_ticks_msec() * 0.004) * 0.25
-	var wob: float = sin(_wobble * 40.0) * 2.0 if _wobble > 0.0 else 0.0
-	draw_set_transform(Vector2(wob, 0), 0.0, Vector2.ONE)
+	draw_set_transform(Vector2(0,12),0,Vector2(1,0.22))
+	draw_circle(Vector2.ZERO,21,Color(0,0,0,0.3))
+	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+	if painted_chest != null:
+		painted_chest.modulate = Color(0.52,0.59,0.59) if opened else Color.WHITE
+		painted_chest.rotation = sin(_wobble*40)*_wobble*0.15
 	if opened:
-		# aberto: tampa levantada, luz saindo
-		draw_circle(Vector2(0, -8), 16.0, Color(1.0, 0.9, 0.5, 0.18))
-		draw_colored_polygon(PackedVector2Array([Vector2(-15,0), Vector2(15,0), Vector2(13,12), Vector2(-13,12)]), dark)
-		draw_colored_polygon(PackedVector2Array([Vector2(-15,-2), Vector2(-13,-14), Vector2(13,-16), Vector2(15,-4)]), dark.lightened(0.15))
+		painted_lid.rotation = -0.55
+		painted_lid.position.y = -12
+		draw_arc(Vector2(0,-8),13,PI,TAU,30,Color("d6c58f"),1.3,true)
 	else:
-		draw_colored_polygon(PackedVector2Array([Vector2(-15,-6), Vector2(15,-6), Vector2(13,12), Vector2(-13,12)]), dark)
-		draw_colored_polygon(PackedVector2Array([Vector2(-16,-6), Vector2(16,-6), Vector2(14,-14), Vector2(-14,-14)]), dark.lightened(0.2))
-		# fecho brilhante (a "faísca" presa)
-		draw_circle(Vector2(0, -5), 4.5, Color(1.0, 0.9, 0.5, glow * 0.4))
-		draw_circle(Vector2(0, -5), 2.5, Color(1.0, 0.92, 0.6, glow + 0.3))
-		draw_line(Vector2(-16, -6), Vector2(16, -6), gold, 1.5)
+		draw_circle(Vector2(0,-4),2,Color("bef6df"))
 
 
 func _on_hit(_dmg: int, _src: Vector2, _kb: float, _unblock: bool = false, _atk: Node = null) -> void:

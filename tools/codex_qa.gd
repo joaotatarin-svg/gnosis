@@ -1,0 +1,91 @@
+extends Node
+## QA de integração: navegação, perfis, fases, morte e isolamento do save.
+## O fluxo usa dano sintético; a validação de combate real é outro teste.
+
+func _ready() -> void:
+	var worker := Worker.new()
+	get_tree().root.add_child.call_deferred(worker)
+
+class Worker extends Node:
+	var errors: int = 0
+	func _ready() -> void:
+		process_mode = Node.PROCESS_MODE_ALWAYS
+		_run.call_deferred()
+
+	func check(condition: bool, message: String) -> void:
+		if condition:
+			print("QA PASS: ", message)
+		else:
+			errors += 1
+			push_error("QA FAIL: " + message)
+
+	func wait(seconds: float = 0.65) -> void:
+		await get_tree().create_timer(seconds, true, false, true).timeout
+
+	func shot(name: String) -> void:
+		if DisplayServer.get_name() == "headless":
+			return
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png("res://shots/codex-" + name + ".png")
+
+	func _run() -> void:
+		SaveManager.persist_enabled = false
+		check(ProjectSettings.globalize_path("user://").contains("GNOSIS-Codex"), "diretório de save independente")
+		get_tree().change_scene_to_file("res://scenes/ui/CharacterAtelier.tscn")
+		await wait()
+		var atelier = get_tree().current_scene
+		for i in 8:
+			atelier._select(i)
+			for pose in 7:
+				atelier._set_pose(1)
+				await get_tree().process_frame
+			check(atelier.art.profile != null and not atelier.art.painted.is_empty(), "perfil ilustrado %d e 7 poses" % i)
+		atelier._select(1)
+		await wait(0.2)
+		await shot("athoth")
+		RunManager.saved_run = {"screen": 22, "test": "preservar"}
+		CodexSession.start_demo()
+		await wait(1.0)
+		check(not SaveManager.persist_enabled, "desafio não escreve progresso")
+		for stage in 3:
+			var level = get_tree().current_scene
+			check(level is Level and CodexSession.stage == stage, "entrada no encontro %d" % (stage + 1))
+			if stage == 2:
+				await shot("boss")
+			var guard: int = 0
+			while not level.completed and guard < 10:
+				guard += 1
+				for e in get_tree().get_nodes_in_group("enemy"):
+					if e is Enemy and e.estate != Enemy.EState.DEAD:
+						e._on_hit_received(99999, level.player.global_position, 10.0, false, null)
+				await wait(1.1)
+			check(level.completed, "limpeza do encontro %d" % (stage + 1))
+			await wait()
+			check(get_tree().paused and level.result_layer != null, "resultado e pausa do encontro %d" % (stage + 1))
+			if stage < 2:
+				for c in level.result_layer.get_children():
+					if c is Button and c.text.begins_with("Próximo"):
+						c.pressed.emit()
+						break
+				await wait(1.0)
+		await shot("victory")
+		get_tree().paused = false
+		CodexSession.start_demo()
+		await wait(1.0)
+		var level = get_tree().current_scene
+		level.player.health.take_damage(99999)
+		await wait(1.2)
+		check(level.completed and get_tree().paused, "morte abre resultado recuperável")
+		for c in level.result_layer.get_children():
+			if c is Button and c.text == "Tentar novamente":
+				c.pressed.emit()
+				break
+		await wait(1.0)
+		check(not get_tree().paused and get_tree().get_first_node_in_group("player").health.current_health > 0, "tentar novamente restaura a jogabilidade")
+		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
+		await wait(1.0)
+		check(not CodexSession.active, "menu encerra sandbox")
+		check(RunManager.saved_run.get("test", "") == "preservar", "checkpoint anterior preservado")
+		check(not SaveManager.persist_enabled, "preferência anterior de persistência restaurada")
+		print("QA RESULT: ", errors, " falhas")
+		get_tree().quit(0 if errors == 0 else 1)

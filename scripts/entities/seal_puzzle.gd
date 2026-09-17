@@ -73,6 +73,9 @@ class SealPillar extends Node2D:
 	var _hurt: Hurtbox
 
 	func _ready() -> void:
+		var stone_art := PaintedLibrary.sprite(2,61.0)
+		stone_art.position.y = 14
+		add_child(stone_art)
 		_hurt = Hurtbox.new()
 		_hurt.team = "enemy"
 		_hurt.collision_layer = 8
@@ -101,8 +104,8 @@ class SealPillar extends Node2D:
 		queue_redraw()
 
 	func _draw() -> void:
-		var stone := Color(0.28, 0.24, 0.38)
-		var glyph := Color(0.45, 0.4, 0.55)
+		var stone := Color("254049")
+		var glyph := Color("537477")
 		match state:
 			"next":
 				var pulse := 0.6 + sin(Time.get_ticks_msec() * 0.008) * 0.4
@@ -111,13 +114,6 @@ class SealPillar extends Node2D:
 				glyph = Color(1.0, 0.92, 0.6)
 		if _err > 0.0:
 			glyph = Color(1.0, 0.3, 0.25)
-		# obelisco
-		draw_colored_polygon(PackedVector2Array([
-			Vector2(-11, 12), Vector2(-8, -38), Vector2(0, -44), Vector2(8, -38), Vector2(11, 12)
-		]), stone)
-		draw_polyline(PackedVector2Array([
-			Vector2(-11, 12), Vector2(-8, -38), Vector2(0, -44), Vector2(8, -38), Vector2(11, 12), Vector2(-11, 12)
-		]), Color(0.1, 0.08, 0.16), 1.5, true)
 		# glifo (triângulo do olho) — brilha conforme o estado
 		if state == "locked" or state == "next" or _err > 0.0:
 			draw_circle(Vector2(0, -18), 8.0, Color(glyph.r, glyph.g, glyph.b, 0.2))

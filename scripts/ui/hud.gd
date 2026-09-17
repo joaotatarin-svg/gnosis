@@ -25,8 +25,9 @@ var _toast_label: Label
 
 func _ready() -> void:
 	add_to_group("hud")
-	_style_bar(hp_bar, Color(0.80, 0.22, 0.24), Color(0.22, 0.08, 0.10))
-	_style_bar(mp_bar, Color(0.46, 0.50, 0.95), Color(0.10, 0.10, 0.26))
+	_compact_style()
+	_style_bar(hp_bar, Color("74b99a"), Color(0.22, 0.08, 0.10))
+	_style_bar(mp_bar, Color("78b8cd"), Color(0.10, 0.10, 0.26))
 	_build_boss_bar()
 	_build_rings()
 	Progression.rings_changed.connect(_refresh_rings)
@@ -143,7 +144,9 @@ func _refresh_rings() -> void:
 		else:
 			d.add_theme_color_override("font_color", sk.color)
 			any = true
-		d.text = "❖" if i == sel and usable else "◆"
+		d.text = ["◉", "◈", "∞", "∷", "◇", "✳", "♛"][i]
+		d.add_theme_color_override("font_outline_color", Color("eee4cd") if i == sel and usable else Color("09141c"))
+		d.add_theme_constant_override("outline_size", 1 if i == sel and usable else 2)
 	_ring_row.visible = any or Progression.rings.size() > 0
 	var sk_sel: SkillData = _ring_dots[sel].skill
 	if Progression.ring_usable(sk_sel.ring):
@@ -210,8 +213,8 @@ func _on_combo(count: int) -> void:
 		combo_label.text = ""
 		return
 	combo_label.text = "%d  COMBO" % count
-	combo_label.scale = Vector2(1.35, 1.35)
-	combo_label.pivot_offset = combo_label.size * 0.5
+	combo_label.scale = Vector2(1.1, 1.1)
+	combo_label.pivot_offset = Vector2(combo_label.size.x, 0)
 	var t := create_tween()
 	t.tween_property(combo_label, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
@@ -248,3 +251,22 @@ func _on_sparks(total: int) -> void:
 
 func _on_weapon(level: int) -> void:
 	weapon_label.text = "Arma Nv. %d" % level
+
+
+## HUD compacto: deixa o palco para os personagens.
+func _compact_style() -> void:
+	$Margin.offset_left = 18
+	$Margin.offset_top = 13
+	$Margin.offset_right = 204
+	$Margin.offset_bottom = 93
+	$Margin/VBox.add_theme_constant_override("separation", 3)
+	for l in [screen_label, spark_label, weapon_label]:
+		l.add_theme_font_size_override("font_size", 10)
+		l.add_theme_color_override("font_color", Color("dfdcc8"))
+		l.add_theme_color_override("font_outline_color", Color("09141c"))
+		l.add_theme_constant_override("outline_size", 3)
+	hp_bar.custom_minimum_size = Vector2(182, 7)
+	mp_bar.custom_minimum_size = Vector2(182, 4)
+	combo_label.offset_left = 420
+	combo_label.offset_right = 615
+	combo_label.add_theme_font_size_override("font_size", 18)

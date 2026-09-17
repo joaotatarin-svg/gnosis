@@ -1,0 +1,105 @@
+extends Level
+## Desafio de três encontros. Usa Player, Enemy e HUD reais, sem simular combate.
+
+var completed: bool = false
+var result_layer: CanvasLayer
+var phase_label: Label
+
+func _ready() -> void:
+	# A entrada direta serve às ferramentas de QA.
+	if not CodexSession.active:
+		CodexSession.start_demo()
+		return
+	screen = 2 + CodexSession.boss_index * 7
+	GameManager.current_screen = screen
+	GameManager.set_state(GameManager.State.PLAYING)
+	player.died.connect(_on_player_died)
+	player.combo_changed.connect(func(count: int): CodexSession.best_combo = maxi(CodexSession.best_combo, count))
+	player.position = Vector2(160, 270)
+	var cam: Camera2D = player.get_node("Camera2D")
+	cam.position_smoothing_enabled = false
+	cam.base_offset = Vector2.ZERO
+	cam.limit_left = 0
+	cam.limit_right = 840
+	cam.limit_top = 50
+	cam.limit_bottom = 410
+	_build_eon_scenery()
+	# Arena compacta, o objetivo nunca fica escondido fora de tela.
+	for wx in [-20, 860]:
+		var wall := StaticBody2D.new()
+		wall.position = Vector2(wx, 170)
+		var shape := CollisionShape2D.new()
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(40, 600)
+		shape.shape = rect
+		wall.add_child(shape)
+		add_child(wall)
+	$Spawns/Spawn1.position = Vector2(430, 270)
+	$Spawns/Spawn2.position = Vector2(570, 270)
+	$Spawns/Spawn3.position = Vector2(720, 270)
+	match CodexSession.stage:
+		0: waves = [["servo", "servo"], ["servo", Bestiary.EON_BOTS[CodexSession.boss_index]]]
+		1: waves = [["escudeiro", "servo"], [Bestiary.EON_BOTS[CodexSession.boss_index], "servo"]]
+		_: waves = [[Bestiary.bosses[CodexSession.boss_index].id]]
+	var layer := CanvasLayer.new()
+	add_child(layer)
+	phase_label = CodexStyle.label(layer, "", Vector2(390, 13), 10, CodexStyle.GOLD, 230)
+	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	CodexStyle.label(layer, "A/D mover   ESPAÇO saltar   J/K golpes   SHIFT esquiva   I aparar   U anel   O esfera", Vector2(18, 341), 8, CodexStyle.MUTED, 615)
+	_start_wave()
+	get_tree().call_group("hud", "toast", ["I  ·  A FAÍSCA DESPERTA", "II  ·  QUEBRE A GUARDA", "III  ·  ENCARE O ARCONTE"][CodexSession.stage])
+
+func _process(delta: float) -> void:
+	if not completed and GameManager.state == GameManager.State.PLAYING:
+		CodexSession.elapsed += delta
+	if phase_label != null:
+		phase_label.text = "DESAFIO  %d / 3   ·   %02d:%02d" % [CodexSession.stage + 1, int(CodexSession.elapsed) / 60, int(CodexSession.elapsed) % 60]
+
+func _start_wave() -> void:
+	GameManager.current_screen = 2
+	if CodexSession.stage == 2:
+		screen = 8 + CodexSession.boss_index * 7
+	super._start_wave()
+	# Os números da campanha permanecem intactos. O desafio usa o início da curva.
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if e is Enemy and e.is_boss_enemy:
+			e.health.setup(270)
+			e.attack_damage = 9
+
+func _on_screen_cleared() -> void:
+	if completed:
+		return
+	completed = true
+	await get_tree().create_timer(0.8).timeout
+	_show_result(true)
+
+func _on_player_died() -> void:
+	if completed:
+		return
+	completed = true
+	await get_tree().create_timer(0.9).timeout
+	_show_result(false)
+
+func _show_result(won: bool) -> void:
+	GameManager.set_state(GameManager.State.PAUSED)
+	get_tree().paused = true
+	result_layer = CanvasLayer.new()
+	result_layer.layer = 30
+	result_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(result_layer)
+	var panel := ColorRect.new()
+	panel.color = Color(0.02, 0.055, 0.075, 0.96)
+	panel.size = Vector2(640, 360)
+	result_layer.add_child(panel)
+	var final: bool = won and CodexSession.stage == 2
+	CodexStyle.label(result_layer, "GNOSIS  /  O DESPERTAR", Vector2(170, 67), 10, CodexStyle.GOLD)
+	CodexStyle.label(result_layer, "A luz permanece." if final else ("O selo cedeu." if won else "A faísca resiste."), Vector2(170, 99), 31, CodexStyle.PAPER, 440, true)
+	CodexStyle.label(result_layer, "Tempo  %02d:%02d    ·    Melhor combo  %d\n%s" % [int(CodexSession.elapsed) / 60, int(CodexSession.elapsed) % 60, CodexSession.best_combo, "Sete carcereiros esperam na campanha." if final else ("Respire. Sua vida será restaurada." if won else "Esquive do vermelho. Apare o dourado.")], Vector2(170, 157), 12, CodexStyle.MUTED)
+	var first := CodexStyle.button(result_layer, "Próximo encontro  →" if won and not final else "Tentar novamente", Vector2(170, 222), 285, func():
+		get_tree().paused = false
+		if won and not final: CodexSession.next_stage()
+		else: CodexSession.start_demo(CodexSession.boss_index), true)
+	CodexStyle.button(result_layer, "Voltar ao menu", Vector2(170, 261), 285, func():
+		get_tree().paused = false
+		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn"))
+	first.grab_focus()

@@ -14,7 +14,7 @@ const GROUND := 316.0      # linha do chão nas camadas (bate com o Level)
 
 ## Paleta por Éon: 0..6 = Torpor..Coroa · 7 = Centro · 8 = Mente (final).
 const PAL := [
-	{"sky_top": Color(0.07, 0.07, 0.13), "sky_bot": Color(0.30, 0.30, 0.40), "far": Color(0.14, 0.14, 0.22), "mid": Color(0.11, 0.11, 0.18), "near": Color(0.07, 0.07, 0.12), "fog": Color(0.55, 0.58, 0.72), "ground": Color(0.22, 0.21, 0.28), "ground_dark": Color(0.08, 0.08, 0.12), "glow": Color(0.72, 0.76, 0.92)},
+	{"sky_top": Color("08131d"), "sky_bot": Color("27464e"), "far": Color("152e3a"), "mid": Color("102631"), "near": Color("0a1c25"), "fog": Color("6babad"), "ground": Color("233b40"), "ground_dark": Color("08151c"), "glow": Color("98cece")},
 	{"sky_top": Color(0.12, 0.04, 0.05), "sky_bot": Color(0.45, 0.16, 0.12), "far": Color(0.22, 0.09, 0.09), "mid": Color(0.16, 0.07, 0.07), "near": Color(0.10, 0.04, 0.05), "fog": Color(0.7, 0.35, 0.25), "ground": Color(0.28, 0.16, 0.14), "ground_dark": Color(0.10, 0.05, 0.05), "glow": Color(1.0, 0.55, 0.3)},
 	{"sky_top": Color(0.05, 0.07, 0.12), "sky_bot": Color(0.28, 0.32, 0.42), "far": Color(0.13, 0.15, 0.22), "mid": Color(0.10, 0.12, 0.18), "near": Color(0.06, 0.07, 0.11), "fog": Color(0.5, 0.55, 0.65), "ground": Color(0.20, 0.22, 0.28), "ground_dark": Color(0.07, 0.08, 0.11), "glow": Color(0.85, 0.85, 0.95)},
 	{"sky_top": Color(0.03, 0.02, 0.07), "sky_bot": Color(0.14, 0.10, 0.26), "far": Color(0.09, 0.07, 0.17), "mid": Color(0.07, 0.05, 0.13), "near": Color(0.04, 0.03, 0.08), "fog": Color(0.45, 0.4, 0.65), "ground": Color(0.16, 0.13, 0.24), "ground_dark": Color(0.05, 0.04, 0.09), "glow": Color(0.7, 0.75, 1.0)},
@@ -65,9 +65,25 @@ func build(p_eon: int, screen: int = 1) -> bool:
 		layer.add_child(spr)
 		return true
 	_build_sky()
-	_build_far()
-	_build_mid()
-	_build_near()
+	var painted_layer := _layer(Vector2(0.18,1.0),768.0)
+	for i in 1:
+		var backdrop := Sprite2D.new()
+		backdrop.texture = PaintedLibrary.background(clampi(eon,0,8))
+		backdrop.centered = false
+		backdrop.position = Vector2(i*768,0)
+		backdrop.scale = Vector2(768.0/backdrop.texture.get_width(),400.0/backdrop.texture.get_height())
+		backdrop.modulate = Color(0.68,0.73,0.77)
+		painted_layer.add_child(backdrop)
+	var architecture := _layer(Vector2(0.64,1.0),1800.0)
+	for x in [40.0,940.0]:
+		var column := PaintedLibrary.sprite(0,230.0)
+		column.position = Vector2(x,GROUND)
+		column.modulate = Color(0.40,0.48,0.52)
+		architecture.add_child(column)
+	for x in [290.0,1110.0]:
+		var lamp := PaintedLibrary.sprite(4,44.0)
+		lamp.position = Vector2(x,GROUND)
+		architecture.add_child(lamp)
 	_build_fog()
 	return false
 
@@ -493,40 +509,10 @@ class GroundDetail extends Node2D:
 		# chão inteiro (gradiente)
 		draw_polygon(PackedVector2Array([Vector2(-2400, 0), Vector2(2400, 0), Vector2(2400, 420), Vector2(-2400, 420)]),
 			PackedColorArray([top, top, dark, dark]))
-		# borda superior (luz rasante)
-		draw_line(Vector2(-2400, 0.5), Vector2(2400, 0.5), top.lightened(0.28), 2.0)
-		draw_line(Vector2(-2400, 3.0), Vector2(2400, 3.0), Color(glow.r, glow.g, glow.b, 0.10), 3.0)
-		# lajes / rachaduras determinísticas
-		var r := RandomNumberGenerator.new()
-		r.seed = hash("ground%d" % eon)
-		var x := -2400.0
-		while x < 2400.0:
-			var w := r.randf_range(50.0, 140.0)
-			var seam := top.darkened(0.35)
-			draw_line(Vector2(x, 2), Vector2(x + r.randf_range(-6.0, 6.0), 16 + r.randf_range(0.0, 14.0)), seam, 1.5)
-			if r.randf() < 0.5:
-				draw_line(Vector2(x + w * 0.3, 8), Vector2(x + w * 0.7, 8 + r.randf_range(-3.0, 3.0)), seam, 1.0)
-			# detalhe do Éon
-			match eon:
-				0:
-					if r.randf() < 0.3:
-						draw_circle(Vector2(x + w * 0.5, 22), r.randf_range(4.0, 9.0), top.darkened(0.2))
-				2:
-					if r.randf() < 0.3:
-						draw_line(Vector2(x + 10, 4), Vector2(x + 30, 4), top.lightened(0.35), 2.0)
-				3:
-					if r.randf() < 0.35:
-						draw_rect(Rect2(x + 8, 6, 14, 9), top.lightened(0.15))
-				4:
-					if r.randf() < 0.35:
-						draw_line(Vector2(x, 30), Vector2(x + w * 0.5, 4), Color(1, 1, 1, 0.08), 1.5)
-				5:
-					if r.randf() < 0.4:
-						draw_colored_polygon(_ell(Vector2(x + w * 0.5, 18), 26.0, 6.0), Color(0.25, 0.4, 0.2, 0.6))
-				6:
-					if r.randf() < 0.35:
-						draw_line(Vector2(x + 6, 5), Vector2(x + w - 6, 5), Color(glow.r, glow.g, glow.b, 0.25), 1.5)
-			x += w
+		var floor_tex: Texture2D = PaintedLibrary.background(eon)
+		for tile in range(-10,11):
+			draw_texture_rect_region(floor_tex,Rect2(tile*512,0,512,160),Rect2(0,floor_tex.get_height()*0.82,512,floor_tex.get_height()*0.18),Color(0.75,0.79,0.83))
+		draw_line(Vector2(-2400,1),Vector2(2400,1),Color(glow,0.18),1.0,true)
 
 	func _ell(c: Vector2, rx: float, ry: float) -> PackedVector2Array:
 		var pts := PackedVector2Array()
@@ -560,28 +546,12 @@ class Foreground extends Node2D:
 		position.x = cx * (1.0 - SPEED)
 		queue_redraw()
 
-	func _draw() -> void:
-		var c: Color = pal.near.darkened(0.5)
-		c.a = 0.9
-		var r := RandomNumberGenerator.new()
-		r.seed = hash("fg%d" % eon)
-		var cam := get_viewport().get_camera_2d()
-		if cam == null:
-			return
-		# base = borda de baixo da tela (só a ponta das silhuetas aparece)
-		var base := cam.get_screen_center_position().y + 244.0
-		var x := -SPAN
-		while x < SPAN * 2.0:
-			var w := r.randf_range(60.0, 160.0)
-			var h := r.randf_range(30.0, 90.0)
-			match eon:
-				5:
-					draw_colored_polygon(PackedVector2Array([Vector2(x, base), Vector2(x + w * 0.4, base - h * 1.4), Vector2(x + w * 0.5, base - h * 0.3), Vector2(x + w * 0.7, base - h), Vector2(x + w, base)]), c)
-				2:
-					draw_colored_polygon(PackedVector2Array([Vector2(x, base), Vector2(x + 4, base - h * 2.0), Vector2(x + 12, base - h * 2.0), Vector2(x + 16, base)]), c)
-				_:
-					draw_colored_polygon(PackedVector2Array([Vector2(x, base), Vector2(x + w * 0.3, base - h), Vector2(x + w * 0.6, base - h * 0.6), Vector2(x + w, base)]), c)
-			x += w + r.randf_range(160.0, 520.0)
+	func _ready() -> void:
+		for x in [-300.0,560.0,1390.0,2190.0,3060.0]:
+			var rubble := PaintedLibrary.sprite(3,72.0)
+			rubble.position = Vector2(x,428)
+			rubble.modulate = Color(0.20,0.26,0.30,0.85)
+			add_child(rubble)
 
 
 # --- vinheta (CanvasLayer abaixo do HUD) ------------------------------------------

@@ -1,7 +1,7 @@
 extends Node2D
 class_name CharacterArt
 ## MOTOR DE ARTE v2 — desenha e ANIMA um personagem por código a partir de um
-## ArtProfile. Nada de asset externo (o PNG é opcional, só pro Rei/Demiurgo).
+## ArtProfile. A edição Codex usa PaintedLibrary/PNG; o desenho antigo é fallback.
 ##
 ## Corpos:
 ##  - HUMANOID / BRUTE / COLOSSUS: bípedes articulados (pernas, braços, arma NA
@@ -23,6 +23,7 @@ var anim_state: String = "idle"
 var anim_time: float = 0.0
 var damage_ratio: float = 0.0     # 0 = inteiro · 1 = quase morto (rachaduras)
 var _rig_draws: Array = []        # buffer de desenho do rig (tinta em 2 passes)
+var painted: Dictionary = {}
 var texture: Texture2D = null     # se setado, usa a arte ilustrada no lugar do procedural
 var texture_height: float = 64.0  # altura de exibição do sprite (px)
 
@@ -48,6 +49,8 @@ var _dead := 0.0         # 0..1 corpo caindo
 
 func set_profile(p: ArtProfile) -> void:
 	profile = p
+	painted = PaintedLibrary.character(p)
+	material = PaintedLibrary.material()
 	queue_redraw()
 
 
@@ -293,6 +296,10 @@ func _draw() -> void:
 	var sy := 1.0 - _crouch
 	draw_set_transform(Vector2(0, _bob * s + GROUND_Y * s * _crouch), _lean, Vector2(1.0, sy))
 
+	if not painted.is_empty() and texture == null:
+		_draw_painted(s)
+		return
+
 	# Rig cutout (PNG em partes): anima as peças e ignora o procedural.
 	if not rig.is_empty():
 		_draw_rig(s)
@@ -310,7 +317,7 @@ func _draw() -> void:
 	if profile.has("wings"): _wings(s)
 	if profile.has("cape"): _cape(s)
 	if profile.has("rot"): _rot(s)
-	if profile.has("hair"): _hair_back(s)
+	if profile.has("hair") and not profile.has("hero"): _hair_back(s)
 
 	match profile.body:
 		ArtProfile.Body.WRAITH: _draw_wraith(s)
@@ -319,9 +326,11 @@ func _draw() -> void:
 
 	# adereços da cabeça (comuns)
 	if profile.has("spikes") and _is_biped(): _spikes(s)
-	if profile.has("helmet"): _helmet(s)
+	if profile.has("helmet") and not profile.has("hero"): _helmet(s)
 	if profile.has("horns"): _horns(s)
-	if profile.has("crown"): _crown(s)
+	if profile.has("crown") and not profile.has("hero"): _crown(s)
+	if profile.height >= 70.0:
+		_codex_regalia(s)
 	# assinaturas dos Arcontes
 	if profile.has("eyelid"): _eyelid(s)
 	if profile.has("sewn"): _sewn(s)
@@ -462,6 +471,9 @@ func _eye_pos(s: float) -> Vector2:
 # --- bípede ------------------------------------------------------------------
 
 func _draw_biped(s: float) -> void:
+	if profile.has("hero"):
+		_draw_sophia(s)
+		return
 	var hero := profile.has("hero")
 	var hip_y := _hip_y()
 	var hip_x := 3.5
@@ -1086,6 +1098,8 @@ func _cracked_face(s: float) -> void:
 func gib_parts() -> Array:
 	var s := profile.height / 44.0
 	var parts: Array = []
+	if not painted.is_empty() and not painted.get("hero",false):
+		return _painted_gibs(s)
 	if texture != null:
 		return parts
 	match profile.body:
@@ -1169,3 +1183,145 @@ func _shards(poly: PackedVector2Array, col: Color, s: float, n: int) -> Array:
 		out.append({"pts": pts, "col": col.darkened(0.05 * float(i)), "kind": "shard"})
 		i += per
 	return out
+
+
+## Sophia v3: silhueta esguia, marfim sobre petróleo, ouro e cabelo de luz.
+## Compartilha a cinemática do cajado e os estados do combate, sem sprites.
+func _draw_sophia(s: float) -> void:
+	var gold: Color = profile.secondary
+	var cloth: Color = profile.primary
+	var dark := Color("244650")
+	var sway: float = sin(anim_time * 2.8) * 1.6
+	# Pernas articuladas expostas sob os dois painéis da túnica.
+	var back := _limb(Vector2(-3, 8), _leg_b, 13, 3.3, dark.darkened(0.2), s, true)
+	_boot(back, s, dark.darkened(0.5))
+	var hand_b := _limb(Vector2(-6, -11), _arm_b, 13, 3, cloth.darkened(0.3), s, false)
+	draw_circle(hand_b * s, 1.8 * s, gold)
+	# Cabelo comprido em mechas, separado do corpo e sem capa.
+	_shaded(PackedVector2Array([Vector2(-5,-28),Vector2(3,-28),Vector2(1,-13),Vector2(-6+sway,5),Vector2(-14+sway,13),Vector2(-10,-7)]), profile.hair.darkened(0.25), s)
+	draw_line(Vector2(-5,-21)*s,Vector2(-9+sway,6)*s, profile.hair, 0.8*s,true)
+	var foot := _limb(Vector2(3, 8), _leg_f, 13, 3.5, dark, s, true)
+	_boot(foot, s, dark.darkened(0.4))
+	draw_line((foot+Vector2(-2,-4))*s,(foot+Vector2(3,-4))*s,gold,1.2*s,true)
+	# Corpete facetado e painéis assimétricos com debrum.
+	_shaded(PackedVector2Array([Vector2(-7,-13),Vector2(5,-14),Vector2(8,-7),Vector2(4,2),Vector2(-4,3),Vector2(-8,-5)]), cloth, s)
+	_shaded(PackedVector2Array([Vector2(-4,2),Vector2(0,3),Vector2(-1+sway,14),Vector2(-9+sway,17),Vector2(-7,8)]), cloth.darkened(0.17), s)
+	_shaded(PackedVector2Array([Vector2(0,3),Vector2(4,2),Vector2(9+sway,15),Vector2(5+sway,18),Vector2(1,13)]), cloth, s)
+	draw_polyline(_v([Vector2(-6,-11),Vector2(0,-4),Vector2(5,-12)],s),gold,1.3*s,true)
+	draw_polyline(_v([Vector2(-3,3),Vector2(-3+sway,12),Vector2(-7+sway,14)],s),gold,0.7*s,true)
+	draw_polyline(_v([Vector2(3,4),Vector2(6+sway,14),Vector2(5+sway,16)],s),gold,0.7*s,true)
+	draw_line(Vector2(-5,2)*s,Vector2(5,2)*s,gold,2.2*s,true)
+	draw_circle(Vector2(0,2)*s,1.8*s,dark)
+	draw_circle(Vector2(0,-6)*s,3.5*s,Color(profile.eye,0.13))
+	draw_colored_polygon(_v([Vector2(0,-9),Vector2(1.4,-6),Vector2(0,-3),Vector2(-1.4,-6)],s),profile.eye)
+	# Rosto em três quartos: perfil angular e olho único visível nesta escala.
+	draw_line(Vector2(0,-16)*s,Vector2(0,-12)*s,profile.skin.darkened(0.2),3*s,true)
+	_shaded(PackedVector2Array([Vector2(-4,-25),Vector2(2,-26),Vector2(5,-22),Vector2(4,-18),Vector2(1,-16),Vector2(-3,-18)]),profile.skin,s)
+	_shaded(PackedVector2Array([Vector2(-5,-24),Vector2(-3,-29),Vector2(3,-29),Vector2(6,-25),Vector2(2,-25),Vector2(-1,-22),Vector2(-3,-17)]),profile.hair,s)
+	draw_line(Vector2(1,-22)*s,Vector2(4,-21.7)*s,dark,0.8*s,true)
+	draw_circle(Vector2(3,-21.7)*s,0.45*s,profile.eye)
+	draw_line(Vector2(2,-18.8)*s,Vector2(3.8,-19)*s,profile.skin.darkened(0.4),0.45*s,true)
+	draw_line(Vector2(-4,-25)*s,Vector2(5,-25)*s,gold,0.8*s,true)
+	# Ombreira e bracelete evoluem, mas o rosto permanece legível.
+	if profile.has("pauldrons"):
+		_shaded(PackedVector2Array([Vector2(-8,-13),Vector2(-4,-16),Vector2(-1,-12),Vector2(-6,-9)]),gold,s)
+	var hand := _limb(Vector2(6,-11),_arm_f,13,3.2,cloth,s,false)
+	draw_circle(hand*s,2.1*s,gold)
+	draw_circle(hand*s,1.0*s,profile.eye)
+	_weapon(s,hand)
+	# Diadema e astrolábio preservam a silhueta durante a evolução.
+	if profile.has("helmet"):
+		draw_arc(Vector2(0,-23)*s,9*s,PI*1.08,PI*1.91,30,Color(gold,0.65),0.6*s,true)
+	if profile.has("crown"):
+		for i in 3:
+			draw_circle(Vector2((i-1)*4,-34-abs(i-1)*-2)*s,0.9*s,profile.eye)
+
+
+## Inscrições e ornamentos ligam os carcereiros à arquitetura dos sete anéis.
+func _codex_regalia(s: float) -> void:
+	var metal: Color = profile.secondary.lerp(profile.eye, 0.42)
+	if profile.body == ArtProfile.Body.WRAITH:
+		for side in [-1.0, 1.0]:
+			var drift: float = sin(anim_time * 2.0 + side) * 2.0
+			var ribbon := PackedVector2Array([Vector2(side*6,-24),Vector2(side*11,-18),Vector2(side*13,2),Vector2(side*20+drift,17),Vector2(side*13+drift,13),Vector2(side*8,-8)])
+			_shaded(ribbon,profile.primary.lightened(0.08),s)
+			draw_polyline(_v([Vector2(side*6,-24),Vector2(side*10,-17),Vector2(side*11,1),Vector2(side*17+drift,13)],s),metal,0.65*s,true)
+		for i in 5:
+			var yy: float = -4.0 + i * 3.4
+			draw_line(Vector2(-2,yy)*s,Vector2(2,yy+1.5)*s,Color(profile.eye,0.4),0.55*s,true)
+		draw_arc(Vector2(0,-16)*s,16*s,PI*1.1,PI*1.9,32,Color(metal,0.65),0.8*s,true)
+	elif profile.body == ArtProfile.Body.BEAST:
+		for i in 5:
+			var x: float = -11.0 + i * 5.0
+			draw_polyline(_v([Vector2(x,-6),Vector2(x+2,-1),Vector2(x+1,3)],s),Color(profile.eye,0.45),0.65*s,true)
+	else:
+		for side in [-1.0, 1.0]:
+			draw_polyline(_v([Vector2(side*9,-10),Vector2(side*5,-2),Vector2(side*6,5)],s),metal,0.85*s,true)
+			for i in 3:
+				draw_circle(Vector2(side*9,-10+i*4)*s,0.6*s,profile.eye)
+		var skirt := PackedVector2Array([Vector2(-5,7),Vector2(5,7),Vector2(7,17),Vector2(0,21),Vector2(-7,17)])
+		_shaded(skirt,profile.secondary,s)
+		draw_polyline(_closed(skirt,s),metal,0.6*s,true)
+
+
+func _draw_painted(s: float) -> void:
+	var tex: Texture2D
+	var rect: Rect2
+	var flip: float = -1.0 if painted.get("flip",false) else 1.0
+	var tint := Color.WHITE
+	if profile.painted_id == "sombra_sophia":
+		tint = Color("745581")
+	if painted.get("hero",false):
+		var frame: int = 0
+		if anim_state in ["walk","charge"]: frame = 1 + int(anim_time * 9.0) % 2
+		elif anim_state in ["jump","fall","dodge","attack_air"]: frame = 2
+		elif anim_state in ["windup","windup_heavy","windup_cast","block"]: frame = 3
+		elif anim_state.begins_with("attack"): frame = 4
+		elif anim_state == "cast": frame = 5
+		var anchors := [Vector2(269,492),Vector2(268,488),Vector2(267,493),Vector2(265,453),Vector2(239,455),Vector2(236,468)]
+		var body_heights := [466.0,445.0,449.0,350.0,378.0,403.0]
+		var factor: float = profile.height * 1.19 / body_heights[frame]
+		tex = PaintedLibrary.region("sophia",Rect2((frame%3)*512,(frame/3)*512,512,512))
+		rect = Rect2(-anchors[frame].x*factor,GROUND_Y*s-anchors[frame].y*factor,512*factor,512*factor)
+	else:
+		tex = PaintedLibrary.region(painted.sheet,painted.rect)
+		var h: float = profile.height * 1.30
+		if painted.sheet == "yaldabaoth": h = 190.0
+		var w: float = h * tex.get_width()/tex.get_height()
+		rect = Rect2(-w*0.5,GROUND_Y*s-h,w,h)
+		if painted.sheet == "inhabitants" and not profile.painted_id in ["soter","velkar","sleeper"]:
+			tint = Color.WHITE.lerp(profile.primary.lightened(0.3),0.22)
+	var breath: float = sin(anim_time*2.5)*0.006 if anim_state == "idle" else 0.0
+	var lean: float = _lean * (0.4 if painted.get("hero",false) else 0.7)
+	if anim_state == "dead": lean += _dead * 1.3
+	draw_set_transform(Vector2(0,GROUND_Y*s+_bob*s),lean,Vector2(flip,1.0-_crouch*0.45+breath))
+	rect.position.y -= GROUND_Y*s
+	draw_texture_rect(tex,rect,false,tint)
+	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+	# O nível da arma mantém feedback visual sem trocar os atributos do combate.
+	if profile.has("hero") and profile.has("pauldrons"):
+		var strength: float = 0.22 if not profile.has("aura") else 0.65
+		draw_arc(Vector2(0,-29*s),8*s,-2.8,-0.35,24,Color(profile.eye,strength),0.7,true)
+		var marks: int = 1 + int(profile.has("helmet")) + int(profile.has("bracers")) + int(profile.has("aura"))
+		for i in marks:
+			var a: float = -2.5 + i*0.54
+			var point := Vector2(0,-29*s) + Vector2(cos(a),sin(a))*9*s
+			draw_circle(point,0.8*s,Color(profile.eye,0.65))
+	if damage_ratio > 0.45 and profile.height >= 70:
+		draw_arc(Vector2(0,GROUND_Y*s-30*s),24*s,0.15,2.7,40,Color(profile.eye,0.38),1.0,true)
+
+
+func _painted_gibs(s: float) -> Array:
+	var parts: Array = []
+	var source: Rect2 = painted.rect
+	var h: float = 190.0 if painted.sheet == "yaldabaoth" else profile.height*1.3
+	var w: float = h * source.size.x/source.size.y
+	var flip: float = -1.0 if painted.get("flip",false) else 1.0
+	for row in 3:
+		for column in 3:
+			var tile := Rect2(source.position + Vector2(column*source.size.x/3,row*source.size.y/3),source.size/3)
+			var x: float = (-w*0.5+column*w/3)*flip
+			var y: float = GROUND_Y*s-h+row*h/3
+			var points := PackedVector2Array([Vector2(x,y),Vector2(x+w/3*flip,y),Vector2(x+w/3*flip,y+h/3),Vector2(x,y+h/3)])
+			parts.append({"pts":points,"col":Color.WHITE,"kind":"painted","tex":PaintedLibrary.region(painted.sheet,tile),"size":Vector2(w/3,h/3),"flip":flip})
+	return parts

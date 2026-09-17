@@ -1,18 +1,22 @@
 ; Configuração do projeto Godot 4.
 ; Renderer "gl_compatibility" = leve, roda em PC fraco (lembrando do seu contexto).
-; Resolução base pequena + filtro "nearest" = pixel art nítido.
+; Resolução lógica 640x360; filtro linear para as novas ilustrações.
 
 config_version=5
 
 [application]
 
-config/name="GNOSIS"
+config/name="GNOSIS - Codex"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="GNOSIS-Codex"
 config/version="0.1.0"
 run/main_scene="res://scenes/ui/MainMenu.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
+
+CodexSession="*res://scripts/autoload/codex_session.gd"
 
 GameManager="*res://scripts/autoload/game_manager.gd"
 GameContent="*res://scripts/autoload/game_content.gd"
@@ -43,4 +47,4 @@ common/physics_ticks_per_second=60
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-textures/canvas_textures/default_texture_filter=0
+textures/canvas_textures/default_texture_filter=1

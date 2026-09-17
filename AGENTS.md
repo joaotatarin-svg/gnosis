@@ -1,3 +1,11 @@
+> **CÓPIA CODEX — 17/09/2026.** Trabalhar somente nesta pasta Gnosis-Codex.
+> João autorizou novas ilustrações, recursos e shaders nesta sessão. Nesta cópia,
+> a arte ativa está em assets/painted e PaintedLibrary; instruções históricas
+> limitando PNG ao Rei ou mandando restaurar o antigo rig não se aplicam à
+> apresentação atual. Sophia continua sendo a única protagonista.
+> Guia atual: docs/CODEX_ENTREGA.md; auditoria: docs/AUDITORIA_VISUAL_CODEX.md.
+> O original em Desktop/Gnosis deve permanecer intocado.
+
 # AGENTS.md — GNOSIS (lido automaticamente pelo Codex em toda sessão)
 
 Jogo **GNOSIS**: beat-em-up 2.5D (Grand Chase) + ação estilo God of War, tema

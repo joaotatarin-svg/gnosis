@@ -14,8 +14,9 @@ func _ready() -> void:
 	var p := ArtProfile.new()
 	p.body = ArtProfile.Body.HUMANOID
 	p.height = 42.0
-	p.primary = Color(0.42, 0.42, 0.48)          # cinza: sem cor própria
-	p.secondary = Color(0.3, 0.3, 0.34)
+	p.painted_id = "sleeper"
+	p.primary = Color("435962")          # cinza: sem cor própria
+	p.secondary = Color("253b43")
 	p.eye = Color(0.5, 0.5, 0.55)                # olho APAGADO (dormindo)
 	_art.set_profile(p)
 	_art.set_anim("idle")
@@ -37,6 +38,7 @@ func _on_body_entered(body: Node) -> void:
 	if awake or not body.is_in_group("player"):
 		return
 	awake = true
+	queue_redraw()
 	Progression.sleepers_freed += 1
 	Progression.add_orbs(10 + screen)
 
@@ -47,3 +49,12 @@ func _on_body_entered(body: Node) -> void:
 	_art.set_profile(p)
 	AoeNova.spawn(get_parent(), global_position + Vector2(0, -8), 0, 52.0, Color(1.0, 0.92, 0.55))
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -20), Color(1.0, 0.92, 0.55))
+
+
+func _draw() -> void:
+	draw_set_transform(Vector2(0,24),0,Vector2(1,0.22))
+	draw_circle(Vector2.ZERO,17,Color(0,0,0,0.28))
+	draw_arc(Vector2.ZERO,22,0,TAU,40,Color("dcc68a") if awake else Color("688084"),0.9,true)
+	draw_set_transform(Vector2.ZERO)
+	if not awake:
+		draw_arc(Vector2(0,-34),5,0,PI,16,Color("899fa1"),0.7,true)

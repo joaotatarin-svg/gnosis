@@ -1,3 +1,17 @@
+# Edição Codex — O Despertar
+
+Abra **Jogar GNOSIS Codex.bat**. Comece por **Entrar no desafio** ou **Ateliê**.
+Guia atual, controles, arquivos e limites: [docs/CODEX_ENTREGA.md](docs/CODEX_ENTREGA.md).
+Esta pasta é uma cópia independente; não compartilha saves com o GNOSIS original.
+
+---
+
+# Edição isolada Codex — O Despertar
+
+Abra **Jogar GNOSIS Codex.bat** nesta pasta. Veja [o guia da entrega](docs/CODEX_ENTREGA.md) para controles, ateliê, testes e limites.
+
+---
+
 # GNOSIS
 
 > *Título oficial.* "Kenoma" é o nome do **mundo** dentro do jogo.

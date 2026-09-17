@@ -11,7 +11,7 @@ func _ready() -> void:
 	layer.layer = 100
 	add_child(layer)
 	_fade = ColorRect.new()
-	_fade.color = Color(0.03, 0.02, 0.06, 1.0)
+	_fade.color = Color("0a151c")
 	_fade.anchors_preset = Control.PRESET_FULL_RECT
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fade.modulate.a = 0.0

@@ -17,9 +17,12 @@ const DIFF_NAMES := ["Normal", "Difícil", "Muito Difícil", "Campeão"]
 
 
 func _ready() -> void:
+	CodexStyle.apply_existing(self, true)
 	var hero: CharacterData = GameContent.characters[0] if GameContent.characters.size() > 0 else null
 	if hero:
 		desc.text = "%s — %s" % [hero.display_name, hero.description]
+	$Center/VBox/Title.text = "A travessia começa"
+	$Center/VBox.custom_minimum_size.x = 470
 	_build_diffs()
 	$Center/VBox/Start.pressed.connect(_start)
 	$Center/VBox/Back.pressed.connect(func(): SceneManager.change_scene("res://scenes/ui/MainMenu.tscn"))

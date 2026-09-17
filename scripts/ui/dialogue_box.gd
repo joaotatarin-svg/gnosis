@@ -34,10 +34,11 @@ func _ready() -> void:
 	layer = 90
 
 	var panel := PanelContainer.new()
+	panel.theme = CodexStyle.theme()
 	panel.anchors_preset = Control.PRESET_BOTTOM_WIDE
 	panel.offset_left = 60
 	panel.offset_right = -60
-	panel.offset_top = -108
+	panel.offset_top = -130
 	panel.offset_bottom = -14
 	add_child(panel)
 
@@ -47,7 +48,8 @@ func _ready() -> void:
 
 	_speaker = Label.new()
 	_speaker.add_theme_color_override("font_color", Color(1.0, 0.9, 0.55))
-	_speaker.add_theme_font_size_override("font_size", 13)
+	_speaker.add_theme_font_size_override("font_size", 14)
+	_speaker.add_theme_font_override("font", CodexStyle.serif())
 	vbox.add_child(_speaker)
 
 	_text = Label.new()
@@ -58,7 +60,7 @@ func _ready() -> void:
 	_hint = Label.new()
 	_hint.text = "▸ continuar"
 	_hint.add_theme_font_size_override("font_size", 10)
-	_hint.add_theme_color_override("font_color", Color(0.6, 0.56, 0.7))
+	_hint.add_theme_color_override("font_color", CodexStyle.MUTED)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	vbox.add_child(_hint)
 

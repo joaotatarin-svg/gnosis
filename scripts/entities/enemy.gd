@@ -196,37 +196,14 @@ func _fit_body(s: float) -> void:
 func _apply_illustrated_art() -> void:
 	if visual == null:
 		return
-	var base := "res://assets/characters/%s.png" % _art_id
-	if not ResourceLoader.exists(base):
+	if not _art_id in ["rei", "rei_final", "demiurgo"]:
 		return
-	var tex = load(base)
-	if tex == null:
-		return
-	# Altura de exibição em px (chefes imponentes; o usuário ajusta depois).
-	var disp: float = 190.0 if is_boss_enemy else 96.0
-	visual.set_texture(tex, disp)
-	visual.position.y = 0.0     # o PNG já ancora os pés na linha do chão
-	# Posterização + contorno de tinta: o PNG fotorrealista passa a falar a
-	# língua do mundo vetorial (mesma linha de tinta da Sophia).
-	var sh = load("res://assets/shaders/posterize_ink.gdshader")
-	if sh != null:
-		var mat := ShaderMaterial.new()
-		mat.shader = sh
-		visual.material = mat
-
-	# Orbe-olho separado (opcional), como Sprite2D filho do chefe.
-	var orb_path := "res://assets/characters/%s_orb.png" % _art_id
-	if ResourceLoader.exists(orb_path):
-		var otex = load(orb_path)
-		if otex != null and otex.get_height() > 0:
-			_orb = Sprite2D.new()
-			_orb.texture = otex
-			_orb.position = ORB_HOME
-			var oh := 72.0   # altura-alvo do orbe (px)
-			_orb.scale = Vector2.ONE * (oh / float(otex.get_height()))
-			if visual.material != null:
-				_orb.material = visual.material     # mesmo tratamento de tinta
-			add_child(_orb)
+	_orb = Sprite2D.new()
+	_orb.texture = PaintedLibrary.region("yaldabaoth",Rect2(1065,155,400,550))
+	_orb.material = PaintedLibrary.material()
+	_orb.position = ORB_HOME
+	_orb.scale = Vector2.ONE * 72.0 / 550.0
+	add_child(_orb)
 
 
 func _physics_process(delta: float) -> void:

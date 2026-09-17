@@ -100,6 +100,8 @@ func _ready() -> void:
 	hitbox.deactivate()
 
 	_refresh_look()
+	var aura = load("res://scripts/fx/codex_combat_aura.gd").new()
+	add_child(aura)
 	# O herói fica mais "foda" conforme a arma/itens evoluem.
 	Progression.weapon_level_changed.connect(func(_lvl): _refresh_look())
 	Progression.stats_changed.connect(_refresh_look)
@@ -721,13 +723,9 @@ func _update_facing() -> void:
 func _refresh_look() -> void:
 	if not visual:
 		return
-	# Decisão de arte (2026-09-09, tarde — usuário): a Sophia é ILUSTRADA. Usa o
-	# rig cutout (assets/characters/sophia/rig.json: cabeça/corpo/saia/cajado)
-	# animado por código; o profile procedural fica só de fallback e pra cor do
-	# orbe/aura (o gear evolui a luz, não a roupa).
+	# Cópia Codex: a instrução da sessão escolhe Sophia procedural.
+	visual.rig.clear()
 	visual.set_profile(Bestiary.player_profile(data, Progression.weapon_level, Progression.item_features()))
-	if not visual.has_rig():
-		visual.set_rig("res://assets/characters/%s/rig.json" % data.id, RIG_HEIGHT)
 
 
 # --- feedback visual ---------------------------------------------------

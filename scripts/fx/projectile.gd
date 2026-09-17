@@ -48,6 +48,8 @@ func _draw() -> void:
 		var p := to_local(_trail[i])
 		var a := 0.35 * (1.0 - float(i) / 8.0)
 		draw_circle(p, 5.0 * (1.0 - float(i) / 10.0), Color(color.r, color.g, color.b, a))
+	if target_team == "player":
+		draw_arc(Vector2.ZERO, 7.0, 0, TAU, 28, Color(color, 0.9), 0.8, true)
 	# orbe com halo pulsante
 	var pulse := 1.0 + sin(_time * 18.0) * 0.15
 	draw_circle(Vector2.ZERO, 9.0 * pulse, Color(color.r, color.g, color.b, 0.25))

@@ -2,6 +2,8 @@ extends CanvasLayer
 ## Menu de pausa (overlay). Pausa a árvore; segue processando a si mesmo.
 
 func _ready() -> void:
+	CodexStyle.apply_existing(self)
+	$Center/Panel/VBox.custom_minimum_size.x = 340
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = true
 	$Center/Panel/VBox/Resume.pressed.connect(_resume)

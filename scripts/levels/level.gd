@@ -132,18 +132,12 @@ func _make_platform(center: Vector2, w: float) -> StaticBody2D:
 	col.shape = rect
 	col.one_way_collision = true
 	body.add_child(col)
-	# Cor da paleta do Éon (não briga com o cenário).
-	var base_col := Color(0.20, 0.17, 0.27)
-	if has_node("Background") and $Background is Scenery:
-		base_col = ($Background as Scenery).pal().ground
-	var vis := Polygon2D.new()
-	vis.color = base_col.darkened(0.25)
-	vis.polygon = PackedVector2Array([Vector2(-w * 0.5, -6), Vector2(w * 0.5, -6), Vector2(w * 0.5, 6), Vector2(-w * 0.5, 6)])
+	var vis := Sprite2D.new()
+	vis.texture = PaintedLibrary.prop(5)
+	vis.material = PaintedLibrary.material()
+	vis.scale = Vector2(w/vis.texture.get_width(),22.0/vis.texture.get_height())
+	vis.position.y = 5.0
 	body.add_child(vis)
-	var edge := Polygon2D.new()
-	edge.color = base_col.lightened(0.25)
-	edge.polygon = PackedVector2Array([Vector2(-w * 0.5, -6), Vector2(w * 0.5, -6), Vector2(w * 0.5, -3), Vector2(-w * 0.5, -3)])
-	body.add_child(edge)
 	return body
 
 

@@ -7,8 +7,21 @@ extends CanvasLayer
 
 
 func _ready() -> void:
+	CodexStyle.apply_existing(self)
+	$Center/Panel/VBox.custom_minimum_size.x = 340
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = true
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(450, 206)
+	scroll.follow_focus = true
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	$Center/Panel/VBox.add_child(scroll)
+	list.reparent(scroll)
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var close_button := Button.new()
+	close_button.text = "Voltar ao jogo"
+	close_button.pressed.connect(_close)
+	$Center/Panel/VBox.add_child(close_button)
 	_rebuild()
 
 

@@ -5,9 +5,9 @@ extends Node2D
 
 const COLS := 6
 const CW := 100.0        # largura da célula
-const CH := 104.0        # altura da célula (arte + nome, sem sobrepor)
+const CH := 116.0        # altura da célula (arte + nome, sem sobrepor)
 const X0 := 70.0
-const Y0 := 70.0
+const Y0 := 95.0
 const VIEW_H := 360.0    # altura visível (res base)
 
 var _cam: Camera2D
@@ -38,7 +38,7 @@ func _ready() -> void:
 
 	# fundo cobre tudo (inclusive a parte rolável)
 	var bg := ColorRect.new()
-	bg.color = Color(0.08, 0.06, 0.11)
+	bg.color = Color("0a151c")
 	bg.position = Vector2(-40, -40)
 	bg.size = Vector2(760, total_h + 80.0)
 	bg.z_index = -10
@@ -47,7 +47,12 @@ func _ready() -> void:
 	# cabeçalho fixo (não rola com a câmera)
 	var hud := CanvasLayer.new()
 	add_child(hud)
-	hud.add_child(_make_label("Codex — GNOSIS", Vector2(20, 10), 16, HORIZONTAL_ALIGNMENT_LEFT, 300))
+	var header := ColorRect.new()
+	header.color = Color("0a151c")
+	header.size = Vector2(640,51)
+	hud.add_child(header)
+	CodexStyle.button(hud,"Voltar",Vector2(541,11),80,func(): SceneManager.change_scene("res://scenes/ui/CharacterAtelier.tscn"))
+	hud.add_child(_make_label("Bestiário — GNOSIS", Vector2(20, 10), 16, HORIZONTAL_ALIGNMENT_LEFT, 300))
 	hud.add_child(_make_label("W/S rolam · Esc volta", Vector2(20, 30), 10, HORIZONTAL_ALIGNMENT_LEFT, 220))
 
 	for i in entries.size():
@@ -56,26 +61,34 @@ func _ready() -> void:
 		var cx := X0 + col * CW
 		var cy := Y0 + row * CH
 
+		var card := Polygon2D.new()
+		card.polygon = PackedVector2Array([Vector2(cx-48,cy-49),Vector2(cx+48,cy-49),Vector2(cx+48,cy+65),Vector2(cx-48,cy+65)])
+		card.color = Color("14252d")
+		add_child(card)
 		var shadow := _shadow_at(Vector2(cx, cy + 28))
 		add_child(shadow)
 
 		var art := CharacterArt.new()
 		art.set_profile(entries[i].p)
 		var hgt: float = entries[i].p.height
-		var sc: float = clampf(50.0 / hgt, 0.35, 1.0)
+		var sc: float = 50.0 / (190.0 if art.painted.get("sheet","") == "yaldabaoth" else hgt*1.3)
 		art.scale = Vector2(sc, sc)
-		art.position = Vector2(cx, cy)
+		art.position = Vector2(cx, cy+25-24*hgt/44*sc)
 		add_child(art)
 
 		# Só o nome próprio (antes da vírgula) — o resto sobrepunha as células.
 		var short_name := String(entries[i].n).split(",")[0]
+		if short_name.length() > 17:
+			var split_at: int = short_name.rfind(" ",17)
+			if split_at > 0:
+				short_name = short_name.substr(0,split_at) + "\n" + short_name.substr(split_at+1)
 		_label(short_name, Vector2(cx - 48, cy + 34), 9, HORIZONTAL_ALIGNMENT_CENTER, 96)
 
 	# câmera pra rolar (o viewport base é 640x360)
 	_cam = Camera2D.new()
 	_cam.position = Vector2(320, 180)
-	_cam.make_current()
 	add_child(_cam)
+	_cam.make_current()
 
 
 func _process(delta: float) -> void:
@@ -98,7 +111,9 @@ func _make_label(text: String, pos: Vector2, size: int, align: int, width: float
 	l.position = pos
 	l.size = Vector2(width, 16)
 	l.horizontal_alignment = align
-	l.clip_text = true
+	l.clip_text = false
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.max_lines_visible = 2
 	l.add_theme_font_size_override("font_size", size)
 	return l
 

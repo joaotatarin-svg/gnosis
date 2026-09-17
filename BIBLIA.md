@@ -4,10 +4,18 @@
 > É o mapa mestre. Detalhes profundos ficam nos docs apontados. O código sempre
 > manda; se algo aqui divergir, corrija este arquivo.
 
+> **CÓPIA CODEX — 17/09/2026.** Trabalhar somente nesta pasta Gnosis-Codex.
+> João autorizou novas ilustrações, recursos e shaders nesta sessão. Nesta cópia,
+> a arte ativa está em assets/painted e PaintedLibrary; instruções históricas
+> limitando PNG ao Rei ou mandando restaurar o antigo rig não se aplicam à
+> apresentação atual. Sophia continua sendo a única protagonista.
+> Guia atual: docs/CODEX_ENTREGA.md; auditoria: docs/AUDITORIA_VISUAL_CODEX.md.
+> O original em Desktop/Gnosis deve permanecer intocado.
+
 ## 0. Contexto do trabalho
 
-- **Projeto:** `C:\Users\jmtat\OneDrive\Desktop\Gnosis` (foi renomeado de "Jogo").
-  **Repositório git local** desde 2026-09-09 (branch `master`). Commite ao fechar
+- **Projeto:** `C:\Users\jmtat\OneDrive\Desktop\Gnosis-Codex` (cópia isolada).
+  **Repositório git local** independente desde 2026-09-16 (branch `codex/despertar`). Commite ao fechar
   cada passo validado; o OneDrive NÃO é controle de versão.
 - **Usuário:** orquestra e decide; NÃO é programador nem designer. Fala português.
   Espera que a IA lidere as sugestões técnicas/criativas e faça o trabalho braçal.
@@ -106,6 +114,19 @@ sinais entre nós. Balanceamento **determinístico por tela**. Mantém exportáv
 (`res://`). Sem dependências externas.
 
 ## 6. Estado atual (FEITO / FALTA) — atualize sempre
+**EDIÇÃO CODEX — 2026-09-17 (somente Gnosis-Codex):** repositório e
+user:// independentes. Novo menu, ateliê, catálogo e desafio de três encontros
+com seleção entre sete chefes. Seis folhas novas de arte integradas: Sophia
+com seis poses; Arcontes/Colosso; criaturas/NPCs; Yaldabaoth/orbe; nove ambientes;
+arquitetura/objetos. PaintedLibrary centraliza atlas/pivôs e transparência.
+CharacterArt continua recebendo os estados reais do combate. Colisões, dano,
+progressão e campanha herdados foram preservados. Revisão de câmera, chão,
+plataformas, paralaxe, névoa, primeiro plano, VFX, desmembramento e interfaces.
+QA passou com zero falhas. Bot venceu três encontros por inputs (26,3 s, combo
+12, dano real e fase 2). Capturas da campanha, menus e chefes em shots/.
+Áudio, build independente, playtest humano integral e animações mais extensas
+seguem pendentes. docs/CODEX_ENTREGA.md detalha alterações e limitações.
+As decisões históricas abaixo servem de contexto; esta entrada descreve a cópia.
 
 **Diagnóstico honesto (2026-09-09):** protótipo completo em largura; a
 profundidade está sendo construída fase a fase (plano F0–F6 no topo de

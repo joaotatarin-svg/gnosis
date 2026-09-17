@@ -35,6 +35,8 @@ func _draw() -> void:
 	var fade := 1.0 - t
 	for d in _dirs:
 		var p := d * ease(t, 0.35)
-		draw_circle(p, 2.6 * fade, Color(color.r, color.g, color.b, fade))
+		draw_line(p - d.normalized() * 8.0 * fade, p, Color(color, fade * 0.6), maxf(0.5, fade), true)
+		draw_circle(p, 2.0 * fade, Color(color.r, color.g, color.b, fade))
 		draw_circle(p, 1.2 * fade, Color(1, 1, 1, fade))
+	draw_arc(Vector2.ZERO, 4.0 + t * 20.0, 0, TAU, 32, Color(color, fade * 0.45), 0.8, true)
 	draw_circle(Vector2.ZERO, 10.0 * (1.0 - t), Color(1, 1, 1, 0.4 * fade))

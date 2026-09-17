@@ -2,6 +2,7 @@ extends Control
 ## Opções: volumes (Geral/SFX/Música). Sliders montados por código. Salva ao mexer.
 
 func _ready() -> void:
+	CodexStyle.apply_existing(self, true)
 	var center := $Center
 	var vbox := $Center/VBox
 	_slider(vbox, "Volume geral", "Master", Audio.master_vol)
