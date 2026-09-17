@@ -1295,7 +1295,7 @@ func _draw_painted(s: float) -> void:
 	if painted.get("hero",false):
 		var frame: int = 0
 		if anim_state in ["walk","charge"]: frame = 1 + int(anim_time * 9.0) % 2
-		elif anim_state in ["jump","fall","dodge","attack_air"]: frame = 2
+		elif anim_state in ["jump","fall","dodge"]: frame = 2
 		elif anim_state in ["windup","windup_heavy","windup_cast","block"]: frame = 3
 		elif anim_state.begins_with("attack"): frame = 4
 		elif anim_state == "cast": frame = 5
@@ -1314,12 +1314,21 @@ func _draw_painted(s: float) -> void:
 			tint = Color.WHITE.lerp(profile.primary.lightened(0.3),0.22)
 	var breath: float = sin(anim_time*2.5)*0.006 if anim_state == "idle" else 0.0
 	var lean: float = _lean * (0.4 if painted.get("hero",false) else 0.7)
-	if anim_state == "dead": lean += _dead * 1.3
+	var oy: float = _bob
+	var crouch: float = _crouch * 0.45
 	# Criaturas sem boneco: o corpo inteiro anda, recua, avança e encolhe.
 	var m: Array = [0.0, 0.0, 1.0, 1.0]
-	if not painted.get("hero", false):
+	if painted.get("hero", false):
+		# Sophia: os estados sem quadro próprio ganham movimento de corpo inteiro.
+		m = _hero_motion()
+		crouch = 0.0
+		if anim_state in HERO_MOTION_STATES:
+			lean = 0.0
+			oy = m[4]
+	else:
 		m = _painted_motion()
-	draw_set_transform(Vector2(m[0]*s,GROUND_Y*s+_bob*s),lean+m[1],Vector2(flip*m[2],(1.0-_crouch*0.45+breath)*m[3]))
+		if anim_state == "dead": lean += _dead * 1.3
+	draw_set_transform(Vector2(m[0]*s,GROUND_Y*s+oy*s),lean+m[1],Vector2(flip*m[2],(1.0-crouch+breath)*m[3]))
 	rect.position.y -= GROUND_Y*s
 	draw_texture_rect(tex,rect,false,tint)
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
@@ -1334,6 +1343,98 @@ func _draw_painted(s: float) -> void:
 			draw_circle(point,0.8*s,Color(profile.eye,0.65))
 	if damage_ratio > 0.45 and profile.height >= 70:
 		draw_arc(Vector2(0,GROUND_Y*s-30*s),24*s,0.15,2.7,40,Color(profile.eye,0.38),1.0,true)
+
+
+## Estados da Sophia em que `_hero_motion` assume a pose inteira (a inclinação
+## e o afundar genéricos de `_compute_pose` são ignorados).
+const HERO_MOTION_STATES := ["dodge", "hurt", "block", "jump", "fall", "dead", "attack_air", "attack_dive", "cast"]
+
+
+## Movimento procedural da Sophia (folha de 6 quadros; os estados sem quadro
+## reaproveitam um parecido). O corpo inteiro conta a ação: a esquiva é um
+## mergulho que gira pra frente, o dano recua e comprime, o bloqueio trava
+## agachado, pulo/queda esticam e comprimem, a morte tomba pra trás com quique,
+## o golpe aéreo gira, o mergulho aponta pro chão e a magia recua e avança.
+## Só desenho: combate, hitboxes e tempos não mudam. `pose_progress` não é
+## alimentado no herói, então tudo sai de `anim_time`.
+## Devolve [deslocamento x, rotação, escala x, escala y, deslocamento y]
+## (deslocamentos em unidades do corpo; y positivo = afunda).
+func _hero_motion() -> Array:
+	var t := anim_time
+	var ox := 0.0
+	var oy := 0.0
+	var rot := 0.0
+	var sx := 1.0
+	var sy := 1.0
+	match anim_state:
+		"dodge":
+			# rolamento (~0.30 s): gira rápido pra frente e segue crescendo,
+			# agachado e esticado, deslizando pra frente — mergulho, não passo
+			var k := clampf(t / 0.30, 0.0, 1.0)
+			var e := ease(k, 0.45)
+			rot = 0.25 + 1.05 * e
+			sx = 1.10
+			sy = 0.80
+			# gira em torno do quadril (não dos pés): a cabeça desce e as pernas
+			# sobem — silhueta de rolamento, não de tropeço
+			var hip: float = 14.0 * sy
+			ox = 3.0 + 7.0 * e - hip * sin(rot)
+			oy = -hip * (1.0 - cos(rot)) - 1.5 * sin(k * PI)
+		"hurt":
+			# recuo e squash que relaxam em 0.25 s
+			var k := 1.0 - clampf(t / 0.25, 0.0, 1.0)
+			ox = -4.5 * k
+			rot = -0.16 * k
+			sx = 1.0 - 0.08 * k
+			sy = 1.0 + 0.06 * k
+			oy = -1.0 * k
+		"block":
+			# quadro de preparação, agachado, levemente pra trás e travado
+			ox = -1.0
+			rot = -0.05
+			sy = 0.92
+			sx = 1.03
+		"jump":
+			rot = 0.04
+			sx = 0.96
+			sy = 1.06
+		"fall":
+			rot = 0.02
+			sx = 1.03
+			sy = 0.97
+		"dead":
+			# tomba pra trás devagar (aceleração de queda), bate e quica
+			var k := clampf(t / 0.70, 0.0, 1.0)
+			var fall := pow(clampf(k / 0.72, 0.0, 1.0), 1.8)
+			var bounce := 0.0
+			if k > 0.72:
+				bounce = sin((k - 0.72) / 0.28 * PI) * 0.16
+			rot = -1.4 * fall + bounce
+			oy = 4.5 * fall
+			ox = -2.0 * fall
+			sy = 1.0 - 0.06 * fall
+		"attack_air":
+			# giro parcial no ar
+			var k := clampf(t / 0.32, 0.0, 1.0)
+			rot = 0.6 * k
+			ox = 1.5 + 1.5 * k
+			sx = 1.04
+		"attack_dive":
+			# mergulho: inclinação forte pra frente, apontando pro chão
+			var k := clampf(t / 0.25, 0.0, 1.0)
+			rot = 0.35 + 0.25 * k
+			ox = 2.0
+			sx = 1.06
+			sy = 0.95
+		"cast":
+			# recua no início e avança no fim: a magia sai do corpo
+			var k := clampf(t / 0.30, 0.0, 1.0)
+			var e := smoothstep(0.0, 1.0, k)
+			ox = lerpf(-2.0, 2.5, e)
+			rot = lerpf(-0.05, 0.08, e)
+			sx = 1.0 + 0.05 * sin(k * PI)
+			sy = 1.0 - 0.03 * sin(k * PI)
+	return [ox, rot, sx, sy, oy]
 
 
 ## Movimento procedural das criaturas pintadas (ilustração de peça única, sem
