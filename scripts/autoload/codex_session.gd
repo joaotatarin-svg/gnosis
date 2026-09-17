@@ -50,4 +50,3 @@ func leave_demo() -> void:
 	RunManager.saved_run = previous_save.duplicate(true)
 	SaveManager.persist_enabled = previous_persist
 	GameManager.difficulty = previous_difficulty
-

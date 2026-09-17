@@ -126,5 +126,3 @@ O ateliê não grava alterações na campanha. Não há dependências externas n
 - O desafio restaura o checkpoint anterior em memória ao sair.
 - Os lançadores usam sua própria pasta. A cópia de trabalho isolada do Codex
   foi sincronizada para a pasta de entrega.
-
-

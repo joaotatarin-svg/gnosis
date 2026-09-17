@@ -41,4 +41,3 @@ func _ready() -> void:
 	CodexStyle.label(self, "S O P H I A", Vector2(426, 310), 10, CodexStyle.GOLD)
 	CodexStyle.label(self, "A centelha que não se curva", Vector2(388, 327), 9, CodexStyle.MUTED)
 	play.grab_focus()
-
