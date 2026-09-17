@@ -19,7 +19,9 @@ func _ready() -> void:
 	add_child(shape)
 	body_entered.connect(func(b):
 		if b.is_in_group("player"):
+			Audio.play_sfx("portal_enter")
 			entered.emit())
+	Audio.play_sfx("portal_open")     # a fenda se abre
 
 
 func _process(delta: float) -> void:

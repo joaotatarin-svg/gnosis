@@ -29,6 +29,7 @@ func _ready() -> void:
 	shape.shape = circle
 	add_child(shape)
 	area_entered.connect(_on_area_entered)
+	Audio.play_sfx("proj_fire")
 
 
 func _physics_process(delta: float) -> void:
@@ -66,6 +67,7 @@ func _on_area_entered(area: Area2D) -> void:
 			area.owner.apply_slow(slow_time)
 		Juice.hit_stop(0.04)
 		Juice.shake(0.25)
+		Audio.play_sfx_at("proj_hit", global_position)
 		ImpactBurst.spawn(get_parent(), global_position, color)
 		if explode_radius > 0.0:
 			AoeNova.spawn(get_parent(), global_position, int(damage * 0.6), explode_radius, color)

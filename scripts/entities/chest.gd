@@ -63,12 +63,14 @@ func _on_hit(_dmg: int, _src: Vector2, _kb: float, _unblock: bool = false, _atk:
 	if opened:
 		return
 	_wobble = 0.2
+	Audio.play_sfx("chest_hit")
 	opened = true
 	_hurt.queue_free()
 	_give_reward()
 
 
 func _give_reward() -> void:
+	Audio.play_sfx("chest_open")
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -10), Color(1.0, 0.9, 0.5))
 	# Em telas múltiplas de 5-1 (4, 9, 14...), tenta dropar uma peça de gear inédita.
 	var gave_item := false

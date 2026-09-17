@@ -65,6 +65,11 @@ var silenced_timer: float = 0.0    # magias caladas (Silêncio)
 var cast_anim_timer: float = 0.0   # pose de conjurar (visual)
 var reflect_timer: float = 0.0     # Anel do Espelho: devolve golpes recebidos
 
+# --- áudio (passos e pouso) ---
+var _step_timer: float = 0.0
+var _was_on_floor: bool = true
+var _fall_speed: float = 0.0       # velocidade vertical do frame anterior (pouso)
+
 @onready var visual: CharacterArt = $Visual
 @onready var hitbox: Hitbox = $Hitbox
 @onready var hurtbox: Hurtbox = $Hurtbox
@@ -122,8 +127,18 @@ func _physics_process(delta: float) -> void:
 		State.HURT:   _process_hurt(delta)
 		_:            _process_free(delta)
 	move_and_slide()
+	_sfx_landing()
 	_update_facing()
 	_sync_anim()
+
+
+## Som de pouso: estava no ar, caiu com velocidade e agora pisa o chão.
+func _sfx_landing() -> void:
+	var on_floor := is_on_floor()
+	if on_floor and not _was_on_floor and _fall_speed > 140.0:
+		Audio.play_sfx("land")
+	_was_on_floor = on_floor
+	_fall_speed = velocity.y
 
 
 func _sync_anim() -> void:
@@ -220,6 +235,7 @@ func _process_free(delta: float) -> void:
 		velocity.y = data.jump_velocity
 		jump_buffer = 0.0
 		coyote = 0.0
+		Audio.play_sfx("jump")
 
 	if Input.is_action_just_pressed("dodge"):
 		_start_dodge()
@@ -256,6 +272,15 @@ func _process_free(delta: float) -> void:
 		state = State.RUN
 	else:
 		state = State.IDLE
+
+	# Passos discretos a cada ~0,3 s andando no chão (mais lentos na névoa).
+	if state == State.RUN:
+		_step_timer -= delta
+		if _step_timer <= 0.0:
+			_step_timer = 0.3 * (1.6 if status_slow > 0.0 else 1.0)
+			Audio.play_sfx("step", 0.08, -6.0)
+	else:
+		_step_timer = 0.08
 
 
 # --- Combo (leve/forte) ------------------------------------------------
@@ -310,6 +335,8 @@ func _do_move(move: ComboData) -> void:
 	combo_reset_timer = move.windup_time() + move.duration + move.chain_time
 
 	var heavy := move.is_heavy()
+	if move.air:
+		Audio.play_sfx("dive" if heavy else "swing_air")   # golpes aéreos soam ao sair
 	velocity.x = facing * move.lunge * (1.35 if heavy else 1.0)
 	pending_dmg = move.damage + (Progression.weapon_level - 1) * 6   # r2: 3→6 (a arma tinha que valer)
 	hitbox.position.x = 20.0 * facing
@@ -345,6 +372,8 @@ func _process_attack(delta: float) -> void:
 		if windup_timer <= 0.0:
 			hitbox.activate(pending_dmg)   # o golpe conecta agora
 			hit_started = true
+			if not air_move:
+				Audio.play_sfx(_swing_sfx())   # o corte sai do wind-up
 			if not air_move:
 				velocity.x = facing * current_move.lunge * (1.35 if current_move.is_heavy() else 1.0)
 			if current_move.is_heavy():
@@ -416,6 +445,7 @@ func _process_attack(delta: float) -> void:
 
 ## Chamado pelo Hitbox quando um golpe do herói acerta — alimenta o combo.
 func register_hit() -> void:
+	Audio.play_sfx("hit_heavy" if current_move != null and current_move.is_heavy() else "hit")
 	combo_count += 1
 	combo_show_timer = 1.4
 	combo_changed.emit(combo_count)
@@ -483,6 +513,7 @@ func _blocked(damage: int, source_position: Vector2) -> void:
 		kb = -float(facing)
 	velocity.x = kb * 120.0
 	Juice.shake(0.15)
+	Audio.play_sfx("block")
 	_flash(Color(2, 2, 3, 1))
 
 
@@ -528,15 +559,17 @@ func _cast_skill(skill: SkillData) -> void:
 		return                     # Anel roubado (o caco ainda não voltou)
 	if silenced_timer > 0.0:
 		_flash(Color(0.6, 0.6, 0.8, 1))   # calada pelo Arconte do Silêncio
+		Audio.play_sfx("cast_fail")
 		return
 	if skill_cooldowns.get(skill.id, 0.0) > 0.0:
 		return
 	if mana < skill.mana_cost:
+		Audio.play_sfx("cast_fail")       # sem Éter
 		return
 	mana -= skill.mana_cost
 	mana_changed.emit(int(mana), max_mana_total)
 	skill_cooldowns[skill.id] = skill.cooldown
-	Audio.play_sfx("cast")
+	Audio.play_sfx(_cast_sfx(skill))
 	cast_anim_timer = 0.3
 
 	var total := skill.base_damage + (Progression.skill_level(skill.id) - 1) * 12   # r2: 8→12
@@ -652,6 +685,7 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, u
 
 	# Tomou dano.
 	health.take_damage(damage)
+	Audio.play_sfx("player_hurt")
 	Juice.rumble(0.0, 0.6, 0.22)
 	DamageNumber.spawn(get_parent(), global_position, damage, Color(1.0, 0.4, 0.35))
 	invuln_timer = 0.6
@@ -681,7 +715,7 @@ func _perfect_dodge() -> void:
 	Juice.shake(0.25)
 	_flash(Color(2.0, 2.2, 3.0, 1))
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -20), Color(0.8, 0.85, 1.0))
-	Audio.play_sfx("parry")
+	Audio.play_sfx("dodge_perfect")
 
 
 ## Corrente do Arconte: prende no lugar por `t` segundos (bloqueio/i-frames ignoram).
@@ -689,6 +723,7 @@ func apply_root(t: float) -> void:
 	if invuln_timer > 0.0 or state == State.BLOCK or state == State.DEAD:
 		return
 	root_timer = maxf(root_timer, t)
+	Audio.play_sfx("rooted")
 	_flash(Color(0.7, 0.7, 1.6, 1))
 
 
@@ -704,6 +739,7 @@ func _process_hurt(delta: float) -> void:
 func _on_died() -> void:
 	state = State.DEAD
 	velocity = Vector2.ZERO
+	Audio.play_sfx("player_die")
 	died.emit()
 
 
@@ -726,6 +762,24 @@ func _refresh_look() -> void:
 	# Cópia Codex: a instrução da sessão escolhe Sophia procedural.
 	visual.rig.clear()
 	visual.set_profile(Bestiary.player_profile(data, Progression.weapon_level, Progression.item_features()))
+
+
+# --- áudio ---------------------------------------------------------------
+
+## Nome do som do golpe atual (chão): lançador, pesado ou leve.
+func _swing_sfx() -> String:
+	if current_move == null:
+		return "swing_light"
+	if current_move.launcher:
+		return "launcher"
+	return "swing_heavy" if current_move.is_heavy() else "swing_light"
+
+
+## Cada Anel tem voz própria: "r_torpor" → cast_torpor; a Esfera inata → cast_solar.
+func _cast_sfx(skill: SkillData) -> String:
+	if skill.id.begins_with("r_"):
+		return "cast_" + skill.id.trim_prefix("r_")
+	return "cast_solar"
 
 
 # --- feedback visual ---------------------------------------------------

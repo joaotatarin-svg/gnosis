@@ -24,6 +24,8 @@ var drop_r: float = 2.0
 var _t: float = 0.0
 var _radius: float = 4.0
 var _rest: bool = false
+var _bounced: bool = false       # só o primeiro quique soa
+static var _last_bounce_ms: int = 0   # rate-limit global (dezenas de peças por morte)
 
 
 ## Espalha as peças de `parts` (de CharacterArt.gib_parts) a partir de `origin`.
@@ -98,6 +100,12 @@ func _process(delta: float) -> void:
 				vel.y *= -0.38
 				vel.x *= 0.55
 				ang_vel *= 0.45
+				if not _bounced and not is_drop:
+					_bounced = true
+					var now := Time.get_ticks_msec()
+					if now - _last_bounce_ms >= 70:
+						_last_bounce_ms = now
+						Audio.play_sfx_at("gib_bounce", global_position, 0.12)
 	queue_redraw()
 
 
