@@ -269,8 +269,12 @@ func _animate_orb(delta: float) -> void:
 func _sync_anim() -> void:
 	if visual == null:
 		return
+	visual.pose_progress = -1.0
+	visual.motion_stride = clampf(absf(velocity.x) / maxf(move_speed,1.0),0.0,1.5)
+	visual.motion_fury = 1.18 if phase == 2 else 1.0
 	match estate:
 		EState.WINDUP:
+			visual.pose_progress = clampf(1.0-attack_timer/maxf(wind_up,0.01),0,1)
 			# O telegrafo é a pose: braço puxado (melee), arma erguida (slam),
 			# cajado carregando (atirador), corpo agachado (investida).
 			match attack_style:
@@ -279,11 +283,15 @@ func _sync_anim() -> void:
 				"charge": visual.set_anim("windup_heavy" if profile_is_beast() else "windup")
 				_: visual.set_anim("windup")
 		EState.STRIKE:
+			visual.pose_progress = clampf(1.0-attack_timer/maxf(strike_time,0.01),0,1)
 			match attack_style:
 				"slam": visual.set_anim("attack_heavy")
 				"ranged": visual.set_anim("cast")
 				"charge": visual.set_anim("charge")
 				_: visual.set_anim("attack")
+		EState.RECOVER:
+			visual.pose_progress = clampf(1.0-attack_timer/maxf(recover_time,0.01),0,1)
+			visual.set_anim("recover")
 		EState.HURT, EState.STAGGER: visual.set_anim("hurt")
 		EState.DEAD: visual.set_anim("dead")
 		EState.CHASE: visual.set_anim("walk" if absf(velocity.x) > 5.0 else "idle")

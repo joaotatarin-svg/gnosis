@@ -114,6 +114,18 @@ sinais entre nós. Balanceamento **determinístico por tela**. Mantém exportáv
 (`res://`). Sem dependências externas.
 
 ## 6. Estado atual (FEITO / FALTA) — atualize sempre
+**ARTICULAÇÕES DOS CHEFES — 17/09/2026:** João pediu movimento de boneco e
+cancelou a troca dos nomes. Nomes e lançadores permanecem como estavam.
+BossPuppet usa Skeleton2D/Bone2D: armaduras por recortes rígidos sobrepostos;
+espectros, Rei e fera por pele UV. Os sete Arcontes, Colosso e Demiurgo têm
+braços/cabeça/tronco articulados, pernas ou tecido/asas, e ciclo próprio da fera.
+Enemy fornece progresso do ataque, velocidade e fase; recuperação suaviza a
+volta ao repouso. Ateliê tem dez modos, ciclo de combate e mostrar articulações.
+QA de nove chefes e integração sem falhas; bot venceu três encontros em 27,8 s,
+combo 13, dano real e fase 2. Capturas puppets-0/1/2 e puppet-joints em shots/.
+Recortes e junções ainda admitem acabamento artístico; não é animação desenhada
+quadro a quadro. Manual da atualização: docs/ANIMACAO_CHEFES.md.
+
 **EDIÇÃO CODEX — 2026-09-17 (somente Gnosis-Codex):** repositório e
 user:// independentes. Novo menu, ateliê, catálogo e desafio de três encontros
 com seleção entre sete chefes. Seis folhas novas de arte integradas: Sophia

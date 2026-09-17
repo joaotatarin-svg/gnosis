@@ -11,7 +11,7 @@ funciona sem conexão durante o jogo.
 
 - **Entrar no desafio:** três encontros, arma nível 3, um Anel, recuperação de
   vida entre encontros, resultado, derrota e revanche.
-- **Ateliê:** Sophia e sete Arcontes, sete estados, pausar/animar, espelhar,
+- **Ateliê:** Sophia e sete Arcontes, dez modos, pausar/animar, espelhar,
   três estudos de cor e níveis da arma. “Testar em combate” enfrenta o chefe escolhido.
 - **Bestiário:** no ateliê, catálogo dos perfis da campanha, incluindo criaturas,
   variantes, formas do Rei, Soter e Velkar. W/S ou setas rolam.
@@ -60,8 +60,9 @@ A Sombra da Sophia usa a silhueta da protagonista escurecida.
 3. **PaintedLibrary** registra folhas, recortes, pivôs e material de transparência.
 4. **ArtProfile / Bestiary** ligam identidade, escala e características à arte.
 5. **CharacterArt** recebe o estado real do combate. Sophia troca seis poses;
-   demais figuras respiram, inclinam, recuam, agacham e recebem flashes. O orbe
-   do Rei permanece independente e mantém a origem dos tiros.
+   **BossPuppet** articula os chefes com ossos, recortes rígidos de armadura e
+   pele para tecidos/fera. Mãos, cotovelos, ombros, pernas e cabeça acompanham
+   preparação, ataque e recuperação. O orbe do Rei mantém a origem dos tiros.
 6. **Ateliê, desafio e capturas** permitem examinar e testar os mesmos perfis
    usados na campanha.
 
@@ -101,9 +102,10 @@ excluída do Git conforme a regra herdada.
 
 ## Verificação
 - Importação/editor headless e execução real para procurar erros de script.
-- QA de integração: oito perfis, sete estados, três encontros, resultados,
+- QA de integração: oito perfis, dez modos, congelamento dos ossos, troca de
+  perfil sem acumular bonecos, três encontros, resultados,
   morte, reinício e restauração de checkpoint sem gravar o progresso do desafio.
-- Partida com inputs reais: três encontros vencidos em **26,3 s**, combo **12**,
+- Partida após a articulação: três encontros vencidos em **27,8 s**, combo **13**,
   dano recebido e segunda fase confirmados, sem cura extra nem dano sintético.
 - Capturas e inspeção de menus, NPCs, sete chefes em fase 2 e telas
   1, 8, 15, 22, 29, 36, 43, 50, 51 e 54. A inspeção de fase 2 usa dano sintético
@@ -112,6 +114,9 @@ excluída do Git conforme a regra herdada.
   estão em shots/painted-audit.log; incluem aquecimento e não são benchmark.
 
 ## Pendências e limites
+Detalhes da articulação: [ANIMACAO_CHEFES.md](ANIMACAO_CHEFES.md). Os recortes
+preservam o aspecto de boneco 2D; junções de armadura e pano ainda podem receber
+acabamento manual em assets desenhados especificamente por parte do corpo.
 Áudio final, executável independente/instalador, playtest humano de sensação
 dos golpes e passagem manual integral pelas 54 telas continuam pendentes.
 As criaturas precisam de animações exclusivas mais extensas. Algumas bordas

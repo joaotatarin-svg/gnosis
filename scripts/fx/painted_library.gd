@@ -39,9 +39,9 @@ static func character(p: ArtProfile) -> Dictionary:
 	var boss: int = bosses.find(id)
 	if boss >= 0:
 		var rects := [Rect2(0,0,379,505),Rect2(379,0,408,503),Rect2(787,0,380,516),Rect2(1167,0,369,507),Rect2(0,506,373,518),Rect2(373,523,427,473),Rect2(800,510,367,514),Rect2(1167,507,369,517)]
-		return {"sheet":"archons", "rect":rects[boss], "flip":true}
+		return {"sheet":"archons", "rect":rects[boss], "flip":true, "puppet":boss}
 	if id in ["rei", "rei_final", "demiurgo"]:
-		return {"sheet":"yaldabaoth", "rect":Rect2(15,0,1046,1024), "flip":false}
+		return {"sheet":"yaldabaoth", "rect":Rect2(15,0,1046,1024), "flip":false, "puppet":8}
 	var index: int = 1
 	if p.body == ArtProfile.Body.WRAITH: index = 0
 	elif p.body in [ArtProfile.Body.BRUTE,ArtProfile.Body.COLOSSUS]: index = 2

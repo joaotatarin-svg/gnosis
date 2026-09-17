@@ -36,11 +36,21 @@ class Worker extends Node:
 		var atelier = get_tree().current_scene
 		for i in 8:
 			atelier._select(i)
-			for pose in 7:
+			for pose in atelier.POSES.size():
 				atelier._set_pose(1)
 				await get_tree().process_frame
-			check(atelier.art.profile != null and not atelier.art.painted.is_empty(), "perfil ilustrado %d e 7 poses" % i)
+			check(atelier.art.profile != null and not atelier.art.painted.is_empty(), "perfil ilustrado %d e 10 modos" % i)
+			check(atelier.art.get_child_count() == (0 if i == 0 else 1),"troca de perfil libera o boneco anterior")
 		atelier._select(1)
+		atelier.art.set_anim("walk")
+		await wait(0.1)
+		atelier.frozen = true
+		atelier.art.set_process(false)
+		var frozen_angle: float = atelier.art.boss_puppet.bones.arm_l.rotation
+		await wait(0.1)
+		check(is_equal_approx(frozen_angle,atelier.art.boss_puppet.bones.arm_l.rotation),"pausa congela as articulações")
+		atelier.frozen = false
+		atelier.art.set_process(true)
 		await wait(0.2)
 		await shot("athoth")
 		RunManager.saved_run = {"screen": 22, "test": "preservar"}

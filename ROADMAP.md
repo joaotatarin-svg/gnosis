@@ -10,6 +10,8 @@ Guia: docs/CODEX_ENTREGA.md; prompts: docs/ARTE_PROMPTS.md.
 - [x] Nove pinturas de ambientes, objetos, plataformas e camadas de profundidade.
 - [x] Câmera, HUD, menus, loja com rolagem, efeitos e fragmentação ilustrada.
 - [x] QA de fluxo e isolamento; partida vencida por inputs; capturas reais.
+- [x] Nove chefes articulados, golpes ligados ao combate, patas/asas/tecidos.
+- [x] Ateliê com ciclo de combate e inspeção das articulações; pausa validada.
 - [ ] Animação exclusiva mais extensa das criaturas e refinamento das bordas.
 - [ ] Fundos individuais em resolução maior; playtest humano das 54 telas.
 - [ ] Áudio final e exportação independente.

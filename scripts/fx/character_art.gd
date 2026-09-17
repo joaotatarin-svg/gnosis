@@ -24,6 +24,10 @@ var anim_time: float = 0.0
 var damage_ratio: float = 0.0     # 0 = inteiro · 1 = quase morto (rachaduras)
 var _rig_draws: Array = []        # buffer de desenho do rig (tinta em 2 passes)
 var painted: Dictionary = {}
+var boss_puppet: BossPuppet
+var pose_progress: float = -1.0
+var motion_stride: float = 1.0
+var motion_fury: float = 1.0
 var texture: Texture2D = null     # se setado, usa a arte ilustrada no lugar do procedural
 var texture_height: float = 64.0  # altura de exibição do sprite (px)
 
@@ -51,6 +55,17 @@ func set_profile(p: ArtProfile) -> void:
 	profile = p
 	painted = PaintedLibrary.character(p)
 	material = PaintedLibrary.material()
+	if is_instance_valid(boss_puppet):
+		remove_child(boss_puppet)
+		boss_puppet.queue_free()
+		boss_puppet = null
+	if painted.has("puppet"):
+		boss_puppet = BossPuppet.new()
+		add_child(boss_puppet)
+		boss_puppet.configure(painted)
+		var h: float = 190.0 if int(painted.puppet) == 8 else profile.height * 1.3
+		boss_puppet.scale = Vector2(-1 if painted.flip else 1,1) * h / 100.0
+		boss_puppet.position.y = GROUND_Y * profile.height / 44.0
 	queue_redraw()
 
 
@@ -107,6 +122,10 @@ func set_anim(state: String) -> void:
 
 func _process(delta: float) -> void:
 	anim_time += delta
+	if is_instance_valid(boss_puppet):
+		boss_puppet.visible = texture == null
+		boss_puppet.modulate = self_modulate
+		boss_puppet.drive(anim_state,anim_time,delta,pose_progress,motion_stride,motion_fury)
 	queue_redraw()
 
 
@@ -288,6 +307,8 @@ func _compute_pose() -> void:
 
 func _draw() -> void:
 	if profile == null:
+		return
+	if is_instance_valid(boss_puppet) and texture == null:
 		return
 	var s := profile.height / 44.0
 	_compute_pose()

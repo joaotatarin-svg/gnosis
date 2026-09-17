@@ -1,8 +1,8 @@
 extends Control
 ## Ateliê usa os MESMOS perfis e animador do jogo. Alterações são só prévia.
 
-const POSES := ["idle", "walk", "attack", "attack_heavy", "cast", "block", "dodge"]
-const POSE_NAMES := ["Repouso", "Caminhar", "Golpe leve", "Golpe forte", "Conjurar", "Aparar", "Esquiva"]
+const POSES := ["idle", "walk", "attack", "attack_heavy", "cast", "block", "dodge", "windup", "hurt", "sequence"]
+const POSE_NAMES := ["Repouso", "Caminhar", "Golpe leve", "Golpe forte", "Conjurar", "Aparar", "Esquiva", "Preparar golpe", "Receber impacto", "Ciclo de combate"]
 const NOTES := [
 	"A memória da luz tomou forma.\nSeis poses ilustradas, túnica bipartida\ne bracelete da Mônada.",
 	"O guardião que ensina a dormir.\nPálpebra selada, corpo espectral\ne névoa que rouba movimento.",
@@ -28,6 +28,8 @@ var pose_label: Label
 var gear_label: Label
 var roster: Array[Button] = []
 var gear_button: Button
+var joints_button: Button
+var show_joints: bool = false
 
 func _ready() -> void:
 	GameManager.set_state(GameManager.State.MENU)
@@ -52,6 +54,13 @@ func _ready() -> void:
 	CodexStyle.label(self, "RECEITA VISUAL", Vector2(391, 204), 8, CodexStyle.GOLD)
 	recipe = CodexStyle.label(self, "", Vector2(391, 222), 9, CodexStyle.MUTED, 218)
 	recipe.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	joints_button = CodexStyle.button(self, "Ver articulações", Vector2(391, 249), 220, func():
+		show_joints = not show_joints
+		joints_button.text = "Ocultar articulações" if show_joints else "Ver articulações"
+		if art.boss_puppet != null:
+			art.boss_puppet.debug_bones = show_joints
+			art.boss_puppet.debug_layer.visible = show_joints
+			art.boss_puppet.debug_layer.queue_redraw())
 	CodexStyle.button(self, "Testar em combate →", Vector2(391, 280), 220, func(): CodexSession.start_demo(maxi(0, selected - 1)), true)
 	CodexStyle.button(self, "‹", Vector2(169, 277), 28, func(): _set_pose(-1))
 	pose_label = CodexStyle.label(self, "Repouso", Vector2(201, 283), 10, CodexStyle.PAPER, 136)
@@ -70,6 +79,12 @@ func _ready() -> void:
 	CodexStyle.button(self, "Espelhar", Vector2(504, 313), 107, func(): art.scale.x *= -1)
 	_select(0)
 	roster[0].grab_focus()
+	if "--boss-motion" in OS.get_cmdline_user_args():
+		_select(2)
+		roster[2].grab_focus()
+		pose = POSES.size()-2
+		_set_pose(1)
+	if "--show-joints" in OS.get_cmdline_user_args(): joints_button.pressed.emit()
 
 func _select(index: int) -> void:
 	selected = index
@@ -89,6 +104,11 @@ func _refresh() -> void:
 		p.secondary = Color("d4a391")
 		p.eye = Color("ffbf89")
 	art.set_profile(p)
+	if art.boss_puppet != null:
+		art.boss_puppet.debug_bones = show_joints
+		art.boss_puppet.debug_layer.visible = show_joints
+		art.boss_puppet.debug_layer.queue_redraw()
+	joints_button.disabled = selected == 0
 	art.modulate = [Color.WHITE,Color("a7e0d8"),Color("e2b5c4")][palette]
 	var sc: float = 116.0 / p.height
 	art.scale = Vector2.ONE * sc
@@ -100,7 +120,7 @@ func _refresh() -> void:
 	var parts := PackedStringArray()
 	for feature in p.features:
 		parts.append(names.get(feature, feature))
-	recipe.text = "Conceito → ilustração → pose → jogo\n\n" + " · ".join(parts)
+	recipe.text = "Conceito → ilustração → " + ("poses" if selected == 0 else "articulações")
 	gear_label.text = ("ARMA %d / 5" % gear if selected == 0 else "ARCONTE") + "   ·   PALETA %d / 3" % (palette + 1)
 	gear_button.disabled = selected != 0
 
@@ -115,6 +135,13 @@ func _process(delta: float) -> void:
 	if art == null or frozen:
 		return
 	clock += delta
+	if POSES[pose] == "sequence":
+		var t: float = fmod(clock,3.0)
+		var state: String = "walk" if t < 1.2 else ("windup_heavy" if t < 1.9 else ("attack_heavy" if t < 2.15 else "recover"))
+		art.set_anim(state)
+		art.pose_progress = -1.0 if t < 1.2 else ((t-1.2)/0.7 if t < 1.9 else ((t-1.9)/0.25 if t < 2.15 else (t-2.15)/0.85))
+		return
+	art.pose_progress = -1.0
 	if clock > 1.3 and pose > 1:
 		clock = 0.0
 		art.anim_time = 0.0
