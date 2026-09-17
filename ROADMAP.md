@@ -12,8 +12,13 @@ Guia: docs/CODEX_ENTREGA.md; prompts: docs/ARTE_PROMPTS.md.
 - [x] QA de fluxo e isolamento; partida vencida por inputs; capturas reais.
 - [x] Nove chefes articulados, golpes ligados ao combate, patas/asas/tecidos.
 - [x] Ateliê com ciclo de combate e inspeção das articulações; pausa validada.
+- [x] Cenário variado por tela (props pintados sorteados por tela) — Claude 17/09.
+- [x] Movimento procedural das criaturas comuns (passo, preparar, golpe, dano) — Claude 17/09.
+- [ ] Fundos individuais por Éon em 1536×1024 (usuário gera no Astra; hook
+  `assets/backgrounds/eon_<i>.png` já existe — a IA divide em camadas de parallax).
 - [ ] Animação exclusiva mais extensa das criaturas e refinamento das bordas.
-- [ ] Fundos individuais em resolução maior; playtest humano das 54 telas.
+- [ ] Playtest humano do desafio e das 54 telas (feel dos golpes, parry, Anéis).
+- [ ] Limpar código morto da geração vetorial antiga em `scenery.gd`.
 - [ ] Áudio final e exportação independente.
 
 > **Plano mestre rumo à versão final (escrito em 2026-09-09 após diagnóstico

@@ -115,6 +115,22 @@ sinais entre nós. Balanceamento **determinístico por tela**. Mantém exportáv
 (`res://`). Sem dependências externas.
 
 ## 6. Estado atual (FEITO / FALTA) — atualize sempre
+**SESSÃO CLAUDE — 17/09/2026 (pasta renomeada pra `Gnosis-Codex - Copia`):**
+revisão honesta da entrega Codex com capturas reais: o salto visual é grande e
+válido (menu, Sophia, chefes, Rei, fundos, ateliê). Três problemas achados e
+dois corrigidos nesta sessão: (1) cenário idêntico em todas as telas (pilar em
+x=40 e braseiro em x=290 fixos) → `scenery.gd` agora sorteia pilar/obelisco/
+entulho/braseiro por rng determinístico da tela, arena de chefe mais limpa;
+(2) criaturas comuns deslizavam estáticas (só chefes têm boneco) →
+`character_art._painted_motion()` dá passo com balanço/squash, recuo comprimido
+no preparar, avanço esticado no golpe, recuo no dano; espectros flutuam, feras
+galopam. Prancha de verificação: `tools/WaveQA.tscn` (salva `shots/waves.png`).
+(3) Fundos borrados (9 recortes de 512×341 esticados) — pendente: usuário gera
+9 imagens 1536×1024 (uma por Éon + Centro + Mente) e a IA liga no hook
+`assets/backgrounds/eon_<i>.png` com parallax dividido. Código morto em
+`scenery.gd` (`_build_far/_build_mid/_make_prop/_build_near`, geração vetorial
+antiga) ainda não foi removido. Identidade git configurada só neste repo.
+
 **ARTICULAÇÕES DOS CHEFES — 17/09/2026:** João pediu movimento de boneco e
 cancelou a troca dos nomes. Nomes e lançadores permanecem como estavam.
 BossPuppet usa Skeleton2D/Bone2D: armaduras por recortes rígidos sobrepostos;

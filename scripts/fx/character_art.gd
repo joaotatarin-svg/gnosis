@@ -1315,7 +1315,11 @@ func _draw_painted(s: float) -> void:
 	var breath: float = sin(anim_time*2.5)*0.006 if anim_state == "idle" else 0.0
 	var lean: float = _lean * (0.4 if painted.get("hero",false) else 0.7)
 	if anim_state == "dead": lean += _dead * 1.3
-	draw_set_transform(Vector2(0,GROUND_Y*s+_bob*s),lean,Vector2(flip,1.0-_crouch*0.45+breath))
+	# Criaturas sem boneco: o corpo inteiro anda, recua, avança e encolhe.
+	var m: Array = [0.0, 0.0, 1.0, 1.0]
+	if not painted.get("hero", false):
+		m = _painted_motion()
+	draw_set_transform(Vector2(m[0]*s,GROUND_Y*s+_bob*s),lean+m[1],Vector2(flip*m[2],(1.0-_crouch*0.45+breath)*m[3]))
 	rect.position.y -= GROUND_Y*s
 	draw_texture_rect(tex,rect,false,tint)
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
@@ -1330,6 +1334,84 @@ func _draw_painted(s: float) -> void:
 			draw_circle(point,0.8*s,Color(profile.eye,0.65))
 	if damage_ratio > 0.45 and profile.height >= 70:
 		draw_arc(Vector2(0,GROUND_Y*s-30*s),24*s,0.15,2.7,40,Color(profile.eye,0.38),1.0,true)
+
+
+## Movimento procedural das criaturas pintadas (ilustração de peça única, sem
+## boneco). Como não há membros, o corpo inteiro conta a ação: passo com
+## balanço e squash, recuo comprimido no preparar (telegrafo), avanço esticado
+## no golpe, recuo no dano. Espectros flutuam; feras galopam.
+## Devolve [deslocamento x (unidades do corpo), rotação extra, escala x, escala y].
+func _painted_motion() -> Array:
+	var t := anim_time
+	var p: float = maxf(pose_progress, 0.0)
+	var fury: float = motion_fury
+	var wraith: bool = profile.body == ArtProfile.Body.WRAITH
+	var beast: bool = profile.body == ArtProfile.Body.BEAST
+	var ox := 0.0
+	var rot := 0.0
+	var sx := 1.0
+	var sy := 1.0
+	match anim_state:
+		"walk":
+			var stride: float = clampf(motion_stride, 0.35, 1.5)
+			if wraith:
+				# espectro: flutua e balança devagar, sem passo
+				rot = sin(t * 2.2) * 0.05
+				sx = 1.0 + sin(t * 2.2) * 0.02
+			elif beast:
+				# fera: galope curto, corpo estica e comprime
+				var ph := sin(t * 11.0 * fury)
+				rot = ph * 0.07
+				sx = 1.0 + absf(ph) * 0.06
+				sy = 1.0 - absf(ph) * 0.05
+			else:
+				# bípede: balança de um pé pro outro (mesma frequência do _bob)
+				var ph := sin(t * 9.0 * fury)
+				rot = ph * 0.05 * stride
+				sx = 1.0 - absf(ph) * 0.03 * stride
+				sy = 1.0 + absf(ph) * 0.03 * stride
+		"charge":
+			ox = 2.0
+			rot = 0.12
+			sx = 1.12
+			sy = 0.92
+		"windup", "windup_heavy", "windup_cast":
+			# recua e comprime rápido, depois segura tremendo (telegrafo legível)
+			var e := ease(p, 0.45)
+			var tremor: float = sin(t * 38.0) * 0.012 * e
+			ox = -3.0 * e
+			rot = -0.06 * e + tremor
+			sx = 1.0 - 0.06 * e
+			sy = 1.0 + 0.05 * e
+			if anim_state == "windup_heavy":
+				ox = -1.5 * e
+				sy = 1.0 + 0.10 * e
+		"attack", "attack_heavy", "cast":
+			# golpe: avança e estica no começo, depois assenta
+			var e := ease(clampf(p if pose_progress >= 0.0 else t / 0.25, 0.0, 1.0), 0.35)
+			var punch: float = sin(e * PI)
+			ox = (1.5 if anim_state == "cast" else 7.0) * punch
+			rot = 0.14 * punch
+			sx = 1.0 + 0.12 * punch
+			sy = 1.0 - 0.08 * punch
+			if anim_state == "attack_heavy":
+				rot = 0.16 * punch
+				sy = 1.0 - 0.14 * punch
+		"recover":
+			# volta pro repouso ainda inclinado à frente
+			var back: float = 1.0 - p
+			ox = 2.0 * back
+			rot = 0.05 * back
+		"hurt":
+			var k := 1.0 - clampf(t / 0.25, 0.0, 1.0)
+			ox = -3.5 * k
+			rot = -0.10 * k
+			sx = 1.0 - 0.10 * k
+			sy = 1.0 + 0.08 * k
+		_:
+			if wraith:
+				rot = sin(t * 1.7) * 0.03
+	return [ox, rot, sx, sy]
 
 
 func _painted_gibs(s: float) -> Array:
