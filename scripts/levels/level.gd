@@ -1,15 +1,37 @@
 extends Node2D
 class_name Level
-## Uma tela do run — o ARCO DOS ANÉIS: o Rei (tela 1), waves + Arconte por Éon
-## (2–50), o roubo (50), o Centro com ecos (51–53) e a batalha dupla (54).
-## Limpou → loja pós-chefe (avança) ou portal. Morte → fim.
+## Uma tela do run — o ARCO DOS ANÉIS: o Rei (tela 1), Éons de 9 telas
+## (2–64) com travessias, o Desafio (Campeão) e o Arconte, o roubo (64), o
+## Centro com ecos (65–67) e a batalha dupla (68).
+##
+## A tela é uma TRAVESSIA (Grand Chase / God of War): 1–3 ZONAS de combate
+## enfileiradas à direita. O jogador anda; ao chegar numa zona ela TRANCA
+## (paredes móveis), as waves nascem; limpou → destranca, "Siga em frente".
+## Última zona limpa → loja pós-chefe (avança) ou portal. Morte → checkpoint.
 
 @export var enemy_scene: PackedScene
 @export var screen: int = 1
 
-var waves: Array = []
+# Geometria da travessia (px de mundo). Zona i tem centro em ZONE_FIRST_X + i*ZONE_STEP.
+const ZONE_FIRST_X := 620.0
+const ZONE_STEP := 1500.0
+const ZONE_TRIGGER := 430.0       # cruzou centro-430 → tranca
+const ZONE_HALF := 470.0          # paredes móveis em centro±470
+const WALL_LEFT := -720.0
+const ARENA_PAD := 720.0          # parede direita = último centro + 720
+const GROUND_Y := 298.0           # pés no chão
+
+var zones: Array = []             # plano da tela: [zona][wave][type_id]
+var zone_index: int = -1          # zona em andamento (-1 = nenhuma começou)
+var zone_active: bool = false     # zona trancada com inimigos vivos
+var waves: Array = []             # waves da zona atual
 var wave_index: int = 0
 var alive: int = 0
+var rest_points: Array = []       # descansos (Vector2) entre as zonas
+var _end_x: float = 1720.0        # parede fixa da direita
+var _zone_walls: Array = []       # paredes móveis da zona trancada
+var _cam_locked: bool = false     # câmera presa na zona (restaurar ao destrancar)
+var _ready_done: bool = false
 
 @onready var spawns: Node2D = $Spawns
 @onready var player: Player = $Player
@@ -23,25 +45,79 @@ func _ready() -> void:
 	if player:
 		player.died.connect(_on_player_died)
 
+	if RunManager.run_active:
+		zones = RunManager.zone_plan(screen)
+	else:
+		zones = [[_test_wave()]]  # rodando Level01.tscn direto (teste)
+	_layout_arena()
+
 	# Cenário do Éon (scenery.gd): céu+astro, skyline, props, névoa, chão com
 	# relevo, primeiro plano e vinheta. Se houver PNG do Éon, ele é usado.
 	_build_eon_scenery()
 
 	_build_platforms()
 	_build_walls()
-
-	if RunManager.run_active:
-		waves = RunManager.wave_plan(screen)
-	else:
-		waves = [_test_wave()]     # rodando Level01.tscn direto (teste)
-
 	_spawn_extras()
 	await _play_narrative_beats()
-	_start_wave()
+	if not is_inside_tree():
+		return
+	if RunManager.run_active:
+		Gnosis.setup_screen(self, screen, rest_points)
+	_ready_done = true
+	# Tela 68: a batalha dupla tem controlador próprio (FinalBattle) — começa já.
+	if RunManager.run_active and RunManager.is_final(screen):
+		_start_wave()
+
+
+## Gatilho das zonas: o jogador anda pra direita e, ao cruzar centro-430 de uma
+## zona ainda não iniciada, ela tranca e as waves nascem.
+func _process(_delta: float) -> void:
+	if not _ready_done or zone_active or zones.is_empty() or player == null:
+		return
+	if GameManager.state != GameManager.State.PLAYING:
+		return
+	var next := zone_index + 1
+	if next >= zones.size():
+		return
+	if player.global_position.x >= zone_center(next) - ZONE_TRIGGER:
+		_start_zone(next)
+
+
+func zone_center(i: int) -> float:
+	return ZONE_FIRST_X + float(i) * ZONE_STEP
+
+
+## Limites jogáveis atuais (x mín, x máx): a zona trancada ou a arena inteira.
+## Usado pelos inimigos que teleportam, pra não caírem atrás de uma parede.
+func arena_bounds() -> Vector2:
+	if zone_active and zone_index >= 0:
+		var c := zone_center(zone_index)
+		return Vector2(c - ZONE_HALF, c + ZONE_HALF)
+	return Vector2(WALL_LEFT, _end_x)
+
+
+## Comprimento da arena e pontos de descanso, derivados do número de zonas.
+func _layout_arena() -> void:
+	var n := maxi(1, zones.size())
+	_end_x = zone_center(n - 1) + ARENA_PAD
+	rest_points = [Vector2(-380.0, GROUND_Y)]
+	for i in n - 1:
+		rest_points.append(Vector2(zone_center(i) + ZONE_STEP * 0.5, GROUND_Y))
+	# A câmera nunca mostra além das paredes fixas.
+	_set_camera_limits(WALL_LEFT, _end_x)
+
+
+func _set_camera_limits(left: float, right: float) -> void:
+	if player == null or not player.has_node("Camera2D"):
+		return
+	var cam: Camera2D = player.get_node("Camera2D")
+	cam.limit_left = int(left)
+	cam.limit_right = int(right)
+	cam.limit_smoothed = true
 
 
 ## Diálogos de entrada da tela: intro + o Rei (1), chegada num Éon, tentação
-## do Arconte, o Centro (51) e a batalha final (54).
+## do Arconte, o Centro (65) e a batalha final (68).
 func _play_narrative_beats() -> void:
 	if not RunManager.run_active:
 		return
@@ -89,7 +165,7 @@ func _build_eon_scenery() -> void:
 
 ## Plataformas one-way (sobe por baixo, pousa em cima). Foco em jogabilidade:
 ## dão reposicionamento e verticalidade sem tirar o combate do chão. Layout
-## determinístico por tela; telas de chefe ficam limpas.
+## determinístico por tela e por zona; telas de chefe ficam limpas.
 func _build_platforms() -> void:
 	if RunManager.run_active and RunManager.is_boss_screen(screen):
 		return
@@ -100,25 +176,31 @@ func _build_platforms() -> void:
 		[Vector2(260, 250), Vector2(640, 250)],
 		[Vector2(180, 250), Vector2(430, 216), Vector2(700, 250)],
 	]
-	var layout: Array = layouts[screen % layouts.size()]
-	for pos in layout:
-		add_child(_make_platform(pos, 130.0))
+	for z in maxi(1, zones.size()):
+		var layout: Array = layouts[(screen + z * 2) % layouts.size()]
+		var shift := Vector2(float(z) * ZONE_STEP, 0.0)
+		for pos in layout:
+			add_child(_make_platform(pos + shift, 130.0))
 
 
 ## Paredes invisíveis nas bordas da arena: ninguém (jogador, inimigo, knockback)
-## sai do chão e cai no vazio. (Bug real: o chão acaba ~x 1900 e dava pra cair.)
+## sai do chão e cai no vazio. A direita fecha logo depois da última zona.
 func _build_walls() -> void:
-	for wx in [-720.0, 1720.0]:
-		var wall := StaticBody2D.new()
-		wall.position = Vector2(wx, 60.0)
-		wall.collision_layer = 1
-		wall.collision_mask = 0
-		var col := CollisionShape2D.new()
-		var rect := RectangleShape2D.new()
-		rect.size = Vector2(40, 1600)
-		col.shape = rect
-		wall.add_child(col)
-		add_child(wall)
+	for wx in [WALL_LEFT, _end_x]:
+		add_child(_make_wall(wx))
+
+
+func _make_wall(wx: float) -> StaticBody2D:
+	var wall := StaticBody2D.new()
+	wall.position = Vector2(wx, 60.0)
+	wall.collision_layer = 1
+	wall.collision_mask = 0
+	var col := CollisionShape2D.new()
+	var rect := RectangleShape2D.new()
+	rect.size = Vector2(40, 1600)
+	col.shape = rect
+	wall.add_child(col)
+	return wall
 
 
 func _make_platform(center: Vector2, w: float) -> StaticBody2D:
@@ -141,39 +223,46 @@ func _make_platform(center: Vector2, w: float) -> StaticBody2D:
 	return body
 
 
-## Conteúdo opcional da tela (determinístico: mesma tela = mesmo conteúdo).
-## Nada disso aparece em tela de chefe — chefe é só o chefe.
+## Conteúdo opcional da tela (determinístico: mesma tela = mesmo conteúdo),
+## sempre nos DESCANSOS entre as zonas: baú no descanso 1, Adormecido no 0,
+## Selos no último. Nada disso aparece em tela de chefe — chefe é só o chefe.
 func _spawn_extras() -> void:
 	if RunManager.run_active and RunManager.is_boss_screen(screen):
 		return
+	var last: int = rest_points.size() - 1
 	if screen % 3 == 1:
 		var c := Chest.new()
 		c.screen = screen
 		add_child(c)
-		c.global_position = Vector2(1150, 298)
+		c.global_position = rest_points[mini(1, last)] + Vector2(40.0, 0.0)
 	if screen % 4 == 2:
 		var sl := Sleeper.new()
 		sl.screen = screen
 		add_child(sl)
-		sl.global_position = Vector2(-450, 288)
+		sl.global_position = rest_points[0] + Vector2(-90.0, -10.0)
 	if screen % 7 == 3:
 		var puz := SealPuzzle.new()
 		puz.screen = screen
 		add_child(puz)
-		puz.global_position = Vector2(1500, 298)
-	# Encontros da história: Soter (3x) e Velkar (1x, perto do fim).
-	var soter_screens := [10, 24, 38]
-	if screen in soter_screens:
+		puz.global_position = rest_points[last] + Vector2(170.0, 0.0)
+	# Encontros da história: Soter nos Éons 1, 3 e 5 (offset 6, no descanso do
+	# meio) e Velkar no Éon 6 (offset 5), perto do fim.
+	if not RunManager.run_active:
+		return
+	var eon := RunManager.eon_index(screen)
+	var off := RunManager.eon_offset(screen)
+	var mid: Vector2 = rest_points[rest_points.size() / 2]
+	if off == 6 and eon in [1, 3, 5]:
 		var soter := NpcEncounter.new()
 		soter.kind = "soter"
-		soter.meeting = soter_screens.find(screen)
+		soter.meeting = [1, 3, 5].find(eon)
 		add_child(soter)
-		soter.global_position = Vector2(760, 288)
-	elif screen == 45:
+		soter.global_position = mid + Vector2(0.0, -10.0)
+	elif off == 5 and eon == 6:
 		var velkar := NpcEncounter.new()
 		velkar.kind = "velkar"
 		add_child(velkar)
-		velkar.global_position = Vector2(760, 286)
+		velkar.global_position = mid + Vector2(0.0, -12.0)
 
 
 func _test_wave() -> Array:
@@ -183,10 +272,70 @@ func _test_wave() -> Array:
 	return ids.slice(0, mini(3, ids.size()))
 
 
+# --- zonas ------------------------------------------------------------------
+
+## Tranca a zona i (paredes móveis + câmera), posiciona os spawns e solta a 1ª wave.
+func _start_zone(i: int) -> void:
+	zone_index = i
+	zone_active = true
+	waves = zones[i]
+	wave_index = 0
+	var c := zone_center(i)
+	_lock_zone(c)
+	_place_spawns(c)
+	if RunManager.run_active:
+		Gnosis.zone_started(screen, i, zones.size())
+	_start_wave()
+
+
+func _lock_zone(c: float) -> void:
+	_unlock_zone()
+	for wx in [c - ZONE_HALF, c + ZONE_HALF]:
+		var w := _make_wall(wx)
+		add_child(w)
+		_zone_walls.append(w)
+	_set_camera_limits(c - ZONE_HALF, c + ZONE_HALF)
+	_cam_locked = true
+
+
+func _unlock_zone() -> void:
+	for w in _zone_walls:
+		if is_instance_valid(w):
+			w.queue_free()
+	_zone_walls.clear()
+	if _cam_locked:
+		_cam_locked = false
+		_set_camera_limits(WALL_LEFT, _end_x)
+
+
+## Três pontos de spawn relativos ao centro da zona (centro-160, centro, centro+160).
+func _place_spawns(c: float) -> void:
+	var pts := spawns.get_children()
+	for k in pts.size():
+		var p: Node2D = pts[k]
+		p.position = Vector2(c + (float(k) - float(pts.size() - 1) * 0.5) * 160.0, 250.0)
+
+
+func _on_zone_cleared() -> void:
+	zone_active = false
+	_unlock_zone()
+	var total := zones.size()
+	var last_zone := zone_index >= total - 1
+	if RunManager.run_active and total > 0:
+		Gnosis.zone_cleared(screen, zone_index, total)
+	if last_zone:
+		_on_screen_cleared()
+	else:
+		get_tree().call_group("hud", "toast", "Siga em frente  →")
+
+
+# --- waves ------------------------------------------------------------------
+
 func _start_wave() -> void:
-	# Tela 54: a batalha dupla tem controlador próprio (FinalBattle).
+	# Tela 68: a batalha dupla tem controlador próprio (FinalBattle).
 	if RunManager.run_active and RunManager.is_final(screen):
 		if not has_node("FinalBattle"):
+			_place_spawns(ZONE_FIRST_X)
 			var fb := FinalBattle.new()
 			fb.name = "FinalBattle"
 			add_child(fb)
@@ -198,17 +347,29 @@ func _start_wave() -> void:
 	var wave: Array = waves[wave_index]
 	var is_boss := RunManager.run_active and RunManager.is_boss_screen(screen)
 	var is_last_wave := wave_index == waves.size() - 1
+	var is_last_zone := zones.is_empty() or zone_index >= zones.size() - 1
+	var is_trial := RunManager.run_active and RunManager.screen_role(screen) == "trial"
+	var eon_bot: String = Bestiary.EON_BOTS[clampi(RunManager.eon_index(screen), 0, Bestiary.EON_BOTS.size() - 1)]
 	var points := spawns.get_children()
+	# Da 2ª wave em diante os inimigos ENTRAM pela borda direita da zona.
+	var from_edge := zone_active and wave_index >= 1
+	var c := zone_center(maxi(0, zone_index))
 	alive = 0
 	for i in wave.size():
 		var e := enemy_scene.instantiate()
 		e.type_id = wave[i]
-		# Em tela normal, o último inimigo da última wave é um Elite.
-		if not is_boss and is_last_wave and i == wave.size() - 1:
+		# Em tela normal, o último inimigo da última wave da ÚLTIMA zona é um Elite.
+		if not is_boss and is_last_wave and is_last_zone and i == wave.size() - 1:
 			e.is_elite = true
+		# Desafio do Éon: o bot da última wave é o CAMPEÃO.
+		if is_trial and is_last_wave and wave[i] == eon_bot:
+			e.is_champion = true
 		add_child(e)
-		var p: Node2D = points[i % points.size()]
-		e.global_position = p.global_position
+		if from_edge:
+			e.global_position = Vector2(c + ZONE_TRIGGER - 10.0 - float(i) * 34.0, 250.0)
+		else:
+			var p: Node2D = points[i % points.size()]
+			e.global_position = p.global_position
 		e.defeated.connect(_on_enemy_defeated)
 		e.minion_spawned.connect(_on_minion)
 		alive += 1
@@ -230,7 +391,7 @@ func _on_enemy_defeated(e) -> void:
 		return
 	wave_index += 1
 	if wave_index >= waves.size():
-		_on_screen_cleared()
+		_on_zone_cleared()
 	else:
 		await get_tree().create_timer(0.8).timeout
 		if is_inside_tree():
@@ -263,15 +424,19 @@ func _on_screen_cleared() -> void:
 			# Loja de recompensa pós-chefe; ao fechar, avança.
 			RunManager.pending_advance = true
 			SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
+	elif RunManager.screen_role(screen) == "trial":
+		# O Campeão caiu: SANTUÁRIO do meio do Éon (loja); ao fechar, avança.
+		RunManager.pending_advance = true
+		SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
 	else:
 		# Tela normal limpa: abre a fenda à direita — o jogador ANDA até ela.
 		_open_exit()
 
 
-## Fenda de saída à direita; ao entrar nela, avança de tela.
+## Fenda de saída no fim da travessia; ao entrar nela, avança de tela.
 func _open_exit() -> void:
 	var portal := ExitPortal.new()
-	portal.position = Vector2(1500, 300)
+	portal.position = Vector2(_end_x - 200.0, 300.0)
 	add_child(portal)
 	portal.entered.connect(_advance_via_exit)
 

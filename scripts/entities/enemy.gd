@@ -18,6 +18,9 @@ enum EState { CHASE, WINDUP, STRIKE, RECOVER, HURT, STAGGER, DEAD }
 
 @export var type_id: String = "servo"     # id no Bestiary
 @export var is_elite: bool = false
+## CAMPEÃO do Éon (tela de desafio): elite + 1.7x vida, 1.15x dano, maior,
+## nome e barra no HUD, faíscas em dobro.
+@export var is_champion: bool = false
 
 # Preenchidos a partir do Bestiary em _ready.
 var display_name: String = "Arconte"
@@ -126,7 +129,9 @@ func _ready() -> void:
 		wind_up = 0.9 if type_id == "rei" else 0.6
 		attack_cooldown = 1.6 if type_id == "rei" else 1.0
 
-	# Elite: maior, mais forte e imparável.
+	# Elite: maior, mais forte e imparável. (Campeão implica elite.)
+	if is_champion:
+		is_elite = true
 	if is_elite:
 		display_name = "%s (Elite)" % display_name
 		base_health = int(base_health * 2.2)
@@ -135,6 +140,13 @@ func _ready() -> void:
 		scale = Vector2(1.2, 1.2)
 		if profile != null:
 			profile = profile.duplicate_with(["horns"])
+	# Campeão do Éon: o bot temático crescido — o "mini-chefe" do meio do Éon.
+	if is_champion:
+		display_name = "Campeão %s" % _eon_title(GameManager.current_screen)
+		base_health = int(base_health * 1.7)
+		attack_damage = int(attack_damage * 1.15)
+		spark_reward *= 2
+		scale = Vector2(1.25, 1.25)
 
 	# Escala determinística por tela + dificuldade (r2: vida e dano crescem em
 	# curvas separadas — vida +2%/tela, dano +1.2%/tela).
@@ -172,8 +184,15 @@ func _ready() -> void:
 	_apply_illustrated_art()
 
 	player = get_tree().get_first_node_in_group("player")
-	if is_boss_enemy:
+	if is_boss_enemy or is_champion:
 		get_tree().call_group("hud", "show_boss", self)
+
+
+## "do Torpor" / "da Fome": o nome do Éon com o artigo certo (pro Campeão).
+func _eon_title(screen: int) -> String:
+	var n := RunManager.eon_name(screen)
+	var fem := n in ["Fome", "Corrente", "Praga", "Coroa"]
+	return ("da " if fem else "do ") + n
 
 
 ## Ajusta colisões e sombra ao tamanho do desenho, mantendo os pés no chão.
@@ -377,6 +396,11 @@ func _separation() -> float:
 
 ## Teleporte curto com clarão nas duas pontas.
 func _blink_to(x: float) -> void:
+	# Nunca pisca pra fora da zona trancada (ficaria preso atrás da parede).
+	var lv := get_parent()
+	if lv != null and lv.has_method("arena_bounds"):
+		var b: Vector2 = lv.arena_bounds()
+		x = clampf(x, b.x + 30.0, b.y - 30.0)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -14), eye_color)
 	global_position.x = x
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -14), eye_color)

@@ -532,18 +532,22 @@ func build_ground(parent: Node2D, ground_top_y: float) -> void:
 class GroundDetail extends Node2D:
 	var eon: int = 0
 	var pal: Dictionary = {}
+	# Faixa do chão: cobre a travessia inteira (até 3 zonas: parede em x≈3620)
+	# com folga — a câmera nunca vê o chão acabar.
+	const LEFT := -2400.0
+	const RIGHT := 6800.0
 
 	func _draw() -> void:
 		var top: Color = pal.ground
 		var dark: Color = pal.ground_dark
 		var glow: Color = pal.glow
 		# chão inteiro (gradiente)
-		draw_polygon(PackedVector2Array([Vector2(-2400, 0), Vector2(2400, 0), Vector2(2400, 420), Vector2(-2400, 420)]),
+		draw_polygon(PackedVector2Array([Vector2(LEFT, 0), Vector2(RIGHT, 0), Vector2(RIGHT, 420), Vector2(LEFT, 420)]),
 			PackedColorArray([top, top, dark, dark]))
 		var floor_tex: Texture2D = PaintedLibrary.background(eon)
-		for tile in range(-10,11):
+		for tile in range(-5,14):
 			draw_texture_rect_region(floor_tex,Rect2(tile*512,0,512,160),Rect2(0,floor_tex.get_height()*0.82,512,floor_tex.get_height()*0.18),Color(0.75,0.79,0.83))
-		draw_line(Vector2(-2400,1),Vector2(2400,1),Color(glow,0.18),1.0,true)
+		draw_line(Vector2(LEFT,1),Vector2(RIGHT,1),Color(glow,0.18),1.0,true)
 
 	func _ell(c: Vector2, rx: float, ry: float) -> PackedVector2Array:
 		var pts := PackedVector2Array()
@@ -569,7 +573,7 @@ class Foreground extends Node2D:
 	var pal: Dictionary = {}
 	var rng: RandomNumberGenerator
 	const SPEED := 1.3       # > 1 = passa mais rápido que o mundo (está à frente)
-	const SPAN := 2600.0
+	const SPAN := 6800.0     # até onde vai o entulho (cobre a travessia de 3 zonas)
 
 	func _process(_delta: float) -> void:
 		var cam := get_viewport().get_camera_2d()
@@ -584,7 +588,7 @@ class Foreground extends Node2D:
 		if rng == null:
 			rng = RandomNumberGenerator.new()
 		var x: float = -300.0 + rng.randf_range(0.0, 400.0)
-		while x < 3200.0:
+		while x < SPAN:
 			var rubble := PaintedLibrary.sprite(3, rng.randf_range(56.0, 88.0))
 			rubble.position = Vector2(x, 428)
 			rubble.modulate = Color(0.20, 0.26, 0.30, 0.85)
