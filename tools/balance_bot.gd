@@ -4,11 +4,14 @@ extends Node
 ## na loja) e mede POR TELA: tempo, dano tomado e "quase-mortes" (vida < 25% →
 ## conta 1 morte e cura cheia, pra run nunca parar). No fim imprime a tabela
 ## com a curva de dificuldade e avisos (HOT = dano demais, COLD = de menos).
+## Com as TRAVESSIAS (r4): sem inimigo vivo e tela ainda não limpa, o bot ANDA
+## pra direita até o gatilho da próxima zona; o timeout é por ZONA parada.
 ## Uso: godot --path . res://tools/BalanceBot.tscn -- [tela_ini] [tela_fim] [vel]
 ##   vel = multiplicador de velocidade (padrão 3; Juice.speed_mult).
 
 func _ready() -> void:
 	var w := BalanceWorker.new()
+	w.last_screen = RunManager.MAX_SCREEN
 	var args := OS.get_cmdline_user_args()
 	if args.size() >= 1:
 		w.first_screen = int(args[0])
@@ -21,15 +24,18 @@ func _ready() -> void:
 
 class BalanceWorker extends Node:
 	var first_screen: int = 1
-	var last_screen: int = 54
+	var last_screen: int = 68
 	var speed: float = 3.0
 
-	const SCREEN_TIMEOUT := 90.0       # s de jogo; passou disso = tela travada
+	const ZONE_TIMEOUT := 100.0        # s de jogo numa zona sem limpar = travada
 	const LOW_HP := 0.45               # abaixo disso: conta morte e cura cheia
 	                                   # (alto o bastante pra um golpe não matar
 	                                   # o medidor antes da cura — morte real ainda
 	                                   # encerra o run e aparece no relatório)
 	var _idle_clear: float = 0.0       # s com a tela limpa sem conseguir avançar
+	var _zone_t: float = 0.0           # s na zona atual (timeout por zona)
+	var _zone_cur: int = -2            # zona em andamento (detecta troca)
+	var _zones: int = 1                # zonas da tela atual (pro relatório)
 
 	var _cur: int = -1
 	var _rows: Array = []              # {screen, time, dmg, deaths, timeout}
@@ -102,7 +108,16 @@ class BalanceWorker extends Node:
 			_flush_row()
 			_cur = RunManager.current_screen
 			_last_hp = pl.health.current_health
+			_zone_cur = -2
+			_zone_t = 0.0
 		_t += delta
+		var lv0 := get_tree().current_scene
+		if lv0 is Level:
+			_zones = maxi(1, lv0.zones.size())
+			if lv0.zone_index != _zone_cur:
+				_zone_cur = lv0.zone_index
+				_zone_t = 0.0
+		_zone_t += delta
 		# 5) medição de dano/quase-morte
 		var hp := pl.health.current_health
 		if hp < _last_hp:
@@ -112,20 +127,18 @@ class BalanceWorker extends Node:
 			_deaths += 1
 			pl.health.heal(pl.health.max_health)
 			_last_hp = pl.health.current_health
-		# 6) timeout da tela: força a limpeza pra seguir medindo as outras
-		# (SEM return: o bot ainda precisa andar até o portal depois da matança)
-		if _t > SCREEN_TIMEOUT and not _timeout:
+		# 6) timeout da ZONA: mata o que está vivo (uma vez) pra seguir medindo
+		# as outras zonas/telas. (SEM return: o bot ainda precisa andar depois.)
+		if _zone_t > ZONE_TIMEOUT:
+			_zone_t = 0.0
 			_timeout = true
-			print("BAT TIMEOUT na tela %d — matando a tela" % _cur)
+			print("BAT TIMEOUT na tela %d zona %d — matando a zona" % [_cur, _zone_cur])
 			# Diagnóstico: quem estava vivo e onde (pra achar stalls determinísticos).
 			for e in get_tree().get_nodes_in_group("enemy"):
 				if is_instance_valid(e) and e.estate != Enemy.EState.DEAD:
 					print("BAT   vivo: %s hp=%d pos=(%.0f,%.0f) estado=%s range=%.0f cd=%.2f" % [e.type_id, e.health.current_health, e.global_position.x, e.global_position.y, Enemy.EState.keys()[e.estate], e.attack_range, e.cooldown_timer])
-			print("BAT   player: pos=(%.0f,%.0f) estado=%s cd=%.2f chao=%s" % [pl.global_position.x, pl.global_position.y, Player.State.keys()[pl.state], pl.attack_cd, str(pl.is_on_floor())])
-		if _timeout:
-			for e in get_tree().get_nodes_in_group("enemy"):
-				if is_instance_valid(e) and e.estate != Enemy.EState.DEAD:
 					e._on_hit_received(e.health.max_health + 9999, pl.global_position, 10.0, false, null)
+			print("BAT   player: pos=(%.0f,%.0f) estado=%s cd=%.2f chao=%s" % [pl.global_position.x, pl.global_position.y, Player.State.keys()[pl.state], pl.attack_cd, str(pl.is_on_floor())])
 		_drive(pl, delta)
 
 	## A "mão" do bot: anda até o inimigo mais perto, bate, esquiva, conjura.
@@ -142,16 +155,25 @@ class BalanceWorker extends Node:
 				best = d
 				target = e
 		if target == null:
-			# Tela limpa: anda até a fenda (se existir, o bot "entra" nela).
 			Input.action_release("move_left")
 			Input.action_release("move_right")
 			var lv := get_tree().current_scene
+			# Tela limpa: anda até a fenda (se existir, o bot "entra" nela).
 			for c in lv.get_children():
 				if c is ExitPortal:
 					pl.global_position = c.global_position + Vector2(0, -20)
-			# Rede de segurança: limpa há tempo demais sem avançar → força a saída.
+			# Travessia: ainda há zonas à frente → ANDA pra direita até o gatilho.
+			var zones_left: bool = lv is Level and not lv.zone_active and lv.zone_index + 1 < lv.zones.size()
+			if zones_left:
+				Input.action_press("move_right")
 			_idle_clear += delta
-			if _idle_clear > 14.0 and lv is Level and lv.has_method("_advance_via_exit"):
+			if zones_left and _idle_clear > 25.0:
+				# Rede de segurança: preso no caminho → salta pro gatilho da zona.
+				print("BAT zona forcada (tela %d, bot preso em x=%.0f)" % [_cur, pl.global_position.x])
+				_idle_clear = 0.0
+				pl.global_position = Vector2(lv.zone_center(lv.zone_index + 1) - Level.ZONE_TRIGGER + 8.0, 250.0)
+			elif not zones_left and _idle_clear > 14.0 and lv is Level and lv.has_method("_advance_via_exit"):
+				# Rede de segurança: limpa há tempo demais sem avançar → força a saída.
 				print("BAT avanco forcado (tela %d presa limpa)" % _cur)
 				_idle_clear = 0.0
 				lv._advance_via_exit()
@@ -207,18 +229,19 @@ class BalanceWorker extends Node:
 
 	func _flush_row() -> void:
 		if _cur > 0:
-			_rows.append({"screen": _cur, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": _timeout})
+			_rows.append({"screen": _cur, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": _timeout, "zones": _zones})
 		_t = 0.0
 		_dmg = 0
 		_deaths = 0
 		_timeout = false
+		_zones = 1
 
 	func _finish(reason: String) -> void:
 		_done = true
 		_flush_row()
 		var lines: Array[String] = []
 		lines.append("BALANCE — %s | arma final nv.%d | faíscas sobrando %d" % [reason, Progression.weapon_level, Progression.orbs])
-		lines.append("tela | tempo(s) | dano | mortes | avisos")
+		lines.append("tela | zonas | tempo(s) | dano | mortes | avisos")
 		var tot_t := 0.0
 		var tot_d := 0
 		var tot_m := 0
@@ -227,8 +250,8 @@ class BalanceWorker extends Node:
 			if r.timeout: warn += " TIMEOUT"
 			if r.dmg >= 70: warn += " HOT"
 			elif r.dmg <= 3 and r.screen > 3: warn += " COLD"
-			if r.time > 75.0 and not r.timeout: warn += " SLOW"
-			lines.append("%4d | %8.1f | %4d | %6d |%s" % [r.screen, r.time, r.dmg, r.deaths, warn])
+			if r.time > 45.0 + 60.0 * float(r.zones) and not r.timeout: warn += " SLOW"
+			lines.append("%4d | %5d | %8.1f | %4d | %6d |%s" % [r.screen, r.zones, r.time, r.dmg, r.deaths, warn])
 			tot_t += r.time
 			tot_d += int(r.dmg)
 			tot_m += int(r.deaths)
