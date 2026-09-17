@@ -74,18 +74,49 @@ func build(p_eon: int, screen: int = 1) -> bool:
 		backdrop.scale = Vector2(768.0/backdrop.texture.get_width(),400.0/backdrop.texture.get_height())
 		backdrop.modulate = Color(0.68,0.73,0.77)
 		painted_layer.add_child(backdrop)
-	var architecture := _layer(Vector2(0.64,1.0),1800.0)
-	for x in [40.0,940.0]:
-		var column := PaintedLibrary.sprite(0,230.0)
-		column.position = Vector2(x,GROUND)
-		column.modulate = Color(0.40,0.48,0.52)
-		architecture.add_child(column)
-	for x in [290.0,1110.0]:
-		var lamp := PaintedLibrary.sprite(4,44.0)
-		lamp.position = Vector2(x,GROUND)
-		architecture.add_child(lamp)
+	_build_architecture()
 	_build_fog()
 	return false
+
+
+## Arquitetura pintada (pilares, obeliscos, entulho, braseiros) em duas camadas
+## de parallax. Determinística por tela: escolha, posição, altura, espelho e
+## tinta saem do rng da tela — duas telas do mesmo Éon nunca ficam iguais.
+## Telas de chefe ficam mais vazias (arena limpa pra leitura do combate).
+func _build_architecture() -> void:
+	var p := pal()
+	var boss: bool = RunManager.run_active and RunManager.is_boss_screen(seed_screen)
+	var tint_mid: Color = Color(0.40, 0.48, 0.52).lerp(p.fog, 0.30)
+	var tint_near: Color = Color(0.30, 0.36, 0.40).lerp(p.fog, 0.22)
+	# Camada do meio: pilares (0) e obeliscos (2) grandes.
+	var mid := _layer(Vector2(0.64, 1.0), W)
+	var r := _rng(3)
+	var x := r.randf_range(20.0, 160.0)
+	while x < W - 80.0:
+		var kind: int = 0 if r.randf() < 0.62 else 2
+		var h: float = r.randf_range(190.0, 265.0) if kind == 0 else r.randf_range(150.0, 215.0)
+		var s := PaintedLibrary.sprite(kind, h)
+		s.position = Vector2(x, GROUND + r.randf_range(0.0, 4.0))
+		s.modulate = tint_mid.darkened(r.randf_range(0.0, 0.18))
+		if r.randf() < 0.5:
+			s.scale.x = -s.scale.x
+		mid.add_child(s)
+		x += r.randf_range(520.0, 760.0) if boss else r.randf_range(330.0, 560.0)
+	# Camada próxima: entulho (3) e braseiros (4) pequenos.
+	var near := _layer(Vector2(0.78, 1.0), W)
+	var r2 := _rng(4)
+	x = r2.randf_range(60.0, 240.0)
+	while x < W - 40.0:
+		var brazier: bool = r2.randf() < 0.42
+		var h2: float = r2.randf_range(38.0, 50.0) if brazier else r2.randf_range(48.0, 88.0)
+		var s2 := PaintedLibrary.sprite(4 if brazier else 3, h2)
+		s2.position = Vector2(x, GROUND + 2.0)
+		if not brazier:
+			s2.modulate = tint_near.darkened(r2.randf_range(0.0, 0.2))
+			if r2.randf() < 0.5:
+				s2.scale.x = -s2.scale.x
+		near.add_child(s2)
+		x += r2.randf_range(260.0, 520.0)
 
 
 func _layer(scale: Vector2, mirror_w: float) -> ParallaxLayer:
@@ -528,6 +559,7 @@ func build_foreground(parent: Node2D) -> void:
 	var f := Foreground.new()
 	f.eon = eon
 	f.pal = pal()
+	f.rng = _rng(6)
 	f.z_index = 30
 	parent.add_child(f)
 
@@ -535,6 +567,7 @@ func build_foreground(parent: Node2D) -> void:
 class Foreground extends Node2D:
 	var eon: int = 0
 	var pal: Dictionary = {}
+	var rng: RandomNumberGenerator
 	const SPEED := 1.3       # > 1 = passa mais rápido que o mundo (está à frente)
 	const SPAN := 2600.0
 
@@ -546,12 +579,19 @@ class Foreground extends Node2D:
 		position.x = cx * (1.0 - SPEED)
 		queue_redraw()
 
+	## Entulho à frente da câmera: posição, tamanho e espelho por tela.
 	func _ready() -> void:
-		for x in [-300.0,560.0,1390.0,2190.0,3060.0]:
-			var rubble := PaintedLibrary.sprite(3,72.0)
-			rubble.position = Vector2(x,428)
-			rubble.modulate = Color(0.20,0.26,0.30,0.85)
+		if rng == null:
+			rng = RandomNumberGenerator.new()
+		var x: float = -300.0 + rng.randf_range(0.0, 400.0)
+		while x < 3200.0:
+			var rubble := PaintedLibrary.sprite(3, rng.randf_range(56.0, 88.0))
+			rubble.position = Vector2(x, 428)
+			rubble.modulate = Color(0.20, 0.26, 0.30, 0.85)
+			if rng.randf() < 0.5:
+				rubble.scale.x = -rubble.scale.x
 			add_child(rubble)
+			x += rng.randf_range(620.0, 1050.0)
 
 
 # --- vinheta (CanvasLayer abaixo do HUD) ------------------------------------------

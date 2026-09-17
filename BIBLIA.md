@@ -4,7 +4,7 @@
 > É o mapa mestre. Detalhes profundos ficam nos docs apontados. O código sempre
 > manda; se algo aqui divergir, corrija este arquivo.
 
-> **CÓPIA CODEX — 17/09/2026.** Trabalhar somente nesta pasta Gnosis-Codex.
+> **CÓPIA CODEX — 17/09/2026.** Trabalhar somente nesta pasta `Gnosis-Codex - Copia`.
 > João autorizou novas ilustrações, recursos e shaders nesta sessão. Nesta cópia,
 > a arte ativa está em assets/painted e PaintedLibrary; instruções históricas
 > limitando PNG ao Rei ou mandando restaurar o antigo rig não se aplicam à
@@ -14,7 +14,8 @@
 
 ## 0. Contexto do trabalho
 
-- **Projeto:** `C:\Users\jmtat\OneDrive\Desktop\Gnosis-Codex` (cópia isolada).
+- **Projeto:** `C:\Users\jmtat\OneDrive\Desktop\Gnosis-Codex - Copia` (cópia
+  isolada; pasta renomeada em 17/09/2026 — o Claude trabalha aqui).
   **Repositório git local** independente desde 2026-09-16 (branch `codex/despertar`). Commite ao fechar
   cada passo validado; o OneDrive NÃO é controle de versão.
 - **Usuário:** orquestra e decide; NÃO é programador nem designer. Fala português.

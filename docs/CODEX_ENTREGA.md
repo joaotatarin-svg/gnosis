@@ -126,7 +126,7 @@ O ateliê não grava alterações na campanha. Não há dependências externas n
 
 ## Isolamento
 - Original preservado: C:\Users\jmtat\OneDrive\Desktop\Gnosis.
-- Entrega: C:\Users\jmtat\OneDrive\Desktop\Gnosis-Codex.
+- Entrega: C:\Users\jmtat\OneDrive\Desktop\Gnosis-Codex - Copia (pasta de trabalho atual).
 - Branch própria: codex/despertar; user:// personalizado: GNOSIS-Codex.
 - O desafio restaura o checkpoint anterior em memória ao sair.
 - Os lançadores usam sua própria pasta. A cópia de trabalho isolada do Codex

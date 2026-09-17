@@ -1,4 +1,4 @@
-> **CÓPIA CODEX — 17/09/2026.** Trabalhar somente nesta pasta Gnosis-Codex.
+> **CÓPIA CODEX — 17/09/2026.** Trabalhar somente nesta pasta `Gnosis-Codex - Copia`.
 > João autorizou novas ilustrações, recursos e shaders nesta sessão. Nesta cópia,
 > a arte ativa está em assets/painted e PaintedLibrary; instruções históricas
 > limitando PNG ao Rei ou mandando restaurar o antigo rig não se aplicam à
