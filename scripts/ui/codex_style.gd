@@ -44,6 +44,10 @@ static func button(parent: Node, text: String, pos: Vector2, width: float, actio
 		box.set_content_margin_all(5)
 		b.add_theme_stylebox_override(state, box)
 	b.pressed.connect(action)
+	# Som de interface: clique ao apertar, tique ao mover o foco/passar o mouse.
+	b.pressed.connect(func(): Audio.play_sfx("ui_click"))
+	b.focus_entered.connect(func(): Audio.play_sfx("ui_move"))
+	b.mouse_entered.connect(func(): Audio.play_sfx("ui_move"))
 	parent.add_child(b)
 	return b
 

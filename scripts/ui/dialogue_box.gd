@@ -109,6 +109,7 @@ func _show_choices() -> void:
 
 
 func _on_choice(i: int) -> void:
+	Audio.play_sfx("ui_choice")
 	choice_made.emit(i)
 	_finish()
 
@@ -124,5 +125,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("attack_light") or event.is_action_pressed("jump") or event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled()
+		Audio.play_sfx("ui_advance")
 		idx += 1
 		_show_line()

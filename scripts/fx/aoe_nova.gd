@@ -24,6 +24,8 @@ static func spawn(parent: Node, pos: Vector2, dmg: int, rad: float, col: Color) 
 
 func _ready() -> void:
 	Juice.shake(0.45)
+	if damage > 0:        # ondas puramente visuais ficam mudas (quem as cria tem som próprio)
+		Audio.play_sfx("nova")
 
 
 func _process(delta: float) -> void:

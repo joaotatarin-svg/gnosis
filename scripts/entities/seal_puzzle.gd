@@ -44,9 +44,11 @@ func _on_struck(index: int) -> void:
 		if step >= 3:
 			_solve()
 		else:
+			Audio.play_sfx("seal_right")
 			_update_glow()
 	else:
 		# errou: reseta com flash vermelho em todos
+		Audio.play_sfx("seal_wrong")
 		step = 0
 		for pil in pillars:
 			pil.flash_error()
@@ -55,6 +57,7 @@ func _on_struck(index: int) -> void:
 
 func _solve() -> void:
 	solved = true
+	Audio.play_sfx("seal_solved")
 	for pil in pillars:
 		pil.set_state("locked")
 	var gold := Color(1.0, 0.9, 0.5)

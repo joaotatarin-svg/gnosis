@@ -38,6 +38,7 @@ func _on_body_entered(body: Node) -> void:
 	if awake or not body.is_in_group("player"):
 		return
 	awake = true
+	Audio.play_sfx("sleeper_wake")
 	queue_redraw()
 	Progression.sleepers_freed += 1
 	Progression.add_orbs(10 + screen)
