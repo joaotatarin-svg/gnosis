@@ -16,7 +16,9 @@ func _ready() -> void:
 	rect.size = Vector2(44, 96)
 	shape.shape = rect
 	shape.position = Vector2(0, -44)
-	add_child(shape)
+	# A fenda nasce dentro de um callback de física (inimigo morrendo) — adiar
+	# a forma evita o erro "can't change this state while flushing queries".
+	add_child.call_deferred(shape)
 	body_entered.connect(func(b):
 		if b.is_in_group("player"):
 			Audio.play_sfx("portal_enter")
