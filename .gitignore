@@ -6,3 +6,7 @@ export.cfg
 *.tmp
 # Capturas da IA (tools/shot.gd) — descartáveis
 /shots/
+
+/shots/
+/installer/Output/
+/.claude/

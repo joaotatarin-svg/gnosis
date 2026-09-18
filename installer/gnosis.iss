@@ -4,7 +4,9 @@
 ; Saída: installer/Output/GNOSIS-Setup-0.1.0.exe
 
 #define AppName "GNOSIS"
-#define AppVersion "0.1.0"
+#ifndef AppVersion
+#define AppVersion "1.0.0"
+#endif
 #define AppPublisher "Estudio Jogo"
 #define AppExe "GNOSIS.exe"
 
@@ -21,6 +23,7 @@ Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayIcon={app}\{#AppExe}
+SetupIconFile=..\assets\icon_gnosis.ico
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
