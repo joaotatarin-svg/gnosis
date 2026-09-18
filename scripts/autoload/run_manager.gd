@@ -1,21 +1,26 @@
 extends Node
-## Estrutura do "run" — o ARCO DOS ANÉIS em 54 telas:
+## Estrutura do "run" — o ARCO DOS ANÉIS em 68 telas:
 ##   1        = O Rei (chefe-tutorial; a Voz o apresenta como amigo)
-##   2..50    = os 7 Éons (7 telas cada); o Arconte fecha o Éon em 8,15,22,29,36,43,50
-##   50       = ao cair o 7º Arconte, o Rei rouba os 7 Anéis e a Voz se revela (cutscene)
-##   51..53   = o Centro: ecos rápidos dos Arcontes devolvem os cacos de memória
-##   54       = a Mente: batalha dupla (Rei + Colosso) — as duas formas caem juntas
-## O HP do herói é carregado entre telas. Autoload acessível como `RunManager`.
+##   2..64    = os 7 Éons (9 telas cada); o Arconte fecha o Éon em 10,19,...,64
+##              Dentro do Éon (offset 0..8): chegada · travessia · travessia ·
+##              travessia · DESAFIO (Campeão + santuário) · travessia · travessia ·
+##              antessala (2 waves pesadas) · ARCONTE.
+##   64       = ao cair o 7º Arconte, o Rei rouba os 7 Anéis e a Voz se revela (cutscene)
+##   65..67   = o Centro: ecos rápidos dos Arcontes devolvem os cacos de memória
+##   68       = a Mente: batalha dupla (Rei + Colosso) — as duas formas caem juntas
+## Cada tela é uma TRAVESSIA com 1–3 ZONAS de combate (ver Level): o jogador
+## anda, a zona tranca, as waves nascem, limpou → segue. O HP do herói é
+## carregado entre telas. Autoload acessível como `RunManager`.
 
 signal screen_changed(screen: int)
 
-const MAX_SCREEN := 54
 const KING_SCREEN := 1
-const EON_LEN := 7            # telas por Éon
+const EON_LEN := 9            # telas por Éon
 const FIRST_EON_SCREEN := 2
-const LAST_ARCHON_SCREEN := 50
-const CENTER_FIRST := 51
-const CENTER_LAST := 53
+const LAST_ARCHON_SCREEN := FIRST_EON_SCREEN + 7 * EON_LEN - 1   # 64
+const CENTER_FIRST := LAST_ARCHON_SCREEN + 1                      # 65
+const CENTER_LAST := CENTER_FIRST + 2                             # 67
+const MAX_SCREEN := CENTER_LAST + 1                               # 68
 
 const EON_NAMES := ["Torpor", "Fome", "Corrente", "Silêncio", "Espelho", "Praga", "Coroa"]
 
@@ -48,7 +53,7 @@ func end_run() -> void:
 # --- checkpoints / continuar -------------------------------------------------
 
 ## Onde a morte te devolve: início do trecho atual. Limiar → 1 · Éon → primeira
-## tela do Éon (2, 9, ..., 44) · Centro → 51 · Mente → 54.
+## tela do Éon (2, 11, ..., 56) · Centro → 65 · Mente → 68.
 func checkpoint_for(screen: int) -> int:
 	if screen <= KING_SCREEN:
 		return KING_SCREEN
@@ -148,9 +153,9 @@ func is_king_screen(screen: int) -> bool:
 	return screen == KING_SCREEN
 
 
-## Tela do Arconte de um Éon (8, 15, ..., 50).
+## Tela do Arconte de um Éon (10, 19, ..., 64) — o último offset do Éon.
 func is_archon_screen(screen: int) -> bool:
-	return screen >= FIRST_EON_SCREEN and screen <= LAST_ARCHON_SCREEN and (screen - 1) % EON_LEN == 0
+	return eon_offset(screen) == EON_LEN - 1
 
 
 func is_theft_screen(screen: int) -> bool:
@@ -185,7 +190,41 @@ func eon_index(screen: int) -> int:
 func archon_number(screen: int) -> int:
 	if not is_archon_screen(screen):
 		return 0
-	return (screen - 1) / EON_LEN
+	return eon_index(screen) + 1
+
+
+## Posição da tela dentro do Éon (0..EON_LEN-1); -1 fora dos Éons.
+func eon_offset(screen: int) -> int:
+	if screen < FIRST_EON_SCREEN or screen > LAST_ARCHON_SCREEN:
+		return -1
+	return (screen - FIRST_EON_SCREEN) % EON_LEN
+
+
+## Papel da tela no arco: "king" (1) · "arrival" (chegada ao Éon) · "travel"
+## (travessia) · "trial" (o DESAFIO do Éon: Campeão + santuário) ·
+## "antechamber" (antessala do Arconte) · "archon" · "center" · "final".
+func screen_role(screen: int) -> String:
+	if screen <= KING_SCREEN:
+		return "king"
+	if screen >= MAX_SCREEN:
+		return "final"
+	if is_center(screen):
+		return "center"
+	match eon_offset(screen):
+		0: return "arrival"
+		4: return "trial"
+		7: return "antechamber"
+		8: return "archon"
+	return "travel"
+
+
+## Quantas ZONAS de combate a tela tem (cada zona = um bolsão de waves).
+## Travessia alterna 3 e 2 pela paridade da tela (par = 3).
+func zone_count(screen: int) -> int:
+	match screen_role(screen):
+		"arrival": return 2
+		"travel": return 3 if screen % 2 == 0 else 2
+	return 1
 
 
 func eon_name(screen: int) -> String:
@@ -200,7 +239,7 @@ func eon_name(screen: int) -> String:
 
 ## Primeira tela de um Éon (pra tocar a introdução narrada).
 func is_eon_start(screen: int) -> bool:
-	return screen >= FIRST_EON_SCREEN and screen <= LAST_ARCHON_SCREEN and (screen - FIRST_EON_SCREEN) % EON_LEN == 0
+	return eon_offset(screen) == 0
 
 
 func boss_id_for(screen: int) -> String:
@@ -214,30 +253,62 @@ func boss_id_for(screen: int) -> String:
 	return Bestiary.bosses[clampi(n - 1, 0, Bestiary.bosses.size() - 1)].id
 
 
-## Plano de waves da tela: array de waves; cada wave = array de type_ids.
-func wave_plan(screen: int) -> Array:
-	if is_final(screen):
-		return []                       # a batalha final tem controlador próprio
-	if is_boss_screen(screen):
-		return [[boss_id_for(screen)]]
-	if is_center(screen):
+## Plano da tela: lista de ZONAS; cada zona = lista de WAVES; cada wave =
+## lista de type_ids. Determinístico: mesma tela = mesmo plano.
+##  - arrival/travel: 1–2 waves por zona (1 nos Éons 0–1, 2 a partir do Éon 2;
+##    a última zona da tela sempre com 2), 3 inimigos por wave.
+##  - trial: 1 zona, 2 waves: [bot, aliado, aliado] e [aliado, bot=CAMPEÃO].
+##  - antechamber: 1 zona, 2 waves pesadas (4 inimigos, com o bot do Éon).
+##  - king/archon: [[[chefe]]] · center: ecos · final: [] (controlador próprio).
+func zone_plan(screen: int) -> Array:
+	var role := screen_role(screen)
+	if role == "final":
+		return []
+	if role == "king" or role == "archon":
+		return [[[boss_id_for(screen)]]]
+	if role == "center":
 		# Ecos rápidos dos Arcontes (2 por tela) + larvas de interferência.
 		var k := (screen - CENTER_FIRST) * 2
 		var a: String = "eco_" + Bestiary.bosses[mini(k, Bestiary.bosses.size() - 1)].id
 		var b: String = "eco_" + Bestiary.bosses[mini(k + 1, Bestiary.bosses.size() - 1)].id
-		return [["larva", a, "larva"], ["larva_ardente", b, "larva"]]
+		return [[["larva", a, "larva"], ["larva_ardente", b, "larva"]]]
+	var eon := eon_index(screen)
+	var bot: String = Bestiary.EON_BOTS[clampi(eon, 0, Bestiary.EON_BOTS.size() - 1)]
 	var ids: Array = Bestiary.types_for_screen(screen)
 	if ids.is_empty():
 		ids = ["servo"]
-	var waves: Array = []
-	# r2: teto de 4 waves (5 waves de 3 + elite virava pântano no fim do run).
-	var wave_count := clampi(2 + int(screen / 14), 2, 4)
-	for w in wave_count:
-		var wave: Array = []
-		for i in 3:
-			wave.append(ids[(w * 3 + i + screen) % ids.size()])
-		waves.append(wave)
-	return waves
+	# Aliados = o pool sem o bot (o bot entra explicitamente onde a regra pede).
+	var allies: Array = ids.filter(func(id): return id != bot)
+	if allies.is_empty():
+		allies = ["servo"]
+	if role == "trial":
+		var a1: String = allies[screen % allies.size()]
+		var a2: String = allies[(screen + 1) % allies.size()]
+		var a3: String = allies[(screen + 2) % allies.size()]
+		return [[[bot, a1, a2], [a3, bot]]]
+	if role == "antechamber":
+		var zone: Array = []
+		for w in 2:
+			var wave: Array = [bot]
+			for i in 3:
+				wave.append(allies[(w * 3 + i + screen) % allies.size()])
+			zone.append(wave)
+		return [zone]
+	# arrival / travel
+	var zones: Array = []
+	var n := zone_count(screen)
+	for z in n:
+		var waves_here := 1 if eon <= 1 else 2
+		if z == n - 1:
+			waves_here = 2
+		var zone: Array = []
+		for w in waves_here:
+			var wave: Array = []
+			for i in 3:
+				wave.append(ids[(z * 7 + w * 3 + i + screen) % ids.size()])
+			zone.append(wave)
+		zones.append(zone)
+	return zones
 
 
 ## Guarda o HP com uma cura leve entre telas (+15% do máximo).

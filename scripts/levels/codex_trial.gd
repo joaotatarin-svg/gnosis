@@ -10,7 +10,7 @@ func _ready() -> void:
 	if not CodexSession.active:
 		CodexSession.start_demo()
 		return
-	screen = 2 + CodexSession.boss_index * 7
+	screen = RunManager.FIRST_EON_SCREEN + CodexSession.boss_index * RunManager.EON_LEN
 	GameManager.current_screen = screen
 	GameManager.set_state(GameManager.State.PLAYING)
 	player.died.connect(_on_player_died)
@@ -56,9 +56,9 @@ func _process(delta: float) -> void:
 		phase_label.text = "DESAFIO  %d / 3   ·   %02d:%02d" % [CodexSession.stage + 1, int(CodexSession.elapsed) / 60, int(CodexSession.elapsed) % 60]
 
 func _start_wave() -> void:
-	GameManager.current_screen = 2
+	GameManager.current_screen = RunManager.FIRST_EON_SCREEN
 	if CodexSession.stage == 2:
-		screen = 8 + CodexSession.boss_index * 7
+		screen = RunManager.FIRST_EON_SCREEN + CodexSession.boss_index * RunManager.EON_LEN + RunManager.EON_LEN - 1
 	super._start_wave()
 	# Os números da campanha permanecem intactos. O desafio usa o início da curva.
 	for e in get_tree().get_nodes_in_group("enemy"):

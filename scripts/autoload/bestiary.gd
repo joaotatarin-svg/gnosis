@@ -3,7 +3,7 @@ extends Node
 ## Autoload acessível como `Bestiary`.
 ##
 ## Balanceamento determinístico: os stats de um inimigo dependem SÓ do tipo e do
-## número da tela. Inimigo da tela 1 sempre tem a mesma vida; na tela 50, o
+## número da tela. Inimigo da tela 1 sempre tem a mesma vida; na tela 64, o
 ## mesmo tipo tem o boost fixo daquela tela. Nada aleatório.
 
 var wave_types: Array = []   # inimigos comuns (waves)
@@ -21,16 +21,22 @@ func _ready() -> void:
 	_build()
 
 
-## Multiplicador fixo por tela (+3% por tela). Tela 1 = 1.0, tela 50 ≈ 2.47.
-## Vida dos inimigos: +2%/tela. (r2 2026-09-11: 3% em vida E dano virava
-## pântano no fim — tela 50 tinha 2.5x de tudo e o combate arrastava.)
+## Progresso do run (0 na tela 1, 1 na tela do 7º Arconte, até 1.15 no fim).
+## Normalizado pelo mapa: mudar o número de telas NÃO muda os valores finais.
+func run_progress(screen: int) -> float:
+	var span := float(maxi(1, RunManager.LAST_ARCHON_SCREEN - 1))
+	return clampf(float(screen - 1) / span, 0.0, 1.15)
+
+
+## Vida dos inimigos: cresce até ≈1.98x na tela do 7º Arconte (r2 2026-09-11:
+## +3% em vida E dano virava pântano no fim — o combate arrastava).
 func screen_multiplier(screen: int) -> float:
-	return 1.0 + maxf(0.0, float(screen - 1)) * 0.02
+	return 1.0 + run_progress(screen) * 0.98
 
 
-## Dano dos inimigos: +1.2%/tela (cresce mais devagar que a vida).
+## Dano dos inimigos: cresce mais devagar que a vida (≈1.59x no 7º Arconte).
 func damage_multiplier(screen: int) -> float:
-	return 1.0 + maxf(0.0, float(screen - 1)) * 0.012
+	return 1.0 + run_progress(screen) * 0.588
 
 
 func is_boss_id(id: String) -> bool:
@@ -63,11 +69,19 @@ func get_type(id: String) -> Dictionary:
 
 ## Quais tipos de wave aparecem numa dada tela: pool por tier de dificuldade +
 ## o bot temático do Éon (com peso dobrado, pra dar cara ao ato).
+## Em run, o tier vem do ÉON (0 → 1 · 1–2 → 2 · 3–4 → 3 · 5+ → 4); fora de run
+## (cenas de teste) vale a regra antiga por número de tela.
 func types_for_screen(screen: int) -> Array:
 	var max_tier := 1
-	if screen >= 13: max_tier = 2
-	if screen >= 26: max_tier = 3
-	if screen >= 41: max_tier = 4
+	if RunManager.run_active:
+		var e := RunManager.eon_index(screen)
+		if e >= 1: max_tier = 2
+		if e >= 3: max_tier = 3
+		if e >= 5: max_tier = 4
+	else:
+		if screen >= 13: max_tier = 2
+		if screen >= 26: max_tier = 3
+		if screen >= 41: max_tier = 4
 	var ids: Array = []
 	for t in wave_types:
 		if t.tier <= max_tier:
@@ -162,7 +176,7 @@ func _build() -> void:
 	var C := ArtProfile.Body.COLOSSUS
 
 	wave_types = [
-		# Tier 1 (telas 1–12)
+		# Tier 1 (Éon 0 / telas 1–12 fora de run)
 		_wt("larva", "Larva do Kenoma", 1, 18, 5, 55.0, 4,
 			_profile(W, 38, Color(0.55, 0.75, 0.55), Color(0.2, 0.3, 0.22), Color(0.7, 1, 0.7), [])),
 		_wt("sombra", "Sombra Errante", 1, 22, 6, 95.0, 5,
@@ -172,7 +186,7 @@ func _build() -> void:
 		# Larva Ardente: corre até você e EXPLODE (imparável — ensina a esquivar).
 		_wt("larva_ardente", "Larva Ardente", 1, 16, 14, 82.0, 5,
 			_profile(W, 36, Color(0.85, 0.45, 0.25), Color(0.4, 0.15, 0.08), Color(1, 0.75, 0.4), []), "melee", "", "exploder"),
-		# Tier 2 (telas 13–25)
+		# Tier 2 (Éons 1–2)
 		_wt("espinho", "Guardião Espinhoso", 2, 55, 10, 60.0, 10,
 			_profile(B, 56, Color(0.7, 0.28, 0.26), Color(0.35, 0.14, 0.13), Color(1, 0.7, 0.3), ["spikes"]), "slam"),
 		_wt("canino", "Besta Canina", 2, 45, 9, 110.0, 9,
@@ -182,7 +196,7 @@ func _build() -> void:
 		# Escudeiro: golpe leve bate no escudo; só pesado ou magia ferem.
 		_wt("escudeiro", "Escudeiro do Selo", 2, 60, 10, 70.0, 11,
 			_profile(H, 50, Color(0.42, 0.45, 0.58), Color(0.7, 0.62, 0.4), Color(1, 0.85, 0.5), ["shield", "helmet"]), "melee", "", "shield"),
-		# Tier 3 (telas 26–40)
+		# Tier 3 (Éons 3–4)
 		_wt("alado", "Vigia Alado", 3, 52, 11, 95.0, 12,
 			_profile(W, 50, Color(0.32, 0.3, 0.5), Color(0.2, 0.18, 0.32), Color(0.6, 0.7, 1), ["wings"]), "ranged"),
 		_wt("bruto", "Bruto de Ferro", 3, 90, 13, 55.0, 16,
@@ -195,7 +209,7 @@ func _build() -> void:
 		# Invocador: mantém distância, atira e chama larvas.
 		_wt("invocador", "Invocador de Larvas", 3, 65, 10, 60.0, 16,
 			_profile(H, 52, Color(0.36, 0.5, 0.4), Color(0.2, 0.3, 0.22), Color(0.7, 1, 0.6), ["staff", "horns"]), "ranged", "", "summoner"),
-		# Tier 4 (telas 41–50)
+		# Tier 4 (Éons 5–6)
 		_wt("aberracao", "Aberração do Vazio", 4, 80, 13, 100.0, 18,
 			_profile(A, 48, Color(0.4, 0.5, 0.4), Color(0.2, 0.28, 0.2), Color(0.7, 1, 0.6), ["spikes", "tail", "claws"]), "charge"),
 
