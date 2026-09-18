@@ -8,6 +8,11 @@ var _hitstop_active := false
 var _base_scale := 1.0          # escala "de fundo" (speed_mult ou a do slow-mo ativo)
 var _slow_token := 0
 
+## Preferências do jogador (Opções): intensidade do tremor de câmera (0..1) e
+## vibração do controle ligada/desligada. O menu de opções grava aqui.
+var shake_mult := 1.0
+var rumble_enabled := true
+
 ## Velocidade global do jogo (1.0 normal; >1 só em ferramentas — bot de balance).
 var speed_mult := 1.0:
 	set(v):
@@ -48,12 +53,16 @@ func slow_mo(scale: float = 0.25, duration: float = 0.6) -> void:
 
 ## Pede tremor de câmera (a Camera2D com camera_shake.gd escuta).
 func shake(trauma: float = 0.4) -> void:
-	shake_requested.emit(trauma)
+	if shake_mult <= 0.001:
+		return
+	shake_requested.emit(trauma * shake_mult)
 
 
 ## Vibração do controle (Xbox/DualShock/genérico com rumble). Curta e discreta —
 ## só nos momentos que o corpo sente: dano, parry, esquiva perfeita, chefe caindo.
 ## weak = motor fino (agudo) · strong = motor grosso (grave) · dur em segundos.
 func rumble(weak: float, strong: float, dur: float) -> void:
+	if not rumble_enabled:
+		return
 	for dev in Input.get_connected_joypads():
 		Input.start_joy_vibration(dev, weak, strong, dur)
