@@ -12,7 +12,7 @@ func _ready() -> void:
 	add_child(layer)
 	_fade = ColorRect.new()
 	_fade.color = Color("0a151c")
-	_fade.anchors_preset = Control.PRESET_FULL_RECT
+	_fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)   # por código, anchors_preset não aplica
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fade.modulate.a = 0.0
 	layer.add_child(_fade)

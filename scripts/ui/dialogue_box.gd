@@ -35,7 +35,9 @@ func _ready() -> void:
 
 	var panel := PanelContainer.new()
 	panel.theme = CodexStyle.theme()
-	panel.anchors_preset = Control.PRESET_BOTTOM_WIDE
+	# `anchors_preset` por código NÃO aplica as âncoras (só no editor) — o painel
+	# encolhia pra largura do conteúdo e o texto quebrava palavra por palavra.
+	panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	panel.offset_left = 60
 	panel.offset_right = -60
 	panel.offset_top = -130

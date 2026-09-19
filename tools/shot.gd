@@ -29,6 +29,8 @@ func _ready() -> void:
 		w.clear = true
 	if args.size() >= 4 and args[3] == "die":
 		w.die = true
+	if args.size() >= 4 and args[3] == "dialog":
+		w.keep_dialog = true
 	if args.size() >= 4 and args[3] == "wave":
 		w.wave = true
 	get_tree().root.add_child.call_deferred(w)
@@ -41,6 +43,7 @@ class ShotWorker extends Node:
 	var frames: int = 90
 	var hurt: bool = false
 	var kill: bool = false          # na metade: mata os inimigos comuns com golpe pesado (vê desmembramento)
+	var keep_dialog: bool = false   # não pula diálogos (pra fotografar a caixa)
 	var clear: bool = false         # a cada terço: mata TUDO e anda até a próxima zona/portal (fluxo da travessia)
 	var die: bool = false           # na metade: MATA A SOPHIA (testa checkpoint/renascimento)
 	var wave: bool = false          # na metade: mata a wave viva uma vez (vê a próxima)
@@ -72,12 +75,15 @@ class ShotWorker extends Node:
 		var had_dialog := false
 		for c in get_tree().root.get_children():
 			if c is DialogueBox:
+				if keep_dialog:
+					had_dialog = true
+					break
 				if c.choices.size() > 0:
 					c._on_choice(0)     # escolha padrão (ex.: "Recusar")
 				else:
 					c._finish()
 				had_dialog = true
-		if had_dialog:
+		if had_dialog and not keep_dialog:
 			return                      # conta frames só sem diálogo na tela
 		_count += 1
 		if hurt and not _hurt_done and _count >= frames / 2:
