@@ -317,3 +317,247 @@ func apply_ending(index: int) -> void:
 			GameManager.end_subtitle = "Recusaste o trono e a porta. Desceste de volta, de faísca em faísca,\nacordando um por um. Sem apocalipse, sem prisão: liberdade lenta — a única que dura."
 	if ending != "" and not RunManager.endings_seen.has(ending):
 		RunManager.endings_seen.append(ending)
+
+
+# --- CONVERSA DE CAMINHADA (legendas sem pausar — ver Gnosis/CaptionBar) --------
+## A Voz comenta cada Éon com o viés DELA (o Pleroma abandonou as faíscas, a Luz
+## de cima não olha pra baixo, "eu fiquei"); a Sophia responde a si mesma e as
+## dúvidas crescem Éon a Éon, alimentadas pelas Estelas (que dão a versão do
+## Pleroma). REGRA DE OURO mantida: nada aqui entrega a virada antes da 64.
+## Cada fala é um {speaker, text}; `Gnosis` garante que nenhuma repete no run.
+
+## Chegada à tela (após os diálogos de entrada). 1–2 falas.
+func walk_arrival(screen: int) -> Array:
+	var role := RunManager.screen_role(screen)
+	if role == "king":
+		return [
+			_l(VOZ, "As cinzas ainda estão quentes. Anda — a névoa não espera por ninguém."),
+			_l("Sophia", "(uma pedra escrita, ali atrás. Alguém deixou palavras pra quem acordasse.)"),
+		]
+	if role == "final":
+		return [_l("Sophia", "Dentro dele. Ele é grande demais pra alguém tão pequeno.")]
+	if role == "center":
+		match screen - RunManager.CENTER_FIRST:
+			0: return [_l("Sophia", "Sem voz. Sem Anéis. Só eu e os ecos dele.")]
+			1: return [_l("Sophia", "Os ecos têm o rosto dos Arcontes. Mas se movem como ele.")]
+			_: return [_l("Sophia", "Cada eco quebrado me devolve um caco. Estou me remontando de dentro pra fora.")]
+	var off := RunManager.eon_offset(screen)
+	var pool: Array = _arrival_pool(RunManager.eon_index(screen))
+	if off < 0 or off >= pool.size():
+		return []
+	return pool[off]
+
+
+## Zona limpa. 1 fala (a última zona das telas de chefe fica com o diálogo).
+func walk_cleared(screen: int, zone: int) -> Array:
+	var role := RunManager.screen_role(screen)
+	if role in ["king", "archon", "final"]:
+		return []
+	if role == "center":
+		var c := [
+			_l("Sophia", "Um caco a mais. Eu lembro do quarto branco. Era o berçário dele."),
+			_l("Sophia", "Ele me chamou de chave. Chaves abrem. Ele esqueceu que abrem dos dois lados."),
+			_l("Sophia", "Os ecos não gritam quando caem. Choram."),
+		]
+		return [c[(screen - RunManager.CENTER_FIRST) % c.size()]]
+	var pool: Array = _cleared_pool(RunManager.eon_index(screen))
+	if pool.is_empty():
+		return []
+	# Determinístico por tela+zona, varrendo o pool inteiro ao longo do Éon.
+	var k := (RunManager.eon_offset(screen) * 3 + zone) % pool.size()
+	return [pool[k]]
+
+
+## Falas de chegada por Éon, indexadas pelo offset da tela (0..8).
+func _arrival_pool(eon: int) -> Array:
+	match eon:
+		0: return [
+			[_l("Sophia", "Eles dormem de pé. Ninguém aqui sabe que a cidade acabou.")],
+			[_l(VOZ, "Vês? Os que dormem não sofrem. Quem acorda, sim. Mas só quem acorda sobe.")],
+			[_l("Sophia", "A pedra dizia que antes de tudo havia um Silêncio inteiro. Por que isso me parece... uma lembrança?")],
+			[_l(VOZ, "Não confies demais nas pedras. Quem as escreveu já não está aqui pra explicar.")],
+			[_l(VOZ, "O Campeão de Athoth guarda o santuário. Acorda-o a golpes.")],
+			[_l("Sophia", "Se o Pleroma é tão cheio, por que ninguém de lá veio buscar os que dormem?"),
+			 _l(VOZ, "Porque a Luz de cima não olha pra baixo. Eu olho.")],
+			[_l(VOZ, "Sente a névoa? É o bafo de Athoth. Ela quer que tu deites.")],
+			[_l(VOZ, "A antessala. Atrás dela, o primeiro trono. Não deites. Nunca deites.")],
+			[_l("Sophia", "Um trono num quarto de sonho. Ele nem abriu os olhos.")],
+		]
+		1: return [
+			[_l("Sophia", "Mercados. Cheiro de pão. Ninguém come — todos mastigam.")],
+			[_l(VOZ, "A hyle, a matéria bruta, tem fome de tudo que brilha. Tu brilhas. Cuidado.")],
+			[_l("Sophia", "As pedras chamam este lugar de Kenoma: o vazio. Mas está cheio até a borda."),
+			 _l(VOZ, "Cheio de falta. É o que 'vazio' quer dizer.")],
+			[_l(VOZ, "Harmas cobra por cada lembrança. Não compres nada. Nem a saudade.")],
+			[_l(VOZ, "O Glutão-campeão come o que mata. Não morras perto dele.")],
+			[_l("Sophia", "Se o Cego fez este mundo por engano, quem deixou o engano durar?"),
+			 _l(VOZ, "Os de cima. Eles chamam isso de paciência.")],
+			[_l(VOZ, "Soter anda por aqui. Não o escutes demais — ele fala bonito e não luta.")],
+			[_l(VOZ, "A boca do trono já está aberta. Entra com a lâmina na frente.")],
+			[_l("Sophia", "Ele tem um mercado inteiro na barriga. E ainda olha pra mim com fome.")],
+		]
+		2: return [
+			[_l("Sophia", "Selos por toda parte. Cada porta tem um cadeado e cada cadeado, um nome.")],
+			[_l(VOZ, "Heimarmene, os antigos chamavam. O destino como corrente. Aqui, é literal.")],
+			[_l("Sophia", "A pedra diz que os astros são os elos. Sete elos, sete céus, sete Arcontes."),
+			 _l(VOZ, "E tu já partiste dois. Continua.")],
+			[_l(VOZ, "Galila não te odeia. Ele te classifica. É pior.")],
+			[_l(VOZ, "O Carcereiro-campeão prende primeiro, pergunta depois. A esquiva quebra a corrente.")],
+			[_l("Sophia", "Se a lei daqui é medo com coroa, quem é o rei?"),
+			 _l(VOZ, "O Cego, no alto. Ninguém mais. Sobe.")],
+			[_l("Sophia", "As pedras dizem que o sopro dentro do barro veio de fora deste mundo. Então eu também vim?"),
+			 _l(VOZ, "Vieste de mim. Eu te achei. Não esqueças a ordem das coisas.")],
+			[_l(VOZ, "Última porta antes do trono. As correntes dele cantam quando têm medo.")],
+			[_l("Sophia", "Um trono feito de elos. Ele se acorrentou a si mesmo pra não cair.")],
+		]
+		3: return [
+			[_l("Sophia", "Livros em branco. Milhares. Alguém apagou uma biblioteca inteira.")],
+			[_l(VOZ, "O Logos — a Palavra — foi calado aqui. Yabel costurou a própria boca pra dar exemplo.")],
+			[_l("Sophia", "As pedras falam de livros enterrados num jarro, achados por acaso. Verdades sobrevivem enterradas."),
+			 _l(VOZ, "Sobrevivem. Não é o mesmo que vencer.")],
+			[_l(VOZ, "Aqui as magias calam. Confia na lâmina, que não precisa falar.")],
+			[_l(VOZ, "O Bibliotecário-campeão cala tudo num raio. Fica longe e bate rápido.")],
+			[_l("Sophia", "O que não é dito... eu tenho ouvido. Uma voz por baixo da tua. Fraca."),
+			 _l(VOZ, "Eco. Este Éon é cheio deles. Ignora.")],
+			[_l("Sophia", "Se lembrar é saber, eu quero lembrar. Mesmo o que dói."),
+			 _l(VOZ, "Lembrar tem hora. Agora é hora de subir.")],
+			[_l(VOZ, "A antessala do Silêncio. Nem eu falo lá dentro. Ouve os passos.")],
+			[_l("Sophia", "Ele não vai falar. E eu vou ter que responder mesmo assim.")],
+		]
+		4: return [
+			[_l("Sophia", "Água parada por toda parte. E em cada poça, eu.")],
+			[_l(VOZ, "A Sabedoria da pedra olhou pra baixo, viu o próprio rosto na água e desceu atrás dele. Não repitas.")],
+			[_l("Sophia", "O nome na pedra é o meu. Sophia."),
+			 _l(VOZ, "É um nome comum. Sabedoria. Metade das mães do Kenoma põe esse nome.")],
+			[_l(VOZ, "Astaphaios te dará o que mais queres: tu, antes de tudo. É o golpe mais cruel.")],
+			[_l(VOZ, "O Reflexo-campeão recua quando bates. Bate onde ele vai estar.")],
+			[_l("Sophia", "Se eu sou o reflexo de alguém... quem está do outro lado do vidro?"),
+			 _l(VOZ, "Ninguém. Vidro é vidro. Anda.")],
+			[_l("Sophia", "A pedra diz que ela se arrependeu treze vezes e cantou. Eu ainda não cantei nenhuma.")],
+			[_l(VOZ, "Última sala antes do vidro grande. Não olhes pra ti mais do que o necessário.")],
+			[_l("Sophia", "Ele tem o meu rosto. A Voz diz que é truque. A Voz diz muita coisa.")],
+		]
+		5: return [
+			[_l("Sophia", "Pântano. As faíscas afundam devagar, como velas.")],
+			[_l(VOZ, "A matéria apodrece. É a única lei que o Cego não escreveu — e a única que o assusta.")],
+			[_l("Sophia", "A pedra diz que o Reino está dentro e fora. Dentro deste pântano?"),
+			 _l(VOZ, "Dentro de ti. Fora daqui. Anda.")],
+			[_l(VOZ, "Belias não mente. Ele só está cansado e acha que o cansaço é a verdade.")],
+			[_l(VOZ, "O Portador-campeão deixa esporos ao morrer. Mata e sai.")],
+			[_l("Sophia", "Um príncipe desceu pra buscar uma pérola e esqueceu de tudo. Até uma carta o lembrar."),
+			 _l(VOZ, "Bonito. Ninguém te mandou carta nenhuma. Tens a mim.")],
+			[_l("Sophia", "Velkar disse que lá em cima não há tirano — há uma criança. Tu nunca me disseste isso."),
+			 _l(VOZ, "Velkar largou a corrente e perdeu o braço. Não é conselheiro de ninguém.")],
+			[_l(VOZ, "Última antessala podre. Depois disso, a Coroa. Aguenta.")],
+			[_l("Sophia", "Ele já está morrendo há eras. Só não deixa ninguém terminar.")],
+		]
+		6: return [
+			[_l("Sophia", "Um trono em cada esquina. Todos vazios. Todos esperando alguém sentar.")],
+			[_l(VOZ, "O último degrau. Armupiel quase tocou o trono do Cego. 'Quase' é a palavra que o define.")],
+			[_l("Sophia", "A pedra fala de um Chamado: uma voz de fora que acorda quem dorme. Foi assim que tu me achaste?"),
+			 _l(VOZ, "Foi. Eu chamei. Tu ouviste. É tudo que importa.")],
+			[_l(VOZ, "Poder é a mais velha das mentiras — e a mais doce. Ele vai te oferecer.")],
+			[_l(VOZ, "O Pretoriano-campeão tem broquel. Pesado ou magia, por trás.")],
+			[_l("Sophia", "As pedras dizem que o corpo é aparência e a faísca é o real. Então o que estou salvando?"),
+			 _l(VOZ, "A faísca. Sempre a faísca. O corpo serve pra subir.")],
+			[_l("Sophia", "Seis Anéis giram na minha mão como se se conhecessem. Como se fossem partes de uma só coisa."),
+			 _l(VOZ, "São. São a chave. Falta o sétimo dente.")],
+			[_l(VOZ, "A antessala da Coroa. Depois dela, o sétimo. E depois... o ritual. Eu prometi te mostrar.")],
+			[_l("Sophia", "Uma coroa alta demais pra cabeça que a carrega. Ele sabe. Por isso grita.")],
+		]
+	return []
+
+
+## Falas de zona limpa por Éon (pool varrido ao longo das telas do Éon).
+func _cleared_pool(eon: int) -> Array:
+	match eon:
+		0: return [
+			_l(VOZ, "Bem. Eles voltam ao chão, e o chão ao sono."),
+			_l("Sophia", "Eles não gritam. Só... deitam. Como se agradecessem."),
+			_l(VOZ, "Cada faísca que soltas fica mais leve. Sente? Elas sobem por ti."),
+			_l("Sophia", "A Voz diz que as faíscas sobem por mim. Sobem pra onde?"),
+			_l(VOZ, "Não pares pra pensar aqui. Pensar, no Torpor, vira cochilo."),
+			_l("Sophia", "Eu lembro de um quarto branco. Não sei de onde."),
+			_l(VOZ, "Anda. O sono deste Éon tem dedos compridos."),
+			_l("Sophia", "(as pedras falam de uma Sabedoria que quis ver a Fonte sozinha. Por que esse nome dói?)"),
+		]
+		1: return [
+			_l(VOZ, "Devorados pelos próprios dentes. A fome sempre acaba assim."),
+			_l("Sophia", "Eles caem com a boca aberta. Ainda com fome."),
+			_l(VOZ, "Mais faíscas. Sente como pesam menos? Estás quase leve."),
+			_l("Sophia", "A pedra disse que os sete foram feitos do Cego, à imagem dele. Se eu derrubar os sete... derrubo o quê?"),
+			_l(VOZ, "Pergunta certa, hora errada. Anda."),
+			_l("Sophia", "Por que tu nunca me dizes o teu nome?"),
+			_l(VOZ, "Um nome aqui vira coleira. Chama-me como sempre: Voz."),
+			_l(VOZ, "Comida, sono, moeda — todas as correntes começam macias."),
+		]
+		2: return [
+			_l(VOZ, "Os selos caem. A ordem deles era só ferrugem."),
+			_l("Sophia", "Eles gritam 'lei' quando morrem. Nenhum diz 'justiça'."),
+			_l(VOZ, "Cada selo quebrado é uma corrente a menos no mundo. Tu és boa nisso."),
+			_l("Sophia", "Boa em quebrar. A Voz nunca me elogia por outra coisa."),
+			_l(VOZ, "Não filosofa com o carcereiro. Ele adora."),
+			_l("Sophia", "Se o destino é corrente, quem segura a outra ponta?"),
+			_l(VOZ, "Anda. Os astros não param de girar por ti."),
+		]
+		3: return [
+			_l("Sophia", "Caem sem som. Como páginas."),
+			_l(VOZ, "Um silêncio a menos. O mundo já parece mais alto."),
+			_l("Sophia", "Há uma pergunta que eu não faço porque tenho medo da resposta."),
+			_l(VOZ, "Então não faças. Perguntas aqui viram tinta em branco."),
+			_l("Sophia", "A pedra dizia: gnose não é fé nem obra. É lembrar. E eu não lembro de nada antes das cinzas."),
+			_l(VOZ, "Lembrarás quando os sete Anéis estiverem juntos. Eu prometo."),
+			_l(VOZ, "Anda. O silêncio gruda nas botas."),
+		]
+		4: return [
+			_l("Sophia", "Quando caem, os cacos mostram um rosto. Nunca o deles."),
+			_l(VOZ, "Não olhes os cacos. Olha o caminho."),
+			_l("Sophia", "A Voz odeia este Éon mais do que os outros. Por quê?"),
+			_l(VOZ, "Porque espelhos mentem melhor do que eu jamais mentiria."),
+			_l("Sophia", "Eu tenho a força dele? Ou ele tem a minha?"),
+			_l(VOZ, "Tu tens a tua. Chega. Sobe."),
+			_l("Sophia", "(no fundo da poça, por um instante: um quarto branco, e alguém pequeno chorando)"),
+		]
+		5: return [
+			_l("Sophia", "Eles apodrecem antes de cair. Já estavam mortos há muito."),
+			_l(VOZ, "A poça some. Boa. Não pises no que ficou."),
+			_l("Sophia", "Quanto do que eu sou é matéria, e quanto é o sopro?"),
+			_l(VOZ, "O sopro. Só ele. O resto é barro emprestado."),
+			_l(VOZ, "Cinco Anéis. Sente como eles puxam pro alto? Estão com pressa."),
+			_l("Sophia", "Os Anéis puxam. Mas não pra cima. Puxam uns pros outros."),
+			_l(VOZ, "Anda. A Praga entra pelos pés quando paras."),
+		]
+		6: return [
+			_l(VOZ, "Coroas caem de mais alto e fazem mais barulho. Só isso."),
+			_l("Sophia", "Eles morrem chamando pelo rei. Nenhum sabe o nome dele."),
+			_l(VOZ, "Quase. Quase, Portadora. Eu sinto os sete a um passo."),
+			_l("Sophia", "A Voz nunca teve tanta pressa. Nunca."),
+			_l("Sophia", "Se a salvação é retorno... eu volto pra onde?"),
+			_l(VOZ, "Pra mim. Pra onde tudo começou. Anda."),
+			_l(VOZ, "Não pares. Nem pra ler. Já sabes o bastante."),
+			_l("Sophia", "(as pedras dizem uma coisa; a Voz, outra. Uma das duas está errada. Ou as duas.)"),
+		]
+	return []
+
+
+# --- EPÍLOGO (cards após o final escolhido — ver Cinematic.epilogue) -----------
+## Textos curtos por final; o título e o subtítulo já estão no GameManager
+## (apply_ending). Cada item vira um card.
+func epilogue_cards(which: String) -> Array:
+	match which:
+		"ascensao": return [
+			"As sete esferas apagaram-se como lamparinas ao amanhecer. Os Arcontes, sem luz para roubar, tornaram-se o que sempre foram: nomes.",
+			"Yaldabaoth voltou para dentro de quem o fez. Não como castigo. Como filho que encontrou o colo.",
+			"No Pleroma ninguém contou esta história. Lá não há passado a contar — só a Plenitude, inteira de novo.",
+		]
+		"ruptura": return [
+			"A coroa pesava menos do que ele dizia. Isso devia ter sido o aviso.",
+			"Os sete tronos foram ocupados por sete cascas novas — ou pelas mesmas, com outros nomes. O Kenoma não percebeu a diferença.",
+			"Um dia alguém acordará entre cinzas e ouvirá uma voz gentil oferecer ajuda. Tu já sabes o que essa voz vai dizer.",
+		]
+		"semente": return [
+			"Não subiu e não sentou. Desceu, tela por tela, batendo à porta dos que dormem.",
+			"Os Arcontes continuam de pé. Mas cada Adormecido acordado é um degrau que eles não controlam.",
+			"É a estrada lenta de Tomé: o Reino espalhado sobre a terra — e cada vez mais gente a vê-lo.",
+		]
+	return ["A faísca lembrou. O resto é silêncio."]

@@ -411,3 +411,31 @@ de diálogo antes de cada chefe.)
 - **Codex/lore** desbloqueável (integrar com a Galeria).
 - Escrever os 7 Éons cena a cena + as falas dos chefes.
 - Amarrar os **finais** às escolhas (falar com Adormecidos, recusar Arcontes).
+
+## 10. GNOSE — o ensino em jogo (feito em 18/09/2026, ver `docs/GNOSE.md`)
+
+Quatro canais, todos em `scripts/autoload/gnosis.gd` e vizinhos:
+
+- **18 Estelas** (pedras escritas nos descansos) contam o mito na ordem dos
+  textos antigos — Mônada · Pleroma e Éons · Sophia e o desejo de ver a Fonte
+  sozinha · o aborto cego (Yaldabaoth/Saklas/Samael) · Kenoma e hyle · os 7
+  Arcontes e as esferas planetárias · o homem de barro e a faísca · gnose como
+  saber-lembrar · Nag Hammadi (1945) e o Apócrifo de João como fontes · Pistis
+  Sophia e os arrependimentos · Valentino e Basílides · Evangelho de Tomé ("o
+  Reino está dentro e fora") · Hino da Pérola · docetismo (sem julgar) ·
+  salvação como retorno. Cada uma casa com o Éon: Torpor = sono/esquecimento,
+  Fome = hyle, Corrente = heimarmene, Silêncio = o Logos calado (e a biblioteca
+  enterrada no jarro), Espelho = o reflexo de Sophia na água, Praga = a matéria
+  que apodrece, Coroa = o trono do Cego. Lidas, viram **Crônicas** (persistem
+  entre runs).
+- **Legendas de caminhada** (~95 falas, sem pausar): a Voz dá a cosmologia
+  com o viés dela ("a Luz de cima não olha pra baixo; eu olho", "vieste de
+  mim", "não confies nas pedras", "não pares pra ler"); a Sophia responde a
+  si mesma e a dúvida cresce Éon a Éon ("o nome na pedra é o meu", "as pedras
+  dizem uma coisa; a Voz, outra"). Regra de ouro preservada: a virada só na 64.
+- **Cinemáticas leves**: prólogo em 6 cards (o mito até "acorda"), card de
+  chefe com letterbox (ATHOTH · Arconte do Torpor · Primeira Esfera, etc.; O
+  REI · Guardião do Limiar; YALDABAOTH · as duas faces), epílogo por final +
+  "Crônicas N/18" + créditos.
+- **Pedagogia pela contradição**: Estelas = versão do Pleroma; Voz = versão
+  do carcereiro. Quem lê as pedras entende a virada antes da Sophia.
