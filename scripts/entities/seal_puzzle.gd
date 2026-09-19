@@ -11,6 +11,7 @@ var order: Array = []
 var step: int = 0
 var solved: bool = false
 var pillars: Array = []
+var _hint: Label
 
 
 func _ready() -> void:
@@ -23,6 +24,23 @@ func _ready() -> void:
 		pil.struck.connect(_on_struck)
 		pillars.append(pil)
 	_update_glow()
+	_build_hint()
+
+
+## Placa acima dos três Selos: sem isto o jogador vê três obeliscos e não
+## entende o que são ("que porra é essa?").
+func _build_hint() -> void:
+	_hint = Label.new()
+	_hint.text = "OS TRÊS SELOS
+golpeie na ordem em que brilham"
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint.add_theme_font_size_override("font_size", 9)
+	_hint.add_theme_color_override("font_color", Color(1.0, 0.9, 0.55, 0.9))
+	_hint.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	_hint.add_theme_constant_override("outline_size", 3)
+	_hint.size = Vector2(220, 30)
+	_hint.position = Vector2(-110, -112)
+	add_child(_hint)
 
 
 func _update_glow() -> void:
@@ -57,6 +75,9 @@ func _on_struck(index: int) -> void:
 
 func _solve() -> void:
 	solved = true
+	if _hint:
+		_hint.text = "selos abertos"
+		_hint.modulate.a = 0.6
 	Audio.play_sfx("seal_solved")
 	for pil in pillars:
 		pil.set_state("locked")

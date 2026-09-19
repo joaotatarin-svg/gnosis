@@ -28,6 +28,7 @@ var waves: Array = []             # waves da zona atual
 var wave_index: int = 0
 var alive: int = 0
 var rest_points: Array = []       # descansos (Vector2) entre as zonas
+var _exited: bool = false          # a fenda já foi atravessada (evita avanço duplo)
 var _end_x: float = 1720.0        # parede fixa da direita
 var _zone_walls: Array = []       # paredes móveis da zona trancada
 var _cam_locked: bool = false     # câmera presa na zona (restaurar ao destrancar)
@@ -459,8 +460,10 @@ func _open_exit() -> void:
 
 
 func _advance_via_exit() -> void:
-	if player and player.health:
-		RunManager.store_health(player.health.current_health, player.health.max_health)
+	if _exited or player == null or player.health == null or player.health.is_dead():
+		return                     # morta não atravessa; e a fenda só avança uma vez
+	_exited = true
+	RunManager.store_health(player.health.current_health, player.health.max_health)
 	RunManager.advance_and_reload()
 
 

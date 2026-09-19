@@ -159,7 +159,10 @@ class ShotWorker extends Node:
 				return
 		for c in lv.get_children():
 			if c is ExitPortal:
-				lv.player.global_position = c.global_position + Vector2(0, -20)
+				# Testa a fenda DE VERDADE: solta a Sophia 100 px antes e ANDA até ela.
+				if lv.player.global_position.distance_to(c.global_position) > 130.0:
+					lv.player.global_position = c.global_position + Vector2(-100, -20)
+				Input.action_press("move_right")
 				return
 		var next: int = lv.zone_index + 1
 		if next < lv.zones.size():

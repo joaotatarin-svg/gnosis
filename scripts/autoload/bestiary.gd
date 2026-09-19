@@ -274,7 +274,7 @@ func _build() -> void:
 	# --- O Demiurgo em suas formas ---
 	# O REI (Ato 1, tela 1): o sacerdote branco mascarado que sai da névoa. Usa o
 	# PNG do Demiurgo (art = "demiurgo"). Tutorial: vida curta, golpes lentos.
-	var rei := _wt("rei", "O Rei", 5, 200, 8, 40.0, 60,
+	var rei := _wt("rei", "O Rei", 5, 320, 12, 40.0, 60,   # 18/09: João achou o duelo fácil (era 200/8)
 		_profile(C, 92, Color(0.85, 0.82, 0.75), Color(0.5, 0.45, 0.3), Color(1, 0.9, 0.6), ["crown", "cape", "aura"]), "ranged", "rei")
 	rei.art = "demiurgo"
 	# O REI enfraquecido (batalha final): a mentira, mais frágil e mais rápida.

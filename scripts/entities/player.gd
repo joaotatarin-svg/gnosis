@@ -690,6 +690,8 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, u
 
 	# Tomou dano.
 	health.take_damage(damage)
+	if health.is_dead():
+		return                     # _on_died já pôs o estado em DEAD — não voltar pra IDLE
 	Audio.play_sfx("player_hurt")
 	Juice.rumble(0.0, 0.6, 0.22)
 	DamageNumber.spawn(get_parent(), global_position, damage, Color(1.0, 0.4, 0.35))
