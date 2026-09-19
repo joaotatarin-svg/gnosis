@@ -115,6 +115,42 @@ sinais entre nós. Balanceamento **determinístico por tela**. Mantém exportáv
 (`res://`). Sem dependências externas.
 
 ## 6. Estado atual (FEITO / FALTA) — atualize sempre
+**SESSÃO CLAUDE — 18/09/2026 (rumo à 1.1.0 "comercializável"):** João reportou
+"tela 3 → chefe → volta ao começo", "curto", "sem história", "não ensina
+gnosticismo". Diagnóstico: ele jogou o **Desafio** (demo de 3 encontros, botão
+principal do menu), não a Campanha. Feito nesta sessão (prompt-mestre em
+`docs/PROMPT_SESSAO_1809.md`), em ondas de agentes integradas na `codex/despertar`:
+- **Onda 0:** 3 branches órfãs da sessão anterior integradas — run de **68
+  telas** (Éons de 9, travessias com 1–3 zonas de combate; `RunManager.zone_plan`,
+  `screen_role`), 64 ganchos de áudio (`audio_manager.gd CATALOG`, música por
+  contexto, crossfade), poses procedurais da Sophia (esquiva/dano/bloqueio/queda).
+- **UX (versão final):** menu Continuar · Nova campanha · Provação (ex-desafio,
+  "treino de 3 encontros") · Ateliê & Bestiário · Crônicas · Opções · Sair;
+  `project.godot` nome "GNOSIS" v1.1.0; pausa com Golpes & Controles
+  (`scripts/ui/moves_screen.gd`: 14 combos, Anéis, tabela teclado/Xbox/DS),
+  Opções (tela cheia, vsync, tremor, vibração, legenda P/M/G → `Juice.shake_mult`,
+  `Juice.rumble_enabled`, `GameManager.caption_font_size()`), HUD por papel
+  (`GameManager.screen_title`: "Torpor · Travessia II" + 9 pontos do Éon), save
+  v2 tolerante, fim de jogo com pintura, Provação avisa que a Campanha tem 68
+  telas. `tools/UxShots.tscn`, `tools/SaveQA.tscn`.
+- **GNOSE (ensina o gnosticismo):** autoload `Gnosis` preenchido — **18 Estelas**
+  (`scripts/entities/stela.gd`; telas 1,3,8,12,…,66; J/X abre painel com
+  título, 5–6 linhas e fonte histórica; desbloqueia Crônica; `docs/GNOSE.md`),
+  **legendas de caminhada** sem pausar (`scripts/ui/caption_bar.gd`;
+  `Narrative.walk_arrival/walk_cleared`, ~95 falas; a Voz com o viés dela, as
+  Estelas com a do Pleroma), **cinemáticas** (`scripts/fx/cinematic.gd`:
+  prólogo em 6 cards na tela 1, card de chefe com letterbox, epílogo com
+  "Crônicas N/18" + créditos), tela **Crônicas** (`scenes/ui/Chronicles.tscn`,
+  persiste em `user://chronicles.json`). `tools/GnoseQA.tscn`.
+- **Balance r5:** o bot nas 68 telas media 339 quase-mortes (travessias
+  triplicaram o dano/tela) → densidade de waves por Éon (2 inimigos nos Éons
+  0–1, 3 depois; 1 wave por zona até o Éon 2), cura entre telas 25%, dano
+  final +50% (era +59%). Dados em `shots/s1809/`. Nova medição pendente.
+- Fixes: portal de saída adiava colisão (erro de física), ferramentas pulam o
+  prólogo e não gravam Crônicas.
+- **ASSETS:** ver entrada abaixo (áudio CC0/CC-BY + VfxLibrary) — integrado
+  quando o agente entregou.
+
 **SESSÃO CLAUDE — 17/09/2026 (pasta renomeada pra `Gnosis-Codex - Copia`):**
 revisão honesta da entrega Codex com capturas reais: o salto visual é grande e
 válido (menu, Sophia, chefes, Rei, fundos, ateliê). Três problemas achados e

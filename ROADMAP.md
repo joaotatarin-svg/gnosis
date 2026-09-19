@@ -4,6 +4,15 @@
 > 1.0 em ondas de agentes (comprimento + Gnose · cinema/UX/áudio/visual ·
 > fechamento). Este arquivo guarda o histórico; o estado vivo está lá.
 
+## Sessão 18/09/2026 — rumo à 1.1.0 (detalhe em BIBLIA.md §6)
+
+- [x] Branches órfãs integradas: 68 telas com travessias, ganchos de áudio, poses da Sophia.
+- [x] UX de versão final: menu, pausa, Golpes & Controles, Opções completas, HUD por papel, save v2, fim de jogo.
+- [x] Gnose: 18 Estelas, legendas de caminhada, prólogo, card de chefe, epílogo, Crônicas.
+- [x] Balance r5 (densidade por Éon, cura 25%). [ ] Nova medição do bot e ajuste fino.
+- [ ] Áudio + VFX de packs CC0/CC-BY (agente ASSETS — ver §6 da BIBLIA).
+- [ ] Build 1.1.0 (`GNOSIS.exe` + instalador Inno) e playtest humano.
+
 ## Edição isolada Codex — 2026-09-17
 
 O histórico abaixo é do projeto de origem. Esta sessão só altera Gnosis-Codex.

@@ -17,56 +17,56 @@
   controles; opções só têm volume; áudio 100% ausente; save sem versão;
   sem executável.
 
-## ONDA 1 (em andamento) — comprimento + Gnose
-- [~] **Estrutura do run (agente A):** Éons de 9 telas (68 no total), cada tela
+## ONDA 1 (FEITA 18/09) — comprimento + Gnose
+- [x] **Estrutura do run (agente A):** Éons de 9 telas (68 no total), cada tela
   uma travessia de 1–3 ZONAS de combate (anda → bolsão trava → limpa → segue);
   papéis por tela: chegada · travessia · **Desafio (Campeão do Éon + Santuário)**
   · travessia · antessala pesada · Arconte. Tiers e multiplicadores por Éon.
   Bot de balance atualizado e rodado (rodada 4 em `docs/BALANCE.md`).
-- [~] **Gnose (agente B):** ~18 Estelas (inscrições que ensinam o gnosticismo
+- [x] **Gnose (agente B, refeito 18/09):** ~18 Estelas (inscrições que ensinam o gnosticismo
   real em ordem pedagógica), conversa de caminhada com legendas sem pausar
   (a Voz conta a cosmologia COM O VIÉS do Demiurgo, sem se denunciar; as
   Estelas dão a versão do Pleroma — o jogador aprende pela contradição),
   tela **Crônicas** persistente entre runs, antessala narrada.
-- [~] Templates de exportação do Godot baixados (build fica pro fim, após polir).
+- [x] Templates de exportação do Godot baixados (build fica pro fim, após polir).
 
-## ONDA 2 — cinema, UX, áudio, visual (paralelo, após integrar a onda 1)
+## ONDA 2 (FEITA 18/09, exceto itens marcados) — cinema, UX, áudio, visual
 ### C. Cinemática leve (`scripts/fx/cinematic.gd`, prólogo, fim, chefes)
-- [ ] **Prólogo** (antes da tela 1): 5–6 cards de texto sobre as pinturas dos
+- [x] **Prólogo** (antes da tela 1): 5–6 cards de texto sobre as pinturas dos
   Éons contando o mito (Mônada → Éons → Sophia → o Cego → Kenoma → faíscas →
   "acorda"), pulável. Estilo GoW: pouco texto, imagem grande.
-- [ ] **Card de chefe:** ao Arconte aparecer, letterbox + nome/título
+- [x] **Card de chefe:** ao Arconte aparecer, letterbox + nome/título
   ("ATHOTH · Arconte do Torpor") com congelamento curto; idem Rei/Colosso.
 - [ ] **O Rei sai da névoa** (tela 1): névoa adensa, silhueta anda até o centro,
   máscara acende — antes do diálogo. **O roubo** (tela 64): os 7 ◆ do HUD voam
   pro Rei um a um; a máscara "cai" (troca de cor/olho); ele afunda no chão.
   **O Centro** (65): descida (câmera desce, cor muda). **Anagnórise** (68):
   Anéis voam pra Sophia, clarão, Colosso encolhe.
-- [ ] **Epílogos:** tela de fim com pintura do Éon/Mente, texto do final em
+- [x] **Epílogos:** tela de fim com pintura do Éon/Mente, texto do final em
   cards, "Crônicas: N/18", créditos curtos; "Melhor progresso" some.
 ### D. UX de versão final (menus, HUD, opções, loja)
-- [ ] **Menu principal:** Continuar (se houver) · Nova campanha · Provação (o
+- [x] **Menu principal:** Continuar (se houver) · Nova campanha · Provação (o
   antigo "desafio") · Ateliê / Bestiário · Crônicas · Opções · Sair. Título sem
   "edição isolada". Nome do projeto "GNOSIS".
-- [ ] **Pausa:** + Crônicas, + Controles/Golpes. **Tela de golpes** (lista dos
+- [x] **Pausa:** + Crônicas, + Controles/Golpes. **Tela de golpes** (lista dos
   combos desbloqueados com a sequência de botões e o que cada nível da arma abre)
   — a progressão precisa ser LEGÍVEL. Loja mostra o que o próximo nível abre.
-- [ ] **Opções:** tela cheia, vsync, tremor de câmera, vibração, tamanho da
+- [x] **Opções:** tela cheia, vsync, tremor de câmera, vibração, tamanho da
   legenda; salvar tudo.
-- [ ] **HUD:** rótulo por papel ("Torpor · Travessia II", "Torpor · O Desafio",
+- [x] **HUD:** rótulo por papel ("Torpor · Travessia II", "Torpor · O Desafio",
   "Antessala do Arconte") em vez de "Tela 27"; progresso do Éon (pontos).
-- [ ] **Save com versão** (`save_version`): runs de mapa antigo são descartados
+- [x] **Save com versão** (`save_version`): runs de mapa antigo são descartados
   com aviso, sem crash. Faíscas/melhor progresso preservados.
 ### E. Áudio (código pronto; usuário gera os arquivos por IA)
-- [ ] Ligar TODOS os ganchos: golpe leve/pesado/aéreo, lançador, parry, esquiva,
+- [x] Ligar TODOS os ganchos: golpe leve/pesado/aéreo, lançador, parry, esquiva,
   esquiva perfeita, bloqueio, dano na Sophia, morte, magia por Anel (8 sons),
   inimigo ferido/morto/elite/campeão, chefe aparece/fase 2/cai, baú, Adormecido,
   selo certo/errado, faísca, portal, zona trava/limpa, estela, legenda, UI.
-- [ ] Música com crossfade: menu, uma faixa por Éon (nigredo→albedo→rubedo),
+- [x] Música com crossfade: menu, uma faixa por Éon (nigredo→albedo→rubedo),
   chefe, Rei/roubo, Centro, Mente, epílogo. `docs/AUDIO.md` vira a lista de
   compras completa com prompts e duração sugerida.
 ### F. Visual
-- [ ] Sophia: poses de esquiva/dano/queda/bloqueio por transformação (como as
+- [x] Sophia: poses de esquiva/dano/queda/bloqueio por transformação (como as
   criaturas), prancha `tools/HeroQA.tscn`.
 - [ ] Partículas ambientais por Éon (motes, brasas, esporos, cinza, cacos de
   luz, faíscas orbitando no Centro, vazio na Mente).
