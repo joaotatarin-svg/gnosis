@@ -294,26 +294,31 @@ func zone_plan(screen: int) -> Array:
 				wave.append(allies[(w * 3 + i + screen) % allies.size()])
 			zone.append(wave)
 		return [zone]
-	# arrival / travel
+	# arrival / travel — r5 (18/09): o bot media 300–800 de dano por tela com
+	# 2 waves × 3 inimigos em cada zona. Agora a densidade sobe com o Éon:
+	# Éons 0–1 = waves de 2 · Éons 2+ = waves de 3; zonas de 1 wave até o
+	# Éon 2, 2 waves a partir do Éon 3; a última zona ganha a 2ª wave do Éon 1.
 	var zones: Array = []
 	var n := zone_count(screen)
+	var per_wave := 2 if eon <= 1 else 3
 	for z in n:
-		var waves_here := 1 if eon <= 1 else 2
-		if z == n - 1:
+		var waves_here := 1 if eon <= 2 else 2
+		if z == n - 1 and eon >= 1:
 			waves_here = 2
 		var zone: Array = []
 		for w in waves_here:
 			var wave: Array = []
-			for i in 3:
+			for i in per_wave:
 				wave.append(ids[(z * 7 + w * 3 + i + screen) % ids.size()])
 			zone.append(wave)
 		zones.append(zone)
 	return zones
 
 
-## Guarda o HP com uma cura leve entre telas (+15% do máximo).
+## Guarda o HP com uma cura entre telas (+25% do máximo — r5: as travessias
+## são mais longas que as arenas antigas, a recomposição acompanha).
 func store_health(hp: int, max_hp: int) -> void:
-	carry_health = mini(max_hp, hp + int(max_hp * 0.15))
+	carry_health = mini(max_hp, hp + int(max_hp * 0.25))
 
 
 func advance_and_reload() -> void:
