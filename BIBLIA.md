@@ -148,8 +148,25 @@ principal do menu), não a Campanha. Feito nesta sessão (prompt-mestre em
   final +50% (era +59%). Dados em `shots/s1809/`. Nova medição pendente.
 - Fixes: portal de saída adiava colisão (erro de física), ferramentas pulam o
   prólogo e não gravam Crônicas.
-- **ASSETS:** ver entrada abaixo (áudio CC0/CC-BY + VfxLibrary) — integrado
-  quando o agente entregou.
+- **ASSETS (som e VFX de packs, autorizado por João):** 66 SFX + 14 músicas
+  preenchidos com packs CC0/CC-BY (Kenney, OpenGameArt, Little Robot Sound
+  Factory CC-BY 3.0, Kevin MacLeod CC-BY 4.0) — licenças e atribuição em
+  `assets/LICENSES.md`; packs brutos em `assets/_packs/` (fora do git, 730 MB);
+  `assets/_packs/build_assets.py` regera tudo. `scripts/fx/vfx_library.gd`
+  (`class_name VfxLibrary`, CPUParticles2D + sprites do Particle Pack: hit,
+  parry, esquiva perfeita, mortes por porte, chefe em 2 estágios + flash,
+  fase 2, cast por cor do Anel, nova, rastro, portal, ambiente por Éon) ligada em
+  enemy/player/impact_burst/aoe_nova/projectile/gib/scenery/level. Sons são
+  "de pack" ajustados — João pode substituir qualquer um pelo nome do arquivo.
+  Loop das músicas não é perfeito na emenda. `tools/VfxShowcase.tscn`.
+- **BUILD 1.1.0:** `builds/GNOSIS.exe` + `.pck` (95 MB) exportado por linha de
+  comando; instalador `installer/Output/GNOSIS-Setup-1.1.0.exe` (118,7 MB,
+  Inno Setup 6.7.3 via `ISCC.exe /DAppVersion=1.1.0`). Exe testado headless.
+- **QA:** CodexQA, AudioQA, GnoseQA e SaveQA passam na build integrada.
+- **FALTA:** playtest humano (feel, timing das legendas, ritmo das travessias);
+  balance r6 medida pelo bot (Éons 3+ ainda quentes na r5: 298 quase-mortes);
+  fundos por Éon em resolução cheia; sons com clima gnóstico gerados por João
+  (`docs/AUDIO.md` tem os prompts); animação quadro a quadro das criaturas.
 
 **SESSÃO CLAUDE — 17/09/2026 (pasta renomeada pra `Gnosis-Codex - Copia`):**
 revisão honesta da entrega Codex com capturas reais: o salto visual é grande e

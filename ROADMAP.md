@@ -10,8 +10,9 @@
 - [x] UX de versão final: menu, pausa, Golpes & Controles, Opções completas, HUD por papel, save v2, fim de jogo.
 - [x] Gnose: 18 Estelas, legendas de caminhada, prólogo, card de chefe, epílogo, Crônicas.
 - [x] Balance r5 (densidade por Éon, cura 25%). [ ] Nova medição do bot e ajuste fino.
-- [ ] Áudio + VFX de packs CC0/CC-BY (agente ASSETS — ver §6 da BIBLIA).
-- [ ] Build 1.1.0 (`GNOSIS.exe` + instalador Inno) e playtest humano.
+- [x] Áudio + VFX de packs CC0/CC-BY (66 SFX, 14 músicas, VfxLibrary; `assets/LICENSES.md`).
+- [x] Build 1.1.0 (`builds/GNOSIS.exe` + `installer/Output/GNOSIS-Setup-1.1.0.exe`).
+- [ ] Playtest humano e ajuste fino do balance (r6 em medição).
 
 ## Edição isolada Codex — 2026-09-17
 

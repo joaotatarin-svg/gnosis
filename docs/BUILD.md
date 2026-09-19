@@ -1,5 +1,13 @@
 # Build & Instalador
 
+> **Última build: 1.1.0 (18/09/2026)** — gerada 100% por linha de comando:
+> ```
+> & $godot --headless --path . --export-release "Windows Desktop" builds/GNOSIS.exe
+> & "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" /DAppVersion=1.1.0 installer\gnosis.iss
+> ```
+> Templates 4.7.1.stable já instalados; Inno Setup 6.7.3 via winget. Cuidado:
+> `export_presets.cfg` NÃO pode ter BOM (o Godot deixa de achar o preset).
+
 > ✅ **Já está tudo pronto no projeto:** `export_presets.cfg` (preset "Windows
 > Desktop" → `builds/GNOSIS.exe`), `installer/gnosis.iss` (Inno Setup) e o
 > carregamento de `patch_*.pck` no boot (`game_manager._load_patches`).
