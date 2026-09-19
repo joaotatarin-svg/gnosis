@@ -26,12 +26,24 @@ grow_vertical = 2
 
 [node name="VBox" type="VBoxContainer" parent="Center"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="Title" type="Label" parent="Center/VBox"]
 layout_mode = 2
 text = "Opções"
 horizontal_alignment = 1
+
+[node name="Cols" type="HBoxContainer" parent="Center/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="Left" type="VBoxContainer" parent="Center/VBox/Cols"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Right" type="VBoxContainer" parent="Center/VBox/Cols"]
+layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="Back" type="Button" parent="Center/VBox"]
 layout_mode = 2

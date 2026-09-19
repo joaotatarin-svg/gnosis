@@ -1,14 +1,26 @@
-# Edição Codex — O Despertar
+# GNOSIS — O Despertar (v1.1)
 
-Abra **Jogar GNOSIS Codex.bat**. Comece por **Entrar no desafio** ou **Ateliê**.
-Guia atual, controles, arquivos e limites: [docs/CODEX_ENTREGA.md](docs/CODEX_ENTREGA.md).
+## Abrir e jogar
+
+Abra **Jogar GNOSIS Codex.bat** nesta pasta (ou `GNOSIS.exe` do build). O menu:
+
+| Botão | O que é |
+|---|---|
+| **Continuar — Éon (Tela N)** | Retoma a campanha do último checkpoint salvo (só aparece se houver um). |
+| **Nova campanha** | O jogo de verdade: **68 telas** — o Rei, sete Éons de 9 telas (cada um fecha num Arconte), o roubo, o Centro e a Mente. Com save, pede confirmação antes de apagar o progresso. |
+| **Provação — treino de 3 encontros** | Sandbox curto (arma nível 3, um Anel, um Arconte no fim). **Não é a campanha** e não grava progresso. |
+| **Ateliê & Bestiário** | Vitrine da Sophia, dos Arcontes e das criaturas. |
+| **Crônicas** | O caderno de lore (entradas desbloqueadas persistem entre runs). |
+| **Opções** | Tela cheia, VSync, tremor de câmera, vibração, tamanho da legenda, volumes. |
+
+Na campanha, **Esc/Start** abre a pausa: Continuar · **Golpes & Controles** (todos os
+combos com a sequência de botões e o nível de arma que os abre, os 7 Anéis, a
+tabela de controles) · Melhorias (a loja) · Opções · Abandonar run (o checkpoint
+salvo permanece). O HUD mostra o papel da tela ("Torpor · Travessia II") e nove
+pontinhos com o progresso do Éon.
+
 Esta pasta é uma cópia independente; não compartilha saves com o GNOSIS original.
-
----
-
-# Edição isolada Codex — O Despertar
-
-Abra **Jogar GNOSIS Codex.bat** nesta pasta. Veja [o guia da entrega](docs/CODEX_ENTREGA.md) para controles, ateliê, testes e limites.
+Guia de entrega e limites: [docs/CODEX_ENTREGA.md](docs/CODEX_ENTREGA.md).
 
 ---
 
@@ -65,11 +77,12 @@ ou magia. A **esquiva** também arrebenta a corrente do Arconte Galila.
 
 ## Fluxo do jogo — o Arco dos Anéis
 
-Menu → Pré-jogo (dificuldade) → **run de 54 telas**: **O Rei** (tela 1, duelo-
-tutorial) → **7 Éons** (Torpor, Fome, Corrente, Silêncio, Espelho, Praga, Coroa),
+Menu → Nova campanha (dificuldade) → **run de 68 telas**: **O Rei** (tela 1, duelo-
+tutorial) → **7 Éons de 9 telas** (Torpor, Fome, Corrente, Silêncio, Espelho,
+Praga, Coroa — chegada · travessias · o Desafio do Campeão · antessala · Arconte),
 cada Éon fechando num **Arconte-chefe** com mecânica própria e 2 fases — cada
-Arconte morto dropa seu **Anel** (uma magia nova) → **o roubo** (tela 50) → **o
-Centro** (51–53, ecos dos Arcontes devolvem os cacos) → **a batalha dupla** (54:
+Arconte morto dropa seu **Anel** (uma magia nova) → **o roubo** (tela 64) → **o
+Centro** (65–67, ecos dos Arcontes devolvem os cacos) → **a batalha dupla** (68:
 as duas formas do Demiurgo precisam cair juntas) → escolha do final. Entre telas:
 baús, Adormecidos, puzzle dos Selos, encontros com Soter e Velkar, e o Santuário
 (loja) após cada chefe. **Morrer não reseta o run**: algo te recompõe (quem — e

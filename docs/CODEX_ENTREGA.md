@@ -5,33 +5,49 @@ A campanha existente de 54 telas, o combate, a narrativa, a progressão e seus
 personagens são a base herdada. Esta sessão acrescenta a reformulação visual
 integrada, o ateliê e o desafio curto; não reivindica a criação da campanha.
 
-## Abrir e jogar
+## Abrir e jogar (menu de versão final — 18/09/2026)
 Execute **Jogar GNOSIS Codex.bat** nesta pasta. Usa o Godot 4.7.1 instalado e
-funciona sem conexão durante o jogo.
+funciona sem conexão durante o jogo. Projeto `GNOSIS`, versão `1.1.0`.
 
-- **Entrar no desafio:** três encontros, arma nível 3, um Anel, recuperação de
-  vida entre encontros, resultado, derrota e revanche.
-- **Ateliê:** Sophia e sete Arcontes, dez modos, pausar/animar, espelhar,
-  três estudos de cor e níveis da arma. “Testar em combate” enfrenta o chefe escolhido.
-- **Bestiário:** no ateliê, catálogo dos perfis da campanha, incluindo criaturas,
-  variantes, formas do Rei, Soter e Velkar. W/S ou setas rolam.
-- **Campanha:** campanha herdada com o novo visual. “Continuar” aparece quando
-  há checkpoint nesta cópia; sem checkpoint, esse lugar abre “Crônicas”.
+- **Continuar — Éon (Tela N):** só aparece com checkpoint salvo; retoma do
+  início do trecho (Limiar, primeira tela do Éon, Centro ou Mente).
+- **Nova campanha:** a campanha inteira — **68 telas** (Rei · 7 Éons de 9 telas ·
+  roubo · Centro · Mente). Com save, confirma antes de apagar o progresso.
+  O pré-jogo escolhe a dificuldade e tem atalho pra "Golpes & Controles".
+- **Provação — treino de 3 encontros:** o antigo "Entrar no desafio". Arma
+  nível 3, um Anel, um Arconte no terceiro encontro. **É treino**: não grava
+  progresso, e o resultado final deixa isso claro com "Ir pra Campanha".
+- **Ateliê & Bestiário:** Sophia e sete Arcontes, dez modos, pausar/animar,
+  espelhar, estudos de cor, níveis da arma; catálogo das criaturas.
+- **Crônicas:** caderno de lore (`Chronicles.tscn` se existir; senão a Galeria).
+- **Opções:** tela cheia, VSync, tremor de câmera (0–100%), vibração do
+  controle, tamanho da legenda (P/M/G) e volumes. Salvo na hora; aplicado no boot.
 
-| Ação | Teclado | Controle Xbox |
-|---|---|---|
-| Mover | A/D ou setas | Analógico esquerdo |
-| Saltar | Espaço | A |
-| Golpes leve / forte | J / K | X / Y |
-| Esquivar | Shift ou L | B |
-| Bloquear / aparar | I | LB |
-| Anel / Esfera Solar | U / O | RB / RT |
-| Trocar Anel | Q/E, 1–7 | LT |
-| Pausa | Esc | Start |
+**Pausa (Esc/Start):** Continuar · Golpes & Controles · Melhorias · Opções
+(overlay, volta pra pausa) · Abandonar run (confirma; o checkpoint permanece).
+Mostra o papel da tela. **HUD:** rótulo por papel ("Torpor · Travessia II",
+"Torpor · O Desafio", "Limiar — O Rei", "O Centro I", "A Mente") + 9 pontinhos
+do Éon (◈ = o Desafio, ◆ = o Arconte).
 
-J → J → K experimenta o lançador com arma nível 3. Amarelo avisa golpe
-aparável; vermelho exige esquiva. O teste automatizado usa as ações de teclado;
-não houve teste com controle físico.
+**Save com versão** (`save_version` = 2): um save antigo (sem versão ou com
+tela fora do mapa de 68) perde só o `run`, com aviso discreto no menu; faíscas
+totais, finais vistos e opções são preservados. JSON quebrado nunca derruba o jogo.
+
+| Ação | Teclado | Xbox | DualShock |
+|---|---|---|---|
+| Mover | A/D ou setas | Analógico esquerdo / D-pad | idem |
+| Saltar | Espaço | A | ✕ |
+| Golpe leve / forte | J / K | X / Y | □ / △ |
+| Esquivar | Shift ou L | B | ○ |
+| Bloquear / aparar | I (segurar / no tempo) | LB | L1 |
+| Anel equipado / Esfera Solar | U / O | RB / RT | R1 / R2 |
+| Trocar Anel | Q/E, 1–7 | LT / Back | L2 / Share |
+| Pausa | Esc / P | Start | Options |
+
+J → J → K experimenta o lançador com arma nível 2+. Amarelo avisa golpe
+aparável; vermelho exige esquiva. A tela "Golpes & Controles" (pausa e
+pré-jogo) lista tudo isso dentro do jogo. O teste automatizado usa as ações de
+teclado; não houve teste com controle físico.
 
 ## Direção visual
 Fantasia sombria ilustrada: pedra entalhada e metal envelhecido. Sophia usa
@@ -93,7 +109,8 @@ quadro a quadro completa das criaturas permanece como melhoria futura.
 | Efeitos | scripts/fx/{codex_combat_aura,codex_sanctum,camera_shake,gib,impact_burst,projectile,aoe_nova}.gd |
 | Desafio | scripts/autoload/codex_session.gd; scripts/levels/codex_trial.gd; scenes/levels/CodexTrial.tscn |
 | Menu e ateliê | scripts/ui/{codex_menu,character_atelier,codex_style}.gd; scenes/ui/{MainMenu,CharacterAtelier}.tscn |
-| Interface | scripts/ui/{hud,pregame,options_menu,pause_menu,upgrade_menu,end_screen,dialogue_box,gallery}.gd |
+| Interface | scripts/ui/{hud,pregame,options_menu,pause_menu,upgrade_menu,end_screen,moves_screen,dialogue_box,gallery}.gd |
+| Capturas de UX | tools/UxShots.tscn (salva shots/ux_*.png de menu, pausa, golpes, opções, fim, HUD) |
 | Testes | tools/{CodexQA,CodexPlaytest,PaintedAudit}.tscn e scripts correspondentes |
 | Outros | project.godot; scenes/entities/Player.tscn; icon.svg; lançadores .bat; documentação |
 

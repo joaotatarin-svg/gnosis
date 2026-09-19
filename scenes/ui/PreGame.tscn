@@ -26,19 +26,20 @@ grow_vertical = 2
 
 [node name="VBox" type="VBoxContainer" parent="Center"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="Title" type="Label" parent="Center/VBox"]
 layout_mode = 2
-text = "Escolha seu portador e a provação"
+text = "Nova campanha"
 horizontal_alignment = 1
 
-[node name="CharBox" type="HBoxContainer" parent="Center/VBox"]
+[node name="Info" type="Label" parent="Center/VBox"]
 layout_mode = 2
-alignment = 1
+text = ""
+horizontal_alignment = 1
 
 [node name="Desc" type="Label" parent="Center/VBox"]
-custom_minimum_size = Vector2(440, 44)
+custom_minimum_size = Vector2(440, 40)
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
@@ -46,16 +47,25 @@ autowrap_mode = 2
 
 [node name="DiffLabel" type="Label" parent="Center/VBox"]
 layout_mode = 2
-text = "Dificuldade:"
+text = "Dificuldade"
 horizontal_alignment = 1
 
 [node name="DiffBox" type="HBoxContainer" parent="Center/VBox"]
 layout_mode = 2
 alignment = 1
 
+[node name="DiffDesc" type="Label" parent="Center/VBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
 [node name="Start" type="Button" parent="Center/VBox"]
 layout_mode = 2
-text = "Começar a ascensão"
+text = "Começar a travessia"
+
+[node name="Moves" type="Button" parent="Center/VBox"]
+layout_mode = 2
+text = "Golpes & Controles"
 
 [node name="Back" type="Button" parent="Center/VBox"]
 layout_mode = 2

@@ -14,12 +14,93 @@ var current_screen: int = 1              # tela/fase atual (balanceamento)
 var end_title: String = ""               # texto da tela de fim (game over/vitória)
 var end_subtitle: String = ""
 
+## OPÇÕES do jogador (salvas pelo SaveManager, aplicadas no boot por
+## `apply_settings`). Quem consome cada uma:
+##   fullscreen / vsync → aqui (DisplayServer)
+##   shake (0.0–1.0)    → tremor de câmera (Juice/camera_shake leem daqui)
+##   rumble (bool)      → vibração do controle (Juice.rumble lê daqui)
+##   caption_size (0=P, 1=M, 2=G) → legendas/diálogos (DialogueBox lê daqui)
+const SETTINGS_DEFAULT := {
+	"fullscreen": false,
+	"vsync": true,
+	"shake": 1.0,
+	"rumble": true,
+	"caption_size": 1,
+}
+var settings: Dictionary = SETTINGS_DEFAULT.duplicate()
+
 
 func _ready() -> void:
 	_load_patches()
 	_load_gamepad_db()
 	_register_inputs()
+	apply_settings()
 	set_state(State.MENU)
+
+
+## Aplica as opções de vídeo (o resto é lido por quem usa). Seguro em headless.
+func apply_settings() -> void:
+	for k in SETTINGS_DEFAULT:
+		if not settings.has(k):
+			settings[k] = SETTINGS_DEFAULT[k]
+	settings["shake"] = clampf(float(settings["shake"]), 0.0, 1.0)
+	settings["caption_size"] = clampi(int(settings["caption_size"]), 0, 2)
+	# Espelha tremor/vibração no Juice (campos da branch principal), se ele já
+	# existir — no boot o GameManager nasce antes do Juice; o SaveManager
+	# chama de novo depois.
+	var juice := get_node_or_null("/root/Juice")
+	if juice != null:
+		if "shake_mult" in juice:
+			juice.set("shake_mult", shake_multiplier())
+		if "rumble_enabled" in juice:
+			juice.set("rumble_enabled", rumble_enabled())
+	if DisplayServer.get_name() == "headless":
+		return
+	var want := DisplayServer.WINDOW_MODE_FULLSCREEN if bool(settings["fullscreen"]) else DisplayServer.WINDOW_MODE_WINDOWED
+	if DisplayServer.window_get_mode() != want:
+		DisplayServer.window_set_mode(want)
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if bool(settings["vsync"]) else DisplayServer.VSYNC_DISABLED)
+
+
+## Multiplicador do tremor de câmera (0..1) — pra quem gera o tremor.
+func shake_multiplier() -> float:
+	return clampf(float(settings.get("shake", 1.0)), 0.0, 1.0)
+
+
+## Vibração do controle ligada?
+func rumble_enabled() -> bool:
+	return bool(settings.get("rumble", true))
+
+
+## Tamanho de fonte das legendas conforme a opção (P/M/G).
+func caption_font_size() -> int:
+	return [11, 13, 16][clampi(int(settings.get("caption_size", 1)), 0, 2)]
+
+
+## Nome LEGÍVEL da tela pelo papel no arco (HUD, pausa, menu "Continuar"):
+## "Limiar — O Rei" · "Torpor · Chegada" · "Torpor · Travessia II" ·
+## "Torpor · O Desafio" · "Torpor · Antessala" · "Torpor · O Arconte" ·
+## "O Centro I" · "A Mente".
+func screen_title(screen: int) -> String:
+	var role := RunManager.screen_role(screen)
+	var eon := RunManager.eon_name(screen)
+	match role:
+		"king": return "Limiar — O Rei"
+		"final": return "A Mente"
+		"center": return "O Centro %s" % _roman(screen - RunManager.CENTER_FIRST + 1)
+		"arrival": return "%s · Chegada" % eon
+		"trial": return "%s · O Desafio" % eon
+		"antechamber": return "%s · Antessala" % eon
+		"archon": return "%s · O Arconte" % eon
+	# Travessia: numera só as travessias (offsets 1,2,3 → I,II,III; 5,6 → IV,V).
+	var off := RunManager.eon_offset(screen)
+	var n := off if off <= 3 else off - 1
+	return "%s · Travessia %s" % [eon, _roman(n)]
+
+
+func _roman(n: int) -> String:
+	var r := ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]
+	return r[clampi(n - 1, 0, r.size() - 1)]
 
 
 ## Updates leves: carrega patch_*.pck da pasta do executável por cima do jogo
