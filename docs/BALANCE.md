@@ -46,3 +46,22 @@
 
 ## Próximo passo
 Playtest HUMANO (feel, parry, uso dos Anéis). Só então mexer de novo em número.
+
+
+## Rodadas 4–7 — run de 68 telas com travessias (18/09/2026)
+
+Bot headless, velocidade 8, Normal, 1→68. "mortes" = vida < 25% (cura cheia e
+segue). Dados brutos em `shots/s1809/bal_*.txt`.
+
+| Rodada | Mudança | Tempo de jogo | Dano | Quase-mortes |
+|---|---|---|---|---|
+| r4 (branch órfã integrada) | 68 telas, 1–3 zonas × 2 waves × 3 inimigos | 84,7 min | 26 764 | 339 |
+| r5 | waves de 2 nos Éons 0–1; 1 wave/zona até o Éon 2; cura entre telas 15→25%; dano final +59→+50% | 80,9 min | 23 873 | 298 |
+| r6 | 1 wave/zona (2ª só na última zona; Éons 5–6 em todas menos a primeira); dano +45% | 72,1 min | 19 941 | 246 |
+| r7 | vida dos inimigos +98→+80% no fim; dano +40% | (medir) | | |
+
+Leitura: telas 1–27 (Limiar, Torpor, Fome, início da Corrente) estão saudáveis
+(0–2 quase-mortes, 7–200 de dano). O calor começa no Éon 3 (Silêncio) e
+cresce até o fim; os TIMEOUTs (55 Belias, 63/64 Coroa, 68 Mente) são limitação
+conhecida do bot (fica parado na poça, ignora servos). Um humano com esquiva e
+parry sofre bem menos que o bot — **playtest do João decide a r8**.

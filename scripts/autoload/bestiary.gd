@@ -31,12 +31,12 @@ func run_progress(screen: int) -> float:
 ## Vida dos inimigos: cresce até ≈1.98x na tela do 7º Arconte (r2 2026-09-11:
 ## +3% em vida E dano virava pântano no fim — o combate arrastava).
 func screen_multiplier(screen: int) -> float:
-	return 1.0 + run_progress(screen) * 0.98
+	return 1.0 + run_progress(screen) * 0.8   # r7: 0.98 → 0.8 (lutas mais curtas = menos dano tomado)
 
 
 ## Dano dos inimigos: cresce mais devagar que a vida (≈1.59x no 7º Arconte).
 func damage_multiplier(screen: int) -> float:
-	return 1.0 + run_progress(screen) * 0.45  # r6: 0.588 → 0.5 → 0.45 (travessias mais longas)
+	return 1.0 + run_progress(screen) * 0.4   # r7: 0.588 → 0.5 → 0.45 → 0.4 (travessias mais longas)
 
 
 func is_boss_id(id: String) -> bool:
