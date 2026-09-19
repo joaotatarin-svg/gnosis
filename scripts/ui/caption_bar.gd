@@ -38,12 +38,12 @@ func _ready() -> void:
 
 	_strip = ColorRect.new()
 	_strip.color = Color(0.02, 0.045, 0.06, 0.62)
-	_strip.anchors_preset = Control.PRESET_FULL_RECT
+	_strip.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(_strip)
 
 	_speaker = Label.new()
-	_speaker.anchors_preset = Control.PRESET_TOP_WIDE
+	_speaker.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_speaker.offset_top = 3.0
 	_speaker.offset_bottom = 15.0
 	_speaker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -54,7 +54,7 @@ func _ready() -> void:
 	_root.add_child(_speaker)
 
 	_text = Label.new()
-	_text.anchors_preset = Control.PRESET_FULL_RECT
+	_text.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_text.offset_left = 10.0
 	_text.offset_right = -10.0
 	_text.offset_top = 15.0
@@ -91,6 +91,11 @@ func clear() -> void:
 
 
 func _process(delta: float) -> void:
+	# Fora de uma tela do run (menu, Crônicas, fim), nada fica pendurado.
+	if not (get_tree().current_scene is Level):
+		if _showing or not _queue.is_empty():
+			clear()
+		return
 	if _showing:
 		_time_left -= delta
 		if _time_left <= 0.0:

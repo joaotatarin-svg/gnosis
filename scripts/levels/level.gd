@@ -126,7 +126,7 @@ func _play_narrative_beats() -> void:
 	if RunManager.is_king_screen(screen):
 		# PRÓLOGO em cards (o mito: Mônada → Éons → Sophia → o Cego → faíscas),
 		# só uma vez por run, antes de a Voz falar.
-		if Narrative.once("prologue"):
+		if not CodexSession.active and Narrative.once("prologue"):
 			await Cinematic.prologue().finished
 			if not is_inside_tree():
 				return

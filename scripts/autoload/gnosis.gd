@@ -241,6 +241,7 @@ const BOSS_TITLES: Dictionary = {
 }
 
 var unlocked: Array = []          # ids das Crônicas lidas (persistem entre runs)
+var persist_enabled: bool = true  # ferramentas (QA/shot) desligam pra não sujar o disco
 var _caption: CaptionBar
 var _by_screen: Dictionary = {}   # tela -> Estela
 
@@ -307,6 +308,8 @@ func _load() -> void:
 
 
 func _save() -> void:
+	if not persist_enabled:
+		return
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
 		return
@@ -316,8 +319,16 @@ func _save() -> void:
 
 # --- contrato com o Level -----------------------------------------------------
 
+## O Desafio Codex (CodexSession) é um sandbox de 3 encontros: sem Estelas,
+## legendas ou cards — o fluxo dele tem resultado próprio e temporizado.
+func _sandbox() -> bool:
+	return CodexSession.active
+
+
 func setup_screen(level: Node2D, screen: int, rest_points: Array) -> void:
 	_caption.clear()
+	if _sandbox():
+		return
 	var e := stela_for_screen(screen)
 	if not e.is_empty() and not rest_points.is_empty() and level != null:
 		var s := Stela.new()
@@ -346,6 +357,8 @@ func zone_started(_screen: int, _zone: int, _total: int) -> void:
 
 
 func zone_cleared(screen: int, zone: int, _total: int) -> void:
+	if _sandbox():
+		return
 	if Narrative.once("walk_c_%d_%d" % [screen, zone]):
 		_caption.say_lines(Narrative.walk_cleared(screen, zone))
 
@@ -358,6 +371,8 @@ func caption(speaker: String, text: String) -> void:
 ## Card de chefe ao nascer: id do Bestiário ("rei", "arconte_sono", ...,
 ## "demiurgo" na batalha dupla) ou "campeao" (Desafio do Éon).
 func boss_card(id: String, screen: int) -> void:
+	if _sandbox():
+		return
 	if id == "campeao":
 		var n := RunManager.eon_name(screen)
 		var fem := n in ["Fome", "Corrente", "Praga", "Coroa"]

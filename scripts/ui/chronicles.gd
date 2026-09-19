@@ -101,7 +101,7 @@ func _refresh() -> void:
 	else:
 		_title.text = "???  ·  %s" % String(cur.eon)
 		_body.text = ""
-		_body.visible = true
+		_body.visible = false          # a dica sobe pra logo abaixo do título
 		_hint_locked.text = "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler." % String(cur.hint)
 		_source.text = ""
 

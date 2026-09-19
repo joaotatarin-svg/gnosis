@@ -94,12 +94,12 @@ func _ready() -> void:
 func _build_cards() -> void:
 	_black = ColorRect.new()
 	_black.color = Color(0.0, 0.0, 0.0, 1.0)
-	_black.anchors_preset = Control.PRESET_FULL_RECT
+	_black.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_black.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_black)
 
 	_bg = TextureRect.new()
-	_bg.anchors_preset = Control.PRESET_FULL_RECT
+	_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_bg.stretch_mode = TextureRect.STRETCH_SCALE
 	_bg.material = PaintedLibrary.material()
@@ -110,7 +110,7 @@ func _build_cards() -> void:
 	# vinheta: escurece as bordas pra o texto assentar
 	var vig := ColorRect.new()
 	vig.color = Color(0.0, 0.01, 0.02, 0.38)
-	vig.anchors_preset = Control.PRESET_FULL_RECT
+	vig.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(vig)
 
@@ -156,7 +156,7 @@ func _build_cards() -> void:
 
 	_hint = Label.new()
 	_hint.text = "qualquer tecla avança  ·  Esc pula"
-	_hint.anchors_preset = Control.PRESET_BOTTOM_RIGHT
+	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	_hint.offset_left = -240.0
 	_hint.offset_top = -22.0
 	_hint.offset_right = -14.0
@@ -213,13 +213,13 @@ func _fade(to: float, dur: float) -> void:
 func _build_boss() -> void:
 	_bar_top = ColorRect.new()
 	_bar_top.color = Color.BLACK
-	_bar_top.anchors_preset = Control.PRESET_TOP_WIDE
+	_bar_top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_bar_top.offset_bottom = 0.0
 	_bar_top.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bar_top)
 	_bar_bottom = ColorRect.new()
 	_bar_bottom.color = Color.BLACK
-	_bar_bottom.anchors_preset = Control.PRESET_BOTTOM_WIDE
+	_bar_bottom.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	_bar_bottom.offset_top = 0.0
 	_bar_bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bar_bottom)

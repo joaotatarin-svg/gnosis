@@ -147,12 +147,12 @@ class StelaPanel extends CanvasLayer:
 		layer = 92
 		var dim := ColorRect.new()
 		dim.color = Color(0.0, 0.02, 0.03, 0.55)
-		dim.anchors_preset = Control.PRESET_FULL_RECT
+		dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(dim)
 
 		var center := CenterContainer.new()
-		center.anchors_preset = Control.PRESET_FULL_RECT
+		center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(center)
 
