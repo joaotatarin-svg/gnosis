@@ -32,6 +32,8 @@ func start(parent: Node, scene: PackedScene, spawn_points: Array) -> void:
 		f.revivable = true
 		f.defeated.connect(_on_form_down)
 	get_tree().call_group("hud", "toast", "As duas formas precisam cair JUNTAS.")
+	# Card das duas faces (letterbox), como todo chefe ao nascer.
+	Gnosis.boss_card("demiurgo", RunManager.MAX_SCREEN)
 
 
 func _spawn(id: String, parent: Node, pos: Vector2) -> Enemy:

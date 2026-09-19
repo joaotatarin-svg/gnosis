@@ -124,6 +124,12 @@ func _play_narrative_beats() -> void:
 	# Cada bico narrativo toca UMA vez por run (Narrative.once): com os
 	# checkpoints, morrer recarrega a tela — sem isto, tudo repetiria.
 	if RunManager.is_king_screen(screen):
+		# PRÓLOGO em cards (o mito: Mônada → Éons → Sophia → o Cego → faíscas),
+		# só uma vez por run, antes de a Voz falar.
+		if Narrative.once("prologue"):
+			await Cinematic.prologue().finished
+			if not is_inside_tree():
+				return
 		if Narrative.once("intro"):
 			await DialogueBox.play(Narrative.intro()).finished
 			await DialogueBox.play(Narrative.king_intro()).finished
@@ -373,6 +379,13 @@ func _start_wave() -> void:
 		e.defeated.connect(_on_enemy_defeated)
 		e.minion_spawned.connect(_on_minion)
 		alive += 1
+	# CARD DE CHEFE (letterbox + nome + título, congela ~1,8 s): ao nascer o
+	# Rei/Arconte e, no Desafio, o Campeão (última wave).
+	if RunManager.run_active:
+		if is_boss and wave_index == 0:
+			Gnosis.boss_card(RunManager.boss_id_for(screen), screen)
+		elif is_trial and is_last_wave and wave.has(eon_bot):
+			Gnosis.boss_card("campeao", screen)
 
 
 ## Invocações (invocador, Coroa, Espelho) contam na wave: precisam morrer também.
@@ -490,6 +503,8 @@ func _win() -> void:
 	var idx: int = await d.choice_made
 	Narrative.apply_ending(idx)
 	SaveManager.save_game()
+	# EPÍLOGO em cards (final escolhido + Crônicas N/18 + créditos), depois o EndScreen.
+	await Cinematic.epilogue(Narrative.ending, Gnosis.chronicles_count(), Gnosis.chronicles_total()).finished
 	SceneManager.change_scene("res://scenes/ui/EndScreen.tscn")
 
 
