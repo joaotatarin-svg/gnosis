@@ -131,23 +131,24 @@ MUSIC_MAX_S = 300.0     # faixas maiores que isto são cortadas com fade (tamanh
 
 # VFX: nome final -> (arquivo no Kenney Particle Pack "PNG (Transparent)", tamanho)
 VFX = {
-	"circle":  ("circle_05.png", 128),
-	"glow":    ("light_01.png", 128),
-	"halo":    ("light_02.png", 128),
-	"spark":   ("spark_04.png", 128),
-	"spark2":  ("spark_06.png", 128),
+	"circle":  ("circle_05.png", 128),   # ponto suave
+	"glow":    ("circle_05.png", 128),   # clarão suave
+	"halo":    ("circle_03.png", 128),   # ANEL nítido (nova, parry, chefe)
+	"light":   ("light_02.png", 128),    # anel suave
+	"spark":   ("star_01.png", 128),     # fagulha (estrela pequena)
+	"spark2":  ("star_06.png", 128),     # fagulha fina
 	"star":    ("star_07.png", 128),
 	"star2":   ("star_09.png", 128),
 	"smoke":   ("smoke_04.png", 128),
 	"smoke2":  ("smoke_08.png", 128),
-	"flame":   ("flame_04.png", 128),
+	"flame":   ("muzzle_02.png", 128),   # língua de fogo cheia
 	"flame2":  ("flame_06.png", 128),
 	"magic":   ("magic_03.png", 128),
 	"magic2":  ("magic_05.png", 128),
 	"twirl":   ("twirl_02.png", 128),
 	"scorch":  ("scorch_01.png", 128),
 	"slash":   ("slash_03.png", 128),
-	"symbol":  ("symbol_02.png", 128),
+	"symbol":  ("star_03.png", 128),     # círculo rúnico
 	"dirt":    ("dirt_02.png", 128),
 	"trace":   ("trace_06.png", 128),
 	"flare":   ("flare_01.png", 128),

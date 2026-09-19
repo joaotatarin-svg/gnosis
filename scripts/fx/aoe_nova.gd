@@ -11,6 +11,7 @@ var duration: float = 0.45
 
 var _time: float = 0.0
 var _hit_done: bool = false
+var _vfx_done: bool = false
 
 
 static func spawn(parent: Node, pos: Vector2, dmg: int, rad: float, col: Color) -> void:
@@ -30,6 +31,10 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
+	if not _vfx_done:
+		# no _ready a global_position ainda não foi definida pelo spawn
+		_vfx_done = true
+		VfxLibrary.nova_ring(get_parent(), global_position, radius, color)
 	if not _hit_done and _time >= 0.06:
 		_hit_done = true
 		if damage > 0:      # damage 0 = onda puramente visual (slam de Arconte)

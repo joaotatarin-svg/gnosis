@@ -106,6 +106,7 @@ func _process(delta: float) -> void:
 					if now - _last_bounce_ms >= 70:
 						_last_bounce_ms = now
 						Audio.play_sfx_at("gib_bounce", global_position, 0.12)
+						VfxLibrary.dust(get_parent(), Vector2(global_position.x, ground_y))
 	queue_redraw()
 
 
