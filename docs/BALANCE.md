@@ -58,10 +58,12 @@ segue). Dados brutos em `shots/s1809/bal_*.txt`.
 | r4 (branch órfã integrada) | 68 telas, 1–3 zonas × 2 waves × 3 inimigos | 84,7 min | 26 764 | 339 |
 | r5 | waves de 2 nos Éons 0–1; 1 wave/zona até o Éon 2; cura entre telas 15→25%; dano final +59→+50% | 80,9 min | 23 873 | 298 |
 | r6 | 1 wave/zona (2ª só na última zona; Éons 5–6 em todas menos a primeira); dano +45% | 72,1 min | 19 941 | 246 |
-| r7 | vida dos inimigos +98→+80% no fim; dano +40% | (medir) | | |
+| r7 | vida dos inimigos +98→+80% no fim; dano +40%; Rei 320/12 | 71,6 min | 20 180 | 249 |
 
 Leitura: telas 1–27 (Limiar, Torpor, Fome, início da Corrente) estão saudáveis
 (0–2 quase-mortes, 7–200 de dano). O calor começa no Éon 3 (Silêncio) e
 cresce até o fim; os TIMEOUTs (55 Belias, 63/64 Coroa, 68 Mente) são limitação
-conhecida do bot (fica parado na poça, ignora servos). Um humano com esquiva e
-parry sofre bem menos que o bot — **playtest do João decide a r8**.
+conhecida do bot (fica parado na poça, ignora servos). r6→r7 não mudou nada
+(246→249): a partir daqui o número do bot é limitação do próprio bot, não dos
+valores. Um humano com esquiva e parry sofre bem menos — **playtest do João
+decide a r8**. Duração de uma run pelo bot: ~72 min de jogo (humano: 2–2,5 h).
