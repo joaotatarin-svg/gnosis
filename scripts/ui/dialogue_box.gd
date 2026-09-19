@@ -55,6 +55,8 @@ func _ready() -> void:
 	_text = Label.new()
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.custom_minimum_size = Vector2(0, 40)
+	# Tamanho da legenda vem das Opções (P/M/G).
+	_text.add_theme_font_size_override("font_size", GameManager.caption_font_size())
 	vbox.add_child(_text)
 
 	_hint = Label.new()
