@@ -58,6 +58,8 @@ class ShotWorker extends Node:
 		GameManager.selected_character = GameContent.characters[0]
 		Progression.reset_run()
 		RunManager.begin()
+		Narrative.once("prologue")      # ferramenta pula o prólogo em cards
+		Gnosis.persist_enabled = false   # e não grava Crônicas no disco
 		RunManager.current_screen = screen
 		GameManager.current_screen = screen
 		for sk in GameContent.characters[0].skills:
