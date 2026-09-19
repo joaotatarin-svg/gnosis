@@ -10,3 +10,7 @@ export.cfg
 /shots/
 /installer/Output/
 /.claude/
+
+# Packs brutos baixados (CC0/CC-BY) — só o script de montagem entra no git
+/assets/_packs/*
+!/assets/_packs/build_assets.py

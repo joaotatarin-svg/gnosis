@@ -15,6 +15,9 @@ static func spawn(parent: Node, pos: Vector2, col: Color) -> void:
 	b.color = col
 	parent.add_child(b)
 	b.global_position = pos
+	# partículas por cima do desenho vetorial (golpe leve; o pesado chama
+	# VfxLibrary.hit(heavy=true) direto no player/enemy)
+	VfxLibrary.hit(parent, pos, false, col)
 
 
 func _ready() -> void:

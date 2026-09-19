@@ -45,6 +45,7 @@ const CATALOG := {
 		"stele_open", "stele_unlock", "subtitle_tick",
 		# --- loja / interface ---
 		"shop_buy", "shop_fail", "ui_click", "ui_move", "ui_advance", "ui_choice",
+		"ui_confirm", "ui_back",
 	],
 	"music": [
 		"theme", "rei",
@@ -57,6 +58,8 @@ const CATALOG := {
 const ALIASES := {
 	"ui": "ui_click",
 	"cast": "cast_solar",
+	"stela": "stele_open",       # narrativa (Estelas)
+	"caption": "subtitle_tick",  # legendas de caminhada
 }
 
 ## Variação de tom por família de som (golpes ±8 %, UI 0, resto ±4 %).

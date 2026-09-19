@@ -63,6 +63,7 @@ func build(p_eon: int, screen: int = 1) -> bool:
 		spr.centered = false
 		spr.scale = Vector2((640.0 / 0.75) / float(tex.get_width()), (360.0 / 0.75) / float(tex.get_height()))
 		layer.add_child(spr)
+		VfxLibrary.ambient(self, eon)
 		return true
 	_build_sky()
 	var painted_layer := _layer(Vector2(0.18,1.0),768.0)
@@ -76,6 +77,7 @@ func build(p_eon: int, screen: int = 1) -> bool:
 		painted_layer.add_child(backdrop)
 	_build_architecture()
 	_build_fog()
+	VfxLibrary.ambient(self, eon)     # partículas do Éon (motes, brasas, cacos…)
 	return false
 
 

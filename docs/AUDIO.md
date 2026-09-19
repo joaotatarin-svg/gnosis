@@ -1,5 +1,15 @@
 # Áudio do GNOSIS — lista de compras DEFINITIVA
 
+> **ESTADO (18/09/2026): TODOS os arquivos abaixo JÁ EXISTEM** — os 66 SFX e
+> as 14 músicas foram preenchidos com packs **CC0 / CC-BY** (Kenney,
+> OpenGameArt, Kevin MacLeod). Fontes, autores e licenças por arquivo em
+> `assets/LICENSES.md`; o script que monta tudo a partir dos packs brutos é
+> `assets/_packs/build_assets.py`. O jogo já toca som do menu ao epílogo.
+> **João pode substituir qualquer um** gerando o seu (prompts abaixo) e
+> salvando por cima com o **mesmo nome** — nada no código muda. A atribuição
+> CC-BY (texto pronto em `assets/LICENSES.md`) precisa ir nos créditos enquanto
+> algum arquivo CC-BY continuar em uso.
+
 O código de áudio está **pronto e ligado**: todo evento do jogo já chama
 `Audio.play_sfx("<nome>")` ou a música certa é escolhida sozinha pelo contexto
 (menu, Rei, Éon, Arconte, Centro, Mente). Enquanto o arquivo não existir, o jogo
@@ -12,7 +22,7 @@ soltar na pasta com o **nome exato**.
   O `tools/AudioQA.tscn` confere que este documento, o catálogo, a pasta e as
   chamadas no código batem.
 
-Total: **64 SFX** + **14 músicas**.
+Total: **66 SFX** + **14 músicas**.
 
 ## Como pedir pra IA (regras que valem pra todos os prompts)
 
@@ -134,9 +144,12 @@ Cada Anel é a paixão de um Arconte virada contra o Kenoma — o som deve lembr
 | `sfx/ui_move.ogg` | foco/mouse muda de botão | 0,1 s | "very soft UI hover tick, tiny stone tap, dry, no music" |
 | `sfx/ui_advance.ogg` | avança uma fala no diálogo | 0,15 s | "dialogue advance: soft parchment flick, quiet and short, dry, no music" |
 | `sfx/ui_choice.ogg` | escolha feita num diálogo (Recusar/Ceder, finais) | 0,7 s | "decision made: single low resonant bell with a short shimmer, weighty, no music" |
+| `sfx/ui_confirm.ogg` | confirmação de menu (iniciar campanha, salvar opções) | 0,4 s | "menu confirm: warm two-note rising tick, soft, dry, no music" |
+| `sfx/ui_back.ogg` | voltar / cancelar num menu | 0,3 s | "menu back: soft descending tick, dry, no music" |
 
 > Os nomes antigos `sfx/ui.ogg` e `sfx/cast.ogg` **não** são mais necessários: o
-> autoload redireciona `ui` → `ui_click` e `cast` → `cast_solar`.
+> autoload redireciona `ui` → `ui_click`, `cast` → `cast_solar`, `stela` →
+> `stele_open` e `caption` → `subtitle_tick` (nomes usados pela narrativa).
 
 ---
 

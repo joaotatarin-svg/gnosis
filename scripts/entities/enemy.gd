@@ -186,6 +186,16 @@ func _ready() -> void:
 	player = get_tree().get_first_node_in_group("player")
 	if is_boss_enemy or is_champion:
 		get_tree().call_group("hud", "show_boss", self)
+		_boss_intro_fx.call_deferred()
+
+
+## Chefe/Campeão entra em cena: stinger + coluna de luz (deferred: a posição
+## só está certa depois do add_child do Level).
+func _boss_intro_fx() -> void:
+	if not is_inside_tree():
+		return
+	Audio.play_sfx("boss_appear")
+	VfxLibrary.boss_appear(get_parent(), global_position + Vector2(0, -20.0 * _art_scale), eye_color)
 
 
 ## "do Torpor" / "da Fome": o nome do Éon com o artigo certo (pro Campeão).
@@ -649,8 +659,9 @@ func _enter_phase2() -> void:
 	attack_hitbox.deactivate()
 	Juice.shake(0.9)
 	Juice.hit_stop(0.15)
+	Audio.play_sfx("boss_phase2")
 	AoeNova.spawn(get_parent(), global_position, 0, 140.0, eye_color)
-	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -30.0 * _art_scale), eye_color)
+	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
 	_flash(Color(3, 2.5, 2, 1))
 	match kit:
 		"coroa":
@@ -704,8 +715,9 @@ func revive(ratio: float) -> void:
 		visual.damage_ratio = 1.0 - ratio
 	if _orb != null:
 		_orb.visible = true
+	Audio.play_sfx("form_revive")
 	AoeNova.spawn(get_parent(), global_position, 0, 150.0, eye_color)
-	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -30.0 * _art_scale), eye_color)
+	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
 	get_tree().call_group("hud", "show_boss", self)
 
 
@@ -764,6 +776,10 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 
 	health.take_damage(damage)
 	_flash(Color(3, 3, 3, 1))
+	Audio.play_sfx_at("enemy_hurt", global_position)
+	if _last_hit_heavy:
+		# golpe pesado / magia: impacto grande (o leve vem do Hitbox via ImpactBurst)
+		VfxLibrary.hit(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), true, eye_color)
 	DamageNumber.spawn(get_parent(), global_position, damage, Color(1.0, 0.92, 0.6))
 	if visual:
 		visual.damage_ratio = 1.0 - float(health.current_health) / maxf(1.0, float(health.max_health))
@@ -828,7 +844,20 @@ func _on_died() -> void:
 	estate = EState.DEAD
 	contact_hitbox.monitoring = false
 	attack_hitbox.monitoring = false
-	Audio.play_sfx("enemy_die")
+	# som e explosão de morte por porte
+	var death_pos := global_position + Vector2(0, -12.0 * _art_scale)
+	if is_boss_enemy:
+		Audio.play_sfx("boss_die")
+		VfxLibrary.boss_death(get_parent(), death_pos, eye_color)
+	elif is_champion:
+		Audio.play_sfx("champion_die")
+		VfxLibrary.elite_death(get_parent(), death_pos, eye_color)
+	elif is_elite:
+		Audio.play_sfx("elite_die")
+		VfxLibrary.elite_death(get_parent(), death_pos, eye_color)
+	else:
+		Audio.play_sfx("enemy_die")
+		VfxLibrary.enemy_death(get_parent(), death_pos, eye_color)
 
 	Progression.add_orbs(int(spark_reward * _reward_mult))
 	# A faísca se liberta e voa até o herói (assinatura GoW).

@@ -445,7 +445,10 @@ func _process_attack(delta: float) -> void:
 
 ## Chamado pelo Hitbox quando um golpe do herói acerta — alimenta o combo.
 func register_hit() -> void:
-	Audio.play_sfx("hit_heavy" if current_move != null and current_move.is_heavy() else "hit")
+	var heavy := current_move != null and current_move.is_heavy()
+	Audio.play_sfx("hit_heavy" if heavy else "hit")
+	if heavy:
+		VfxLibrary.hit(get_parent(), global_position + Vector2(26.0 * facing, -14.0), true, Color(1.0, 0.9, 0.55))
 	combo_count += 1
 	combo_show_timer = 1.4
 	combo_changed.emit(combo_count)
@@ -500,6 +503,7 @@ func _parry(attacker: Node) -> void:
 	Juice.shake(0.6)
 	Juice.rumble(0.6, 0.3, 0.18)
 	Audio.play_sfx("parry")
+	VfxLibrary.parry(get_parent(), global_position + Vector2(16.0 * facing, -16.0))
 	_flash(Color(3, 3, 4, 1))
 	if attacker != null and attacker.has_method("stagger"):
 		attacker.stagger()
@@ -571,6 +575,7 @@ func _cast_skill(skill: SkillData) -> void:
 	skill_cooldowns[skill.id] = skill.cooldown
 	Audio.play_sfx(_cast_sfx(skill))
 	cast_anim_timer = 0.3
+	VfxLibrary.cast(get_parent(), global_position + Vector2(14.0 * facing, -18.0), skill.color)
 
 	var total := skill.base_damage + (Progression.skill_level(skill.id) - 1) * 12   # r2: 8→12
 	var col := skill.color
@@ -714,7 +719,7 @@ func _perfect_dodge() -> void:
 	Juice.slow_mo(0.3, 0.35)
 	Juice.shake(0.25)
 	_flash(Color(2.0, 2.2, 3.0, 1))
-	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -20), Color(0.8, 0.85, 1.0))
+	VfxLibrary.dodge_perfect(get_parent(), global_position + Vector2(0, -20))
 	Audio.play_sfx("dodge_perfect")
 
 

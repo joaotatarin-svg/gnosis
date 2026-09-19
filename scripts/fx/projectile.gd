@@ -30,6 +30,7 @@ func _ready() -> void:
 	add_child(shape)
 	area_entered.connect(_on_area_entered)
 	Audio.play_sfx("proj_fire")
+	VfxLibrary.projectile_trail(self, color)
 
 
 func _physics_process(delta: float) -> void:
@@ -70,6 +71,7 @@ func _on_area_entered(area: Area2D) -> void:
 		Audio.play_sfx_at("proj_hit", global_position)
 		ImpactBurst.spawn(get_parent(), global_position, color)
 		if explode_radius > 0.0:
+			VfxLibrary.hit(get_parent(), global_position, true, color)
 			AoeNova.spawn(get_parent(), global_position, int(damage * 0.6), explode_radius, color)
 			_vanish()
 		elif not pierce:
