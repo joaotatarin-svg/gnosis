@@ -302,8 +302,13 @@ func zone_plan(screen: int) -> Array:
 	var n := zone_count(screen)
 	var per_wave := 2 if eon <= 1 else 3
 	for z in n:
-		var waves_here := 1 if eon <= 2 else 2
+		# r6: 1 wave por zona; a última zona ganha a 2ª a partir do Éon 1 e,
+		# nos Éons 5–6, todas as zonas menos a primeira têm 2 (o bot media
+		# 400–1000 de dano/tela do Éon 3 em diante com 2 waves em toda zona).
+		var waves_here := 1
 		if z == n - 1 and eon >= 1:
+			waves_here = 2
+		if eon >= 5 and z >= 1:
 			waves_here = 2
 		var zone: Array = []
 		for w in waves_here:

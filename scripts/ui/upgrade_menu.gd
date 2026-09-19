@@ -90,28 +90,30 @@ func _add(text: String, enabled: bool, cb: Callable) -> void:
 
 
 func _buy_weapon() -> void:
-	Progression.upgrade_weapon()
+	_buy_sfx(Progression.upgrade_weapon())
 	_rebuild()
 
 
 func _buy_skill(skill: SkillData) -> void:
-	Progression.upgrade_skill(skill)
+	_buy_sfx(Progression.upgrade_skill(skill))
 	_rebuild()
 
 
 func _buy_hp() -> void:
-	Progression.buy_max_health(20, 60)
+	_buy_sfx(Progression.buy_max_health(20, 60))
 	_rebuild()
 
 
 func _buy_mp() -> void:
-	Progression.buy_max_mana(15, 60)
+	_buy_sfx(Progression.buy_max_mana(15, 60))
 	_rebuild()
 
 
 func _buy_heal() -> void:
 	if not Progression.spend_orbs(50):
+		Audio.play_sfx("shop_fail")
 		return
+	Audio.play_sfx("shop_buy")
 	var pl := get_tree().get_first_node_in_group("player")
 	if pl != null and pl.health != null:
 		pl.health.heal(pl.health.max_health)
@@ -131,3 +133,8 @@ func _close() -> void:
 		# Modo teste/menu.
 		get_tree().paused = false
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
+
+
+## Som da compra: comprou → "shop_buy"; sem faíscas → "shop_fail".
+func _buy_sfx(ok: bool) -> void:
+	Audio.play_sfx("shop_buy" if ok else "shop_fail")

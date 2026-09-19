@@ -274,6 +274,7 @@ func unlock(id: String) -> bool:
 		return false
 	unlocked.append(id)
 	_save()
+	Audio.play_sfx("stele_unlock")
 	return true
 
 

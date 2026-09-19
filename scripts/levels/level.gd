@@ -302,6 +302,7 @@ func _lock_zone(c: float) -> void:
 		_zone_walls.append(w)
 	_set_camera_limits(c - ZONE_HALF, c + ZONE_HALF)
 	_cam_locked = true
+	Audio.play_sfx("zone_lock")
 
 
 func _unlock_zone() -> void:
@@ -312,6 +313,7 @@ func _unlock_zone() -> void:
 	if _cam_locked:
 		_cam_locked = false
 		_set_camera_limits(WALL_LEFT, _end_x)
+		Audio.play_sfx("zone_clear")
 
 
 ## Três pontos de spawn relativos ao centro da zona (centro-160, centro, centro+160).
@@ -418,6 +420,7 @@ func _on_screen_cleared() -> void:
 
 	if player and player.health:
 		RunManager.store_health(player.health.current_health, player.health.max_health)
+	Audio.play_sfx("level_clear")
 
 	if RunManager.is_final(screen):
 		_win()
@@ -452,6 +455,7 @@ func _open_exit() -> void:
 	portal.position = Vector2(_end_x - 200.0, 300.0)
 	add_child(portal)
 	portal.entered.connect(_advance_via_exit)
+	VfxLibrary.portal(self, portal.position, Color(0.8, 0.9, 1.0))
 
 
 func _advance_via_exit() -> void:
@@ -531,6 +535,7 @@ func _on_player_died() -> void:
 	if not is_inside_tree():
 		return
 	await DialogueBox.play(Narrative.death_revive(screen, RunManager.deaths_this_run, lost)).finished
+	Audio.play_sfx("revive")
 	RunManager.respawn_at_checkpoint()
 
 
