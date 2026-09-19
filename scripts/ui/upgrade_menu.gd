@@ -35,6 +35,22 @@ func _rebuild() -> void:
 		var cost := Progression.weapon_upgrade_cost()
 		_add("Arma Nv.%d → %d   (%d faíscas)" % [Progression.weapon_level, Progression.weapon_level + 1, cost],
 			Progression.can_upgrade_weapon(), _buy_weapon)
+		# O que o próximo nível ABRE (a progressão precisa ser legível).
+		var opens: Array = []
+		var ch0: CharacterData = GameManager.selected_character
+		if ch0 == null and GameContent.characters.size() > 0:
+			ch0 = GameContent.characters[0]
+		if ch0 != null:
+			for c in ch0.combos:
+				if c.required_weapon_level == Progression.weapon_level + 1:
+					opens.append(c.display_name)
+		if not opens.is_empty():
+			var l := Label.new()
+			l.text = "   abre: " + ", ".join(opens)
+			l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			l.add_theme_font_size_override("font_size", 9)
+			l.add_theme_color_override("font_color", CodexStyle.GOLD)
+			list.add_child(l)
 	else:
 		_add("Arma no nível máximo", false, Callable())
 

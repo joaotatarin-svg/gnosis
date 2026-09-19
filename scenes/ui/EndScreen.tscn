@@ -17,6 +17,21 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.06, 0.05, 0.09, 1)
 
+[node name="Painting" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+expand_mode = 1
+stretch_mode = 6
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.02, 0.045, 0.06, 0.55)
+mouse_filter = 2
+
 [node name="Center" type="CenterContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,29 +39,42 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="Center"]
+[node name="Panel" type="PanelContainer" parent="Center"]
 layout_mode = 2
-theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="Center/VBox"]
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Kicker" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="Center/Panel/VBox"]
 layout_mode = 2
 text = "Fim"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Center/VBox"]
+[node name="Subtitle" type="Label" parent="Center/Panel/VBox"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="Best" type="Label" parent="Center/VBox"]
+[node name="Chronicles" type="Label" parent="Center/Panel/VBox"]
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="Retry" type="Button" parent="Center/VBox"]
+[node name="Buttons" type="HBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="Retry" type="Button" parent="Center/Panel/VBox/Buttons"]
 layout_mode = 2
 text = "Jogar de novo"
 
-[node name="Menu" type="Button" parent="Center/VBox"]
+[node name="Menu" type="Button" parent="Center/Panel/VBox/Buttons"]
 layout_mode = 2
-text = "Menu principal"
+text = "Menu"

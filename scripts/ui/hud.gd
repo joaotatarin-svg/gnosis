@@ -22,6 +22,10 @@ var _ring_dots: Array = []
 var _ring_name: Label
 var _toast_label: Label
 
+# Progresso do Éon: 9 pontinhos abaixo do rótulo (preenchidos até a tela atual).
+var _eon_row: HBoxContainer
+var _eon_dots: Array[Label] = []
+
 
 func _ready() -> void:
 	add_to_group("hud")
@@ -29,6 +33,7 @@ func _ready() -> void:
 	_style_bar(hp_bar, Color("74b99a"), Color(0.22, 0.08, 0.10))
 	_style_bar(mp_bar, Color("78b8cd"), Color(0.10, 0.10, 0.26))
 	_build_boss_bar()
+	_build_eon_dots()
 	_build_rings()
 	Progression.rings_changed.connect(_refresh_rings)
 	_refresh_rings()
@@ -219,20 +224,44 @@ func _on_combo(count: int) -> void:
 	t.tween_property(combo_label, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
+## Fileira de 9 pontinhos = as telas do Éon atual (logo abaixo do rótulo).
+func _build_eon_dots() -> void:
+	_eon_row = HBoxContainer.new()
+	_eon_row.add_theme_constant_override("separation", 2)
+	for i in RunManager.EON_LEN:
+		var d := Label.new()
+		d.text = "●"
+		d.add_theme_font_size_override("font_size", 7)
+		d.add_theme_color_override("font_outline_color", Color("09141c"))
+		d.add_theme_constant_override("outline_size", 2)
+		_eon_row.add_child(d)
+		_eon_dots.append(d)
+	$Margin/VBox.add_child(_eon_row)
+	$Margin/VBox.move_child(_eon_row, screen_label.get_index() + 1)
+
+
+## Rótulo pelo PAPEL da tela ("Torpor · Travessia II") + pontinhos do Éon.
 func _update_screen_label() -> void:
 	var s := RunManager.current_screen
-	if not RunManager.run_active:
-		screen_label.text = "Tela %d" % s
-	elif RunManager.is_final(s):
-		screen_label.text = "A MENTE DO CEGO"
-	elif RunManager.is_king_screen(s):
-		screen_label.text = "O Limiar"
-	elif RunManager.is_center(s):
-		screen_label.text = "O Centro — Tela %d" % s
-	elif RunManager.is_archon_screen(s):
-		screen_label.text = "Éon %s — O ARCONTE" % RunManager.eon_name(s)
-	else:
-		screen_label.text = "Éon %s — Tela %d" % [RunManager.eon_name(s), s]
+	if CodexSession.active:
+		screen_label.text = "Provação  ·  %d / 3" % (CodexSession.stage + 1)
+		_eon_row.visible = false
+		return
+	screen_label.text = GameManager.screen_title(s)
+	var off := RunManager.eon_offset(s)
+	_eon_row.visible = off >= 0
+	if off < 0:
+		return
+	for i in _eon_dots.size():
+		var d: Label = _eon_dots[i]
+		if i < off:
+			d.add_theme_color_override("font_color", Color("c5a56a"))            # feita
+		elif i == off:
+			d.add_theme_color_override("font_color", Color("eee4cd"))            # atual
+		else:
+			d.add_theme_color_override("font_color", Color(1, 1, 1, 0.18))       # à frente
+		# O Desafio (4) e o Arconte (8) ganham marca própria.
+		d.text = "◆" if i == RunManager.EON_LEN - 1 else ("◈" if i == 4 else "●")
 
 
 func _on_hp(current: int, maximum: int) -> void:

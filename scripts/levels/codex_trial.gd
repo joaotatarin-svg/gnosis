@@ -53,7 +53,7 @@ func _process(delta: float) -> void:
 	if not completed and GameManager.state == GameManager.State.PLAYING:
 		CodexSession.elapsed += delta
 	if phase_label != null:
-		phase_label.text = "DESAFIO  %d / 3   ·   %02d:%02d" % [CodexSession.stage + 1, int(CodexSession.elapsed) / 60, int(CodexSession.elapsed) % 60]
+		phase_label.text = "PROVAÇÃO  %d / 3   ·   %02d:%02d" % [CodexSession.stage + 1, int(CodexSession.elapsed) / 60, int(CodexSession.elapsed) % 60]
 
 func _start_wave() -> void:
 	GameManager.current_screen = RunManager.FIRST_EON_SCREEN
@@ -92,14 +92,33 @@ func _show_result(won: bool) -> void:
 	panel.size = Vector2(640, 360)
 	result_layer.add_child(panel)
 	var final: bool = won and CodexSession.stage == 2
-	CodexStyle.label(result_layer, "GNOSIS  /  O DESPERTAR", Vector2(170, 67), 10, CodexStyle.GOLD)
-	CodexStyle.label(result_layer, "A luz permanece." if final else ("O selo cedeu." if won else "A faísca resiste."), Vector2(170, 99), 31, CodexStyle.PAPER, 440, true)
-	CodexStyle.label(result_layer, "Tempo  %02d:%02d    ·    Melhor combo  %d\n%s" % [int(CodexSession.elapsed) / 60, int(CodexSession.elapsed) % 60, CodexSession.best_combo, "Sete carcereiros esperam na campanha." if final else ("Respire. Sua vida será restaurada." if won else "Esquive do vermelho. Apare o dourado.")], Vector2(170, 157), 12, CodexStyle.MUTED)
-	var first := CodexStyle.button(result_layer, "Próximo encontro  →" if won and not final else "Tentar novamente", Vector2(170, 222), 285, func():
+	CodexStyle.label(result_layer, "GNOSIS  /  PROVAÇÃO  (treino)", Vector2(170, 52), 10, CodexStyle.GOLD)
+	CodexStyle.label(result_layer, "A luz permanece." if final else ("O selo cedeu." if won else "A faísca resiste."), Vector2(170, 80), 31, CodexStyle.PAPER, 440, true)
+	CodexStyle.label(result_layer, "Tempo  %02d:%02d    ·    Melhor combo  %d" % [int(CodexSession.elapsed) / 60, int(CodexSession.elapsed) % 60, CodexSession.best_combo], Vector2(170, 132), 12, CodexStyle.MUTED)
+	if final:
+		# Deixar CLARO: isto foi só o treino. A campanha é o jogo.
+		CodexStyle.wrap_label(CodexStyle.label(result_layer, "Isto foi a Provação (treino). A Campanha tem %d telas e sete Arcontes — no menu, em \"Nova campanha\"." % RunManager.MAX_SCREEN, Vector2(170, 158), 11, CodexStyle.PAPER, 310), 310)
+	else:
+		CodexStyle.label(result_layer, "Respire. Sua vida será restaurada." if won else "Esquive do vermelho. Apare o dourado.", Vector2(170, 158), 12, CodexStyle.MUTED)
+	var y := 222.0
+	var first: Button
+	if final:
+		first = CodexStyle.button(result_layer, "Ir pra Campanha  →", Vector2(170, y), 285, func():
+			get_tree().paused = false
+			Audio.play_sfx("ui_confirm")
+			SceneManager.change_scene("res://scenes/ui/PreGame.tscn"), true)
+		y += 36
+		CodexStyle.button(result_layer, "Repetir a Provação", Vector2(170, y), 285, func():
+			get_tree().paused = false
+			CodexSession.start_demo(CodexSession.boss_index))
+	else:
+		first = CodexStyle.button(result_layer, "Próximo encontro  →" if won else "Tentar novamente", Vector2(170, y), 285, func():
+			get_tree().paused = false
+			if won: CodexSession.next_stage()
+			else: CodexSession.start_demo(CodexSession.boss_index), true)
+	y += 36
+	CodexStyle.button(result_layer, "Voltar ao menu", Vector2(170, y), 285, func():
 		get_tree().paused = false
-		if won and not final: CodexSession.next_stage()
-		else: CodexSession.start_demo(CodexSession.boss_index), true)
-	CodexStyle.button(result_layer, "Voltar ao menu", Vector2(170, 261), 285, func():
-		get_tree().paused = false
+		Audio.play_sfx("ui_back")
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn"))
 	first.grab_focus()
