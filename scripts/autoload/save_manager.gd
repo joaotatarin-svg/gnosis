@@ -22,6 +22,9 @@ var notice: String = ""
 
 func _ready() -> void:
 	load_game()
+	# O Juice nasce DEPOIS deste autoload: reaplica no próximo frame pra que
+	# tremor/vibração salvos cheguem nele (apply_settings espelha se existir).
+	GameManager.apply_settings.call_deferred()
 
 
 func save_game() -> void:
