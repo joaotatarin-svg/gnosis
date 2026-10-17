@@ -26,6 +26,7 @@ class Runner extends Node:
 	var pl: Player
 	var _held: Dictionary = {}
 	var fails: Array[String] = []
+	var _trace: String = ""
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
@@ -183,7 +184,7 @@ class Runner extends Node:
 		var frame := 0
 		for k in 4:
 			_tap("jump")
-			for i in 42:
+			for i in 70:
 				if i == 10 or i == 16:
 					_tap("attack_heavy")
 					if pressed_at < 0:
@@ -203,8 +204,13 @@ class Runner extends Node:
 					lock_q.append(str(frame - landed_at))
 					landed_at = -1
 				in_dive = diving
+				var st := "%s/%s%s" % [Player.State.keys()[pl.state], pl.current_move.id if pl.current_move != null else "-", "" if pl.is_on_floor() else "(ar)"]
+				if st != _trace:
+					_trace = st
+					if OS.get_environment("FEEL_TRACE") != "":
+						print("FEEL|trace q=%d %s" % [frame, st])
 			pressed_at = -1
-		print("FEEL|aereo 4_pulos x 2_apertos: mergulhos=%d novas=%d preparo(q)=%s trava_pouso(q)=%s" % [dives, novas, ",".join(windup_q), ",".join(lock_q)])
+		print("FEEL|aereo 4_pulos(70q) x 2_apertos: mergulhos=%d novas=%d preparo(q)=%s trava_pouso(q)=%s" % [dives, novas, ",".join(windup_q), ",".join(lock_q)])
 		if dives > 4:
 			fails.append("aéreo forte saiu %d vezes em 4 pulos" % dives)
 
