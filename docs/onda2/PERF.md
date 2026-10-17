@@ -31,7 +31,7 @@ Não editei o jogo: medi e entreguei as correções como patch pronto para os do
 | P1 | **3 variantes de shader compiladas no meio da luta** (cache frio = 1ª sessão do jogador): 1º desmembramento (gib com `painted_clean` em retângulo recortado), 1ª esquiva (afterimage `painted_ghost`), 1ª criatura-variante do Éon (boneco articulado → shader de esqueleto 2D) | contagem do cache, 3/3 repetições | `VfxLibrary.prewarm` (patch) → **0** | Técnico | ALTA |
 | P2 | **~16 MB de textura carregados do disco e enviados à GPU no meio da luta**: folha `inhabitants` (8 MB) no 1º inimigo (carrega no 1º desenho), folha `archons` (7,2 MB) na 1ª morte de variante do Éon (os gibs recortam dela), boneco do Éon (1 MB), texturas de VFX (0,1–0,2 MB cada, 1º uso) | `RENDER_TEXTURE_MEM_USED` por evento | prewarm carrega e segura as referências → **0** | Técnico | ALTA |
 | P3 | O resto dos efeitos (partículas, aditivo, flashes, números, projétil, nova, portal...) **já compila no load** da fase: o Godot GLES3 compila a variante padrão quando o material nasce. Não eram a causa | 0 variantes nesses eventos | — | — | — |
-| P4 | **2ª sessão é limpa**: o Godot guarda os binários em `user://shader_cache`; com cache quente, 0 compilações na luta. O engasgo de shader é de 1ª sessão (e depois de atualizar driver/jogo). As texturas (P2) pesam em TODA sessão | rodada com cache quente | prewarm cobre os dois | — | — |
+| P4 | **2ª sessão é limpa**: o Godot guarda os binários em `user://shader_cache`; com cache quente, 0 compilações na luta. O engasgo de shader é de 1ª sessão (e depois de atualizar driver/jogo). As texturas (P2) pesam na 1ª vez de CADA sessão (depois ficam no cache estático de `PaintedLibrary`/`VfxLibrary`) | rodada com cache quente | prewarm cobre os dois | — | — |
 | P5 | Perfil de CPU por tela: 0,4–0,6 ms/quadro sem extras e 1,1–1,4 ms com 12–15 criaturas (nesta CPU dividida) → **CPU não é gargalo** | tabela §4 | — | — | — |
 | P6 | Draw calls: ~210 só a tela (tela 3), **~12 por criatura**; 330–410 com 12 extras | GL n=0 × n=6 × n=12 | não mexi (Cenário é o maior bloco); medir em iGPU | Cenário | BAIXA |
 | P7 | REVISAO #16 (alocação por quadro): a chave `"%s:%s@%s:%s" % [...]` da malha + `grid_mesh` custam 3–15 µs por criatura por quadro; dicionário `chain` montado todo quadro (Sophia). `PaintedLibrary.region` **não** é mais por quadro (só gibs/props) | AllocBench + A/B | `character_art_alloc.patch` | Anim-Sophia | BAIXA |
@@ -181,8 +181,10 @@ Maior arquivo: `derived/sophia_frames.png` (5,7 MB no pck; 2048² com mipmaps = 
 - **Nada medido em GPU real nem em iGPU.** Os ms do §5 são do llvmpipe. Recomendo o João rodar
   `GL=1 tools/perf/run.sh engasgos` (ou o PerfProbe) no PC dele depois do patch — ou o chefe pedir.
 - A sonda de engasgos roda na tela 3 (Torpor). As criaturas mudam por Éon; o prewarm usa
-  `Bestiary.types_for_screen(tela)`, então deve generalizar, mas só medi a tela 3 com repetição
-  (OUTRAS_TELAS).
+  `Bestiary.types_for_screen(tela)`, então deve generalizar, repeti na tela 50 (Praga, 1 rodada:
+  `/home/user/caps/perf/run3_t50/RESUMO.md`): mesmo quadro — 3 → 0 variantes, 0 MB de textura,
+  1º desmembramento 222 → 0 ms, 1ª esquiva 112 → 0, variante do Éon 203 → 2. Não medi telas de
+  chefe com a sonda (o chefe ataca e suja a medida) nem a 68.
 - Ainda há um resíduo de ~25 ms na 1ª esquiva no llvmpipe com o prewarm (0 shaders, 0 textura):
   provável custo interno do driver de software; não consegui atribuir.
 - Não otimizei draw calls (cada criatura tem material próprio → não agrupa). Cenário/Anim decidem.
