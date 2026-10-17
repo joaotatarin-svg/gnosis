@@ -1,24 +1,40 @@
 extends Node
 ## FERRAMENTA (não faz parte do jogo): BOT DE BALANCE. Joga o run inteiro
 ## sozinho (IA simples: persegue, bate, esquiva telegrafos, usa magias, compra
-## na loja) e mede POR TELA: tempo, dano tomado e "quase-mortes" (vida < 25% →
+## na loja) e mede POR TELA: tempo, dano tomado e "quase-mortes" (vida < 45% →
 ## conta 1 morte e cura cheia, pra run nunca parar). No fim imprime a tabela
 ## com a curva de dificuldade e avisos (HOT = dano demais, COLD = de menos).
 ## Com as TRAVESSIAS (r4): sem inimigo vivo e tela ainda não limpa, o bot ANDA
 ## pra direita até o gatilho da próxima zona; o timeout é por ZONA parada.
-## Uso: godot --path . res://tools/BalanceBot.tscn -- [tela_ini] [tela_fim] [vel]
-##   vel = multiplicador de velocidade (padrão 3; Juice.speed_mult).
+## Uso: godot --headless --audio-driver Dummy --fixed-fps 60 --path . \
+##          res://tools/BalanceBot.tscn -- [tela_ini] [tela_fim] [vel] [seed=N] [out=/caminho/base]
+##   vel  = multiplicador de velocidade (padrão 3; Juice.speed_mult). Com
+##          --fixed-fps 60, use vel <= 8 (8 passos de física por quadro).
+##   seed = semente do sorteio global (padrão 1). É re-semeada a CADA tela
+##          (hash de seed+tela): uma mudança na tela 10 não muda o sorteio da 11.
+##   out  = base dos arquivos de saída (gera <base>.txt e <base>.csv); padrão
+##          user://balance. O .csv tem uma linha por tela e o dano por FONTE.
+## DETERMINISMO (Onda 2): rode SEMPRE com --fixed-fps 60 — sem isso o delta
+## segue o relógio real e duas rodadas na mesma máquina divergem.
+## Comparar rodadas: tools/balance/run.sh e tools/balance/compare.py.
 
 func _ready() -> void:
 	var w := BalanceWorker.new()
 	w.last_screen = RunManager.MAX_SCREEN
-	var args := OS.get_cmdline_user_args()
-	if args.size() >= 1:
-		w.first_screen = int(args[0])
-	if args.size() >= 2:
-		w.last_screen = int(args[1])
-	if args.size() >= 3:
-		w.speed = float(args[2])
+	var pos: Array[String] = []
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("seed="):
+			w.base_seed = int(a.substr(5))
+		elif a.begins_with("out="):
+			w.out_base = a.substr(4)
+		else:
+			pos.append(a)
+	if pos.size() >= 1:
+		w.first_screen = int(pos[0])
+	if pos.size() >= 2:
+		w.last_screen = int(pos[1])
+	if pos.size() >= 3:
+		w.speed = float(pos[2])
 	get_tree().root.add_child.call_deferred(w)
 
 
@@ -26,6 +42,8 @@ class BalanceWorker extends Node:
 	var first_screen: int = 1
 	var last_screen: int = 68
 	var speed: float = 3.0
+	var base_seed: int = 1
+	var out_base: String = "user://balance"
 
 	const ZONE_TIMEOUT := 100.0        # s de jogo numa zona sem limpar = travada
 	const LOW_HP := 0.45               # abaixo disso: conta morte e cura cheia
@@ -50,6 +68,18 @@ class BalanceWorker extends Node:
 	var _cast_t: float = 0.0
 	var _done: bool = false
 	var _beat: float = 0.0             # heartbeat de progresso no stdout
+	# Dano por FONTE (quem bateu): type_id do inimigo, "projetil" (tiro sem
+	# dono) ou "zona" (dano sem golpe: poça/veneno de Arconte).
+	var _src: Dictionary = {}          # fonte -> dano na tela atual
+	var _src_total: Dictionary = {}    # fonte -> dano no run inteiro
+	var _hit_label: String = ""        # quem acertou neste quadro
+	var _pend: int = 0                 # dano visto neste quadro (atribui no _process)
+	var _hp_seen: int = -1
+	var _watched_id: int = 0           # instance_id do player com sinais ligados
+	var _boss: String = ""             # chefe/campeão visto na tela (relatório)
+	var _hits: int = 0                 # golpes que tiraram vida na tela
+	var _maxhit: int = 0               # maior golpe único na tela
+	var _projs: Array = []             # projéteis hostis vivos, marcados com quem atirou
 	# padrão de golpes do bot: mistura strings reais (LLL, LLH, HH, LLLH)
 	const PATTERN := ["light", "light", "light", "heavy", "light", "light", "heavy", "heavy", "heavy"]
 
@@ -64,6 +94,10 @@ class BalanceWorker extends Node:
 		Gnosis.persist_enabled = false   # e não grava Crônicas no disco
 		RunManager.current_screen = first_screen
 		GameManager.current_screen = first_screen
+		# Sorteio determinístico POR TELA (o jogo usa randf/randi globais).
+		_reseed(first_screen)
+		RunManager.screen_changed.connect(_reseed)
+		get_tree().node_added.connect(_on_node_added)
 		get_tree().change_scene_to_file.call_deferred("res://scenes/levels/Level01.tscn")
 
 	func _process(delta: float) -> void:
@@ -105,6 +139,8 @@ class BalanceWorker extends Node:
 		var pl: Player = get_tree().get_first_node_in_group("player")
 		if pl == null or pl.health == null:
 			return
+		_watch(pl)
+		_attribute()
 		# 4) troca de tela: fecha a linha anterior
 		if RunManager.current_screen != _cur:
 			_flush_row()
@@ -215,6 +251,78 @@ class BalanceWorker extends Node:
 			Input.action_press(act)
 			_release_later(act)
 
+	## Re-semeia o sorteio global a cada tela nova (chamado pelo screen_changed,
+	## antes da cena da tela nascer).
+	func _reseed(screen: int) -> void:
+		seed(hash("gnosis-balance-%d-%d" % [base_seed, screen]))
+
+	## Liga os sinais do player desta tela (cada tela recria o player).
+	func _watch(pl: Player) -> void:
+		if _watched_id == pl.get_instance_id():
+			return
+		_watched_id = pl.get_instance_id()
+		_hp_seen = pl.health.current_health
+		_hit_label = ""
+		_pend = 0
+		pl.hurtbox.hit_received.connect(_on_player_hit)
+		pl.health.health_changed.connect(_on_player_hp)
+
+	func _on_player_hit(_dmg: int, pos: Vector2, _kb: float, _unbl: bool, attacker: Node) -> void:
+		if attacker != null and is_instance_valid(attacker) and attacker is Enemy:
+			_hit_label = str(attacker.type_id)
+			return
+		# Sem dono: projétil. Acha o tiro nessa posição e quem o disparou.
+		_hit_label = "projetil"
+		var best := 40.0
+		for pj in _projs:
+			if is_instance_valid(pj) and pj.has_meta("bal_src"):
+				var d: float = pj.global_position.distance_to(pos)
+				if d < best:
+					best = d
+					_hit_label = "%s(tiro)" % str(pj.get_meta("bal_src"))
+
+	## Todo projétil hostil que nasce é marcado (no quadro seguinte, quando já
+	## tem posição) com o inimigo mais perto — quem atirou.
+	func _on_node_added(n: Node) -> void:
+		if n is Projectile:
+			_tag_projectile.call_deferred(n)
+
+	func _tag_projectile(pj: Projectile) -> void:
+		if not is_instance_valid(pj) or pj.target_team != "player":
+			return
+		var best := INF
+		var who := "?"
+		for e in get_tree().get_nodes_in_group("enemy"):
+			if is_instance_valid(e) and e is Enemy:
+				var d: float = e.global_position.distance_to(pj.global_position)
+				if d < best:
+					best = d
+					who = str(e.type_id)
+		pj.set_meta("bal_src", who)
+		_projs = _projs.filter(func(x): return is_instance_valid(x))
+		_projs.append(pj)
+
+	func _on_player_hp(cur: int, _mx: int) -> void:
+		if _hp_seen >= 0 and cur < _hp_seen:
+			_pend += _hp_seen - cur
+			_hits += 1
+			_maxhit = maxi(_maxhit, _hp_seen - cur)
+		_hp_seen = cur
+
+	## Fecha o quadro: o dano visto vai para quem acertou (ou "zona").
+	func _attribute() -> void:
+		if _pend > 0:
+			var k: String = _hit_label if _hit_label != "" else "zona"
+			_src[k] = int(_src.get(k, 0)) + _pend
+			_src_total[k] = int(_src_total.get(k, 0)) + _pend
+		_pend = 0
+		_hit_label = ""
+		if _boss == "":
+			for e in get_tree().get_nodes_in_group("enemy"):
+				if is_instance_valid(e) and e is Enemy and (e.is_boss_enemy or e.is_champion):
+					_boss = str(e.type_id)
+					break
+
 	func _release_later(a: String) -> void:
 		await get_tree().create_timer(0.05, true, false, true).timeout
 		Input.action_release(a)
@@ -231,7 +339,12 @@ class BalanceWorker extends Node:
 
 	func _flush_row() -> void:
 		if _cur > 0:
-			_rows.append({"screen": _cur, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": _timeout, "zones": _zones})
+			_rows.append({"screen": _cur, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": _timeout, "zones": _zones,
+				"src": _src.duplicate(), "boss": _boss, "hits": _hits, "maxhit": _maxhit})
+		_src = {}
+		_boss = ""
+		_hits = 0
+		_maxhit = 0
 		_t = 0.0
 		_dmg = 0
 		_deaths = 0
@@ -258,11 +371,38 @@ class BalanceWorker extends Node:
 			tot_d += int(r.dmg)
 			tot_m += int(r.deaths)
 		lines.append("TOTAL: %.1f min de jogo | %d de dano | %d mortes" % [tot_t / 60.0, tot_d, tot_m])
-		var f := FileAccess.open("user://balance.txt", FileAccess.WRITE)
+		# Dano por fonte no run inteiro (maiores primeiro).
+		var keys: Array = _src_total.keys()
+		keys.sort_custom(func(a, b): return int(_src_total[a]) > int(_src_total[b]))
+		var parts: Array[String] = []
+		for k in keys:
+			parts.append("%s=%d" % [k, int(_src_total[k])])
+		lines.append("FONTES: " + ", ".join(parts))
+		lines.append("seed=%d vel=%.1f telas %d-%d" % [base_seed, speed, first_screen, last_screen])
+		var f := FileAccess.open(out_base + ".txt", FileAccess.WRITE)
 		for l in lines:
 			print("BAL ", l)
 			if f:
 				f.store_line(l)
 		if f:
 			f.close()
+		_write_csv()
 		get_tree().quit()
+
+	## CSV por tela (para tools/balance/compare.py): fontes como "id:dano;id:dano".
+	func _write_csv() -> void:
+		var f := FileAccess.open(out_base + ".csv", FileAccess.WRITE)
+		if f == null:
+			print("BAL (sem CSV: não abriu %s.csv)" % out_base)
+			return
+		f.store_line("screen,zones,time,dmg,deaths,timeout,hits,maxhit,boss,sources")
+		for r in _rows:
+			var src: Dictionary = r.src
+			var ks: Array = src.keys()
+			ks.sort_custom(func(a, b): return int(src[a]) > int(src[b]))
+			var parts: Array[String] = []
+			for k in ks:
+				parts.append("%s:%d" % [k, int(src[k])])
+			f.store_line("%d,%d,%.1f,%d,%d,%d,%d,%d,%s,%s" % [r.screen, r.zones, r.time, r.dmg, r.deaths,
+				1 if r.timeout else 0, r.hits, r.maxhit, r.boss, ";".join(parts)])
+		f.close()
