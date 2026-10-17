@@ -288,6 +288,55 @@ class Worker extends Node:
 		check(not is_instance_valid(shop) or shop.is_queued_for_deletion(), "loja: B fecha")
 		await wait(0.1)
 		check(not get_tree().paused, "loja: ao fechar (sem pausa por baixo) o mundo despausa")
+		# Balance P1/P2: vida máx. 60×(n+1) até 10; Restauração só no santuário/pós-chefe.
+		var U = load("res://scripts/ui/upgrade_menu.gd")
+		check(U.hp_cost_for(0) == 60 and U.hp_cost_for(1) == 120 and U.hp_cost_for(9) == 600, "loja P1: preço 60/120/…/600")
+		check(U.hp_buys_from_bonus(0) == 0 and U.hp_buys_from_bonus(25) == 0 and U.hp_buys_from_bonus(45) == 1 and U.hp_buys_from_bonus(75 + 60) == 3, "loja P1: compras deduzidas do bônus (com dons do Soter)")
+		Progression.orbs = 99999
+		Progression.bonus_max_health = 0
+		RunManager.pending_advance = false
+		shop = SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
+		await wait(0.5)
+		var hp_row: Button = null
+		var heal_row: Button = null
+		for b in shop.list.get_children():
+			if String(b.text).begins_with("+20 de vida"):
+				hp_row = b
+			if String(b.text).begins_with("Restauração"):
+				heal_row = b
+		check(heal_row != null and heal_row.disabled, "loja P2: Restauração trancada no meio do run (pausa)")
+		var bought := 0
+		for i in 12:
+			if hp_row == null or hp_row.disabled:
+				break
+			var o := Progression.orbs
+			hp_row.emit_signal("pressed")
+			await frames(2)
+			if Progression.orbs < o:
+				bought += 1
+			hp_row = null
+			for b in shop.list.get_children():
+				if String(b.text).begins_with("+20 de vida") and not b.is_queued_for_deletion():
+					hp_row = b
+		check(bought == 10 and Progression.bonus_max_health == 200, "loja P1: no máximo 10 compras (%d, bônus %d)" % [bought, Progression.bonus_max_health])
+		check(99999 - Progression.orbs == 60 * 55, "loja P1: total pago 60×(1+…+10) = 3300 (%d)" % (99999 - Progression.orbs))
+		await shot("loja_teto")
+		shop.queue_free()
+		PauseStack.clear()
+		await wait(0.2)
+		RunManager.pending_advance = true
+		shop = SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
+		await wait(0.5)
+		heal_row = null
+		for b in shop.list.get_children():
+			if String(b.text).begins_with("Restauração"):
+				heal_row = b
+		check(heal_row != null and String(heal_row.text).contains("cura"), "loja P2: Restauração aparece no santuário/pós-chefe")
+		RunManager.pending_advance = false
+		shop.queue_free()
+		PauseStack.clear()
+		Progression.bonus_max_health = 0
+		await wait(0.2)
 		if lv != null:
 			pass
 
