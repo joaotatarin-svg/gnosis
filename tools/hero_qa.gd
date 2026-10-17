@@ -67,6 +67,15 @@ func _ready() -> void:
 			if state == "dead":
 				# deitada = último quadro da sequência e mais largo que alto
 				check(idx == seq.frames.size() - 1 and float(r[2]) > float(r[3]) * 1.3, "Morte não termina deitada: " + e.f)
+				# transição desenhada (S12): atingida → cambaleia → joelho → mão → tomba → deitada
+				check(seq.frames.size() >= 5, "Morte sem a transição antes do deitado (%d quadros)" % seq.frames.size())
+			if state == "walk":
+				# corrida = ciclo todo DESENHADO (sem os meios borrados do RIFE)
+				var drawn: bool = true
+				for fe in seq.frames:
+					if String(fe.f).begins_with("rinb."):
+						drawn = false
+				check(drawn and seq.frames.size() >= 8, "Corrida com quadros do RIFE ou ciclo curto: " + seq_name)
 			if state == "dodge_back":
 				check(seq_name == "dodge_back", "Esquiva pra trás sem quadro próprio")
 		if state == "dodge":
@@ -90,6 +99,26 @@ func _ready() -> void:
 		label.add_theme_font_size_override("font_size", 9)
 		label.text = "%s\nt=%.2f" % [state, time]
 		add_child(label)
+	# APARO e CONTRA-ATAQUE (S14): estados no atlas; o flash do _parry na guarda
+	# dispara o "parry"; play_action("riposte") toca o contra-ataque e termina.
+	if not db.is_empty():
+		for s in ["block", "parry", "riposte"]:
+			check(db.meta.states.has(s), "Atlas sem o estado: " + s)
+		var pa := CharacterArt.new()
+		add_child(pa)
+		pa.set_profile(p)
+		pa.set_process(false)
+		pa.set_anim("block")
+		pa.modulate = Color(3, 3, 4, 1)          # flash do Player._parry
+		pa._tick_visual(1.0 / 60.0)
+		check(pa._hero_seq(db.meta.states) == "parry", "Aparo na guarda não toca o quadro de aparo")
+		pa.modulate = Color.WHITE
+		pa.play_action("riposte")
+		check(pa._hero_seq(db.meta.states) == "riposte", "Contra-ataque não toca")
+		for f in 60:
+			pa._tick_visual(1.0 / 60.0)
+		check(pa._hero_seq(db.meta.states) != "riposte", "Contra-ataque não termina")
+		pa.visible = false
 	await get_tree().process_frame
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw

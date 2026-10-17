@@ -1,0 +1,304 @@
+{
+ "character": "creatures/espadachim",
+ "atlas": "res://assets/painted/derived/creatures/espadachim_frames.png",
+ "flex": "",
+ "sil": "res://assets/painted/derived/creatures/espadachim_frames_sil.png",
+ "body_px": 220.0,
+ "kind": "biped",
+ "fit": {
+  "body_frac": 0.895,
+  "foot_gap": 0.02,
+  "dx": -0.10601,
+  "rect_px": [
+   425,
+   400
+  ]
+ },
+ "cloth_amp": 0.0,
+ "hem_wave": 0.0,
+ "atlas_size": [
+  2048,
+  512
+ ],
+ "frames": {
+  "idle_0": {
+   "rect": [
+    755,
+    0,
+    199,
+    245
+   ],
+   "top": 17.11,
+   "foot_y": 237.11,
+   "bottom": 237.67,
+   "pelvis_x": 77.64,
+   "mid": false
+  },
+  "walk_0": {
+   "rect": [
+    954,
+    0,
+    215,
+    244
+   ],
+   "top": 17.11,
+   "foot_y": 236.56,
+   "bottom": 236.56,
+   "pelvis_x": 90.28,
+   "mid": false
+  },
+  "walk_0-walk_1_50": {
+   "rect": [
+    360,
+    0,
+    197,
+    247
+   ],
+   "top": 18.0,
+   "foot_y": 239.0,
+   "bottom": 239.0,
+   "pelvis_x": 77.49,
+   "mid": true
+  },
+  "walk_1": {
+   "rect": [
+    180,
+    0,
+    180,
+    249
+   ],
+   "top": 17.11,
+   "foot_y": 241.56,
+   "bottom": 241.56,
+   "pelvis_x": 67.23,
+   "mid": false
+  },
+  "walk_1-walk_2_50": {
+   "rect": [
+    557,
+    0,
+    198,
+    247
+   ],
+   "top": 17.0,
+   "foot_y": 238.0,
+   "bottom": 238.0,
+   "pelvis_x": 76.89,
+   "mid": true
+  },
+  "walk_2": {
+   "rect": [
+    1169,
+    0,
+    216,
+    244
+   ],
+   "top": 17.11,
+   "foot_y": 236.0,
+   "bottom": 237.11,
+   "pelvis_x": 87.96,
+   "mid": false
+  },
+  "walk_2-walk_0_50": {
+   "rect": [
+    1385,
+    0,
+    215,
+    244
+   ],
+   "top": 17.0,
+   "foot_y": 235.0,
+   "bottom": 235.0,
+   "pelvis_x": 89.41,
+   "mid": true
+  },
+  "windup": {
+   "rect": [
+    0,
+    0,
+    180,
+    255
+   ],
+   "top": 48.78,
+   "foot_y": 247.67,
+   "bottom": 247.67,
+   "pelvis_x": 84.33,
+   "mid": false
+  },
+  "strike": {
+   "rect": [
+    0,
+    255,
+    270,
+    201
+   ],
+   "top": 15.44,
+   "foot_y": 193.78,
+   "bottom": 193.78,
+   "pelvis_x": 103.21,
+   "mid": false
+  },
+  "hurt": {
+   "rect": [
+    1600,
+    0,
+    213,
+    203
+   ],
+   "top": 7.11,
+   "foot_y": 195.44,
+   "bottom": 195.44,
+   "pelvis_x": 89.61,
+   "mid": false
+  },
+  "death": {
+   "rect": [
+    270,
+    255,
+    200,
+    149
+   ],
+   "top": 7.67,
+   "foot_y": 135.44,
+   "bottom": 141.56,
+   "pelvis_x": 100.67,
+   "mid": false
+  }
+ },
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "f": "idle_0",
+     "anchor": [
+      77.64,
+      237.11
+     ]
+    }
+   ]
+  },
+  "walk": {
+   "frames": [
+    {
+     "f": "walk_0",
+     "anchor": [
+      90.28,
+      236.56
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_50",
+     "anchor": [
+      78.28,
+      239.56
+     ]
+    },
+    {
+     "f": "walk_1",
+     "anchor": [
+      67.23,
+      241.56
+     ]
+    },
+    {
+     "f": "walk_1-walk_2_50",
+     "anchor": [
+      77.96,
+      238.56
+     ]
+    },
+    {
+     "f": "walk_2",
+     "anchor": [
+      87.96,
+      236.0
+     ]
+    },
+    {
+     "f": "walk_2-walk_0_50",
+     "anchor": [
+      89.28,
+      235.56
+     ]
+    }
+   ],
+   "cycle_bodies": 0.9
+  },
+  "windup": {
+   "frames": [
+    {
+     "f": "windup",
+     "anchor": [
+      84.33,
+      247.67
+     ]
+    }
+   ]
+  },
+  "attack": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      103.21,
+      193.78
+     ]
+    }
+   ]
+  },
+  "recover": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      103.21,
+      193.78
+     ]
+    },
+    {
+     "f": "idle_0",
+     "anchor": [
+      77.64,
+      237.11
+     ]
+    }
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      89.61,
+      195.44
+     ]
+    }
+   ]
+  },
+  "dead": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      89.61,
+      195.44
+     ]
+    },
+    {
+     "f": "death",
+     "anchor": [
+      100.67,
+      135.44
+     ]
+    }
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ }
+}

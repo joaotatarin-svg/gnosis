@@ -1,0 +1,84 @@
+{
+ "_doc": "Receita do NPC soter (inhabitants índice 6). Folha do GPT 2x4: idle_0, idle_1, talk_0, talk_1, bless_0, bless_1, turn_away, fade.",
+ "group": "creatures",
+ "sheet": "artes/gpt/npc_soter_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_0",
+  "idle_1",
+  "talk_0",
+  "talk_1",
+  "bless_0",
+  "bless_1",
+  "turn_away",
+  "fade"
+ ],
+ "ref": "idle_0",
+ "old_sheet": "assets/painted/derived/inhabitants.png",
+ "old_rect": [
+  0,
+  786,
+  425,
+  475
+ ],
+ "old_flip": false,
+ "kind": "npc",
+ "body_px": 240,
+ "anchors": {},
+ "anchor_fix": {},
+ "inbetween": {
+  "idle": [
+   "idle_0",
+   "idle_1",
+   2
+  ]
+ },
+ "flex": {},
+ "hem_wave": 0.0,
+ "states": {
+  "idle": {
+   "pingpong": [
+    "idle_0",
+    "idle_1"
+   ],
+   "loop": true,
+   "fps": 3.0
+  },
+  "talk": {
+   "frames": [
+    "talk_0",
+    "talk_1"
+   ],
+   "loop": true,
+   "fps": 2.5
+  },
+  "bless": {
+   "frames": [
+    "bless_0",
+    "bless_1"
+   ],
+   "dur": [
+    0.35
+   ]
+  },
+  "fade": {
+   "frames": [
+    "turn_away",
+    "fade"
+   ],
+   "dur": [
+    0.4
+   ]
+  }
+ },
+ "recolor": {
+  "fade": [
+   236,
+   226,
+   196
+  ]
+ }
+}

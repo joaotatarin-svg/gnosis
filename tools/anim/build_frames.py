@@ -355,7 +355,10 @@ def main() -> None:
 			# apoiado recua em relação à pélvis até o quadro seguinte. Trocando
 			# de quadro a cada `advance[i]` de distância, o pé apoiado volta ao
 			# MESMO ponto do mundo em toda troca (deriva 0 no apoio).
-			low = [out_frames[e["f"]]["low_x"] - out_frames[e["f"]]["pelvis_x"] for e in seq]
+			# pé de apoio = bota mais baixa; `support` força a bota de trás/da frente
+			# num quadro (ex.: pé estendido antes do contato — o apoio ainda é o de trás)
+			sup = st.get("support", {})
+			low = [out_frames[e["f"]][{"rear": "rear_x", "front": "front_x"}.get(sup.get(e["f"]), "low_x")] - out_frames[e["f"]]["pelvis_x"] for e in seq]
 			steps = set(st.get("steps", []))
 			n = len(seq)
 			adv = [None] * n
@@ -369,7 +372,7 @@ def main() -> None:
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
 			print("  %s: avanço por quadro %s -> ciclo %.2f alturas" % (sname, adv, sum(adv) / body_px))
-		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change"]:
+		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support"]:
 			if key in st and key not in entry:
 				entry[key] = st[key]
 		out_states[sname] = entry
