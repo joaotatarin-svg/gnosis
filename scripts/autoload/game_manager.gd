@@ -22,7 +22,9 @@ var end_subtitle: String = ""
 ##   caption_size (0=P, 1=M, 2=G) → legendas/diálogos (DialogueBox lê daqui)
 const SETTINGS_DEFAULT := {
 	"fullscreen": false,
-	"vsync": true,
+	# PRÉVIA: VSync DESLIGADO por padrão — com VSync o OpenGL desta máquina (RX 7600,
+	# 144 Hz) caía para ~21–28 qps; sem ele roda liso. O teto vem de `_apply_fps_cap`.
+	"vsync": false,
 	"shake": 1.0,
 	"rumble": true,
 	"caption_size": 1,
@@ -66,6 +68,17 @@ func apply_settings() -> void:
 	if DisplayServer.window_get_mode() != want:
 		DisplayServer.window_set_mode(want)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if bool(settings["vsync"]) else DisplayServer.VSYNC_DISABLED)
+	_apply_fps_cap()
+
+
+## PRÉVIA: limita o FPS à taxa do monitor (fallback 60, teto 240) — sem VSync o
+## jogo não dispara a centenas de qps nem esquenta a GPU à toa. Com VSync ligado
+## o teto continua (o VSync já segura na taxa do monitor).
+func _apply_fps_cap() -> void:
+	var hz: int = int(DisplayServer.screen_get_refresh_rate())
+	if hz <= 0:
+		hz = 60
+	Engine.max_fps = mini(hz, 240)
 
 
 ## Multiplicador do tremor de câmera (0..1) — pra quem gera o tremor.
