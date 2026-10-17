@@ -136,3 +136,30 @@ pintados por osso.
 - Braços de Galila e Armupiel não ganharam camada própria (o braço da espada
   quase não cruza o tronco); Yabel e Athoth seguem com o campo antigo.
 - Sensação/tempo do golpe ainda precisa de playtest humano.
+
+## 5. Quadros desenhados (Onda 2, 17/10/2026) — o método principal
+
+Os chefes passaram a tocar **quadros pintados pelo GPT** (folha 2×4: idle_0, idle_1,
+walk_0, walk_1, windup, strike, hurt, death), como a Sophia. O boneco desta página
+continua como **reserva** (chefe sem atlas) e a API (`set_state_texture`, Ateliê) não mudou.
+Trocar a textura da malha por outra pose foi descartado: os pesos valem só para a pose
+de repouso e a pintura deformava errado.
+
+```
+python tools/anim_bosses/boss_frames.py athoth          # atlas + JSON + meios do RIFE (GPU)
+python tools/anim_bosses/boss_frames.py athoth --no-rife # reaproveita os meios (src/bosses)
+godot --headless --path . --editor --quit               # importa (mipmaps já no .import)
+godot --headless --audio-driver Dummy --path . res://tools/PuppetQA.tscn         # check (inclui quadros)
+godot --audio-driver Dummy --path . --resolution 1400x520 res://tools/AnimQA.tscn -- boss_board <prefixo> [id]
+```
+
+Receita (`tools/anim_bosses/recipes/<nome>.json`): folha, grade, `old_body` (camada do
+boneco, de onde sai o ajuste de escala/lugar), âncoras por célula (`pelvis` | `top` |
+`lying`, `anchor_fix`), meios do RIFE, máscara do pano e estados (`pingpong`, `loop`+`fps`,
+`at` = limiares do progresso real do inimigo, `dur`, `cycle_bodies`). Detalhes e estado por
+chefe em `docs/onda2/ARTE_GPT.md`.
+
+No jogo (`CharacterArt`, seção "CHEFES POR QUADROS"): troca seca, mola amortecida em
+(avanço, curvatura) para o hold da preparação e o estalo do golpe, afterimage na entrada do
+golpe, contorno pulsante no telegrafo, gibs do último quadro, shader
+`assets/painted/shaders/painted_boss.gdshader`.

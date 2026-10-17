@@ -35,6 +35,8 @@ func _ready() -> void:
 	match mode:
 		"film_sophia": _film_sophia()
 		"film_criaturas": _film_creatures()
+		"film_boss": _film_boss(args[2] if args.size() >= 3 else "arconte_sono")
+		"boss_board": await _boss_board(args[2] if args.size() >= 3 else "")
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -163,7 +165,8 @@ func _process(delta: float) -> void:
 		a.t += delta
 		art.position.x += float(st[2]) * delta
 		# pose_progress das criaturas (preparo/golpe/recuo)
-		art.pose_progress = clampf(a.t / float(st[1]), 0.0, 1.0) if String(st[0]) in ["windup", "attack", "recover"] and not art.painted.get("hero", false) else -1.0
+		var s0: String = String(st[0])
+		art.pose_progress = clampf(a.t / float(st[1]), 0.0, 1.0) if (s0.begins_with("windup") or s0.begins_with("attack") or s0 == "recover") and not art.painted.get("hero", false) else -1.0
 		if st.size() > 4:
 			# arco do pulo: sobe e desce
 			var u: float = a.t / float(st[1])
@@ -199,6 +202,87 @@ func _run_drift() -> void:
 	f.close()
 	print("RUN DRIFT: ", rows.size(), " quadros")
 	get_tree().quit()
+
+
+# ------------------------------------------------------------------ chefes
+## Chefe pelo id do Bestiário (arconte_sono, ..., colosso, rei_final).
+func _boss(id: String, pos: Vector2, sc: float, puppet: bool = false) -> CharacterArt:
+	var art := CharacterArt.new()
+	add_child(art)
+	var p: ArtProfile = Bestiary.get_type(id).profile
+	art.set_profile(p)
+	if puppet:
+		art._boss_db = {}          # força o boneco (comparação antes × depois)
+	art.position = pos - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0 * sc)
+	art.scale = Vector2(sc, sc)
+	return art
+
+
+## Prancha ANTES × DEPOIS por chefe com quadros: linha de cima = boneco antigo,
+## linha de baixo = quadros desenhados, nos mesmos estados/instantes.
+## `only` = um id; vazio = todos os chefes que têm atlas.
+func _boss_board(only: String) -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	get_window().size = Vector2i(1400, 520)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	var ids: Array = []
+	for b in Bestiary.bosses:
+		ids.append(b.id)
+	ids.append_array(["colosso", "rei_final"])
+	if only != "":
+		ids = [only]
+	var cells := [["idle", -1.0, 0.6], ["walk", -1.0, 0.5], ["windup", 0.9, 0.6], ["attack", 0.15, 0.06], ["recover", 0.5, 0.2], ["hurt", -1.0, 0.08], ["dead", -1.0, 0.5]]
+	for id in ids:
+		var probe := _boss(id, Vector2(-999, -999), 1.0)
+		var framed: bool = probe.has_boss_frames()
+		probe.free()
+		if not framed and only == "":
+			continue
+		var stage := Node2D.new()
+		add_child(stage)
+		for row in 2:
+			for i in cells.size():
+				var art := _boss(id, Vector2(100 + i * 200, 240 + row * 260), 1.6, row == 0)
+				remove_child(art)
+				stage.add_child(art)
+				art.set_process(false)
+				art.set_anim(String(cells[i][0]))
+				# avança o relógio visual como no jogo (mola, boneco) até o instante
+				var steps: int = int(float(cells[i][2]) * 60.0)
+				for f in steps:
+					art.pose_progress = float(cells[i][1]) if float(cells[i][1]) < 0.0 else float(cells[i][1]) * float(f + 1) / steps
+					if cells[i][0] == "walk":
+						art.motion_stride = 1.0
+						art.motion_distance += 2.0
+					art._process(1.0 / 60.0)
+				if row == 0:
+					var lb := Label.new()
+					lb.text = String(cells[i][0])
+					lb.position = Vector2(i * 200 + 10, 4)
+					stage.add_child(lb)
+			var tag := Label.new()
+			tag.text = ("BONECO (antes)" if row == 0 else "QUADROS (depois)") + "  " + id
+			tag.position = Vector2(8, 250 + row * 260 - 30)
+			stage.add_child(tag)
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		_save((out if out != "" else "user://boss_board") + "_" + id + ".png")
+		stage.queue_free()
+		await get_tree().process_frame
+	get_tree().quit()
+
+
+## Filme de um chefe sozinho: parado → anda → prepara (hold) → golpe → recupera
+## → dano → parado → prepara forte → golpe forte → morte (dissolve).
+func _film_boss(id: String) -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	var art := _boss(id, Vector2(300, GROUND), 1.5)
+	art.scale.x = -art.scale.x       # olha pra esquerda, como no jogo
+	var tl := [["idle", 1.2, 0.0], ["walk", 1.2, -40.0], ["windup", 0.8, 0.0], ["attack", 0.25, 0.0], ["recover", 0.6, 0.0],
+		["idle", 0.4, 0.0], ["hurt", 0.4, 25.0], ["idle", 0.5, 0.0], ["windup_heavy", 0.9, 0.0], ["attack_heavy", 0.3, 0.0],
+		["recover", 0.6, 0.0], ["dead", 1.2, 0.0], ["dead", 0.01, 0.0]]
+	actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
+	_label("CHEFE %s — quadros desenhados (AnimQA)" % id, Vector2(6, 6))
 
 
 func _save(path: String) -> void:

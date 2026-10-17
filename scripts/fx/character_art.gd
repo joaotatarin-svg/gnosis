@@ -69,6 +69,12 @@ func set_profile(p: ArtProfile) -> void:
 		var h: float = 190.0 if int(painted.puppet) == 8 else profile.height * 1.3
 		boss_puppet.scale = Vector2(-1 if painted.flip else 1,1) * h / 100.0
 		boss_puppet.position.y = GROUND_Y * profile.height / 44.0
+	# Chefe com QUADROS DESENHADOS: o CharacterArt toca os quadros e o boneco
+	# fica de reserva (existe, mas não anima nem aparece).
+	_boss_db = frame_db("bosses/" + String(painted.frames)) if painted.has("frames") else {}
+	_flex_material().shader = load(BOSS_SHADER if has_boss_frames() else FLEX_SHADER)
+	_bsp = Vector2.ZERO
+	_bsv = Vector2.ZERO
 	queue_redraw()
 
 
@@ -136,9 +142,11 @@ func _process(delta: float) -> void:
 	anim_time += delta
 	_tick_visual(delta)
 	if is_instance_valid(boss_puppet):
-		boss_puppet.visible = texture == null
-		boss_puppet.modulate = self_modulate
-		boss_puppet.drive(anim_state,anim_time,delta,pose_progress,motion_stride,motion_fury)
+		var framed: bool = has_boss_frames()
+		boss_puppet.visible = texture == null and not framed
+		if not framed:
+			boss_puppet.modulate = self_modulate
+			boss_puppet.drive(anim_state,anim_time,delta,pose_progress,motion_stride,motion_fury)
 	queue_redraw()
 
 
@@ -321,7 +329,7 @@ func _compute_pose() -> void:
 func _draw() -> void:
 	if profile == null:
 		return
-	if is_instance_valid(boss_puppet) and texture == null:
+	if is_instance_valid(boss_puppet) and texture == null and not has_boss_frames():
 		return
 	var s := profile.height / 44.0
 	_compute_pose()
@@ -1132,6 +1140,8 @@ func _cracked_face(s: float) -> void:
 func gib_parts() -> Array:
 	var s := profile.height / 44.0
 	var parts: Array = []
+	if has_boss_frames() and not _boss_shown.is_empty():
+		return _frame_gibs()
 	if not painted.is_empty() and not painted.get("hero",false):
 		return _painted_gibs(s)
 	if texture != null:
@@ -1311,6 +1321,7 @@ func _codex_regalia(s: float) -> void:
 const MAX_ROT := 0.12
 const MAX_SQUASH := 0.07
 const FLEX_SHADER := "res://assets/shaders/painted_flex.gdshader"
+const BOSS_SHADER := "res://assets/painted/shaders/painted_boss.gdshader"   # chefes por quadros
 const FRAMES_JSON := "res://assets/painted/derived/%s_frames.json"
 const MESH_COLS := 6
 const MESH_ROWS := 10
@@ -1357,6 +1368,8 @@ static func frame_db(character: String) -> Dictionary:
 		db = {"meta": data, "atlas": load(String(data.atlas))}
 		if ResourceLoader.exists(String(data.get("flex", ""))):
 			db["flex"] = load(String(data.flex))
+		if ResourceLoader.exists(String(data.get("sil", ""))):
+			db["sil"] = load(String(data.sil))
 	_frame_dbs[character] = db
 	return db
 
@@ -1510,6 +1523,34 @@ func _draw_painted(s: float) -> void:
 			_on_frame_changed(seq, seq_name, i, tip)
 			_shown_key = key
 		m = _hero_motion()
+	elif has_boss_frames():
+		# CHEFE POR QUADROS: mesma lógica da Sophia (atlas + âncora por quadro);
+		# escala e lugar herdados da pintura antiga (meta.fit) → o corpo ocupa
+		# o mesmo espaço do boneco (colisões/_fit_body coerentes).
+		var meta: Dictionary = _boss_db.meta
+		var seq_name: String = _boss_seq(meta.states)
+		var seq: Dictionary = meta.states[seq_name]
+		var i: int = _boss_index(seq)
+		var e: Dictionary = seq.frames[i]
+		var fr: Dictionary = meta.frames[e.f]
+		var rr: Array = fr.rect
+		var rect := Rect2(rr[0], rr[1], rr[2], rr[3])
+		var anchor := Vector2(e.anchor[0], e.anchor[1])
+		tex = _boss_db.atlas
+		flex_tex = _boss_db.get("flex", null)
+		mesh = grid_mesh("%s:%s@%s" % [meta.character, e.f, anchor], rect, rect.position + anchor, Vector2(tex.get_width(), tex.get_height()))
+		body_h = float(meta.body_px)
+		var hw: float = _boss_world_h()
+		k = hw * float(meta.fit.body_frac) / body_h
+		var key: String = seq_name + ":" + str(i)
+		if key != _shown_key:
+			_on_boss_frame_changed(seq, i)
+			_shown_key = key
+		m = _boss_m.duplicate()
+		# pé e centro do corpo onde estavam na pintura antiga (unidades do corpo)
+		m[0] = float(m[0]) + float(meta.fit.dx) * hw / s
+		m[4] = float(m[4]) - float(meta.fit.foot_gap) * hw / s
+		_boss_shown = {"rect": rect, "anchor": anchor, "k": k, "tex": tex}
 	else:
 		var rect: Rect2
 		var anchor: Vector2
@@ -1548,10 +1589,18 @@ func _draw_painted(s: float) -> void:
 	if flex_tex != null:
 		mat.set_shader_parameter("flex_mask", flex_tex)
 	var running: bool = anim_state in ["walk", "charge", "dodge", "jump", "fall"]
-	mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
-	mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
+	var framed_boss: bool = not hero and has_boss_frames()
+	if framed_boss:
+		# chefe: só o pano/trapos de baixo (G da máscara); onda da barra por receita
+		var ca: float = float(_boss_db.meta.get("cloth_amp", 0.0))
+		mat.set_shader_parameter("hair_amp", 0.0)
+		mat.set_shader_parameter("cloth_amp", (ca * 1.5 if running else ca) if flex_tex != null else 0.0)
+		mat.set_shader_parameter("hem_wave", float(_boss_db.meta.get("hem_wave", 0.0)) * (1.4 if running else 1.0))
+	else:
+		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
+		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
+		mat.set_shader_parameter("hem_wave", 2.0 if profile.body == ArtProfile.Body.WRAITH else 0.0)
 	mat.set_shader_parameter("texel", Vector2(1.0 / tex.get_width(), 1.0 / tex.get_height()))
-	mat.set_shader_parameter("hem_wave", 2.0 if profile.body == ArtProfile.Body.WRAITH else 0.0)
 	mat.set_shader_parameter("dissolve", _dissolve_amount())
 	mat.set_shader_parameter("glow_color", profile.eye)
 	# --- desenho: corpo (transform limitado) + malha da pintura ---
@@ -1562,6 +1611,15 @@ func _draw_painted(s: float) -> void:
 	var origin := Vector2(float(m[0]) * s, GROUND_Y * s + float(m[4]) * s)
 	draw_set_transform(origin, rot, Vector2(sx, sy))
 	var mt := Transform2D(0.0, Vector2(k, k), 0.0, Vector2.ZERO)
+	if framed_boss and telegraph_color.a > 0.0:
+		# TELEGRAFO: contorno brilhante pulsando atrás do corpo (8 cópias
+		# deslocadas, cor chapada) — a pintura continua legível por cima.
+		var pulse: float = 0.75 + 0.25 * sin(_wind_time * 18.0)
+		var glow := Color(telegraph_color.r * 1.4, telegraph_color.g * 1.4, telegraph_color.b * 1.4, telegraph_color.a * pulse)
+		var w: float = 1.3 / maxf(absf(sx), 0.5)
+		for j in 8:
+			var off := Vector2.from_angle(TAU * j / 8.0) * w
+			draw_grid(get_canvas_item(), mesh, Transform2D(0.0, Vector2(k, k), 0.0, off), _silhouette_tex(tex), glow)
 	draw_grid(get_canvas_item(), mesh, mt, tex, tint)
 	_body_xform = Transform2D(rot, Vector2(sx, sy), 0.0, origin) * mt
 	_body_mesh = mesh
@@ -1662,6 +1720,8 @@ func _tick_visual(delta: float) -> void:
 	_wind_time += delta
 	_smear_clock += delta
 	_impact = move_toward(_impact, 0.0, delta * 6.0)
+	if has_boss_frames():
+		_tick_boss(delta)
 	_land_t = maxf(0.0, _land_t - delta)
 	if _rise_t > 0.0:
 		_rise_t = maxf(0.0, _rise_t - delta)
@@ -1866,6 +1926,189 @@ func _painted_motion() -> Array:
 				sy = 1.0 + sin(t * 2.0) * 0.008
 	return [ox, 0.0, sx, sy, oy, bend]
 
+
+# =========================================================================
+# CHEFES POR QUADROS DESENHADOS (folhas do GPT, docs/ANIMACAO_CHEFES.md)
+# =========================================================================
+# Atlas + JSON de tools/anim_bosses/boss_frames.py. Troca SECA entre os quadros
+# pintados (idle/andar com meios do RIFE em vaivém), HOLD no quadro da
+# preparação com tensão e tremor, ESTALO no golpe (mola com sobressalto +
+# afterimage), recuo no dano, dissolução na morte. O movimento extra é uma
+# MOLA amortecida em (avanço, curvatura do shader) — o "boneco leve" por cima
+# dos quadros, sem girar o cartão. O BossPuppet fica de reserva (sem atlas).
+
+var _boss_db: Dictionary = {}                     # {meta, atlas, flex, sil} ou {} (= boneco)
+var _boss_m: Array = [0.0, 0.0, 1.0, 1.0, 0.0, 0.0]   # [ox, rot, sx, sy, oy, bend] da mola
+var _bsp := Vector2.ZERO                          # mola: (avanço x, curvatura) atuais
+var _bsv := Vector2.ZERO
+var _boss_state_seen: String = ""
+var _boss_shown: Dictionary = {}                  # último quadro desenhado (gibs)
+## Contorno do telegrafo (cor; a = intensidade). Nos chefes por quadros o tom
+## chapado da preparação (Enemy.TELEGRAPH_*) vira este contorno pulsante.
+var telegraph_color := Color(0, 0, 0, 0)
+const _TELEGRAPH_TINTS := [Color(1.0, 0.85, 0.2, 1.0), Color(1.0, 0.25, 0.25, 1.0)]
+
+
+## true quando este chefe toca quadros desenhados (senão, o boneco).
+func has_boss_frames() -> bool:
+	return not _boss_db.is_empty()
+
+
+## Altura do recorte antigo em px de mundo (a mesma conta do boneco).
+func _boss_world_h() -> float:
+	return 190.0 if int(painted.get("puppet", -1)) == 8 else profile.height * 1.3
+
+
+## Estado de animação → sequência do atlas do chefe (com reserva).
+func _boss_seq(states: Dictionary) -> String:
+	var st: String = anim_state
+	if states.has(st):
+		return st
+	var chain := {"charge": ["attack", "walk"], "windup_heavy": ["windup"], "windup_cast": ["windup"],
+		"attack_heavy": ["attack"], "cast": ["attack"], "attack_up": ["attack"], "attack_air": ["attack"],
+		"attack_dive": ["attack"], "stagger": ["hurt"], "block": ["hurt"], "dodge": ["walk"],
+		"dead": ["hurt"], "recover": ["idle"], "jump": ["idle"], "fall": ["idle"]}
+	for alt in chain.get(st, []):
+		if states.has(alt):
+			return alt
+	return "idle"
+
+
+## Quadro da sequência: andar pela DISTÂNCIA (cycle_bodies), laços pelo relógio
+## contínuo (não reinicia a cada idle↔walk), `at` pelo PROGRESSO real do
+## inimigo (preparação/golpe/recuperação), senão `dur` por quadro.
+func _boss_index(seq: Dictionary) -> int:
+	var n: int = seq.frames.size()
+	if n <= 1:
+		return 0
+	if seq.has("cycle_bodies"):
+		var cyc: float = float(seq.cycle_bodies) * _boss_world_h() * float(_boss_db.meta.fit.body_frac)
+		return int(fposmod(motion_distance / maxf(cyc, 1.0), 1.0) * n) % n
+	if seq.get("loop", false) and float(seq.get("fps", 0.0)) > 0.0:
+		return int(_wind_time * float(seq.fps) * motion_fury) % n
+	if seq.has("at") and pose_progress >= 0.0:
+		var at: Array = seq.at
+		var idx: int = 0
+		for j in mini(n, at.size()):
+			if pose_progress >= float(at[j]):
+				idx = j
+		return idx
+	return _seq_index(seq, "")
+
+
+func _on_boss_frame_changed(seq: Dictionary, i: int) -> void:
+	if anim_state == "dead" and i == seq.frames.size() - 1 and seq.frames.size() > 1:
+		_impact = 1.0
+	if i in _int_list(seq.get("impact_at", [])) and i > 0:
+		spawn_afterimage(Color(profile.eye, 0.5), 0.09)
+
+
+func _silhouette_tex(tex: Texture2D) -> Texture2D:
+	return _boss_db.get("sil", tex)
+
+
+## Mola + poses de corpo inteiro dos chefes por quadros (chamada por _tick_visual).
+func _tick_boss(delta: float) -> void:
+	var entered: bool = anim_state != _boss_state_seen
+	_boss_state_seen = anim_state
+	var t: float = anim_time
+	var p: float = pose_progress if pose_progress >= 0.0 else clampf(t / 0.4, 0.0, 1.0)
+	var spirit: bool = String(_boss_db.meta.get("kind", "")) == "spirit"
+	var heavy: float = 1.3 if anim_state in ["attack_heavy", "windup_heavy"] else 1.0
+	var goal := Vector2.ZERO
+	var sx: float = 1.0
+	var sy: float = 1.0
+	var oy: float = 0.0
+	var tremor: float = 0.0
+	var freq: float = 3.2
+	var damp: float = 0.75
+	match anim_state:
+		"windup", "windup_heavy", "windup_cast":
+			# chega à pose em 35% do tempo e SEGURA: tensão crescente + tremor fino
+			var e: float = (1.0 - pow(1.0 - clampf(p / 0.35, 0.0, 1.0), 3.0)) * (1.0 + 0.10 * smoothstep(0.35, 1.0, p))
+			goal = Vector2(-2.0, -3.5) * e * heavy
+			sx = 1.0 - 0.025 * e
+			sy = 1.0 + 0.035 * e * heavy
+			tremor = sin(_wind_time * 47.0) * 0.3 * smoothstep(0.45, 1.0, p)
+			freq = 5.0
+			damp = 0.85
+		"attack", "attack_heavy", "cast", "attack_up", "charge":
+			var settle: float = 1.0 - 0.6 * smoothstep(0.35, 1.0, p)
+			goal = (Vector2(1.5, 3.0) if anim_state == "cast" else Vector2(3.0, 5.0)) * settle * heavy
+			if anim_state == "charge":
+				goal = Vector2(2.0, 6.0)
+			sx = 1.0 + 0.05 * (1.0 - p)
+			sy = 1.0 - 0.04 * (1.0 - p)
+			freq = 7.0
+			damp = 0.4
+			if entered:
+				# ESTALO: velocidade injetada (sobressalto) + rastro de luz curto
+				_bsv += Vector2(60.0, 90.0) * heavy
+				spawn_afterimage(Color(profile.eye, 0.5), 0.09)
+		"recover":
+			goal = Vector2(1.5, 2.0) * (1.0 - smoothstep(0.0, 1.0, p))
+			freq = 2.6
+			damp = 0.7
+		"hurt", "stagger":
+			var k: float = 1.0 - clampf(t / 0.3, 0.0, 1.0)
+			goal = Vector2(-3.0, -4.0) * k
+			sx = 1.0 - 0.05 * k
+			sy = 1.0 + 0.05 * k
+			freq = 5.0
+			damp = 0.35
+			if entered:
+				_bsv += Vector2(-50.0, -70.0)
+		"dead":
+			sy = 1.0 - 0.04 * clampf(t / 0.5, 0.0, 1.0)
+			freq = 2.0
+			damp = 0.9
+		_:
+			if anim_state == "walk":
+				goal.y = 1.5
+	if spirit and anim_state != "dead":
+		oy = sin(_wind_time * 1.7) * 0.8          # espectro flutua
+	elif anim_state == "idle":
+		sy *= 1.0 + sin(_wind_time * 2.0) * 0.006
+	# mola amortecida (sobressalto na entrada do golpe, assentamento depois)
+	var w: float = TAU * freq
+	var steps: int = clampi(ceili(delta * 120.0), 1, 8)
+	var h: float = minf(delta, 0.1) / steps
+	for _j in steps:
+		_bsv += (-2.0 * damp * w * _bsv - w * w * (_bsp - goal)) * h
+		_bsp += _bsv * h
+	_boss_m = [_bsp.x + tremor, 0.0, sx, sy, oy, _bsp.y]
+	# Telegrafo: o tom chapado que o Enemy põe na preparação vira CONTORNO
+	# pulsante (a pintura do quadro de preparação continua legível).
+	if anim_state.begins_with("windup"):
+		for c in _TELEGRAPH_TINTS:
+			if modulate.is_equal_approx(c):
+				telegraph_color = Color(c.r, c.g, c.b, 0.9)
+				modulate = Color.WHITE
+	else:
+		telegraph_color.a = move_toward(telegraph_color.a, 0.0, delta * 8.0)
+
+
+## Gibs do chefe por quadros: 3×3 pedaços do ÚLTIMO quadro desenhado.
+func _frame_gibs() -> Array:
+	var parts: Array = []
+	var s: float = profile.height / 44.0
+	var rect: Rect2 = _boss_shown.rect
+	var an: Vector2 = _boss_shown.anchor
+	var k: float = _boss_shown.k
+	var hw: float = _boss_world_h()
+	var org := Vector2(float(_boss_m[0]) * s + float(_boss_db.meta.fit.dx) * hw, GROUND_Y * s + float(_boss_m[4]) * s - float(_boss_db.meta.fit.foot_gap) * hw)
+	for row in 3:
+		for column in 3:
+			var tile := Rect2(rect.position + Vector2(column * rect.size.x / 3.0, row * rect.size.y / 3.0), rect.size / 3.0)
+			var p0: Vector2 = org + (tile.position - rect.position - an) * k
+			var sz: Vector2 = tile.size * k
+			var at := AtlasTexture.new()
+			at.atlas = _boss_shown.tex
+			at.region = tile
+			at.filter_clip = true
+			var pts := PackedVector2Array([p0, p0 + Vector2(sz.x, 0.0), p0 + sz, p0 + Vector2(0.0, sz.y)])
+			parts.append({"pts": pts, "col": Color.WHITE, "kind": "painted", "tex": at, "size": sz, "flip": 1.0})
+	return parts
 
 
 func _painted_gibs(s: float) -> Array:

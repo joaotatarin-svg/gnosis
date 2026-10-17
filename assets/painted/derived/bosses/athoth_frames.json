@@ -1,0 +1,412 @@
+{
+ "character": "bosses/athoth",
+ "atlas": "res://assets/painted/derived/bosses/athoth_frames.png",
+ "flex": "res://assets/painted/derived/bosses/athoth_frames_flex.png",
+ "sil": "res://assets/painted/derived/bosses/athoth_frames_sil.png",
+ "body_px": 300.0,
+ "kind": "spirit",
+ "fit": {
+  "body_frac": 0.92475,
+  "foot_gap": 0.00396,
+  "dx": 0.00727,
+  "rect_px": [
+   379,
+   505
+  ]
+ },
+ "cloth_amp": 3.0,
+ "hem_wave": 1.6,
+ "atlas_size": [
+  2048,
+  1024
+ ],
+ "frames": {
+  "idle_0": {
+   "rect": [
+    0,
+    0,
+    239,
+    344
+   ],
+   "top": 34.08,
+   "foot_y": 334.08,
+   "bottom": 334.08,
+   "pelvis_x": 127.75,
+   "mid": false
+  },
+  "idle_0-idle_1_25": {
+   "rect": [
+    239,
+    0,
+    238,
+    336
+   ],
+   "top": 32.0,
+   "foot_y": 327.0,
+   "bottom": 327.0,
+   "pelvis_x": 128.64,
+   "mid": true
+  },
+  "idle_0-idle_1_50": {
+   "rect": [
+    477,
+    0,
+    238,
+    336
+   ],
+   "top": 33.0,
+   "foot_y": 310.0,
+   "bottom": 324.0,
+   "pelvis_x": 133.74,
+   "mid": true
+  },
+  "idle_0-idle_1_75": {
+   "rect": [
+    952,
+    0,
+    237,
+    331
+   ],
+   "top": 32.0,
+   "foot_y": 318.0,
+   "bottom": 318.0,
+   "pelvis_x": 128.72,
+   "mid": true
+  },
+  "idle_1": {
+   "rect": [
+    715,
+    0,
+    237,
+    334
+   ],
+   "top": 33.4,
+   "foot_y": 322.44,
+   "bottom": 322.44,
+   "pelvis_x": 126.39,
+   "mid": false
+  },
+  "walk_0": {
+   "rect": [
+    1453,
+    0,
+    270,
+    320
+   ],
+   "top": 34.08,
+   "foot_y": 292.99,
+   "bottom": 310.11,
+   "pelvis_x": 147.58,
+   "mid": false
+  },
+  "walk_0-walk_1_25": {
+   "rect": [
+    496,
+    344,
+    265,
+    313
+   ],
+   "top": 33.0,
+   "foot_y": 299.0,
+   "bottom": 299.0,
+   "pelvis_x": 145.64,
+   "mid": true
+  },
+  "walk_0-walk_1_50": {
+   "rect": [
+    0,
+    344,
+    262,
+    317
+   ],
+   "top": 34.0,
+   "foot_y": 305.0,
+   "bottom": 305.0,
+   "pelvis_x": 146.46,
+   "mid": true
+  },
+  "walk_0-walk_1_75": {
+   "rect": [
+    1723,
+    0,
+    257,
+    319
+   ],
+   "top": 35.0,
+   "foot_y": 307.0,
+   "bottom": 307.0,
+   "pelvis_x": 146.66,
+   "mid": true
+  },
+  "walk_1": {
+   "rect": [
+    1189,
+    0,
+    264,
+    326
+   ],
+   "top": 34.08,
+   "foot_y": 315.59,
+   "bottom": 315.59,
+   "pelvis_x": 160.62,
+   "mid": false
+  },
+  "windup": {
+   "rect": [
+    262,
+    344,
+    234,
+    316
+   ],
+   "top": 34.77,
+   "foot_y": 308.05,
+   "bottom": 308.05,
+   "pelvis_x": 114.03,
+   "mid": false
+  },
+  "strike": {
+   "rect": [
+    1007,
+    344,
+    378,
+    293
+   ],
+   "top": 29.97,
+   "foot_y": 280.66,
+   "bottom": 280.66,
+   "pelvis_x": 150.83,
+   "mid": false
+  },
+  "hurt": {
+   "rect": [
+    761,
+    344,
+    246,
+    312
+   ],
+   "top": 25.18,
+   "foot_y": 299.15,
+   "bottom": 299.15,
+   "pelvis_x": 158.0,
+   "mid": false
+  },
+  "death": {
+   "rect": [
+    1385,
+    344,
+    280,
+    228
+   ],
+   "top": 50.52,
+   "foot_y": 216.96,
+   "bottom": 220.38,
+   "pelvis_x": 145.7,
+   "mid": false
+  }
+ },
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "f": "idle_0",
+     "anchor": [
+      127.75,
+      334.08
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_25",
+     "anchor": [
+      127.75,
+      329.08
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_50",
+     "anchor": [
+      127.75,
+      327.08
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_75",
+     "anchor": [
+      126.75,
+      323.08
+     ]
+    },
+    {
+     "f": "idle_1",
+     "anchor": [
+      126.39,
+      322.44
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_75",
+     "anchor": [
+      126.75,
+      323.08
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_50",
+     "anchor": [
+      127.75,
+      327.08
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_25",
+     "anchor": [
+      127.75,
+      329.08
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 4.0
+  },
+  "walk": {
+   "frames": [
+    {
+     "f": "walk_0",
+     "anchor": [
+      147.58,
+      292.99
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_25",
+     "anchor": [
+      147.62,
+      296.59
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_50",
+     "anchor": [
+      149.62,
+      303.59
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_75",
+     "anchor": [
+      149.62,
+      309.59
+     ]
+    },
+    {
+     "f": "walk_1",
+     "anchor": [
+      160.62,
+      315.59
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_75",
+     "anchor": [
+      149.62,
+      309.59
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_50",
+     "anchor": [
+      149.62,
+      303.59
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_25",
+     "anchor": [
+      147.62,
+      296.59
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 6.0
+  },
+  "windup": {
+   "frames": [
+    {
+     "f": "windup",
+     "anchor": [
+      114.03,
+      308.05
+     ]
+    }
+   ]
+  },
+  "attack": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      150.83,
+      280.66
+     ]
+    }
+   ],
+   "impact_at": [
+    0
+   ]
+  },
+  "recover": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      150.83,
+      280.66
+     ]
+    },
+    {
+     "f": "idle_0",
+     "anchor": [
+      127.75,
+      334.08
+     ]
+    }
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      158.0,
+      299.15
+     ]
+    }
+   ]
+  },
+  "dead": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      158.0,
+      299.15
+     ]
+    },
+    {
+     "f": "death",
+     "anchor": [
+      153.91,
+      220.38
+     ]
+    }
+   ],
+   "dur": [
+    0.14
+   ]
+  }
+ }
+}

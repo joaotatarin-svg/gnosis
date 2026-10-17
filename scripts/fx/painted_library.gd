@@ -56,14 +56,21 @@ static func character(p: ArtProfile) -> Dictionary:
 	if p.has("velkar"): id = "velkar"
 	# Variantes do Éon herdam a família do seu Arconte, em escala de criatura.
 	var families := {"sonambulo":"arconte_sono","glutao":"arconte_fome","carcereiro":"arconte_corrente","mudo":"arconte_silencio","reflexo":"arconte_espelho","esporos":"arconte_praga","pretoriano":"arconte_coroa","alado":"arconte_silencio","fantasma":"arconte_sono","cornudo":"arconte_corrente"}
+	var own: String = id                  # id antes da família (o chefe em pessoa)
 	id = families.get(id,id)
 	var bosses := ["arconte_sono", "arconte_fome", "arconte_corrente", "arconte_silencio", "arconte_espelho", "arconte_praga", "arconte_coroa", "colosso"]
 	var boss: int = bosses.find(id)
 	if boss >= 0:
 		var rects := [Rect2(0,0,379,505),Rect2(379,0,408,503),Rect2(787,0,380,516),Rect2(1167,0,369,507),Rect2(0,506,373,518),Rect2(373,523,427,473),Rect2(800,510,367,514),Rect2(1167,507,369,517)]
-		return {"sheet":"archons", "rect":rects[boss], "flip":true, "puppet":boss}
+		var d := {"sheet":"archons", "rect":rects[boss], "flip":true, "puppet":boss}
+		# Quadros desenhados (folha do GPT → tools/anim_bosses/boss_frames.py):
+		# só o chefe em pessoa (e o seu eco); as criaturas da família seguem no
+		# boneco. Sem atlas, o CharacterArt cai no boneco (fallback).
+		if own == id:
+			d["frames"] = BossPuppet.NAMES[boss]
+		return d
 	if id in ["rei", "rei_final", "demiurgo"]:
-		return {"sheet":"yaldabaoth", "rect":Rect2(15,0,1046,1024), "flip":false, "puppet":8}
+		return {"sheet":"yaldabaoth", "rect":Rect2(15,0,1046,1024), "flip":false, "puppet":8, "frames":"rei"}
 	var index: int = 1
 	if p.body == ArtProfile.Body.WRAITH: index = 0
 	elif p.body in [ArtProfile.Body.BRUTE,ArtProfile.Body.COLOSSUS]: index = 2
