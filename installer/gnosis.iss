@@ -1,16 +1,19 @@
-; Instalador do GNOSIS — Inno Setup (https://jrsoftware.org/isinfo.php)
+﻿; Instalador do GNOSIS — Inno Setup (https://jrsoftware.org/isinfo.php)
 ; 1) Exporte o jogo no Godot (builds/GNOSIS.exe + GNOSIS.pck)
 ; 2) Abra este arquivo no Inno Setup Compiler e clique em Compile
-; Saída: installer/Output/GNOSIS-Setup-<versão>.exe (padrão 1.1.0; mude com /DAppVersion=x.y.z)
+; Saída: installer/Output/GNOSIS-Setup-<versão>.exe (padrão 1.2.0; mude com /DAppVersion=x.y.z)
 
 #define AppName "GNOSIS"
 #ifndef AppVersion
-#define AppVersion "1.1.0"
+#define AppVersion "1.2.0"
 #endif
-; PENDENTE (decisão do João): "Estudio Jogo" é provisório. O AppId abaixo
-; também NUNCA pode mudar depois do 1º instalador publicado (é ele que o
-; Windows usa para atualizar/desinstalar) — não troque sem decidir isso antes.
-#define AppPublisher "Estudio Jogo"
+; Publicador: João Tatarin (decidido em 17/10/2026, versão 1.2.0).
+; AppId: MANTIDO o mesmo desde o build 1.0.0 (não é um GUID hexadecimal de
+; verdade, mas o Inno aceita qualquer texto). NUNCA troque: é por ele que o
+; Windows reconhece a instalação anterior para atualizar/desinstalar — um
+; AppId novo instalaria um 2º GNOSIS ao lado do antigo.
+; Arquivo em UTF-8 COM BOM (o "ã" do publicador sai certo no Inno 6).
+#define AppPublisher "João Tatarin"
 #define AppExe "GNOSIS.exe"
 
 [Setup]
@@ -42,7 +45,7 @@ Source: "..\builds\GNOSIS.pck"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\assets\LICENSES.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE_godot.txt"; DestDir: "{app}"; Flags: ignoreversion
 ; Patches menores: o jogo só monta patch_<versão>_*.pck da MESMA versão do
-; projeto (ex.: patch_1.1.0_01.pck). Solte-os em builds/ e descomente:
+; projeto (ex.: patch_1.2.0_01.pck). Solte-os em builds/ e descomente:
 ; Source: "..\builds\patch_{#AppVersion}_*.pck"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]

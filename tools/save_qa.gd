@@ -64,6 +64,7 @@ func _ready() -> void:
 	_cases_legacy()
 	_cases_atomic()
 	_cases_persist_run()
+	_cases_vsync_migration()
 	_wipe()
 	await _cases_types()
 	_wipe()
@@ -188,6 +189,55 @@ func _cases_persist_run() -> void:
 	SaveManager.persist_enabled = false
 	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate()
 	GameManager.apply_settings()
+
+
+# --- migração do VSync (1.2.0: padrão desligado, settings_rev 1) -------------
+
+## Lê `settings` do disco de QA (ou {} se não der).
+func _disk_settings() -> Dictionary:
+	var disk = JSON.parse_string(_read(SaveManager.SAVE_PATH))
+	if disk is Dictionary and disk.get("settings") is Dictionary:
+		return disk.settings
+	return {}
+
+
+func _cases_vsync_migration() -> void:
+	_wipe()
+	# 1ª execução: VSync desligado e revisão atual.
+	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
+	SaveManager.load_game()
+	check(GameManager.settings.vsync == false and int(GameManager.settings.settings_rev) == GameManager.SETTINGS_REV, "1ª execução: vsync=false, settings_rev=%d" % GameManager.SETTINGS_REV)
+	# Save ANTIGO (o do João em 17/10: sem settings_rev, vsync=true) → false.
+	_write(JSON.stringify({"save_version": 2, "best_screen": 22, "settings": {"caption_size": 1, "fullscreen": false, "rumble": false, "shake": 0.5, "vsync": true}}))
+	SaveManager.load_game()
+	check(GameManager.settings.vsync == false, "save antigo com vsync=true → migrado para false")
+	check(int(GameManager.settings.settings_rev) == 1 and not GameManager.rumble_enabled() and is_equal_approx(GameManager.shake_multiplier(), 0.5), "migração só mexe no vsync (rev=1, outras opções preservadas)")
+	# A migração vai ao disco no próximo save (rev 1, vsync false).
+	SaveManager.persist_enabled = true
+	SaveManager.save_game()
+	var st := _disk_settings()
+	check(st.get("vsync") == false and int(st.get("settings_rev", 0)) == 1, "save seguinte grava vsync=false e settings_rev=1 (%s)" % [st])
+	# Quem RELIGA o VSync depois é respeitado (não migra de novo).
+	GameManager.settings["vsync"] = true
+	SaveManager.save_game()
+	SaveManager.persist_enabled = false
+	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
+	SaveManager.load_game()
+	check(GameManager.settings.vsync == true, "religado depois da migração: vsync=true respeitado no load")
+	# Save antigo com vsync=false fica false; tipo errado no vsync não vira true.
+	_write(JSON.stringify({"save_version": 2, "settings": {"vsync": false}}))
+	SaveManager.load_game()
+	check(GameManager.settings.vsync == false and int(GameManager.settings.settings_rev) == 1, "save antigo com vsync=false: continua false")
+	_write(JSON.stringify({"save_version": 2, "settings": {"vsync": true, "settings_rev": "x"}}))
+	SaveManager.load_game()
+	check(GameManager.settings.vsync == false, "settings_rev inválido conta como 0 (migra)")
+	# Revisão futura (save de versão mais nova) não é rebaixada nem mexida.
+	_write(JSON.stringify({"save_version": 2, "settings": {"vsync": true, "settings_rev": 7}}))
+	SaveManager.load_game()
+	check(GameManager.settings.vsync == true and int(GameManager.settings.settings_rev) == 7, "settings_rev futuro (7): intocado")
+	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
+	GameManager.apply_settings()
+	_wipe()
 
 
 # --- JSON válido com tipos errados (REVISAO #5) -------------------------------

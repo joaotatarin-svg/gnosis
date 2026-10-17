@@ -42,12 +42,14 @@ func rodar() -> void:
 	_screen_rng()
 	_lista_conquistas()
 	_primeira_execucao()
+	_fps_e_vsync()
 	_desbloqueios()
 	await _morte_no_arconte()
 	await _morte_depois_do_desafio()
 	await _bestiario_ao_encontrar()
 	await _intocada()
 	await _demo()
+	_folhas_fora_do_export()
 	_limpar()
 	SaveManager.persist_enabled = false
 	var intocado := true
@@ -216,6 +218,76 @@ func _primeira_execucao() -> void:
 	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
 	GameManager.apply_settings()
 	_limpar()
+
+
+# --- 2b. qps / VSync (1.2.0) -------------------------------------------------------
+
+func _fps_e_vsync() -> void:
+	check("vsync_padrao_desligado", GameManager.SETTINGS_DEFAULT["vsync"] == false and int(GameManager.SETTINGS_DEFAULT["settings_rev"]) == GameManager.SETTINGS_REV, "")
+	var casos := {144: 144, 60: 60, 165: 165, 360: 240, 0: 60, -1: 60}
+	var ruins: Array = []
+	for hz in casos:
+		if GameManager.fps_cap_for(hz) != casos[hz]:
+			ruins.append("%d→%d" % [hz, GameManager.fps_cap_for(hz)])
+	check("teto_de_qps_pela_taxa_do_monitor", ruins.is_empty(), "144→144 · 0/-1→60 · 360→240 %s" % str(ruins))
+	# Migração pura: antigo true → false (uma vez); rev 1 com true fica true.
+	var a: Dictionary = SaveManager.migrate_settings({"vsync": true, "shake": 0.3})
+	var b: Dictionary = SaveManager.migrate_settings({"vsync": true, "settings_rev": 1})
+	var c: Dictionary = SaveManager.migrate_settings(a)
+	check("migracao_vsync_uma_vez", a["vsync"] == false and int(a["settings_rev"]) == 1 and is_equal_approx(float(a["shake"]), 0.3)
+		and b["vsync"] == true and c["vsync"] == false, "antigo=%s · rev1=%s" % [str(a), str(b)])
+	# Boot com save antigo (como o do João): no load o vsync sai desligado.
+	_limpar()
+	var f := FileAccess.open(SaveManager.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify({"save_version": 2, "best_screen": 22, "settings": {"vsync": true, "shake": 1.0}}))
+	f.close()
+	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
+	SaveManager.load_game()
+	check("save_antigo_sai_sem_vsync", GameManager.settings["vsync"] == false, "")
+	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
+	GameManager.apply_settings()
+	_limpar()
+
+
+# --- 2c. export sem as folhas originais (1.2.0) -------------------------------------
+
+## As 5 folhas cromáticas originais e assets/characters/ ficam FORA do .pck.
+## Roda depois de várias fases (Sophia, Rei, Athoth, Harmas): nada disso pode
+## ter sido carregado — o PaintedLibrary só cai na original se a derivada
+## faltar, então as 5 derivadas têm de existir.
+const FORA_DO_EXPORT := ["assets/painted/sophia.png", "assets/painted/archons.png", "assets/painted/yaldabaoth.png",
+	"assets/painted/architecture.png", "assets/painted/inhabitants.png"]
+
+
+func _folhas_fora_do_export() -> void:
+	var cfg := ConfigFile.new()
+	var exc := ""
+	if cfg.load("res://export_presets.cfg") == OK:
+		exc = String(cfg.get_value("preset.0", "exclude_filter", "")) + " | " + String(cfg.get_value("preset.1", "exclude_filter", ""))
+	var faltam: Array = []
+	for f in FORA_DO_EXPORT + ["assets/characters/*"]:
+		if exc.count(f) < 2:
+			faltam.append(f)
+	check("export_exclui_folhas_originais", faltam.is_empty() and not "eons.png" in exc, "faltam=%s (eons.png fica: não tem derivada)" % str(faltam))
+	# Cada folha cromática pedida ao catálogo sai da derivada (não da original).
+	var origem: Array = []
+	for f in PaintedLibrary.KEYED_SHEETS:
+		var tx := PaintedLibrary.sheet(String(f))
+		if tx == null or not tx.resource_path.begins_with(PaintedLibrary.DERIVED_DIR):
+			origem.append("%s→%s" % [f, tx.resource_path if tx != null else "null"])
+	check("derivadas_existem", PaintedLibrary.has_clean_sheets() and origem.is_empty(), str(origem))
+	var usadas: Array = []
+	for k in PaintedLibrary.textures:
+		var t = PaintedLibrary.textures[k]
+		if t is Resource:
+			var rp := String((t as Resource).resource_path)
+			if rp.trim_prefix("res://") in FORA_DO_EXPORT or rp.contains("assets/characters/"):
+				usadas.append(rp)
+	for f in FORA_DO_EXPORT:
+		if ResourceLoader.has_cached("res://" + f):
+			usadas.append(f)
+	check("folhas_originais_nao_carregadas", usadas.is_empty() and PaintedLibrary.textures.size() > 0,
+		"folhas em uso=%s · carregadas=%s" % [str(usadas), str(PaintedLibrary.textures.keys())])
 
 
 # --- 3. demo ----------------------------------------------------------------------
