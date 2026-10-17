@@ -17,6 +17,9 @@ class_name ComboData
 @export var air: bool = false               # golpe AÉREO (só sai no ar)
 @export var hits: int = 1                   # multi-hit: a hitbox religa N vezes
 @export var aoe_radius: float = 0.0         # >0: nova de área ao conectar
+## Hitstop próprio do golpe em segundos (0 = automático pelo peso). O Hitbox lê
+## se existir (`"hitstop" in mv`) — pedido do Combate (Onda 2).
+@export var hitstop: float = 0.0
 @export_multiline var description: String = ""
 
 

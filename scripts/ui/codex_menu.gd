@@ -3,7 +3,8 @@ extends Control
 ## poeira de luz subindo) e a Sophia grande à direita; à esquerda o logotipo e
 ## as ações, em ordem de importância:
 ## Continuar (se houver checkpoint) · Nova campanha · Provação (treino de 3
-## encontros) · Ateliê & Bestiário | Crônicas · Opções | Créditos | Sair.
+## encontros; com Arcontes vencidos, escolhe-se contra quem) · Galeria &
+## Bestiário | Crônicas · Opções | Créditos | Sair.
 ## Navegável por teclado e controle (foco = moldura acesa com losangos).
 
 const COL_X := 34.0
@@ -18,6 +19,7 @@ var _title_items: Array = []
 
 func _ready() -> void:
 	CodexSession.leave_demo()
+	EndScreen.ensure_demo_hook()
 	RunManager.end_run()
 	Progression.reset_run()
 	GameManager.set_state(GameManager.State.MENU)
@@ -92,7 +94,7 @@ func _build_actions() -> void:
 	# --- Continuar (só com checkpoint salvo) ---
 	if has_save:
 		var sc := clampi(int(RunManager.saved_run.get("screen", 1)), 1, RunManager.MAX_SCREEN)
-		var cont := CodexStyle.button(self, "Continuar  ·  %s, tela %d" % [RunManager.eon_name(sc), sc], Vector2(COL_X, y), COL_W, func():
+		var cont := CodexStyle.button(self, "Continuar  ·  %s" % GameManager.screen_title(sc), Vector2(COL_X, y), COL_W, func():
 			RunManager.continue_run(), true)
 		_first_focus = cont
 		_buttons.append(cont)
@@ -104,13 +106,12 @@ func _build_actions() -> void:
 		_first_focus = new_run
 	y += ROW_PITCH
 	# --- Provação (o antigo "desafio": 3 encontros, treino) ---
-	_buttons.append(CodexStyle.button(self, "Provação  ·  treino de 3 encontros", Vector2(COL_X, y), COL_W, func():
-		CodexSession.start_demo()))
+	_buttons.append(CodexStyle.button(self, "Provação  ·  treino de 3 encontros", Vector2(COL_X, y), COL_W, _open_trial))
 	y += ROW_PITCH
 	# --- Ateliê & Bestiário | Crônicas ---
 	var left_w := 140.0
 	var right_w := COL_W - left_w - 6.0
-	_buttons.append(CodexStyle.button(self, "Ateliê & Bestiário", Vector2(COL_X, y), left_w, func():
+	_buttons.append(CodexStyle.button(self, "Galeria & Bestiário", Vector2(COL_X, y), left_w, func():
 		SceneManager.change_scene("res://scenes/ui/CharacterAtelier.tscn")))
 	_buttons.append(CodexStyle.button(self, "Crônicas", Vector2(COL_X + left_w + 6, y), right_w, _open_chronicles))
 	y += ROW_PITCH
@@ -156,13 +157,78 @@ func _on_new_campaign() -> void:
 		return
 	var sc := clampi(int(RunManager.saved_run.get("screen", 1)), 1, RunManager.MAX_SCREEN)
 	CodexStyle.confirm(self, "Começar de novo?",
-		"Isso apaga o progresso salvo — %s, tela %d — e as faíscas e melhorias desta jornada.\nFinais vistos e opções ficam." % [RunManager.eon_name(sc), sc],
+		"Isso apaga o progresso salvo — %s — e as faíscas e melhorias desta jornada.\nFinais vistos e opções ficam." % GameManager.screen_title(sc),
 		"Apagar e começar", func():
 			RunManager.saved_run = {}
 			SaveManager.save_game()
 			SceneManager.change_scene("res://scenes/ui/PreGame.tscn"),
 		"Voltar", func():
 			if _first_focus != null: _first_focus.grab_focus())
+
+
+## Provação: o Athoth é o treino de sempre; os outros Arcontes entram na lista
+## depois de VENCIDOS na campanha (#26). Só o Athoth → começa direto.
+func _open_trial() -> void:
+	var open: Array[int] = BestiaryLore.trial_bosses()
+	if not open.has(0):
+		open.push_front(0)
+	if open.size() <= 1:
+		Audio.play_sfx("ui_confirm")
+		CodexSession.start_demo(0)
+		return
+	var layer := CanvasLayer.new()
+	layer.layer = 60
+	add_child(layer)
+	var dim := ColorRect.new()
+	dim.color = Color(0.02, 0.045, 0.06, 0.8)
+	dim.size = Vector2(640, 360)
+	layer.add_child(dim)
+	var panel := Panel.new()
+	panel.add_theme_stylebox_override("panel", CodexStyle.panel_frame(0.98))
+	panel.position = Vector2(190, 34)
+	panel.size = Vector2(260, 292)
+	layer.add_child(panel)
+	var t := CodexStyle.label(panel, "Provação", Vector2(20, 14), 15, CodexStyle.GOLD_HI, 220, true)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var sub := CodexStyle.label(panel, "Escolha o Arconte do 3º encontro", Vector2(20, 36), 10, CodexStyle.MUTED, 220)
+	sub.add_theme_font_override("font", CodexStyle.italic())
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var rows: Array[Button] = []
+	for i in Bestiary.bosses.size():
+		var ok := open.has(i)
+		var nm: String = String(Bestiary.bosses[i].name).split(",")[0] if ok else "? ? ?"
+		var b := CodexStyle.button(panel, "%s  ·  %s" % [nm, RunManager.EON_NAMES[i]] if ok else nm, Vector2(30, 58 + i * 29), 200, func():
+			layer.queue_free()
+			CodexSession.start_demo(i))
+		b.disabled = not ok
+		b.focus_mode = Control.FOCUS_ALL if ok else Control.FOCUS_NONE
+		rows.append(b)
+	var foot := InputGlyphs.Hint.new()
+	foot.pairs = [["ui_accept", "escolher"], ["ui_cancel", "voltar"]]
+	foot.position = Vector2(10, 266)
+	foot.size = Vector2(240, 14)
+	foot.font_size = 9
+	foot.icon_h = 12.0
+	panel.add_child(foot)
+	var catcher := _TrialCancel.new()
+	catcher.on_cancel = func():
+		layer.queue_free()
+		if _buttons.size() > 2: (_buttons[2] if RunManager.has_saved_run() else _buttons[1]).grab_focus()
+	layer.add_child(catcher)
+	rows[0].grab_focus()
+	CodexStyle.pop_in(panel)
+
+
+## Esc / B fecham a escolha da Provação.
+class _TrialCancel extends Node:
+	var on_cancel: Callable
+	func _input(event: InputEvent) -> void:
+		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
+			get_viewport().set_input_as_handled()
+			Audio.play_sfx("ui_back")
+			if on_cancel.is_valid():
+				on_cancel.call()
+			queue_free()
 
 
 ## Crônicas (caderno de lore). Se a cena ainda não existir, abre a Galeria.

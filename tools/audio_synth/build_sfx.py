@@ -39,6 +39,8 @@ CAT = {
 	"ui": -22.0, "ui_soft": -27.0, "ui_big": -18.0, "shop": -18.0,
 	"blip": -25.0,
 	"story": -15.0, "story_soft": -17.0, "story_whisper": -21.0, "story_heart": -18.0,
+	# avisos do combate (R5): curtos, têm de atravessar a música do chefe
+	"tell": -17.0, "tell_low": -14.0,
 }
 CEIL = -1.0
 
@@ -520,6 +522,10 @@ for _n in M.SOUNDS:
 # SFX de roteiro (cena "o Rei sai da névoa") — story.py
 import story as S
 RECIPES.update(S.SOUNDS)
+
+# Avisos do combate (R5) — tells.py
+import tells as T
+RECIPES.update(T.SOUNDS)
 
 
 def finish(x, cat):

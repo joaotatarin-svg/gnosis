@@ -61,6 +61,9 @@ echo "GNOSIS validate — $PROJ"
 echo "Godot: $GODOT   Logs: $LOGDIR"
 if want Scripts; then step Scripts --editor --quit; fi
 for q in $FAST; do want "$q" && step "$q" "res://tools/$q.tscn"; done
+# QA do Técnico2 (checkpoints, demo, desbloqueios, conquistas): troca de cena
+# e conta tempo em quadros → --fixed-fps 60, como as regressões.
+if want TecnicoQA; then step TecnicoQA --fixed-fps 60 "res://tools/tecnico/TecnicoQA.tscn"; fi
 if [ $FULL -eq 1 ]; then for q in $SLOW; do want "$q" && step "$q" "res://tools/$q.tscn"; done; fi
 echo
 echo "=== RESUMO ==="

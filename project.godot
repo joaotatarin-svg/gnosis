@@ -9,7 +9,7 @@ config_version=5
 config/name="GNOSIS"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="GNOSIS-Codex"
-config/version="1.1.0"
+config/version="1.2.0"
 run/main_scene="res://scenes/ui/MainMenu.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 config/icon="res://assets/icon_gnosis.png"
@@ -30,6 +30,7 @@ RunManager="*res://scripts/autoload/run_manager.gd"
 Narrative="*res://scripts/autoload/narrative.gd"
 FpsOverlay="*res://scripts/autoload/fps_overlay.gd"
 Gnosis="*res://scripts/autoload/gnosis.gd"
+Achievements="*res://scripts/autoload/achievements.gd"
 
 [display]
 
@@ -50,3 +51,9 @@ common/physics_interpolation=true
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/canvas_textures/default_texture_filter=1
+
+[gnosis]
+
+demo=false
+demo.demo=true
+store_url=""

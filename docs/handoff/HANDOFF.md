@@ -64,6 +64,38 @@
 - Combate: só PLANO (nenhum código de jogo aplicado). docs/COMBATE.md tem o código pronto da Fase A (câmera — causa: Camera2D.offset somado APÓS os limites —, juice R2/R3/R8/R10, hitbox, misericórdia, orbes R6, physics_interpolation) e a Fase B. Execute-o.
 - **A integração completa ainda NÃO foi validada** depois desses últimos merges: primeiro passo = rodar a validação e corrigir.
 
+## 3c. FECHAMENTO DA NUVEM (17/10/2026 ~08:30 UTC) — o bastão fica com a sessão LOCAL
+`integracao/onda1` = Onda 1 + Onda 2 + Onda 2b + `dir2/arte-gpt` (local) integrados. Validação Linux:
+`tools/validate.sh` TUDO VERDE (CodexQA 53, AudioQA 54, GnoseQA 18, SaveQA 41, TecnicoQA 36, Puppet/Hero/Wave OK) e
+`tools/regressao/run_all.sh` 10/10 PASS. Relatórios de cada agente em `docs/onda2/*.md`; pedidos em `docs/pedidos/onda2_*.md`;
+backlog do crítico em `docs/onda2/BACKLOG_CRITICO.md`; briefs em `docs/handoff/briefs/`.
+
+**NÃO integrado (decidir):**
+- `dir2/combate2` (gibs, P3 Belias, números de dano por opção, contorno do Éon, card com chefe visível, névoa na tela 7,
+  correntes na tela 25, conserto do tiro de corrente). Ressalva do próprio agente: o bot PIOROU a tela 55 (1062→1319) por
+  causa do Belias 1,15× maior → tirar `arconte_praga` do `BOSS_PRESENCE` em enemy.gd antes de mergear, e rodar validate --full.
+
+**Fila imediata (por dono de arquivo):**
+1. Técnico (game_manager.gd): portar `fac9814` do `preview/noite` (vsync=false padrão + `Engine.max_fps` = taxa do monitor) e
+   MIGRAR saves antigos com `vsync: true` (senão o João fica a ~21 qps). Medido pela sessão local: causa é o vsync do OpenGL na RX 7600.
+2. Desempenho: `git apply tools/perf/patches/vfx_prewarm.patch` (o prewarm atual não elimina engasgo; medido) e excluir do export
+   as 5 folhas originais + `assets/characters/` (~9 MB). `character_art_alloc.patch` (baixa prioridade).
+3. Encenação: F2 tela 68 (Rei metade fora / Colosso fora na chegada, empilhados na luta); C3 card de chefe com o chefe fora do quadro;
+   pedido 7 da arte (staging.gd: `_Little` → `CegoPequeno`); ligar as 12 ilustrações `artes/gpt/cinematic/` no cinematic.gd/staging
+   (copiar para assets/cinematic/); Soter/Velkar com `set_anim(...)`; esconder números de dano e dicas durante cinemáticas (C1/C2).
+4. UI-menus: Estelas com `artes/gpt/stelae/` (painel + Crônicas), `menu_bg_a` no menu; P3 dicas da Provação (pad).
+5. UI-HUD: M1 (legenda na altura das canelas com zoom 1,2); toast de conquista; `Audio.low_health_pulse()` na vinheta.
+6. Combate: F1 flash de dano da Sophia (silhueta laranja chapada → flash branco curto); `visual.telegraph_color`;
+   `visual.play_action("parry"/"riposte")` no `_parry()`; `dead` ~0,4 s antes do desmembramento.
+7. Balance: medir de novo (checkpoints novos, P1 da loja, combate2) com `tools/balance/run.sh`.
+8. Inglês: rodada própria no fim (plano em `assets/i18n/PLANO.md`).
+9. `painted_flex.gdshader` da Sophia (cor ao quadrado): correção de 1 linha espera o OK visual do João.
+
+**Decisões do João pendentes:** paleta da loja A/B e ícone Olho/Faísca (`assets/store/board.png`); tema do menu A/B/C e variações
+de chefe (amostras em `docs/onda2/amostras/`);
+"regra do nome" (#16, recomendado: ironia dramática); AppPublisher/AppId; GodotSteam; `gnosis/store_url`; declarar arte por IA na Steam;
+Athoth sempre liberado na Provação (hoje sim).
+
 ## 4. Fila de trabalho (em ordem)
 1. **Fechar a Onda 1:** integrar `dir/anim-sophia`, `dir/cenario`, `dir/audio`, `dir/combate`, `dir/qa-ux`
    em `integracao/onda1`; rodar `tools/validate.ps1 -Path <wt>` até TUDO VERDE; capturas antes/depois.

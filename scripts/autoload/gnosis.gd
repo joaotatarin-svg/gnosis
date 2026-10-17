@@ -250,6 +250,8 @@ var _by_screen: Dictionary = {}   # tela -> Estela
 func _ready() -> void:
 	for e in STELAS:
 		_by_screen[int(e.screen)] = e
+	if GameManager.demo and SAVE_PATH == "user://chronicles.json":
+		SAVE_PATH = GameManager.DEMO_DIR + "chronicles.json"   # demo: save separado (#27)
 	_load()
 	_caption = CaptionBar.new()
 	add_child(_caption)
@@ -276,6 +278,10 @@ func unlock(id: String) -> bool:
 	unlocked.append(id)
 	_save()
 	Audio.play_sfx("stele_unlock")
+	# Conquistas de Crônicas (1ª Estela, 18/18) — autoload leve, se existir.
+	var ach := get_node_or_null("/root/Achievements")
+	if ach != null and ach.has_method("check_progress"):
+		ach.call("check_progress")
 	return true
 
 

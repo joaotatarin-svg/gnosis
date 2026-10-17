@@ -36,11 +36,19 @@ var persist_enabled: bool = true
 ## interruptor das ferramentas: aí nada vai ao disco.)
 var persist_run: bool = true
 
+## Chaves de PROGRESSO: com `persist_run` desligado (Provação) ficam como
+## estão no disco.
+const PROGRESS_KEYS := ["save_version", "best_screen", "endings_seen", "run", "bosses_beaten", "bestiary_seen"]
+
 ## Aviso pendente pro menu (run antigo descartado). O menu lê e limpa.
 var notice: String = ""
 
 
 func _ready() -> void:
+	# DEMO (#27): save separado — o progresso da demo não mistura com o do jogo.
+	if GameManager.demo and SAVE_PATH == "user://save.json":
+		SAVE_PATH = GameManager.DEMO_DIR + "save.json"
+		print("GNOSIS DEMO: campanha até a tela %d; save em %s" % [GameManager.DEMO_LAST_SCREEN, SAVE_PATH])
 	load_game()
 	# O Juice nasce DEPOIS deste autoload: reaplica no próximo frame pra que
 	# tremor/vibração salvos cheguem nele (apply_settings espelha se existir).
@@ -59,12 +67,16 @@ func save_game() -> void:
 		"vol_sfx": Audio.sfx_vol,
 		"vol_music": Audio.music_vol,
 		"settings": GameManager.settings,
+		# Desbloqueios (#26): chefes vencidos na CAMPANHA e criaturas vistas —
+		# meta-progresso, sobrevive a run novo.
+		"bosses_beaten": Progression.bosses_beaten,
+		"bestiary_seen": Bestiary.seen_ids(),
 	}
 	if not persist_run:
 		# Progresso: o que já está no disco (ou nada de run, se não há save).
 		var old = read_json_safe(SAVE_PATH).data
 		if typeof(old) == TYPE_DICTIONARY:
-			for k in ["save_version", "best_screen", "endings_seen", "run"]:
+			for k in PROGRESS_KEYS:
 				if old.has(k):
 					data[k] = old[k]
 				elif k == "run":
@@ -72,11 +84,15 @@ func save_game() -> void:
 		else:
 			data["run"] = {}
 	write_json_atomic(SAVE_PATH, data)
+	var ach := get_node_or_null("/root/Achievements")
+	if ach != null and ach.has_method("check_progress"):
+		ach.call("check_progress")
 
 
 func load_game() -> bool:
 	if not _any_copy_exists(SAVE_PATH):
 		_apply_default_volumes()
+		GameManager.apply_first_run_defaults()   # 1ª execução: tela cheia (#24)
 		GameManager.apply_settings()   # padrões (e espelho no Juice)
 		return false
 	var got := read_json_safe(SAVE_PATH)
@@ -92,6 +108,14 @@ func load_game() -> bool:
 	var d: Dictionary = got.data
 	RunManager.best_screen = clampi(_int(d.get("best_screen", 1), 1), 1, RunManager.MAX_SCREEN)
 	RunManager.endings_seen = SaveCoerce.as_str_array(d.get("endings_seen", []))
+	# --- desbloqueios (#26): listas de ids; tipo errado = vazio ---
+	if d.has("bosses_beaten"):
+		Progression.bosses_beaten = SaveCoerce.as_str_array(d.get("bosses_beaten", []))
+	else:
+		# Save de antes dos desbloqueios: deduz da melhor tela (jogar a tela
+		# depois de um chefe = venceu o chefe) e dos finais vistos.
+		Progression.bosses_beaten = bosses_beaten_from_progress(RunManager.best_screen, RunManager.endings_seen.size() > 0)
+	Bestiary.set_seen_ids(SaveCoerce.as_str_array(d.get("bestiary_seen", [])))
 	# --- run em andamento: só se a versão e o mapa baterem ---
 	var version := _int(d.get("save_version", 0), 0)
 	var run = d.get("run", {})
@@ -113,7 +137,7 @@ func load_game() -> bool:
 	# REVISAO #5: cada opção só entra se o TIPO bater com o padrão (número
 	# int/float é intercambiável). `shake: [1]` ou `fullscreen: "sim"` ficam
 	# no padrão e não são regravados como lixo no próximo save.
-	var st := SaveCoerce.as_dict(d.get("settings", {}))
+	var st := migrate_settings(SaveCoerce.as_dict(d.get("settings", {})))
 	for k in GameManager.SETTINGS_DEFAULT:
 		if st.has(k):
 			var v = SaveCoerce.match_type(st[k], GameManager.SETTINGS_DEFAULT[k])
@@ -124,6 +148,38 @@ func load_game() -> bool:
 				GameManager.settings[k] = GameManager.SETTINGS_DEFAULT[k]
 	GameManager.apply_settings()
 	return true
+
+
+## Migração das OPÇÕES gravadas, pela revisão `settings_rev` (ausente = 0).
+## rev 0 → 1 (versão 1.2.0): o VSync passou a DESLIGADO por padrão — no OpenGL
+## da RX 7600 / 144 Hz ele derrubava o jogo a ~21 qps. Quem tinha `vsync: true`
+## gravado (o padrão antigo, não uma escolha) passa a false UMA vez; a revisão
+## sobe para 1 e vai ao disco no próximo save, então quem religar o VSync
+## depois é respeitado. Revisão futura (> atual) fica como está. Função pura.
+static func migrate_settings(st: Dictionary) -> Dictionary:
+	var out := st.duplicate(true)
+	var rev := SaveCoerce.as_int(out.get("settings_rev", 0), 0)
+	if rev < 1:
+		if typeof(out.get("vsync")) == TYPE_BOOL and out["vsync"] == true:
+			out["vsync"] = false
+			print("SaveManager: opções migradas (rev %d → 1): VSync desligado (novo padrão)." % rev)
+	out["settings_rev"] = maxi(rev, GameManager.SETTINGS_REV)
+	return out
+
+
+## Migração (save sem `bosses_beaten`): chefes cuja tela fica ANTES da melhor
+## tela alcançada; um final visto = todos (inclusive o Demiurgo).
+static func bosses_beaten_from_progress(best: int, any_ending: bool) -> Array[String]:
+	var out: Array[String] = []
+	if best > RunManager.KING_SCREEN or any_ending:
+		out.append("rei")
+	for i in Bestiary.bosses.size():
+		var archon_screen: int = RunManager.FIRST_EON_SCREEN + i * RunManager.EON_LEN + RunManager.EON_LEN - 1
+		if best > archon_screen or any_ending:
+			out.append(String(Bestiary.bosses[i].id))
+	if any_ending:
+		out.append("demiurgo")
+	return out
 
 
 # --- gravação atômica / leitura com recuperação ------------------------------

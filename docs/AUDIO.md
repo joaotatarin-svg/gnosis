@@ -42,6 +42,15 @@
 - **Tema do menu**: 3 opções por síntese em `tools/audio_synth/menu_theme.py` (A Esferas, B Coro,
   C Caixinha) — NÃO instaladas; o menu segue com `theme` até o João escolher.
 
+**Onda 2b (17/10/2026, branch `dir2/audio2`, nuvem):**
+- Avisos do combate `tell_parry`/`tell_unblock` (síntese, `tells.py`). Têm bus próprio `Tell`, fora do
+  abafado da câmera lenta, e tom fixo. Medição de leitura sob a música em `tools/audio/tell_check.py`.
+- `heartbeat` virou UMA batida. A intro toca duas pelo cue; o HUD usa `low_health_pulse()`.
+- R9: na tela do Arconte a música de chefe espera o stinger; na morte do chefe a música some ~2,6 s.
+- Centro: `track_for_screen` devolve silêncio até o 1º caco.
+- Sorteio do áudio num `RandomNumberGenerator` próprio (pedido do Balance: não desalinha o global).
+- Música de chefe por Arconte: 7 opções (`boss_variants.py`). Nenhuma instalada; aguardam o João.
+
 **Falta / problemas conhecidos (honesto):**
 - **Ninguém OUVIU nada ainda** (nem as magias da Onda 1, nem nada da Onda 2). Tudo foi avaliado por
   medição e espectrograma. Lista de amostras no relatório `docs/onda2/AUDIO.md`.
@@ -72,6 +81,9 @@ python tools/audio_synth/measure.py assets/audio saida.json                  # l
 | `magic.py` | magias, projéteis, nova, faísca (síntese; `python magic.py` grava as 3 opções em `_caps/audio/opcoes/`) |
 | `story.py` | SFX da cena do Rei (síntese) |
 | `menu_theme.py` | tema do menu: 3 opções (loop de 64 s, −16 LUFS); `--install <x>` grava `music/menu.ogg` |
+| `tells.py` | avisos do combate `tell_parry`/`tell_unblock` (síntese; entram pelo `build_sfx.py`) |
+| `boss_variants.py` | 7 variações da música de chefe por Arconte a partir de `boss.ogg` (processamento circular: o loop segue emendando); `--install <éon>` grava `music/boss_<éon>.ogg` |
+| `../audio/tell_check.py` | mede leitura dos avisos sob a música (banda a banda, níveis do jogo) e distância (MFCC) para o resto do catálogo |
 | `build_music.py` | masteriza as músicas a partir dos MP3 originais, acha e costura o loop |
 | `build_ambience.py` | ambiências periódicas (loop perfeito por construção) |
 | `measure.py` · `seam_clips.py` · `spectro.py` | medição, clipes da emenda, mosaico de espectrogramas |
@@ -87,7 +99,8 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
   teto −1 dBFS com limitador. Golpe −12, pesado −10, swing −18, passo −20 (o player toca a −6 dB),
   magia −13 (Coroa −11), chefe −10, UI −22, ui_move −27, blip −25, faísca −25, legenda −30.
   Transientes muito curtos (passo, soco) ficam 1–4 dB abaixo do alvo porque o teto de pico manda.
-- **Buses:** Master (HardLimiter −0,5 dB) ← Music, Ambience, SFX ← (UI, Voice). UI = `ui_*`, `shop_*`,
+- **Buses:** Master (HardLimiter −1 dB) ← Music, Ambience, SFX ← (UI, Voice, SFX_L2…R2), Tell ← (Tell_L2…R2).
+  Tell = `tell_*` (avisos do combate): segue o slider de SFX e NÃO passa pelo passa-baixas da câmera lenta. UI = `ui_*`, `shop_*`,
   `subtitle_tick`; Voice = `blip_*` (monofônico). Sliders: Master, SFX (inclui UI/Voz), Música (inclui ambiência).
 - **Ducking:** DialogueBox/Cinematic na árvore → música −9 dB, ambiência −5 dB (entra 0,25 s, sai 0,8 s).
 
@@ -98,7 +111,32 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
 `play_ambience(nome, volume_db=0)` · `stop_ambience(fade)` · `duck(on)` · `is_ducked()` · `play_blip(falante)` ·
 `blip_for_speaker(falante)` · `has_sfx/has_music/has_ambience` · `variants_of(nome)` · `set_volume(bus, linear)` ·
 `track_for_screen(tela)` · `ambience_for_screen(tela)` · `play_sfx_pitched(nome, tom, dB)` · `voice_theme(modo)` ·
-`cue(nome)` · `ring_note(i, devolvendo)` · `menu_track()` · `shutdown()`.
+`cue(nome)` · `ring_note(i, devolvendo)` · `menu_track()` · `shutdown()` ·
+`play_sfx_later(nome, s, dB)` · `low_health_pulse()` · `boss_track(éon)` · `boss_pending` (Onda 2b).
+
+### Silêncio antes do chefe e Centro (Onda 2b — NEURO R9, pedido da Encenação)
+
+- **Tela do Arconte** (e 3º encontro da Provação): ao chegar, a música do Éon sai em 0,6 s e a faixa de
+  chefe NÃO entra — fica só a ambiência. O stinger `boss_appear` (card de chefe / chefe nascendo) cai no
+  vazio e a faixa de chefe entra 0,3 s depois (fade 0,25 s; por baixo do ducking do card). Voltar da
+  pausa depois disso não refaz o silêncio; recomeçar a tela refaz. Rede de segurança: sem stinger em
+  25 s, a faixa entra. Tela 1 (Rei) e 68 (final) ficam com a Encenação.
+- **Morte do chefe** (`boss_die`): a música cai −30 dB em 150 ms, fica 1,6 s fora e volta em 1 s.
+- **Centro**: `track_for_screen()` devolve `""` (silêncio) no Centro enquanto nenhum caco voltou; voltar
+  da pausa (`PLAYING`) também não religa. `centro` entra no 1º caco (curva igual à do Level).
+- **Música de chefe por Arconte** (#40): `boss_track(éon)` usa `music/boss_<éon>.ogg` SE existir (opcional,
+  `OPTIONAL_MUSIC`); senão `boss`. Nenhuma instalada: as opções esperam o João (`boss_variants.py`).
+
+### Avisos do combate e vida baixa (Onda 2b — NEURO R5 e R22)
+
+| Som | Quem chama | Como soa |
+|---|---|---|
+| `tell_parry` | Combate, no brilho AMARELO (golpe aparável), `play_sfx("tell_parry", -1, 0, pos)` | "tim" redondo e agudo, ~0,15 s (Lá6 + parcial de barra 2,76× + Lá7), pico no 1º ms = a janela de parry abriu |
+| `tell_unblock` | Combate, no losango VERMELHO (imparável), idem | "vuum" áspero e grave, ~0,3 s: serra 75→140 Hz saturada, AM 33 Hz, sopro 200–900 Hz; cresce até o golpe |
+| `heartbeat` | HUD: `Audio.low_health_pulse()` a cada pulso da vinheta | UMA batida lub-dub (~0,7 s), a −3 dB do arquivo, e a música abre −3 dB por ~0,6 s (sem atropelar névoa/morte do chefe); no máximo 1 a cada 0,6 s |
+
+Os avisos tocam com tom FIXO (sem variação aleatória: o ouvido aprende o ritmo) e passam ao lado do
+passa-baixas da câmera lenta (bus `Tell`), para o aviso nunca sumir durante uma esquiva perfeita.
 
 ### Tema da Voz e API das cenas (Onda 2 — ROTEIRO §2 e §5 #8)
 
@@ -114,7 +152,7 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
 
 | `cue` | Som |
 |---|---|
-| `heartbeat` | `heartbeat` (2 batidas abafadas) |
+| `heartbeat` | `heartbeat` 2× (1,1 s de relógio real entre as batidas; o arquivo tem UMA) |
 | `fog_thickens` | `fog_swell` + música −8 dB ("desce a 40 %") até `king_emerges` ou a troca de tela |
 | `king_emerges` | `king_step`; na tela do Rei também `boss_appear` −8 dB e a música volta em 2 s |
 | `mask_lights` / `mask_cracks` | `mask_light` / `block` −4 dB (estalo seco) |
@@ -254,9 +292,11 @@ Var = nº de arquivos (`nome`, `nome_2`...). M-max = loudness momentânea máx. 
 | `sfx/mask_light.ogg` | S | 1 | -17.0 | novo |
 | `sfx/voice_merge.ogg` | S | 1 | -15.0 | novo |
 | `sfx/whisper.ogg` | S | 1 | -21.0 | novo |
-| `sfx/heartbeat.ogg` | S | 1 | -18.0 | onda 2 |
+| `sfx/heartbeat.ogg` | S | 1 | -18.0 | onda 2 (2b: UMA batida) |
 | `sfx/clap.ogg` | S | 1 | -15.2 | onda 2 |
 | `sfx/child_breath.ogg` | S | 1 | -21.0 | onda 2 |
+| `sfx/tell_parry.ogg` | S | 1 | -17.0 | onda 2b |
+| `sfx/tell_unblock.ogg` | S | 1 | -14.0 | onda 2b |
 
 | Música | Faixa (Kevin MacLeod) | Loop (s) | Alvo LUFS |
 |---|---|---|---|

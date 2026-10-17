@@ -25,6 +25,29 @@ var rings_stolen: bool = false         # o Rei roubou os Anéis (tela 50)
 var restored_rings: Array[String] = [] # cacos de memória devolvidos no Centro
 var selected_ring: int = 0             # índice (0..6) do Anel equipado
 
+# --- Desbloqueios (backlog #26) — META-progresso: NÃO zera no reset_run ---
+## Um chefe caiu na CAMPANHA pela 1ª vez (Provação não conta).
+signal boss_beaten(boss_id: String)
+## Ids dos chefes já vencidos na campanha ("rei", ids dos Arcontes,
+## "demiurgo"). Gravado no save; a Provação só lista os vencidos.
+var bosses_beaten: Array[String] = []
+
+
+## Marca um chefe como vencido na campanha. Ignora a Provação e cenas de teste
+## fora de run. Devolve true se era inédito.
+func record_boss_beaten(boss_id: String) -> bool:
+	if boss_id == "" or CodexSession.active or not RunManager.run_active:
+		return false
+	if bosses_beaten.has(boss_id):
+		return false
+	bosses_beaten.append(boss_id)
+	boss_beaten.emit(boss_id)
+	return true
+
+
+func is_boss_beaten(boss_id: String) -> bool:
+	return bosses_beaten.has(boss_id)
+
 
 func unlock_skill(id: String) -> void:
 	if not unlocked_skills.has(id):
@@ -40,6 +63,7 @@ func add_ring(boss_id: String, skill_id: String) -> void:
 	if not rings.has(boss_id):
 		rings.append(boss_id)
 	unlock_skill(skill_id)
+	record_boss_beaten(boss_id)      # o Anel só vem de um Arconte vencido
 	rings_changed.emit()
 
 

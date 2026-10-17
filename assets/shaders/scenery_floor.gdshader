@@ -6,7 +6,8 @@ render_mode unshaded;
 // linha dos pés anda 1:1 com o mundo; mais perto da câmera, mais rápido
 // (o chão "abre"). Por cima: névoa no horizonte, poça de luz onde se luta,
 // reflexo do fundo (tela espelhada no horizonte), borda iluminada e
-// escurecimento em direção à câmera.
+// escurecimento em direção à câmera. Abaixo da faixa de luta (P2): manchas
+// de luz que passam devagar e o brilho do Éon escorrendo pelas rachaduras.
 
 uniform sampler2D floor_tex : source_color, filter_linear;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
@@ -24,7 +25,21 @@ uniform vec4 glow : source_color = vec4(0.8, 0.9, 1.0, 1.0);
 uniform float has_tex = 1.0;
 uniform vec4 base_col : source_color = vec4(0.14, 0.13, 0.17, 1.0);
 
+uniform float life = 1.0;          // vida da faixa de baixo (P2): luz nas fendas + manchas de luz
+uniform float crack_amt = 1.1;    // brilho do Éon vazando pelas rachaduras (a faísca presa na matéria)
+
 varying vec2 local;
+
+float fhash(vec2 q) {
+	return fract(sin(dot(q, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float fnoise(vec2 q) {
+	vec2 i = floor(q);
+	vec2 f = fract(q);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(fhash(i), fhash(i + vec2(1.0, 0.0)), f.x), mix(fhash(i + vec2(0.0, 1.0)), fhash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
 
 void vertex() {
 	local = VERTEX;
@@ -46,8 +61,11 @@ void fragment() {
 	float s = max(0.55, 1.0 + (y - feet_y) / band_h * persp);
 	float wx = cam_x + sx / s;
 	vec3 c = base_col.rgb * (1.0 - vt * 0.5);
+	vec2 fuv = vec2(mirror1(wx / tile_w), vt);
+	float l0 = 0.0;
 	if (has_tex > 0.5) {
-		c = texture(floor_tex, vec2(mirror1(wx / tile_w), vt)).rgb;
+		c = texture(floor_tex, fuv).rgb;
+		l0 = dot(c, vec3(0.3, 0.59, 0.11));
 	}
 	// reflexo: a tela espelhada no horizonte, com ondulação leve
 	float floor_sv = SCREEN_UV.y - dy / view_h;
@@ -62,7 +80,30 @@ void fragment() {
 	float lane = exp(-pow((y - feet_y) / 16.0, 2.0));
 	c += glow.rgb * lane * 0.07;
 	// escurece em direção à câmera (o primeiro plano é sombra)
-	c *= mix(1.0, 0.42, smoothstep(0.3, 1.0, vt));
+	c *= mix(1.0, mix(0.42, 0.52, life), smoothstep(0.3, 1.0, vt));
+	if (life > 0.0) {
+		// VIDA NA FAIXA DE BAIXO (abaixo da faixa de luta, sem disputar com ela):
+		// 1) manchas de luz que passam devagar (nuvem/vitral lá em cima), presas
+		//    ao chão em perspectiva;
+		float below = smoothstep(0.22, 0.55, vt);
+		if (below > 0.0) {
+			float warp = fnoise(vec2(wx * 0.004, vt * 3.0));
+			float pool = 0.5 + 0.5 * sin(wx * 0.009 + vt * 5.0 + TIME * 0.25 + warp * 7.0);
+			c *= 1.0 + below * life * 0.22 * smoothstep(0.55, 1.0, pool);
+			// 2) a faísca presa na matéria: o brilho do Éon escorre pelas fendas em
+			//    ondas lentas que viajam pelo chão. As 4 amostras extras (rachadura =
+			//    mais escura que a vizinhança, em cruz) só onde a onda está passando.
+			float wave = 0.5 + 0.5 * sin(wx * 0.014 - TIME * 0.7 + warp * 9.0 + vt * 3.0);
+			float seep = smoothstep(0.6, 1.0, wave) * (0.7 + 0.3 * sin(TIME * 1.3 + wx * 0.02)) * below;
+			if (seep > 0.01 && has_tex > 0.5) {
+				vec2 px = 2.5 / vec2(textureSize(floor_tex, 0));
+				vec3 nb = texture(floor_tex, vec2(mirror1(fuv.x + px.x), fuv.y)).rgb + texture(floor_tex, vec2(mirror1(fuv.x - px.x), fuv.y)).rgb
+					+ texture(floor_tex, fuv + vec2(0.0, px.y)).rgb + texture(floor_tex, fuv - vec2(0.0, px.y)).rgb;
+				float crack = smoothstep(0.02, 0.07, dot(nb * 0.25, vec3(0.3, 0.59, 0.11)) - l0);
+				c += glow.rgb * crack * seep * crack_amt * life;
+			}
+		}
+	}
 	// borda iluminada no horizonte
 	c += glow.rgb * exp(-max(dy, 0.0) / 1.8) * 0.14;
 	COLOR = vec4(c, smoothstep(-1.5, 3.0, dy));

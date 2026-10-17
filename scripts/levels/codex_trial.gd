@@ -4,12 +4,11 @@ extends Level
 var completed: bool = false
 var result_layer: CanvasLayer
 var phase_label: Label
-## Faixa de dicas de controle (segue o dispositivo em uso — QA P3).
+## Faixa de dicas de controle: segue o dispositivo em uso e o remapeamento
+## (QA P3 · #33, via `InputGlyphs`).
 var hint_label: Label
-var _pad: bool = false
 
-const HINT_KEYS := "A/D mover   ESPAÇO saltar   J/K golpes   SHIFT esquiva   I aparar   U anel   O esfera"
-const HINT_PAD := "Analógico mover   A saltar   X/Y golpes   B esquiva   LB aparar   RB anel   RT esfera"
+const HINTS := [["@move", "mover"], ["jump", "saltar"], [["attack_light", "attack_heavy"], "golpes"], ["dodge", "esquiva"], ["block", "aparar"], ["skill1", "anel"], ["skill2", "esfera"]]
 
 func _ready() -> void:
 	# A entrada direta serve às ferramentas de QA.
@@ -52,28 +51,21 @@ func _ready() -> void:
 	phase_label = CodexStyle.label(layer, "", Vector2(390, 13), 10, CodexStyle.GOLD, 230)
 	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	hint_label = CodexStyle.label(layer, "", Vector2(18, 341), 8, CodexStyle.MUTED, 615)
-	_pad = not Input.get_connected_joypads().is_empty()
+	var l := InputGlyphs.listener()
+	if l != null:
+		l.connect("device_changed", _on_device_changed)
 	_refresh_hints()
 	_start_wave()
 	get_tree().call_group("hud", "toast", ["I  ·  A FAÍSCA DESPERTA", "II  ·  QUEBRE A GUARDA", "III  ·  ENCARE O ARCONTE"][CodexSession.stage])
 
-## Troca a faixa de dicas para o último dispositivo usado (não consome o evento).
-func _input(event: InputEvent) -> void:
-	var pad := _pad
-	if event is InputEventJoypadButton and event.pressed:
-		pad = true
-	elif event is InputEventJoypadMotion and absf(event.axis_value) > 0.5:
-		pad = true
-	elif (event is InputEventKey and event.pressed) or (event is InputEventMouseButton and event.pressed):
-		pad = false
-	if pad != _pad:
-		_pad = pad
-		_refresh_hints()
+## Troca a faixa de dicas quando o último dispositivo usado muda.
+func _on_device_changed(_d: int) -> void:
+	_refresh_hints()
 
 
 func _refresh_hints() -> void:
 	if hint_label != null:
-		hint_label.text = HINT_PAD if _pad else HINT_KEYS
+		hint_label.text = InputGlyphs.hint(HINTS, -1, "   ")
 
 
 func _process(delta: float) -> void:

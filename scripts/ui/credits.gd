@@ -72,7 +72,14 @@ func _ready() -> void:
 	add_child(fade)
 
 	_back = CodexStyle.button(self, "Voltar", Vector2(540, 324), 84, _leave, false, "ui_back")
-	CodexStyle.label(self, "W/S · setas · analógico rolam   ·   Esc / B volta", Vector2(16, 332), 9, Color(CodexStyle.MUTED, 0.8), 260)
+	var hint := InputGlyphs.Hint.new()     # segue o dispositivo em uso (#33)
+	hint.pairs = [["@scroll", "rolam"], ["ui_cancel", "volta"]]
+	hint.position = Vector2(16, 330)
+	hint.size = Vector2(300, 16)
+	hint.font_size = 9
+	hint.icon_h = 12.0
+	hint.align = 0
+	add_child(hint)
 	_back.grab_focus()
 
 

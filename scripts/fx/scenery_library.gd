@@ -28,7 +28,8 @@ const LAYERS := [
 
 ## Direção de luz por Éon (à mão). Coordenadas `ray` em fração da pintura
 ## (acima do chão): x 0..1 da esquerda, y 0..1 do topo. `ray_dark` = raios de
-## VAZIO (escurecem em vez de clarear — a Mente).
+## VAZIO (escurecem em vez de clarear — a Mente). `crack` (opcional, padrão 1,1)
+## = brilho do Éon nas rachaduras do chão; menor onde a luz do Éon é quase branca.
 const LOOK := [
 	# 0 Torpor: a lua no rosácea; chão alagado reflete bem.
 	{"ray": Vector2(0.60, 0.16), "ray_col": Color(0.62, 0.86, 1.0), "ray_amt": 0.30, "ray_spread": 0.55, "reflect": 0.34, "mist": 0.55, "glow": Color("98cece"), "light": Color(0.80, 0.90, 1.0)},
@@ -39,11 +40,11 @@ const LOOK := [
 	# 3 Silêncio: o sol negro só tem halo (raios fracos, frios).
 	{"ray": Vector2(0.66, 0.20), "ray_col": Color(0.70, 0.66, 1.0), "ray_amt": 0.18, "ray_spread": 0.70, "reflect": 0.22, "mist": 0.50, "glow": Color(0.7, 0.75, 1.0), "light": Color(0.80, 0.80, 1.0)},
 	# 4 Espelho: claridade forte; o chão é quase espelho.
-	{"ray": Vector2(0.62, 0.02), "ray_col": Color(0.96, 0.92, 1.0), "ray_amt": 0.32, "ray_spread": 0.50, "reflect": 0.50, "mist": 0.45, "glow": Color(0.95, 0.97, 1.0), "light": Color(1.0, 0.98, 1.0)},
+	{"ray": Vector2(0.62, 0.02), "ray_col": Color(0.96, 0.92, 1.0), "ray_amt": 0.32, "ray_spread": 0.50, "reflect": 0.50, "crack": 0.4, "mist": 0.45, "glow": Color(0.95, 0.97, 1.0), "light": Color(1.0, 0.98, 1.0)},
 	# 5 Praga: luz verde coada pelas arcadas; chão úmido.
 	{"ray": Vector2(0.72, -0.05), "ray_col": Color(0.72, 1.0, 0.60), "ray_amt": 0.28, "ray_spread": 0.45, "reflect": 0.26, "mist": 0.75, "glow": Color(0.7, 1.0, 0.5), "light": Color(0.84, 1.0, 0.80)},
 	# 6 Coroa: ouro diagonal; mármore polido.
-	{"ray": Vector2(0.64, -0.02), "ray_col": Color(1.0, 0.86, 0.52), "ray_amt": 0.34, "ray_spread": 0.55, "reflect": 0.36, "mist": 0.40, "glow": Color(1.0, 0.85, 0.4), "light": Color(1.0, 0.92, 0.75)},
+	{"ray": Vector2(0.64, -0.02), "ray_col": Color(1.0, 0.86, 0.52), "ray_amt": 0.34, "ray_spread": 0.55, "reflect": 0.36, "crack": 0.7, "mist": 0.40, "glow": Color(1.0, 0.85, 0.4), "light": Color(1.0, 0.92, 0.75)},
 	# 7 Centro: a esfera da máquina irradia (e tem faíscas em órbita).
 	{"ray": Vector2(0.62, 0.36), "ray_col": Color(0.82, 0.72, 1.0), "ray_amt": 0.24, "ray_spread": 1.0, "reflect": 0.18, "mist": 0.55, "glow": Color(1.0, 0.8, 0.45), "light": Color(0.88, 0.82, 1.0)},
 	# 8 Mente: o olho cego irradia VAZIO.

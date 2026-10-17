@@ -160,6 +160,10 @@ func _scene_open() -> void:
 			# M3: a música do Éon cai a −14 dB ao abrir o encontro ("Senta.").
 			Audio.duck_music(600.0, -14.0)
 			_ducked = true
+		"tentacao":
+			# #18: o Arconte já está no palco (Level._stage_archon); a câmera
+			# enquadra os dois, ela à esquerda e ele à direita.
+			_frame_boss()
 
 
 func _on_line(index: int, line: Dictionary) -> void:
@@ -239,6 +243,8 @@ func _on_finished(box: DialogueBox) -> void:
 			_unlock()
 		"anagnorise":
 			_cam_release(0.6)
+		"tentacao":
+			_cam_release(0.5)
 		"santuario":
 			if _music_stopped:
 				await get_tree().create_timer(1.0, true, false, true).timeout
@@ -287,6 +293,23 @@ func _a_mask_lights() -> void:
 	VfxLibrary._flash_sprite(self, p, "halo", Color(GOLD, 0.9), 0.25, 1.4, 0.45)
 	VfxLibrary._flash_sprite(self, p, "flare", Color(1, 0.95, 0.7, 1.0), 0.15, 0.7, 0.15)
 	Juice.shake(0.15)
+
+
+## Tentação: centra o quadro entre a Sophia e o Arconte parado (zoom de jogo)
+## e sobe os dois acima da caixa.
+func _frame_boss() -> void:
+	if player == null:
+		return
+	var boss: Node2D = null
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if e is Enemy and e.is_boss_enemy:
+			boss = e
+			break
+	if boss == null:
+		return
+	var mid := (player.global_position.x + boss.global_position.x) * 0.5
+	# Desce o quadro como na cena D: os dois ficam ACIMA da caixa de diálogo.
+	_cam_to(1.0, Vector2(mid - _view_center().x, D_LIFT), 0.8)
 
 
 ## Onde o Rei espera o duelo (o 1º ponto de spawn da zona 0 do Level).
