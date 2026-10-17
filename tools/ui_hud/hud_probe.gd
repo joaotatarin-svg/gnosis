@@ -264,15 +264,50 @@ class P extends Node:
 		await shot("toast")
 
 	func _hints() -> void:
+		Narrative.reset()
 		await level_at(1)
-		await wait(0.5)
+		await wait(1.6)
+		var h := hud()
+		print("HUDP|hints|fila=", h.hints.size(), " atual=", h._hint, " pad=", h.use_pad)
 		await shot("hints_0_teclado")
+		await key(KEY_D, 0.3)
 		await key(KEY_SPACE)
-		await wait(0.6)
-		await shot("hints_1_pulou")
-		await pad(JOY_BUTTON_A)
-		await wait(0.4)
-		await shot("hints_2_controle")
+		await wait(1.2)
+		print("HUDP|hints|apos_usar t=", h._hint_t, " feitas=", h._hint_done.keys(), " atual=", h._hint)
+		await pad(JOY_BUTTON_X)
+		await wait(0.3)
+		await shot("hints_1_controle")
+		print("HUDP|hints|pad=", h.use_pad, " rotulo_golpe=", h.key_label("attack_light"), " mover=", h.key_label("@move"))
+		# 1º Anel: dica nova
+		Progression.add_ring(GameContent.characters[0].skills.filter(func(sk): return sk.ring != "")[0].ring, "x")
+		await wait(0.2)
+		print("HUDP|hints|fila_apos_anel=", h.hints.size())
+		# faíscas por orbe
+		h.spark_orb_arrived()     # liga o modo orbe (o Combate chama sempre)
+		await wait(0.5)
+		var before: float = h.sparks_shown
+		Progression.add_orbs(5)
+		await wait(0.1)
+		for i in 3:
+			h.spark_orb_arrived()
+			await wait(0.13)
+		print("HUDP|sparks|antes=%d apos_3_orbes=%d total=%d" % [int(before), int(round(h.sparks_shown)), Progression.orbs])
+		await wait(2.0)
+		print("HUDP|sparks|depois_de_2s=%d" % int(round(h.sparks_shown)))
+		Progression.weapon_level = 2
+		Progression.weapon_level_changed.emit(2)
+		await wait(0.3)
+		await shot("hints_2_arma")
+		# restore_ring
+		var d: float = h.detach_ring(0)
+		await wait(d + 0.3)
+		var r: float = h.restore_ring(0)
+		await wait(r * 0.5)
+		await shot("hints_3_restore_meio")
+		var t0 := Time.get_ticks_msec()
+		while h._incoming.size() > 0 and Time.get_ticks_msec() - t0 < 5000:
+			await wait(0.05)
+		print("HUDP|restore|incoming=", h._incoming.size(), " detached=", h._detached.size(), " ms_ate_assentar=", Time.get_ticks_msec() - t0, " time_scale=", Engine.time_scale)
 
 	func _pad() -> void:
 		await level_at(10, false)
