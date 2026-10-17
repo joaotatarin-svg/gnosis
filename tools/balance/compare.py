@@ -2,7 +2,7 @@
 """GNOSIS — compara duas rodadas do bot de balance (CSV do tools/balance_bot.gd).
 
 Uso:
-  python3 tools/balance/compare.py A.csv B.csv [--telas]   (A = antes, B = depois)
+  python3 tools/balance/compare.py A.csv B.csv [--telas] [--papeis]   (A = antes, B = depois)
   python3 tools/balance/compare.py A.csv                    (resumo de uma rodada)
 
 Mostra: totais, curva por trecho (Limiar, 7 Éons, Centro, Mente), telas que mais
@@ -91,6 +91,22 @@ def resumo(a: dict) -> None:
         print("  %-24s %6d  (%4.1f%%)" % (k, v, v * 100.0 / max(1, t["dmg"])))
 
 
+def papeis(rows: dict, nome: str) -> None:
+    """Por Éon: mediana das travessias, Campeão (offset 4), antessala (7), Arconte (8)."""
+    import statistics
+    print("\n%s — por papel da tela (dano)" % nome)
+    print("%-10s %8s %8s %9s %8s %9s" % ("Éon", "trav.med", "campeão", "antessala", "arconte", "dano/min"))
+    for i, e in enumerate(EONS):
+        a0 = 2 + 9 * i
+        if not all((a0 + k) in rows for k in range(9)):
+            continue
+        trav = [rows[a0 + k]["dmg"] for k in (0, 1, 2, 3, 5, 6)]
+        t = sum(rows[a0 + k]["time"] for k in range(9)) / 60.0
+        d = sum(rows[a0 + k]["dmg"] for k in range(9))
+        print("%-10s %8.0f %8d %9d %8d %9.0f" % (e, statistics.median(trav), rows[a0 + 4]["dmg"], rows[a0 + 7]["dmg"],
+              rows[a0 + 8]["dmg"], d / max(0.01, t)))
+
+
 def main() -> int:
     args = [x for x in sys.argv[1:] if not x.startswith("--")]
     if not args:
@@ -99,6 +115,8 @@ def main() -> int:
     a = load(args[0])
     if len(args) == 1:
         resumo(a)
+        if "--papeis" in sys.argv:
+            papeis(a, args[0])
         return 0
     b = load(args[1])
     # Identidade só nos campos de JOGO (colunas novas do CSV não contam).
@@ -131,6 +149,9 @@ def main() -> int:
         print("\nTelas que mais mudaram (dano):")
         for s in moved:
             print("  %3d %-14s %5d→%-5d %s  %s" % (s, trecho(s), a[s]["dmg"], b[s]["dmg"], pct(a[s]["dmg"], b[s]["dmg"]), b[s]["boss"]))
+    if "--papeis" in sys.argv:
+        papeis(a, "A")
+        papeis(b, "B")
     sa, sb = src_total(a), src_total(b)
     keys = sorted(set(sa) | set(sb), key=lambda k: -max(sa.get(k, 0), sb.get(k, 0)))[:15]
     print("\nDano por fonte (A→B):")
