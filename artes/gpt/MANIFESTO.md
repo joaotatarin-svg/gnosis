@@ -390,3 +390,62 @@ Chat: https://chatgpt.com/c/6ad33822-6c1c-83e9-9539-4ac389a72382 (refs: painted/
 ## Resumo Fila 6
 - Aprovadas: bot_1_sonambulo_a, bot_2_glutao_b, bot_3_carcereiro_a, bot_4_mudo_a, bot_5_reflexo_a, bot_6_esporos_a, bot_7_pretoriano_a.
 - 9 pedidos (8 imagens; 1 recusa por diretriz de violência). Nenhum aviso de limite.
+
+# FILA 7 — Quadros intermediários desenhados (mesmo chat da folha original)
+Padrão A (bots/criaturas) `<id>_motion_a.png`, 2×4: 0 walk_contact_A · 1 walk_down_A · 2 walk_pass_A · 3 walk_up_A · 4 walk_contact_B ·
+5 walk_pass_B · 6 recover_0 (saindo do strike) · 7 recover_1 (quase idle).
+- `bot_1_sonambulo_motion_a.png` — padrão A. Nota 8. Mesma escala da folha original (h≈415–454), passos legíveis, recuperação com braços voltando. Chat do bot 1.
+- `bot_2_glutao_motion_a.png` — padrão A (andar = rastejar de 6 quadros). Nota 7.5. Fiel ao glutao_b, mesma escala (h≈250–285).
+  Diferenças entre quadros do rastejar são SUTIS (bom p/ fluidez, mas quase repetidos); rec_0 (empinado) e rec_1 ok. Chat do bot 2.
+- `bot_3_carcereiro_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈400–445), corrente pendurada com gancho em todos os quadros. Chat do bot 3.
+- `bot_4_mudo_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈403–448); rolos flutuantes balançam junto (alguns soltos — agrupar). Chat do bot 4.
+- `bot_5_reflexo_motion_a.png` — padrão A. Nota 8 (APROVADA). Alternativa `bot_5_reflexo_motion_b.png` (A/B; passos mais uniformes, nota 7.5). Chat do bot 5.
+- `bot_6_esporos_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈396–430), passos de corcunda legíveis; rec_0 com a corcunda empinada. Chat do bot 6.
+- `bot_7_pretoriano_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈430–460), escudo sempre à frente; recuperação mostra a lança voltando. Chat do bot 7.
+Padrão A' (larva flutuante): células 0–5 = ondulação flutuando (alto→desce→baixo→sobe→alto oposto→desce) · 6 recover_0 · 7 recover_1.
+- `cri_1_larva_motion_a.png` — padrão A' (flutuar). Nota 8. Fiel; ondulação suave (corpo sobe/desce, faixas ondulam). Chat da criatura 1.
+- `cri_2_espadachim_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈394–454), espada baixa à frente; ponta da espada perto da borda das células (não toca). Chat da criatura 2.
+- `cri_3_bruto_motion_a.png` — padrão A. Nota 8. Fiel ao bruto_b, mesma escala (h≈385–425), passada pesada. Chat da criatura 3.
+Padrão A'' (cão quadrúpede): células 0–5 = trote (diagonal A toca → baixo → passagem → impulso → diagonal B toca → passagem) · 6 recover_0 · 7 recover_1.
+- `cri_4_cao_motion_a.png` — padrão A'' (trote). Nota 8. Fiel, escala igual (h≈245–290), patas alternando; células muito largas (encostam a 1–6 px umas das outras, sem tocar). Chat da criatura 4.
+- `cri_5_escudeiro_motion_a.png` — padrão A. Nota 7.5. Fiel (escudo do sol no braço do lado da câmera, lança), mesma escala (h≈370–395).
+  Pontas da lança chegam às bordas (q3 até x=1536). rec_0 mostra o escudo virado de lado (troca de vista momentânea). Chat da criatura 5.
+- `cri_6_conjurador_motion_a.png` — padrão A. Nota 7.5. Fiel, mesma escala (h≈410–436); manto cobre as pernas, então o andar se lê mais pelo
+  cajado/pés que aparecem; mantos quase encostam entre células (1–8 px). Chat da criatura 6.
+
+Sophia (chat https://chatgpt.com/c/6ad32fd5-1254-83e9-993b-a2f7e95cfa44):
+- `s15_recover_a.png` 2×4 — células: 0 rec_light1 · 1 rec_light2 · 2 rec_light3 · 3 rec_heavy · 4 rec_cast · 5 rec_air_land · 6 rec_dodge · 7 rec_hurt.
+  Nota 7.5. Fiel, escala ok (h≈305–470 conforme a pose). Cada célula é uma pose de transição isolada (1 quadro por golpe, não sequência).
+  Ressalva: o cajado muda de mão/lado entre células (ex.: rec_cast vertical na frente; rec_light1 cruzado) — usar cada célula só com o golpe correspondente.
+  q0 encosta na borda esquerda (x=2), a estocada q2 avança até x≈1248 (passa da célula, não toca).
+- `s16_idle_a.png` 2×4 — células: idle_0..idle_7 (ciclo contínuo de respiração).
+  Nota 8. Ciclo sutil e consistente (cabelo/faixas ondulam, corpo e cajado parados), escala idêntica entre células (h≈495–497).
+  O cristal encosta no topo da célula (y≈4 / 506) e as botas descem até y≈1003 — sem corte. Posição x varia até ~9 px entre células: alinhar pelos pés.
+
+Chefes (padrão C) `boss_<n>_<nome>_motion_a.png` 2×4: 0 walk_c0 (contato) · 1 walk_p0 (passagem) · 2 walk_c1 · 3 walk_p1 ·
+4 windup_1 (antecipação leve) · 5 windup_2 (antecipação máxima) · 6 strike_1 (impacto) · 7 strike_2 (follow-through).
+- `boss_1_athoth_motion_a.png` — padrão C (deslizar). Nota 8. Fiel ao athoth_c (perfil, halo de lado, trapos navy), mesma escala (h≈465–485),
+  orbes pequenos (soltos) no windup/strike. Linha de cima desce até y≈508 — separar por componente. Chat do Athoth refeito.
+- `boss_2_harmas_motion_a.png` — padrão C. Nota 8. Fiel (vista ~3/4 como o original), mesma escala (h≈440–470); veio com fundo MAGENTA
+  (o original era transparente — combinar no recorte). windup_2 punhos erguidos (frontal), strike com punhos no chão. Chat do Harmas.
+- `boss_3_galila_motion_a.png` — padrão C. Nota 8. Fiel ao galila_b (perfil), mesma escala (h≈410–446). As gaiolas-lanterna são vazadas
+  (magenta aparece por dentro — normal). strike_1 (estocada) vai de x≈708 a 1200, passa da célula sem tocar o vizinho. Chat da Galila.
+- `boss_4_yabel_motion_a.png` — padrão C. Nota 7.5. Fiel, mesma escala (h≈410–457), agora o windup ficou de PERFIL (o original era frontal —
+  pode haver salto se misturar com o windup antigo; usar estes dois em sequência). Asas com reflexo arroxeado perto do magenta (despill). Chat do Yabel.
+- `boss_5_astaphaios_motion_a.png` — padrão C. Nota 7.5. Fiel, perfil, mesma escala (h≈370–480). Véus continuam translúcidos (~13,5 mil px
+  quase-magenta, metade da versão original) — despill. Cajado do windup cruza a borda das células (x≈8 e a estocada vai até 1210, sem tocar). Chat do Astaphaios.
+- `boss_6_belias_motion_a.png` — padrão C (passada de fera). Nota 8. Fiel, mesma escala (h≈245–325), perfil p/ direita. Figuras ocupam a célula
+  inteira na largura (encostam 1–3 px entre si, sem tocar); q3 até x=1534. Chat do Belias.
+- `boss_7_armupiel_motion_a.png` — padrão C. Nota 8. Fiel, perfil, mesma escala (h≈410–467); windup em 2 etapas com espadão erguido,
+  strike com lâmina fincada no chão. Chat do Armupiel.
+- `boss_8_colosso_motion_a.png` — padrão C. Nota 8. Fiel ao colosso_b, mesma escala (h≈420–457); windup com punho erguido atrás (perfil),
+  strike com punhos no chão + lascas pequenas (soltas). q7 encosta na borda direita (x=1536). Chat do Colosso.
+- `boss_9_rei_motion_a.png` — padrão C (deslizar). Nota 8. Fiel ao rei_a, mesma escala (h≈420–465). Fundo de novo ROSA (≈248,1,190),
+  como o original — chavear por essa cor (o QA padrão vê 1 bloco; com a cor certa são 8 quadros). windup_2 sobe até y≈488. Chat do Rei.
+
+## Resumo Fila 7
+- 13 folhas A (7 bots + 6 criaturas), 2 da Sophia (s15, s16), 9 chefes (padrão C) = 24 folhas novas + 1 alternativa (bot_5_reflexo_motion_b).
+- ~26 pedidos de geração, 0 recusas, nenhum aviso de limite.
+
+# LOJA
+Chat da key art: https://chatgpt.com/c/6ad32ebc-f810-83e9-826e-765ea8ed5729

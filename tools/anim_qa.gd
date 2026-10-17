@@ -43,6 +43,7 @@ func _ready() -> void:
 		"rim_board": await _rim_board()
 		"weapon_board": await _weapon_board()
 		"bot_board": await _bot_board()
+		"film_walk": _film_walk(args.slice(2))
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -395,6 +396,21 @@ func _rim_board() -> void:
 	_save(out if out != "" else "user://rim_board.png")
 	CharacterArt.rim_override = -1
 	get_tree().quit()
+
+
+## FLUIDEZ (FILA 7): até 4 personagens (ids do Bestiário) ANDANDO lado a lado
+## (andar pela distância, chão marcado), golpe e recuperação no fim.
+func _film_walk(ids: Array) -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	if ids.is_empty():
+		ids = ["sonambulo", "glutao", "carcereiro"]
+	for k in ids.size():
+		var art := _boss(String(ids[k]), Vector2(560, 80 + (k + 1) * 82), 0.9)
+		art.scale.x = -art.scale.x       # olha pra esquerda e anda pra esquerda
+		var tl := [["walk", 2.4, -38.0], ["windup", 0.5, 0.0], ["attack", 0.25, 0.0], ["recover", 0.7, 0.0], ["idle", 0.3, 0.0]]
+		actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
+		_label(String(ids[k]), Vector2(6, 80 + k * 82 + 40))
+	_label("ANDAR (FILA 7) — quadros desenhados pela distância", Vector2(6, 6))
 
 
 ## Bots de Éon (#7): para cada um, o Arconte (referência), o bot ANTES

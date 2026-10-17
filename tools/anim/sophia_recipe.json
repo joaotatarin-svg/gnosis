@@ -285,6 +285,42 @@
     "follow",
     "back"
    ]
+  },
+  "s15": {
+   "file": "assets/painted/src/sophia_s15.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": 1.0,
+   "cells": [
+    "rec_light1",
+    "rec_light2",
+    "rec_light3",
+    "rec_heavy",
+    "rec_cast",
+    "rec_air",
+    "rec_dodge",
+    "rec_hurt"
+   ]
+  },
+  "s16": {
+   "file": "assets/painted/src/sophia_s16.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": "auto:breath_0",
+   "cells": [
+    "breath_0",
+    "breath_1",
+    "breath_2",
+    "breath_3",
+    "breath_4",
+    "breath_5",
+    "breath_6",
+    "breath_7"
+   ]
   }
  },
  "frame_fix": {
@@ -295,12 +331,17 @@
  "states": {
   "idle": {
    "frames": [
-    "s3.idle_0",
-    "s3.idle_2",
-    "s3.idle_3"
+    "s16.breath_0",
+    "s16.breath_1",
+    "s16.breath_2",
+    "s16.breath_3",
+    "s16.breath_4",
+    "s16.breath_5",
+    "s16.breath_6",
+    "s16.breath_7"
    ],
    "loop": true,
-   "fps": 2.6,
+   "fps": 5.0,
    "anchor": "front"
   },
   "ready": {
@@ -628,6 +669,57 @@
     1,
     2
    ]
+  },
+  "rec_light3": {
+   "frames": [
+    "s15.rec_light3",
+    "s3.ready_0"
+   ],
+   "dur": [
+    0.16
+   ],
+   "anchor": "front"
+  },
+  "rec_cast": {
+   "frames": [
+    "s15.rec_cast",
+    "s3.ready_0"
+   ],
+   "dur": [
+    0.16
+   ],
+   "anchor": "front"
+  },
+  "rec_air": {
+   "frames": [
+    "s15.rec_air",
+    "s3.ready_0"
+   ],
+   "dur": [
+    0.16
+   ],
+   "anchor": "front"
+  },
+  "rec_dodge": {
+   "frames": [
+    "s15.rec_dodge",
+    "s3.ready_0"
+   ],
+   "dur": [
+    0.16
+   ],
+   "anchor": "front"
+  },
+  "rec_hurt": {
+   "frames": [
+    "s15.rec_hurt",
+    "s3.ready_0"
+   ],
+   "dur": [
+    0.16
+   ],
+   "anchor": "front"
   }
- }
+ },
+ "_doc_s15": "S15: rec_light1, rec_light2 e rec_heavy FORA — o cajado troca de lado/altura em relação ao fim do golpe e à prontidão (pulo visível). Usadas: rec_light3, rec_cast, rec_air, rec_dodge, rec_hurt."
 }

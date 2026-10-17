@@ -140,8 +140,21 @@ func set_anim(state: String) -> void:
 		# renascer (checkpoint): saindo da morte, levanta apoiada no cajado
 		if anim_state == "dead" and state in ["idle", "walk"]:
 			_rise_t = 0.45
+		# RECUPERAÇÃO desenhada (S15): voltando pro parado depois de um golpe,
+		# magia, mergulho, esquiva ou dano, toca o quadro de "volta" daquela ação
+		var rec: String = ""
+		if state == "idle" and painted.get("hero", false):
+			match anim_state:
+				"attack": rec = "rec_light%d" % clampi(combo_step if combo_step > 0 else 1, 1, 3)
+				"attack_heavy", "attack_up": rec = "rec_heavy"
+				"cast": rec = "rec_cast"
+				"attack_air", "attack_dive", "fall": rec = "rec_air"
+				"dodge": rec = "rec_dodge"
+				"hurt": rec = "rec_hurt"
 		anim_state = state
 		anim_time = 0.0
+		if rec != "":
+			play_action(rec)
 		# giro do manto na esquiva (contrato com o Áudio: some se não houver arquivo)
 		if state == "dodge" and painted.get("hero", false) and is_visible_in_tree():
 			Audio.play_sfx("cloth", 0.1, -4.0)
@@ -1881,6 +1894,9 @@ func _tick_action(delta: float) -> void:
 		total += float(d)
 	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
 	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):
+		_action = ""
+	# recuperação só vale enquanto ela está parada (andou/atacou = corta)
+	elif _action.begins_with("rec_") and anim_state != "idle":
 		_action = ""
 
 

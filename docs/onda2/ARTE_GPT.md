@@ -221,3 +221,52 @@ parada, golpe forte, magia × níveis 1→5).
 - Capturas: `gifs/harmas_andando_antes.gif` × `gifs/harmas_andando_depois.gif` e
   `gifs/harmas_andando_antes_depois.png` (no trecho capturado o Harmas anda pouco: o "antes" não chega a
   mostrar o quadro fundido; o "depois" não tem nenhum quadro fundido por construção).
+
+## FLUIDEZ (FILA 7) — intermediários desenhados
+
+`boss_frames.py` ganhou `extra_sheets` (folhas `<id>_motion_a` do mesmo chat, mesma pipeline; escala
+normalizada pela pose quase parada `recover_1` × `idle_0` da folha principal → mesma escala e linha de
+pés). `tools/anim_bosses/add_motion.py <receita>=<folha>` liga a folha (padrão A das criaturas/bots):
+- `walk` = 6 quadros desenhados (contato A, desce A, passagem A, sobe A, contato B, passagem B) pela distância;
+- `recover` = golpe → recover_0 → recover_1 → parado, pelo progresso real do inimigo.
+
+**Bloco 1 (bots 1–4: sonâmbulo, glutão, carcereiro, mudo):** escalas medidas 0,995 / 1,032 / 1,008 / 1,013
+(nenhuma destoou → nada no REFAZER). Opacidade/sem-RIFE do PuppetQA verde. GIFs do andar:
+`gifs/andar_bots_antes.gif` × `gifs/andar_bots_depois.gif` (AnimQA `-- film_walk x sonambulo glutao carcereiro`),
+faixa `gifs/andar_bots_antes_depois.png`. Honesto: no glutão o rastejar de 6 quadros tem diferenças sutis
+(o produtor avisou) — fica mais "vivo", não muito mais legível.
+
+**Bloco 2 (parcial): reflexo** (folha motion_a aprovada; escala 1,032) — `gifs/reflexo_andar_quadros.png`. Faltam esporos, pretoriano, 6 criaturas, S15/S16 da Sophia e os 9 chefes (ainda não chegaram).
+
+
+**Bloco 2: esporos e pretoriano** (escalas 0,979 / 0,972) — `gifs/esporos_pretoriano_andar_quadros.png`, `gifs/andar_bots2_depois.gif` (reflexo, esporos, pretoriano). Os 7 bots têm andar de 6 quadros desenhados + recuperação.
+
+
+**Bloco 3: criaturas larva, espadachim, bruto** (escalas 0,932 / 1,015 / 0,992; larva = padrão A' flutuando em laço) — `gifs/criaturas_andar_quadros_1.png`, `gifs/andar_criaturas1_depois.gif`. Preparado também: `tools/anim/sophia_motion.py` (S15/S16) e o padrão B dos chefes em `add_motion.py`; o CharacterArt já toca `rec_*` ao voltar pro parado.
+
+
+**Bloco 4: criaturas cão, escudeiro, conjurador** (cão = trote A'', escala fixa 1,0 — a medida automática de quadrúpede dava 1,085 pela pose; escudeiro 0,984; conjurador 1,0) — `gifs/criaturas_andar_quadros_2.png`, `gifs/andar_criaturas2_depois.gif`. As 6 criaturas e os 7 bots têm intermediários desenhados.
+
+
+**Bloco 5: Sophia S16 (respiração) + S15 (recuperações).**
+- Parado = 8 quadros de respiração desenhados (S16, escala auto 1,000), laço a 5 qps.
+- Recuperações ao voltar pro parado (ação avulsa, corta se ela andar/atacar): **usadas** rec_light3, rec_cast,
+  rec_air (no lugar do pouso), rec_dodge, rec_hurt. **Descartadas** rec_light1, rec_light2 e rec_heavy: o
+  cajado troca de lado/altura em relação ao fim do golpe e à prontidão (conferido em
+  `gifs/sophia_s15_continuidade.png`: golpe → recuperação → prontidão). Menos quadros certos.
+- HeroQA: parado com 8 quadros; rec_light3 toca e termina; rec_light1 não volta.
+- O atlas da Sophia passou a 2048×4096 (80 quadros). GIFs: `gifs/sophia_parado_antes.gif` × `gifs/sophia_parado_depois.gif`,
+  quadros em `gifs/sophia_s15_s16_quadros.png`.
+
+**Bloco 6: chefes Athoth, Harmas, Galila (padrão C).** Escalas 1,025 / 0,932 / 1,030. Andar = 4 quadros novos
+(contato, passagem, contato, passagem) pela distância; preparação = antecipação leve → máxima (hold na máxima);
+golpe = impacto → seguimento; recuperação = seguimento → parado. Os quadros antigos `windup`/`strike` saíram
+dessas sequências (duas poses "máximas" diferentes dariam pulo). Harmas: folha motion veio magenta (a original
+era RGBA) — mesma escala/cor no recorte. GIFs: `gifs/harmas_andar_golpe_antes.gif` × `_depois.gif`,
+`gifs/galila_andar_golpe_antes.gif` × `_depois.gif`; quadros `gifs/chefes_motion_1.png`.
+
+**Bloco 7: chefes Yabel, Astaphaios, Belias (padrão C).** Escalas 0,988 / 1,009 / 1,023. Yabel: a preparação nova é de perfil (a antiga era frontal) — melhor. Quadros `gifs/chefes_motion_2.png`; GIF `gifs/belias_andar_golpe_depois.gif`.
+
+
+**Bloco 8: chefes Armupiel, Colosso, Rei (padrão C; Rei com fundo rosa).** Escalas 1,000 / 0,998 / 1,002. Quadros `gifs/chefes_motion_3.png`; GIFs `gifs/arconte_coroa_andar_golpe_depois.gif`, `gifs/rei_final_andar_golpe_depois.gif`. **FILA 7 completa:** 9 chefes, 6 criaturas, 7 bots e a Sophia (S15/S16) com intermediários desenhados; nenhuma folha foi para o REFAZER.
+

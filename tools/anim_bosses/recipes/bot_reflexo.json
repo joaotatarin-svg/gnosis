@@ -35,9 +35,12 @@
   },
   "walk": {
    "frames": [
-    "walk_0",
-    "walk_1",
-    "walk_2"
+    "walk_contact_A",
+    "walk_down_A",
+    "walk_pass_A",
+    "walk_up_A",
+    "walk_contact_B",
+    "walk_pass_B"
    ],
    "cycle_bodies": 0.9
   },
@@ -54,11 +57,15 @@
   "recover": {
    "frames": [
     "strike",
+    "recover_0",
+    "recover_1",
     "idle_0"
    ],
    "at": [
     0.0,
-    0.4
+    0.25,
+    0.55,
+    0.85
    ]
   },
   "hurt": {
@@ -75,5 +82,27 @@
     0.12
    ]
   }
- }
+ },
+ "extra_sheets": [
+  {
+   "sheet": "artes/gpt/bot_5_reflexo_motion_a.png",
+   "grid": [
+    4,
+    2
+   ],
+   "cells": [
+    "walk_contact_A",
+    "walk_down_A",
+    "walk_pass_A",
+    "walk_up_A",
+    "walk_contact_B",
+    "walk_pass_B",
+    "recover_0",
+    "recover_1"
+   ],
+   "scale": "auto",
+   "ref": "recover_1",
+   "main_ref": "idle_0"
+  }
+ ]
 }

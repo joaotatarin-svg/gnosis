@@ -182,9 +182,25 @@ def build(name: str, use_rife: bool = True) -> None:
 	body_px = float(R.get("body_px", 300))
 	base = body_px / ref_body_src
 	ref_h = body_px                                  # altura de referência no atlas
+	# FOLHAS EXTRAS (intermediários desenhados, FILA 7: <id>_motion_a): mesma
+	# pipeline; escala normalizada pela altura do corpo EM PÉ (célula `ref` da
+	# extra × `ref` da folha principal) → mesma escala e mesma linha de pés.
+	sheet_scale = {}
+	for ex in R.get("extra_sheets", []):
+		exr = slice_sheet(os.path.join(ROOT, ex["sheet"]), ex.get("grid", [4, 2]), ex["cells"], ex.get("raw_alpha_cells", []))
+		sc = ex.get("scale", "auto")
+		if sc == "auto":
+			# compara POSES EQUIVALENTES: `ref` da extra × `main_ref` da principal
+			em = measure(exr[ex["ref"]][0])
+			mm = measure(raw[ex.get("main_ref", ref)][0])
+			sc = (mm["foot_y"] - mm["top"]) / max(1.0, em["foot_y"] - em["top"]) * float(ex.get("ref_ratio", 1.0))
+		for n, v in exr.items():
+			raw[n] = v
+			sheet_scale[n] = float(sc)
+		print("  folha extra %s: %d quadros, escala %.3f" % (os.path.basename(ex["sheet"]), len(exr), float(sc)))
 	frames = {}
 	for n, (rgba, origin) in raw.items():
-		s = base * float(R.get("scale_fix", {}).get(n, 1.0))
+		s = base * sheet_scale.get(n, 1.0) * float(R.get("scale_fix", {}).get(n, 1.0))
 		small = resize_rgba(rgba, s)
 		h, w = small.shape[:2]
 		canvas = np.zeros((h + 2 * PAD, w + 2 * PAD, 4), np.float32)
