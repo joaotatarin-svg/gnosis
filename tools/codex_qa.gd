@@ -51,6 +51,14 @@ class Worker extends Node:
 	## só da versão do projeto.
 	## Espera o SceneManager terminar (transições + fila), com teto de 10 s —
 	## máquina lenta não pode virar falso negativo.
+	## Espera `cond` virar verdade por até `max_frames` quadros (padrão ~3 s).
+	func _until(cond: Callable, max_frames: int = 180) -> bool:
+		var n: int = 0
+		while not cond.call() and n < max_frames:
+			n += 1
+			await get_tree().process_frame
+		return cond.call()
+
 	func _until_idle() -> void:
 		await get_tree().process_frame
 		var t0 := Time.get_ticks_msec()
@@ -143,9 +151,11 @@ class Worker extends Node:
 		await shot("athoth")
 		RunManager.saved_run = {"screen": 22, "test": "preservar"}
 		CodexSession.start_demo()
-		await wait(1.0)
+		await _until_idle()
 		check(not SaveManager.persist_run and not SaveManager.persist_enabled, "desafio não escreve progresso")
 		for stage in 3:
+			# Espera a fase do encontro estar no ar (troca de cena por estado, não por tempo).
+			await _until(func(): return get_tree().current_scene is Level and CodexSession.stage == stage, 600)
 			var level = get_tree().current_scene
 			check(level is Level and CodexSession.stage == stage, "entrada no encontro %d" % (stage + 1))
 			check(level is Level and RunManager.current_screen == CodexSession.screen_for(CodexSession.boss_index, stage) and RunManager.current_screen == level.screen, "encontro %d na tela do Éon certo (%d)" % [stage + 1, RunManager.current_screen])
@@ -159,27 +169,31 @@ class Worker extends Node:
 						e._on_hit_received(99999, level.player.global_position, 10.0, false, null)
 				await wait(1.1)
 			check(level.completed, "limpeza do encontro %d" % (stage + 1))
-			await wait()
-			check(get_tree().paused and level.result_layer != null, "resultado e pausa do encontro %d" % (stage + 1))
-			if stage < 2:
+			# Resultado: até ~3 s em quadros (sob carga o tempo fixo falhava).
+			var shown: bool = await _until(func(): return get_tree().paused and is_instance_valid(level) and level.result_layer != null)
+			check(shown, "resultado e pausa do encontro %d" % (stage + 1))
+			if stage < 2 and shown:
 				for c in level.result_layer.get_children():
 					if c is Button and c.text.begins_with("Próximo"):
 						c.pressed.emit()
 						break
-				await wait(1.0)
+				await _until_idle()
 		await shot("victory")
 		get_tree().paused = false
 		CodexSession.start_demo()
-		await wait(1.0)
+		await _until_idle()
+		await _until(func(): return get_tree().current_scene is Level, 600)
 		var level = get_tree().current_scene
 		level.player.health.take_damage(99999)
-		await wait(1.2)
-		check(level.completed and get_tree().paused, "morte abre resultado recuperável")
-		for c in level.result_layer.get_children():
-			if c is Button and c.text == "Tentar novamente":
-				c.pressed.emit()
-				break
-		await wait(1.0)
+		var dead_shown: bool = await _until(func(): return is_instance_valid(level) and level.completed and get_tree().paused and level.result_layer != null, 300)
+		check(dead_shown, "morte abre resultado recuperável")
+		if dead_shown:
+			for c in level.result_layer.get_children():
+				if c is Button and c.text == "Tentar novamente":
+					c.pressed.emit()
+					break
+		await _until_idle()
+		await _until(func(): return not get_tree().paused and get_tree().get_first_node_in_group("player") != null)
 		check(not get_tree().paused and get_tree().get_first_node_in_group("player").health.current_health > 0, "tentar novamente restaura a jogabilidade")
 		# REVISAO #12: pedido no meio do fade não se perde. (a) véu descendo: o
 		# último pedido vira o destino; (b) véu abrindo: roda logo depois. A pilha
