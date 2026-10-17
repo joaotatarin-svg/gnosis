@@ -53,8 +53,7 @@ Ver Pedidos.
 | Colosso | `boss_8_colosso_b.png` (_a rejeitada) | **integrado** (11/3) | `gifs/prancha_colosso.png`, `gifs/final_depois_jogo_leve.gif` |
 | Rei / Rei final / Yaldabaoth | `boss_9_rei_a.png` (fundo rosa 248,3,185 — a chave estima a cor pela moldura) | **integrado** (14/6) | `gifs/prancha_rei_final.png`, `gifs/rei_depois_jogo_leve.gif`, `t68b/last_small.png` |
 
-Bípedes andam com 4 quadros pela DISTÂNCIA (walk_0 → idle_0 → walk_1 → idle_1, ciclo = 0,9
-altura do corpo); espectros, fera e Rei em vaivém com meios do RIFE. Tamanho: altura do corpo
+Bípedes andam com 8 quadros pela DISTÂNCIA (walk_0 → idle_0 → walk_1 → idle_1 com um meio do RIFE entre cada par, ciclo = 0,9 altura do corpo; Armupiel só walk_0 ↔ walk_1 + meio, porque no idle a espada fica fincada e o meio dobrava a lâmina — gifs/andar_8_quadros_bipedes.png); espectros, fera e Rei em vaivém com meios do RIFE. Tamanho: altura do corpo
 igual ao boneco em todos (PuppetQA); a largura muda onde a vista mudou (Colosso e Rei em perfil
 ficaram mais estreitos que a pintura frontal antiga; Belias com espinhos mais baixos).
 

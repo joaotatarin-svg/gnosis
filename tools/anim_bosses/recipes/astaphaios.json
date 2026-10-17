@@ -17,6 +17,26 @@
    "idle_0",
    "idle_1",
    2
+  ],
+  "w1": [
+   "walk_0",
+   "idle_0",
+   1
+  ],
+  "w2": [
+   "idle_0",
+   "walk_1",
+   1
+  ],
+  "w3": [
+   "walk_1",
+   "idle_1",
+   1
+  ],
+  "w4": [
+   "idle_1",
+   "walk_0",
+   1
   ]
  },
  "flex": {},
@@ -33,9 +53,13 @@
   "walk": {
    "frames": [
     "walk_0",
+    "walk_0-idle_0_50",
     "idle_0",
+    "idle_0-walk_1_50",
     "walk_1",
-    "idle_1"
+    "walk_1-idle_1_50",
+    "idle_1",
+    "idle_1-walk_0_50"
    ],
    "cycle_bodies": 0.9
   },
