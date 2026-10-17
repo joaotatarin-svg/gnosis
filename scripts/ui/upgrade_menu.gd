@@ -1,9 +1,12 @@
 extends CanvasLayer
 ## Santuário de Ascensão = a loja estilo God of War.
-## Gasta faíscas pra: subir a arma (libera combos), subir magias, +Vida/+Éter, cura.
+## Gasta faíscas para: subir a arma (libera combos), subir magias, +Vida/+Éter, cura.
 ## Cada item é uma linha: nome e efeito à esquerda, PREÇO com o ícone de faísca
-## à direita (cinza quando não dá pra pagar). Depois de comprar, o foco fica no
-## mesmo item (dá pra comprar em série no controle). Esc/B fecha.
+## à direita. Indisponível = linha apagada; sem faíscas, a faixa de aviso diz
+## "Faíscas insuficientes · faltam N" ao focar o item. Abre com o foco no 1º
+## item; setas/D-pad andam, Enter/A compra, Esc/B fecha. Depois de comprar, o
+## foco fica no mesmo item (dá para comprar em série no controle).
+## Pausa o mundo pela `PauseStack` (por cima da pausa, fechar volta para ela).
 
 @onready var spark_label: Label = $Center/Panel/VBox/SparkLabel
 @onready var list: VBoxContainer = $Center/Panel/VBox/List
@@ -11,12 +14,14 @@ extends CanvasLayer
 const ROW_W := 420.0
 
 var _focus_index: int = 0
+var _status: Label                 # "Faíscas insuficientes · faltam N"
+var _close_button: Button
 
 
 func _ready() -> void:
 	CodexStyle.apply_existing(self)
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().paused = true
+	PauseStack.push(self)
 	$Dim.color = Color(0.01, 0.03, 0.045, 0.78)
 	var vbox: VBoxContainer = $Center/Panel/VBox
 	vbox.custom_minimum_size.x = ROW_W + 16
@@ -42,6 +47,15 @@ func _ready() -> void:
 	row.add_child(icon)
 	spark_label.reparent(row)
 	spark_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	# Faixa de aviso (altura fixa: o painel não pula quando ela acende/apaga).
+	_status = Label.new()
+	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_status.custom_minimum_size = Vector2(ROW_W, 13)
+	_status.add_theme_font_override("font", CodexStyle.italic())
+	_status.add_theme_font_size_override("font_size", 10)
+	_status.add_theme_color_override("font_color", CodexStyle.EMBER)
+	vbox.add_child(_status)
+	vbox.move_child(_status, row.get_index() + 1)
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(ROW_W + 16, 196)
 	scroll.follow_focus = true
@@ -54,8 +68,10 @@ func _ready() -> void:
 	close_button.text = "Voltar ao jogo" if not RunManager.pending_advance else "Seguir caminho"
 	close_button.custom_minimum_size.y = CodexStyle.BTN_H
 	close_button.pressed.connect(_close)
+	close_button.focus_entered.connect(_update_status.bind(null))
 	CodexStyle._wire(close_button, "ui_back")
 	vbox.add_child(close_button)
+	_close_button = close_button
 	_rebuild()
 	CodexStyle.pop_in($Center/Panel)
 
@@ -105,21 +121,42 @@ func _rebuild() -> void:
 	var hurt: bool = pl != null and pl.health != null and pl.health.current_health < pl.health.max_health
 	_add("Restauração  ·  cura completa", "" if hurt else "a vida já está cheia", 50, hurt and Progression.orbs >= 50, _buy_heal)
 
-	# Foco: o mesmo item de antes (ou o primeiro que dá pra comprar).
+	# Foco: o 1º item ao abrir; depois de comprar, o mesmo item de antes
+	# (trancado também recebe foco — lê-se o preço e o aviso).
 	var rows := list.get_children()
 	if rows.is_empty():
+		if _close_button != null:
+			_close_button.grab_focus.call_deferred()
 		return
 	var target: Button = rows[clampi(_focus_index, 0, rows.size() - 1)]
-	if target.disabled:
-		for r in rows:
-			if not r.disabled:
-				target = r
-				break
-	if target.disabled:
-		var close: Button = $Center/Panel/VBox.get_child($Center/Panel/VBox.get_child_count() - 1)
-		close.grab_focus.call_deferred()
+	target.grab_focus.call_deferred()
+	_update_status(target)
+
+
+## Faixa de aviso: item focado sem faíscas → "faltam N"; no "Voltar" (ou sem
+## item), avisa se NADA dá para comprar por falta de faíscas.
+func _update_status(row: Button) -> void:
+	if _status == null:
+		return
+	var text := ""
+	if row != null and row.has_meta("cost"):
+		var cost: int = row.get_meta("cost")
+		if cost >= 0 and Progression.orbs < cost:
+			text = "Faíscas insuficientes  ·  faltam %d" % (cost - Progression.orbs)
 	else:
-		target.grab_focus.call_deferred()
+		var any_ok := false
+		var any_short := false
+		for r in list.get_children():
+			if r.is_queued_for_deletion() or not r.has_meta("cost"):
+				continue
+			var c: int = r.get_meta("cost")
+			if not r.disabled:
+				any_ok = true
+			elif c >= 0 and Progression.orbs < c:
+				any_short = true
+		if any_short and not any_ok:
+			text = "Faíscas insuficientes para as melhorias"
+	_status.text = text
 
 
 ## Uma linha da loja: nome (+ subtítulo), preço com faísca à direita.
@@ -133,7 +170,10 @@ func _add(text: String, sub: String, cost: int, enabled: bool, cb: Callable, acc
 	b.add_theme_font_override("font", CodexStyle.display())
 	b.add_theme_font_size_override("font_size", 10)
 	var idx := list.get_child_count()
-	b.focus_entered.connect(func(): _focus_index = idx)
+	b.set_meta("cost", cost)
+	b.focus_entered.connect(func():
+		_focus_index = idx
+		_update_status(b))
 	if cb.is_valid():
 		b.pressed.connect(cb)
 	CodexStyle._wire(b, "")
@@ -146,7 +186,10 @@ func _add(text: String, sub: String, cost: int, enabled: bool, cb: Callable, acc
 	deco.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(deco)
 	if sub != "":
-		b.text = text + "\n "             # espaço pro subtítulo desenhado embaixo
+		b.text = text + "\n "             # espaço para o subtítulo desenhado embaixo
+	if not enabled:
+		# Apagado de verdade (QA M3): texto e preço recuam; o foco ainda acende a moldura.
+		b.add_theme_color_override("font_disabled_color", Color(CodexStyle.MUTED, 0.5))
 	list.add_child(b)
 	# Comprar algo trancado: som de "não dá".
 	if not enabled and cost >= 0:
@@ -188,17 +231,23 @@ func _buy_heal() -> void:
 
 func _close() -> void:
 	if RunManager.pending_advance:
-		# Loja pós-chefe: avança pra próxima tela.
+		# Loja pós-chefe: avança para a próxima tela (troca de cena: zera a pilha).
 		RunManager.pending_advance = false
-		get_tree().paused = false
+		PauseStack.clear()
 		RunManager.advance_and_reload()
 	elif RunManager.run_active:
-		# Aberta pela pausa durante o run: fecha e volta pro menu de pausa.
+		# Aberta pela pausa durante o run: fecha e volta para o menu de pausa
+		# (que continua segurando o mundo); sem pausa por baixo, despausa.
+		PauseStack.pop(self)
 		queue_free()
 	else:
 		# Modo teste/menu.
-		get_tree().paused = false
+		PauseStack.clear()
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
+
+
+func _exit_tree() -> void:
+	PauseStack.pop(self)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -221,18 +270,18 @@ class _RowDeco extends Control:
 	var affordable: bool = true
 	var sub: String = ""
 	func _draw() -> void:
-		draw_line(Vector2(5, 6), Vector2(5, size.y - 6), Color(accent, 0.85 if affordable else 0.35), 1.2, true)
+		draw_line(Vector2(5, 6), Vector2(5, size.y - 6), Color(accent, 0.85 if affordable else 0.22), 1.2, true)
 		if cost >= 0:
 			var font := CodexStyle.body_bold()
 			var s := str(cost)
 			var w := font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
 			var x := size.x - 12.0 - w
 			var y := size.y * 0.5
-			var col := CodexStyle.SPARK if affordable else Color(CodexStyle.MUTED, 0.6)
+			var col := CodexStyle.SPARK if affordable else Color(CodexStyle.MUTED, 0.45)
 			CodexStyle.draw_spark(self, Vector2(x - 9.0, y), 4.2, col)
 			draw_string(font, Vector2(x, y + 4.5), s, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, col)
 		if sub != "":
-			draw_string(CodexStyle.italic(), Vector2(12, size.y - 7.0), sub, HORIZONTAL_ALIGNMENT_LEFT, size.x - 90.0, 10, Color(CodexStyle.GOLD, 0.9 if affordable else 0.5))
+			draw_string(CodexStyle.italic(), Vector2(12, size.y - 7.0), sub, HORIZONTAL_ALIGNMENT_LEFT, size.x - 90.0, 10, Color(CodexStyle.GOLD, 0.9) if affordable else Color(CodexStyle.MUTED, 0.5))
 
 
 class _SparkIcon extends Control:

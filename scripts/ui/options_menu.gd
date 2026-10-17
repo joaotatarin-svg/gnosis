@@ -1,12 +1,14 @@
 extends Control
 ## Opções (tela cheia ou overlay da pausa). Duas colunas:
 ##   VÍDEO & JOGO — tela cheia · VSync · tremor de câmera (0–100%) · vibração ·
-##                  tamanho da legenda (P/M/G)
+##                  reduzir flashes · tamanho da legenda (P/M/G)
 ##   ÁUDIO        — volumes Geral / Efeitos / Música
-## Tudo vai pra `GameManager.settings` (ou Audio) e é salvo na hora pelo
+## Tudo vai para `GameManager.settings` (ou Audio) e é salvo na hora pelo
 ## SaveManager; `GameManager.apply_settings()` reaplica vídeo no boot.
-## Tremor e vibração também são gravados direto em `Juice.shake_mult` /
-## `Juice.rumble_enabled` quando esses campos existirem (branch principal).
+## Tremor, vibração e "Reduzir flashes" (padrão desligada) também são gravados
+## direto em `Juice.shake_mult` / `rumble_enabled` / `reduce_flashes` quando
+## esses campos existirem. Gravar é sempre `SaveManager.save_game()` (REVISAO
+## #13: o SaveManager grava as opções inclusive na Provação).
 ## Navegável por teclado/controle: botões alternam com Enter/A, sliders com ←/→.
 ## Cada linha mostra o NOME à esquerda e o VALOR em ouro à direita.
 
@@ -53,6 +55,7 @@ func _ready() -> void:
 		GameManager.settings["shake"] = v
 		_push_juice(), func(v: float): return "%d%%" % int(round(v * 100.0)))
 	_rumble = _toggle(_left, "Vibração do controle", "rumble")
+	_toggle(_left, "Reduzir flashes", "reduce_flashes")
 	_caption = _row_button(_left, "Legendas")
 	_caption.pressed.connect(_cycle_caption)
 	_refresh_caption()
@@ -180,17 +183,22 @@ func _slider(parent: Node, label_text: String, lo: float, hi: float, value: floa
 	parent.add_child(row)
 
 
-## Espelha tremor/vibração no Juice quando ele tiver os campos (branch principal).
+## Espelha tremor/vibração/flashes no Juice quando ele tiver os campos.
 func _push_juice() -> void:
 	if "shake_mult" in Juice:
 		Juice.set("shake_mult", GameManager.shake_multiplier())
 	if "rumble_enabled" in Juice:
 		Juice.set("rumble_enabled", GameManager.rumble_enabled())
+	if "reduce_flashes" in Juice:
+		Juice.set("reduce_flashes", bool(GameManager.settings.get("reduce_flashes", false)))
 
 
 func _apply_and_save() -> void:
 	Audio.play_sfx("ui_confirm")
 	GameManager.apply_settings()
+	_push_juice()                      # apply_settings pode não conhecer as chaves novas
+	# O SaveManager decide o que grava (o Técnico garante que as opções sempre
+	# gravam, inclusive na Provação — REVISAO #13; gravação atômica com .bak).
 	SaveManager.save_game()
 
 

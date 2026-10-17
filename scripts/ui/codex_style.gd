@@ -463,6 +463,7 @@ static func apply_existing(root: Node, backdrop: bool = false) -> void:
 		root.get_node("Bg").color = INK
 		var architecture = load("res://scripts/fx/codex_sanctum.gd").new()
 		architecture.menu = true
+		architecture.medallion = 0.25          # telas de texto: sem "cursores" sobre títulos/sliders (P1)
 		architecture.modulate = Color(0.4, 0.48, 0.48)
 		root.add_child(architecture)
 		root.move_child(architecture, 1)

@@ -4,6 +4,11 @@ extends Node2D
 var tint: Color = Color("73b8b4")
 var time: float = 0.0
 var menu: bool = false
+## Força do medalhão (círculos, marcas e os 7 anéis). 1 = cheio (mundo, menu
+## principal, onde a pintura cobre o centro). Telas de TEXTO (opções, pré-jogo,
+## crônicas, ateliê) usam ~0,25: o medalhão vira textura e os 7 anéis — que
+## pareciam cursores sobre sliders e títulos (QA P1) — somem.
+var medallion: float = 1.0
 
 func _process(delta: float) -> void:
 	time += delta
@@ -13,19 +18,22 @@ func _draw() -> void:
 	if menu:
 		draw_rect(Rect2(-400, -400, 2000, 1200), Color("09141c"))
 	var center := Vector2(430, 132) if menu else Vector2(490, 104)
-	for i in range(9, 0, -1):
-		draw_circle(center, 25.0 + i * 15.0, Color(tint, 0.009))
-	for radius in [69.0, 75.0, 109.0, 112.0]:
-		draw_arc(center, radius, 0, TAU, 160, Color(tint, 0.26), 0.65, true)
-	for i in 56:
-		var a: float = TAU * i / 56.0
-		var d := Vector2.from_angle(a)
-		draw_line(center + d * 100, center + d * (111 if i % 7 == 0 else 105), Color(tint, 0.38), 0.65, true)
-	for i in 7:
-		var a: float = TAU * i / 7.0 - PI * 0.5 + time * 0.013
-		var p := center + Vector2.from_angle(a) * 75
-		draw_circle(p, 4.0, Color("09141c"))
-		draw_arc(p, 4.0, 0, TAU, 24, Color("c5a56a"), 0.8, true)
+	var m := clampf(medallion, 0.0, 1.0)
+	if m > 0.0:
+		for i in range(9, 0, -1):
+			draw_circle(center, 25.0 + i * 15.0, Color(tint, 0.009 * m))
+		for radius in [69.0, 75.0, 109.0, 112.0]:
+			draw_arc(center, radius, 0, TAU, 160, Color(tint, 0.26 * m), 0.65, true)
+		for i in 56:
+			var a: float = TAU * i / 56.0
+			var d := Vector2.from_angle(a)
+			draw_line(center + d * 100, center + d * (111 if i % 7 == 0 else 105), Color(tint, 0.38 * m), 0.65, true)
+	if m >= 0.99:
+		for i in 7:
+			var a: float = TAU * i / 7.0 - PI * 0.5 + time * 0.013
+			var p := center + Vector2.from_angle(a) * 75
+			draw_circle(p, 4.0, Color("09141c"))
+			draw_arc(p, 4.0, 0, TAU, 24, Color("c5a56a"), 0.8, true)
 	# Portais de pedra recortados; frisos, juntas e nervuras dão escala.
 	for i in range(-2, 9):
 		var x: float = i * 180.0 + 10

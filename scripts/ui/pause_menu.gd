@@ -1,8 +1,9 @@
 extends CanvasLayer
-## Menu de pausa (overlay). Pausa a árvore; segue processando a si mesmo.
-## Continuar · Golpes & Controles · Melhorias (a loja) · Opções (overlay que
-## volta PRA CÁ, não pro menu) · Abandonar run (confirma; o checkpoint salvo
-## permanece). Mostra o papel da tela ("Torpor · Travessia II").
+## Menu de pausa (overlay). Pausa a árvore pela `PauseStack`; segue processando
+## a si mesmo. Continuar · Golpes & Controles · Melhorias (a loja; TRANCADA em
+## combate — "Disponível fora de combate") · Opções (overlay que volta PARA CÁ,
+## não para o menu) · Abandonar run (confirma; o checkpoint salvo permanece).
+## Mostra o papel da tela ("Torpor · Travessia II"). Esc/B/Start = Continuar.
 
 @onready var _vbox: VBoxContainer = $Center/Panel/VBox
 @onready var _resume: Button = $Center/Panel/VBox/Resume
@@ -19,7 +20,7 @@ func _ready() -> void:
 	_vbox.custom_minimum_size.x = 260
 	$Dim.color = Color(0.01, 0.03, 0.045, 0.7)
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	get_tree().paused = true
+	PauseStack.push(self)
 	var role: Label = $Center/Panel/VBox/Role
 	role.text = _role_text()
 	role.add_theme_font_override("font", CodexStyle.italic())
@@ -37,6 +38,7 @@ func _ready() -> void:
 	_quit.pressed.connect(_ask_quit)
 	for b in [_resume, _moves, _upgrades, _options, _quit]:
 		b.custom_minimum_size.y = CodexStyle.BTN_H
+	_lock_upgrades_in_combat()
 	# cima/baixo circulam (do último volta ao primeiro)
 	_resume.focus_neighbor_top = _resume.get_path_to(_quit)
 	_quit.focus_neighbor_bottom = _quit.get_path_to(_resume)
@@ -51,10 +53,53 @@ func _role_text() -> String:
 	return GameManager.screen_title(RunManager.current_screen)
 
 
+## Melhorias só fora de combate (QA M6): curar no meio de um Arconte quebrava a
+## tensão. O botão continua focável (o jogador lê o porquê) mas não abre.
+func _lock_upgrades_in_combat() -> void:
+	if not in_combat(get_tree()):
+		return
+	_upgrades.disabled = true
+	_upgrades.tooltip_text = "Disponível fora de combate"
+	# O porquê, logo abaixo do botão (centrado como os botões; não briga com o nome).
+	var why := Label.new()
+	why.name = "Why"
+	why.text = "Disponível fora de combate"
+	why.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	why.add_theme_font_override("font", CodexStyle.italic())
+	why.add_theme_font_size_override("font_size", 10)
+	why.add_theme_color_override("font_color", Color(CodexStyle.MUTED, 0.95))
+	why.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_vbox.add_child(why)
+	_vbox.move_child(why, _upgrades.get_index() + 1)
+	# Apertar o trancado: som de "não dá" (o pressed não dispara em desabilitado).
+	_upgrades.gui_input.connect(func(ev: InputEvent):
+		if _upgrades.disabled and ev.is_action_pressed("ui_accept"):
+			Audio.play_sfx("shop_fail"))
+
+
+## Há combate em curso? Zona trancada ou algum inimigo vivo na cena (chefe,
+## wave, Provação). Fora de um Level (menus/ferramentas) nunca.
+static func in_combat(tree: SceneTree) -> bool:
+	var lv := tree.current_scene
+	if lv != null and "zone_active" in lv and bool(lv.get("zone_active")):
+		return true
+	for e in tree.get_nodes_in_group("enemy"):
+		if not is_instance_valid(e) or e.is_queued_for_deletion():
+			continue
+		var h = e.get("health")
+		if h != null and h.has_method("is_dead") and not h.is_dead():
+			return true
+	return false
+
+
 func _resume_game() -> void:
-	get_tree().paused = false
+	PauseStack.pop(self)
 	GameManager.set_state(GameManager.State.PLAYING)
 	queue_free()
+
+
+func _exit_tree() -> void:
+	PauseStack.pop(self)
 
 
 func _open_moves() -> void:
@@ -68,7 +113,9 @@ func _open_moves() -> void:
 
 
 func _open_upgrades() -> void:
-	# A loja é uma cena própria (fecha sozinha e volta pra cá com run ativo).
+	# A loja é uma cena própria (fecha sozinha e volta para cá com run ativo).
+	if _upgrades.disabled:
+		return
 	_sub_open = true
 	$Center.visible = false
 	var shop := SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
@@ -117,7 +164,7 @@ func _quit_now() -> void:
 	# "Continuar" na hora e um save de opções não apaga o run do disco.
 	if RunManager.run_active and not CodexSession.active:
 		RunManager.saved_run = RunManager.run_snapshot()
-	get_tree().paused = false
+	PauseStack.clear()                 # volta ao menu: ninguém mais segura o mundo
 	Audio.play_sfx("ui_back")
 	SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
 

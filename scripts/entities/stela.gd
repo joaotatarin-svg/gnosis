@@ -4,6 +4,8 @@ class_name Stela
 ## Chegue perto e aperte o golpe leve (J / X) ou Enter para LER: abre um painel
 ## estilizado (CodexStyle) com o ensino gnóstico daquela pedra e desbloqueia a
 ## entrada correspondente nas Crônicas (persistem entre runs — `Gnosis`).
+## Só abre FORA de combate (QA M7): com inimigo vivo perto, zona trancada ou a
+## Sophia no meio de um combo, o golpe leve é só golpe.
 ## Desenhada por código (obsidiana + inscrições em marfim + brilho de ouro
 ## enquanto ainda não foi lida). `entry` vem de `Gnosis.STELAS`.
 
@@ -13,6 +15,9 @@ var _read_now: bool = false        # lida nesta visita (apaga o brilho)
 var _t: float = 0.0
 var _prompt: Label
 var _busy: bool = false
+
+## Inimigo vivo a menos disto (px) da Sophia = combate: a Estela não abre.
+const ENEMY_NEAR := 320.0
 
 
 func _ready() -> void:
@@ -44,6 +49,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	# O convite só aparece quando ler é possível (sem inimigo vivo por perto).
+	if _near and not _busy:
+		_prompt.visible = not _enemy_near()
 	queue_redraw()
 
 
@@ -62,9 +70,45 @@ func _on_body_exited(body: Node) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _near or _busy or entry.is_empty():
 		return
-	if event.is_action_pressed("attack_light") or event.is_action_pressed("ui_accept"):
-		get_viewport().set_input_as_handled()
-		open()
+	var read := event.is_action_pressed("attack_light")
+	# Enter também lê — mas não o pulo (Espaço/A também são "ui_accept").
+	if not read and event.is_action_pressed("ui_accept") and not event.is_action("jump"):
+		read = true
+	if not read or not can_read():
+		return
+	get_viewport().set_input_as_handled()
+	open()
+
+
+## Ler só fora de combate: sem inimigo vivo perto, sem zona trancada e sem a
+## Sophia no meio de um combo (aí o aperto é golpe).
+func can_read() -> bool:
+	if _enemy_near():
+		return false
+	var lv := get_tree().current_scene
+	if lv != null and "zone_active" in lv and bool(lv.get("zone_active")):
+		return false
+	var pl := get_tree().get_first_node_in_group("player")
+	if pl != null:
+		var seq = pl.get("combo_sequence")
+		var timer = pl.get("combo_reset_timer")
+		if seq is Array and not seq.is_empty() and timer != null and float(timer) > 0.0:
+			return false
+	return true
+
+
+func _enemy_near() -> bool:
+	var pl := get_tree().get_first_node_in_group("player") as Node2D
+	var from: Vector2 = pl.global_position if pl != null else global_position
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if not (e is Node2D) or e.is_queued_for_deletion():
+			continue
+		var h = e.get("health")
+		if h != null and h.has_method("is_dead") and h.is_dead():
+			continue
+		if (e as Node2D).global_position.distance_to(from) < ENEMY_NEAR:
+			return true
+	return false
 
 
 ## Abre o painel de leitura; ao fechar, desbloqueia a Crônica (se inédita).
@@ -143,7 +187,7 @@ class StelaPanel extends CanvasLayer:
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
-		get_tree().paused = true
+		PauseStack.push(self)          # (o som de abrir é o "stela", tocado pela pedra)
 		layer = 92
 		var dim := ColorRect.new()
 		dim.color = Color(0.0, 0.02, 0.03, 0.55)
@@ -224,6 +268,9 @@ class StelaPanel extends CanvasLayer:
 				or event.is_action_pressed("ui_cancel"):
 			get_viewport().set_input_as_handled()
 			Audio.play_sfx("ui")
-			get_tree().paused = false
+			PauseStack.pop(self)
 			finished.emit()
 			queue_free()
+
+	func _exit_tree() -> void:
+		PauseStack.pop(self)
