@@ -241,3 +241,6 @@ faixa `gifs/andar_bots_antes_depois.png`. Honesto: no glutão o rastejar de 6 qu
 
 **Bloco 2: esporos e pretoriano** (escalas 0,979 / 0,972) — `gifs/esporos_pretoriano_andar_quadros.png`, `gifs/andar_bots2_depois.gif` (reflexo, esporos, pretoriano). Os 7 bots têm andar de 6 quadros desenhados + recuperação.
 
+
+**Bloco 3: criaturas larva, espadachim, bruto** (escalas 0,932 / 1,015 / 0,992; larva = padrão A' flutuando em laço) — `gifs/criaturas_andar_quadros_1.png`, `gifs/andar_criaturas1_depois.gif`. Preparado também: `tools/anim/sophia_motion.py` (S15/S16) e o padrão B dos chefes em `add_motion.py`; o CharacterArt já toca `rec_*` ao voltar pro parado.
+

@@ -404,3 +404,7 @@ Padrão A (bots/criaturas) `<id>_motion_a.png`, 2×4: 0 walk_contact_A · 1 walk
 - `bot_7_pretoriano_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈430–460), escudo sempre à frente; recuperação mostra a lança voltando. Chat do bot 7.
 Padrão A' (larva flutuante): células 0–5 = ondulação flutuando (alto→desce→baixo→sobe→alto oposto→desce) · 6 recover_0 · 7 recover_1.
 - `cri_1_larva_motion_a.png` — padrão A' (flutuar). Nota 8. Fiel; ondulação suave (corpo sobe/desce, faixas ondulam). Chat da criatura 1.
+- `cri_2_espadachim_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈394–454), espada baixa à frente; ponta da espada perto da borda das células (não toca). Chat da criatura 2.
+- `cri_3_bruto_motion_a.png` — padrão A. Nota 8. Fiel ao bruto_b, mesma escala (h≈385–425), passada pesada. Chat da criatura 3.
+Padrão A'' (cão quadrúpede): células 0–5 = trote (diagonal A toca → baixo → passagem → impulso → diagonal B toca → passagem) · 6 recover_0 · 7 recover_1.
+- `cri_4_cao_motion_a.png` — padrão A'' (trote). Nota 8. Fiel, escala igual (h≈245–290), patas alternando; células muito largas (encostam a 1–6 px umas das outras, sem tocar). Chat da criatura 4.
