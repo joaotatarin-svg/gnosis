@@ -740,20 +740,22 @@ func _b_sink() -> void:
 	var feet := Vector2(_king.global_position.x, _ground_y())
 	var crack := _crack_ground(feet)
 	var t := _tw()
-	t.tween_interval(1.8)
-	t.tween_property(_king, "global_position:y", _king.global_position.y + 140.0, 1.6).set_ease(Tween.EASE_IN)
+	t.tween_interval(1.0)
+	t.tween_property(_king, "global_position:y", _king.global_position.y + 220.0, 1.9).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	for g in _gems:
 		if is_instance_valid(g):
 			t.parallel().tween_property(g, "modulate:a", 0.0, 0.45)
 	t.tween_property(_black, "color:a", 1.0, 0.8)
 	var opening := _tw()
-	opening.tween_interval(0.25)
-	opening.tween_property(crack, "open", 1.0, 2.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	opening.tween_interval(0.15)
+	opening.tween_property(crack, "open", 1.0, 1.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# O momento é épico: luz âmbar forte saindo do chão, tremor crescente, poeira.
 	var quake := _tw()
-	for k in 4:
-		quake.tween_callback(Juice.shake.bind(0.18 + 0.06 * float(k)))
-		quake.tween_callback(VfxLibrary.dust.bind(self, feet + Vector2((float(k) - 1.5) * 34.0, -2.0)))
-		quake.tween_interval(0.55)
+	for k in 6:
+		quake.tween_callback(Juice.shake.bind(0.3 + 0.05 * float(k)))
+		quake.tween_callback(VfxLibrary.dust.bind(self, feet + Vector2((float(k) - 2.5) * 30.0, -2.0)))
+		quake.tween_callback(VfxLibrary._flash_sprite.bind(self, feet + Vector2(0, -10), "halo", Color(1.0, 0.72, 0.3, 0.75), 0.6, 2.2 + 0.3 * float(k), 0.5))
+		quake.tween_interval(0.45)
 	_cam_to(1.0, Vector2(_side() * 60.0, 40.0), 1.8)
 
 
@@ -1489,12 +1491,12 @@ class _King extends Node2D:
 		# abaixo dela pelo recorte `clip`).
 		var sunk := global_position.y - Staging._ground()
 		if sunk > 1.0:
-			var w := 70.0
+			var w := 90.0
 			var gy := -sunk
-			var ga := clampf(sunk / 30.0, 0.0, 1.0)
+			var ga := clampf(sunk / 20.0, 0.0, 1.0)
 			over.draw_set_transform(Vector2(0, gy), 0.0, Vector2(1.0, 0.22))
-			over.draw_circle(Vector2.ZERO, w, Color(1.0, 0.78, 0.4, 0.18 * ga))
-			over.draw_circle(Vector2.ZERO, w * 0.62, Color(1.0, 0.88, 0.6, 0.32 * ga))
+			over.draw_circle(Vector2.ZERO, w, Color(1.0, 0.78, 0.4, 0.3 * ga))
+			over.draw_circle(Vector2.ZERO, w * 0.62, Color(1.0, 0.88, 0.6, 0.5 * ga))
 			over.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			over.draw_line(Vector2(-w * 0.8, gy), Vector2(w * 0.8, gy), Color(1.0, 0.95, 0.8, 0.85 * ga), 1.5, true)
 
@@ -1570,7 +1572,7 @@ class _FloorCrack extends Node2D:
 		var dirs := [PI + 0.1, -0.1, PI * 0.7, PI * 0.3, PI * 1.25, PI * 1.82]
 		for k in dirs.size():
 			var a: float = float(dirs[k]) + rng.randf_range(-0.12, 0.12)
-			var length: float = rng.randf_range(90.0, 150.0) * (1.0 if k < 2 else 0.6)
+			var length: float = rng.randf_range(150.0, 220.0) * (1.0 if k < 2 else 0.6)
 			var pts := PackedVector2Array([Vector2.ZERO])
 			var p := Vector2.ZERO
 			var n := 9
@@ -1578,13 +1580,15 @@ class _FloorCrack extends Node2D:
 				a += rng.randf_range(-0.45, 0.45)
 				p += Vector2(cos(a), sin(a)) * (length / float(n))
 				pts.append(p)
-			_branches.append({"pts": pts, "w": rng.randf_range(2.6, 3.6) * (1.0 if k < 2 else 0.7)})
+			_branches.append({"pts": pts, "w": rng.randf_range(4.0, 5.5) * (1.0 if k < 2 else 0.7)})
 		_glow = Node2D.new()
 		_glow.material = VfxLibrary._additive()
 		add_child(_glow)
 		_glow.draw.connect(_draw_glow)
 
 	func _process(delta: float) -> void:
+		if _glow != null and open > 0.0:
+			_glow.queue_redraw()               # os fachos tremulam
 		# Faíscas sobem das pontas enquanto a fenda abre (uma ponta por vez).
 		if _decal != null or open <= 0.0 or open >= 1.0 or _branches.is_empty():
 			return
@@ -1670,8 +1674,30 @@ class _FloorCrack extends Node2D:
 		for b in _branches:
 			_poly(_glow, _strip(b, 1.8), Color(CORE.r, CORE.g * 0.9, CORE.b * 0.7, 0.28 * a))
 			_poly(_glow, _strip(b, 0.35), Color(1.0, 0.95, 0.8, 0.7 * a))
-		# brilho no ponto de origem (o "poço" sob os pés dele)
-		_glow.draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.25))
-		_glow.draw_circle(Vector2.ZERO, 22.0 * a, Color(CORE, 0.16 * a))
-		_glow.draw_circle(Vector2.ZERO, 9.0 * a, Color(1.0, 0.92, 0.7, 0.35 * a))
+		# Luz SUBINDO das fendas: fachos aditivos que nascem nos ramos e somem
+		# para cima (degradê por vértice), tremulando.
+		var tt := float(Time.get_ticks_msec()) * 0.001
+		for bi in _branches.size():
+			var b: Dictionary = _branches[bi]
+			var pts: PackedVector2Array = b.pts
+			for j in range(1, pts.size(), 2):
+				if float(j) > open * float(pts.size() - 1):
+					break
+				var base := Vector2(pts[j].x, pts[j].y * 0.3)
+				var flick := 0.75 + 0.25 * sin(tt * 9.0 + float(j) * 1.7 + float(bi))
+				var hgt := (70.0 + 50.0 * flick) * a * (1.0 - float(j) / float(pts.size()))
+				var half := 5.0 + 3.0 * flick
+				_glow.draw_polygon(PackedVector2Array([base + Vector2(-half, 0), base + Vector2(half, 0),
+					base + Vector2(half * 0.4, -hgt), base + Vector2(-half * 0.4, -hgt)]),
+					PackedColorArray([Color(CORE, 0.55 * a * flick), Color(CORE, 0.55 * a * flick),
+					Color(CORE, 0.0), Color(CORE, 0.0)]))
+		# o "poço" de luz sob os pés dele
+		_glow.draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.3))
+		_glow.draw_circle(Vector2.ZERO, 70.0 * a, Color(CORE, 0.14 * a))
+		_glow.draw_circle(Vector2.ZERO, 38.0 * a, Color(CORE, 0.3 * a))
+		_glow.draw_circle(Vector2.ZERO, 16.0 * a, Color(1.0, 0.95, 0.8, 0.6 * a))
 		_glow.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		# coluna de luz larga no centro (o chão "se abre" para o motor)
+		var ch := 160.0 * a
+		_glow.draw_polygon(PackedVector2Array([Vector2(-34, 0), Vector2(34, 0), Vector2(18, -ch), Vector2(-18, -ch)]),
+			PackedColorArray([Color(1.0, 0.8, 0.45, 0.45 * a), Color(1.0, 0.8, 0.45, 0.45 * a), Color(CORE, 0.0), Color(CORE, 0.0)]))
