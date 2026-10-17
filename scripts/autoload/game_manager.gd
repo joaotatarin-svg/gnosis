@@ -26,6 +26,9 @@ const SETTINGS_DEFAULT := {
 	"shake": 1.0,
 	"rumble": true,
 	"caption_size": 1,
+	# Acessibilidade: corta clarões/flashes de tela cheia (fotossensibilidade).
+	# Quem desenha flash lê `Juice.reduce_flashes` (espelhado em apply_settings).
+	"reduce_flashes": false,
 }
 var settings: Dictionary = SETTINGS_DEFAULT.duplicate()
 
@@ -40,9 +43,10 @@ func _ready() -> void:
 
 ## Aplica as opções de vídeo (o resto é lido por quem usa). Seguro em headless.
 func apply_settings() -> void:
+	# Chave ausente ou com tipo errado (save editado, menu com bug) → padrão.
 	for k in SETTINGS_DEFAULT:
-		if not settings.has(k):
-			settings[k] = SETTINGS_DEFAULT[k]
+		var v = SaveCoerce.match_type(settings.get(k), SETTINGS_DEFAULT[k]) if settings.has(k) else null
+		settings[k] = SETTINGS_DEFAULT[k] if typeof(v) == TYPE_NIL else v
 	settings["shake"] = clampf(float(settings["shake"]), 0.0, 1.0)
 	settings["caption_size"] = clampi(int(settings["caption_size"]), 0, 2)
 	# Espelha tremor/vibração no Juice (campos da branch principal), se ele já
@@ -54,6 +58,8 @@ func apply_settings() -> void:
 			juice.set("shake_mult", shake_multiplier())
 		if "rumble_enabled" in juice:
 			juice.set("rumble_enabled", rumble_enabled())
+		if "reduce_flashes" in juice:
+			juice.set("reduce_flashes", reduce_flashes())
 	if DisplayServer.get_name() == "headless":
 		return
 	var want := DisplayServer.WINDOW_MODE_FULLSCREEN if bool(settings["fullscreen"]) else DisplayServer.WINDOW_MODE_WINDOWED
@@ -64,17 +70,22 @@ func apply_settings() -> void:
 
 ## Multiplicador do tremor de câmera (0..1) — pra quem gera o tremor.
 func shake_multiplier() -> float:
-	return clampf(float(settings.get("shake", 1.0)), 0.0, 1.0)
+	return clampf(SaveCoerce.as_float(settings.get("shake", 1.0), 1.0), 0.0, 1.0)
 
 
 ## Vibração do controle ligada?
 func rumble_enabled() -> bool:
-	return bool(settings.get("rumble", true))
+	return SaveCoerce.as_bool(settings.get("rumble", true), true)
+
+
+## Reduzir clarões (acessibilidade) ligado?
+func reduce_flashes() -> bool:
+	return SaveCoerce.as_bool(settings.get("reduce_flashes", false), false)
 
 
 ## Tamanho de fonte das legendas conforme a opção (P/M/G).
 func caption_font_size() -> int:
-	return [11, 13, 16][clampi(int(settings.get("caption_size", 1)), 0, 2)]
+	return [11, 13, 16][clampi(SaveCoerce.as_int(settings.get("caption_size", 1), 1), 0, 2)]
 
 
 ## Nome LEGÍVEL da tela pelo papel no arco (HUD, pausa, menu "Continuar"):
@@ -103,21 +114,40 @@ func _roman(n: int) -> String:
 	return r[clampi(n - 1, 0, r.size() - 1)]
 
 
-## Updates leves: carrega patch_*.pck da pasta do executável por cima do jogo
-## base (só no build exportado). Ordem alfabética = patch mais novo por último.
+## Updates leves: carrega patch_<versão>_*.pck da pasta do executável por cima
+## do jogo base (só no build exportado). Ordem alfabética = patch mais novo por
+## último. REVISAO #7: só entra patch da MESMA `config/version` do projeto — um
+## patch velho esquecido na pasta não reverte as correções da versão nova; o
+## resto é ignorado com aviso. Limite conhecido: isto roda no _ready do 2º
+## autoload, então um patch NÃO consegue trocar scripts de autoload (já
+## carregados) — para isso, instalador/depot novo.
 func _load_patches() -> void:
 	if not OS.has_feature("standalone"):
 		return
 	var dir := DirAccess.open(OS.get_executable_path().get_base_dir())
 	if dir == null:
 		return
-	var patches: Array[String] = []
-	for f in dir.get_files():
-		if f.begins_with("patch_") and f.ends_with(".pck"):
-			patches.append(f)
-	patches.sort()
-	for p in patches:
-		ProjectSettings.load_resource_pack(dir.get_current_dir().path_join(p))
+	var version := String(ProjectSettings.get_setting("application/config/version", ""))
+	for p in patch_files_for(dir.get_files(), version):
+		if not ProjectSettings.load_resource_pack(dir.get_current_dir().path_join(p)):
+			push_warning("GameManager: patch %s não pôde ser montado." % p)
+
+
+## Filtra (e ordena) os nomes de arquivo que são patch válido para a versão:
+## `patch_<versão>_<algo>.pck`. Qualquer outro `patch_*.pck` é ignorado com print.
+## Função pura (sem disco) para o CodexQA testar.
+static func patch_files_for(files: PackedStringArray, version: String) -> Array[String]:
+	var out: Array[String] = []
+	var prefix := "patch_%s_" % version
+	for f in files:
+		if not (f.begins_with("patch_") and f.get_extension().to_lower() == "pck"):
+			continue
+		if version != "" and f.begins_with(prefix) and f.length() > prefix.length() + 4:
+			out.append(f)
+		else:
+			print("GameManager: patch ignorado (não é da versão %s): %s" % [version, f])
+	out.sort()
+	return out
 
 
 func set_state(new_state: State) -> void:
@@ -178,6 +208,53 @@ func _register_inputs() -> void:
 	for i in 7:
 		_add_action("ring_%d" % (i + 1), [num_keys[i]])
 	_add_action("pause",        [KEY_ESCAPE, KEY_P], [JOY_BUTTON_START])
+	_register_ui_pad()
+
+
+## Navegação de MENUS com controle (QA_UX B1): o Godot 4.7 só traz teclado em
+## `ui_accept`/`ui_cancel` — sem isto, quem joga só de controle não confirma
+## nem volta em nenhuma tela (softlock na 1ª tentação). A = confirmar, B =
+## voltar (convenção Xbox/Steam Deck; no DualSense é ✕/○ pela posição). As
+## teclas de fábrica ficam; só ACRESCENTAMOS os botões. As setas de UI já vêm
+## com D-pad + analógico esquerdo no motor, mas garantimos aqui (idempotente)
+## para não depender do padrão de uma versão futura.
+## Conflito? Não: A/B também são pulo/esquiva, mas a UI só recebe `ui_*` quando
+## um Control tem foco (menus, diálogos com o mundo pausado).
+func _register_ui_pad() -> void:
+	_ensure_pad("ui_accept", [JOY_BUTTON_A])
+	_ensure_pad("ui_cancel", [JOY_BUTTON_B])
+	_ensure_pad("ui_up",    [JOY_BUTTON_DPAD_UP],    [[JOY_AXIS_LEFT_Y, -1.0]])
+	_ensure_pad("ui_down",  [JOY_BUTTON_DPAD_DOWN],  [[JOY_AXIS_LEFT_Y, 1.0]])
+	_ensure_pad("ui_left",  [JOY_BUTTON_DPAD_LEFT],  [[JOY_AXIS_LEFT_X, -1.0]])
+	_ensure_pad("ui_right", [JOY_BUTTON_DPAD_RIGHT], [[JOY_AXIS_LEFT_X, 1.0]])
+
+
+## Acrescenta botões/eixos de controle a uma ação SEM duplicar o que já existe
+## (o motor compara botão/eixo e sentido) e sem tocar nas teclas.
+func _ensure_pad(action: String, buttons: Array, motions: Array = []) -> void:
+	if not InputMap.has_action(action):
+		InputMap.add_action(action)
+	for b in buttons:
+		var ev := InputEventJoypadButton.new()
+		ev.button_index = b
+		if not InputMap.action_has_event(action, ev):
+			InputMap.action_add_event(action, ev)
+	for m in motions:
+		var ev := InputEventJoypadMotion.new()
+		ev.axis = m[0]
+		ev.axis_value = m[1]
+		if not InputMap.action_has_event(action, ev):
+			InputMap.action_add_event(action, ev)
+
+
+## Ação tem pelo menos um botão de controle? (QA: B1 não pode voltar.)
+func action_has_pad_button(action: String, button: int) -> bool:
+	if not InputMap.has_action(action):
+		return false
+	for ev in InputMap.action_get_events(action):
+		if ev is InputEventJoypadButton and (ev as InputEventJoypadButton).button_index == button:
+			return true
+	return false
 
 
 ## SDL_GameControllerDB (github.com/mdqinc/SDL_GameControllerDB, licença zlib):

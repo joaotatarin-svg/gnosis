@@ -8,6 +8,9 @@ extends Node
 var _fade: ColorRect
 var _spark: Control
 var _busy: bool = false
+var _swapped: bool = false         # a troca desta transição já aconteceu (véu abrindo)
+var _target: String = ""           # cena da transição em curso (ainda não trocada)
+var _pending: String = ""          # pedido que chegou com o véu abrindo: roda em seguida
 var _quiet_until: int = 0          # msec: silêncio do "ui_move" logo após abrir uma tela
 
 
@@ -36,21 +39,47 @@ func _exit_tree() -> void:
 	CodexStyle.release(get_tree())
 
 
+## Troca de cena com o véu. REVISAO #12: pedido que chega no meio de uma
+## transição NÃO se perde (quem chama, ex. RunManager, já mudou a tela e
+## salvou antes): com o véu ainda descendo, o último pedido vira o destino;
+## com o véu já abrindo (cena nova no ar), ele fica guardado e roda logo ao fim.
+## Ao trocar, a pilha de pausa é zerada — nenhum dono da cena velha segura o
+## mundo novo pausado.
 func change_scene(path: String) -> void:
 	if _busy:
+		if _swapped:
+			_pending = path
+		else:
+			_target = path
 		return
 	_busy = true
-	var t := create_tween().set_parallel(true)
-	t.tween_property(_fade, "modulate:a", 1.0, 0.22)
-	t.tween_property(_spark, "modulate:a", 1.0, 0.22)
-	await t.finished
-	get_tree().change_scene_to_file(path)
-	_quiet_until = Time.get_ticks_msec() + 250
-	var t2 := create_tween().set_parallel(true)
-	t2.tween_property(_spark, "modulate:a", 0.0, 0.18)
-	t2.tween_property(_fade, "modulate:a", 0.0, 0.3).set_delay(0.05)
-	await t2.finished
+	_target = path
+	while _target != "":
+		_swapped = false
+		var t := create_tween().set_parallel(true)
+		t.tween_property(_fade, "modulate:a", 1.0, 0.22)
+		t.tween_property(_spark, "modulate:a", 1.0, 0.22)
+		await t.finished
+		PauseStack.clear()
+		var err := get_tree().change_scene_to_file(_target)
+		if err != OK:
+			push_error("SceneManager: não consegui abrir %s (erro %d)." % [_target, err])
+		_swapped = true
+		_target = ""
+		_quiet_until = Time.get_ticks_msec() + 250
+		var t2 := create_tween().set_parallel(true)
+		t2.tween_property(_spark, "modulate:a", 0.0, 0.18)
+		t2.tween_property(_fade, "modulate:a", 0.0, 0.3).set_delay(0.05)
+		await t2.finished
+		_target = _pending
+		_pending = ""
+	_swapped = false
 	_busy = false
+
+
+## Há uma transição em curso (véu descendo/abrindo ou pedido na fila)?
+func is_busy() -> bool:
+	return _busy
 
 
 ## Instancia uma cena por cima da cena atual (ex.: pausa, loja).

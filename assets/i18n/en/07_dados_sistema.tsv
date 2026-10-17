@@ -1,0 +1,148 @@
+# Lote 07 — dados e sistema: bestiário, golpes/magias, títulos de tela, save, inimigo, selos, Estela (painel),
+# cinemáticas, Provação (codex_trial), batalha final, level.
+# ATENÇÃO: linhas com espaço no fim/começo são intencionais (pedaços concatenados no código).
+bestiary._build.c70469	Kenoma Larva
+bestiary._build.041a5a	Wandering Shade
+bestiary._build.565fa2	Demiurge's Servant
+bestiary._build.acf0b4	Burning Larva
+bestiary._build.d4861d	Thorned Guardian
+bestiary._build.5df56c	Hound Beast
+bestiary._build.3861c4	Horned Reaper
+bestiary._build.9bbbd2	Seal Squire
+bestiary._build.f3ab88	Winged Sentinel
+bestiary._build.9bf35e	Iron Brute
+bestiary._build.0af239	Herald of Silence
+bestiary._build.3cff43	Void Phantom
+bestiary._build.87688f	Larva Summoner
+bestiary._build.beb9c7	Void Aberration
+bestiary._build.ab02a5	Sleepwalker
+bestiary._build.2b9c1a	Glutton
+bestiary._build.07ed98	Jailer
+bestiary._build.b15c1a	Mute Librarian
+bestiary._build.02158a	Reflection
+bestiary._build.529dff	Spore-Bearer
+bestiary._build.94d379	Crown Praetorian
+bestiary._build.9a8e21	Sophia's Shadow
+bestiary._build.cd9f88	Athoth, Archon of Torpor
+bestiary._build.7f99d0	Harmas, Archon of Hunger
+bestiary._build.1cf359	Galila, Archon of the Chain
+bestiary._build.e9b247	Yabel, Archon of Silence
+bestiary._build.1d1aa8	Astaphaios, Archon of the Mirror
+bestiary._build.0d91f6	Belias, Archon of Blight
+bestiary._build.43457b	Armupiel, Archon of the Crown
+bestiary._build.d82541	The King
+bestiary._build.14730e	The King — the Lie
+bestiary._build.8a39d6	Hollow Colossus — the Truth
+bestiary._build.c293d3	Yaldabaoth
+bestiary._build.740cc1	Echo of
+bestiary._build.dcccff	Aeon Pauldrons
+bestiary._build.a4b38a	Guardian's Helm
+bestiary._build.d4a343	Aeon Bracers
+bestiary._build.4c2b27	Diadem of the Source
+game_content._build_characters.b0fb6f	Sophia
+game_content._build_characters.2cc339	A spark without memory, woken in the ashes of the Kenoma. She fights with her staff and the light that still remembers.
+game_content._build_characters.d3e408	Staff Strike
+game_content._build_characters.827ea1	Double Staff
+game_content._build_characters.18f0fa	Arcane Breath
+game_content._build_characters.ebdc7f	Arcane Impact
+game_content._build_characters.18f304	Arcane Rift
+game_content._build_characters.848bd2	Arcane Ascent
+game_content._build_characters.cf85da	Arcane Burst
+game_content._build_characters.8e2928	Rising Cut
+game_content._build_characters.fe5782	Celestial Spin
+game_content._build_characters.d0f780	Starfall
+game_content._build_characters.986674	Staff Tempest
+game_content._build_characters.602a01	Twin Rend
+game_content._build_characters.328647	Fury of the Monad
+game_content._build_characters.93c06b	Arcane Collapse
+game_content._build_characters.5b6f4c	Sun Orb
+game_content._build_characters.27e4a0	Explodes on impact.
+game_content._build_characters.7360e7	Sleep Mist
+game_content._build_characters.c6c58e	A drowsy cloud: enemies inside it slow down.
+game_content._build_characters.bb39dc	Ravenous Maw
+game_content._build_characters.b72ec1	Sucks enemies in close and bites.
+game_content._build_characters.dd6df2	Chain of the Law
+game_content._build_characters.f4e9d0	A chain that pins the target in place.
+game_content._build_characters.cfbb2d	Mute Scream
+game_content._build_characters.febc50	Silences all nearby wind-ups (stuns).
+game_content._build_characters.c48f73	For 5 s, every hit you take returns to whoever dealt it.
+game_content._build_characters.9922e5	Rotten Bloom
+game_content._build_characters.36846d	Plants a poison patch that hurts whoever steps in.
+game_content._build_characters.64af3e	Broken Crown
+game_content._build_characters.ac2791	The Archon's crown shatters into light: huge area damage.
+game_manager.screen_title.f0f1c5	Threshold — The King
+game_manager.screen_title.a0294c	The Mind
+game_manager.screen_title.e9ad2c	The Center %s
+game_manager.screen_title.a13df8	%s · Arrival
+game_manager.screen_title.76f65a	%s · The Challenge
+game_manager.screen_title.bcc8a0	%s · Antechamber
+game_manager.screen_title.4907e4	%s · The Archon
+game_manager.screen_title.8bca3a	%s · Crossing %s
+game_manager._roman.ca73ab	I
+game_manager._roman.e95267	II
+game_manager._roman.a6178c	III
+game_manager._roman.932eaa	IV
+game_manager._roman.c9ee56	V
+game_manager._roman.85ebe3	VI
+game_manager._roman.0ea48f	VII
+game_manager._roman.8985af	VIII
+game_manager._roman.b04dce	IX
+game_manager.difficulty_name.45e118	Normal
+game_manager.difficulty_name.36dc8f	Hard
+game_manager.difficulty_name.3e6659	Very Hard
+game_manager.difficulty_name.83caa2	Champion
+save_manager.load_game.bd4bd0	The save file was unreadable and has been ignored.
+save_manager.load_game.a99a60	Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept.
+save_manager.load_game.e9b25b	The saved checkpoint does not exist on this map and was discarded. Sparks, endings and options were kept.
+enemy_data._top.cef7da	Archon
+enemy._ready.93c65e	%s (Elite)
+enemy._ready.5fbd7f	Champion %s
+enemy._eon_title.5101be	of
+enemy._eon_title.ce4410	of
+seal_puzzle._build_hint.4778ec	THE THREE SEALS
+seal_puzzle._solve.b16c6d	seals opened
+stela._ready.c33be5	J / X · read the Stele
+stela.open.bfded4	Chronicle unlocked: %s  (%d/%d)
+stela._ready.f08366	STELE  ·  %s
+stela._ready.0b4c7d	Kenoma
+stela._ready.7be33a	Source: %s
+stela._ready.4deab3	• new Chronicle  %d/%d
+stela._ready.9f1fce	Chronicle %d/%d
+stela._ready.adc6ff	      › close
+cinematic.prologue.e5613a	In the beginning there was no beginning.\nThere was the One — nameless, measureless, full.\nThe ancients called it Monad, Depth, Silence.
+cinematic.prologue.06441e	From it the Aeons emanated, in pairs, like overflowing light.\nIn the Pleroma nothing slept. Nothing forgot.
+cinematic.prologue.ac3cdb	The youngest, Sophia — Wisdom — sought to reach the Source alone.\nFrom that unpartnered desire came a formless son,\nand she hid him in a cloud.
+cinematic.prologue.4dd67e	Blind to the Light he came from, he believed himself the only god.\nAnd he made a world copying what he never saw: the Kenoma, the void.
+cinematic.prologue.97ec52	Seven Archons. Seven spheres. Seven chains.\nAnd within the clay, hidden, the spark he took from his mother.
+cinematic.prologue.4eff7a	The sparks are sleeping.\n\nOne of them has just felt pain.
+cinematic.epilogue.4ab9df	Every stone has been read. The spark remembers in full.
+cinematic.epilogue.8e89d7	%d Stelae were left unread in the Kenoma. The Chronicles keep the ones that were read.
+cinematic.epilogue.2f5ff6	CHRONICLES  %d / %d
+cinematic.epilogue.863da2	GNOSIS
+cinematic.epilogue.622c86	João Tatarin — direction, production and choices\nIllustrated art generated by AI under the author's direction\nCode written with Claude (Anthropic) and Codex (OpenAI)\nSounds and effects CC0/CC-BY — see assets/LICENSES.md\n\nInspired by the Nag Hammadi texts, the Pistis Sophia\nand the accounts of Irenaeus, Hippolytus and Clement.
+cinematic.epilogue.17a290	...mother?
+cinematic._build_cards.c7f240	any key continues  ·  Esc skips
+codex_trial._ready.f294f2	A/D move   SPACE jump   J/K strikes   SHIFT dodge   I parry   U ring   O orb
+codex_trial._ready.7dcce7	I  ·  THE SPARK AWAKENS
+codex_trial._ready.1e3e14	II  ·  BREAK THE GUARD
+codex_trial._ready.2329e1	III  ·  FACE THE ARCHON
+codex_trial._process.93a682	TRIAL  %d / 3   ·   %02d:%02d
+codex_trial._show_result.5077e5	GNOSIS  /  TRIAL  (training)
+codex_trial._show_result.faefd4	The light endures.
+codex_trial._show_result.1a76a8	The seal broke.
+codex_trial._show_result.dd2f86	The spark resists.
+codex_trial._show_result.bbc4d3	Time  %02d:%02d    ·    Best combo  %d
+codex_trial._show_result.6623a5	That was the Trial (training). The Campaign has %d screens and seven Archons — in the menu, under "New campaign".
+codex_trial._show_result.ba7313	Breathe. Your health will be restored.
+codex_trial._show_result.66105b	Dodge the red. Parry the gold.
+codex_trial._show_result.fc8b0c	To the Campaign  →
+codex_trial._show_result.788c52	Repeat the Trial
+codex_trial._show_result.dce1a6	Next encounter  →
+codex_trial._show_result.04fc24	Try again
+codex_trial._show_result.509aa0	Back to menu
+final_battle.start.5a95a1	Both forms must fall TOGETHER.
+level._play_narrative_beats.34d9f2	Refuse
+level._play_narrative_beats.8eb3bb	Yield
+level._on_zone_cleared.5e6b69	Keep going  →
+level._on_player_died.f920d1	You fell in the Kenoma
+level._on_player_died.ba60d8	Reached Screen %d.
