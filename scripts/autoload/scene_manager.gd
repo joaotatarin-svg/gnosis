@@ -32,6 +32,10 @@ func _ready() -> void:
 	layer.add_child(_spark)
 
 
+func _exit_tree() -> void:
+	CodexStyle.release(get_tree())
+
+
 func change_scene(path: String) -> void:
 	if _busy:
 		return

@@ -255,6 +255,16 @@ static func install_global(tree: SceneTree) -> void:
 	tree.root.theme = t
 
 
+## Solta os caches estáticos (fontes/tema) ao fechar o jogo — sem isso o
+## Godot avisa "resources still in use at exit".
+static func release(tree: SceneTree) -> void:
+	if tree != null and tree.root != null:
+		tree.root.theme = null
+	ThemeDB.fallback_font = null
+	_theme = null
+	_fonts.clear()
+
+
 # --- fábrica de rótulos/botões -------------------------------------------------------
 
 static func label(parent: Node, text: String, pos: Vector2, size: int, color: Color = PAPER, width: float = 400.0, display: bool = false) -> Label:

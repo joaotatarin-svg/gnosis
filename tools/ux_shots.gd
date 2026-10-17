@@ -158,6 +158,11 @@ class Worker extends Node:
 			get_tree().change_scene_to_file("res://scenes/ui/Credits.tscn")
 			await wait(1.2)
 			await shot("creditos")
+			var cr = get_tree().current_scene
+			cr._y = -420.0
+			cr._hold = 30.0
+			await wait(0.3)
+			await shot("creditos_atribuicao")
 		# 11. Fim de jogo — vitória
 		GameManager.end_title = "ASCENSÃO"
 		GameManager.end_subtitle = "Sophia atravessa o véu. O Kenoma fica pra trás — e a luz que ela carregava volta pra Fonte, inteira."

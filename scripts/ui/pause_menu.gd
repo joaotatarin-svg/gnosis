@@ -16,21 +16,32 @@ var _sub_open: bool = false     # um overlay (golpes/opções/loja) está aberto
 
 func _ready() -> void:
 	CodexStyle.apply_existing(self)
-	_vbox.custom_minimum_size.x = 300
+	_vbox.custom_minimum_size.x = 260
+	$Dim.color = Color(0.01, 0.03, 0.045, 0.7)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = true
 	var role: Label = $Center/Panel/VBox/Role
 	role.text = _role_text()
-	role.add_theme_font_size_override("font_size", 10)
-	role.add_theme_color_override("font_color", CodexStyle.GOLD)
+	role.add_theme_font_override("font", CodexStyle.italic())
+	role.add_theme_font_size_override("font_size", 12)
+	role.add_theme_color_override("font_color", CodexStyle.MUTED)
+	var rule := CodexStyle.Rule.new()
+	rule.custom_minimum_size = Vector2(0, 7)
+	rule.color = Color(CodexStyle.GOLD, 0.8)
+	_vbox.add_child(rule)
+	_vbox.move_child(rule, role.get_index() + 1)
 	_resume.pressed.connect(_resume_game)
 	_moves.pressed.connect(_open_moves)
 	_upgrades.pressed.connect(_open_upgrades)
 	_options.pressed.connect(_open_options)
 	_quit.pressed.connect(_ask_quit)
 	for b in [_resume, _moves, _upgrades, _options, _quit]:
-		b.pressed.connect(func(): Audio.play_sfx("ui"))
+		b.custom_minimum_size.y = CodexStyle.BTN_H
+	# cima/baixo circulam (do último volta ao primeiro)
+	_resume.focus_neighbor_top = _resume.get_path_to(_quit)
+	_quit.focus_neighbor_bottom = _quit.get_path_to(_resume)
 	_resume.grab_focus()
+	CodexStyle.pop_in($Center/Panel)
 
 
 ## "Torpor · Travessia II" — ou o encontro da Provação.
@@ -92,10 +103,10 @@ func _ask_quit() -> void:
 	_sub_open = true
 	$Center.visible = false
 	var sc := RunManager.checkpoint_for(RunManager.current_screen)
-	var body := "Volta pro menu. O checkpoint salvo permanece: %s (Tela %d)." % [RunManager.eon_name(sc), sc]
+	var body := "Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d." % [RunManager.eon_name(sc), sc]
 	if CodexSession.active:
-		body = "Volta pro menu. A Provação não grava progresso."
-	CodexStyle.confirm(self, "Abandonar a run?", body, "Abandonar", _quit_now, "Voltar", func():
+		body = "Você volta ao menu. A Provação não grava progresso."
+	CodexStyle.confirm(self, "Abandonar a jornada?", body, "Abandonar", _quit_now, "Voltar", func():
 		_sub_open = false
 		$Center.visible = true
 		_quit.grab_focus())

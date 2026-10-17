@@ -11,6 +11,8 @@ class_name DialogueBox
 
 signal finished
 signal choice_made(index: int)
+## A cada fala exibida (o Level usa o campo opcional `cue` da fala pra encenar).
+signal line_shown(index: int, line: Dictionary)
 
 const CPS := 46.0                 # letras por segundo
 const PANEL := Rect2(36, 250, 568, 98)
@@ -188,6 +190,7 @@ func _show_line() -> void:
 	_blip_count = 0
 	_typing = true
 	_deco.queue_redraw()
+	line_shown.emit(idx, l)
 
 
 ## Mostra a fala inteira (1º aperto durante a digitação).

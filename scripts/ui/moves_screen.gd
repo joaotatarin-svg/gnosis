@@ -34,18 +34,12 @@ func _ready() -> void:
 	dim.size = Vector2(640, 360)
 	add_child(dim)
 	var panel := Panel.new()
-	var box := StyleBoxFlat.new()
-	box.bg_color = Color(CodexStyle.INK, 0.98)
-	box.border_color = Color(CodexStyle.GOLD, 0.75)
-	box.set_border_width_all(1)
-	box.shadow_color = Color(0, 0, 0, 0.4)
-	box.shadow_size = 12
-	panel.add_theme_stylebox_override("panel", box)
+	panel.add_theme_stylebox_override("panel", CodexStyle.panel_frame(0.98))
 	panel.position = PANEL_POS
 	panel.size = PANEL_SIZE
 	add_child(panel)
-	CodexStyle.label(panel, "GOLPES & CONTROLES", Vector2(16, 10), 17, CodexStyle.PAPER, 400, true)
-	var lvl := CodexStyle.label(panel, "Arma Nv. %d / %d" % [Progression.weapon_level, Progression.MAX_WEAPON_LEVEL], Vector2(380, 16), 10, CodexStyle.GOLD, 184)
+	CodexStyle.label(panel, "Golpes & Controles", Vector2(18, 10), 17, CodexStyle.GOLD_HI, 400, true)
+	var lvl := CodexStyle.label(panel, "ARMA NV. %d / %d" % [Progression.weapon_level, Progression.MAX_WEAPON_LEVEL], Vector2(380, 16), 8, CodexStyle.GOLD, 184, true)
 	lvl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_scroll = ScrollContainer.new()
 	_scroll.position = Vector2(16, 40)
@@ -59,10 +53,11 @@ func _ready() -> void:
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.add_child(_list)
 	_fill()
-	var hint := CodexStyle.label(panel, "W/S · setas · analógico rolam        Esc / B fecham", Vector2(16, PANEL_SIZE.y - 30), 8, CodexStyle.MUTED, 380)
-	hint.position.y = PANEL_SIZE.y - 26
-	_back = CodexStyle.button(panel, "Voltar", Vector2(PANEL_SIZE.x - 16 - 110, PANEL_SIZE.y - 38), 110, close)
+	var hint := CodexStyle.label(panel, "W/S · setas · analógico rolam      ·      Esc / B fecha", Vector2(18, PANEL_SIZE.y - 30), 10, CodexStyle.MUTED, 380)
+	hint.position.y = PANEL_SIZE.y - 30
+	_back = CodexStyle.button(panel, "Voltar", Vector2(PANEL_SIZE.x - 18 - 110, PANEL_SIZE.y - 40), 110, close, false, "")
 	_back.grab_focus()
+	CodexStyle.pop_in(panel)
 
 
 # --- conteúdo ---------------------------------------------------------------
@@ -125,7 +120,7 @@ func _fill() -> void:
 	]:
 		_control_row(c[0], c[1], c[2], c[3])
 	_gap()
-	_note("Telegrafo AMARELO = dá pra aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.")
+	_note("Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.")
 	_note("Escudeiros só caem com golpe forte ou magia.   A esquiva arrebenta a Corrente da Lei.")
 
 
@@ -173,13 +168,14 @@ func _header(text: String, right: String) -> void:
 	var h := HBoxContainer.new()
 	var a := Label.new()
 	a.text = text
-	a.add_theme_font_size_override("font_size", 10)
+	a.add_theme_font_override("font", CodexStyle.display())
+	a.add_theme_font_size_override("font_size", 9)
 	a.add_theme_color_override("font_color", CodexStyle.GOLD)
 	a.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(a)
 	var b := Label.new()
 	b.text = right
-	b.add_theme_font_size_override("font_size", 8)
+	b.add_theme_font_size_override("font_size", 10)
 	b.add_theme_color_override("font_color", CodexStyle.MUTED)
 	b.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	h.add_child(b)
@@ -193,7 +189,8 @@ func _header(text: String, right: String) -> void:
 func _sub(text: String) -> void:
 	var l := Label.new()
 	l.text = text
-	l.add_theme_font_size_override("font_size", 8)
+	l.add_theme_font_override("font", CodexStyle.italic())
+	l.add_theme_font_size_override("font_size", 10)
 	l.add_theme_color_override("font_color", CodexStyle.MUTED)
 	_list.add_child(l)
 
@@ -205,20 +202,22 @@ func _row(name: String, mid: String, info: String, col: Color, mid_col: Color) -
 	var a := Label.new()
 	a.text = name
 	a.custom_minimum_size.x = 150
-	a.add_theme_font_size_override("font_size", 10)
+	a.add_theme_font_size_override("font_size", 12)
 	a.add_theme_color_override("font_color", col)
 	h.add_child(a)
 	var b := Label.new()
 	b.text = mid
 	b.custom_minimum_size.x = 150
-	b.add_theme_font_size_override("font_size", 10)
+	b.add_theme_font_override("font", CodexStyle.body_bold())
+	b.add_theme_font_size_override("font_size", 12)
 	b.add_theme_color_override("font_color", mid_col)
 	h.add_child(b)
 	var c := Label.new()
 	c.text = info
 	c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	c.clip_text = true
-	c.add_theme_font_size_override("font_size", 9)
+	c.add_theme_font_override("font", CodexStyle.italic())
+	c.add_theme_font_size_override("font_size", 11)
 	c.add_theme_color_override("font_color", Color(col, minf(col.a, 0.8)))
 	h.add_child(c)
 	_list.add_child(h)
@@ -231,7 +230,7 @@ func _control_row(action: String, kb: String, xbox: String, ds: String) -> void:
 		var l := Label.new()
 		l.text = pair[0]
 		l.custom_minimum_size.x = pair[1]
-		l.add_theme_font_size_override("font_size", 10)
+		l.add_theme_font_size_override("font_size", 12)
 		l.add_theme_color_override("font_color", pair[2])
 		if pair[1] == 0:
 			l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -243,7 +242,7 @@ func _note(text: String) -> void:
 	var l := Label.new()
 	l.text = text
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.add_theme_font_size_override("font_size", 9)
+	l.add_theme_font_size_override("font_size", 11)
 	l.add_theme_color_override("font_color", CodexStyle.MUTED)
 	_list.add_child(l)
 
@@ -281,5 +280,7 @@ func _input(event: InputEvent) -> void:
 
 func close() -> void:
 	Audio.play_sfx("ui_back")
+	if not is_inside_tree():
+		return
 	closed.emit()
 	queue_free()

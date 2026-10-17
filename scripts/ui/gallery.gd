@@ -51,9 +51,12 @@ func _ready() -> void:
 	header.color = Color("0a151c")
 	header.size = Vector2(640,51)
 	hud.add_child(header)
-	CodexStyle.button(hud,"Voltar",Vector2(541,11),80,func(): SceneManager.change_scene("res://scenes/ui/CharacterAtelier.tscn"))
-	hud.add_child(_make_label("Bestiário — GNOSIS", Vector2(20, 10), 16, HORIZONTAL_ALIGNMENT_LEFT, 300))
-	hud.add_child(_make_label("W/S rolam · Esc volta", Vector2(20, 30), 10, HORIZONTAL_ALIGNMENT_LEFT, 220))
+	var back := CodexStyle.button(hud, "Voltar", Vector2(541, 12), 80, _leave, false, "ui_back")
+	CodexStyle.label(hud, "Bestiário", Vector2(20, 8), 18, CodexStyle.GOLD_HI, 300, true)
+	var hint := CodexStyle.label(hud, "W/S · setas · analógico rolam   ·   Esc / B volta", Vector2(20, 32), 10, CodexStyle.MUTED, 320)
+	hint.add_theme_font_override("font", CodexStyle.italic())
+	CodexStyle.rule(hud, Vector2(0, 46), 640, Color(CodexStyle.GOLD, 0.5))
+	back.grab_focus()
 
 	for i in entries.size():
 		var col := i % COLS
@@ -63,7 +66,12 @@ func _ready() -> void:
 
 		var card := Polygon2D.new()
 		card.polygon = PackedVector2Array([Vector2(cx-48,cy-49),Vector2(cx+48,cy-49),Vector2(cx+48,cy+65),Vector2(cx-48,cy+65)])
-		card.color = Color("14252d")
+		card.color = Color("12232b")
+		var edge := Line2D.new()
+		edge.points = PackedVector2Array([Vector2(cx-48,cy-49),Vector2(cx+48,cy-49),Vector2(cx+48,cy+65),Vector2(cx-48,cy+65),Vector2(cx-48,cy-49)])
+		edge.width = 0.6
+		edge.default_color = Color(0.77, 0.65, 0.42, 0.35)
+		add_child(edge)
 		add_child(card)
 		var shadow := _shadow_at(Vector2(cx, cy + 28))
 		add_child(shadow)
@@ -93,6 +101,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var dir := Input.get_axis("move_up", "move_down") if InputMap.has_action("move_up") else 0.0
+	if absf(dir) < 0.3:
+		dir = Input.get_axis("ui_up", "ui_down")
 	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
 		dir = -1.0
 	elif Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
@@ -130,5 +140,12 @@ func _shadow_at(pos: Vector2) -> Polygon2D:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause"):
-		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
+	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		Audio.play_sfx("ui_back")
+		_leave()
+
+
+## Volta pro Ateliê (de onde o Bestiário é aberto) — botão e Esc/B iguais.
+func _leave() -> void:
+	SceneManager.change_scene("res://scenes/ui/CharacterAtelier.tscn")
