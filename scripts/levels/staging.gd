@@ -137,7 +137,8 @@ func _scene_open() -> void:
 			Audio.stop_music(0.0)
 			_music_stopped = true
 			_black.color.a = 1.0
-			var t := _tw()
+			# Fora do _flush: a 1ª fala aparece já no escuro (não pode pular a volta da luz).
+			var t := create_tween().set_ignore_time_scale(true)
 			t.tween_interval(1.5)
 			t.tween_property(_black, "color:a", 0.0, 1.4)
 		"rei":
@@ -728,10 +729,15 @@ func _spawn_fog(at: Vector2, alpha: float, dur: float) -> void:
 
 
 ## O corpo do chefe caído (congelado no meio da morte pela caixa) sai de cena.
+## (Também os pedaços do desmembramento, que ficam parados no ar com a caixa aberta.)
 func _hide_boss_bodies() -> void:
 	for e in get_tree().get_nodes_in_group("enemy"):
 		if e is Enemy and e.is_boss_enemy:
 			e.visible = false
+	if level != null:
+		for c in level.get_children():
+			if c is Gib:
+				(c as Node2D).visible = false
 
 
 func _clear_fog(dur: float) -> void:
@@ -874,10 +880,9 @@ func _view_center() -> Vector2:
 	return get_viewport().get_canvas_transform().affine_inverse() * (get_viewport_rect().size * 0.5)
 
 
+## O chão da cena (fixo do Level — a Sophia pode estar no ar quando a cena começa).
 func _ground_y() -> float:
-	if player != null:
-		return player.global_position.y + 24.0
-	return 298.0
+	return Level.GROUND_Y
 
 
 func _process(delta: float) -> void:
