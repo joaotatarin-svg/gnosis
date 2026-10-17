@@ -243,12 +243,12 @@ de duelo, parecer justo/heroico. Ato 4 = reusa movesets do Ato 2 com twist
 - **Finais.** O canon novo tem um clímax autoral único (o "reclamar"). Os 3 finais
   antigos (Ascensão/Ruptura/Semente) ficam como **decisão em aberto**: ou viram
   variações do reclamar, ou são aposentados. (Decisão do usuário.)
-- **Estrutura no código — ✅ IMPLEMENTADA (2026-09-11).** Run de 54 telas:
-  Ato 1 = o Rei na tela 1 (duelo-tutorial; `Narrative.king_intro/king_fall`);
-  Ato 2 = 7 Éons (telas 2–50, Arconte em 8,15,…,50); Ato 3 = o roubo na 50
-  (`Narrative.theft`, `Progression.steal_rings`); Ato 4 = o Centro 51–53 (ecos
-  devolvem cacos); Ato 5 = a batalha dupla na 54 (`final_battle.gd`, revive em
-  14 s, Anéis girando spawnando larvas; a 1ª queda devolve o 7º Anel).
+- **Estrutura no código — ✅ IMPLEMENTADA (2026-09-11; 68 telas desde 18/09).**
+  Ato 1 = o Rei na tela 1 (`Narrative.king_intro/king_fall`); Ato 2 = 7 Éons de
+  9 telas (2–64; Arconte em 10, 19, …, 64; Soter em 17/35/53; Velkar em 61);
+  Ato 3 = o roubo na 64 (`Narrative.theft`, `Progression.steal_rings`); Ato 4 =
+  o Centro 65–67 (ecos devolvem cacos); Ato 5 = a batalha dupla na 68
+  (`final_battle.gd`). Mapa tela a tela e roteiro das cenas: `docs/ROTEIRO.md`.
 - **Anéis = mecânica VIVA.** 1 Anel por Arconte = 1 magia (`SkillData.ring`),
   seleção 1–7/Q/E/L2, HUD próprio; roubados na 50, poderes voltam como cacos.
 
@@ -362,7 +362,7 @@ de diálogo antes de cada chefe.)
   a própria corrente. Pagou o preço da gnose — perdeu a coroa, o posto e a
   certeza; vaga mutilado pelos andares altos. É o rosto trágico do inimigo: prova
   de que até um Arconte pode acordar. Encontra o Portador **uma vez, perto do
-  fim** (tela 45), e entrega a verdade que nenhum aliado diria: o que o espera no
+  fim** (tela 61), e entrega a verdade que nenhum aliado diria: o que o espera no
   trono não é um tirano — é uma criança cega chamando pela mãe. Contraponto de
   Soter: um nunca precisou de perdão; o outro não sabe viver sem ele.
 - **Os Adormecidos** — NPCs do Kenoma, felizes na ilusão. Falar com eles é o
@@ -428,7 +428,7 @@ Quatro canais, todos em `scripts/autoload/gnosis.gd` e vizinhos:
   enterrada no jarro), Espelho = o reflexo de Sophia na água, Praga = a matéria
   que apodrece, Coroa = o trono do Cego. Lidas, viram **Crônicas** (persistem
   entre runs).
-- **Legendas de caminhada** (~95 falas, sem pausar): a Voz dá a cosmologia
+- **Legendas de caminhada** (184 falas, sem pausar, nenhuma repete): a Voz dá a cosmologia
   com o viés dela ("a Luz de cima não olha pra baixo; eu olho", "vieste de
   mim", "não confies nas pedras", "não pares pra ler"); a Sophia responde a
   si mesma e a dúvida cresce Éon a Éon ("o nome na pedra é o meu", "as pedras
