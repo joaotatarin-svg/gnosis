@@ -16,9 +16,10 @@ class_name Staging
 ## Sophia (camera_shake.gd): durante a cena ela roda sempre e a cena mexe no
 ## `base_offset`/`zoom`; ao fim tudo volta como estava.
 ## APIs de outros donos são chamadas com has_method (compila sem elas).
-## SOM: o estado da música é do Áudio. Cada cue vai primeiro a `Audio.cue()`;
-## se o Áudio conhece o cue, o som é dele (`_snd = false`) e aqui só a imagem.
-## Sem essa API, a Staging toca um som mínimo (play_sfx/play_music/duck).
+## SOM: dono único = Áudio. Cada cue vai a `Audio.cue()` (som e música da
+## cena), o tema da Voz por `Audio.voice_theme()`, as gemas por `ring_note`
+## (ou pelo HUD). Aqui só ficam os momentos de cena sem cue (corte seco do
+## "Sete.", palmas, sussurro, passos do Rei, música baixa de Soter/tentação).
 ## A câmera mexe em `zoom` (RELATIVO ao zoom de jogo salvo) e `base_offset`
 ## (entra no ALVO da câmera; o deslocamento lateral é limitado pela margem
 ## segura da câmera nova — o quadro anda o que ela deixar).
@@ -56,7 +57,6 @@ var _little: _Little
 var _aura: Sprite2D
 var _locked: bool = false
 var _music_stopped: bool = false
-var _snd: bool = true                          # a Staging toca o som deste cue?
 var _ducked: bool = false                      # abaixou a música (soter) — soltar no fim
 
 var _fx_layer: CanvasLayer                     # abaixo da caixa (90): flash e preto
@@ -155,10 +155,7 @@ func _scene_open() -> void:
 			_cam_take()
 		"santuario":
 			# O tema da Voz, baixo (plantio — o roubo colhe).
-			if Audio.has_method("voice_theme"):
-				Audio.call("voice_theme", "santuario")
-			else:
-				Audio.play_music("theme")
+			Audio.voice_theme("santuario")
 		"soter":
 			# M3: a música do Éon cai a −14 dB ao abrir o encontro ("Senta.").
 			Audio.duck_music(600.0, -14.0)
@@ -170,20 +167,11 @@ func _on_line(index: int, line: Dictionary) -> void:
 	var cue := String(line.get("cue", ""))
 	var who := String(line.get("speaker", ""))
 	var text := String(line.get("text", ""))
-	_snd = true
-	if cue != "" and Audio.has_method("cue"):
-		_snd = not bool(Audio.call("cue", cue))
+	if cue != "":
+		Audio.cue(cue)                 # o som do cue é do Áudio
 	match cue:
-		"heartbeat":
-			if _snd:
-				_beat()
 		"music_stop":
-			if _snd:
-				Audio.stop_music(0.0)
 			_music_stopped = true
-		"chime":
-			if _snd:
-				Audio.play_sfx("stele_unlock", -1.0, -6.0)
 		"fog_thickens": _a_fog()
 		"king_emerges":
 			if _scene == "roubo":
@@ -256,10 +244,7 @@ func _on_finished(box: DialogueBox) -> void:
 				await get_tree().create_timer(1.0, true, false, true).timeout
 			if not is_inside_tree():
 				return
-			if Audio.has_method("voice_theme"):
-				Audio.call("voice_theme", "")
-			elif RunManager.run_active:
-				Audio.play_music(Audio.track_for_screen(RunManager.current_screen))
+			Audio.voice_theme("")
 			_music_stopped = false
 	_scene = ""
 
@@ -269,9 +254,6 @@ func _on_finished(box: DialogueBox) -> void:
 func _a_fog() -> void:
 	var c := _view_center()
 	_cam_to(1.08, Vector2(60, 0), 2.0)
-	if _snd:
-		Audio.play_sfx("fog_swell")
-		Audio.duck_music(9.0, -8.0)
 	_spawn_fog(Vector2(c.x + 190.0, _ground_y()), 0.7, 1.6)
 	_king = _make_king(Vector2(c.x + 220.0, _ground_y()))
 	_king.silhouette(0.0)
@@ -295,8 +277,6 @@ func _a_emerges() -> void:
 	var t := _tw()
 	t.tween_method(_king.silhouette, 0.0, 1.0, 0.8)
 	_cam_to(1.15, Vector2(70, 0), 1.0)
-	if _snd:
-		Audio.play_sfx("boss_appear", -1.0, -8.0)
 
 
 func _a_mask_lights() -> void:
@@ -307,8 +287,6 @@ func _a_mask_lights() -> void:
 	VfxLibrary._flash_sprite(self, p, "halo", Color(GOLD, 0.9), 0.25, 1.4, 0.45)
 	VfxLibrary._flash_sprite(self, p, "flare", Color(1, 0.95, 0.7, 1.0), 0.15, 0.7, 0.15)
 	Juice.shake(0.15)
-	if _snd:
-		Audio.play_sfx("mask_light")
 
 
 ## Onde o Rei espera o duelo (o 1º ponto de spawn da zona 0 do Level).
@@ -333,8 +311,6 @@ func _fall_cracks() -> void:
 	if _king == null:
 		return
 	_king.crack_open(0.3, _tw())
-	if _snd:
-		Audio.play_sfx("block", -1.0, -4.0)
 	Juice.shake(0.12)
 
 
@@ -381,8 +357,6 @@ func _b_voice_merge() -> void:
 	if _king == null:
 		_b_king_enters()
 		_flush()
-	if _snd:
-		Audio.play_sfx("voice_merge")
 	# A cor do nome "A Voz" pisca uma vez: a voz saiu da boca dele.
 	var plate = _box.get("_plate") if _box != null else null
 	if plate is CanvasItem:
@@ -395,14 +369,11 @@ func _b_voice_merge() -> void:
 func _b_applause() -> void:
 	if _king == null:
 		return
+	Audio.play_sfx("clap")             # o arquivo já tem as 2 palmas lentas
 	var t := _tw()
 	for k in 2:
 		t.tween_interval(0.45)
 		t.tween_callback(func() -> void:
-			if Audio.has_sfx("clap"):
-				Audio.play_sfx("clap")
-			else:
-				Audio.play_sfx("parry", 0.02, -10.0)
 			if _king != null:
 				VfxLibrary._flash_sprite(self, _king.hand(), "spark", Color(1, 0.95, 0.8), 0.08, 0.3, 0.12))
 
@@ -432,10 +403,7 @@ func _steal_gem(i: int) -> void:
 		if dur <= 0.0:
 			dur = 0.7
 	else:
-		if Audio.has_method("ring_note"):
-			Audio.call("ring_note", i, false)
-		else:
-			Audio.play_sfx("ring_steal")
+		Audio.ring_note(i)
 	_gem_born[i] = true
 	# A gema "do mundo" nasce quando a do HUD chega na mão dele.
 	var t := create_tween().set_ignore_time_scale(true)
@@ -477,18 +445,8 @@ func _b_mask_falls() -> void:
 	t.tween_method(_king.cool, 0.0, 1.0, 0.6)
 	_flash_white(0.08)
 	Juice.shake(0.5)
-	# O tema da Voz, grave e lento (pitch 0,75) por 3 s → corta → `roubo`
-	# (com o Áudio novo, o cue `mask_falls` já fez isso).
+	# O tema da Voz distorcido → corte → `roubo`: é do Áudio (cue `mask_falls`).
 	_music_stopped = false
-	if not _snd:
-		return
-	Audio.play_music("theme", false, 0.75)
-	var m := create_tween().set_ignore_time_scale(true)
-	m.tween_interval(3.0)
-	m.tween_callback(func() -> void:
-		Audio.stop_music(0.0)
-		Audio.set_music_pitch(1.0, 0.0)
-		Audio.play_music("roubo"))
 
 
 ## Vira o motor: o manto colapsa, as gemas viram 3 anéis concêntricos em volta
@@ -505,10 +463,6 @@ func _b_sink() -> void:
 	t.tween_property(_king, "global_position:y", _king.global_position.y + 120.0, 1.6).set_ease(Tween.EASE_IN)
 	t.tween_property(_black, "color:a", 1.0, 0.8)
 	_crack_ground(_king.global_position)
-	if _snd:
-		Audio.play_sfx("dive")
-		Audio.play_sfx("boss_step", -1.0, -2.0)
-		Audio.stop_music(2.0)
 	Juice.shake(0.35)
 	_cam_to(1.12, Vector2(_side() * 60.0, 40.0), 1.8)
 
@@ -569,8 +523,6 @@ func _kneel() -> void:
 # --- cena D: a anagnórise (tela 68) ------------------------------------------
 
 func _d_rings_return() -> void:
-	if _snd:
-		Audio.stop_music(0.0)
 	_music_stopped = true
 	# Recua para enquadrar os três (ela e as duas formas caídas).
 	_cam_to(0.8, Vector2(_frame_forms_dx(), D_LIFT), 0.8)
@@ -625,16 +577,16 @@ func _return_gem(i: int, from: Vector2) -> void:
 		if is_instance_valid(g):
 			VfxLibrary._flash_sprite(self, chest, "glow", Color(g.color, 0.9), 0.15, 0.7, 0.3)
 			g.queue_free()
-		# O som da gema que volta é do HUD (restore_ring).
+		# O som da gema que volta é do HUD (restore_ring); sem ele, a nota do Áudio.
 		if _hud != null and _hud.has_method("restore_ring"):
-			_hud.call("restore_ring", i))
+			_hud.call("restore_ring", i)
+		else:
+			Audio.ring_note(i, true))
 
 
 func _d_flash() -> void:
 	_flash_white(0.12, 0.3)
 	Juice.shake(0.35)
-	if _snd:
-		Audio.play_sfx("nova")
 	if player != null and _aura == null:
 		_aura = Sprite2D.new()
 		_aura.texture = VfxLibrary.tex("glow")
@@ -682,14 +634,10 @@ func _d_shrink() -> void:
 		t.parallel().tween_property(rei, "global_position", to, 1.6)
 		t.parallel().tween_property(rei, "modulate", Color(0.8, 0.82, 0.9, 0.0), 1.6)
 	t.parallel().tween_property(_little, "modulate:a", 1.0, 1.0).set_delay(2.6)
-	if _snd:
-		Audio.play_sfx("whisper", -1.0, -6.0)
 
 
 func _d_theme() -> void:
-	# O tema da Voz volta sozinho, lento — agora é dela (cue `theme_alone`).
-	if _snd:
-		Audio.play_music("theme", true, 0.85)
+	# O tema da Voz volta sozinho, lento — agora é dela (o Áudio, pelo cue `theme_alone`).
 	_music_stopped = false
 
 
@@ -702,9 +650,7 @@ func _d_reclaim() -> void:
 	t.tween_property(_little, "global_position", hand, 0.7).set_trans(Tween.TRANS_SINE)
 	t.parallel().tween_property(_little, "scale", Vector2(0.3, 0.3), 0.7)
 	t.tween_callback(func() -> void:
-		VfxLibrary._flash_sprite(self, hand, "light", Color(1, 0.95, 0.75, 1), 0.2, 1.1, 0.5)
-		if _snd:
-			Audio.play_sfx("revive", -1.0, -4.0))
+		VfxLibrary._flash_sprite(self, hand, "light", Color(1, 0.95, 0.75, 1), 0.2, 1.1, 0.5))
 	t.tween_property(_little, "modulate:a", 0.0, 0.3)
 
 
@@ -855,14 +801,6 @@ func _flash_white(hold: float, fade: float = 0.25) -> void:
 	t.tween_property(_white, "color:a", a, 0.03)
 	t.tween_interval(hold)
 	t.tween_property(_white, "color:a", 0.0, fade)
-
-
-func _beat() -> void:
-	var s := "heartbeat" if Audio.has_sfx("heartbeat") else "boss_step"
-	var t := _tw()
-	t.tween_callback(func() -> void: Audio.play_sfx(s, 0.0, -4.0))
-	t.tween_interval(0.28)
-	t.tween_callback(func() -> void: Audio.play_sfx(s, 0.0, -9.0))
 
 
 func _tw() -> Tween:
