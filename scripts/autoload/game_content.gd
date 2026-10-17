@@ -55,7 +55,7 @@ func _build_characters() -> void:
 	var sophia := CharacterData.new()
 	sophia.id = "sophia"
 	sophia.display_name = "Sophia"
-	sophia.description = "A faísca perdida. Frágil, mas canaliza magias devastadoras da luz da Mônada."
+	sophia.description = "Uma faísca sem memória, desperta nas cinzas do Kenoma. Luta com o cajado e com a luz que ainda lembra."
 	sophia.max_health = 120   # balance 2026-09-11 (bot): 90 morria demais sem cura
 	sophia.max_mana = 100
 	sophia.move_speed = 185.0
@@ -90,12 +90,12 @@ func _build_characters() -> void:
 	sophia.skills = [
 		_skill("m_s1", "Esfera Solar", SkillData.SkillType.PROJECTILE, 20, 26, "Explode ao acertar.", "", 6.0, Color(1.0, 0.85, 0.5)),
 		_skill("r_torpor", "Névoa do Sono", SkillData.SkillType.AOE, 22, 12, "Nuvem que adormece: inimigos dentro ficam lentos.", "arconte_sono", 9.0, Color(0.72, 0.78, 1.0)),
-		_skill("r_fome", "Boca Voraz", SkillData.SkillType.AOE, 24, 22, "Suga os inimigos até você e morde.", "arconte_fome", 9.0, Color(1.0, 0.55, 0.3)),
-		_skill("r_corrente", "Corrente da Lei", SkillData.SkillType.PROJECTILE, 18, 18, "Corrente que PRENDE o alvo no lugar.", "arconte_corrente", 7.0, Color(0.85, 0.85, 0.95)),
+		_skill("r_fome", "Boca Voraz", SkillData.SkillType.AOE, 24, 22, "Suga os inimigos para perto e morde.", "arconte_fome", 9.0, Color(1.0, 0.55, 0.3)),
+		_skill("r_corrente", "Corrente da Lei", SkillData.SkillType.PROJECTILE, 18, 18, "Corrente que prende o alvo no lugar.", "arconte_corrente", 7.0, Color(0.85, 0.85, 0.95)),
 		_skill("r_silencio", "Grito Mudo", SkillData.SkillType.AOE, 20, 10, "Cala todo golpe em preparo ao redor (atordoa).", "arconte_silencio", 10.0, Color(0.7, 0.8, 1.0)),
-		_skill("r_espelho", "Reflexo", SkillData.SkillType.BUFF, 26, 0, "Por 5 s, todo golpe que te acerta volta pra quem deu.", "arconte_espelho", 14.0, Color(0.9, 0.95, 1.0)),
+		_skill("r_espelho", "Reflexo", SkillData.SkillType.BUFF, 26, 0, "Por 5 s, todo golpe recebido volta para quem o deu.", "arconte_espelho", 14.0, Color(0.9, 0.95, 1.0)),
 		_skill("r_praga", "Flor Podre", SkillData.SkillType.AOE, 22, 6, "Planta um canteiro de veneno que fere quem pisa.", "arconte_praga", 9.0, Color(0.75, 1.0, 0.55)),
-		_skill("r_coroa", "Coroa da Mônada", SkillData.SkillType.AOE, 40, 48, "A nova da Fonte: dano enorme em área.", "arconte_coroa", 16.0, Color(1.0, 0.9, 0.5)),
+		_skill("r_coroa", "Coroa Partida", SkillData.SkillType.AOE, 40, 48, "A coroa do Arconte se parte em luz: dano enorme em área.", "arconte_coroa", 16.0, Color(1.0, 0.9, 0.5)),
 	]
 	characters.append(sophia)
 
