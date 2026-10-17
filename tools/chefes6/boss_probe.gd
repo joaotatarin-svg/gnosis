@@ -344,6 +344,11 @@ class ProbeWorker extends Node:
 				_string_left = 3 + (_rng.randi() % 2)
 				_release_moves()
 			return
+		# guarda/névoa: o jogador médio aprende a não bater (às vezes erra)
+		if profile == "medio" and target.get("brain") != null and target.brain.no_touch():
+			if _rng.randf() < 0.85:
+				_release_moves()
+				return
 		# esperando o golpe armado (vai defender): não entra batendo
 		if profile == "medio" and target.estate == Enemy.EState.WINDUP and absf(dx) < reach + 40.0:
 			var pc: Dictionary = _plan.get(target.get_instance_id(), {})
