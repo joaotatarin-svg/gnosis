@@ -69,3 +69,9 @@ em ordem, por cima do base — sem reinstalar. (Descomente a linha `patch_*` no
 
 - Distribuição (itch.io? Steam? site próprio?).
 - Assinatura de código (evita alerta do SmartScreen) — opcional/custo.
+
+## Validação antes de qualquer build (desde a Onda 1)
+`powershell -ExecutionPolicy Bypass -File toolsalidate.ps1` → precisa dar **TUDO VERDE**
+(scripts + ScriptCheck + 7 QAs headless, ~1 min; `-Full` inclui o bot do desafio).
+O export exclui `tools/*, artes/*, shots/*, docs/*` (`export_presets.cfg`).
+Toda execução de ferramenta usa `--audio-driver Dummy`. Detalhes: `docs/QA_BASELINE.md`.
