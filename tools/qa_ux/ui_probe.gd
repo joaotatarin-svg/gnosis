@@ -37,6 +37,11 @@ class Pilot extends Node:
 		await get_tree().create_timer(s, true, false, true).timeout
 
 	func shot(name: String) -> void:
+		# headless (Linux/nuvem): sem imagem, só registra.
+		if DisplayServer.get_name() == "headless":
+			_n += 1
+			log_ui("SHOT", "(headless) " + name)
+			return
 		await RenderingServer.frame_post_draw
 		_n += 1
 		var p := "%s/ui%02d_%s.png" % [out_dir, _n, name]
@@ -228,9 +233,13 @@ class Pilot extends Node:
 			await key(KEY_DOWN)
 			await pad(JOY_BUTTON_DPAD_DOWN)
 			log_ui("loja.foco_apos_baixo", focus())
+			# Com 0 faíscas o foco nasce em "Voltar ao jogo" (último): ↑ entra na
+			# lista; Enter ali NÃO pode fechar a loja (Enter em "Voltar" fecharia).
+			await key(KEY_UP)
+			log_ui("loja.foco_apos_cima", focus())
 			var o0 := Progression.orbs
 			await key(KEY_ENTER)
-			log_ui("loja.enter_com_0_faiscas", "faiscas %d -> %d" % [o0, Progression.orbs])
+			log_ui("loja.enter_com_0_faiscas", "faiscas %d -> %d loja_aberta=%s" % [o0, Progression.orbs, str(lv.get_children().any(func(c): return c.scene_file_path.ends_with("UpgradeMenu.tscn") and not c.is_queued_for_deletion()))])
 			if Progression.orbs < 0:
 				bug("loja_faiscas_negativas", str(Progression.orbs))
 			await key(KEY_ESCAPE)
@@ -246,6 +255,13 @@ class Pilot extends Node:
 					if c.scene_file_path.ends_with("UpgradeMenu.tscn"):
 						c._close()      # (método interno: fechar pra seguir)
 				await wait(0.4)
+			if not is_instance_valid(pm) or pm.is_queued_for_deletion():
+				bug("esc_na_loja_fechou_a_pausa", "Esc na loja (aberta pela pausa) fechou também a pausa")
+				await key(KEY_ESCAPE)
+				await wait(0.4)
+				for c in lv.get_children():
+					if c.scene_file_path.ends_with("PauseMenu.tscn"):
+						pm = c
 			log_ui("pausa.apos_loja", "pausa_visivel=%s foco=%s" % [str(pm.get_node("Center").visible), focus()])
 			# Pausa → Opções → Esc volta pra pausa
 			pm._options.grab_focus()

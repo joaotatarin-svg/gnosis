@@ -13,6 +13,9 @@ class_name Enemy
 
 signal defeated(enemy)
 signal minion_spawned(minion)
+## O dano do golpe SAI agora (hitbox ligou / projétil nasceu). Para o boneco do
+## chefe acertar o estalo no impacto (pedido da Animação-Chefes).
+signal attack_impact()
 
 enum EState { CHASE, WINDUP, STRIKE, RECOVER, HURT, STAGGER, DEAD }
 
@@ -42,6 +45,18 @@ const TELEGRAPH_UNBLOCKABLE := Color(1.0, 0.25, 0.25, 1.0)
 const CHARGE_SPEED := 340.0
 const ENEMY_SCENE := "res://scenes/entities/Enemy.tscn"
 const SEPARATION := 30.0          # distância mínima entre inimigos (IA de grupo)
+# --- feedback (NEURO_SATISFACAO R1/R4/R5/R8/R10; docs/COMBATE.md §7) ---
+const TELEGRAPH_TINT := 0.45      # R5: tinge 45 % em direção à cor (não multiplica 100 %)
+const TELEGRAPH_PULSE := 0.05     # pulso de ±5 % no tingimento…
+const TELEGRAPH_PULSE_HZ := 2.0   # …a 2 Hz (abaixo de 3 Hz, R10)
+const GLINT_LEAD := 0.18          # R5: brilho de aviso 180 ms antes do golpe (= janela de parry)
+const GLINT_BOOST := 0.35         # o brilho clareia o tingimento por um instante
+const GLINT_TIME := 0.12          # duração do brilho no corpo (s de jogo)
+const FLASH_FADE := 0.11          # R1: o flash some em 110 ms REAIS depois do hitstop
+const VIB_LIGHT := 1.5            # R1: vibração da vítima (px), golpe leve
+const VIB_HEAVY := 3.0            # golpe pesado / lançador / magia
+const VIB_STEP_MS := 33           # troca de lado a cada ~33 ms reais
+const HURT_VOICE_MS := 250        # R4: "enemy_hurt" no máximo 1 a cada 250 ms por inimigo
 
 var estate: EState = EState.CHASE
 var health: HealthComponent
@@ -68,6 +83,21 @@ var force_dismember: bool = false    # finisher: sempre desmembra
 var slow_timer: float = 0.0          # Névoa do Sono da Sophia: anda na metade
 var rooted_timer: float = 0.0        # Corrente da Lei: preso no lugar
 var revivable: bool = false          # batalha final: cai mas pode se refazer
+# Telegrafo (R5) e flash/vibração (R1) em tempo real.
+var _tint_base: Color = Color(1, 1, 1, 1)   # cor-base do estado (telegrafo no WINDUP)
+var _glint_done: bool = false
+var _glint_t: float = -1.0
+var _flash_col: Color = Color(1, 1, 1, 1)
+var _flash_t: float = -1.0
+var _vib_amp: float = 0.0
+var _vib_until_ms: int = 0
+var _vib_seen: bool = false
+var _vib_cur: Vector2 = Vector2.ZERO
+var _last_hurt_voice_ms: int = -100000
+## Pedido da Animação-Chefes: onde o dano sai no STRIKE (0..1 do progresso) e a
+## força do último dano (0..1). Também vão como metadado no `visual`.
+var impact_at: float = 0.0
+var hurt_power: float = 0.0
 var _art_id: String = ""             # id do PNG ilustrado (def "art")
 
 # Arte ilustrada (opcional) + orbe-olho flutuante (chefes com PNG).
@@ -260,6 +290,7 @@ func _physics_process(delta: float) -> void:
 		if global_position.y > 560.0 or global_position.x < lo or global_position.x > hi:
 			global_position = Vector2(mid, 200.0)
 			velocity = Vector2.ZERO
+			reset_physics_interpolation()
 
 	match estate:
 		EState.CHASE:   _process_chase(delta)
@@ -425,6 +456,7 @@ func _blink_to(x: float) -> void:
 		x = clampf(x, b.x + 30.0, b.y - 30.0)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -14), eye_color)
 	global_position.x = x
+	reset_physics_interpolation()       # teleporte: não interpola o caminho
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -14), eye_color)
 	_flash(Color(2.5, 2.5, 3.0, 1))
 	if visual and player != null and is_instance_valid(player):
@@ -443,22 +475,52 @@ func _begin_windup() -> void:
 		atk_dir = int(signf(player.global_position.x - global_position.x))
 		if atk_dir == 0:
 			atk_dir = 1
-	if visual:
-		visual.modulate = TELEGRAPH_UNBLOCKABLE if attack_hitbox.unblockable else TELEGRAPH_PARRYABLE
+	# R5: tinge 45 % (a arte pintada não escurece) e guarda como cor-base: um
+	# flash de dano no meio do telegrafo volta para ELA, não para branco.
+	var tell := TELEGRAPH_UNBLOCKABLE if attack_hitbox.unblockable else TELEGRAPH_PARRYABLE
+	_tint_base = Color(1, 1, 1, 1).lerp(tell, TELEGRAPH_TINT)
+	_glint_done = attack_timer <= GLINT_LEAD
+	_glint_t = -1.0
+	if visual and _flash_t < 0.0:
+		visual.modulate = _tint_base
 
 
 func _process_windup(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0.0, 400.0 * delta)
 	attack_timer -= delta
+	# R5: brilho de aviso quando a janela de parry abre (180 ms antes do golpe).
+	if not _glint_done and attack_timer <= GLINT_LEAD:
+		_glint_done = true
+		_tell_glint()
 	if attack_timer <= 0.0:
 		_begin_strike()
+
+
+## Brilho de aviso (R5): estrela no ponto da arma — REDONDA e amarela =
+## aparável, LOSANGO vermelho = imparável (forma + som, não só cor) — e o
+## corpo clareia um instante. Som: pedido ao Áudio ("tell_parry"/"tell_unblock"
+## ainda não existem no catálogo — entra aqui quando o Áudio criar).
+func _tell_glint() -> void:
+	_glint_t = 0.0
+	var unb: bool = attack_hitbox.unblockable
+	var pos := global_position + Vector2(18.0 * atk_dir * _art_scale, -18.0 * _art_scale)
+	if _orb != null:
+		pos = _orb.global_position
+	VfxLibrary.tell_glint(get_parent(), pos, unb)
 
 
 func _begin_strike() -> void:
 	estate = EState.STRIKE
 	attack_timer = strike_time
-	if visual:
+	_tint_base = Color(1, 1, 1, 1)
+	_glint_t = -1.0
+	if visual and _flash_t < 0.0:
 		visual.modulate = Color(1, 1, 1, 1)
+	# o dano sai no começo do STRIKE (hitbox/projétil/explosão): impact_at = 0
+	impact_at = 0.0
+	if visual:
+		visual.set_meta("impact_at", impact_at)
+	attack_impact.emit()
 	if behavior == "exploder":
 		_explode()
 		return
@@ -509,7 +571,7 @@ func _begin_strike() -> void:
 			# Pancada no chão. CHEFE: onda MUITO maior e golpe mais largo.
 			var rad: float = 120.0 if is_boss_enemy else 70.0
 			AoeNova.spawn(get_parent(), global_position + Vector2(0, 14), 0, rad, eye_color)
-			Juice.shake(0.75 if is_boss_enemy else 0.5)
+			Juice.shake(0.5 if is_boss_enemy else 0.35)
 			attack_hitbox.position.x = 0.0
 			attack_hitbox.scale = Vector2(3.8 if is_boss_enemy else 2.6, 1.0)
 			attack_hitbox.activate()
@@ -581,7 +643,7 @@ func _explode() -> void:
 	var pos := global_position + Vector2(0, -8)
 	AoeNova.spawn(get_parent(), pos, 0, r, Color(1.0, 0.55, 0.25))
 	ImpactBurst.spawn(get_parent(), pos, Color(1.0, 0.6, 0.3))
-	Juice.shake(0.6)
+	Juice.shake(0.45)
 	if player != null and is_instance_valid(player) and player.global_position.distance_to(pos) <= r:
 		player._on_hit_received(attack_hitbox.damage, pos, 260.0, true, self)
 	health.take_damage(health.max_health)
@@ -633,6 +695,7 @@ func _summon(id: String, count: int) -> void:
 		get_parent().add_child(m)
 		var ox := (float(i) - float(count - 1) * 0.5) * 120.0
 		m.global_position = global_position + Vector2(ox, -20.0)
+		m.reset_physics_interpolation()     # nasce já no lugar (sem rastro desde a origem)
 		ImpactBurst.spawn(get_parent(), m.global_position, eye_color)
 		_minions.append(m)
 		minion_spawned.emit(m)
@@ -657,7 +720,8 @@ func _enter_phase2() -> void:
 	estate = EState.STAGGER
 	attack_timer = 0.9
 	attack_hitbox.deactivate()
-	Juice.shake(0.9)
+	_tint_base = Color(1, 1, 1, 1)
+	Juice.shake(0.7)
 	Juice.hit_stop(0.15)
 	Audio.play_sfx("boss_phase2")
 	AoeNova.spawn(get_parent(), global_position, 0, 140.0, eye_color)
@@ -672,6 +736,9 @@ func _enter_phase2() -> void:
 			# O Espelho devolve a Sophia contra ela mesma.
 			_summon("sombra_sophia", 1)
 	get_tree().call_group("hud", "boss_phase", 2)
+	# Gancho do Roteiro: legendas da fase 2 (sem pausar a luta).
+	if is_boss_enemy and RunManager.run_active and Gnosis.has_method("captions") and Narrative.has_method("archon_phase2"):
+		Gnosis.captions(Narrative.archon_phase2(type_id))
 
 
 # --- dano ------------------------------------------------------------------
@@ -710,6 +777,8 @@ func revive(ratio: float) -> void:
 	phase = 1
 	contact_hitbox.monitoring = true
 	hurtbox.monitoring = true
+	_flash_t = -1.0
+	_tint_base = Color(1, 1, 1, 1)
 	if visual:
 		visual.modulate = Color(1, 1, 1, 1)
 		visual.damage_ratio = 1.0 - ratio
@@ -764,25 +833,45 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 		_last_hit_heavy = true          # magias / novas
 	_last_kick = Vector2(kb_dir * knockback * 0.9, -knockback * 0.4)
 
-	# FINISHER: o golpe que mata o ÚLTIMO inimigo da tela entra em câmera lenta
-	# e sempre desmembra (chefe: mais lento e mais longo).
+	# FINISHER: o golpe que mata o último inimigo vivo sempre desmembra. A câmera
+	# lenta é RACIONADA (R8): chefe sempre; comum só no fim da TELA ou se o golpe
+	# final foi pesado, aéreo ou lançador — senão o +33 ms de morte do Hitbox
+	# basta. Magia/nova (attacker null) não entra: a Coroa já tem o seu slow-mo.
 	if damage >= health.current_health and attacker is Player:
 		if is_boss_enemy:
 			Juice.slow_mo(0.15, 1.1)
 		elif _alive_enemies() <= 1:
 			force_dismember = true
-			Juice.slow_mo(0.22, 0.55)
-			Juice.shake(0.5)
+			var mvf: ComboData = attacker.current_move
+			var big_blow: bool = mvf != null and (mvf.is_heavy() or mvf.air or mvf.launcher)
+			if big_blow or _is_screen_end():
+				Juice.slow_mo(0.22, 0.55)
 
 	health.take_damage(damage)
-	_flash(Color(3, 3, 3, 1))
-	Audio.play_sfx_at("enemy_hurt", global_position)
-	if _last_hit_heavy:
-		# golpe pesado / magia: impacto grande (o leve vem do Hitbox via ImpactBurst)
+	# Este golpe matou: o _on_died já pôs DEAD e cuidou da morte (inclusive a
+	# forma "caída" da batalha final, que precisa FICAR em DEAD para o revive).
+	# Daqui para baixo nada pode mexer no estado (antes virava HURT com vida 0 e
+	# a forma revivível nunca mais morria — bug bloqueante da tela 68).
+	var died_now: bool = estate == EState.DEAD
+	hurt_power = clampf(float(damage) / maxf(1.0, float(health.max_health)) * 4.0 + knockback / 600.0, 0.0, 1.0)
+	if visual:
+		visual.set_meta("hurt_power", hurt_power)
+	if not (died_now and revivable):      # a forma caída: o tween de queda manda na cor
+		_flash(Color(3, 3, 3, 1), VIB_HEAVY if _last_hit_heavy else VIB_LIGHT)
+	# R4: a voz de dor cansa antes do impacto — no máximo 1 a cada 250 ms.
+	var now_ms := Time.get_ticks_msec()
+	if now_ms - _last_hurt_voice_ms >= HURT_VOICE_MS:
+		_last_hurt_voice_ms = now_ms
+		Audio.play_sfx_at("enemy_hurt", global_position)
+	if attacker == null:
+		# magia/nova (sem Hitbox): o impacto grande nasce aqui; golpe do Hitbox
+		# já ganhou o seu VFX no ponto de contato (R4: um só por acerto).
 		VfxLibrary.hit(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), true, eye_color)
 	DamageNumber.spawn(get_parent(), global_position, damage, Color(1.0, 0.92, 0.6))
 	if visual:
 		visual.damage_ratio = 1.0 - float(health.current_health) / maxf(1.0, float(health.max_health))
+	if died_now or estate == EState.DEAD:
+		return
 
 	# Gigantes quase não recuam.
 	velocity.x = kb_dir * knockback / maxf(1.0, _art_scale)
@@ -819,6 +908,19 @@ func _alive_enemies() -> int:
 	return n
 
 
+## Este é o fim da TELA? (última wave da última zona) — R8: só aí o comum
+## ganha câmera lenta de finalização.
+func _is_screen_end() -> bool:
+	var lv := get_parent()
+	if lv == null or not lv.has_method("arena_bounds"):
+		return true
+	var zs = lv.get("zones")
+	var ws = lv.get("waves")
+	if not (zs is Array and ws is Array):
+		return true
+	return int(lv.get("zone_index")) >= zs.size() - 1 and int(lv.get("wave_index")) >= ws.size() - 1
+
+
 ## Chamado quando o player apara (parry) um golpe deste inimigo.
 func stagger() -> void:
 	if estate == EState.DEAD:
@@ -826,7 +928,8 @@ func stagger() -> void:
 	attack_hitbox.deactivate()
 	estate = EState.STAGGER
 	attack_timer = 0.7
-	if visual:
+	_tint_base = Color(1, 1, 1, 1)
+	if visual and _flash_t < 0.0:
 		visual.modulate = Color(1, 1, 1, 1)
 	var kb := 1.0
 	if player != null and is_instance_valid(player):
@@ -835,13 +938,14 @@ func stagger() -> void:
 			kb = 1.0
 	velocity.x = kb * 170.0 / maxf(1.0, _art_scale)
 	velocity.y = -110.0 / maxf(1.0, _art_scale)
-	_flash(Color(3, 3, 3, 1))
+	_flash(Color(3, 3, 3, 1), VIB_HEAVY)
 
 
 func _on_died() -> void:
 	if estate == EState.DEAD:
 		return
 	estate = EState.DEAD
+	_tint_base = Color(1, 1, 1, 1)
 	contact_hitbox.monitoring = false
 	attack_hitbox.monitoring = false
 	# som e explosão de morte por porte
@@ -874,6 +978,7 @@ func _on_died() -> void:
 		return
 	# Batalha final: a forma cai mas fica (pode se refazer).
 	if revivable:
+		_flash_t = -1.0                     # o tween de "forma caída" manda no modulate
 		hurtbox.set_deferred("monitoring", false)
 		visual.dissolve_max = 0.55          # desfaz só em parte: pode se refazer
 		visual.set_anim("dead")
@@ -894,8 +999,8 @@ func _on_died() -> void:
 		var kick := _last_kick
 		if is_boss_enemy:
 			kick *= 1.6
-			Juice.shake(1.0)
-			Juice.hit_stop(0.12)
+			Juice.shake(0.9)
+			Juice.hit_stop(0.18)
 		Gib.burst(get_parent(), visual.global_position, parts, facing, ground, kick, eye_color, visual._ink())
 		ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), eye_color)
 		visual.visible = false
@@ -912,9 +1017,73 @@ func _on_died() -> void:
 		t.tween_callback(queue_free)
 
 
-func _flash(color: Color) -> void:
+## R1/R10: flash INSTANTÂNEO (no mesmo quadro), mantido enquanto durar o
+## hitstop e apagado em FLASH_FADE s REAIS de volta para a cor-base do estado
+## (o telegrafo, se estiver no WINDUP — antes voltava para branco e apagava o
+## aviso: bug do R5). Força limitada pelo Juice: cheio ≤ 3/s por inimigo, chefe
+## com teto 2,0, "Reduzir flashes". `vibrate` > 0 = treme no hitstop (R1).
+func _flash(color: Color, vibrate: float = 0.0) -> void:
 	if visual == null:
 		return
-	var t := create_tween()
-	t.tween_property(visual, "modulate", color, 0.03)
-	t.tween_property(visual, "modulate", Color(1, 1, 1, 1), 0.12)
+	var k: float = Juice.flash_strength(self, is_boss_enemy)
+	_flash_col = Color(1, 1, 1, 1).lerp(color, k)
+	_flash_col.a = 1.0
+	_flash_t = 0.0
+	visual.modulate = Color(_flash_col.r, _flash_col.g, _flash_col.b, visual.modulate.a)
+	if vibrate > 0.0:
+		_vib_amp = vibrate / maxf(1.0, _art_scale * 0.7)   # gigante treme menos
+		_vib_until_ms = Time.get_ticks_msec() + 250
+		_vib_seen = false
+
+
+## Cor-base agora: telegrafo (com pulso de 2 Hz e o brilho de aviso) no
+## WINDUP, branco no resto.
+func _base_tint() -> Color:
+	if estate != EState.WINDUP:
+		return Color(1, 1, 1, 1)
+	var t := float(Time.get_ticks_msec()) / 1000.0
+	var pulse := 1.0 + sin(t * TAU * TELEGRAPH_PULSE_HZ) * TELEGRAPH_PULSE / TELEGRAPH_TINT
+	var c := Color(1, 1, 1, 1).lerp(_tint_base, clampf(pulse, 0.0, 2.0))
+	if _glint_t >= 0.0 and _glint_t < GLINT_TIME:
+		c = c.lerp(Color(1.6, 1.6, 1.6, 1), GLINT_BOOST * (1.0 - _glint_t / GLINT_TIME))
+	c.a = 1.0
+	return c
+
+
+## Flash, telegrafo e vibração correm em tempo REAL (o hitstop deixa o jogo a 5 %).
+func _process(delta: float) -> void:
+	if visual == null:
+		return
+	var real_dt: float = delta / maxf(Engine.time_scale, 0.001)
+	var frozen: bool = Juice.hitstop_active()
+	if _glint_t >= 0.0:
+		_glint_t += delta
+	var alpha: float = visual.modulate.a   # a dissolução/morte mexe no alfa: preserva
+	if _flash_t >= 0.0:
+		if not frozen:
+			_flash_t += real_dt
+		var k := 1.0 - clampf(_flash_t / FLASH_FADE, 0.0, 1.0)
+		var c := _base_tint().lerp(_flash_col, k)
+		visual.modulate = Color(c.r, c.g, c.b, alpha)
+		if k <= 0.0:
+			_flash_t = -1.0
+	elif estate == EState.WINDUP:
+		var b := _base_tint()
+		visual.modulate = Color(b.r, b.g, b.b, alpha)
+	if _vib_amp > 0.0:
+		var now := Time.get_ticks_msec()
+		if frozen:
+			_vib_seen = true
+			var side := 1.0 if (now / VIB_STEP_MS) % 2 == 0 else -1.0
+			var a := _vib_amp * Juice.hitstop_left() * side
+			_vib_offset(Vector2(a, 0.0) if is_on_floor() else Vector2(0.0, a))
+		elif _vib_seen or now > _vib_until_ms:
+			_vib_amp = 0.0
+			_vib_offset(Vector2.ZERO)
+
+
+## Desloca só o desenho (hurtbox e colisão ficam paradas). O y-base do visual
+## vem do _fit_body (pés no chão): soma/desfaz só o deslocamento da vibração.
+func _vib_offset(o: Vector2) -> void:
+	visual.position += o - _vib_cur
+	_vib_cur = o
