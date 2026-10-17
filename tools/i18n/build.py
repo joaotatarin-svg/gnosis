@@ -91,8 +91,9 @@ def check(r: dict, en: str) -> list[str]:
 		# linhas de card de cinema: limite por linha (~60), não no total
 		if r["kind"] == "card_cinema" and "\n" in en:
 			longest = max(len(x) for x in en.split("\n"))
-			if longest > 62:
-				out.append(f"linha de card com {longest} car. (> 62)")
+			cap = max(62, max(len(x) for x in pt.split("\n")))
+			if longest > cap:
+				out.append(f"linha de card com {longest} car. (> {cap})")
 		elif len(en) > max(lim, len(pt)):
 			out.append(f"{len(en)} car. > limite {lim}")
 		elif len(en) > lim:

@@ -1,0 +1,121 @@
+# Lote 03 — narrative.gd (escolhas do final, finais, Adormecidos, legendas de chegada: Limiar → Coroa)
+narrative.final_choices.0adb89	Ascension — take everyone
+narrative.final_choices.7b5876	Rupture — protect
+narrative.final_choices.b2d67b	Seed — awaken
+narrative.final_choices.3f7920	Requires 4 Sleepers awakened along the way
+narrative.ending_lines.4dc9ac	Let's go home. All of us.
+narrative.ending_lines.8d1175	(The Kenoma begins to come apart, like a dream at dawn. She looks back once.)
+narrative.ending_lines.3b84f4	No one will be abandoned again. I'll stay. I'll watch over everyone.
+narrative.ending_lines.a8e494	(The throne is still warm. It fits.)
+narrative.ending_lines.9859ad	I won't climb. I won't sit. I'll go down and knock on every door.
+narrative.ending_lines.b8d16a	(Far below, in the ashes where she woke, someone begins to stir.)
+narrative.apply_ending.473e9d	ASCENSION
+narrative.apply_ending.48b169	Each spark returned to the Source. The Kenoma faded like dreams at dawn.\nThe whole truth. No world at all.
+narrative.apply_ending.e31cf8	RUPTURE
+narrative.apply_ending.994a4b	Sophia sat on the still-warm throne. The crown fit.\nNo one would be abandoned again. No one would ever leave.
+narrative.apply_ending.419f7e	SEED
+narrative.apply_ending.5cccea	Sophia refused throne and door. She went back down, spark by spark.\nNo apocalypse and no prison: a slow freedom, the only kind that lasts.
+narrative.sleeper_line.e3675b	Sleeper
+narrative.sleeper_line.a5eaea	I was dreaming of my mother. Why did you wake me?
+narrative.sleeper_line.28a47d	Sleeper
+narrative.sleeper_line.48ee3c	It's cold out here. Was it always?
+narrative.sleeper_line.d9364a	How long did I sleep? ...No. Don't tell me.
+narrative.sleeper_line.76abf0	Thank you. I think.
+narrative.sleeper_line.5f4c3d	Were you asleep too? You have the look.
+narrative.sleeper_line.73ec18	If I wake up, who looks after my dream?
+narrative.sleeper_line.0cab99	He said sleeping was a kindness. Who said? I can't remember who said it.
+narrative.sleeper_line.5cf95f	Leave the light on. Just for a little while.
+narrative.sleeper_line.d5082a	I remember a woman who sang off-key. Ina? Did you know Ina?
+narrative.sleeper_line.b56732	My son is sleeping two streets over. Will you go there too? Please?
+narrative.sleeper_line.5f71d2	It hurts. Why does waking hurt?
+narrative.sleeper_line.2dec2d	Because it's yours.
+narrative.sleeper_line.397a0f	I dreamed I could fly. Down here everything weighs so much.
+narrative.sleeper_line.ce7b60	I didn't ask for this. ...But now that I see, I don't want to close my eyes.
+narrative.sleeper_line.5770da	They talk of a woman who walks among the sleepers. Was that you?
+narrative.walk_arrival.d048a8	The ashes are still warm. Walk: the mist waits for no one.
+narrative.walk_arrival.33da73	(A stone with writing, just ahead. Someone left words for whoever woke.)
+narrative.walk_arrival.2e3ce0	Everything here is too big. Like a child's room seen from the floor.
+narrative.walk_arrival.54c63a	(The floor is made of gears. They turn slowly, as if breathing.)
+narrative.walk_arrival.a8effd	The echoes have the Archons' faces. But they move like him.
+narrative.walk_arrival.1d5764	I'm putting myself back together from the inside out. Almost there.
+narrative.walk_cleared.e7e72e	The shards don't come back warm. They come back cold. And true.
+narrative.walk_cleared.377ab5	He called the Rings a key. Keys open, and he forgot they open both ways.
+narrative.walk_cleared.cda1ce	The echoes don't scream when they fall. They weep.
+narrative._arrival_pool.4c8096	They sleep standing up. No one here knows the city is gone.
+narrative._arrival_pool.cbec18	You see? Those who sleep do not suffer. Those who wake do. But only those who wake climb.
+narrative._arrival_pool.bd9441	The stone spoke of a Silence before everything. Why does that sound like a memory?
+narrative._arrival_pool.d58ae8	Do not trust the stones too much. Whoever wrote them is not here to explain.
+narrative._arrival_pool.9499d7	Pairs of light. Aeons. Then who was my pair?
+narrative._arrival_pool.dcf712	No one climbs in pairs, Bearer. One climbs alone. With me.
+narrative._arrival_pool.d40771	Athoth's Champion guards the shrine. Wake him with blows.
+narrative._arrival_pool.03c464	If the Pleroma is so full, why does no one come down for those who sleep?
+narrative._arrival_pool.490d9a	Because the Light above does not look down. I do.
+narrative._arrival_pool.b3137b	Do you feel the mist? It is Athoth's breath. It wants you to lie down.
+narrative._arrival_pool.6a2d5e	The antechamber. Behind it, the first throne. Do not lie down. Never lie down.
+narrative._arrival_pool.7b2ab2	A throne in a dream-room. And he hasn't even opened his eyes.
+narrative._arrival_pool.9a9e23	The smell of bread everywhere. No one eats. Everyone chews.
+narrative._arrival_pool.540436	Matter hungers for everything that shines. And you shine. Careful.
+narrative._arrival_pool.f4f895	They call this world the Kenoma, the void. But it's full to the brim.
+narrative._arrival_pool.67fac6	Full of lack. That is what ‘void’ means.
+narrative._arrival_pool.da819e	The stone says the Blind One was born without pair or form. Who leaves a child like that alone?
+narrative._arrival_pool.981e23	Those above. They call it patience.
+narrative._arrival_pool.489ca7	The Glutton guarding the shrine eats what it kills. Do not die near it.
+narrative._arrival_pool.a64b2c	You know my name. Why do you never tell me yours?
+narrative._arrival_pool.360227	A name, here, becomes a collar. Call me what you always have: Voice.
+narrative._arrival_pool.e5288d	Someone in white up ahead, standing in a light that comes from nowhere.
+narrative._arrival_pool.697525	They say one Soter wanders these parts. I have never seen him.
+narrative._arrival_pool.55cc1e	Harmas's antechamber. Blows first; talk, never.
+narrative._arrival_pool.41cf4f	A whole market in his belly. And he still looks at me hungry.
+narrative._arrival_pool.7364fb	Seals everywhere. Every door has a padlock; every padlock, a name.
+narrative._arrival_pool.81ba78	Heimarmene, the ancients said: Fate as a chain. Here, it truly is a chain.
+narrative._arrival_pool.59fd2f	The stars are the links. Seven links, seven heavens, seven Archons.
+narrative._arrival_pool.23ae0c	And you have broken two already. Go on.
+narrative._arrival_pool.6b02c1	Galila does not hate you. He classifies you. That is worse.
+narrative._arrival_pool.d51c38	The shrine's Jailer binds first and asks later. Dodge, and the chain snaps.
+narrative._arrival_pool.4c60c9	If the law here is fear wearing a crown, who wears the crown?
+narrative._arrival_pool.f18753	The Blind One, high above. No one else. Climb.
+narrative._arrival_pool.9c8760	The stone says the breath in the clay came from outside this world. So did I?
+narrative._arrival_pool.d1bd6a	You came from me. I found you. Do not forget the order of things.
+narrative._arrival_pool.a0d69b	Last door before the throne. His chains sing when they are afraid.
+narrative._arrival_pool.eabb98	A throne made of links. He chained himself so he wouldn't fall.
+narrative._arrival_pool.001f78	Blank books. Thousands. Someone erased an entire library.
+narrative._arrival_pool.f314a9	Here the Word was silenced. Yabel sewed his own mouth shut to set the example.
+narrative._arrival_pool.de4e70	Did you hear that? Again. Faint, underneath you.
+narrative._arrival_pool.72245a	An echo. This Aeon is full of them. Ignore it.
+narrative._arrival_pool.863319	Here spells fall silent. Trust the staff: it has no need to speak.
+narrative._arrival_pool.cd2d15	The shrine's Librarian silences everything around him. Keep away and strike fast.
+narrative._arrival_pool.0281b0	The stone tells of books buried in a jar, found by chance. Truth survives buried.
+narrative._arrival_pool.730da6	It survives. That is not the same as winning.
+narrative._arrival_pool.f86edb	If remembering is knowing, I want to remember. Even what hurts.
+narrative._arrival_pool.517ee0	Remembering has its hour. Now is the hour to climb.
+narrative._arrival_pool.6bf56c	I did not fall silent from fear. I do not speak to those who do not fight, that is all.
+narrative._arrival_pool.81d98d	The antechamber of Silence. In there, not even I speak.
+narrative._arrival_pool.14e1b7	He won't speak. And I'll have to answer anyway.
+narrative._arrival_pool.54121a	Still water everywhere. And in every puddle, me.
+narrative._arrival_pool.274108	Do you know the story? Wisdom saw her own face in the water and went down after it.
+narrative._arrival_pool.2e3f81	Vanity. Do not repeat it.
+narrative._arrival_pool.385f02	The name on the stone is mine. Sophia.
+narrative._arrival_pool.37fff8	A common name. Wisdom. Half the mothers in the Kenoma give it to their daughters.
+narrative._arrival_pool.0d69b5	Astaphaios will give you what you want most: you, before everything. The cruelest blow.
+narrative._arrival_pool.60050b	The shrine's Reflection backs away when you strike. Strike where it will be.
+narrative._arrival_pool.e12ddd	The stone says it wasn't her face in the water. It was a false light, seen from above.
+narrative._arrival_pool.d4fbbd	Stones repeat whatever they like. Water is water. Climb.
+narrative._arrival_pool.cf01bb	She repented thirteen times, and sang. I haven't sung a single one.
+narrative._arrival_pool.57483a	Last room before the great glass. Do not look at yourself more than you must.
+narrative._arrival_pool.f84126	He has my face. The Voice says it's a trick. The Voice says a lot of things.
+narrative._arrival_pool.c9428c	Swamp. The sparks sink slowly, like candles.
+narrative._arrival_pool.24f918	Matter rots. It is the one law the Blind One did not write, and the one that frightens him.
+narrative._arrival_pool.3f07c7	The stone says the Kingdom is inside and outside. Inside this swamp?
+narrative._arrival_pool.888a2d	Inside you. Outside of here. Climb.
+narrative._arrival_pool.721a22	Belias does not lie. He is tired, and he thinks tiredness is the truth.
+narrative._arrival_pool.ebf6ee	The shrine's Spore-Bearer poisons even after death. Kill it and step away.
+narrative._arrival_pool.778e0b	Five Rings. Two more, and I will show you the end of all this.
+narrative._arrival_pool.5bb8ca	A prince went down to fetch a pearl and forgot who he was. Until a letter reminded him.
+narrative._arrival_pool.70b726	Lovely. No one sent you any letter. You have me.
+narrative._arrival_pool.d3b3d3	The last rotten antechamber. After it, the Crown. Hold on.
+narrative._arrival_pool.ac7258	He's been dying for ages. He just won't let anyone finish.
+narrative._arrival_pool.53befb	A throne on every corner. All empty. All waiting for someone to sit.
+narrative._arrival_pool.e1affd	The last step. Armupiel nearly touched the Blind One's throne. ‘Nearly’ defines him.
+narrative._arrival_pool.88596f	The stone speaks of a Call: a voice from outside that wakes sleepers. Is that how you found me?
+narrative._arrival_pool.1b50ab	It is. I called; you heard. That is all that matters.
+narrative._arrival_pool.39379f	Here the servants kneel even to die. Do not grow used to seeing people on their knees.

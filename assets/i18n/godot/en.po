@@ -5,7 +5,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. narrative.VOZ.1031fa  [narrativa]
+#. narrative.VOZ.1031fa  [falante]
 #: scripts/autoload/narrative.gd:17
 msgid "A Voz"
 msgstr "The Voice"
@@ -400,7 +400,7 @@ msgstr "He will offer you power: the oldest of lies, and the sweetest."
 msgid "Último degrau. Depois eu descubro quem sou. Tu prometeste."
 msgstr "The last step. Then I find out who I am. You promised."
 
-#. narrative.temptation.920e2e  [narrativa]
+#. narrative.temptation.920e2e  [falante]
 #: scripts/autoload/narrative.gd:242
 msgid "Athoth"
 msgstr "Athoth"
@@ -415,7 +415,7 @@ msgstr "Bearer... you do not sleep either, do you? I know this weariness. Lie do
 msgid "Se dormires agora, nunca mais acordas. Escolhe."
 msgstr "If you sleep now, you will never wake again. Choose."
 
-#. narrative.temptation.38663e  [narrativa]
+#. narrative.temptation.38663e  [falante]
 #: scripts/autoload/narrative.gd:246
 msgid "Harmas"
 msgstr "Harmas"
@@ -435,7 +435,7 @@ msgstr "(How does he know about the window?)"
 msgid "Arcontes roubam lembranças. Essa é nossa. Não deixes. Escolhe."
 msgstr "Archons steal memories. That one is ours. Do not let him. Choose."
 
-#. narrative.temptation.bcccd6  [narrativa]
+#. narrative.temptation.bcccd6  [falante]
 #: scripts/autoload/narrative.gd:251
 msgid "Galila"
 msgstr "Galila"
@@ -450,7 +450,7 @@ msgstr "It is recorded that you are out of place. Without law, all falls: I fell
 msgid "Corrente polida ainda é corrente. Escolhe."
 msgstr "A polished chain is still a chain. Choose."
 
-#. narrative.temptation.1dcab3  [narrativa]
+#. narrative.temptation.1dcab3  [falante]
 #: scripts/autoload/narrative.gd:255
 msgid "Yabel"
 msgstr "Yabel"
@@ -465,7 +465,7 @@ msgstr "(does not speak; points to his own sewn mouth, then to yours, and offers
 msgid "O silêncio dele é um túmulo confortável. Escolhe."
 msgstr "His silence is a comfortable tomb. Choose."
 
-#. narrative.temptation.700e01  [narrativa]
+#. narrative.temptation.700e01  [falante]
 #: scripts/autoload/narrative.gd:259
 msgid "Astaphaios"
 msgstr "Astaphaios"
@@ -480,7 +480,7 @@ msgstr "Look: it is us, before the ashes, at the window, counting boats. Stay th
 msgid "É o golpe mais cruel de todos. Eu sei. Escolhe."
 msgstr "It is the cruelest blow of all. I know. Choose."
 
-#. narrative.temptation.90eb81  [narrativa]
+#. narrative.temptation.90eb81  [falante]
 #: scripts/autoload/narrative.gd:263
 msgid "Belias"
 msgstr "Belias"
@@ -495,7 +495,7 @@ msgstr "Everything rots, Bearer. I watched all I planted die. Surrender now, and
 msgid "Ele confunde cansaço com verdade. Escolhe."
 msgstr "He mistakes weariness for truth. Choose."
 
-#. narrative.temptation.e4b255  [narrativa]
+#. narrative.temptation.e4b255  [falante]
 #: scripts/autoload/narrative.gd:267
 msgid "Armupiel"
 msgstr "Armupiel"
@@ -755,7 +755,7 @@ msgstr "I don't know. Stay with you? If you'll let me."
 msgid "...Sim. Comigo. Sempre."
 msgstr "...Yes. With me. Always."
 
-#. narrative.soter_meeting.a423a3  [narrativa]
+#. narrative.soter_meeting.a423a3  [falante]
 #: scripts/autoload/narrative.gd:394
 msgid "Soter"
 msgstr "Soter"
@@ -830,17 +830,17 @@ msgstr "They belonged to everyone. That is why they are yours too. Remember it w
 msgid "E quando ficares sozinha, não temas o silêncio. Ele também é teu. Escolhe."
 msgstr "And when you are alone, do not fear the silence. It is yours as well. Choose."
 
-#. narrative.soter_blessings.52f948  [narrativa]
+#. narrative.soter_blessings.52f948  [escolha]
 #: scripts/autoload/narrative.gd:417
 msgid "Cura plena"
 msgstr "Full healing"
 
-#. narrative.soter_blessings.1444ad  [narrativa]
+#. narrative.soter_blessings.1444ad  [escolha]
 #: scripts/autoload/narrative.gd:417
 msgid "Arma desperta (+1 nível)"
 msgstr "Weapon awakened (+1 level)"
 
-#. narrative.soter_blessings.4e447a  [narrativa]
+#. narrative.soter_blessings.4e447a  [escolha]
 #: scripts/autoload/narrative.gd:417
 msgid "Vigor (+25 de vida máx.)"
 msgstr "Vigor (+25 max health)"
@@ -860,7 +860,7 @@ msgstr "You stopped for a long time. Do not stop. ...Please."
 msgid "Falta pouco. Não deixes ninguém te atrasar agora."
 msgstr "Not far now. Do not let anyone slow you down."
 
-#. narrative.velkar_meeting.89680c  [narrativa]
+#. narrative.velkar_meeting.89680c  [falante]
 #: scripts/autoload/narrative.gd:435
 msgid "Velkar"
 msgstr "Velkar"
@@ -900,12 +900,12 @@ msgstr "Every day. He was my father."
 msgid "Quando chegares nele, acaba direito. Toma: faíscas que colhi quando era monstro. Pesam menos em ti."
 msgstr "When you reach him, end it properly. Here: sparks I gathered when I was a monster. They weigh less on you."
 
-#. narrative.velkar_choices.855b0f  [narrativa]
+#. narrative.velkar_choices.855b0f  [escolha]
 #: scripts/autoload/narrative.gd:446
 msgid "Vem comigo"
 msgstr "Come with me"
 
-#. narrative.velkar_choices.c4ba9c  [narrativa]
+#. narrative.velkar_choices.c4ba9c  [escolha]
 #: scripts/autoload/narrative.gd:446
 msgid "Fica em paz"
 msgstr "Be at peace"
@@ -985,7 +985,7 @@ msgstr "I wept for them."
 msgid "Choraste por mim. Os sete eram meus filhos, e tu me trouxeste o que restou deles."
 msgstr "You wept for me. The seven were my children, and you brought me what was left of them."
 
-#. narrative.theft.128140  [narrativa]
+#. narrative.theft.128140  [falante]
 #: scripts/autoload/narrative.gd:477
 msgid "Uma voz nos Anéis"
 msgstr "A voice in the Rings"
@@ -1025,7 +1025,7 @@ msgstr "No one. ...Then me."
 msgid "Os ecos dele estão aqui embaixo. Cada um guarda um pedaço que ele me tirou. Vou buscá-los."
 msgstr "His echoes are down here. Each one keeps a piece he took from me. I'm going to get them back."
 
-#. narrative.echo_shard.d80545  [narrativa]
+#. narrative.echo_shard.d80545  [toast]
 #: scripts/autoload/narrative.gd:498
 msgid "Caco de memória recuperado: %s"
 msgstr "Memory shard recovered: %s"
@@ -1100,12 +1100,12 @@ msgstr "The Crown is back. And with it, the reason why: I came down on purpose."
 msgid "Para desfazer o que tu fazias. E para te buscar."
 msgstr "To undo what you were doing. And to bring you home."
 
-#. narrative.final_form_fell.a6f548  [narrativa]
+#. narrative.final_form_fell.a6f548  [toast]
 #: scripts/autoload/narrative.gd:553
 msgid "%s caiu. Derrube a outra antes que se refaça!"
 msgstr "%s has fallen. Bring down the other before it re-forms!"
 
-#. narrative.final_revive.33de02  [narrativa]
+#. narrative.final_revive.33de02  [toast]
 #: scripts/autoload/narrative.gd:557
 msgid "%s se refez."
 msgstr "%s has re-formed."
@@ -1154,3 +1154,1148 @@ msgstr "(gathers him into herself) My name is Sophia. I'm the one who gave you y
 #: scripts/autoload/narrative.gd:573
 msgid "Falta o mais difícil: um mundo inteiro de gente que dorme. Ninguém vai escolher por mim."
 msgstr "The hardest part remains: a whole world of people who sleep. No one will choose for me."
+
+#. narrative.final_choices.0adb89  [escolha]
+#: scripts/autoload/narrative.gd:582
+msgid "Ascensão — levar todos"
+msgstr "Ascension — take everyone"
+
+#. narrative.final_choices.7b5876  [escolha]
+#: scripts/autoload/narrative.gd:583
+msgid "Ruptura — proteger"
+msgstr "Rupture — protect"
+
+#. narrative.final_choices.b2d67b  [escolha]
+#: scripts/autoload/narrative.gd:584
+msgid "Semente — despertar"
+msgstr "Seed — awaken"
+
+#. narrative.final_choices.3f7920  [escolha]
+#: scripts/autoload/narrative.gd:585
+msgid "Exige 4 Adormecidos despertos pelo caminho"
+msgstr "Requires 4 Sleepers awakened along the way"
+
+#. narrative.ending_lines.4dc9ac  [dialogo · Sophia]
+#: scripts/autoload/narrative.gd:594
+msgid "Vamos para casa. Todos."
+msgstr "Let's go home. All of us."
+
+#. narrative.ending_lines.8d1175  [dialogo · (narrador)]
+#: scripts/autoload/narrative.gd:595
+msgid "(O Kenoma começa a se desfazer, como sonho ao amanhecer. Ela olha para trás uma vez.)"
+msgstr "(The Kenoma begins to come apart, like a dream at dawn. She looks back once.)"
+
+#. narrative.ending_lines.3b84f4  [dialogo · Sophia]
+#: scripts/autoload/narrative.gd:598
+msgid "Ninguém mais vai ser abandonado. Eu fico. Eu olho por todos."
+msgstr "No one will be abandoned again. I'll stay. I'll watch over everyone."
+
+#. narrative.ending_lines.a8e494  [dialogo · (narrador)]
+#: scripts/autoload/narrative.gd:599
+msgid "(O trono ainda está morno. Serve.)"
+msgstr "(The throne is still warm. It fits.)"
+
+#. narrative.ending_lines.9859ad  [dialogo · Sophia]
+#: scripts/autoload/narrative.gd:602
+msgid "Não vou subir. Não vou sentar. Vou descer e bater em cada porta."
+msgstr "I won't climb. I won't sit. I'll go down and knock on every door."
+
+#. narrative.ending_lines.b8d16a  [dialogo · (narrador)]
+#: scripts/autoload/narrative.gd:603
+msgid "(Lá embaixo, nas cinzas onde ela acordou, alguém começa a se mexer.)"
+msgstr "(Far below, in the ashes where she woke, someone begins to stir.)"
+
+#. narrative.apply_ending.473e9d  [card_cinema]
+#: scripts/autoload/narrative.gd:613
+msgid "ASCENSÃO"
+msgstr "ASCENSION"
+
+#. narrative.apply_ending.48b169  [card_cinema]
+#: scripts/autoload/narrative.gd:614
+msgid "Toda faísca voltou à Fonte. O Kenoma se desfez como um sonho ao acordar.\nVerdade inteira. Mundo nenhum."
+msgstr "Each spark returned to the Source. The Kenoma faded like dreams at dawn.\nThe whole truth. No world at all."
+
+#. narrative.apply_ending.e31cf8  [card_cinema]
+#: scripts/autoload/narrative.gd:617
+msgid "RUPTURA"
+msgstr "RUPTURE"
+
+#. narrative.apply_ending.994a4b  [card_cinema]
+#: scripts/autoload/narrative.gd:618
+msgid "Sophia sentou-se no trono ainda morno. A coroa serviu.\nNinguém mais seria abandonado. Ninguém mais sairia."
+msgstr "Sophia sat on the still-warm throne. The crown fit.\nNo one would be abandoned again. No one would ever leave."
+
+#. narrative.apply_ending.419f7e  [card_cinema]
+#: scripts/autoload/narrative.gd:621
+msgid "SEMENTE"
+msgstr "SEED"
+
+#. narrative.apply_ending.5cccea  [card_cinema]
+#: scripts/autoload/narrative.gd:622
+msgid "Sophia recusou o trono e a porta. Desceu de volta, de faísca em faísca.\nSem apocalipse e sem prisão: liberdade lenta, a única que dura."
+msgstr "Sophia refused throne and door. She went back down, spark by spark.\nNo apocalypse and no prison: a slow freedom, the only kind that lasts."
+
+#. narrative.sleeper_line.e3675b  [legenda]
+#: scripts/autoload/narrative.gd:636
+msgid "Adormecida"
+msgstr "Sleeper"
+
+#. narrative.sleeper_line.a5eaea  [legenda · Adormecida]
+#: scripts/autoload/narrative.gd:636
+msgid "Eu estava sonhando com a minha mãe. Por que me acordaste?"
+msgstr "I was dreaming of my mother. Why did you wake me?"
+
+#. narrative.sleeper_line.28a47d  [legenda]
+#: scripts/autoload/narrative.gd:637
+msgid "Adormecido"
+msgstr "Sleeper"
+
+#. narrative.sleeper_line.48ee3c  [legenda · Adormecido]
+#: scripts/autoload/narrative.gd:637
+msgid "Está frio aqui fora. Sempre esteve?"
+msgstr "It's cold out here. Was it always?"
+
+#. narrative.sleeper_line.d9364a  [legenda · Adormecida]
+#: scripts/autoload/narrative.gd:638
+msgid "Quanto tempo eu dormi? ...Não. Não me digas."
+msgstr "How long did I sleep? ...No. Don't tell me."
+
+#. narrative.sleeper_line.76abf0  [legenda · Adormecido]
+#: scripts/autoload/narrative.gd:639
+msgid "Obrigado. Acho."
+msgstr "Thank you. I think."
+
+#. narrative.sleeper_line.5f4c3d  [legenda · Adormecida]
+#: scripts/autoload/narrative.gd:640
+msgid "Tu também estavas dormindo? Tens a cara."
+msgstr "Were you asleep too? You have the look."
+
+#. narrative.sleeper_line.73ec18  [legenda · Adormecido]
+#: scripts/autoload/narrative.gd:641
+msgid "Se eu acordo, quem cuida do meu sonho?"
+msgstr "If I wake up, who looks after my dream?"
+
+#. narrative.sleeper_line.0cab99  [legenda · Adormecida]
+#: scripts/autoload/narrative.gd:642
+msgid "Ele disse que dormir era bondade. Quem disse? Não lembro quem disse."
+msgstr "He said sleeping was a kindness. Who said? I can't remember who said it."
+
+#. narrative.sleeper_line.5cf95f  [legenda · Adormecido]
+#: scripts/autoload/narrative.gd:643
+msgid "Deixa a luz acesa. Só um pouco."
+msgstr "Leave the light on. Just for a little while."
+
+#. narrative.sleeper_line.d5082a  [legenda · Adormecida]
+#: scripts/autoload/narrative.gd:644
+msgid "Eu lembro de uma mulher que cantava errado. Ina? Tu conheceste a Ina?"
+msgstr "I remember a woman who sang off-key. Ina? Did you know Ina?"
+
+#. narrative.sleeper_line.b56732  [legenda · Adormecido]
+#: scripts/autoload/narrative.gd:645
+msgid "Meu filho dorme duas ruas para lá. Vais lá também? Por favor?"
+msgstr "My son is sleeping two streets over. Will you go there too? Please?"
+
+#. narrative.sleeper_line.5f71d2  [legenda · Adormecida]
+#: scripts/autoload/narrative.gd:646
+msgid "Dói. Por que acordar dói?"
+msgstr "It hurts. Why does waking hurt?"
+
+#. narrative.sleeper_line.2dec2d  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:646
+msgid "Porque é teu."
+msgstr "Because it's yours."
+
+#. narrative.sleeper_line.397a0f  [legenda · Adormecido]
+#: scripts/autoload/narrative.gd:647
+msgid "Eu sonhava que voava. Aqui embaixo tudo pesa tanto."
+msgstr "I dreamed I could fly. Down here everything weighs so much."
+
+#. narrative.sleeper_line.ce7b60  [legenda · Adormecida]
+#: scripts/autoload/narrative.gd:648
+msgid "Eu não pedi isto. ...Mas agora que vejo, não quero fechar os olhos."
+msgstr "I didn't ask for this. ...But now that I see, I don't want to close my eyes."
+
+#. narrative.sleeper_line.5770da  [legenda · Adormecido]
+#: scripts/autoload/narrative.gd:649
+msgid "Contam de uma que anda entre os que dormem. Eras tu?"
+msgstr "They talk of a woman who walks among the sleepers. Was that you?"
+
+#. narrative.walk_arrival.d048a8  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:671
+msgid "As cinzas ainda estão quentes. Anda: a névoa não espera ninguém."
+msgstr "The ashes are still warm. Walk: the mist waits for no one."
+
+#. narrative.walk_arrival.33da73  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:672
+msgid "(Uma pedra escrita, logo adiante. Alguém deixou palavras para quem acordasse.)"
+msgstr "(A stone with writing, just ahead. Someone left words for whoever woke.)"
+
+#. narrative.walk_arrival.2e3ce0  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:675
+msgid "Tudo aqui é grande demais. Como um quarto de criança visto do chão."
+msgstr "Everything here is too big. Like a child's room seen from the floor."
+
+#. narrative.walk_arrival.54c63a  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:678
+msgid "(O chão é feito de engrenagens. Giram devagar, como se respirassem.)"
+msgstr "(The floor is made of gears. They turn slowly, as if breathing.)"
+
+#. narrative.walk_arrival.a8effd  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:679
+msgid "Os ecos têm o rosto dos Arcontes. Mas se movem como ele."
+msgstr "The echoes have the Archons' faces. But they move like him."
+
+#. narrative.walk_arrival.1d5764  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:680
+msgid "Estou me remontando de dentro para fora. Falta pouco."
+msgstr "I'm putting myself back together from the inside out. Almost there."
+
+#. narrative.walk_cleared.e7e72e  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:696
+msgid "Os cacos não voltam quentes. Voltam frios. E verdadeiros."
+msgstr "The shards don't come back warm. They come back cold. And true."
+
+#. narrative.walk_cleared.377ab5  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:697
+msgid "Ele chamava os Anéis de chave. Chaves abrem, e ele esqueceu que abrem dos dois lados."
+msgstr "He called the Rings a key. Keys open, and he forgot they open both ways."
+
+#. narrative.walk_cleared.cda1ce  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:698
+msgid "Os ecos não gritam quando caem. Choram."
+msgstr "The echoes don't scream when they fall. They weep."
+
+#. narrative._arrival_pool.4c8096  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:716
+msgid "Eles dormem de pé. Ninguém aqui sabe que a cidade acabou."
+msgstr "They sleep standing up. No one here knows the city is gone."
+
+#. narrative._arrival_pool.cbec18  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:717
+msgid "Vês? Os que dormem não sofrem. Quem acorda, sim. Mas só quem acorda sobe."
+msgstr "You see? Those who sleep do not suffer. Those who wake do. But only those who wake climb."
+
+#. narrative._arrival_pool.bd9441  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:718
+msgid "A pedra falava de um Silêncio antes de tudo. Por que isso me soa como lembrança?"
+msgstr "The stone spoke of a Silence before everything. Why does that sound like a memory?"
+
+#. narrative._arrival_pool.d58ae8  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:719
+msgid "Não confies demais nas pedras. Quem as escreveu já não está aqui para explicar."
+msgstr "Do not trust the stones too much. Whoever wrote them is not here to explain."
+
+#. narrative._arrival_pool.9499d7  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:720
+msgid "Pares de luz. Éons. Então quem era o meu par?"
+msgstr "Pairs of light. Aeons. Then who was my pair?"
+
+#. narrative._arrival_pool.dcf712  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:721
+msgid "Ninguém sobe em par, Portadora. Sobe-se sozinha. Comigo."
+msgstr "No one climbs in pairs, Bearer. One climbs alone. With me."
+
+#. narrative._arrival_pool.d40771  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:722
+msgid "O Campeão de Athoth guarda o santuário. Acorda-o a golpes."
+msgstr "Athoth's Champion guards the shrine. Wake him with blows."
+
+#. narrative._arrival_pool.03c464  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:723
+msgid "Se o Pleroma é tão cheio, por que ninguém de lá desce para buscar os que dormem?"
+msgstr "If the Pleroma is so full, why does no one come down for those who sleep?"
+
+#. narrative._arrival_pool.490d9a  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:724
+msgid "Porque a Luz de cima não olha para baixo. Eu olho."
+msgstr "Because the Light above does not look down. I do."
+
+#. narrative._arrival_pool.b3137b  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:725
+msgid "Sentes a névoa? É o hálito de Athoth. Ela quer que tu te deites."
+msgstr "Do you feel the mist? It is Athoth's breath. It wants you to lie down."
+
+#. narrative._arrival_pool.6a2d5e  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:726
+msgid "A antessala. Atrás dela, o primeiro trono. Não te deites. Nunca te deites."
+msgstr "The antechamber. Behind it, the first throne. Do not lie down. Never lie down."
+
+#. narrative._arrival_pool.7b2ab2  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:727
+msgid "Um trono num quarto de sonho. E ele nem abriu os olhos."
+msgstr "A throne in a dream-room. And he hasn't even opened his eyes."
+
+#. narrative._arrival_pool.9a9e23  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:730
+msgid "Cheiro de pão por toda parte. Ninguém come. Todos mastigam."
+msgstr "The smell of bread everywhere. No one eats. Everyone chews."
+
+#. narrative._arrival_pool.540436  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:731
+msgid "A matéria tem fome de tudo o que brilha. E tu brilhas. Cuidado."
+msgstr "Matter hungers for everything that shines. And you shine. Careful."
+
+#. narrative._arrival_pool.f4f895  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:732
+msgid "Chamam este mundo de Kenoma, o vazio. Mas está cheio até a borda."
+msgstr "They call this world the Kenoma, the void. But it's full to the brim."
+
+#. narrative._arrival_pool.67fac6  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:733
+msgid "Cheio de falta. É isso que ‘vazio’ quer dizer."
+msgstr "Full of lack. That is what ‘void’ means."
+
+#. narrative._arrival_pool.da819e  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:734
+msgid "A pedra diz que o Cego nasceu sem par e sem forma. Quem deixa um filho assim sozinho?"
+msgstr "The stone says the Blind One was born without pair or form. Who leaves a child like that alone?"
+
+#. narrative._arrival_pool.981e23  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:735
+msgid "Os de cima. Eles chamam isso de paciência."
+msgstr "Those above. They call it patience."
+
+#. narrative._arrival_pool.489ca7  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:736
+msgid "O Glutão que guarda o santuário come o que mata. Não morras perto dele."
+msgstr "The Glutton guarding the shrine eats what it kills. Do not die near it."
+
+#. narrative._arrival_pool.a64b2c  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:737
+msgid "Tu sabes o meu nome. Por que nunca me dizes o teu?"
+msgstr "You know my name. Why do you never tell me yours?"
+
+#. narrative._arrival_pool.360227  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:738
+msgid "Um nome, aqui, vira coleira. Chama-me como sempre: Voz."
+msgstr "A name, here, becomes a collar. Call me what you always have: Voice."
+
+#. narrative._arrival_pool.e5288d  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:739
+msgid "Há alguém de branco mais adiante, parado numa luz que não vem de lugar nenhum."
+msgstr "Someone in white up ahead, standing in a light that comes from nowhere."
+
+#. narrative._arrival_pool.697525  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:740
+msgid "Dizem que um tal Soter anda por estas bandas. Eu nunca o vi."
+msgstr "They say one Soter wanders these parts. I have never seen him."
+
+#. narrative._arrival_pool.55cc1e  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:741
+msgid "A antessala de Harmas. Golpe primeiro; conversa, nunca."
+msgstr "Harmas's antechamber. Blows first; talk, never."
+
+#. narrative._arrival_pool.41cf4f  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:742
+msgid "Um mercado inteiro na barriga dele. E ainda me olha com fome."
+msgstr "A whole market in his belly. And he still looks at me hungry."
+
+#. narrative._arrival_pool.7364fb  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:745
+msgid "Selos por toda parte. Cada porta tem um cadeado; cada cadeado, um nome."
+msgstr "Seals everywhere. Every door has a padlock; every padlock, a name."
+
+#. narrative._arrival_pool.81ba78  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:746
+msgid "Heimarmene, diziam os antigos: o Destino como corrente. Aqui, é corrente mesmo."
+msgstr "Heimarmene, the ancients said: Fate as a chain. Here, it truly is a chain."
+
+#. narrative._arrival_pool.59fd2f  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:747
+msgid "Os astros são os elos. Sete elos, sete céus, sete Arcontes."
+msgstr "The stars are the links. Seven links, seven heavens, seven Archons."
+
+#. narrative._arrival_pool.23ae0c  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:748
+msgid "E tu já partiste dois. Continua."
+msgstr "And you have broken two already. Go on."
+
+#. narrative._arrival_pool.6b02c1  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:749
+msgid "Galila não te odeia. Ele te classifica. É pior."
+msgstr "Galila does not hate you. He classifies you. That is worse."
+
+#. narrative._arrival_pool.d51c38  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:750
+msgid "O Carcereiro do santuário prende primeiro e pergunta depois. Esquiva-te, e a corrente se parte."
+msgstr "The shrine's Jailer binds first and asks later. Dodge, and the chain snaps."
+
+#. narrative._arrival_pool.4c60c9  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:751
+msgid "Se a lei daqui é medo com coroa, quem usa a coroa?"
+msgstr "If the law here is fear wearing a crown, who wears the crown?"
+
+#. narrative._arrival_pool.f18753  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:752
+msgid "O Cego, lá no alto. Ninguém mais. Sobe."
+msgstr "The Blind One, high above. No one else. Climb."
+
+#. narrative._arrival_pool.9c8760  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:753
+msgid "A pedra diz que o sopro no barro veio de fora deste mundo. Então eu também vim?"
+msgstr "The stone says the breath in the clay came from outside this world. So did I?"
+
+#. narrative._arrival_pool.d1bd6a  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:754
+msgid "Vieste de mim. Eu te achei. Não esqueças a ordem das coisas."
+msgstr "You came from me. I found you. Do not forget the order of things."
+
+#. narrative._arrival_pool.a0d69b  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:755
+msgid "Última porta antes do trono. As correntes dele cantam quando têm medo."
+msgstr "Last door before the throne. His chains sing when they are afraid."
+
+#. narrative._arrival_pool.eabb98  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:756
+msgid "Um trono feito de elos. Ele se acorrentou a si mesmo para não cair."
+msgstr "A throne made of links. He chained himself so he wouldn't fall."
+
+#. narrative._arrival_pool.001f78  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:759
+msgid "Livros em branco. Milhares. Alguém apagou uma biblioteca inteira."
+msgstr "Blank books. Thousands. Someone erased an entire library."
+
+#. narrative._arrival_pool.f314a9  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:760
+msgid "Aqui a Palavra foi calada. Yabel costurou a própria boca para dar o exemplo."
+msgstr "Here the Word was silenced. Yabel sewed his own mouth shut to set the example."
+
+#. narrative._arrival_pool.de4e70  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:761
+msgid "Ouviste? De novo. Fraca, por baixo de ti."
+msgstr "Did you hear that? Again. Faint, underneath you."
+
+#. narrative._arrival_pool.72245a  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:762
+msgid "Eco. Este Éon está cheio deles. Ignora."
+msgstr "An echo. This Aeon is full of them. Ignore it."
+
+#. narrative._arrival_pool.863319  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:763
+msgid "Aqui as magias se calam. Confia no cajado: ele não precisa falar."
+msgstr "Here spells fall silent. Trust the staff: it has no need to speak."
+
+#. narrative._arrival_pool.cd2d15  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:764
+msgid "O Bibliotecário do santuário cala tudo ao redor. Fica longe e bate rápido."
+msgstr "The shrine's Librarian silences everything around him. Keep away and strike fast."
+
+#. narrative._arrival_pool.0281b0  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:765
+msgid "A pedra fala de livros enterrados num jarro, achados por acaso. A verdade sobrevive enterrada."
+msgstr "The stone tells of books buried in a jar, found by chance. Truth survives buried."
+
+#. narrative._arrival_pool.730da6  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:766
+msgid "Sobrevive. Não é o mesmo que vencer."
+msgstr "It survives. That is not the same as winning."
+
+#. narrative._arrival_pool.f86edb  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:767
+msgid "Se lembrar é saber, eu quero lembrar. Mesmo o que dói."
+msgstr "If remembering is knowing, I want to remember. Even what hurts."
+
+#. narrative._arrival_pool.517ee0  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:768
+msgid "Lembrar tem hora. Agora é hora de subir."
+msgstr "Remembering has its hour. Now is the hour to climb."
+
+#. narrative._arrival_pool.6bf56c  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:769
+msgid "Não me calei por medo. Não falo com quem não luta, só isso."
+msgstr "I did not fall silent from fear. I do not speak to those who do not fight, that is all."
+
+#. narrative._arrival_pool.81d98d  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:770
+msgid "A antessala do Silêncio. Lá dentro, nem eu falo."
+msgstr "The antechamber of Silence. In there, not even I speak."
+
+#. narrative._arrival_pool.14e1b7  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:771
+msgid "Ele não vai falar. E eu vou ter de responder mesmo assim."
+msgstr "He won't speak. And I'll have to answer anyway."
+
+#. narrative._arrival_pool.54121a  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:774
+msgid "Água parada por toda parte. E em cada poça, eu."
+msgstr "Still water everywhere. And in every puddle, me."
+
+#. narrative._arrival_pool.274108  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:775
+msgid "Conheces a história? A Sabedoria viu o próprio rosto na água e desceu atrás dele."
+msgstr "Do you know the story? Wisdom saw her own face in the water and went down after it."
+
+#. narrative._arrival_pool.2e3f81  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:776
+msgid "Vaidade. Não repitas."
+msgstr "Vanity. Do not repeat it."
+
+#. narrative._arrival_pool.385f02  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:777
+msgid "O nome na pedra é o meu. Sophia."
+msgstr "The name on the stone is mine. Sophia."
+
+#. narrative._arrival_pool.37fff8  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:778
+msgid "Nome comum. Sabedoria. Metade das mães do Kenoma dá esse nome às filhas."
+msgstr "A common name. Wisdom. Half the mothers in the Kenoma give it to their daughters."
+
+#. narrative._arrival_pool.0d69b5  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:779
+msgid "Astaphaios vai te dar o que mais queres: tu, antes de tudo. É o golpe mais cruel."
+msgstr "Astaphaios will give you what you want most: you, before everything. The cruelest blow."
+
+#. narrative._arrival_pool.60050b  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:780
+msgid "O Reflexo do santuário recua quando bates. Bate onde ele vai estar."
+msgstr "The shrine's Reflection backs away when you strike. Strike where it will be."
+
+#. narrative._arrival_pool.e12ddd  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:781
+msgid "A pedra diz que não foi o rosto dela na água. Foi uma luz falsa, vista de cima."
+msgstr "The stone says it wasn't her face in the water. It was a false light, seen from above."
+
+#. narrative._arrival_pool.d4fbbd  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:782
+msgid "Pedras repetem o que querem. Água é água. Sobe."
+msgstr "Stones repeat whatever they like. Water is water. Climb."
+
+#. narrative._arrival_pool.cf01bb  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:783
+msgid "Ela se arrependeu treze vezes, e cantou. Eu ainda não cantei nenhuma."
+msgstr "She repented thirteen times, and sang. I haven't sung a single one."
+
+#. narrative._arrival_pool.57483a  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:784
+msgid "Última sala antes do vidro grande. Não te olhes mais do que o necessário."
+msgstr "Last room before the great glass. Do not look at yourself more than you must."
+
+#. narrative._arrival_pool.f84126  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:785
+msgid "Ele tem o meu rosto. A Voz diz que é truque. A Voz diz muita coisa."
+msgstr "He has my face. The Voice says it's a trick. The Voice says a lot of things."
+
+#. narrative._arrival_pool.c9428c  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:788
+msgid "Pântano. As faíscas afundam devagar, como velas."
+msgstr "Swamp. The sparks sink slowly, like candles."
+
+#. narrative._arrival_pool.24f918  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:789
+msgid "A matéria apodrece. É a única lei que o Cego não escreveu, e a única que o assusta."
+msgstr "Matter rots. It is the one law the Blind One did not write, and the one that frightens him."
+
+#. narrative._arrival_pool.3f07c7  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:790
+msgid "A pedra diz que o Reino está dentro e fora. Dentro deste pântano?"
+msgstr "The stone says the Kingdom is inside and outside. Inside this swamp?"
+
+#. narrative._arrival_pool.888a2d  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:791
+msgid "Dentro de ti. Fora daqui. Sobe."
+msgstr "Inside you. Outside of here. Climb."
+
+#. narrative._arrival_pool.721a22  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:792
+msgid "Belias não mente. Está cansado, e acha que o cansaço é a verdade."
+msgstr "Belias does not lie. He is tired, and he thinks tiredness is the truth."
+
+#. narrative._arrival_pool.ebf6ee  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:793
+msgid "O Portador de Esporos do santuário envenena até depois de morto. Mata-o e afasta-te."
+msgstr "The shrine's Spore-Bearer poisons even after death. Kill it and step away."
+
+#. narrative._arrival_pool.778e0b  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:794
+msgid "Cinco Anéis. Mais dois, e eu te mostro o fim de tudo isto."
+msgstr "Five Rings. Two more, and I will show you the end of all this."
+
+#. narrative._arrival_pool.5bb8ca  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:795
+msgid "Um príncipe desceu para buscar uma pérola e esqueceu quem era. Até que uma carta o lembrou."
+msgstr "A prince went down to fetch a pearl and forgot who he was. Until a letter reminded him."
+
+#. narrative._arrival_pool.70b726  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:796
+msgid "Bonito. Ninguém te mandou carta nenhuma. Tens a mim."
+msgstr "Lovely. No one sent you any letter. You have me."
+
+#. narrative._arrival_pool.d3b3d3  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:797
+msgid "Última antessala podre. Depois dela, a Coroa. Aguenta."
+msgstr "The last rotten antechamber. After it, the Crown. Hold on."
+
+#. narrative._arrival_pool.ac7258  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:798
+msgid "Ele está morrendo há eras. Só não deixa ninguém terminar."
+msgstr "He's been dying for ages. He just won't let anyone finish."
+
+#. narrative._arrival_pool.53befb  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:801
+msgid "Um trono em cada esquina. Todos vazios. Todos à espera de quem se sente."
+msgstr "A throne on every corner. All empty. All waiting for someone to sit."
+
+#. narrative._arrival_pool.e1affd  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:802
+msgid "O último degrau. Armupiel quase tocou o trono do Cego. ‘Quase’ é a palavra que o define."
+msgstr "The last step. Armupiel nearly touched the Blind One's throne. ‘Nearly’ defines him."
+
+#. narrative._arrival_pool.88596f  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:803
+msgid "A pedra fala de um Chamado: uma voz de fora que acorda quem dorme. Foi assim que me achaste?"
+msgstr "The stone speaks of a Call: a voice from outside that wakes sleepers. Is that how you found me?"
+
+#. narrative._arrival_pool.1b50ab  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:804
+msgid "Foi. Eu chamei; tu ouviste. É tudo o que importa."
+msgstr "It is. I called; you heard. That is all that matters."
+
+#. narrative._arrival_pool.39379f  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:805
+msgid "Aqui os servos se ajoelham até para morrer. Não te acostumes a ver gente de joelhos."
+msgstr "Here the servants kneel even to die. Do not grow used to seeing people on their knees."
+
+#. narrative._arrival_pool.93167f  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:806
+msgid "O Pretoriano do santuário tem broquel. Golpe pesado, ou pelas costas."
+msgstr "The shrine's Praetorian carries a buckler. Heavy blows, or from behind."
+
+#. narrative._arrival_pool.1d54f3  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:807
+msgid "Seis Anéis giram na minha mão como se se conhecessem. Partes de uma coisa só."
+msgstr "Six Rings turn in my hand as if they knew each other. Parts of a single thing."
+
+#. narrative._arrival_pool.82e15c  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:808
+msgid "São. São a chave. Falta o sétimo dente."
+msgstr "They are. They are the key. It lacks only the seventh tooth."
+
+#. narrative._arrival_pool.7daff7  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:809
+msgid "Velkar disse que lá em cima há uma criança. Tu nunca me disseste isso."
+msgstr "Velkar said there's a child up there. You never told me that."
+
+#. narrative._arrival_pool.b91b5b  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:810
+msgid "Porque não há. Há um trono, e o trono é teu inimigo."
+msgstr "Because there is none. There is a throne, and the throne is your enemy."
+
+#. narrative._arrival_pool.0e8f56  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:811
+msgid "A antessala da Coroa. Depois dela, o sétimo. E depois... o ritual. Prometi mostrar-te."
+msgstr "The antechamber of the Crown. After it, the seventh. And then... the rite. I promised to show you."
+
+#. narrative._arrival_pool.ca43fd  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:812
+msgid "Uma coroa alta demais para a cabeça que a carrega. Ele sabe. Por isso grita."
+msgstr "A crown too tall for the head that wears it. He knows. That's why he shouts."
+
+#. narrative._cleared_pool.6894f2  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:823
+msgid "Bem. Eles voltam ao chão, e o chão ao sono."
+msgstr "Good. They return to the ground, and the ground to sleep."
+
+#. narrative._cleared_pool.097ef9  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:824
+msgid "Eles não gritam. Só se deitam... como se agradecessem."
+msgstr "They don't scream. They just lie down... as if they were grateful."
+
+#. narrative._cleared_pool.9ac746  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:825
+msgid "Cada faísca que soltas fica mais leve. Sentes? Elas sobem por ti."
+msgstr "Every spark you free grows lighter. Do you feel it? They rise because of you."
+
+#. narrative._cleared_pool.adf085  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:826
+msgid "Sobem por mim... para onde?"
+msgstr "They rise because of me... to where?"
+
+#. narrative._cleared_pool.b23cbe  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:827
+msgid "Não pares para pensar aqui. No Torpor, pensar vira cochilo."
+msgstr "Do not stop to think here. In Torpor, thinking turns into dozing."
+
+#. narrative._cleared_pool.f15daf  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:828
+msgid "(Um gosto de leite morno na boca. De onde vem isso?)"
+msgstr "(A taste of warm milk in my mouth. Where does that come from?)"
+
+#. narrative._cleared_pool.409779  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:829
+msgid "Caem de mãos abertas. Ninguém fecha o punho para dormir."
+msgstr "They fall with open hands. No one clenches a fist to sleep."
+
+#. narrative._cleared_pool.44dbf2  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:830
+msgid "O sono deste Éon tem dedos compridos. Sobe."
+msgstr "The sleep of this Aeon has long fingers. Climb."
+
+#. narrative._cleared_pool.b785be  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:832
+msgid "O Torpor não odeia ninguém. Só quer companhia."
+msgstr "Torpor hates no one. It only wants company."
+
+#. narrative._cleared_pool.8a8231  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:833
+msgid "Quantos destes já foram faíscas como eu?"
+msgstr "How many of these were once sparks like me?"
+
+#. narrative._cleared_pool.077887  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:834
+msgid "Sentes a névoa engrossar? É medo. Ele sabe que vens."
+msgstr "Do you feel the mist thickening? It is fear. He knows you are coming."
+
+#. narrative._cleared_pool.c59898  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:835
+msgid "Um Arconte com medo de mim?"
+msgstr "An Archon, afraid of me?"
+
+#. narrative._cleared_pool.c16125  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:836
+msgid "(A pedra falava de uma Sabedoria que quis ver a Fonte sozinha. Por que esse nome me dói?)"
+msgstr "(The stone spoke of a Wisdom who wanted to see the Source alone. Why does that name hurt?)"
+
+#. narrative._cleared_pool.30dd1d  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:839
+msgid "Devorados pelos próprios dentes. A fome sempre termina assim."
+msgstr "Devoured by their own teeth. Hunger always ends this way."
+
+#. narrative._cleared_pool.527c93  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:840
+msgid "Caem de boca aberta. Ainda com fome."
+msgstr "They fall with their mouths open. Still hungry."
+
+#. narrative._cleared_pool.9ae920  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:841
+msgid "Bonito golpe. Eu teria aplaudido, se tivesse mãos."
+msgstr "A fine blow. I would have applauded, if I had hands."
+
+#. narrative._cleared_pool.494f42  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:842
+msgid "Ninguém aqui vende nada. Só troca uma fome por outra."
+msgstr "No one here sells anything. They just trade one hunger for another."
+
+#. narrative._cleared_pool.c9c38f  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:843
+msgid "Comida, sono, moeda: todas as correntes começam macias."
+msgstr "Food, sleep, coin: every chain begins soft."
+
+#. narrative._cleared_pool.c78694  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:844
+msgid "(Também tenho fome. Mas não de pão.)"
+msgstr "(I'm hungry too. But not for bread.)"
+
+#. narrative._cleared_pool.3ba33d  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:845
+msgid "Harmas cobra por cada lembrança. Não compres nada. Nem a saudade."
+msgstr "Harmas charges for every memory. Buy nothing. Not even longing."
+
+#. narrative._cleared_pool.07b0cf  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:846
+msgid "E se eu já vendi alguma coisa aqui sem saber?"
+msgstr "What if I already sold something here without knowing?"
+
+#. narrative._cleared_pool.2d1ffb  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:848
+msgid "Os mercadores fecham as bancas quando passas. Já te conhecem."
+msgstr "The merchants close their stalls when you pass. They know you already."
+
+#. narrative._cleared_pool.9f4e33  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:849
+msgid "Ou têm medo do que eu carrego."
+msgstr "Or they're afraid of what I carry."
+
+#. narrative._cleared_pool.003c76  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:850
+msgid "Não pares. A fome sente o cheiro de quem para."
+msgstr "Do not stop. Hunger smells those who stop."
+
+#. narrative._cleared_pool.191c72  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:851
+msgid "Enquanto ele falava, a Voz não disse nada. Nada."
+msgstr "While he was talking, the Voice said nothing. Nothing."
+
+#. narrative._cleared_pool.084614  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:852
+msgid "Se o Cego fez os sete à imagem dele... derrubar os sete derruba o quê?"
+msgstr "If the Blind One made the seven in his image... what falls when the seven fall?"
+
+#. narrative._cleared_pool.6f70f5  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:855
+msgid "Os selos caem. A ordem deles era só ferrugem."
+msgstr "The seals fall. Their order was only rust."
+
+#. narrative._cleared_pool.af727d  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:856
+msgid "Gritam ‘lei’ quando morrem. Nenhum diz ‘justiça’."
+msgstr "They cry ‘law’ as they die. None of them says ‘justice’."
+
+#. narrative._cleared_pool.94fdcd  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:857
+msgid "Cada selo quebrado é uma corrente a menos no mundo. Tu és boa nisto."
+msgstr "Every broken seal is one less chain in the world. You are good at this."
+
+#. narrative._cleared_pool.4c50b1  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:858
+msgid "Boa em quebrar. A Voz nunca me elogia por outra coisa."
+msgstr "Good at breaking. The Voice never praises me for anything else."
+
+#. narrative._cleared_pool.a72ac8  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:859
+msgid "Não filosofes com o carcereiro. Ele adora."
+msgstr "Do not philosophize with the jailer. He loves it."
+
+#. narrative._cleared_pool.e1447f  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:860
+msgid "Se o destino é corrente, quem segura a outra ponta?"
+msgstr "If fate is a chain, who holds the other end?"
+
+#. narrative._cleared_pool.395282  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:861
+msgid "Os astros não param de girar por ti. Sobe."
+msgstr "The stars will not stop turning for you. Climb."
+
+#. narrative._cleared_pool.690b9e  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:862
+msgid "(Os dois Anéis tilintam um no outro, como se conversassem.)"
+msgstr "(The two Rings chime against each other, as if they were talking.)"
+
+#. narrative._cleared_pool.a2f289  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:864
+msgid "Os elos têm nomes gravados. Nenhum é o meu. Ainda."
+msgstr "The links have names carved in them. None is mine. Yet."
+
+#. narrative._cleared_pool.1fc826  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:865
+msgid "Nem será. Eu não deixaria."
+msgstr "Nor will it be. I would not allow it."
+
+#. narrative._cleared_pool.1f3b79  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:866
+msgid "Barro emprestado, Portadora. Não te apegues ao corpo: ele é só a escada."
+msgstr "Borrowed clay, Bearer. Do not cling to the body: it is only the ladder."
+
+#. narrative._cleared_pool.a5ceb8  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:867
+msgid "Se o barro é dele e o sopro não é... o que é meu?"
+msgstr "If the clay is his and the breath isn't... what's mine?"
+
+#. narrative._cleared_pool.a7f859  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:868
+msgid "Ouço daqui as correntes do trono. Cantam baixo. Parece choro."
+msgstr "I can hear the throne's chains from here. They sing low. It sounds like weeping."
+
+#. narrative._cleared_pool.a7f0ce  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:871
+msgid "Caem sem som. Como páginas."
+msgstr "They fall without a sound. Like pages."
+
+#. narrative._cleared_pool.790dc9  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:872
+msgid "Um silêncio a menos. O mundo já soa mais alto."
+msgstr "One silence fewer. The world already sounds louder."
+
+#. narrative._cleared_pool.d16ea1  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:873
+msgid "Há uma pergunta que eu não faço, porque tenho medo da resposta."
+msgstr "There's a question I don't ask, because I'm afraid of the answer."
+
+#. narrative._cleared_pool.1126c2  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:874
+msgid "Então não a faças. Aqui, pergunta vira tinta em branco."
+msgstr "Then do not ask it. Here, a question turns into blank ink."
+
+#. narrative._cleared_pool.581550  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:875
+msgid "Gnose não é fé nem obra, diz a pedra: é lembrar. E eu não lembro de nada antes das cinzas."
+msgstr "Gnosis isn't faith or works, says the stone: it's remembering. And I remember nothing before the ashes."
+
+#. narrative._cleared_pool.0432bf  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:876
+msgid "Vais lembrar quando os sete Anéis estiverem juntos. Eu prometo."
+msgstr "You will remember when the seven Rings are together. I promise."
+
+#. narrative._cleared_pool.f4b61d  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:877
+msgid "O silêncio gruda nas botas. Sobe."
+msgstr "Silence sticks to your boots. Climb."
+
+#. narrative._cleared_pool.908fe5  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:878
+msgid "(Um livro caído. Branco. Mas a mão sabe onde estava cada palavra.)"
+msgstr "(A fallen book. Blank. But my hand knows where every word was.)"
+
+#. narrative._cleared_pool.c87117  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:880
+msgid "Livros enterrados não salvam ninguém. Quem te salva sou eu, que estou aqui."
+msgstr "Buried books save no one. The one who saves you is me, and I am here."
+
+#. narrative._cleared_pool.cb383e  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:881
+msgid "(Dezesseis séculos debaixo da terra, e ainda falam.)"
+msgstr "(Sixteen centuries under the earth, and they still speak.)"
+
+#. narrative._cleared_pool.b233e2  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:882
+msgid "Mais perto. As estantes acabam logo."
+msgstr "Closer. The shelves end soon."
+
+#. narrative._cleared_pool.52374d  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:883
+msgid "Por que tu te calas quando Soter aparece?"
+msgstr "Why do you go quiet when Soter appears?"
+
+#. narrative._cleared_pool.c861c3  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:884
+msgid "Do outro lado da porta, nem o ar se mexe."
+msgstr "On the other side of the door, not even the air moves."
+
+#. narrative._cleared_pool.a18fb3  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:887
+msgid "Quando caem, os cacos mostram um rosto. Nunca o deles."
+msgstr "When they fall, the shards show a face. Never their own."
+
+#. narrative._cleared_pool.3c67d7  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:888
+msgid "Não olhes os cacos. Olha o caminho."
+msgstr "Do not look at the shards. Look at the path."
+
+#. narrative._cleared_pool.05c47f  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:889
+msgid "A Voz odeia este Éon mais que os outros. Por quê?"
+msgstr "The Voice hates this Aeon more than the others. Why?"
+
+#. narrative._cleared_pool.049c22  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:890
+msgid "Porque espelhos mentem melhor do que eu jamais mentiria."
+msgstr "Because mirrors lie better than I ever would."
+
+#. narrative._cleared_pool.9f8075  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:891
+msgid "Tenho a força dele, ou ele tem a minha?"
+msgstr "Do I have his strength, or does he have mine?"
+
+#. narrative._cleared_pool.7479c1  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:892
+msgid "Tens a tua. Chega. Sobe."
+msgstr "You have your own. Enough. Climb."
+
+#. narrative._cleared_pool.231213  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:893
+msgid "Quatro Anéis. Sentes como eles puxam? Estão com pressa."
+msgstr "Four Rings. Do you feel how they pull? They are in a hurry."
+
+#. narrative._cleared_pool.e00436  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:894
+msgid "Puxam. Mas não para cima: uns para os outros."
+msgstr "They pull. But not upward: toward each other."
+
+#. narrative._cleared_pool.7765c0  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:896
+msgid "Não te demores na água. Ela devolve mais do que mostra."
+msgstr "Do not linger by the water. It gives back more than it shows."
+
+#. narrative._cleared_pool.ae134e  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:897
+msgid "(No fundo da poça, por um instante: uma nuvem branca, e alguém pequeno chorando nela.)"
+msgstr "(At the bottom of the puddle, for an instant: a white cloud, and someone small crying in it.)"
+
+#. narrative._cleared_pool.d222fb  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:898
+msgid "Valentino, Basílides... homens mortos discutindo o que nunca viram."
+msgstr "Valentinus, Basilides... dead men arguing over what they never saw."
+
+#. narrative._cleared_pool.195160  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:899
+msgid "Discutiam o mesmo que eu: de onde vim, e para onde volto."
+msgstr "They argued about the same thing I do: where I came from, and where I go back to."
+
+#. narrative._cleared_pool.3d97bb  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:900
+msgid "Atrás da porta, alguém respira no mesmo ritmo que eu."
+msgstr "Behind the door, someone is breathing in time with me."
+
+#. narrative._cleared_pool.25bb74  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:903
+msgid "Apodrecem antes de cair. Já estavam mortos havia muito."
+msgstr "They rot before they fall. They had been dead a long time."
+
+#. narrative._cleared_pool.830914  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:904
+msgid "A poça some. Bom. Não pises no que ficou."
+msgstr "The puddle drains away. Good. Do not step in what is left."
+
+#. narrative._cleared_pool.a21d9c  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:905
+msgid "Quanto do que eu sou é matéria, e quanto é sopro?"
+msgstr "How much of me is matter, and how much is breath?"
+
+#. narrative._cleared_pool.f2394a  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:906
+msgid "O sopro. Só ele. O resto é barro emprestado."
+msgstr "The breath. Only that. The rest is borrowed clay."
+
+#. narrative._cleared_pool.26db6a  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:907
+msgid "A Praga entra pelos pés de quem para. Sobe."
+msgstr "The Blight gets in through the feet of those who stop. Climb."
+
+#. narrative._cleared_pool.c3d299  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:908
+msgid "(Os vivos daqui não pedem cura. Pedem que acabe logo.)"
+msgstr "(The living here don't ask for a cure. They ask for it to end soon.)"
+
+#. narrative._cleared_pool.d77a50  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:909
+msgid "O que está dentro de mim me salva? E se o que está dentro for escuro?"
+msgstr "Does what's inside me save me? And what if what's inside is dark?"
+
+#. narrative._cleared_pool.d137dc  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:910
+msgid "Então eu sou a tua luz. Basta."
+msgstr "Then I am your light. That is enough."
+
+#. narrative._cleared_pool.aa0cee  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:912
+msgid "Não respires fundo aqui. Nem para suspirar."
+msgstr "Do not breathe deep here. Not even to sigh."
+
+#. narrative._cleared_pool.9a6538  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:913
+msgid "Cinco Anéis, cada um mais quente que o anterior. Como se me reconhecessem."
+msgstr "Five Rings, each warmer than the last. As if they recognized me."
+
+#. narrative._cleared_pool.210986  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:914
+msgid "O manto do príncipe esperava por ele lá em cima. Será que algo me espera?"
+msgstr "The prince's robe was waiting for him up above. Is something waiting for me?"
+
+#. narrative._cleared_pool.b6a588  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:915
+msgid "Ina, Merou, Tasso. Digo os nomes baixinho, para não esquecer."
+msgstr "Ina, Merou, Tasso. I say the names softly, so I won't forget."
+
+#. narrative._cleared_pool.9d52ea  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:916
+msgid "Respira. Do outro lado, só a Coroa e eu."
+msgstr "Breathe. On the other side, only the Crown and me."
+
+#. narrative._cleared_pool.b61105  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:919
+msgid "Coroas caem de mais alto e fazem mais barulho. Só isso."
+msgstr "Crowns fall from higher up and make more noise. That is all."
+
+#. narrative._cleared_pool.f6d8bd  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:920
+msgid "Morrem chamando pelo rei. Nenhum sabe o nome dele."
+msgstr "They die calling for the king. None of them knows his name."
+
+#. narrative._cleared_pool.724ca8  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:921
+msgid "Quase, Portadora. Quase. Sinto os sete a um passo."
+msgstr "Nearly, Bearer. Nearly. I feel all seven one step away."
+
+#. narrative._cleared_pool.82b530  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:922
+msgid "A Voz nunca teve tanta pressa. Nunca."
+msgstr "The Voice has never been in such a hurry. Never."
+
+#. narrative._cleared_pool.21b853  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:923
+msgid "Se a salvação é retorno... eu volto para onde?"
+msgstr "If salvation is a return... where do I return to?"
+
+#. narrative._cleared_pool.5f3d18  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:924
+msgid "Para mim. Para onde tudo começou."
+msgstr "To me. To where it all began."
+
+#. narrative._cleared_pool.37db12  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:925
+msgid "Não pares. Nem para ler. Já sabes o bastante."
+msgstr "Do not stop. Not even to read. You know enough already."
+
+#. narrative._cleared_pool.7c7696  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:926
+msgid "(Sei o bastante para desconfiar. Não o bastante para parar.)"
+msgstr "(I know enough to be suspicious. Not enough to stop.)"
+
+#. narrative._cleared_pool.a15102  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:928
+msgid "O ar aqui cheira a ouro velho e a medo. Sobe."
+msgstr "The air here smells of old gold and fear. Climb."
+
+#. narrative._cleared_pool.e1848c  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:929
+msgid "Velkar fala demais para quem perdeu tudo. Não carregues as palavras dele."
+msgstr "Velkar talks too much for one who lost everything. Do not carry his words."
+
+#. narrative._cleared_pool.fea190  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:930
+msgid "As pedras dizem que o corpo é aparência. Então por que dói tanto?"
+msgstr "The stones say the body is only an appearance. Then why does it hurt so much?"
+
+#. narrative._cleared_pool.e7f82a  [legenda · A Voz]
+#: scripts/autoload/narrative.gd:931
+msgid "Salva a faísca, Portadora. O corpo serve para subir."
+msgstr "Save the spark, Bearer. The body is for climbing."
+
+#. narrative._cleared_pool.991586  [legenda · Sophia]
+#: scripts/autoload/narrative.gd:932
+msgid "(As pedras dizem uma coisa; a Voz, outra. Uma das duas está errada. Ou as duas.)"
+msgstr "(The stones say one thing; the Voice, another. One of them is wrong. Or both.)"
+
+#. narrative.epilogue_cards.6e7aab  [card_cinema]
+#: scripts/autoload/narrative.gd:944
+msgid "As sete esferas se apagaram como lamparinas ao amanhecer. Os Arcontes voltaram a ser o que sempre foram: nomes."
+msgstr "The seven spheres went out like oil lamps at dawn. The Archons became again what they had always been: names."
+
+#. narrative.epilogue_cards.86fff5  [card_cinema]
+#: scripts/autoload/narrative.gd:945
+msgid "Os que dormiam não acordaram. Só deixaram de sonhar. Ninguém perguntou se queriam."
+msgstr "Those who slept did not wake. They simply stopped dreaming. No one asked if they wanted to."
+
+#. narrative.epilogue_cards.bb32d7  [card_cinema]
+#: scripts/autoload/narrative.gd:946
+msgid "No colo da Fonte, uma criança aprendeu a ver. A mãe olhou para trás uma vez. Bastou para lembrar; não para ficar."
+msgstr "In the lap of the Source, a child learned to see. The mother looked back once. Enough to remember; not to stay."
+
+#. narrative.epilogue_cards.87a8d2  [card_cinema]
+#: scripts/autoload/narrative.gd:950
+msgid "A coroa pesava menos do que ele dizia. Isso devia ter sido o aviso."
+msgstr "The crown weighed less than he had said. That should have been the warning."
+
+#. narrative.epilogue_cards.45bb80  [card_cinema]
+#: scripts/autoload/narrative.gd:951
+msgid "Sete tronos, sete cascas novas. O Kenoma não notou a diferença. Ela cuidava de todos. De todos."
+msgstr "Seven thrones, seven new husks. The Kenoma did not notice the difference. She looked after everyone. Everyone."
+
+#. narrative.epilogue_cards.c7d3b9  [card_cinema]
+#: scripts/autoload/narrative.gd:954
+msgid "Tantas vezes provou os presentes deles. O trono só lhe pareceu familiar."
+msgstr "So many times she had tasted their gifts. The throne only felt familiar."
+
+#. narrative.epilogue_cards.97cf55  [card_cinema]
+#: scripts/autoload/narrative.gd:955
+msgid "Um dia, numa cidade de cinzas, alguém acordou e ouviu uma voz gentil: “Acorda. As cinzas sob os teus pés eram a tua gente.”"
+msgstr "One day, in a city of ash, someone woke and heard a gentle voice: “Wake. The ashes beneath your feet were your people.”"
+
+#. narrative.epilogue_cards.6dd24b  [card_cinema]
+#: scripts/autoload/narrative.gd:958
+msgid "Ela desceu de porta em porta, batendo à casa dos que dormem. Alguns abriram. Outros pediram mais um pouco de sonho. Ela esperou."
+msgstr "She went down from door to door, knocking at the houses of those who sleep. Some opened. Others asked for a little more dream. She waited."
+
+#. narrative.epilogue_cards.e04b2f  [card_cinema]
+#: scripts/autoload/narrative.gd:959
+msgid "Na cidade das cinzas aprendeu os nomes. Ina, que cantava errado. Merou, do poço. Tasso, do telhado. Disse cada um em voz alta."
+msgstr "In the city of ash she learned the names. Ina, who sang off-key. Merou, of the well. Tasso, of the roof. She said each one aloud."
+
+#. narrative.epilogue_cards.245d54  [card_cinema]
+#: scripts/autoload/narrative.gd:960
+msgid "Não eram a gente dela. Agora são. E dentro dela, pequeno, alguém aprendia a ver."
+msgstr "They were not her people. Now they are. And inside her, small, someone was learning to see."
+
+#. narrative.epilogue_cards.e1f163  [card_cinema]
+#: scripts/autoload/narrative.gd:962
+msgid "A faísca lembrou. O resto é silêncio."
+msgstr "The spark remembered. The rest is silence."

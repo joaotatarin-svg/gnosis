@@ -117,10 +117,16 @@ def classify(l):
 	if f.endswith("narrative.gd"):
 		if l.scope == "ORDINAIS":
 			return "ordinal", "", 0
-		if "walk" in l.scope or "caption" in l.scope:
+		if "walk" in l.scope or "caption" in l.scope or l.scope.endswith("_pool") or l.scope == "sleeper_line":
 			return "legenda", sp, 95
-		if "card" in l.scope or "epilogue" in l.scope or "prologue" in l.scope:
+		if "card" in l.scope or "epilogue" in l.scope or "prologue" in l.scope or l.scope == "apply_ending":
 			return "card_cinema", sp, 240
+		if l.scope in ("echo_shard", "final_form_fell", "final_revive"):
+			return "toast", sp, 60
+		if l.scope in ("final_choices", "soter_blessings", "velkar_choices"):
+			return "escolha", sp, 48
+		if l.scope in ("VOZ", "REI", "YAL", "SOPHIA") or (not sp and re.fullmatch(r"[A-ZÁ-Ú][\wà-ÿ]+( [a-zà-ÿ]+ [A-ZÁ-Ú][\wà-ÿ]+)?|Uma voz nos Anéis", l.text)):
+			return "falante", "", 24
 		if sp:
 			return "dialogo", sp, 115
 		return "narrativa", sp, 115
