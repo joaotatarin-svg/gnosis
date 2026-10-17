@@ -160,7 +160,7 @@ func _build_demo() -> void:
 	var retry: Button = $Center/Panel/VBox/Buttons/Retry
 	var menu: Button = $Center/Panel/VBox/Buttons/Menu
 	retry.text = "Lista de desejos"
-	retry.disabled = url == ""
+	retry.visible = url != ""                # sem URL (o João define), sem botão
 	retry.tooltip_text = url
 	retry.pressed.connect(func():
 		if store_url() != "":

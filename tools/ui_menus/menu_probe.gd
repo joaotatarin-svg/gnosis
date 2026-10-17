@@ -9,7 +9,7 @@ extends Node
 ##     --path . --resolution 1280x720 res://tools/ui_menus/MenuProbe.tscn -- <pasta_saida> [seção ...]
 ## Sem capturas (testes de tempo confiáveis — a janela no llvmpipe roda a poucos fps):
 ##   godot --headless --audio-driver Dummy --path . res://tools/ui_menus/MenuProbe.tscn -- <pasta> [seção ...]
-## Seções: glifos loja pausa pilha voltar cronicas opcoes controles estela provacao creditos bestiario demo (padrão: todas)
+## Seções: glifos loja pausa pilha voltar cronicas opcoes controles estela provacao creditos bestiario demo provacao_lista (padrão: todas)
 ## + opcoes_provacao (só quando pedida: confere a REVISAO #13, que é do SaveManager/Técnico)
 ## Imprime "UIM OK: ..." / "UIM FALHA: ..." e no fim "UIM RESULT: N ok, M falha(s)".
 ## O B do controle em `ui_cancel` (e o A em `ui_accept`) é mapeado AQUI se o
@@ -213,6 +213,8 @@ class Worker extends Node:
 			await _bestiary()
 		if want("demo"):
 			await _demo_end()
+		if want("provacao_lista"):
+			await _trial_picker()
 		PauseStack.clear()
 		print("UIM RESULT: %d ok, %d falha(s)" % [ok, fail])
 		get_tree().quit()
@@ -794,6 +796,30 @@ class Worker extends Node:
 		Credits.licenses_path = "res://assets/LICENSES.md"
 
 	## L2: nomes do Bestiário cabem nas células.
+	## #26: escolha da Provação no menu — só Arcontes vencidos (com
+	## `--bestiario-tudo` todos abrem); sem nenhum vencido, começa direto no Athoth.
+	func _trial_picker() -> void:
+		await go("res://scenes/ui/MainMenu.tscn", 1.0)
+		var mm := get_tree().current_scene
+		var open: Array = BestiaryLore.trial_bosses()
+		if open.size() <= 1 and not open.has(1):
+			check(true, "provação (menu): nenhum Arconte além do Athoth vencido — começa direto (%s)" % str(open))
+			return
+		mm._open_trial()
+		await wait(0.5)
+		var rows := 0
+		var enabled := 0
+		for b in mm.find_children("*", "Button", true, false):
+			if b.get_parent() is Panel and b.get_parent().get_parent() is CanvasLayer:
+				rows += 1
+				if not b.disabled:
+					enabled += 1
+		check(rows == 7 and enabled == maxi(1, open.size() if open.has(0) else open.size() + 1), "provação (menu): 7 linhas, %d liberadas" % enabled)
+		await shot("provacao_lista")
+		await key(KEY_ESCAPE)
+		await wait(0.3)
+		check(scene_path().contains("MainMenu") and focus() != null, "provação (menu): Esc fecha a lista [%s]" % txt(focus()))
+
 	## #52/#27: pré-jogo sem spoiler; card de fim da demo + "Lista de desejos".
 	func _demo_end() -> void:
 		await go("res://scenes/ui/PreGame.tscn", 1.0)
@@ -815,7 +841,7 @@ class Worker extends Node:
 		EndScreen.demo_card = true
 		await go("res://scenes/ui/EndScreen.tscn", 1.0)
 		wl = get_tree().current_scene.get_node("Center/Panel/VBox/Buttons/Retry")
-		check(wl.disabled, "demo: sem URL o botão fica desligado")
+		check(not wl.visible and focus() != null, "demo: sem URL o botão some e o foco fica no Menu")
 		if GameManager.has_signal("demo_finished") and "demo" in GameManager:
 			GameManager.set("demo", true)
 			EndScreen.ensure_demo_hook()
