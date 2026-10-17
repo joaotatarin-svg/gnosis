@@ -40,7 +40,7 @@
   e este handoff + `artes/gpt/` (folhas do GPT; tem `.gdignore`).
 - Branches de diretor `dir/<cargo>` (cada um dono de arquivos DISJUNTOS — ver `REGRAS_DIRETORES.md`):
   - `dir/anim-sophia` — quadros desenhados da Sophia (build_frames.py, atlas+JSON, CharacterArt toca
-    sequências), alfa real, smear/afterimage/vento/dissolução. **Estava em andamento.** QAs HeroQA/WaveQA e
+    sequências), alfa real, smear/afterimage/vento/dissolução. (fechado — ver 3b). QAs HeroQA/WaveQA e
     o CodexQA "troca de perfil libera o boneco anterior" estavam VERMELHOS na integração (provável: o teste
     conta filhos do CharacterArt e o novo código adiciona outro nó — ajustar o teste para contar só o
     BossPuppet, sem afrouxar o vazamento). Ver `docs/ANIMACAO.md` (seção "ESTADO PARA A PRÓXIMA SESSÃO").
@@ -49,13 +49,20 @@
   - `dir/audio` — mixagem/loudness, emenda de loops, ambiências sintetizadas, variações, sons do contrato
     (`step`, `step_heavy`, `cloth`, `boss_step`, `blip_voz|rei|sophia|estela|npc`, `ui_open`…), refazer magias
     e orbe (João achou "paia"), 5 SFX da cena do Rei, API de música (pitch, duck_music, camada do Centro),
-    volume padrão moderado. **Em andamento.** AudioQA falha até `step_heavy`/`cloth` existirem. Ver `docs/AUDIO.md`.
+    volume padrão moderado. (fechado — ver 3b). Ver `docs/AUDIO.md`.
   - `dir/combate` — Fase A (juice/câmera/hitbox/orbes/misericórdia, a partir do `NEURO_SATISFACAO.md`).
     **Em andamento.** A **Fase B** (player.gd/enemy.gd) está descrita em `docs/COMBATE.md`.
   - `dir/qa-ux` — caçador de bugs; relatório em `docs/QA_UX_BUGS.md`.
   - Concluídos e integrados: `dir/tecnico`, `dir/ui`, `dir/roteiro`, `dir/anim-chefes`, `dir/revisao`.
 - Ao retomar: `git fetch`, veja `git log integracao/onda1..dir/<x>` para cada branch e integre o que faltar.
   Os `.import` reescritos só por fim de linha pelo editor headless **não** devem ser commitados.
+
+## 3b. ATUALIZAÇÃO FINAL (todos os diretores da Onda 1 encerraram e estão MERGEADOS em integracao/onda1)
+- Anim-Sophia FECHOU: 61 quadros/28 estados do GPT, corrida pela distância (16 quadros c/ RIFE; `USE_RUN_INBETWEENS := false` volta ao ciclo de 8 se borrar), smear/afterimage/vento/dissolução; HeroQA/WaveQA verdes. CodexQA só falha "diretório de save independente" por causa do `override.cfg` local (não é bug).
+- Cenário FECHOU: fundos upscale (Real-ESRGAN) em camadas, chão 2.5D com reflexo, raios, névoa, plataformas integradas, arena de chefe. Faltou o pacote de loja (assets/store).
+- Áudio FECHOU: loudness, loops, 9 ambiências, magias/faísca refeitas, 14 sons novos, buses+limitador, API de música. AudioQA 23/24: o ducking automático de diálogo NÃO abaixa a música (bug aberto, ver docs/AUDIO.md). Ninguém OUVIU os sons ainda — o João deve ouvir antes do fechamento.
+- Combate: só PLANO (nenhum código de jogo aplicado). docs/COMBATE.md tem o código pronto da Fase A (câmera — causa: Camera2D.offset somado APÓS os limites —, juice R2/R3/R8/R10, hitbox, misericórdia, orbes R6, physics_interpolation) e a Fase B. Execute-o.
+- **A integração completa ainda NÃO foi validada** depois desses últimos merges: primeiro passo = rodar a validação e corrigir.
 
 ## 4. Fila de trabalho (em ordem)
 1. **Fechar a Onda 1:** integrar `dir/anim-sophia`, `dir/cenario`, `dir/audio`, `dir/combate`, `dir/qa-ux`
