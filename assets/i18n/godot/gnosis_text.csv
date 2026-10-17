@@ -286,6 +286,7 @@ O Rei enfraquecido e o Colosso Oco  ·  as duas faces,Weakened King and Hollow C
 O CAMPEÃO,THE CHAMPION
 Guardião do santuário %s %s,Guardian of the shrine %s %s
 A Voz,The Voice
+O Cego,The Blind One
 primeiro,first
 segundo,second
 terceiro,third
@@ -1000,6 +1001,9 @@ Ceder,Yield
 Siga em frente  →,Keep going  →
 Você caiu no Kenoma,You fell in the Kenoma
 Chegou até a Tela %d.,Reached Screen %d.
+Foreground,Foreground
+FgColumn%d,FgColumn%d
+%s:%d,%s:%d
 Repouso,Idle
 Caminhar,Walk
 Golpe leve,Light strike

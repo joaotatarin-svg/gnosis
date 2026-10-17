@@ -34,6 +34,27 @@ const DESCENT := 120.0
 # Cena D: a câmera desce um pouco para a Sophia ficar ACIMA da caixa de diálogo.
 const D_LIFT := 48.0
 const HAND := Vector2(-66.0, -84.0)           # mão estendida do Rei (olhando à esquerda)
+# QUADRO DE DIÁLOGO (Onda 5, QA2 #1): com QUALQUER caixa aberta, a câmera desce
+# até os pés da Sophia ficarem nesta altura da tela (px da base 640×360). A caixa
+# começa em y 250 (placa do nome em 240); com escolhas ela cresce até 214 (204).
+const FEET_Y := 226.0
+const FEET_Y_TALL := 198.0
+const FEET_BELOW_BODY := 12.0                 # pés ≈ 12 px abaixo da origem (camera_shake.gd)
+const PARTNER_RANGE := 420.0                  # interlocutor até esta distância entra no quadro
+# Cenas com o Rei de corpo inteiro (≈ 200 px de mundo): o quadro abre para a
+# cabeça dele caber com os pés dela acima da caixa.
+const KING_ZOOM := 0.8
+# Rosto do Rei DEPOIS de "a máscara cai" (cena B): o estado pintado do atlas
+# (pedido à arte: Rei sem máscara) ou, enquanto não chega, o recorte do retrato
+# `rei_revelado` (tools/encenacao/rei_mascara_rachada.py).
+const REVEALED_STATES := ["revealed", "unmasked", "sem_mascara"]
+# Poses da folha `rei_revelado_a` (arte, Onda 6). Foram pintadas olhando para o
+# lado OPOSTO do Rei de máscara: o figurante espelha a pintura nelas para ele
+# continuar virado para a Sophia (a mão aberta e os Anéis do lado dela).
+const MIRRORED_POSES := ["mask_crack", "revealed", "triumph", "dominion", "sinking"]
+const REVEALED_FACE := "res://assets/cinematic/rei_mascara_rachada.png"
+const FACE_H := 44.0                          # altura do rosto recortado (px de mundo)
+const FACE_DX := Vector2(0.0, 0.0)            # ajuste do recorte sobre a cabeça pintada
 
 var level: Node2D
 var player: Node2D
@@ -70,6 +91,14 @@ var _art_kb: Tween
 var _art_line: int = -2                        # fala em que a ilustração entrou
 var _line_idx: int = -1                        # fala atual da caixa
 var _descending: bool = false                  # a descida do Centro (cena C, sem caixa)
+# Quadro de diálogo (QA2 #1): o último enquadramento pedido (zoom relativo e
+# deslocamento) — refeito quando a caixa cresce para as escolhas.
+var _cur_k: float = 1.0
+var _cur_shift: Vector2 = Vector2.ZERO
+var _framed: bool = false                      # a cena já mexeu na câmera nesta caixa
+var _tall_seen: bool = false
+var _boxes: Array = []                         # caixas abertas (DialogueBox) que vigio
+var _vis_mode: int = -1                        # process_mode do Visual da Sophia (idle na conversa)
 
 
 func _ready() -> void:
@@ -97,6 +126,10 @@ func setup(p_level: Node2D, p_player: Node2D) -> void:
 	if player != null and player.has_node("Camera2D"):
 		_cam = player.get_node("Camera2D")
 	_hud = get_tree().get_first_node_in_group("hud")
+	# Toda caixa de diálogo que abrir (pela cena ou direto no DialogueBox.play):
+	# a Sophia para em pé e a câmera sobe o quadro acima da caixa.
+	if not get_tree().node_added.is_connected(_on_node_added):
+		get_tree().node_added.connect(_on_node_added)
 
 
 # --- API para o Level ------------------------------------------------------------
@@ -106,6 +139,7 @@ func setup(p_level: Node2D, p_player: Node2D) -> void:
 func play(lines: Array, choices: Array = [], scene: String = "") -> DialogueBox:
 	_scene = scene
 	_clear_damage_numbers()
+	_framed = false
 	_box = DialogueBox.play(lines, choices)
 	_box.line_shown.connect(_on_line)
 	_box.finished.connect(_on_finished.bind(_box))
@@ -118,6 +152,165 @@ func play(lines: Array, choices: Array = [], scene: String = "") -> DialogueBox:
 ## has_method para esconder dicas/combo/faíscas durante as cenas (QA C2).
 func is_active() -> bool:
 	return _scene != "" or _descending or _art_on()
+
+
+# --- quadro de diálogo (Onda 5, QA2 #1 e #9) ---------------------------------------
+# A caixa cobre o terço de baixo da tela, onde ficam os pés de todo mundo: com a
+# câmera de jogo, a Sophia falava ESCONDIDA atrás dela (Cena A, roubo, chegada da
+# Mente, diálogos comuns). Agora toda caixa — a da cena (play) ou a direta
+# (DialogueBox.play do Level/NPC) — faz o mesmo que já valia para Soter/Velkar:
+# a Sophia para em pé (idle, respirando) e a câmera desce o quadro até os pés dela
+# ficarem em FEET_Y, centrada entre ela e quem fala (chefe, NPC, Rei-figurante
+# a até PARTNER_RANGE px). Os enquadramentos próprios das cenas (_cam_to) também
+# respeitam essa altura. Ao fechar (sem outra caixa logo em seguida), tudo volta.
+
+func _on_node_added(n: Node) -> void:
+	if not (n is DialogueBox):
+		return
+	_boxes.append(n)
+	n.tree_exited.connect(_on_box_closed.bind(n), CONNECT_ONE_SHOT)
+	if CodexSession.active or not is_inside_tree():
+		return
+	_settle_player()
+	if n == _box:
+		# Caixa da cena: o enquadramento é dela; sem um, o quadro de diálogo.
+		if not _framed:
+			_frame_dialog()
+	else:
+		_framed = false
+		_frame_dialog()
+
+
+func _on_box_closed(b: Node) -> void:
+	_boxes.erase(b)
+	if b != _box and is_inside_tree():
+		_release_soon(0.45)
+
+
+## Há caixa de diálogo aberta?
+func _box_open() -> bool:
+	for b in _boxes:
+		if is_instance_valid(b) and (b as Node).is_inside_tree() and not (b as Node).is_queued_for_deletion():
+			return true
+	return false
+
+
+## A caixa aberta cresceu para as escolhas (a última fala antes delas já usa a
+## caixa alta — DialogueBox._show_line)?
+func _box_tall() -> bool:
+	for b in _boxes:
+		if is_instance_valid(b) and not (b as Node).is_queued_for_deletion():
+			var box: DialogueBox = b
+			if not box.choices.is_empty() and box.idx >= box.lines.size() - 1:
+				return true
+	return false
+
+
+## Centra o quadro entre a Sophia e quem fala (se houver alguém perto); a altura
+## (pés acima da caixa) vem do _cam_to.
+func _frame_dialog() -> void:
+	if _cam == null or player == null or not is_instance_valid(player):
+		return
+	var other := _partner()
+	var dx := 0.0
+	var k := 1.0
+	if other != null:
+		dx = _mid_shift(other.global_position.x)
+		if other == _king:
+			k = KING_ZOOM
+	_cam_to(k, Vector2(dx, 0.0), 0.6)
+
+
+## O interlocutor mais perto da Sophia (até PARTNER_RANGE): o Rei-figurante, um
+## NPC (Soter/Velkar) ou um chefe visível.
+func _partner() -> Node2D:
+	var px := player.global_position.x
+	var cands: Array = []
+	if _king != null and is_instance_valid(_king) and _king.visible:
+		cands.append(_king)
+	if level != null:
+		for c in level.get_children():
+			if c is NpcEncounter and (c as Node2D).visible:
+				cands.append(c)
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if e is Enemy and e.is_boss_enemy and (e as Node2D).is_visible_in_tree():
+			cands.append(e)
+	var best: Node2D = null
+	var bd := PARTNER_RANGE
+	for c in cands:
+		var d: float = absf((c as Node2D).global_position.x - px)
+		if d < bd:
+			bd = d
+			best = c
+	return best
+
+
+## Deslocamento X (relativo ao alvo normal da câmera) que põe o meio entre a
+## Sophia e `x` no centro. A câmera ainda segura a Sophia na faixa segura.
+func _mid_shift(x: float) -> float:
+	_cam_take()
+	var mid := (player.global_position.x + x) * 0.5
+	var unshifted := _view_center().x
+	if "base_offset" in _cam:
+		unshifted -= Vector2(_cam.get("base_offset")).x - Vector2(_cam_saved.base_offset).x
+	return mid - unshifted
+
+
+## Quanto a câmera desce (px de mundo, somado ao base_offset salvo) para os pés
+## da Sophia ficarem em FEET_Y (FEET_Y_TALL com escolhas) no zoom relativo `k`.
+func _lift(k: float) -> float:
+	if _cam == null:
+		return 0.0
+	var z := _base_zoom().y * k
+	var half := get_viewport_rect().size.y * 0.5
+	var feet := FEET_Y_TALL if _box_tall() else FEET_Y
+	var base_y := float(Vector2(_cam_saved.base_offset).y) if not _cam_saved.is_empty() else -66.0
+	return (FEET_BELOW_BODY - base_y) - (feet - half) / maxf(z, 0.01)
+
+
+## QA2 #9: a caixa pausa o mundo no quadro em que abriu — a Sophia ficava
+## congelada no meio da passada. Em pé no chão, ela vai para o parado (idle) e
+## o Visual dela segue respirando durante a conversa (só o Visual: o corpo,
+## a física e o estado do Player não são tocados). Morta, ferida ou no ar, fica.
+func _settle_player() -> void:
+	if player == null or not is_instance_valid(player) or not (player is CharacterBody2D):
+		return
+	var vis = player.get("visual")
+	if not (vis is CharacterArt):
+		return
+	if "state" in player:
+		var st := int(player.get("state"))
+		if st == Player.State.DEAD or st == Player.State.HURT:
+			return
+	var body := player as CharacterBody2D
+	if not body.is_on_floor():
+		return
+	body.velocity.x = 0.0
+	(vis as CharacterArt).set_anim("idle")
+	if _vis_mode < 0:
+		_vis_mode = (vis as Node).process_mode
+		(vis as Node).process_mode = Node.PROCESS_MODE_ALWAYS
+
+
+func _unsettle_player() -> void:
+	if _vis_mode < 0:
+		return
+	var vis = player.get("visual") if player != null and is_instance_valid(player) else null
+	if vis is Node and is_instance_valid(vis):
+		(vis as Node).process_mode = _vis_mode
+	_vis_mode = -1
+
+
+## Solta a câmera e a Sophia daqui a 2 quadros — se nenhuma outra caixa abriu
+## nesse meio-tempo (falas em sequência: a próxima caixa só reenquadra, sem o
+## quadro voltar ao jogo e descer de novo).
+func _release_soon(dur: float) -> void:
+	for _i in 2:
+		await get_tree().process_frame
+	if not is_inside_tree() or _box_open():
+		return
+	_unsettle_player()
+	_cam_release(dur)
 
 
 ## A cena da tela 1 terminou: o Rei-figurante segura o lugar até o duelo
@@ -233,9 +426,18 @@ func _on_line(index: int, line: Dictionary) -> void:
 			elif who == "Uma voz nos Anéis":
 				_orbit_weak = true
 				Audio.play_sfx("whisper")
-			elif text.contains("mais baixo"):
+			elif who == Narrative.YAL and cue == "" and _king != null and is_instance_valid(_king):
+				# O Rei revelado (arte): o orbe ao alto no nome; a mão puxando os
+				# Anéis em "os sete eram meus filhos"; parado nas outras falas.
+				if text.begins_with("Chama-me pelo nome"):
+					_king.pose("triumph")
+				elif text.begins_with("Choraste por mim"):
+					_king.pose("dominion")
+				else:
+					_king.rest()
+			if text.contains("mais baixo"):
 				Audio.duck_music(9.0, -14.0)
-				_cam_to(1.2, Vector2(_side() * 50.0, 6.0), 1.6)
+				_cam_to(KING_ZOOM + 0.06, Vector2(_side() * 50.0, 6.0), 1.6)
 		"tentacao":
 			# M2: o passado "quente" vira arma — a música do chefe recua.
 			if text.begins_with("(Como ele sabe"):
@@ -256,9 +458,14 @@ func _on_finished(box: DialogueBox) -> void:
 	if _ducked:
 		Audio.duck_music(0.0, 0.0)
 		_ducked = false
+	# A câmera volta ao jogo (se nenhuma outra caixa abrir logo em seguida —
+	# _release_soon). O roubo fica no preto até a tela mudar.
+	match _scene:
+		"roubo": pass
+		"anagnorise": _release_soon(0.6)
+		_: _release_soon(0.5)
 	match _scene:
 		"rei":
-			_cam_release(0.5)
 			# O Rei vai ao seu lugar no duelo e espera (zone_started o tira).
 			if _king != null and is_instance_valid(_king):
 				var t := create_tween().set_ignore_time_scale(true)
@@ -269,10 +476,6 @@ func _on_finished(box: DialogueBox) -> void:
 			_black.color.a = 1.0                   # fica no preto até a tela mudar
 			_hud_release()
 			_unlock()
-		"anagnorise":
-			_cam_release(0.6)
-		"tentacao", "soter", "velkar":
-			_cam_release(0.5)
 		"santuario":
 			if _music_stopped:
 				await get_tree().create_timer(1.0, true, false, true).timeout
@@ -287,7 +490,7 @@ func _on_finished(box: DialogueBox) -> void:
 
 func _a_fog() -> void:
 	var c := _view_center()
-	_cam_to(1.08, Vector2(60, 0), 2.0)
+	_cam_to(KING_ZOOM, Vector2(60, 0), 2.0)
 	_spawn_fog(Vector2(c.x + 190.0, _ground_y()), 0.7, 1.6)
 	_king = _make_king(Vector2(c.x + 220.0, _ground_y()))
 	_king.silhouette(0.0)
@@ -310,7 +513,7 @@ func _a_emerges() -> void:
 		_tw().tween_property(f, "modulate:a", 0.22, 0.8)
 	var t := _tw()
 	t.tween_method(_king.silhouette, 0.0, 1.0, 0.8)
-	_cam_to(1.15, Vector2(70, 0), 1.0)
+	_cam_to(KING_ZOOM + 0.03, Vector2(70, 0), 1.0)
 
 
 func _a_mask_lights() -> void:
@@ -419,7 +622,7 @@ func _b_king_enters() -> void:
 	t.parallel().tween_property(_king, "global_position:x", px + s * 125.0, 2.5)
 	t.parallel().tween_callback(_king.step).set_delay(0.3)
 	t.parallel().tween_callback(_king.step).set_delay(1.5)
-	_cam_to(1.12, Vector2(s * 60.0, 0), 3.0)
+	_cam_to(KING_ZOOM, Vector2(s * 60.0, 0), 3.0)
 	for f in _fogs:
 		t.parallel().tween_property(f, "modulate:a", 0.25, 1.0).set_delay(1.6)
 
@@ -532,13 +735,26 @@ func _b_sink() -> void:
 	_orbit_weak = false
 	_king.collapse(_tw())
 	# Colapsa (0,8 s), o motor gira à vista (1 s), afunda (1,6 s), preto (0,8 s).
+	# O chão abre em FENDAS de luz a partir dos pés dele; ele afunda RECORTADO
+	# pela linha do chão (_King.clip), com brilho na borda — não achata.
+	var feet := Vector2(_king.global_position.x, _ground_y())
+	var crack := _crack_ground(feet)
 	var t := _tw()
 	t.tween_interval(1.8)
-	t.tween_property(_king, "global_position:y", _king.global_position.y + 120.0, 1.6).set_ease(Tween.EASE_IN)
+	t.tween_property(_king, "global_position:y", _king.global_position.y + 140.0, 1.6).set_ease(Tween.EASE_IN)
+	for g in _gems:
+		if is_instance_valid(g):
+			t.parallel().tween_property(g, "modulate:a", 0.0, 0.45)
 	t.tween_property(_black, "color:a", 1.0, 0.8)
-	_crack_ground(_king.global_position)
-	Juice.shake(0.35)
-	_cam_to(1.12, Vector2(_side() * 60.0, 40.0), 1.8)
+	var opening := _tw()
+	opening.tween_interval(0.25)
+	opening.tween_property(crack, "open", 1.0, 2.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	var quake := _tw()
+	for k in 4:
+		quake.tween_callback(Juice.shake.bind(0.18 + 0.06 * float(k)))
+		quake.tween_callback(VfxLibrary.dust.bind(self, feet + Vector2((float(k) - 1.5) * 34.0, -2.0)))
+		quake.tween_interval(0.55)
+	_cam_to(1.0, Vector2(_side() * 60.0, 40.0), 1.8)
 
 
 # --- cena C: a descida ao Centro (tela 65) -----------------------------------
@@ -726,10 +942,10 @@ func _d_shrink() -> void:
 ## O Cego pequeno (CegoPequeno) muda de pose pela fala: ouve "...mãe?" e olha
 ## pra cima; treme quando ela assume a culpa; estende a mão no "Levanta."; no
 ## `reclaim` volta à pose automática pelo `glow` (erguido → aninhado na mão dela).
-func _little_pose(who: String, text: String) -> void:
+func _little_pose(_who: String, text: String) -> void:
 	if _little == null or not is_instance_valid(_little):
 		return
-	if who == Narrative.YAL and text.begins_with("...mãe?"):
+	if text.begins_with("...mãe?"):           # quem fala é ele (Narrative.CEGO)
 		_little.set_anim("look_up")
 	elif text.begins_with("Fui eu que fechei"):
 		_little.set_anim("trembling")
@@ -854,20 +1070,17 @@ func _clear_fog(dur: float) -> void:
 	_fogs.clear()
 
 
-func _crack_ground(at: Vector2) -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 64
-	for k in 5:
-		var ln := Line2D.new()
-		ln.width = 2.0
-		ln.default_color = Color(0.05, 0.03, 0.06, 0.9)
-		var p := at + Vector2(0, 2) - global_position
-		ln.add_point(p)
-		var dir := Vector2(cos(PI + PI * float(k) / 4.0) * 1.0, 0.12)
-		for s in 3:
-			p += dir.rotated(rng.randf_range(-0.4, 0.4)) * rng.randf_range(14.0, 26.0)
-			ln.add_point(p)
-		add_child(ln)
+## O chão do roubo abre (feedback do João: os riscos pretos grossos de antes
+## liam como rabisco): FENDAS de verdade — `_FloorCrack` — que crescem a partir
+## de `at` (pés do Rei). Se a arte entregar a sequência pintada (decalque), ela
+## toca no lugar do desenho. A cena anima `open` 0→1.
+func _crack_ground(at: Vector2) -> Node2D:
+	var c := _FloorCrack.new()
+	c.z_index = -1                             # abaixo do Rei (irmãos na Staging)
+	c.seed_value = 64
+	add_child(c)
+	c.global_position = at
+	return c
 
 
 func _ring_color(i: int) -> Color:
@@ -901,10 +1114,18 @@ func _cam_to(zoom: float, shift: Vector2, dur: float) -> void:
 	if _cam == null:
 		return
 	_cam_take()
+	_framed = true
+	_cur_k = zoom
+	_cur_shift = shift
+	_tall_seen = _box_tall()
+	# Com caixa aberta, os pés dela ficam ACIMA da caixa (QA2 #1).
+	var s := shift
+	if _box_open():
+		s.y = maxf(s.y, _lift(zoom))
 	var t := _tw()
 	t.tween_property(_cam, "zoom", Vector2(zoom, zoom) * _base_zoom(), dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	if "base_offset" in _cam:
-		t.parallel().tween_property(_cam, "base_offset", Vector2(_cam_saved.base_offset) + shift, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		t.parallel().tween_property(_cam, "base_offset", Vector2(_cam_saved.base_offset) + s, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _cam_release(dur: float) -> void:
@@ -979,11 +1200,18 @@ func _view_center() -> Vector2:
 
 ## O chão da cena (fixo do Level — a Sophia pode estar no ar quando a cena começa).
 func _ground_y() -> float:
+	return _ground()
+
+
+static func _ground() -> float:
 	return Level.GROUND_Y
 
 
 func _process(delta: float) -> void:
 	_orbit_t += delta
+	# A caixa cresceu para as escolhas (ou voltou): o quadro sobe mais um pouco.
+	if not _cam_saved.is_empty() and _box_open() and _box_tall() != _tall_seen:
+		_cam_to(_cur_k, _cur_shift, 0.35)
 	if _king == null or not is_instance_valid(_king):
 		return
 	var head := _king.global_position + HEAD + Vector2(0, 10)
@@ -1011,6 +1239,7 @@ func _exit_tree() -> void:
 	if _ducked:
 		Audio.duck_music(0.0, 0.0)
 	_hud_release()
+	_unsettle_player()
 	if _cam != null and is_instance_valid(_cam) and not _cam_saved.is_empty():
 		_cam.zoom = _cam_saved.zoom
 		_cam.process_mode = _cam_saved.process_mode
@@ -1021,12 +1250,20 @@ func _exit_tree() -> void:
 # =============================================================================
 ## O Rei de cena (figurante): a mesma pintura do chefe, sem IA nem colisão.
 ## Raiz nos PÉS. `body` leva a pintura e o orbe (silhueta/esfriar mexem nele);
-## a máscara, a rachadura e o olho cego são desenhados por cima.
+## a rachadura e o caco da máscara caindo são desenhados por cima.
+## Depois de "a máscara cai" (QA2 #2): se o atlas do Rei tiver um estado
+## REVEALED_STATES (o Rei sem máscara, pedido à arte), a pintura troca para ele;
+## senão o rosto vira o recorte do retrato `rei_revelado` (máscara rachada, olho
+## aceso) — `face_spr`. O disco preto antigo só sobra se faltar o recorte.
 class _King extends Node2D:
 	var body: Node2D
 	var art: CharacterArt
 	var orb: Sprite2D
+	var face_spr: Sprite2D                          # rosto revelado (recorte provisório)
+	var clip: _Clip                             # máscara de recorte (piso)
 	var over: Node2D
+	var rest_anim: String = "idle"              # pose de descanso (vira o estado revelado)
+	var _painted_reveal: bool = false
 	var glint_on: bool = false
 	var _glint_a: float = 0.0
 	var _t: float = 0.0
@@ -1040,8 +1277,11 @@ class _King extends Node2D:
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
+		# Recorte pela linha do chão: o que afunda some abaixo do piso.
+		clip = _Clip.new()
+		add_child(clip)
 		body = Node2D.new()
-		add_child(body)
+		clip.add_child(body)
 		art = CharacterArt.new()
 		var t: Dictionary = Bestiary.get_type("rei")
 		if t.has("profile"):
@@ -1056,7 +1296,17 @@ class _King extends Node2D:
 		orb.position = Vector2(78.0, -168.0) + Vector2(0, -24.0)
 		orb.scale = Vector2.ONE * 72.0 / 550.0
 		body.add_child(orb)
-		# Desenhos POR CIMA da pintura (orbe aceso, rachadura, olho cego).
+		# O rosto revelado (recorte), invisível até a máscara cair; filho do corpo:
+		# vira com ele, esfria com ele e achata no colapso.
+		if ResourceLoader.exists(Staging.REVEALED_FACE):
+			var tex: Texture2D = load(Staging.REVEALED_FACE)
+			face_spr = Sprite2D.new()
+			face_spr.texture = tex
+			face_spr.scale = Vector2.ONE * Staging.FACE_H / float(tex.get_height())
+			face_spr.position = Staging.HEAD + Staging.FACE_DX
+			face_spr.modulate.a = 0.0
+			body.add_child(face_spr)
+		# Desenhos POR CIMA da pintura (orbe aceso, rachadura, caco da máscara).
 		over = Node2D.new()
 		add_child(over)
 		over.draw.connect(_draw_over)
@@ -1089,25 +1339,93 @@ class _King extends Node2D:
 		var t := create_tween()
 		t.tween_property(body, "position:y", -3.0, 0.3).set_trans(Tween.TRANS_SINE)
 		t.tween_property(body, "position:y", 0.0, 0.3).set_trans(Tween.TRANS_SINE)
-		t.tween_callback(func() -> void: art.set_anim("idle"))
+		t.tween_callback(func() -> void: art.set_anim(rest_anim))
 
 	func glint(a: float) -> void:
 		_glint_a = maxf(_glint_a, a)
 
 	func crack_open(dur: float, t: Tween) -> void:
+		if has_pose("mask_crack"):
+			# A máscara racha NA PINTURA (mão no rosto): nada desenhado por cima
+			# deslizando em relação ao corpo.
+			pose("mask_crack")
+			_painted_reveal = true
+			return
 		t.tween_property(self, "_crack", 1.0, dur)
 
 	func drop_mask(t: Tween) -> void:
-		t.tween_property(self, "_blind", 1.0, 0.3)
+		var st := revealed_state()
+		if st != "":
+			# A pintura do Rei SEM máscara (arte, Onda 6): a mão no rosto com a
+			# máscara rachando (`mask_crack`) e, 0,35 s depois, o vazio escuro com
+			# UM olho âmbar (`revealed`). A máscara inteira cai por cima.
+			_painted_reveal = true
+			rest_anim = st
+			if has_pose("mask_crack"):
+				pose("mask_crack")
+				t.tween_interval(0.35)
+				t.tween_callback(pose.bind(st))
+			else:
+				pose(st)
+				t.tween_interval(0.01)
+		elif face_spr != null:
+			# Provisório: a máscara racha, um caco cai e o rosto do retrato aparece.
+			t.tween_property(face_spr, "modulate:a", 1.0, 0.25)
+		else:
+			t.tween_property(self, "_blind", 1.0, 0.3)
 		t.parallel().tween_property(self, "_mask_off", 1.0, 0.6).set_ease(Tween.EASE_IN)
 
+	## O estado "Rei sem máscara" do atlas pintado ("" = ainda não existe).
+	func revealed_state() -> String:
+		for s in Staging.REVEALED_STATES:
+			if has_pose(s):
+				return s
+		return ""
+
+	## O atlas pintado do Rei tem esta pose (estados da folha `rei_revelado_a`:
+	## mask_crack, revealed, triumph, dominion, sinking)?
+	func has_pose(st: String) -> bool:
+		if art == null or not art.has_boss_frames():
+			return false
+		var db = art.get("_boss_db")
+		if not (db is Dictionary):
+			return false
+		var meta = (db as Dictionary).get("meta", {})
+		if not (meta is Dictionary):
+			return false
+		var states = (meta as Dictionary).get("states", {})
+		return states is Dictionary and (states as Dictionary).has(st)
+
+	## Troca a pose pintada (se existir). Nas poses em que o orbe-olho já está
+	## pintado na mão (ou o corpo afunda), o orbe solto some.
+	func pose(st: String) -> void:
+		if not has_pose(st):
+			return
+		art.set_anim(st)
+		art.scale.x = -absf(art.scale.x) if st in Staging.MIRRORED_POSES else absf(art.scale.x)
+		if st in Staging.REVEALED_STATES:
+			rest_anim = st
+		orb.visible = not (st in ["triumph", "dominion", "sinking", "mask_crack"])
+
+	## Volta à pose de descanso (revelado, depois que a máscara caiu).
+	func rest() -> void:
+		pose(rest_anim)
+
 	func collapse(t: Tween) -> void:
-		t.tween_property(body, "scale:y", 0.2, 0.8).set_ease(Tween.EASE_IN)
+		if has_pose("sinking"):
+			# A pintura dele afundando em rachaduras de luz; o achatamento é curto.
+			pose("sinking")
+			t.tween_property(body, "scale:y", 0.7, 0.8).set_ease(Tween.EASE_IN)
+		else:
+			t.tween_property(body, "scale:y", 0.2, 0.8).set_ease(Tween.EASE_IN)
 		t.parallel().tween_property(self, "_collapse", 1.0, 0.8)
 
 	func _process(delta: float) -> void:
 		_t += delta
 		_glint_a = maxf(0.0, _glint_a - delta * 0.8)
+		if clip != null:
+			clip.floor_y = Staging._ground() - global_position.y + 4.0
+			clip.queue_redraw()
 		if over != null:
 			over.queue_redraw()
 
@@ -1140,23 +1458,45 @@ class _King extends Node2D:
 			over.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			over.draw_circle(hp + Vector2(0, -3), 8.0, Color(0.9, 0.92, 0.95, 0.15 * _blind))
 			over.draw_circle(hp + Vector2(0, -3), 4.5, Color(0.9, 0.92, 0.95, 0.9 * _blind))
-		# A máscara caindo: desce 30 px girando 20° e some.
-		if _mask_off > 0.0 and _mask_off < 1.0:
+		# A máscara caindo: desce 30 px girando 20° e some. Com a pintura sem
+		# máscara cai a máscara inteira; no provisório (rosto do retrato, máscara
+		# rachada), só o CACO que se soltou em cima do olho.
+		if _mask_off > 0.0 and _mask_off < 1.0 and not _painted_reveal:
 			over.draw_set_transform(head + Vector2(6.0 * _mask_off, 30.0 * _mask_off), deg_to_rad(20.0) * _mask_off * _dir, Vector2.ONE)
 			var mc := Color(0.95, 0.92, 0.82, 1.0 - _mask_off)
-			var oval := PackedVector2Array()
-			for i in 16:
-				var a2 := TAU * float(i) / 16.0
-				oval.append(Vector2(cos(a2) * 13.0, sin(a2) * 21.0))
-			over.draw_colored_polygon(oval, mc)
 			var ink := Color(0.1, 0.08, 0.06, mc.a)
-			over.draw_line(Vector2(-6, -6), Vector2(-6, 2), ink, 2.0)
-			over.draw_line(Vector2(6, -6), Vector2(6, 2), ink, 2.0)
-			over.draw_line(Vector2(0, -4), Vector2(0, 10), Color(ink, mc.a * 0.5), 1.0)
+			if face_spr == null:
+				var oval := PackedVector2Array()
+				for i in 16:
+					var a2 := TAU * float(i) / 16.0
+					oval.append(Vector2(cos(a2) * 13.0, sin(a2) * 21.0))
+				over.draw_colored_polygon(oval, mc)
+				over.draw_line(Vector2(-6, -6), Vector2(-6, 2), ink, 2.0)
+				over.draw_line(Vector2(6, -6), Vector2(6, 2), ink, 2.0)
+				over.draw_line(Vector2(0, -4), Vector2(0, 10), Color(ink, mc.a * 0.5), 1.0)
+			else:
+				var shard := PackedVector2Array([Vector2(-7 * _dir, -9), Vector2(4 * _dir, -11), Vector2(7 * _dir, -2),
+					Vector2(1 * _dir, 2), Vector2(-3 * _dir, 9), Vector2(-8 * _dir, 1)])
+				over.draw_colored_polygon(shard, mc)
+				var edge := shard.duplicate()
+				edge.append(shard[0])
+				over.draw_polyline(edge, ink, 1.0, true)
 			over.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		# O motor: um núcleo negro no meio dos anéis.
-		if _collapse > 0.0:
+		if _collapse > 0.0 and not _painted_reveal:
 			over.draw_circle(Vector2(0, -36), 10.0 * _collapse, Color(0.01, 0.01, 0.02, _collapse))
+		# Afundando: a borda do chão por onde ele entra brilha (o corpo some
+		# abaixo dela pelo recorte `clip`).
+		var sunk := global_position.y - Staging._ground()
+		if sunk > 1.0:
+			var w := 70.0
+			var gy := -sunk
+			var ga := clampf(sunk / 30.0, 0.0, 1.0)
+			over.draw_set_transform(Vector2(0, gy), 0.0, Vector2(1.0, 0.22))
+			over.draw_circle(Vector2.ZERO, w, Color(1.0, 0.78, 0.4, 0.18 * ga))
+			over.draw_circle(Vector2.ZERO, w * 0.62, Color(1.0, 0.88, 0.6, 0.32 * ga))
+			over.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			over.draw_line(Vector2(-w * 0.8, gy), Vector2(w * 0.8, gy), Color(1.0, 0.95, 0.8, 0.85 * ga), 1.5, true)
 
 
 ## Uma gema de Anel no mundo (o roubo e a devolução).
@@ -1177,3 +1517,161 @@ class _Gem extends Node2D:
 		draw_colored_polygon(d, Color(color.r, color.g, color.b, 0.95 * maxf(dim, 0.4)))
 		draw_circle(Vector2(-1, -2), 1.4, Color(1, 1, 1, 0.8 * dim))
 
+
+## Recorte do Rei pela linha do chão (clip_children): só o que está ACIMA de
+## `floor_y` (local) aparece. Parado no chão, não corta nada (pés ≈ 0).
+class _Clip extends Node2D:
+	var floor_y: float = 4.0
+
+	func _ready() -> void:
+		clip_children = CanvasItem.CLIP_CHILDREN_ONLY
+
+	func _draw() -> void:
+		draw_rect(Rect2(-400.0, -600.0, 800.0, 600.0 + floor_y), Color.WHITE)
+
+
+## Fendas no chão que ABREM (cena B): ramos irregulares saindo do ponto,
+## achatados na perspectiva do piso, com largura variável (afina na ponta),
+## borda escura suave e um núcleo de luz âmbar com brilho aditivo. `open` 0→1
+## cresce o comprimento e a largura; faíscas sobem das pontas enquanto abre.
+## Sequência pintada (pedida à Produção: `fx_floor_crack_a.png`, quadros lado a
+## lado, quadrados, fundo transparente): se existir, toca como decalque no lugar.
+class _FloorCrack extends Node2D:
+	const DECALS := ["res://assets/cinematic/fx_floor_crack_a.png", "res://assets/painted/fx/fx_floor_crack_a.png"]
+	const CORE := Color(1.0, 0.78, 0.38)
+	const EDGE := Color(0.05, 0.03, 0.04)
+	var open: float = 0.0:
+		set(v):
+			open = v
+			queue_redraw()
+			if _glow != null:
+				_glow.queue_redraw()
+			if _decal != null:
+				_decal.frame = clampi(int(v * float(_decal.hframes)), 0, _decal.hframes - 1)
+	var seed_value: int = 64
+	var _branches: Array = []                  # [{pts: PackedVector2Array, w: float}]
+	var _glow: Node2D
+	var _decal: Sprite2D
+	var _spark_t: float = 0.0
+
+	func _ready() -> void:
+		process_mode = Node.PROCESS_MODE_ALWAYS
+		for path in DECALS:
+			if ResourceLoader.exists(path):
+				var tex: Texture2D = load(path)
+				_decal = Sprite2D.new()
+				_decal.texture = tex
+				_decal.hframes = maxi(1, int(round(float(tex.get_width()) / float(tex.get_height()))))
+				_decal.scale = Vector2(1.0, 0.35) * 260.0 / float(tex.get_height())
+				add_child(_decal)
+				return
+		var rng := RandomNumberGenerator.new()
+		rng.seed = seed_value
+		var dirs := [PI + 0.1, -0.1, PI * 0.7, PI * 0.3, PI * 1.25, PI * 1.82]
+		for k in dirs.size():
+			var a: float = float(dirs[k]) + rng.randf_range(-0.12, 0.12)
+			var length: float = rng.randf_range(90.0, 150.0) * (1.0 if k < 2 else 0.6)
+			var pts := PackedVector2Array([Vector2.ZERO])
+			var p := Vector2.ZERO
+			var n := 9
+			for i in n:
+				a += rng.randf_range(-0.45, 0.45)
+				p += Vector2(cos(a), sin(a)) * (length / float(n))
+				pts.append(p)
+			_branches.append({"pts": pts, "w": rng.randf_range(2.6, 3.6) * (1.0 if k < 2 else 0.7)})
+		_glow = Node2D.new()
+		_glow.material = VfxLibrary._additive()
+		add_child(_glow)
+		_glow.draw.connect(_draw_glow)
+
+	func _process(delta: float) -> void:
+		# Faíscas sobem das pontas enquanto a fenda abre (uma ponta por vez).
+		if _decal != null or open <= 0.0 or open >= 1.0 or _branches.is_empty():
+			return
+		_spark_t += delta
+		if _spark_t < 0.1:
+			return
+		_spark_t = 0.0
+		var b: Dictionary = _branches[randi() % _branches.size()]
+		var tip := _tip(b)
+		var gp := global_position + Vector2(tip.x, tip.y * 0.3)
+		VfxLibrary._flash_sprite(get_parent(), gp + Vector2(0, -4), "spark", Color(1.0, 0.85, 0.55, 0.9), 0.12, 0.02, 0.45)
+
+	## Ponta atual do ramo (cresce com `open`).
+	func _tip(b: Dictionary) -> Vector2:
+		var pts: PackedVector2Array = b.pts
+		var f := clampf(open, 0.0, 1.0) * float(pts.size() - 1)
+		var i := mini(int(f), pts.size() - 2)
+		return pts[i].lerp(pts[i + 1], f - float(i))
+
+	## Faixa do ramo (polígono), já achatada no piso: largura × `wmul`.
+	func _strip(b: Dictionary, wmul: float) -> PackedVector2Array:
+		var pts: PackedVector2Array = b.pts
+		var reach := clampf(open, 0.0, 1.0) * float(pts.size() - 1)
+		var line := PackedVector2Array()
+		for i in pts.size():
+			if float(i) <= reach:
+				line.append(pts[i])
+			else:
+				var tp := _tip(b)
+				if tp.distance_to(line[line.size() - 1]) > 0.5:
+					line.append(tp)
+				break
+		if line.size() < 2 or line[line.size() - 1].distance_to(line[0]) < 1.0:
+			return PackedVector2Array()
+		# O traçado vai para o plano do piso (achatado); a LARGURA não (senão as
+		# fendas deitadas viram fio).
+		for i in line.size():
+			line[i] = Vector2(line[i].x, line[i].y * 0.3)
+		var left := PackedVector2Array()
+		var right := PackedVector2Array()
+		var wopen := clampf(open * 1.6, 0.0, 1.0)
+		for i in line.size():
+			var d: Vector2
+			if i < line.size() - 1:
+				d = (line[i + 1] - line[i]).normalized()
+			else:
+				d = (line[i] - line[i - 1]).normalized()
+			var nrm := Vector2(-d.y, d.x)
+			# afina para a ponta; serrilha leve (largura variável)
+			var taper := 1.0 - float(i) / float(maxi(1, line.size() - 1))
+			var jag := 0.75 + 0.25 * sin(float(i) * 2.3 + float(seed_value))
+			var w: float = float(b.w) * wmul * wopen * (0.2 + 0.8 * taper) * jag
+			var q := line[i]
+			left.append(q + nrm * w)
+			right.append(q - nrm * w)
+		right.reverse()
+		left.append_array(right)
+		return left
+
+	## Desenha a faixa em QUADS (um por segmento): a faixa fina e torta pode se
+	## auto-cruzar como polígono único; quad a quad nunca falha.
+	func _poly(ci: CanvasItem, pts: PackedVector2Array, c: Color) -> void:
+		var n := pts.size() / 2
+		if n < 2:
+			return
+		for i in n - 1:
+			var q := PackedVector2Array([pts[i], pts[i + 1], pts[pts.size() - 2 - i], pts[pts.size() - 1 - i]])
+			# quad degenerado (largura ~0) → "Invalid polygon": pula
+			var area := absf((q[2] - q[0]).cross(q[3] - q[1])) * 0.5
+			if area > 0.05:
+				ci.draw_colored_polygon(q, c)
+
+	func _draw() -> void:
+		if _decal != null:
+			return
+		for b in _branches:
+			_poly(self, _strip(b, 2.2), Color(EDGE, 0.35))
+			_poly(self, _strip(b, 1.25), Color(EDGE, 0.8))
+			_poly(self, _strip(b, 0.55), Color(CORE, 0.95))
+
+	func _draw_glow() -> void:
+		var a := clampf(open * 2.0, 0.0, 1.0)
+		for b in _branches:
+			_poly(_glow, _strip(b, 1.8), Color(CORE.r, CORE.g * 0.9, CORE.b * 0.7, 0.28 * a))
+			_poly(_glow, _strip(b, 0.35), Color(1.0, 0.95, 0.8, 0.7 * a))
+		# brilho no ponto de origem (o "poço" sob os pés dele)
+		_glow.draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.25))
+		_glow.draw_circle(Vector2.ZERO, 22.0 * a, Color(CORE, 0.16 * a))
+		_glow.draw_circle(Vector2.ZERO, 9.0 * a, Color(1.0, 0.92, 0.7, 0.35 * a))
+		_glow.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
