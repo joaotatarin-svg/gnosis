@@ -5,7 +5,11 @@ o anterior deixou o script, a ferramenta de captura e parte das peças sem commi
 completei o que faltava (hero, biblioteca, ícones, variantes B, capturas) e commitei.
 
 ## 1. Commits
-Ver `git log --oneline integracao/onda1..dir2/loja` (todos com prefixo "loja").
+- `2cc7804` WIP: script gerador + ferramenta de captura limpa (trabalho do agente anterior, revisado)
+- `a28563f` WIP: cápsulas A/B, hero, logo, ícones e 6 capturas reais
+- `9e4346a` WIP: rascunho deste relatório
+- `9614791` captura 4 vira a horda do Espelho; prancha A/B sem rótulos sobrepostos
+- (último) relatório final
 
 ## 2. O que existe (arquivos)
 - `tools/store/build_store.py` — **regera tudo** (determinístico: rodei duas vezes, mesmos MD5).
@@ -43,8 +47,9 @@ O João escolhe por peça na `board.png`. Opinião: A para as cápsulas (o carmi
 lojas azuladas), B para o hero (é a primeira tela do jogo).
 
 **Capturas escolhidas** (quadros reais; HUD do jogo visível, sem legendas):
-01 Rei no Limiar · 02 magia contra Athoth · 03 Galila entre gaiolas · 04 Astaphaios nos espelhos ·
-05 golpe contra Armupiel · 06 o Centro com criaturas. Seis cenários diferentes.
+01 Rei no Limiar (tela 1) · 02 magia contra Athoth (10) · 03 Galila entre gaiolas (28) ·
+04 onda de criaturas no Éon do Espelho (41) · 05 golpe contra Armupiel (64) · 06 o Centro com criaturas (65).
+Cinco cenários diferentes; 4 lutas de chefe e 2 de onda. A Steam pede no mínimo 5.
 
 ## 3. Capturas / provas
 - Prancha: `assets/store/board.png` (todas as peças lado a lado, A/B, ícones, logo, hero, capturas).
@@ -52,7 +57,17 @@ lojas azuladas), B para o hero (é a primeira tela do jogo).
 - Brutos e folhas de contato: `/home/user/caps/loja/raw/`, `/home/user/caps/loja/cs_s*.png`.
 
 ## 4. Validação
-(ver relatório final — colado lá)
+`tools/validate.sh --only "ScriptCheck CodexQA"` (17/10, ~06:30 UTC, máquina com carga ~50 por outros agentes):
+```
+ScriptCheck    OK        13s  pass=0  code=0
+CodexQA        TEMPO    240s  pass=27  code=124   (FAIL: save independente [conhecido]; morte abre resultado recuperável)
+CodexQA        TEMPO    600s  pass=23  code=124   (2ª rodada, TIMEOUT=600: FAIL save independente; resultado e pausa do encontro 2)
+```
+Os itens que falham MUDAM de uma rodada para outra e o teste estoura o tempo: parece efeito da carga da
+máquina, não deste branch — ele não toca em código do jogo (só `tools/store/*`, `assets/store/*` com
+`.gdignore` e este doc; `store_shot.gd` não tem `class_name`). NÃO confirmei rodando o CodexQA na base
+`integracao/onda1` (não posso mexer em outro worktree). O script Python é determinístico (MD5 iguais em
+duas rodadas das small capsules).
 
 ## 5. O que NÃO ficou bom / limites (honesto)
 - **A Sophia é pequena nas capturas** (o enquadramento real do jogo, câmera aberta). São fiéis, mas
@@ -60,8 +75,8 @@ lojas azuladas), B para o hero (é a primeira tela do jogo).
   não da loja — não recortei/ampliei para não mostrar algo que o jogo não mostra.
 - A key art mostra a Sophia e o Rei juntos num céu que é de outro Éon (composição de loja, não uma
   cena do jogo). Isso é normal em cápsula, mas as CAPTURAS é que mostram o jogo de verdade.
-- Sem ondas de criaturas comuns boas: a tela 3 mostrou um inimigo só; a 6ª captura (Centro) é a que
-  tem mais criaturas. Faltam capturas de horda grande e da Sophia em close.
+- Ondas de criaturas: a tela 3 mostrou um inimigo só (descartada); a 41 e a 65 têm 3–4 criaturas.
+  Não há captura de horda grande nem da Sophia em close. As capturas 01 e 02 têm o mesmo cenário (Limiar).
 - Ícone "faísca" é mais simples/gráfico; o "Olho" lê melhor pequeno mas é o símbolo do vilão.
 - Os pés da Sophia saem cortados na borda inferior em algumas cápsulas (escolha de enquadramento).
 - Não fiz: ícone da comunidade 184×184, fundo da página (page background), trailer/GIF.
