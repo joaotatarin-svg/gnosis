@@ -589,6 +589,9 @@ func _process_attack(delta: float) -> void:
 		hitbox.deactivate()
 		buffered_btn = ""
 		_enter_block()
+		# segurado desde antes da janela = só defesa (o aparo exige apertar na hora)
+		if not Input.is_action_just_pressed("block"):
+			block_time = PARRY_WINDOW + 0.01
 		return
 
 	# Fase de wind-up: "carregando" o golpe (freia mais no pesado).
