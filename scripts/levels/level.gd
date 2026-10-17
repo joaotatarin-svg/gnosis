@@ -48,6 +48,8 @@ var _last_boss_pos: Vector2 = Vector2.ZERO   # onde o chefe caiu (a queda do Rei
 # "logo adiante"; o resto da intro vira legenda enquanto ela anda, e a Cena A
 # (o Rei sai da névoa) só abre quando ela chega ao gatilho do duelo.
 const KING_SPAWN_X := -470.0
+# A MENTE (68): a Sophia acorda a 70 px da parede esquerda da arena trancada.
+const FINAL_SOPHIA_DX := 70.0
 var _king_scene_pending: bool = false   # Cena A ainda não tocou (abre no gatilho)
 var _king_scene_running: bool = false
 # TENTAÇÃO EM CENA (#18): o Arconte já está no palco durante a conversa (parado,
@@ -81,6 +83,8 @@ func _ready() -> void:
 	if RunManager.run_active and RunManager.is_king_screen(screen) and player != null:
 		player.global_position.x = KING_SPAWN_X
 		_snap_camera()
+	if RunManager.run_active and RunManager.is_final(screen) and player != null:
+		_lock_final_arena()
 	_tutor_parry_done = Narrative.seen.has("dica_aparar")
 	_tutor_unblock_done = Narrative.seen.has("dica_imparavel")
 
@@ -119,6 +123,26 @@ func _process(_delta: float) -> void:
 			_play_king_scene()      # a Cena A abre no gatilho; o duelo vem depois
 			return
 		_start_zone(next)
+
+
+## F2 (QA visual): a Mente é uma ARENA trancada desde a chegada (centro ± ZONE_HALF,
+## paredes e véus da zona). A Sophia acorda perto da borda esquerda, virada para
+## a direita, e a câmera já para no quadro da luta: o clarão, a caixa e o card
+## mostram o mesmo lugar onde as duas formas nascem (FinalBattle.REI_DX/COL_DX).
+func _lock_final_arena() -> void:
+	var c := zone_center(0)
+	zone_index = 0
+	zone_active = true
+	for wx in [c - ZONE_HALF, c + ZONE_HALF]:
+		var w := _make_wall(wx)
+		add_child(w)
+		_zone_walls.append(w)
+	_set_camera_limits(c - ZONE_HALF, c + ZONE_HALF)
+	_cam_locked = true
+	player.global_position.x = c - ZONE_HALF + FINAL_SOPHIA_DX
+	if "facing" in player:
+		player.set("facing", 1)
+	_snap_camera()
 
 
 ## Cena A (ROTEIRO §2): o Rei sai da névoa quando ela chega ao gatilho do duelo.
@@ -642,6 +666,11 @@ func _on_screen_cleared() -> void:
 	if player and player.health:
 		RunManager.store_health(player.health.current_health, player.health.max_health)
 	Audio.play_sfx("level_clear")
+	# H3 (QA visual): o chefe/Campeão morreu enquanto o card dele ainda estava
+	# na tela — a cena, a caixa e a loja esperam o card acabar (não sobrepõem).
+	await _cinematics_done()
+	if not is_inside_tree():
+		return
 
 	if RunManager.is_final(screen):
 		_win()
@@ -675,6 +704,21 @@ func _on_screen_cleared() -> void:
 	else:
 		# Tela normal limpa: abre a fenda à direita — o jogador ANDA até ela.
 		_open_exit()
+
+
+## Espera os cards (Cinematic) que estão na tela ou acabaram de ser pedidos
+## (nascem por call_deferred) terminarem. Teto de ~6 s por segurança.
+func _cinematics_done() -> void:
+	await get_tree().process_frame
+	for _i in 360:
+		var busy := false
+		for c in get_tree().root.get_children():
+			if c is Cinematic and not c.is_queued_for_deletion():
+				busy = true
+				break
+		if not busy:
+			return
+		await get_tree().process_frame
 
 
 ## Fenda de saída no fim da travessia; ao entrar nela, avança de tela.

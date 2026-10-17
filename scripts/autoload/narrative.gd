@@ -20,6 +20,20 @@ const YAL := "Yaldabaoth"
 const SOPHIA := "Sophia"
 const NARRADOR := ""          # rubrica sem falante (a caixa mostra só o texto)
 
+# Moods do retrato (campo `mood`, ver _m). Constantes: o AudioQA lê os cues das
+# falas `_c(...)` por regex e confundiria um mood literal no fim da linha com um cue.
+const M_ARREPENDIDO := "arrependido"
+const M_CHOQUE := "choque"
+const M_DETERMINADA := "determinada"
+const M_IRONICO := "ironico"
+const M_MEDO := "medo"
+const M_QUEBRADO := "quebrado"
+const M_REGIO := "regio"
+const M_REVELADO := "revelado"
+const M_SERENA := "serena"
+const M_TERNURA := "ternura"
+const M_TRISTE := "triste"
+
 const ORDINAIS := ["primeiro", "segundo", "terceiro", "quarto", "quinto", "sexto", "sétimo"]
 
 var refusals: int = 0        # tentações recusadas
@@ -55,6 +69,17 @@ func _l(speaker: String, text: String) -> Dictionary:
 ## Fala com marcação de encenação (`cue`) para a cena da Onda 2.
 func _c(speaker: String, text: String, cue: String) -> Dictionary:
 	return {"speaker": speaker, "text": text, "cue": cue}
+
+
+## RETRATO POR EMOÇÃO (Onda 3): marca a fala com `mood`, que a DialogueBox (ui3)
+## usa para escolher o retrato. Sem `mood`, vale o neutro do falante. Valores
+## (docs/pedidos/encenacao3.md): Sophia neutra/determinada/triste/raiva/medo/
+## ternura/choque/serena · Rei e Yaldabaoth regio/ironico/revelado/quebrado ·
+## Soter sereno/triste · Velkar elmo/arrependido. A Voz NUNCA leva mood (retrato
+## nenhum: a regra de ouro — nada liga a Voz ao Rei antes do roubo).
+func _m(line: Dictionary, mood: String) -> Dictionary:
+	line["mood"] = mood
+	return line
 
 
 ## "Uma faísca escorre" / "37 faíscas escorrem" — a fala nunca diz "0 faíscas".
@@ -175,15 +200,15 @@ func intro() -> Array:
 func king_intro() -> Array:
 	return [
 		_c(VOZ, "Olha: alguém vem da névoa. Não temas, eu o conheço. É um rei antigo, e gentil. Não te quer mal.", "fog_thickens"),
-		_c(REI, "Faísca perdida... que bom que acordaste. O limiar tem uma lei: só passa quem me toca com a própria luz.", "king_emerges"),
-		_c(REI, "(ergue o orbe; a máscara se acende) Mostra-me a tua. Vem.", "mask_lights"),
+		_m(_c(REI, "Faísca perdida... que bom que acordaste. O limiar tem uma lei: só passa quem me toca com a própria luz.", "king_emerges"), M_REGIO),
+		_m(_c(REI, "(ergue o orbe; a máscara se acende) Mostra-me a tua. Vem.", "mask_lights"), M_IRONICO),
 	]
 
 
 ## O Rei "cai" (tela 1): o selo racha e os sete Arcontes acordam.
 func king_fall() -> Array:
 	return [
-		_c(REI, "(a máscara racha) ...Ah. A tua luz é maior do que eu lembrava.", "mask_cracks"),
+		_m(_c(REI, "(a máscara racha) ...Ah. A tua luz é maior do que eu lembrava.", "mask_cracks"), M_IRONICO),
 		_c(VOZ, "Sentiste? O selo dele se partiu. Lá em cima, sete tronos acabam de acordar.", "king_sinks"),
 		_l(VOZ, "Sete Arcontes, sete Anéis. Reúne-os todos, e mostro-te como desfazer este mundo de mentira."),
 	]
@@ -244,7 +269,7 @@ func temptation(boss_id: String) -> Array:
 		]
 		"arconte_fome": return [
 			_l("Harmas", "A tua casa. A janela para o rio. Os barcos que contavas. Guardei tudo, quentinho. Fica."),
-			_l(SOPHIA, "(Como ele sabe da janela?)"),
+			_m(_l(SOPHIA, "(Como ele sabe da janela?)"), M_MEDO),
 			_l(VOZ, "Arcontes roubam lembranças. Essa é nossa. Não deixes. Escolhe."),
 		]
 		"arconte_corrente": return [
@@ -426,11 +451,11 @@ func soter_meeting(n: int) -> Array:
 			_l("Soter", "Sabes por que não luto? Toda lâmina, até a justa, ensina a mão a fechar. A tua ainda abre. Escolhe."),
 		]
 		2: return [
-			_l("Soter", "É a última vez que nos vemos deste lado, Portadora. Lá em cima, nem eu alcanço."),
+			_m(_l("Soter", "É a última vez que nos vemos deste lado, Portadora. Lá em cima, nem eu alcanço."), M_TRISTE),
 			_l("Soter", "Merou, que tirava água do poço para quem não podia. Tasso, que dormia no telhado para ver os astros."),
 			_l(SOPHIA, "Eles eram a minha gente?"),
 			_l("Soter", "Eram de todos. Por isso também são teus. Lembra-te disso quando te disserem outra coisa."),
-			_l("Soter", "E quando ficares sozinha, não temas o silêncio. Ele também é teu. Escolhe."),
+			_m(_l("Soter", "E quando ficares sozinha, não temas o silêncio. Ele também é teu. Escolhe."), M_TRISTE),
 		]
 	return []
 
@@ -456,10 +481,10 @@ func velkar_meeting() -> Array:
 	return [
 		_l("Velkar", "Não ergas o cajado, Portadora. Já fui Arconte. Larguei a corrente... e ela levou o meu braço junto."),
 		_l(SOPHIA, "Por que a largaste?"),
-		_l("Velkar", "Porque uma faísca me olhou como tu olhas os Adormecidos. Não aguentei ser olhado assim."),
-		_l("Velkar", "Lá em cima não há tirano. Há uma criança cega, num trono grande demais, chamando pela mãe."),
-		_l(SOPHIA, "...Tu choras por ele?"),
-		_l("Velkar", "Todo dia. Era meu pai."),
+		_m(_l("Velkar", "Porque uma faísca me olhou como tu olhas os Adormecidos. Não aguentei ser olhado assim."), M_ARREPENDIDO),
+		_m(_l("Velkar", "Lá em cima não há tirano. Há uma criança cega, num trono grande demais, chamando pela mãe."), M_ARREPENDIDO),
+		_m(_l(SOPHIA, "...Tu choras por ele?"), M_TRISTE),
+		_m(_l("Velkar", "Todo dia. Era meu pai."), M_ARREPENDIDO),
 		_l("Velkar", "Quando chegares nele, acaba direito. Toma: faíscas que colhi quando era monstro. Pesam menos em ti."),
 	]
 
@@ -470,8 +495,8 @@ func velkar_choices() -> Array:
 
 func velkar_farewell(choice: int) -> Array:
 	if choice == 0:
-		return [_l("Velkar", "Não. Alguém tem de ficar com os que acordam tarde.")]
-	return [_l("Velkar", "Paz eu não tenho. Mas fico. Alguém tem de ficar com os que acordam tarde.")]
+		return [_m(_l("Velkar", "Não. Alguém tem de ficar com os que acordam tarde."), M_ARREPENDIDO)]
+	return [_m(_l("Velkar", "Paz eu não tenho. Mas fico. Alguém tem de ficar com os que acordam tarde."), M_ARREPENDIDO)]
 
 
 # --- ATO 3: O ROUBO + A MÁSCARA CAI (tela 64) ----------------------------------
@@ -488,17 +513,17 @@ func theft() -> Array:
 		_c(NARRADOR, "(Passos na névoa. Um vulto que tu conheces. A máscara sem uma rachadura.)", "king_emerges"),
 		_c(VOZ, "(a voz já não vem de dentro de ti: vem da boca do Rei) Mostrar. Sim.", "voice_merge"),
 		_l(VOZ, "(ele aplaude, devagar) Eu disse que aplaudiria, se tivesse mãos. Tenho."),
-		_l(SOPHIA, "...Não."),
+		_m(_l(SOPHIA, "...Não."), M_CHOQUE),
 		_c(NARRADOR, "(Os sete Anéis se arrancam dos teus dedos, um a um, e voam para ele como quem volta para casa.)", "rings_fly"),
-		_c(YAL, "(a máscara cai; atrás dela, só um olho cego) Eu sou o Cego de quem te falei. E não há outro além de mim.", "mask_falls"),
-		_l(YAL, "Chama-me pelo nome que nunca te disse: Yaldabaoth. Sabes o que portavas, Portadora? A mim."),
-		_l(YAL, "Nunca houve rio. Nunca houve janela. A tua gente? Cinzas de uma colheita qualquer."),
-		_l(YAL, "Dei-te um luto para te dar um caminho. O luto é a coleira mais macia."),
-		_l(SOPHIA, "Eu chorei por eles."),
-		_l(YAL, "Choraste por mim. Os sete eram meus filhos, e tu trouxeste-me o que restou deles."),
+		_m(_c(YAL, "(a máscara cai; atrás dela, só um olho cego) Eu sou o Cego de quem te falei. E não há outro além de mim.", "mask_falls"), M_REVELADO),
+		_m(_l(YAL, "Chama-me pelo nome que nunca te disse: Yaldabaoth. Sabes o que portavas, Portadora? A mim."), M_REVELADO),
+		_m(_l(YAL, "Nunca houve rio. Nunca houve janela. A tua gente? Cinzas de uma colheita qualquer."), M_REVELADO),
+		_m(_l(YAL, "Dei-te um luto para te dar um caminho. O luto é a coleira mais macia."), M_REVELADO),
+		_m(_l(SOPHIA, "Eu chorei por eles."), M_TRISTE),
+		_m(_l(YAL, "Choraste por mim. Os sete eram meus filhos, e tu trouxeste-me o que restou deles."), M_REVELADO),
 		_l("Uma voz nos Anéis", "...espera... eu... lembro..."),
-		_l(YAL, "(mais baixo, quase a Voz de antes) Tu disseste que ficavas comigo."),
-		_c(YAL, "(vira um motor de anéis e afunda no chão) Desta vez, não te levantes.", "sink"),
+		_m(_l(YAL, "(mais baixo, quase a Voz de antes) Tu disseste que ficavas comigo."), M_REVELADO),
+		_m(_c(YAL, "(vira um motor de anéis e afunda no chão) Desta vez, não te levantes.", "sink"), M_REVELADO),
 	]
 
 
@@ -508,10 +533,10 @@ func theft() -> Array:
 func center_intro() -> Array:
 	return [
 		_c(NARRADOR, "(Silêncio. Nenhuma voz. Pela primeira vez, só o som da tua respiração.)", "wait_2s"),
-		_l(SOPHIA, "Voz?"),
-		_l(SOPHIA, "..."),
-		_l(SOPHIA, "Ninguém. ...Então eu."),
-		_l(SOPHIA, "Os ecos dele estão aqui embaixo. Cada um guarda um pedaço que ele me tirou. Vou buscá-los."),
+		_m(_l(SOPHIA, "Voz?"), M_MEDO),
+		_m(_l(SOPHIA, "..."), M_MEDO),
+		_m(_l(SOPHIA, "Ninguém. ...Então eu."), M_DETERMINADA),
+		_m(_l(SOPHIA, "Os ecos dele estão aqui embaixo. Cada um guarda um pedaço que ele me tirou. Vou buscá-los."), M_DETERMINADA),
 	]
 
 
@@ -555,9 +580,9 @@ func echo_memory(boss_id: String) -> Array:
 ## A batalha final: o choque, a mente dele.
 func final_pre() -> Array:
 	return [
-		_l(SOPHIA, "(Um clarão. O chão some. O mundo vira o interior de uma mente.) ...Estou dentro dele."),
-		_l(YAL, "Duas faces: a que amaste e a que temes. As duas sou eu. Derruba uma, e a outra a refaz."),
-		_l(SOPHIA, "Então caem as duas. Juntas."),
+		_m(_l(SOPHIA, "(Um clarão. O chão some. O mundo vira o interior de uma mente.) ...Estou dentro dele."), M_MEDO),
+		_m(_l(YAL, "Duas faces: a que amaste e a que temes. As duas sou eu. Derruba uma, e a outra a refaz."), M_REVELADO),
+		_m(_l(SOPHIA, "Então caem as duas. Juntas."), M_DETERMINADA),
 	]
 
 
@@ -565,8 +590,8 @@ func final_pre() -> Array:
 ## o relógio de 14 s corre). Gancho: final_battle, bloco da primeira queda.
 func seventh_ring() -> Array:
 	return [
-		_l(SOPHIA, "A Coroa voltou. E com ela, o porquê: eu desci de propósito."),
-		_l(SOPHIA, "Para desfazer o que tu fazias. E para te buscar."),
+		_m(_l(SOPHIA, "A Coroa voltou. E com ela, o porquê: eu desci de propósito."), M_DETERMINADA),
+		_m(_l(SOPHIA, "Para desfazer o que tu fazias. E para te buscar."), M_TERNURA),
 	]
 
 
@@ -585,14 +610,14 @@ func final_revive(form_name: String) -> String:
 func final_lines() -> Array:
 	return [
 		_c(NARRADOR, "(As duas formas caem juntas. Os sete Anéis param no ar... e voltam para ti, um por um.)", "rings_return"),
-		_c(SOPHIA, "Eles não são o teu corpo. São o meu: cacos meus, que tu forjaste em correntes.", "flash"),
-		_l(SOPHIA, "Vim te buscar. E os meus próprios cacos me fizeram esquecer até isso."),
+		_m(_c(SOPHIA, "Eles não são o teu corpo. São o meu: cacos meus, que tu forjaste em correntes.", "flash"), M_DETERMINADA),
+		_m(_l(SOPHIA, "Vim te buscar. E os meus próprios cacos me fizeram esquecer até isso."), M_TRISTE),
 		_c(NARRADOR, "(O Colosso se abre. Está oco. Lá no fundo, encolhido e cego, alguém pequeno.)", "colossus_shrinks"),
-		_l(YAL, "...mãe? eu não queria ser cego. eu só queria que alguém olhasse para mim."),
-		_l(SOPHIA, "Fui eu que fechei a nuvem. Fui eu que te deixei lá. Agora eu estou olhando."),
-		_c(SOPHIA, "Levanta. Eu te seguro.", "theme_alone"),
-		_c(SOPHIA, "(recolhe-o para dentro de si) Meu nome é Sophia. Fui eu que te dei o teu.", "reclaim"),
-		_l(SOPHIA, "Falta o mais difícil: um mundo inteiro de gente que dorme. Ninguém vai escolher por mim."),
+		_m(_l(YAL, "...mãe? eu não queria ser cego. eu só queria que alguém olhasse para mim."), M_QUEBRADO),
+		_m(_l(SOPHIA, "Fui eu que fechei a nuvem. Fui eu que te deixei lá. Agora eu estou olhando."), M_TERNURA),
+		_m(_c(SOPHIA, "Levanta. Eu te seguro.", "theme_alone"), M_TERNURA),
+		_m(_c(SOPHIA, "(recolhe-o para dentro de si) Meu nome é Sophia. Fui eu que te dei o teu.", "reclaim"), M_TERNURA),
+		_m(_l(SOPHIA, "Falta o mais difícil: um mundo inteiro de gente que dorme. Ninguém vai escolher por mim."), M_DETERMINADA),
 	]
 
 
@@ -613,15 +638,15 @@ func final_choices(sleepers: int) -> Array:
 func ending_lines(index: int) -> Array:
 	match index:
 		0: return [
-			_l(SOPHIA, "Vamos para casa. Todos."),
+			_m(_l(SOPHIA, "Vamos para casa. Todos."), M_SERENA),
 			_l(NARRADOR, "(O Kenoma começa a se desfazer, como sonho ao amanhecer. Ela olha para trás uma vez.)"),
 		]
 		1: return [
-			_l(SOPHIA, "Ninguém mais vai ser abandonado. Eu fico. Eu olho por todos."),
+			_m(_l(SOPHIA, "Ninguém mais vai ser abandonado. Eu fico. Eu olho por todos."), M_SERENA),
 			_l(NARRADOR, "(O trono ainda está morno. Serve.)"),
 		]
 		2: return [
-			_l(SOPHIA, "Não vou subir. Não vou sentar. Vou descer e bater em cada porta."),
+			_m(_l(SOPHIA, "Não vou subir. Não vou sentar. Vou descer e bater em cada porta."), M_SERENA),
 			_l(NARRADOR, "(Lá embaixo, nas cinzas onde ela acordou, alguém começa a se mexer.)"),
 		]
 	return []

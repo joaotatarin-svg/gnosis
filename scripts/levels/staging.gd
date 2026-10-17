@@ -53,7 +53,7 @@ var _gem_born: Dictionary = {}                 # índice -> true (já nasceu no 
 var _orbit: int = 0                            # 0 parado · 1 órbita · 2 motor (3 anéis)
 var _orbit_t: float = 0.0
 var _orbit_weak: bool = false                  # "...espera... eu... lembro..."
-var _little: _Little
+var _little: CegoPequeno                       # o Cego pequeno pintado (scripts/fx/cego_pequeno.gd)
 var _aura: Sprite2D
 var _locked: bool = false
 var _music_stopped: bool = false
@@ -62,6 +62,14 @@ var _ducked: bool = false                      # abaixou a música (soter) — s
 var _fx_layer: CanvasLayer                     # abaixo da caixa (90): flash e preto
 var _white: ColorRect
 var _black: ColorRect
+# ILUSTRAÇÕES das cenas (Onda 3): 07 roubo (B), 08 descida (C), 09 anagnórise (D)
+# entram como um card de tela cheia ATRÁS da caixa (na camada dos efeitos, entre o
+# preto e o flash), com Ken Burns lento; saem na fala seguinte.
+var _art_rect: TextureRect
+var _art_kb: Tween
+var _art_line: int = -2                        # fala em que a ilustração entrou
+var _line_idx: int = -1                        # fala atual da caixa
+var _descending: bool = false                  # a descida do Centro (cena C, sem caixa)
 
 
 func _ready() -> void:
@@ -97,11 +105,19 @@ func setup(p_level: Node2D, p_player: Node2D) -> void:
 ## (await .finished / .choice_made como sempre).
 func play(lines: Array, choices: Array = [], scene: String = "") -> DialogueBox:
 	_scene = scene
+	_clear_damage_numbers()
 	_box = DialogueBox.play(lines, choices)
 	_box.line_shown.connect(_on_line)
 	_box.finished.connect(_on_finished.bind(_box))
 	_scene_open()
 	return _box
+
+
+## Há cena dirigida no ar? (entre play() e o fim do _on_finished, a descida do
+## Centro sem caixa, ou uma ilustração de cena na tela). O HUD (ui3) chama por
+## has_method para esconder dicas/combo/faíscas durante as cenas (QA C2).
+func is_active() -> bool:
+	return _scene != "" or _descending or _art_on()
 
 
 ## A cena da tela 1 terminou: o Rei-figurante segura o lugar até o duelo
@@ -160,6 +176,9 @@ func _scene_open() -> void:
 			# M3: a música do Éon cai a −14 dB ao abrir o encontro ("Senta.").
 			Audio.duck_music(600.0, -14.0)
 			_ducked = true
+			_frame_npc()
+		"velkar":
+			_frame_npc()
 		"tentacao":
 			# #18: o Arconte já está no palco (Level._stage_archon); a câmera
 			# enquadra os dois, ela à esquerda e ele à direita.
@@ -168,6 +187,13 @@ func _scene_open() -> void:
 
 func _on_line(index: int, line: Dictionary) -> void:
 	_flush()
+	_line_idx = index
+	if _art_on() and index != _art_line:
+		_hide_art(0.8)                 # a ilustração da cena dura uma fala
+	if index == 0:
+		# O golpe final pode criar o número DEPOIS de a cena abrir (a morte do
+		# chefe chama a cena no meio do golpe): limpa de novo na 1ª fala.
+		_clear_damage_numbers()
 	var cue := String(line.get("cue", ""))
 	var who := String(line.get("speaker", ""))
 	var text := String(line.get("text", ""))
@@ -215,6 +241,7 @@ func _on_line(index: int, line: Dictionary) -> void:
 			if text.begins_with("(Como ele sabe"):
 				Audio.duck_music(5.0, -10.0)
 		"anagnorise":
+			_little_pose(who, text)
 			if text.begins_with("Fui eu que fechei"):
 				_cam_to(1.32, Vector2(0, D_LIFT - 10.0), 1.2)   # baixa à altura dela
 			elif text.begins_with("Falta o mais difícil"):
@@ -225,6 +252,7 @@ func _on_finished(box: DialogueBox) -> void:
 	if box != _box:
 		return
 	_flush()
+	_hide_art(0.5)
 	if _ducked:
 		Audio.duck_music(0.0, 0.0)
 		_ducked = false
@@ -243,7 +271,7 @@ func _on_finished(box: DialogueBox) -> void:
 			_unlock()
 		"anagnorise":
 			_cam_release(0.6)
-		"tentacao":
+		"tentacao", "soter", "velkar":
 			_cam_release(0.5)
 		"santuario":
 			if _music_stopped:
@@ -310,6 +338,26 @@ func _frame_boss() -> void:
 	var mid := (player.global_position.x + boss.global_position.x) * 0.5
 	# Desce o quadro como na cena D: os dois ficam ACIMA da caixa de diálogo.
 	_cam_to(1.0, Vector2(mid - _view_center().x, D_LIFT), 0.8)
+
+
+## Encontro com Soter/Velkar: a caixa cobria os dois (os pés ficam a 76 % da
+## tela, a caixa começa a ~65 %) — o NPC falava, ajoelhava e abençoava escondido.
+## Centra o quadro entre ela e o NPC mais perto e desce D_LIFT, como na tentação.
+func _frame_npc() -> void:
+	if player == null or level == null:
+		return
+	var npc: Node2D = null
+	var best := INF
+	for c in level.get_children():
+		if c is NpcEncounter:
+			var d := absf((c as Node2D).global_position.x - player.global_position.x)
+			if d < best:
+				best = d
+				npc = c
+	if npc == null:
+		return
+	var mid := (player.global_position.x + npc.global_position.x) * 0.5
+	_cam_to(1.0, Vector2(mid - _view_center().x, D_LIFT), 0.6)
 
 
 ## Onde o Rei espera o duelo (o 1º ponto de spawn da zona 0 do Level).
@@ -468,6 +516,9 @@ func _b_mask_falls() -> void:
 	t.tween_method(_king.cool, 0.0, 1.0, 0.6)
 	_flash_white(0.08)
 	Juice.shake(0.5)
+	# O clarão abre na ILUSTRAÇÃO do roubo (07): os anéis voando para a mão dele,
+	# a máscara caindo. Some na fala seguinte, já com o Rei cego no palco.
+	_show_art(7, 0.3, Vector2(0.35, -0.45), 7.0)
 	# O tema da Voz distorcido → corte → `roubo`: é do Áudio (cue `mask_falls`).
 	_music_stopped = false
 
@@ -496,6 +547,7 @@ func _b_sink() -> void:
 ## paleta vai do dourado da Coroa ao cinza-violeta do Centro → a Sophia cai de
 ## joelhos e se ergue. Sem música (só vento): a `centro` entra no 1º caco.
 func descend() -> void:
+	_descending = true
 	PauseStack.push(self)
 	Audio.stop_music(0.0)
 	_black.color.a = 1.0
@@ -510,7 +562,16 @@ func descend() -> void:
 	cm.color = Color(1.25, 1.0, 0.6)
 	add_child(cm)
 	var t := _tw()
-	t.tween_interval(1.0)
+	if Cinematic.art_texture(8) != null:
+		# A queda em ILUSTRAÇÃO (08): do preto, ela cai de cabeça entre os cacos
+		# (a deriva desce com ela); volta ao preto e o jogo segue a descida.
+		t.tween_interval(0.3)
+		t.tween_callback(_show_art.bind(8, 0.7, Vector2(0.0, -0.9), 4.0))
+		t.tween_interval(3.0)
+		t.tween_callback(_hide_art.bind(0.6))
+		t.tween_interval(0.7)
+	else:
+		t.tween_interval(1.0)
 	t.tween_property(_black, "color:a", 0.0, 0.6)
 	if _cam != null:
 		t.parallel().tween_property(_cam, "base_offset", Vector2(_cam_saved.base_offset), 2.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -518,6 +579,7 @@ func descend() -> void:
 	t.tween_callback(_kneel)
 	t.tween_interval(1.5)
 	await t.finished
+	_descending = false
 	if not is_inside_tree():
 		return
 	PauseStack.pop(self)
@@ -635,13 +697,15 @@ func _d_shrink() -> void:
 	back.tween_interval(3.0)
 	back.tween_callback(_cam_to.bind(1.3, Vector2(0, D_LIFT), 1.2))
 	# O pequeno: encolhido e cego, ao lado do pé dela.
-	_little = _Little.new()
+	_little = CegoPequeno.new()
 	_little.scale = Vector2.ONE * 1.5
 	add_child(_little)
 	var side := 1.0
 	if player != null:
 		side = float(player.get("facing")) if "facing" in player else 1.0
 		_little.global_position = player.global_position + Vector2(side * 30.0, 22.0)
+	# A pintura olha para a direita: ao lado direito dela, ele vira para ela.
+	_little.scale.x = -absf(_little.scale.x) * side
 	_little.modulate.a = 0.0
 	var spot := _little.global_position
 	var t := _tw()
@@ -659,6 +723,24 @@ func _d_shrink() -> void:
 	t.parallel().tween_property(_little, "modulate:a", 1.0, 1.0).set_delay(2.6)
 
 
+## O Cego pequeno (CegoPequeno) muda de pose pela fala: ouve "...mãe?" e olha
+## pra cima; treme quando ela assume a culpa; estende a mão no "Levanta."; no
+## `reclaim` volta à pose automática pelo `glow` (erguido → aninhado na mão dela).
+func _little_pose(who: String, text: String) -> void:
+	if _little == null or not is_instance_valid(_little):
+		return
+	if who == Narrative.YAL and text.begins_with("...mãe?"):
+		_little.set_anim("look_up")
+	elif text.begins_with("Fui eu que fechei"):
+		_little.set_anim("trembling")
+	elif text.begins_with("Levanta."):
+		_little.set_anim("reach")
+		# Ele estende a mão; depois, a ILUSTRAÇÃO da anagnórise (09): ela o abraça.
+		var t := _tw()
+		t.tween_interval(1.3)
+		t.tween_callback(_show_art.bind(9, 0.9, Vector2(-0.3, 0.35), 7.0))
+
+
 func _d_theme() -> void:
 	# O tema da Voz volta sozinho, lento — agora é dela (o Áudio, pelo cue `theme_alone`).
 	_music_stopped = false
@@ -668,10 +750,11 @@ func _d_reclaim() -> void:
 	if _little == null or player == null:
 		return
 	var hand := player.global_position + Vector2(10.0, -12.0)
+	_little.set_anim("")                  # volta ao glow: erguido → aninhado
 	var t := _tw()
 	t.tween_property(_little, "glow", 1.0, 0.5)
 	t.tween_property(_little, "global_position", hand, 0.7).set_trans(Tween.TRANS_SINE)
-	t.parallel().tween_property(_little, "scale", Vector2(0.3, 0.3), 0.7)
+	t.parallel().tween_property(_little, "scale", Vector2(0.3 * signf(_little.scale.x), 0.3), 0.7)
 	t.tween_callback(func() -> void:
 		VfxLibrary._flash_sprite(self, hand, "light", Color(1, 0.95, 0.75, 1), 0.2, 1.1, 0.5))
 	t.tween_property(_little, "modulate:a", 0.0, 0.3)
@@ -711,6 +794,55 @@ func _hide_boss_bodies() -> void:
 		for c in level.get_children():
 			if c is Gib:
 				(c as Node2D).visible = false
+
+
+## Card de ilustração da cena (nº de Cinematic.ART): tela cheia, atrás da caixa
+## e do flash, entra em `fade` s com Ken Burns de `dur` s. Dura até a próxima fala
+## (ou `_hide_art`). Sem o arquivo, não faz nada (a cena segue no palco).
+func _show_art(n: int, fade: float, dir: Vector2, dur: float) -> void:
+	var tex := Cinematic.art_texture(n)
+	if tex == null:
+		return
+	if _art_rect == null:
+		# Na camada dos efeitos, ENTRE o preto e o branco: cobre o preto (a descida
+		# começa no escuro) e o clarão branco passa por cima dela (o roubo).
+		_art_rect = Cinematic.make_art_rect()
+		_fx_layer.add_child(_art_rect)
+		_fx_layer.move_child(_art_rect, _black.get_index() + 1)
+	if _art_kb != null and _art_kb.is_valid():
+		_art_kb.kill()
+	_art_rect.texture = tex
+	_art_rect.modulate = Color(1, 1, 1, 0)
+	_art_line = _line_idx
+	_art_kb = Cinematic.ken_burns(_art_rect, self, dur, dir)
+	_tw().tween_property(_art_rect, "modulate:a", 1.0, fade)
+
+
+func _hide_art(fade: float) -> void:
+	if not _art_on():
+		return
+	_art_line = -2
+	var t := _tw()
+	t.tween_property(_art_rect, "modulate:a", 0.0, fade)
+
+
+func _art_on() -> bool:
+	return _art_rect != null and is_instance_valid(_art_rect) and _art_line != -2
+
+
+## C1 (QA visual): o número de dano do último golpe ficava CONGELADO na tela a
+## cena inteira (a caixa pausa a árvore e ele não some). A cena começa sem eles.
+func _clear_damage_numbers() -> void:
+	if level == null or not is_instance_valid(level):
+		return
+	var stack: Array = [level]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		for c in n.get_children():
+			if c is DamageNumber:
+				c.queue_free()
+			elif c.get_child_count() > 0:
+				stack.append(c)
 
 
 func _clear_fog(dur: float) -> void:
@@ -1045,27 +1177,3 @@ class _Gem extends Node2D:
 		draw_colored_polygon(d, Color(color.r, color.g, color.b, 0.95 * maxf(dim, 0.4)))
 		draw_circle(Vector2(-1, -2), 1.4, Color(1, 1, 1, 0.8 * dim))
 
-
-## "Alguém pequeno": encolhido e cego, do tamanho do pé dela.
-class _Little extends Node2D:
-	var glow: float = 0.0
-	var _t: float = 0.0
-
-	func _ready() -> void:
-		process_mode = Node.PROCESS_MODE_ALWAYS
-
-	func _process(d: float) -> void:
-		_t += d
-		queue_redraw()
-
-	func _draw() -> void:
-		var breath := 1.0 + 0.04 * sin(_t * 2.4)
-		var body := Color(0.08, 0.07, 0.1).lerp(Color(1, 0.95, 0.8), glow)
-		draw_set_transform(Vector2(0, -7), 0.0, Vector2(1.0, breath))
-		draw_circle(Vector2.ZERO, 9.0, Color(0.85, 0.82, 0.95, 0.18))   # contorno pálido (lê no escuro)
-		draw_circle(Vector2.ZERO, 7.5, body)
-		draw_circle(Vector2(3, -6), 4.6, body)
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		draw_circle(Vector2(4.5, -13.5), 1.8, Color(0.92, 0.93, 0.96, 1.0 - glow * 0.5))
-		if glow > 0.0:
-			draw_circle(Vector2(0, -8), 16.0, Color(1, 0.95, 0.75, 0.25 * glow))

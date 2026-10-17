@@ -1,7 +1,9 @@
 extends CanvasLayer
 class_name Cinematic
-## Cinemática leve, toda por código: cards de texto sobre a pintura do Éon
-## (prólogo, epílogo) e o CARD DE CHEFE com letterbox. Pausa o mundo enquanto
+## Cinemática leve, toda por código: cards de texto sobre as ILUSTRAÇÕES das
+## cinemáticas (`assets/cinematic/cine_NN_*.png`, 1536×1024: prólogo 01–06,
+## epílogos 10–12) com Ken Burns lento e legenda no terço inferior — ou sobre a
+## pintura do Éon (Crônicas, créditos) — e o CARD DE CHEFE com letterbox. Pausa o mundo enquanto
 ## toca (process ALWAYS) pela pilha de pausa (PauseStack): ao terminar, larga só
 ## a SUA pausa — se um diálogo ou a loja ainda seguram o mundo, ele continua parado.
 ## Uso:  await Cinematic.prologue().finished
@@ -12,8 +14,21 @@ class_name Cinematic
 signal finished
 
 const TEXT_W := 470.0
+# Ilustrações das cinemáticas (artes/gpt/cinematic → assets/cinematic). Sem texto;
+# o terço inferior é calmo para a legenda. Número = ordem do MANIFESTO.
+const ART_DIR := "res://assets/cinematic/"
+const ART := {
+	1: "cine_01_monada_a.png", 2: "cine_02_eons_a.png", 3: "cine_03_sophia_nuvem_a.png",
+	4: "cine_04_cego_a.png", 5: "cine_05_kenoma_a.png", 6: "cine_06_faisca_a.png",
+	7: "cine_07_roubo_a.png", 8: "cine_08_descida_a.png", 9: "cine_09_anagnorise_a.png",
+	10: "cine_10_ascensao_a.png", 11: "cine_11_ruptura_a.png", 12: "cine_12_semente_a.png",
+}
+const KB_ZOOM := 0.06              # Ken Burns: zoom 1,00 → 1,06 ao longo da ilustração
+const KB_PAN := 0.7                # deriva = 70 % da folga que o zoom abre (nunca mostra borda)
+const XFADE := 0.8                 # troca de ilustração dentro do mesmo card (s)
+const ART_DIM := Color(0.92, 0.92, 0.94, 1.0)   # a pintura quase cheia (a legenda tem a faixa escura)
 
-var cards: Array = []              # [{title, text, bg, time}]
+var cards: Array = []              # [{title, text, bg | art: [nº...], time}]
 var boss: Dictionary = {}          # {name, title} → modo card de chefe
 var _idx: int = -1
 var _done: bool = false
@@ -28,6 +43,14 @@ var _bar_top: ColorRect
 var _bar_bottom: ColorRect
 var _boss_name: Label
 var _boss_title: Label
+var _vig: ColorRect
+var _art_box: Control              # as ilustrações (duas camadas para a troca)
+var _art_a: TextureRect
+var _art_b: TextureRect
+var _shade: TextureRect            # faixa escura do terço inferior (legenda)
+var _art_cur: Array = []           # ilustrações do card em tela
+var _art_fade: bool = true         # o fade do card leva a ilustração junto?
+var _kb_tweens: Array = []
 
 
 ## Fonte de TÍTULO: `CodexStyle.display()` (Cinzel) quando a UI nova estiver
@@ -49,6 +72,71 @@ static func _spawn() -> Cinematic:
 	return c
 
 
+## Caminho da ilustração nº `n` (1–12); "" se não existir no projeto.
+static func art_path(n: int) -> String:
+	if not ART.has(n):
+		return ""
+	var p: String = ART_DIR + String(ART[n])
+	return p if ResourceLoader.exists(p) else ""
+
+
+## Textura da ilustração nº `n` (null se faltar: o card cai na pintura do Éon).
+static func art_texture(n: int) -> Texture2D:
+	var p := art_path(n)
+	if p == "":
+		return null
+	var t = load(p)
+	return t as Texture2D
+
+
+## Um TextureRect de tela cheia que COBRE a tela (corta as sobras do 3:2).
+static func make_art_rect() -> TextureRect:
+	var r := TextureRect.new()
+	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r
+
+
+## Faixa escura do terço inferior: a legenda lê em qualquer ilustração.
+static func make_shade() -> TextureRect:
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
+	g.colors = PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0.005, 0.012, 0.86)])
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill_from = Vector2(0, 0)
+	gt.fill_to = Vector2(0, 1)
+	gt.width = 4
+	gt.height = 128
+	var r := TextureRect.new()
+	r.texture = gt
+	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	r.stretch_mode = TextureRect.STRETCH_SCALE
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r
+
+
+## KEN BURNS lento: zoom 1,00 → 1,00+KB_ZOOM e deriva leve na direção `dir`
+## (x, y em −1..1) em `dur` s reais. A deriva só usa a folga que o zoom abre
+## (o TextureRect cobre a tela exata): a borda da pintura nunca aparece.
+static func ken_burns(r: Control, owner: Node, dur: float, dir: Vector2) -> Tween:
+	var half := Vector2(320.0, 180.0)
+	if r.is_inside_tree():
+		half = r.get_viewport_rect().size * 0.5
+	r.pivot_offset = half
+	var tw := owner.create_tween().set_ignore_time_scale(true)
+	tw.tween_method(func(k: float) -> void:
+		if not is_instance_valid(r):
+			return
+		var z := 1.0 + KB_ZOOM * k
+		r.scale = Vector2(z, z)
+		r.position = Vector2(dir.x * half.x, dir.y * half.y) * (z - 1.0) * KB_PAN, 0.0, 1.0, maxf(dur, 0.1))
+	return tw
+
+
 ## O mito em 3 cards (backlog #6: o prólogo inteiro em ≤ 20 s; o jogador decide
 ## nos primeiros 60 s): o Um e os Éons → Sophia, o filho cego e a nuvem → o
 ## Kenoma e as faíscas. O último card NÃO diz "acorda": quem diz é
@@ -56,10 +144,13 @@ static func _spawn() -> Cinematic:
 ## que no epílogo (0,45 + 0,3 s); 3 × 0,75 + 17,6 s de leitura ≈ 19,9 s sem apertar nada.
 static func prologue() -> Cinematic:
 	var c := _spawn()
+	# Onda 3: as 6 ilustrações do prólogo, duas por card, trocando no meio dele
+	# (a Mônada → os Éons; Sophia e a nuvem → o Cego; o Kenoma → a faísca).
+	# `bg` fica de reserva (sem a ilustração, volta a pintura do Éon).
 	c.cards = [
-		{"title": "", "text": "No princípio havia o Um. Dele emanaram os Éons, aos pares,\ncomo luz que transborda. Ali nada dormia. Nada esquecia.", "bg": 8, "time": 5.4, "fade_in": 0.45, "fade_out": 0.3},
-		{"title": "", "text": "A mais jovem, Sophia, quis alcançar a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma,\ne ela o escondeu numa nuvem.", "bg": 4, "time": 5.8, "fade_in": 0.45, "fade_out": 0.3},
-		{"title": "", "text": "Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.\nNo barro dormem as faíscas que ele levou da mãe.\n\nUma delas acaba de sentir dor.", "bg": 0, "time": 6.4, "fade_in": 0.45, "fade_out": 0.3},
+		{"title": "", "text": "No princípio havia o Um. Dele emanaram os Éons, aos pares,\ncomo luz que transborda. Ali nada dormia. Nada esquecia.", "bg": 8, "art": [1, 2], "time": 5.4, "fade_in": 0.45, "fade_out": 0.3},
+		{"title": "", "text": "A mais jovem, Sophia, quis alcançar a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma,\ne ela o escondeu numa nuvem.", "bg": 4, "art": [3, 4], "time": 5.8, "fade_in": 0.45, "fade_out": 0.3},
+		{"title": "", "text": "Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.\nNo barro dormem as faíscas que ele levou da mãe.\n\nUma delas acaba de sentir dor.", "bg": 0, "art": [5, 6], "time": 6.4, "fade_in": 0.45, "fade_out": 0.3},
 	]
 	return c
 
@@ -75,13 +166,22 @@ static func boss_card(p_name: String, p_title: String) -> Cinematic:
 static func epilogue(ending: String, chron_n: int, chron_total: int) -> Cinematic:
 	var c := _spawn()
 	var bg := 8
+	var art: Array = []
 	match ending:
-		"ascensao": bg = 3
-		"ruptura": bg = 6
-		"semente": bg = 0
-	c.cards.append({"title": GameManager.end_title, "text": GameManager.end_subtitle, "bg": bg, "time": 6.0})
+		"ascensao":
+			bg = 3
+			art = [10]
+		"ruptura":
+			bg = 6
+			art = [11]
+		"semente":
+			bg = 0
+			art = [12]
+	# A ilustração do final fica sob o título e os cards do epílogo (o Ken Burns
+	# corre por todos eles, sem piscar); Crônicas e créditos voltam à pintura do Éon.
+	c.cards.append({"title": GameManager.end_title, "text": GameManager.end_subtitle, "bg": bg, "art": art, "time": 6.0})
 	for t in Narrative.epilogue_cards(ending):
-		c.cards.append({"title": "", "text": String(t), "bg": bg, "time": 5.4})
+		c.cards.append({"title": "", "text": String(t), "bg": bg, "art": art, "time": 5.4})
 	var chron_line := "Todas as pedras foram lidas. A faísca lembra por inteiro." if chron_n >= chron_total \
 		else "Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas." % (chron_total - chron_n)
 	c.cards.append({"title": "CRÔNICAS  %d / %d" % [chron_n, chron_total], "text": chron_line, "bg": 7, "time": 5.0})
@@ -122,12 +222,28 @@ func _build_cards() -> void:
 	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bg)
 
+	# As ilustrações: duas camadas (troca com fusão dentro do card), recortadas na tela.
+	_art_box = Control.new()
+	_art_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_art_box.clip_contents = true
+	_art_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_art_box)
+	_art_a = Cinematic.make_art_rect()
+	_art_b = Cinematic.make_art_rect()
+	_art_box.add_child(_art_a)
+	_art_box.add_child(_art_b)
+	_art_a.modulate = ART_DIM
+	_art_b.modulate = Color(ART_DIM, 0.0)
+
 	# vinheta: escurece as bordas para o texto assentar
-	var vig := ColorRect.new()
-	vig.color = Color(0.0, 0.01, 0.02, 0.38)
-	vig.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(vig)
+	_vig = ColorRect.new()
+	_vig.color = Color(0.0, 0.01, 0.02, 0.38)
+	_vig.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_vig.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_vig)
+	_shade = Cinematic.make_shade()
+	_shade.visible = false
+	add_child(_shade)
 
 	_title = Label.new()
 	_title.anchor_left = 0.5
@@ -188,6 +304,9 @@ func _set_alpha(a: float) -> void:
 	_bg.modulate.a = a
 	_title.modulate.a = a
 	_text.modulate.a = a
+	if _art_fade:
+		_art_box.modulate.a = a
+		_shade.modulate.a = a
 
 
 func _run_cards() -> void:
@@ -196,15 +315,127 @@ func _run_cards() -> void:
 			break
 		_idx = i
 		var card: Dictionary = cards[i]
+		var arts: Array = _card_art(card)
+		# Mesma ilustração do card anterior: ela fica (o Ken Burns segue); só o texto troca.
+		var keep: bool = not arts.is_empty() and arts == _art_cur
 		_title.text = String(card.get("title", ""))
 		_text.text = String(card.get("text", ""))
+		_layout(not arts.is_empty())
 		var bg_i: int = int(card.get("bg", -1))
-		_bg.texture = PaintedLibrary.background(bg_i) if bg_i >= 0 else null
+		_bg.texture = PaintedLibrary.background(bg_i) if bg_i >= 0 and arts.is_empty() else null
+		if not keep:
+			_show_art(arts, i)
+		_art_fade = not keep
 		_advance = false
 		await _fade(1.0, float(card.get("fade_in", 0.55)))
-		await _hold(float(card.get("time", 5.0)))
+		if arts.size() > 1:
+			await _hold_art(arts, float(card.get("time", 5.0)))
+		else:
+			await _hold(float(card.get("time", 5.0)))
+		var nxt: Array = _card_art(cards[i + 1]) if i + 1 < cards.size() else []
+		_art_fade = _skip_all or arts.is_empty() or nxt != arts
 		await _fade(0.0, float(card.get("fade_out", 0.35)))
 	_finish()
+
+
+## As ilustrações do card que existem no projeto (sem elas, o card usa `bg`).
+func _card_art(card: Dictionary) -> Array:
+	var out: Array = []
+	for n in card.get("art", []):
+		if Cinematic.art_path(int(n)) != "":
+			out.append(int(n))
+	return out
+
+
+## Card ILUSTRADO: pintura cheia, faixa escura embaixo, título + texto no terço
+## inferior (o texto cresce para cima a partir da base). Card de pintura do Éon:
+## o layout antigo, centrado, com a vinheta.
+func _layout(illustrated: bool) -> void:
+	_shade.visible = illustrated
+	_vig.color.a = 0.08 if illustrated else 0.38
+	if not illustrated:
+		_title.anchor_top = 0.5
+		_title.anchor_bottom = 0.5
+		_title.offset_top = -92.0
+		_title.offset_bottom = -58.0
+		_text.anchor_top = 0.5
+		_text.anchor_bottom = 0.5
+		_text.offset_top = -52.0
+		_text.offset_bottom = 70.0
+		return
+	_text.anchor_top = 1.0
+	_text.anchor_bottom = 1.0
+	_text.offset_bottom = -26.0
+	_text.offset_top = -26.0 - 120.0
+	var lines: int = maxi(1, _text.get_line_count())
+	var h: float = float(lines) * (float(_text.get_line_height()) + 3.0)
+	_text.offset_top = -26.0 - h
+	_title.anchor_top = 1.0
+	_title.anchor_bottom = 1.0
+	_title.offset_bottom = _text.offset_top - 2.0
+	_title.offset_top = _title.offset_bottom - 34.0
+
+
+## Começa a(s) ilustração(ões) do card `i`: a 1ª entra com Ken Burns que dura o
+## tempo em que ela fica na tela (somando os cards seguintes com a mesma pintura).
+func _show_art(arts: Array, i: int) -> void:
+	for t in _kb_tweens:
+		if t is Tween and t.is_valid():
+			t.kill()
+	_kb_tweens.clear()
+	_art_cur = arts
+	_art_b.modulate.a = 0.0
+	_art_b.texture = null
+	if arts.is_empty():
+		_art_a.texture = null
+		return
+	_art_a.texture = Cinematic.art_texture(int(arts[0]))
+	_art_a.modulate = ART_DIM
+	_art_box.move_child(_art_a, 0)
+	var span := 0.0
+	if arts.size() > 1:
+		span = float(cards[i].get("time", 5.0)) / float(arts.size()) + XFADE + 0.6
+	else:
+		for k in range(i, cards.size()):
+			if _card_art(cards[k]) != arts:
+				break
+			span += float(cards[k].get("time", 5.0)) + float(cards[k].get("fade_in", 0.55)) + float(cards[k].get("fade_out", 0.35))
+	_kb_tweens.append(Cinematic.ken_burns(_art_a, self, span, _kb_dir(int(arts[0]))))
+
+
+## Direção da deriva por ilustração (variada, determinística).
+func _kb_dir(n: int) -> Vector2:
+	var dirs := [Vector2(0.6, -0.5), Vector2(-0.6, 0.35), Vector2(0.45, 0.5), Vector2(-0.5, -0.4)]
+	return dirs[n % dirs.size()]
+
+
+## Card com mais de uma ilustração: divide o tempo e funde uma na outra (XFADE).
+## Se o jogador avança, o card acaba (como sempre).
+func _hold_art(arts: Array, total: float) -> void:
+	var slice := total / float(arts.size())
+	var front := _art_a
+	var back := _art_b
+	for j in range(1, arts.size()):
+		await _hold(slice - XFADE * 0.5)
+		if _advance or _skip_all:
+			return
+		back.texture = Cinematic.art_texture(int(arts[j]))
+		back.scale = Vector2.ONE
+		back.position = Vector2.ZERO
+		back.modulate = Color(ART_DIM, 0.0)
+		_art_box.move_child(back, -1)
+		_kb_tweens.append(Cinematic.ken_burns(back, self, slice + XFADE + 0.6, _kb_dir(int(arts[j]))))
+		var tw := create_tween().set_ignore_time_scale(true)
+		tw.tween_property(back, "modulate:a", 1.0, XFADE)
+		await _hold(XFADE)
+		back.modulate.a = 1.0
+		front.modulate.a = 0.0
+		var sw := front
+		front = back
+		back = sw
+		if _advance or _skip_all:
+			return
+	await _hold(slice - XFADE * 0.5)
 
 
 ## Espera `t` segundos reais ou até o jogador avançar.
