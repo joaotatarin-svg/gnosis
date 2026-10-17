@@ -11,7 +11,11 @@ Não editei o jogo: medi e entreguei as correções como patch pronto para os do
 > 193 ms da linha de base (RX 7600) mostra que é visível. Nada foi medido em GPU integrada.
 
 ## 1. Commits
-(lista no fim do relatório ao chefe — `git log --oneline integracao/onda1..dir2/perf`)
+Branch `dir2/perf` (19 commits, só arquivos meus: `tools/perf/*`, `tools/perf_probe.gd`,
+`docs/onda2/PERF.md`, `docs/pedidos/onda2_perf.md`) — `git log --oneline c1beb1c..dir2/perf`.
+Os principais: `ab951cb` sonda de engasgos · `527ee58` run.sh/resumo/pck · `a358869` PerfProbe sem o
+sono do headless · `25eb273` prewarm fiel · `3bdeeb9` patches sobre `integracao/onda1` ·
+`7ff8fd7` prewarm ancorado na Sophia e com a árvore pausada · `c3b6419` prova final.
 
 ## 2. Ferramentas (todas minhas, fora do jogo)
 | Arquivo | O que faz |
@@ -229,8 +233,12 @@ Maior arquivo: `derived/sophia_frames.png` (5,7 MB no pck; 2048² com mipmaps = 
   `/home/user/caps/perf/run3_t50/RESUMO.md`): mesmo quadro — 3 → 0 variantes, 0 MB de textura,
   1º desmembramento 222 → 0 ms, 1ª esquiva 112 → 0, variante do Éon 203 → 2. Não medi telas de
   chefe com a sonda (o chefe ataca e suja a medida) nem a 68.
-- Ainda há um resíduo de ~25 ms na 1ª esquiva no llvmpipe com o prewarm (0 shaders, 0 textura):
-  provável custo interno do driver de software; não consegui atribuir.
+- Resíduos que não atribuí: ~30 ms no 1º golpe leve (só llvmpipe, sem shader/textura) e a morte
+  de chefe (~31–44 ms, de fora de propósito: o efeito sacode a câmera; vem com hit-stop).
+- A tela 50 e as rodadas na base antiga usaram o prewarm chamado pela SONDA (depois do `_ready`);
+  a prova com a chamada real do `Level._ready` é a da cópia do `integracao/onda1` (§5, tela 3).
+- O prewarm gasta ~160–190 ms a mais no load (CPU e llvmpipe). Não medi o load total da fase.
+- O `character_art_alloc.patch` (REVISAO #16) foi validado e medido só em CPU; ganho pequeno.
 - Não otimizei draw calls (cada criatura tem material próprio → não agrupa). Cenário/Anim decidem.
 - Os eventos de chefe (fase 2, morte) foram medidos como VFX isolados, não com o chefe real.
 
