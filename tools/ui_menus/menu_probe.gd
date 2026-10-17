@@ -9,7 +9,8 @@ extends Node
 ##     --path . --resolution 1280x720 res://tools/ui_menus/MenuProbe.tscn -- <pasta_saida> [seção ...]
 ## Sem capturas (testes de tempo confiáveis — a janela no llvmpipe roda a poucos fps):
 ##   godot --headless --audio-driver Dummy --path . res://tools/ui_menus/MenuProbe.tscn -- <pasta> [seção ...]
-## Seções: loja pausa pilha voltar cronicas opcoes estela provacao opcoes_provacao creditos bestiario (padrão: todas)
+## Seções: loja pausa pilha voltar cronicas opcoes estela provacao creditos bestiario (padrão: todas)
+## + opcoes_provacao (só quando pedida: confere a REVISAO #13, que é do SaveManager/Técnico)
 ## Imprime "UIM OK: ..." / "UIM FALHA: ..." e no fim "UIM RESULT: N ok, M falha(s)".
 ## O B do controle em `ui_cancel` (e o A em `ui_accept`) é mapeado AQUI se o
 ## InputMap ainda não tiver (simula o pedido ao Técnico) — o código dos menus
@@ -200,7 +201,7 @@ class Worker extends Node:
 			await _stela()
 		if want("provacao"):
 			await _trial()
-		if want("opcoes_provacao"):
+		if only.has("opcoes_provacao"):    # só a pedido: depende do SaveManager do Técnico
 			await _options_in_trial()
 		if want("creditos"):
 			await _credits()

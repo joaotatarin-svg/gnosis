@@ -110,6 +110,7 @@ func _on_player_died() -> void:
 func _show_result(won: bool) -> void:
 	GameManager.set_state(GameManager.State.PAUSED)
 	PauseStack.push(self)
+	Audio.play_sfx("ui_open")
 	result_layer = CanvasLayer.new()
 	result_layer.layer = 30
 	result_layer.process_mode = Node.PROCESS_MODE_ALWAYS

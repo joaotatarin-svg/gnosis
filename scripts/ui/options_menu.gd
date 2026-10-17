@@ -7,8 +7,8 @@ extends Control
 ## SaveManager; `GameManager.apply_settings()` reaplica vídeo no boot.
 ## Tremor, vibração e "Reduzir flashes" (padrão desligada) também são gravados
 ## direto em `Juice.shake_mult` / `rumble_enabled` / `reduce_flashes` quando
-## esses campos existirem. Dentro da Provação (save desligado) as OPÇÕES ainda
-## são gravadas — só elas (REVISAO #13).
+## esses campos existirem. Gravar é sempre `SaveManager.save_game()` (REVISAO
+## #13: o SaveManager grava as opções inclusive na Provação).
 ## Navegável por teclado/controle: botões alternam com Enter/A, sliders com ←/→.
 ## Cada linha mostra o NOME à esquerda e o VALOR em ouro à direita.
 
@@ -197,41 +197,9 @@ func _apply_and_save() -> void:
 	Audio.play_sfx("ui_confirm")
 	GameManager.apply_settings()
 	_push_juice()                      # apply_settings pode não conhecer as chaves novas
-	# O SaveManager é quem decide o que grava (o Técnico separa run × opções,
-	# REVISAO #13). Ponte enquanto isso não chega: na Provação (save do run
-	# desligado) regrava só as opções aqui.
-	if SaveManager.has_method("save_settings"):
-		SaveManager.call("save_settings")
-	else:
-		SaveManager.save_game()
-		if not SaveManager.persist_enabled and not ("persist_settings" in SaveManager) \
-				and CodexSession.active and CodexSession.previous_persist:
-			_save_settings_only()
-
-
-## Provação: o save do run está desligado (não grava progresso), mas as opções
-## do jogador têm de sobreviver. Regrava SÓ volumes e opções no save existente.
-## (Ferramentas de QA que já tinham o save desligado não gravam nada.)
-func _save_settings_only() -> void:
-	var path: String = SaveManager.SAVE_PATH
-	var data: Dictionary = {}
-	if FileAccess.file_exists(path):
-		var rf := FileAccess.open(path, FileAccess.READ)
-		if rf == null:
-			return
-		var parsed = JSON.parse_string(rf.get_as_text())
-		rf.close()
-		if typeof(parsed) != TYPE_DICTIONARY:
-			return                         # ilegível: não piora o que está lá
-		data = parsed
-	data["vol_master"] = Audio.master_vol
-	data["vol_sfx"] = Audio.sfx_vol
-	data["vol_music"] = Audio.music_vol
-	data["settings"] = GameManager.settings
-	var wf := FileAccess.open(path, FileAccess.WRITE)
-	if wf:
-		wf.store_string(JSON.stringify(data))
-		wf.close()
+	# O SaveManager decide o que grava (o Técnico garante que as opções sempre
+	# gravam, inclusive na Provação — REVISAO #13; gravação atômica com .bak).
+	SaveManager.save_game()
 
 
 func _back() -> void:
