@@ -41,8 +41,13 @@ def tell_parry():
 	# transiente de 3 ms (4–9 kHz): dá a "borda" que corta a música
 	m = M.n_(0.004)
 	click = C.bp(C.noise(m, 700), 4000, 9000) * C.env_ad(m, 0.0003, 0.0012)
+	# "xing" de lâmina: sopro 3→7 kHz de 60 ms por baixo — separa o aviso do
+	# tilintar de vidro da faísca (que é tom puro)
+	k = M.n_(0.06)
+	shing = M.sweep_bp(C.noise(k, 702), 3000, 7000, 3.0) * C.env_swell(k, 0.012, 0.018)
 	M.put(o, core, 0.0, 0.0, 0.0)
 	M.put(o, click, 0.0, -14.0, 0.0)
+	M.put(o, shing, 0.0, -15.0, 0.0)
 	# cauda brilhante curtíssima (a sala não pode borrar o ritmo)
 	return C.reverb(C.hp(o, 900), rt60=0.35, wet=0.12, seed=701, lp_hz=11000, tail=True)
 

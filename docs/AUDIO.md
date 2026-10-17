@@ -72,6 +72,9 @@ python tools/audio_synth/measure.py assets/audio saida.json                  # l
 | `magic.py` | magias, projéteis, nova, faísca (síntese; `python magic.py` grava as 3 opções em `_caps/audio/opcoes/`) |
 | `story.py` | SFX da cena do Rei (síntese) |
 | `menu_theme.py` | tema do menu: 3 opções (loop de 64 s, −16 LUFS); `--install <x>` grava `music/menu.ogg` |
+| `tells.py` | avisos do combate `tell_parry`/`tell_unblock` (síntese; entram pelo `build_sfx.py`) |
+| `boss_variants.py` | 7 variações da música de chefe por Arconte a partir de `boss.ogg` (processamento circular: o loop segue emendando); `--install <éon>` grava `music/boss_<éon>.ogg` |
+| `../audio/tell_check.py` | mede leitura dos avisos sob a música (banda a banda, níveis do jogo) e distância (MFCC) para o resto do catálogo |
 | `build_music.py` | masteriza as músicas a partir dos MP3 originais, acha e costura o loop |
 | `build_ambience.py` | ambiências periódicas (loop perfeito por construção) |
 | `measure.py` · `seam_clips.py` · `spectro.py` | medição, clipes da emenda, mosaico de espectrogramas |

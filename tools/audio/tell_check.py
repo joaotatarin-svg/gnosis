@@ -134,6 +134,10 @@ def main():
 			d.append((float(np.linalg.norm(mf - mf2)), k, int(c2), round(a2, 3)))
 		d.sort()
 		rep["vizinhos"][name] = [{"som": k, "dist": round(v, 1), "centro_Hz": c, "ataque_s": a} for v, k, c, a in d[:3]]
+	rep["confundiveis"] = {}
+	for name in TELLS:
+		rep["confundiveis"][name] = {k: round(float(np.linalg.norm(feats[name][0] - feats[k][0])), 1)
+			for k in ["spark", "parry", "block", "hit", "boss_step", "ui_confirm", "shard", "heartbeat"] if k in feats}
 	a, b = feats["tell_parry"][0], feats["tell_unblock"][0]
 	rep["dist_parry_unblock"] = round(float(np.linalg.norm(a - b)), 1)
 	# mediana das distâncias entre variações do mesmo som (régua do "parecido")
