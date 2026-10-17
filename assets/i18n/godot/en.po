@@ -603,7 +603,7 @@ msgstr "Every torpor begins like this: someone loved so much they forgot themsel
 #. gnosis.STELAS.9180f6  [estela_fonte]
 #: scripts/autoload/gnosis.gd:61
 msgid "Apócrifo de João (NHC II,1, 9–10); Irineu I,2–4; Hipólito, Refutação VI,29–36."
-msgstr "Apocryphon of John (NHC II,1, 9–10); Irenaeus I,2–4; Hippolytus, Refutation VI,29–36."
+msgstr "Apocryphon of John (NHC II,1, 9–10); Irenaeus I,2–4; Hippolytus, Refutation of All Heresies VI,29–36."
 
 #. gnosis.STELAS.38dd9b  [estela_dica]
 #: scripts/autoload/gnosis.gd:62
@@ -1068,7 +1068,7 @@ msgstr "What we know of them is a reflection in the words of those who fought th
 #. gnosis.STELAS.15fc13  [estela_fonte]
 #: scripts/autoload/gnosis.gd:170
 msgid "Irineu I,1–8 e I,24; Hipólito, Refutação VII,20–27; Clemente, Stromata; Tertuliano, Contra os Valentinianos 4."
-msgstr "Irenaeus I,1–8 and I,24; Hippolytus, Refutation VII,20–27; Clement, Stromata; Tertullian, Against the Valentinians 4."
+msgstr "Irenaeus I,1–8 and I,24; Hippolytus, Refutation of All Heresies VII,20–27; Clement, Stromata; Tertullian, Against the Valentinians 4."
 
 #. gnosis.STELAS.d75374  [estela_dica]
 #: scripts/autoload/gnosis.gd:171

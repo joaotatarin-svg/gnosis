@@ -85,6 +85,11 @@ func _ready() -> void:
 	set_state(State.MENU)
 
 
+## i18n (Onda 4): solta a tradução própria antes do GDScript ser finalizado.
+func _exit_tree() -> void:
+	I18n.shutdown()
+
+
 ## Aplica as opções de vídeo (o resto é lido por quem usa). Seguro em headless.
 func apply_settings() -> void:
 	# Chave ausente ou com tipo errado (save editado, menu com bug) → padrão.

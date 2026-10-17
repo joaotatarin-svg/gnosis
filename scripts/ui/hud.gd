@@ -1234,7 +1234,7 @@ class _HudCanvas extends Control:
 		var rect := Rect2(x0, y, w, 8)
 		var name_full: String = String(bb.node.get("display_name")) if is_instance_valid(bb.node) else bb.last_name
 		bb.last_name = name_full
-		var parts := name_full.split(",", false, 1)
+		var parts := I18n.t(name_full).split(",", false, 1)   # i18n: traduz o nome inteiro antes de partir
 		var main_name := parts[0].strip_edges() if parts.size() > 0 else name_full
 		var sub := parts[1].strip_edges() if parts.size() > 1 else ""
 		var phase2: bool = bb.phase >= 2

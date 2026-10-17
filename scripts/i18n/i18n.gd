@@ -51,6 +51,16 @@ static func apply(setting: String) -> void:
 		TranslationServer.set_locale(code)
 
 
+## Tira a tradução do TranslationServer ao fechar o jogo (GameManager._exit_tree).
+## Sem isto o servidor solta o objeto DEPOIS que o GDScript já foi finalizado e o
+## Godot fecha com falha de segmentação (código 139) — as QAs saíam "FALHOU".
+static func shutdown() -> void:
+	if _tr != null:
+		_tr.active = false
+		TranslationServer.remove_translation(_tr)
+		_tr = null
+
+
 ## Idioma efetivo agora ("pt_BR" ou "en").
 static func current() -> String:
 	return _current if _current != "" else PT
