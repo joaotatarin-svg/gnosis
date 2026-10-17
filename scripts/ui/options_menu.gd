@@ -197,12 +197,16 @@ func _apply_and_save() -> void:
 	Audio.play_sfx("ui_confirm")
 	GameManager.apply_settings()
 	_push_juice()                      # apply_settings pode não conhecer as chaves novas
-	if SaveManager.persist_enabled:
-		SaveManager.save_game()
-	elif SaveManager.has_method("save_settings"):
+	# O SaveManager é quem decide o que grava (o Técnico separa run × opções,
+	# REVISAO #13). Ponte enquanto isso não chega: na Provação (save do run
+	# desligado) regrava só as opções aqui.
+	if SaveManager.has_method("save_settings"):
 		SaveManager.call("save_settings")
-	elif CodexSession.active and CodexSession.previous_persist:
-		_save_settings_only()
+	else:
+		SaveManager.save_game()
+		if not SaveManager.persist_enabled and not ("persist_settings" in SaveManager) \
+				and CodexSession.active and CodexSession.previous_persist:
+			_save_settings_only()
 
 
 ## Provação: o save do run está desligado (não grava progresso), mas as opções

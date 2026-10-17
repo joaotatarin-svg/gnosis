@@ -9,7 +9,7 @@ extends Node
 ##     --path . --resolution 1280x720 res://tools/ui_menus/MenuProbe.tscn -- <pasta_saida> [seção ...]
 ## Sem capturas (testes de tempo confiáveis — a janela no llvmpipe roda a poucos fps):
 ##   godot --headless --audio-driver Dummy --path . res://tools/ui_menus/MenuProbe.tscn -- <pasta> [seção ...]
-## Seções: loja pausa pilha voltar cronicas opcoes estela provacao creditos bestiario (padrão: todas)
+## Seções: loja pausa pilha voltar cronicas opcoes estela provacao opcoes_provacao creditos bestiario (padrão: todas)
 ## Imprime "UIM OK: ..." / "UIM FALHA: ..." e no fim "UIM RESULT: N ok, M falha(s)".
 ## O B do controle em `ui_cancel` (e o A em `ui_accept`) é mapeado AQUI se o
 ## InputMap ainda não tiver (simula o pedido ao Técnico) — o código dos menus
@@ -200,6 +200,8 @@ class Worker extends Node:
 			await _stela()
 		if want("provacao"):
 			await _trial()
+		if want("opcoes_provacao"):
+			await _options_in_trial()
 		if want("creditos"):
 			await _credits()
 		if want("bestiario"):
@@ -538,6 +540,46 @@ class Worker extends Node:
 		check(get_tree().paused and PauseStack.count() >= 1, "provação: resultado pausa pela pilha")
 		CodexSession.leave_demo()
 		PauseStack.clear()
+
+	## REVISAO #13: opção mudada dentro da Provação chega ao save (só as opções).
+	## Usa o user:// do worktree (override.cfg) e devolve o save como estava.
+	func _options_in_trial() -> void:
+		var path: String = SaveManager.SAVE_PATH
+		var had := FileAccess.file_exists(path)
+		var backup := FileAccess.get_file_as_string(path) if had else ""
+		var flash_before := bool(GameManager.settings.get("reduce_flashes", false))
+		SaveManager.persist_enabled = true
+		PauseStack.clear()
+		CodexSession.start_demo()
+		await wait(2.0)
+		check(not SaveManager.persist_enabled, "opções na Provação: save do run desligado")
+		var packed: PackedScene = load("res://scenes/ui/OptionsMenu.tscn")
+		var om = packed.instantiate()
+		om.overlay = true
+		get_tree().current_scene.add_child(om)
+		await wait(0.3)
+		var btn: Button = null
+		for b in om.find_children("*", "Button", true, false):
+			if b.has_meta("key") and b.get_meta("key") == "reduce_flashes":
+				btn = b
+		if btn != null:
+			btn.emit_signal("pressed")
+		await wait(0.1)
+		var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
+		var saved = parsed.get("settings", {}).get("reduce_flashes", null) if typeof(parsed) == TYPE_DICTIONARY else null
+		check(saved != null and bool(saved) == not flash_before, "opções na Provação: 'Reduzir flashes' gravado no save (%s)" % str(saved))
+		om.queue_free()
+		CodexSession.leave_demo()
+		GameManager.settings["reduce_flashes"] = flash_before
+		if had:
+			var f := FileAccess.open(path, FileAccess.WRITE)
+			f.store_string(backup)
+			f.close()
+		else:
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+		SaveManager.persist_enabled = false
+		PauseStack.clear()
+		await wait(0.5)
 
 	## Créditos: atribuições CC-BY sempre (com e sem o LICENSES.md).
 	func _credits() -> void:
