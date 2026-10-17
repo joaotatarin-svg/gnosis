@@ -5,6 +5,7 @@ extends Node
 ##   xvfb-run -a -s "-screen 0 1280x720x24" godot --audio-driver Dummy --rendering-driver opengl3 \
 ##     --path . --resolution 1280x720 res://tools/ui_hud/HudProbe.tscn -- <cenario> <pasta>
 ## Cenários: t1 · pause · t10choice · t68choice · t68boss · card · death · toast · hints · pad · dialog_api
+##           rubrica · speed · bosscap (Onda 2b)
 
 func _ready() -> void:
 	var w := P.new()
@@ -124,6 +125,9 @@ class P extends Node:
 			"dialog_api": await _dialog_api()
 			"feet": await _feet()
 			"respiro": await _respiro()
+			"rubrica": await _rubrica()
+			"speed": await _speed()
+			"bosscap": await _bosscap()
 		print("HUDP|FIM")
 		get_tree().quit()
 
@@ -396,3 +400,97 @@ class P extends Node:
 				ys.append(int(pl.get_global_transform_with_canvas().origin.y))
 				await wait(0.3)
 			print("HUDP|feet|tela=%d|pes_tela_y=%s" % [sc, str(ys)])
+
+	# --- Onda 2b ------------------------------------------------------------------
+
+	## Rubrica (#22): a 1ª fala do jogo vira tela escura + texto central sem caixa;
+	## rubrica no meio de uma cena = véu leve na base (a Encenação segue visível).
+	func _rubrica() -> void:
+		await level_at(1)
+		var d := DialogueBox.play(Narrative.intro())
+		await wait(2.5)
+		print("HUDP|rubrica|narr=%s dark=%s box_a=%.2f narr_a=%.2f texto='%s'" % [str(d._narr_on), str(d._narr_dark), d._box.modulate.a, d._narr.modulate.a, d._narr_text.text])
+		await shot("rubrica_0_escuro")
+		await key(KEY_J)
+		await key(KEY_J)
+		await wait(1.2)
+		print("HUDP|rubrica|fala2 narr=%s box_a=%.2f narr_a=%.2f falante='%s'" % [str(d._narr_on), d._box.modulate.a, d._narr.modulate.a, d._speaker.text])
+		await shot("rubrica_1_caixa")
+		d._finish()
+		await wait(0.3)
+		var th: Array = Narrative.theft()
+		var d2 := DialogueBox.play(th.slice(5, 8))    # "...Não." → rubrica dos Anéis → Yaldabaoth
+		await wait(0.4)
+		await key(KEY_J)
+		await key(KEY_J)
+		await wait(2.4)
+		print("HUDP|rubrica|meio_cena narr=%s dark=%s texto='%s'" % [str(d2._narr_on), str(d2._narr_dark), d2._narr_text.text])
+		await shot("rubrica_2_leve")
+		d2._finish()
+		await wait(0.2)
+		var probe := [{"speaker": "", "text": "(Silêncio.)"}, {"speaker": "A Voz", "text": "(baixinho) Agora."},
+			{"speaker": "", "text": "Sem parênteses."}, {"speaker": "", "text": "(a) e (b)"}, {"speaker": "Sophia", "text": "x", "mode": "narration"}]
+		print("HUDP|rubrica|detecta=", probe.map(func(l): return DialogueBox.is_narration(l)))
+		# Escura só na abertura sem encenação visual: intro (heartbeat), Centro (wait_2s);
+		# a anagnórise (rings_return) fica leve para ver os Anéis voltando.
+		var fl: Array = Narrative.final_lines()
+		print("HUDP|rubrica|escura intro=%s centro=%s final=%s" % [str(DialogueBox.narration_dark(Narrative.intro()[0], 0)),
+			str(DialogueBox.narration_dark(Narrative.center_intro()[0], 0)), str(DialogueBox.narration_dark(fl[0], 0))])
+
+	## Velocidade do texto (Opções): mede as letras visíveis após 0,5 s.
+	func _speed() -> void:
+		await level_at(2)
+		var line := [{"speaker": "A Voz", "text": "Uma fala comprida o bastante para medir a velocidade da máquina de escrever sem pontuação no meio do caminho"}]
+		var old = GameManager.settings.get("text_speed", null)
+		for v in [0.5, 1.0, 2.0, 0.0, "instant"]:
+			GameManager.settings["text_speed"] = v
+			var d := DialogueBox.play(line)
+			await wait(0.55)
+			print("HUDP|speed|v=%s vis=%d typing=%s" % [str(v), d._text.visible_characters, str(d.is_typing())])
+			d._finish()
+			await wait(0.2)
+		if old == null:
+			GameManager.settings.erase("text_speed")
+		else:
+			GameManager.settings["text_speed"] = old
+
+	## #21: legenda enfileirada ANTES da luta (chegada) não fala por cima do chefe;
+	## a fala que nasce DURANTE a luta (fase 2) passa.
+	func _bosscap() -> void:
+		# Tela 1 (Rei): a chegada "Anda: a névoa não espera ninguém" é enfileirada
+		# no setup e o Rei entra logo depois dos diálogos (o caso do s01.png do crítico).
+		Narrative.reset()
+		Narrative.once("prologue")
+		await level_at(1, false)
+		var cb: Node = null
+		for c in Gnosis.get_children():
+			if c is CaptionBar:
+				cb = c
+		print("HUDP|bosscap|chegada fila=%d showing=%s" % [cb._queue.size(), str(cb._showing)])
+		await skip_dialogs()
+		# Anda para a direita até o Rei entrar (barra de chefe), pulando as falas dele.
+		Input.action_press("move_right")
+		var t0 := Time.get_ticks_msec()
+		var bar_at := -1
+		while Time.get_ticks_msec() - t0 < 20000:
+			if not dialogs().is_empty():
+				Input.action_release("move_right")
+				await skip_dialogs()
+				Input.action_press("move_right")
+			await wait(0.25)
+			var nb: int = hud().boss_bars().size()
+			if nb > 0 and bar_at < 0:
+				bar_at = Time.get_ticks_msec() - t0
+				Input.action_release("move_right")
+				print("HUDP|bosscap|barra_apareceu ms=%d showing=%s fila=%d texto='%s'" % [bar_at, str(cb._showing), cb._queue.size(), cb._text.text if cb._showing else ""])
+				break
+		Input.action_release("move_right")
+		for k in 4:
+			await wait(0.5)
+			print("HUDP|bosscap|t=%.1f barras=%d showing=%s fila=%d alpha=%.2f texto='%s'" % [0.5 * (k + 1), hud().boss_bars().size(), str(cb._showing), cb._queue.size(), cb._root.modulate.a, cb._text.text if cb._showing else ""])
+		print("HUDP|bosscap|luta barras=%d showing=%s fila=%d texto='%s'" % [hud().boss_bars().size(), str(cb._showing), cb._queue.size(), cb._text.text if cb._showing else ""])
+		await shot("bosscap_0_luta")
+		Gnosis.caption("Athoth", "Fala que nasce DURANTE a luta (fase 2).")
+		await wait(1.4)
+		print("HUDP|bosscap|fase2 showing=%s texto='%s'" % [str(cb._showing), cb._text.text])
+		await shot("bosscap_1_fase2")

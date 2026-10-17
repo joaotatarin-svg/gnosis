@@ -15,6 +15,11 @@ class_name CaptionBar
 ## Some (QA-UX A2/L4/M4): árvore pausada ou PauseStack segurando (pausa, loja,
 ## opções, golpes, diálogo, card de chefe), Sophia morta (a fila é descartada) e
 ## fora de uma tela do run.
+## Luta de chefe (backlog #21): legenda de CHEGADA não fala por cima do chefe.
+## Na 1ª vez que uma barra de chefe/Campeão aparece na tela, a fala no ar sai e
+## a fila enfileirada ANTES (chegada da tela) é descartada; o que nasce DURANTE a
+## luta (fase 2 dos Arcontes, 7º Anel, lembranças dos ecos) passa normalmente.
+## Velocidade do texto segue as Opções (DialogueBox.text_speed()).
 
 const SPEAKER_COLOR := Color("ecd498")
 const MIN_TIME := 3.0
@@ -39,6 +44,8 @@ var _blip: String = "blip_npc"
 var _blips: int = 0
 var _bottom: float = BOTTOM_Y     # base atual da faixa (desliza quando o chefe entra)
 var _height: float = 56.0
+var _fight_armed: bool = true     # a próxima luta de chefe da tela ainda corta a chegada
+var _in_fight: bool = false
 
 
 func _ready() -> void:
@@ -102,6 +109,8 @@ func say(speaker: String, text: String) -> void:
 
 ## Esvazia tudo (troca de tela, morte).
 func clear() -> void:
+	_fight_armed = true
+	_in_fight = false
 	_queue.clear()
 	_time_left = 0.0
 	_gap = 0.0
@@ -127,6 +136,7 @@ func _process(delta: float) -> void:
 			_kill_tween()
 			_root.modulate.a = 0.0     # sem fade: a morte vem com câmera lenta
 		return
+	_check_fight()
 	_layout(delta)
 	if _showing:
 		_type(delta)
@@ -147,10 +157,13 @@ func _type(delta: float) -> void:
 		return
 	var total := _text.get_total_character_count()
 	var before := int(_shown)
-	_shown += delta * CPS
-	var now := mini(int(_shown), total)
+	var sp := DialogueBox.text_speed()
+	_shown = INF if is_inf(sp) else _shown + delta * CPS * sp
+	var now := total if is_inf(_shown) else mini(int(_shown), total)
 	var txt := _text.text
 	for i in range(before, now):
+		if is_inf(_shown):
+			break                  # instantâneo: sem rajada de blips
 		if i < txt.length() and txt[i] != " ":
 			_blips += 1
 			if _blips % 2 == 1:
@@ -199,6 +212,25 @@ func _layout(delta: float) -> void:
 	_bottom = target if delta < 0.0 else move_toward(_bottom, target, delta * 160.0)
 	_root.position = Vector2(640.0 * 0.12, _bottom - _height)
 	_root.size = Vector2(640.0 * 0.76, _height)
+
+
+## Começou a luta de chefe (1ª barra viva na tela)? Corta a chegada (#21).
+func _check_fight() -> void:
+	var fight := false
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud != null and hud.has_method("boss_bars"):
+		fight = not (hud.call("boss_bars") as Array).is_empty()
+	if fight and not _in_fight and _fight_armed:
+		_fight_armed = false
+		_queue.clear()
+		if _showing:
+			_hide()
+	_in_fight = fight
+
+
+## Há luta de chefe com barra viva agora? (QA/sonda)
+func in_boss_fight() -> bool:
+	return _in_fight
 
 
 func _player_dead() -> bool:

@@ -24,6 +24,9 @@ extends CanvasLayer
 ## Dicas de controle (QA-UX A7): telas 1–3 e 1ª vez de cada mecânica, no topo
 ## central, com as teclas do dispositivo em uso (último InputEvent); somem sozinhas
 ## e nunca pausam. show_hint(segmentos) para outros usarem.
+## Glifos (Onda 2b, #33): com o `InputGlyphs` do ui-menus presente, as teclas das
+## dicas viram ÍCONES do dispositivo em uso (tecla, Xbox, PlayStation, Switch,
+## Deck); sem ele, o rótulo de texto antigo (teclado/controle genérico).
 
 signal ring_detach_finished(index: int)
 signal ring_restore_finished(index: int)
@@ -58,6 +61,7 @@ const LOW_HP := 0.25
 const LOW_HP_MAX_TIME := 8.0
 ## O Combate já chama spark_orb_arrived()? (vale para o resto da sessão)
 static var orb_mode: bool = false
+const HINT_ICON_H := 13.0         # altura do ícone de tecla/botão nas dicas
 
 var _canvas: _HudCanvas
 var _counters: _HudCanvas            # faíscas + arma numa camada própria (recuam fora de combate)
@@ -157,7 +161,8 @@ func _ready() -> void:
 	sparks_shown = float(sparks)
 	weapon = Progression.weapon_level
 	RunManager.screen_changed.connect(func(_s): _canvas.queue_redraw())
-	use_pad = Input.get_connected_joypads().size() > 0
+	var g = DialogueBox.glyphs()
+	use_pad = bool(g.is_pad()) if g != null else Input.get_connected_joypads().size() > 0
 	_queue_screen_hints()
 	_check_ring_hints()
 
@@ -740,8 +745,13 @@ func hint_alpha() -> float:
 
 
 func _input(event: InputEvent) -> void:
-	# Dispositivo em uso = o do último InputEvent relevante.
-	if event is InputEventKey or event is InputEventMouseButton:
+	# Dispositivo em uso = o do último InputEvent relevante (com o InputGlyphs,
+	# ele decide — e sabe se é Xbox, PlayStation, Switch ou Deck).
+	var g = DialogueBox.glyphs()
+	if g != null:
+		g.note_event(event)
+		use_pad = bool(g.is_pad())
+	elif event is InputEventKey or event is InputEventMouseButton:
 		use_pad = false
 	elif event is InputEventJoypadButton:
 		use_pad = true
@@ -759,6 +769,9 @@ func _input(event: InputEvent) -> void:
 
 ## Rótulo curto da tecla/botão de `action` para o dispositivo em uso.
 func key_label(action: String) -> String:
+	var g = DialogueBox.glyphs()
+	if g != null:
+		return String(g.label(action, _glyph_dev(g)))
 	if action == "@move":
 		return "Analógico" if use_pad else "%s  %s" % [key_label("move_left"), key_label("move_right")]
 	if not InputMap.has_action(action):
@@ -777,6 +790,30 @@ func key_label(action: String) -> String:
 			var code := k.keycode if k.keycode != KEY_NONE else k.physical_keycode
 			return _key_name(code)
 	return "?"
+
+
+## Dispositivo para o InputGlyphs: o dele, mas coerente com `use_pad` (sonda/QA
+## podem forçar use_pad; aí vale o tipo de controle que ele já conhece).
+func _glyph_dev(g) -> int:
+	var d: int = int(g.device())
+	if use_pad == (d != 0):
+		return d
+	return 1 if use_pad else 0        # Device.XBOX / Device.KEYBOARD
+
+
+## Largura do ícone da ação nas dicas (InputGlyphs) ou -1 sem ele.
+func glyph_width(action: String, h: float) -> float:
+	var g = DialogueBox.glyphs()
+	if g == null:
+		return -1.0
+	return float(g.icon_width(action, h, null, _glyph_dev(g)))
+
+
+## Desenha o ícone da ação em `ci` (dentro do _draw dele) — só com o InputGlyphs.
+func draw_glyph(ci: CanvasItem, center: Vector2, action: String, h: float, alpha: float) -> void:
+	var g = DialogueBox.glyphs()
+	if g != null:
+		g.draw_icon(ci, center, action, h, null, _glyph_dev(g), alpha)
 
 
 static func _key_name(code: Key) -> String:
@@ -1177,8 +1214,12 @@ class _HudCanvas extends Control:
 				items.append(["sep", "·", 10.0])
 			first = false
 			for act in seg.get("keys", []):
-				var lab: String = hud.key_label(act)
 				var used: bool = hud._hint_done.has(act)
+				var gw: float = hud.glyph_width(act, HINT_ICON_H)
+				if gw > 0.0:
+					items.append(["icon", act, gw, used])
+					continue
+				var lab: String = hud.key_label(act)
 				items.append(["key", lab, font.get_string_size(lab, HORIZONTAL_ALIGNMENT_LEFT, -1, ks).x + 8.0, used])
 			var tx := String(seg.get("text", ""))
 			if tx != "":
@@ -1210,6 +1251,12 @@ class _HudCanvas extends Control:
 					draw_rect(r, Color(0.02, 0.05, 0.07, 0.95 * a))
 					draw_rect(r, Color(CodexStyle.GOLD_HI if used else CodexStyle.GOLD, a), false, 0.8)
 					_txt(Vector2(x, y + 3.0), String(it[1]), font, ks, Color(CodexStyle.GOLD_HI if used else CodexStyle.PAPER, a), HORIZONTAL_ALIGNMENT_CENTER, w, 0)
+				"icon":
+					var used2: bool = it[3]
+					hud.draw_glyph(self, Vector2(x + w * 0.5, y), String(it[1]), HINT_ICON_H, a)
+					if used2:
+						# usado: filete dourado por baixo (o ícone fica com as cores dele)
+						draw_line(Vector2(x + 1.0, y + 8.5), Vector2(x + w - 1.0, y + 8.5), Color(CodexStyle.GOLD_HI, a), 1.2)
 				"txt":
 					_txt(Vector2(x + 2.0, y + 3.5), String(it[1]), tfont, ts, Color(CodexStyle.PAPER, 0.92 * a), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 3)
 				"sep":
