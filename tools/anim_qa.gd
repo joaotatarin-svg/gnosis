@@ -39,6 +39,7 @@ func _ready() -> void:
 		"boss_board": await _boss_board(args[2] if args.size() >= 3 else "")
 		"shader_cmp": await _shader_cmp()
 		"npc_board": await _npc_board()
+		"cego_board": await _cego_board()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -344,6 +345,32 @@ func _npc_board() -> void:
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://npc_board.png")
+	get_tree().quit()
+
+
+## O Cego pequeno (cena D): poses pelo glow como a encenação anima, ao lado
+## da Sophia (escala 1,5 como no staging.gd), em fundo escuro da Mente.
+func _cego_board() -> void:
+	RenderingServer.set_default_clear_color(Color("140f1c"))
+	var cases := [["curled", 0.0, 1.5], ["trembling", 0.0, 1.5], ["look_up", 0.3, 1.5], ["reach", 0.7, 1.5], ["lifted", 1.0, 1.5], ["nestled", 1.0, 0.5]]
+	for i in cases.size():
+		var x: float = 60.0 + i * 100.0
+		var s := _sophia(Vector2(x - 26.0, GROUND), 1.0)
+		s.set_process(false)
+		s.set_anim("idle")
+		s.queue_redraw()
+		var c := CegoPequeno.new()
+		add_child(c)
+		c.position = Vector2(x + 4.0, GROUND)
+		c.scale = Vector2.ONE * float(cases[i][2])
+		c.glow = float(cases[i][1])
+		if cases[i][0] == "trembling":
+			c.set_anim("trembling")
+		c._process(0.0)
+		_label("%s (glow %.1f)" % [cases[i][0], cases[i][1]], Vector2(x - 40.0, GROUND + 10.0))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://cego_board.png")
 	get_tree().quit()
 
 

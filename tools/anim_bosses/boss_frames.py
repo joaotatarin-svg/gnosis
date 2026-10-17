@@ -168,8 +168,11 @@ def build(name: str, use_rife: bool = True) -> None:
 		tmp_old = os.path.join(tempfile.mkdtemp(prefix="oldfit_"), "old.png")
 		img.save(tmp_old)
 		fit = old_fit(tmp_old, bool(R.get("old_flip", False)))
-	else:
+	elif "old_body" in R:
 		fit = old_fit(os.path.join(ROOT, R["old_body"]), bool(R.get("old_flip", True)))
+	else:
+		# personagem novo, sem pintura antiga: o tamanho em tela vem do código
+		fit = {"body_frac": 1.0, "foot_gap": 0.0, "dx": 0.0, "rect_px": [0, 0]}
 	# correção de tamanho (silhueta nova com asas/coroa mais altas que a antiga)
 	fit["body_frac"] = round(fit["body_frac"] * float(R.get("size_fix", 1.0)), 5)
 	ref = R.get("ref", "idle_0")

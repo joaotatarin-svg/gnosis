@@ -98,6 +98,15 @@ mostra o nome do Colosso desde o início. Não é arte → Pedido 4.
 6. **player.gd (combate)**: chamar `visual.play_action("parry")` dentro de `_parry()` (hoje o aparo é
    reconhecido pelo flash — se a Fase B mudar a cor do flash, para de funcionar) e, se houver
    contra-ataque após o aparo, `visual.play_action("riposte")` no início dele (quadros prontos no atlas).
+7. **staging.gd (cena D, anagnórise — o "disco preto")**: o Cego pequeno é o `_Little` (círculos desenhados).
+   Trocar SÓ duas linhas (a interface é a mesma: `glow`, `modulate`, `scale`, `global_position`):
+   - linha 56: `var _little: _Little`  →  `var _little: CegoPequeno`
+   - linha 615: `_little = _Little.new()`  →  `_little = CegoPequeno.new()`
+   (a classe `_Little`, linha 1027, pode ser apagada depois). O `CegoPequeno` (`scripts/fx/cego_pequeno.gd`)
+   escolhe a pose pelo `glow` que a cena já anima: encolhido com a máscara caída → olha pra cima → estende a
+   mão → erguido → aninhado (quando já está na mão dela, escala < 0,8). Para travar uma pose:
+   `_little.set_anim("curled"|"trembling"|"look_up"|"reach"|"lifted"|"nestled")`. Prova:
+   `gifs/cego_pequeno_prancha.png` (AnimQA `-- cego_board`).
 ## Criaturas (bloco extra, mesmo pipeline)
 
 Folhas `cri_<n>_<nome>` do produtor (2×4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt,
@@ -156,3 +165,7 @@ Prova: `gifs/npcs_estados.png` (AnimQA `-- npc_board`).
 - HeroQA: estados block/parry/riposte no atlas; flash do aparo na guarda toca `parry`; `riposte` toca e termina.
 - Capturas: `gifs/sophia_aparo_quadros.png` (quadros alinhados), `gifs/sophia_guarda_antes.gif` (pose S1) ×
   `gifs/sophia_aparo_depois.gif` (guarda → aparo → contra-ataque, AnimQA film_sophia).
+
+## O Cego pequeno (cena D)
+
+Folha `artes/gpt/cego_pequeno_a.png` (2×3) → receita `tools/anim_bosses/recipes/cego_pequeno.json` (grupo `npcs`, linha de baixo × 0,92 para igualar a escala; sem pintura antiga, o `boss_frames.py` agora aceita isso) → `assets/painted/derived/npcs/cego_pequeno_frames.*`. Nó pronto: `scripts/fx/cego_pequeno.gd` (`class_name CegoPequeno`), origem no chão, ~22 px de mundo na escala 1 (33 px na escala 1,5 da cena), respiração, tremor em surtos, contorno pálido para ler no escuro e o halo quente do `glow`; sem atlas cai no desenho antigo. Ligação na cena: Pedido 7.
