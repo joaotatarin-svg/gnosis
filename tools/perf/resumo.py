@@ -45,7 +45,7 @@ def perfil(out):
     print("## Perfil por tela\n")
     print("CPU = headless (sem render; tempo de CPU do jogo nesta máquina compartilhada). "
           "GL = janela 320×180 no llvmpipe: só as CONTAGENS valem (draw calls/objetos/nós).\n")
-    print("| Tela | Papel | CPU n=0 ms mediana / p99 / máx | CPU n=extra ms mediana / p99 / máx | vivos || GL draw calls | GL objetos | nós |")
+    print("| Tela | Papel | CPU n=0 ms mediana / p99 / máx | CPU n=extra ms mediana / p99 / máx | vivos | GL draw calls | GL objetos | nós |")
     print("|---:|---|---|---|---:|---:|---:|---:|")
     for t in sorted(rows):
         r = rows[t]
