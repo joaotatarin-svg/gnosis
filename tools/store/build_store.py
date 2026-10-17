@@ -771,7 +771,7 @@ SHOTS = [
     ("01_rei_limiar", "s1_016", "Tela 1: Sophia contra o Rei no Limiar (catedral da lua)"),
     ("02_athoth_magia", "s10_014", "Tela 10: magia de luz contra Athoth, Arconte do Torpor"),
     ("03_galila_corrente", "s28_016", "Tela 28: Galila, Arconte da Corrente, entre gaiolas suspensas"),
-    ("04_astaphaios_espelho", "s46_016", "Tela 46: Astaphaios no salão de espelhos"),
+    ("04_horda_espelho", "s41_002", "Tela 41: a Sophia contra uma onda de criaturas no Éon do Espelho"),
     ("05_armupiel_coroa", "s64_010", "Tela 64: golpe contra Armupiel, Arconte da Coroa"),
     ("06_centro_horda", "s65_002", "Tela 65: o Centro, Sophia cercada por criaturas"),
 ]
@@ -799,6 +799,12 @@ def make_screens(raw_dir):
 # --------------------------------------------------------------------------
 # prancha (para o João escolher) e teste de miniatura
 # --------------------------------------------------------------------------
+
+
+def _cell_w(cell):
+    """Largura da célula na prancha: a imagem ou o rótulo, o que for maior."""
+    name, im = cell
+    return max(im.width, len(name) * 8 + 90)
 
 
 def board(items):
@@ -829,11 +835,11 @@ def board(items):
     # empacota em linhas de até 1960 px
     rows, cur, cw = [], [], 0
     for c in cells:
-        if cur and cw + c[1].width + pad > 1960:
+        if cur and cw + _cell_w(c) + pad > 1960:
             rows.append(cur)
             cur, cw = [], 0
         cur.append(c)
-        cw += c[1].width + pad
+        cw += _cell_w(c) + pad
     if cur:
         rows.append(cur)
     W = 1960 + pad
@@ -857,7 +863,7 @@ def board(items):
             tag = "B" if "_b." in name else ("A" if name.startswith(("capsule", "library_capsule", "hero")) else "")
             d.text((x, y), "%s%s  (%dx%d)" % ("[%s] " % tag if tag else "", name, src.width, src.height), fill=(220, 210, 190), font=lf)
             sheet.paste(im.convert("RGB"), (x, y + lab_h))
-            x += im.width + pad
+            x += _cell_w((name, im)) + pad
         y += rh + lab_h + pad
     return sheet
 
