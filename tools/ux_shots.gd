@@ -162,13 +162,39 @@ class Worker extends Node:
 		get_tree().change_scene_to_file("res://scenes/ui/Gallery.tscn")
 		await wait(1.0)
 		await shot("bestiario")
-		# 9. Crônicas (com 3 lidas)
+		# 9. Crônicas (com 3 lidas + a mais longa, nag_hammadi)
 		for e in Gnosis.entries().slice(0, 3):
 			if not Gnosis.is_unlocked(String(e.id)):
 				Gnosis.unlocked.append(String(e.id))
+		if not Gnosis.is_unlocked("nag_hammadi"):
+			Gnosis.unlocked.append("nag_hammadi")
 		get_tree().change_scene_to_file("res://scenes/ui/Chronicles.tscn")
 		await wait(1.0)
 		await shot("cronicas")
+		var chr = get_tree().current_scene
+		if chr != null and chr.has_method("_move"):
+			for k in 9:
+				chr._move(1)
+			await wait(0.3)
+			await shot("cronicas_longa")
+			chr._move(1)
+			await wait(0.2)
+			await shot("cronicas_trancada")
+		# 9b. Painel de leitura da Estela com o afresco (Onda 3): curta e a mais longa.
+		for sid in ["monada", "nag_hammadi"]:
+			var ent: Dictionary = {}
+			for e in Gnosis.STELAS:
+				if String(e.id) == sid:
+					ent = e
+			var sp := Stela.StelaPanel.new()
+			sp.entry = ent
+			get_tree().root.add_child(sp)
+			await wait(0.4)
+			await shot("estela_" + sid)
+			_check(Stela.art_for(sid) != null, "Estela %s tem afresco" % sid)
+			PauseStack.pop(sp)
+			sp.queue_free()
+			await wait(0.1)
 		# 10. Créditos (se existir)
 		if ResourceLoader.exists("res://scenes/ui/Credits.tscn"):
 			get_tree().change_scene_to_file("res://scenes/ui/Credits.tscn")
