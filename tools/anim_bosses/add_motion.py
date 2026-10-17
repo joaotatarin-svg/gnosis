@@ -21,18 +21,22 @@ CELLS_A = ["walk_contact_A", "walk_down_A", "walk_pass_A", "walk_up_A", "walk_co
 
 # Padrão B (chefes `boss_<n>_<nome>_motion_a`): andar 4 novos + preparação em 2
 # etapas + golpe em 2 etapas (ordem do MANIFESTO FILA 7; --cells sobrescreve).
-CELLS_B = ["walk_c0", "walk_p0", "walk_c1", "walk_p1", "windup_0", "windup_1", "strike_0", "strike_1"]
+# (MANIFESTO chama de "padrão C": walk_c0 · walk_p0 · walk_c1 · walk_p1 ·
+#  windup_1 antecipação leve · windup_2 máxima · strike_1 impacto · strike_2 seguimento)
+CELLS_B = ["walk_c0", "walk_p0", "walk_c1", "walk_p1", "windup_1", "windup_2", "strike_1", "strike_2"]
 BOSSES = ["athoth", "harmas", "galila", "yabel", "astaphaios", "belias", "armupiel", "colosso", "rei"]
 
 
 def boss_pattern(R: dict, sheet: str, cells: list) -> None:
 	R["extra_sheets"] = [{"sheet": "artes/gpt/%s.png" % sheet, "grid": [4, 2], "cells": cells,
 		"scale": "auto", "ref": cells[1], "main_ref": "idle_0"}]
+	# andar: só os 4 novos (mesma folha → mesma continuidade; pela distância)
 	R["states"]["walk"] = {"frames": cells[:4], "cycle_bodies": 0.9}
-	# preparação: sai do parado em 2 etapas e chega à pose desenhada (hold)
-	R["states"]["windup"] = {"frames": [cells[4], cells[5], "windup"], "at": [0.0, 0.18, 0.4]}
-	# golpe: arranque → pico desenhado → seguimento
-	R["states"]["attack"] = {"frames": [cells[6], "strike", cells[7]], "at": [0.0, 0.12, 0.55], "impact_at": [1]}
+	# preparação: antecipação leve → máxima (HOLD na máxima). Só da folha nova:
+	# misturar com o "windup" antigo seriam duas poses máximas diferentes (pulo).
+	R["states"]["windup"] = {"frames": [cells[4], cells[5]], "at": [0.0, 0.3]}
+	# golpe: impacto → seguimento; recuperação: seguimento → parado
+	R["states"]["attack"] = {"frames": [cells[6], cells[7]], "at": [0.0, 0.5]}
 	R["states"]["recover"] = {"frames": [cells[7], "idle_0"], "at": [0.0, 0.45]}
 
 

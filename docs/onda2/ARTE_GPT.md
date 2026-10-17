@@ -257,3 +257,10 @@ faixa `gifs/andar_bots_antes_depois.png`. Honesto: no glutão o rastejar de 6 qu
 - HeroQA: parado com 8 quadros; rec_light3 toca e termina; rec_light1 não volta.
 - O atlas da Sophia passou a 2048×4096 (80 quadros). GIFs: `gifs/sophia_parado_antes.gif` × `gifs/sophia_parado_depois.gif`,
   quadros em `gifs/sophia_s15_s16_quadros.png`.
+
+**Bloco 6: chefes Athoth, Harmas, Galila (padrão C).** Escalas 1,025 / 0,932 / 1,030. Andar = 4 quadros novos
+(contato, passagem, contato, passagem) pela distância; preparação = antecipação leve → máxima (hold na máxima);
+golpe = impacto → seguimento; recuperação = seguimento → parado. Os quadros antigos `windup`/`strike` saíram
+dessas sequências (duas poses "máximas" diferentes dariam pulo). Harmas: folha motion veio magenta (a original
+era RGBA) — mesma escala/cor no recorte. GIFs: `gifs/harmas_andar_golpe_antes.gif` × `_depois.gif`,
+`gifs/galila_andar_golpe_antes.gif` × `_depois.gif`; quadros `gifs/chefes_motion_1.png`.

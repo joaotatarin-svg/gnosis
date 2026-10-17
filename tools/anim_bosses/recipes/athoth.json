@@ -36,32 +36,41 @@
   },
   "walk": {
    "frames": [
-    "walk_0",
-    "walk_1"
+    "walk_c0",
+    "walk_p0",
+    "walk_c1",
+    "walk_p1"
    ],
    "cycle_bodies": 0.9
   },
   "windup": {
    "frames": [
-    "windup"
+    "windup_1",
+    "windup_2"
+   ],
+   "at": [
+    0.0,
+    0.3
    ]
   },
   "attack": {
    "frames": [
-    "strike"
+    "strike_1",
+    "strike_2"
    ],
-   "impact_at": [
-    0
+   "at": [
+    0.0,
+    0.5
    ]
   },
   "recover": {
    "frames": [
-    "strike",
+    "strike_2",
     "idle_0"
    ],
    "at": [
     0.0,
-    0.4
+    0.45
    ]
   },
   "hurt": {
@@ -78,5 +87,27 @@
     0.14
    ]
   }
- }
+ },
+ "extra_sheets": [
+  {
+   "sheet": "artes/gpt/boss_1_athoth_motion_a.png",
+   "grid": [
+    4,
+    2
+   ],
+   "cells": [
+    "walk_c0",
+    "walk_p0",
+    "walk_c1",
+    "walk_p1",
+    "windup_1",
+    "windup_2",
+    "strike_1",
+    "strike_2"
+   ],
+   "scale": "auto",
+   "ref": "walk_p0",
+   "main_ref": "idle_0"
+  }
+ ]
 }

@@ -430,3 +430,7 @@ Chefes (padrão C) `boss_<n>_<nome>_motion_a.png` 2×4: 0 walk_c0 (contato) · 1
   (o original era transparente — combinar no recorte). windup_2 punhos erguidos (frontal), strike com punhos no chão. Chat do Harmas.
 - `boss_3_galila_motion_a.png` — padrão C. Nota 8. Fiel ao galila_b (perfil), mesma escala (h≈410–446). As gaiolas-lanterna são vazadas
   (magenta aparece por dentro — normal). strike_1 (estocada) vai de x≈708 a 1200, passa da célula sem tocar o vizinho. Chat da Galila.
+- `boss_4_yabel_motion_a.png` — padrão C. Nota 7.5. Fiel, mesma escala (h≈410–457), agora o windup ficou de PERFIL (o original era frontal —
+  pode haver salto se misturar com o windup antigo; usar estes dois em sequência). Asas com reflexo arroxeado perto do magenta (despill). Chat do Yabel.
+- `boss_5_astaphaios_motion_a.png` — padrão C. Nota 7.5. Fiel, perfil, mesma escala (h≈370–480). Véus continuam translúcidos (~13,5 mil px
+  quase-magenta, metade da versão original) — despill. Cajado do windup cruza a borda das células (x≈8 e a estocada vai até 1210, sem tocar). Chat do Astaphaios.
