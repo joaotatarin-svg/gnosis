@@ -14,6 +14,17 @@ var target_team: String = "enemy"  # "enemy" = tiro do player; "player" = tiro d
 var lifetime: float = 1.2
 var root_time: float = 0.0        # >0 = corrente: prende o alvo no lugar (Galila)
 var slow_time: float = 0.0        # >0 = sono: deixa o alvo lento (Sonâmbulo)
+## Onda 6 (inimigos6): tiro MIRADO em qualquer direção (voadores atiram de cima).
+## Zero = o antigo tiro horizontal por `direction`.
+var aim: Vector2 = Vector2.ZERO
+## Onda 6: tiro em ARCO (arc_gravity > 0): sobe e cai; ao tocar `ground_y` vira a
+## zona `land_kind` ("poison"/"sleep") no chão — o arremesso do Portador/Sonâmbulo.
+var arc_gravity: float = 0.0
+var ground_y: float = INF          # y do chão (some ao tocar; INF = não confere)
+var land_kind: String = ""
+var land_radius: float = 40.0
+var land_time: float = 3.0
+var _vel: Vector2 = Vector2.ZERO
 
 var _time: float = 0.0
 var _trail: Array[Vector2] = []
@@ -35,7 +46,16 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	position.x += direction * speed * delta
+	if arc_gravity > 0.0 or aim != Vector2.ZERO:
+		if _vel == Vector2.ZERO:
+			_vel = (aim.normalized() if aim != Vector2.ZERO else Vector2(direction, 0.0)) * speed
+		_vel.y += arc_gravity * delta
+		position += _vel * delta
+		if global_position.y >= ground_y:
+			_land()
+			return
+	else:
+		position.x += direction * speed * delta
 	_time += delta
 	_trail.push_front(global_position)
 	if _trail.size() > 8:
@@ -81,6 +101,14 @@ func _on_area_entered(area: Area2D) -> void:
 			_vanish()
 		elif not pierce:
 			_vanish()
+
+
+## Tocou o chão (tiro em arco/mirado): estoura e, se pedir, deixa a zona.
+func _land() -> void:
+	ImpactBurst.spawn(get_parent(), global_position, color)
+	if land_kind != "":
+		HazardZone.spawn(get_parent(), Vector2(global_position.x, ground_y), land_kind, land_radius, land_time, color)
+	_vanish()
 
 
 func _vanish() -> void:
