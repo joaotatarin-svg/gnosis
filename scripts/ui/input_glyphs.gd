@@ -60,6 +60,13 @@ static func is_pad(dev: int = -1) -> bool:
 	return (device() if dev < 0 else dev) != Device.KEYBOARD
 
 
+## Tipo do último CONTROLE visto (vale mesmo com o teclado em uso): para mostrar
+## a coluna "Controle" da tela de Controles com os nomes certos.
+static func pad_kind() -> int:
+	device()
+	return _pad_kind
+
+
 static func device_name(dev: int = -1) -> String:
 	return DEVICE_NAMES[clampi(device() if dev < 0 else dev, 0, DEVICE_NAMES.size() - 1)]
 

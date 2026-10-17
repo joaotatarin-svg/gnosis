@@ -9,7 +9,7 @@ extends Node
 ##     --path . --resolution 1280x720 res://tools/ui_menus/MenuProbe.tscn -- <pasta_saida> [seção ...]
 ## Sem capturas (testes de tempo confiáveis — a janela no llvmpipe roda a poucos fps):
 ##   godot --headless --audio-driver Dummy --path . res://tools/ui_menus/MenuProbe.tscn -- <pasta> [seção ...]
-## Seções: glifos loja pausa pilha voltar cronicas opcoes estela provacao creditos bestiario (padrão: todas)
+## Seções: glifos loja pausa pilha voltar cronicas opcoes controles estela provacao creditos bestiario (padrão: todas)
 ## + opcoes_provacao (só quando pedida: confere a REVISAO #13, que é do SaveManager/Técnico)
 ## Imprime "UIM OK: ..." / "UIM FALHA: ..." e no fim "UIM RESULT: N ok, M falha(s)".
 ## O B do controle em `ui_cancel` (e o A em `ui_accept`) é mapeado AQUI se o
@@ -199,6 +199,8 @@ class Worker extends Node:
 			await _chronicles()
 		if want("opcoes"):
 			await _options()
+		if want("controles"):
+			await _controls()
 		if want("estela"):
 			await _stela()
 		if want("provacao"):
@@ -457,6 +459,103 @@ class Worker extends Node:
 		await pad(JOY_BUTTON_A)
 		await wait(0.1)
 		check(bool(GameManager.settings.get("reduce_flashes", false)) == was, "opções: A desliga de novo")
+		# #34: velocidade do texto, números de dano, modo de janela
+		var ts: Button = om.get("_text_speed")
+		var seen_speeds: Array = []
+		for i in 4:
+			ts.grab_focus()
+			await pad(JOY_BUTTON_A)
+			await wait(0.05)
+			seen_speeds.append(float(GameManager.settings.get("text_speed", -1.0)))
+		seen_speeds.sort()
+		check(seen_speeds == [0.0, 0.5, 1.0, 2.0], "opções: velocidade do texto passa por 0,5/1/2/instantâneo %s" % str(seen_speeds))
+		var dn: Button = null
+		for b in om.find_children("*", "Button", true, false):
+			if b.has_meta("key") and b.get_meta("key") == "damage_numbers":
+				dn = b
+		var dn0 := bool(GameManager.settings.get("damage_numbers", true))
+		dn.grab_focus()
+		await pad(JOY_BUTTON_A)
+		await wait(0.05)
+		check(bool(GameManager.settings.get("damage_numbers", true)) == not dn0, "opções: números de dano alterna")
+		await pad(JOY_BUTTON_A)
+		var wb: Button = om.get("_window")
+		var modes: Array = []
+		for i in 3:
+			wb.grab_focus()
+			await pad(JOY_BUTTON_A)
+			await wait(0.1)
+			modes.append(int(GameManager.settings.get("window_mode", -1)))
+		modes.sort()
+		check(modes == [0, 1, 2], "opções: modo de janela passa por janela/tela cheia/sem bordas %s" % str(modes))
+		check(bool(GameManager.settings.get("fullscreen", false)) == (int(GameManager.settings.get("window_mode", 0)) != 0), "opções: 'fullscreen' acompanha o modo de janela")
+		await shot("opcoes_novas")
+
+	## #34: tela Controles — captura, troca com conflito, recusa, padrão; JSON.
+	func _controls() -> void:
+		await go("res://scenes/ui/OptionsMenu.tscn", 1.0)
+		var om := get_tree().current_scene
+		GameManager.settings["bindings"] = {}
+		InputRebind.reset()
+		var cb: Button = om.get("_controls")
+		cb.grab_focus()
+		await key(KEY_ENTER)
+		await wait(0.4)
+		var cm: ControlsMenu = null
+		for c in om.get_children():
+			if c is ControlsMenu:
+				cm = c
+		check(cm != null, "controles: abre pelas Opções")
+		if cm == null:
+			return
+		await shot("controles")
+		var rows: Array = cm.get("_rows")
+		check(rows.size() == InputRebind.ACTIONS.size() and focus() == rows[0].kb, "controles: %d ações, foco na 1ª" % rows.size())
+		# Golpe leve (J) ← K: troca com Golpe forte
+		rows[0].kb.grab_focus()
+		await key(KEY_ENTER)
+		await wait(0.2)
+		check(cm.get("_capturing") != null, "controles: Enter inicia a captura")
+		await shot("controles_captura")
+		await key(KEY_K)
+		await wait(0.1)
+		var light := InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD)
+		var heavy := InputGlyphs.label("attack_heavy", InputGlyphs.Device.KEYBOARD)
+		check(light == "K" and heavy == "J", "controles: K no golpe leve troca com o forte [%s / %s]" % [light, heavy])
+		var bd: Dictionary = GameManager.settings.get("bindings", {})
+		check(bd.has("attack_light") and bd.has("attack_heavy"), "controles: gravado em settings.bindings %s" % str(bd.keys()))
+		# Esc recusado (é cancelar) e tecla de Anel fixa recusada
+		rows[2].kb.grab_focus()
+		await key(KEY_ENTER)
+		await wait(0.2)
+		await key(KEY_1)
+		check(cm.get("_capturing") != null and String(cm.get("_status").text).contains("fixo"), "controles: tecla 1 (Anel) recusada [%s]" % cm.get("_status").text)
+		await key(KEY_ESCAPE)
+		await wait(0.05)
+		check(cm.get("_capturing") == null and InputGlyphs.label("jump", InputGlyphs.Device.KEYBOARD) == "Espaço", "controles: Esc cancela sem mudar")
+		# Controle: Golpe leve ← RB (botão) — troca com Anel (magia)
+		rows[0].pad.grab_focus()
+		await key(KEY_ENTER)
+		await wait(0.2)
+		await pad(JOY_BUTTON_RIGHT_SHOULDER)
+		await wait(0.1)
+		check(InputGlyphs.label("attack_light", InputGlyphs.Device.XBOX) == "RB" and InputGlyphs.label("skill1", InputGlyphs.Device.XBOX) == "X", "controles: RB no golpe leve troca com o Anel")
+		# JSON: ida e volta pelo save (números viram float no JSON)
+		var json: Dictionary = JSON.parse_string(JSON.stringify(GameManager.settings["bindings"]))
+		InputRebind.reset()
+		check(InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD) == "J", "controles: reset volta ao J")
+		InputRebind.new().apply_bindings(json)
+		check(InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD) == "K" and InputGlyphs.label("attack_light", InputGlyphs.Device.XBOX) == "RB", "controles: apply_bindings(JSON) reaplica")
+		check(InputRebind.deserialize({"k": "x"}) == null or InputRebind.deserialize({"b": 999}) == null, "controles: evento inválido do save é ignorado")
+		# Restaurar padrão (botão)
+		cm.get("_reset_btn").emit_signal("pressed")
+		await wait(0.05)
+		check((GameManager.settings["bindings"] as Dictionary).is_empty() and InputGlyphs.label("attack_heavy", InputGlyphs.Device.KEYBOARD) == "K", "controles: Restaurar padrão")
+		await pad(JOY_BUTTON_B)
+		await wait(0.2)
+		check(not is_instance_valid(cm) or cm.is_queued_for_deletion(), "controles: B fecha a tela")
+		check(get_tree().current_scene == om, "controles: B fecha só os Controles (Opções continuam)")
+		InputGlyphs.set_device(InputGlyphs.Device.KEYBOARD)
 
 	## M7: a Estela só abre com o golpe leve fora de combate.
 	func _stela() -> void:
