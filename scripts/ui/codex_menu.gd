@@ -1,7 +1,10 @@
 extends Control
-## Menu principal de versão final. A pintura do Limiar (viva: deriva lenta,
-## poeira de luz subindo) e a Sophia grande à direita; à esquerda o logotipo e
-## as ações, em ordem de importância:
+## Menu principal de versão final. Fundo = a ilustração do menu (Onda 3,
+## assets/menu/menu_bg.jpg: a Sophia de costas à direita, numa ponte em ruínas,
+## olhando a cidade e os Anéis no céu; metade esquerda escura e calma), viva:
+## deriva lenta + poeira de luz subindo. À esquerda o logotipo e as ações, numa
+## sombra em degradê para o contraste. Sem a ilustração, volta a pintura do
+## Limiar com a Sophia desenhada (fallback antigo). Ações, por importância:
 ## Continuar (se houver checkpoint) · Nova campanha · Provação (treino de 3
 ## encontros; com Arcontes vencidos, escolhe-se contra quem) · Galeria &
 ## Bestiário | Crônicas · Opções | Créditos | Sair.
@@ -10,6 +13,12 @@ extends Control
 const COL_X := 34.0
 const COL_W := 240.0
 const ROW_PITCH := 30.0
+const MENU_BG := "res://assets/menu/menu_bg.jpg"
+## Ilustração 1536×1024 desenhada a 680×453 (sobra p/ a deriva); topo em −44
+## deixa os Anéis cortados no alto e a Sophia inteira na ponte.
+const BG_SIZE := Vector2(680, 453)
+const BG_POS_A := Vector2(-28, -44)
+const BG_POS_B := Vector2(-12, -34)
 
 var _first_focus: Button
 var _painting: TextureRect
@@ -34,6 +43,54 @@ func _ready() -> void:
 
 
 func _build_backdrop() -> void:
+	if ResourceLoader.exists(MENU_BG):
+		_build_illustrated()
+		return
+	_build_legacy_backdrop()
+
+
+## Fundo novo: a ilustração inteira na tela, em deriva lenta, com poeira de luz
+## sobre a metade direita e a sombra da coluna de botões à esquerda.
+func _build_illustrated() -> void:
+	var bg := ColorRect.new()
+	bg.color = CodexStyle.INK_DEEP
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg)
+	_painting = TextureRect.new()
+	_painting.texture = load(MENU_BG)
+	# expand_mode ANTES do size: senão o tamanho mínimo (a textura, 1536×1024) vence.
+	_painting.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_painting.stretch_mode = TextureRect.STRETCH_SCALE
+	_painting.position = BG_POS_A
+	_painting.size = BG_SIZE
+	_painting.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_painting)
+	# Deriva lenta (parallax "respirando"), em laço: 16 px em 18 s.
+	var drift := create_tween().set_loops()
+	drift.tween_property(_painting, "position", BG_POS_B, 18.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	drift.tween_property(_painting, "position", BG_POS_A, 18.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	var motes := CodexStyle.Motes.new()
+	motes.area = Rect2(230, 0, 410, 360)
+	motes.count = 36
+	add_child(motes)
+	# Sombra da coluna de botões: escura atrás do logotipo/botões, some antes da cidade.
+	var shade := Polygon2D.new()
+	shade.polygon = PackedVector2Array([Vector2(0, 0), Vector2(300, 0), Vector2(380, 0), Vector2(380, 360), Vector2(300, 360), Vector2(0, 360)])
+	var dark := Color(0.024, 0.05, 0.07, 0.78)
+	var mid := Color(0.024, 0.05, 0.07, 0.55)
+	var clear := Color(0.024, 0.05, 0.07, 0.0)
+	shade.vertex_colors = PackedColorArray([dark, mid, clear, clear, mid, dark])
+	add_child(shade)
+	# Pé da tela um pouco mais escuro (a ponte vira chão, não compete com os botões).
+	var foot := Polygon2D.new()
+	foot.polygon = PackedVector2Array([Vector2(0, 300), Vector2(640, 300), Vector2(640, 360), Vector2(0, 360)])
+	foot.vertex_colors = PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0.01, 0.02, 0.03, 0.5), Color(0.01, 0.02, 0.03, 0.5)])
+	add_child(foot)
+
+
+## Fundo antigo (sem a ilustração do menu): pintura do Limiar + Sophia desenhada.
+func _build_legacy_backdrop() -> void:
 	var backdrop = load("res://scripts/fx/codex_sanctum.gd").new()
 	backdrop.menu = true
 	add_child(backdrop)
@@ -45,7 +102,6 @@ func _build_backdrop() -> void:
 	_painting.modulate = Color(0.55, 0.65, 0.7)
 	_painting.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_painting)
-	# Deriva lenta da pintura (parallax "respirando"), em laço.
 	var drift := create_tween().set_loops()
 	drift.tween_property(_painting, "position", Vector2(240, -2), 14.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	drift.tween_property(_painting, "position", Vector2(255, -6), 14.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

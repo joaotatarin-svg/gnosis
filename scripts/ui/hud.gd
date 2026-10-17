@@ -67,9 +67,12 @@ var _canvas: _HudCanvas
 var _counters: _HudCanvas            # faíscas + arma numa camada própria (recuam fora de combate)
 var _combo_label: Label
 var _toast: Control
+var _toast_holder: Control           # desloca o toast para baixo da legenda (CaptionBar no topo)
+var _caption_bottom: float = -1.0    # base da faixa de legenda (-1 = sem legenda)
 var _toast_label: Label
 var _toast_tween: Tween
 var _recede: float = 0.0             # 0..1: HUD recolhido (card de chefe da Cinemática)
+var _scene_k: float = 0.0            # 0..1: cena/diálogo no ar (some o HUD de combate não essencial)
 
 # estado das barras
 var hp: float = 1.0
@@ -116,6 +119,8 @@ var _calm_a: float = 1.0             # alpha atual das faíscas/arma
 var _combat_check: float = 0.0
 var _low_t: float = -1.0             # s de vinheta de vida baixa (-1 = desligada)
 var _low_fade: float = 0.0           # 0..1 intensidade (entra/sai suave)
+var _low_beat: int = -1              # último pulso da vinheta que já bateu o coração (Audio)
+var _toast_queue: Array[String] = [] # avisos esperando a vez (conquista + Crônica juntas)
 
 
 func _ready() -> void:
@@ -165,6 +170,10 @@ func _ready() -> void:
 	use_pad = bool(g.is_pad()) if g != null else Input.get_connected_joypads().size() > 0
 	_queue_screen_hints()
 	_check_ring_hints()
+	# Conquista liberada → toast (Achievements é autoload leve; compila sem ele).
+	var ach := get_node_or_null("/root/Achievements")
+	if ach != null and ach.has_signal("unlocked"):
+		ach.connect("unlocked", _on_achievement)
 
 
 func _process(delta: float) -> void:
@@ -172,6 +181,11 @@ func _process(delta: float) -> void:
 	if get_tree().paused:
 		# Estado congelado, mas o desenho segue (no roubo a caixa pausa o mundo e
 		# o encaixe da gema precisa apagar/acender na hora).
+		# Faíscas: atrás da loja/pausa o número mostra o total REAL (QA H2: ficava
+		# o valor velho congelado enquanto a loja mostrava o novo).
+		if sparks_shown != float(sparks):
+			sparks_shown = float(sparks)
+			_spark_hold = 0.0
 		_canvas.queue_redraw()
 		_counters.queue_redraw()
 		return
@@ -203,7 +217,8 @@ func _process(delta: float) -> void:
 		sparks_shown = move_toward(sparks_shown, float(sparks), step)
 	_spark_pulse = maxf(0.0, _spark_pulse - delta * 2.5)
 	_spark_pop = maxf(0.0, _spark_pop - delta)
-	_process_hints(delta)
+	if _scene_k <= 0.0:
+		_process_hints(delta)      # durante cena a dica espera (não "queima" escondida)
 	_weapon_flash = maxf(0.0, _weapon_flash - delta * 0.6)
 	for i in _ring_pop.size():
 		_ring_pop[i] = maxf(0.0, _ring_pop[i] - delta * 1.8)
@@ -276,15 +291,24 @@ func _on_combo(count: int) -> void:
 
 # --- API pública ------------------------------------------------------------------
 
-## Aviso curto (cacos de memória, Crônicas, quedas na batalha final) numa
-## faixa própria (TOAST_RECT). Texto longo encolhe a fonte para caber.
+## Aviso curto (cacos de memória, Crônicas, conquistas, quedas na batalha final)
+## numa faixa própria (TOAST_RECT). Texto longo encolhe a fonte para caber.
+## Dois avisos juntos (Crônica + conquista) fazem fila: um de cada vez.
 func toast(msg: String) -> void:
+	if _toast != null and _toast_tween != null and _toast_tween.is_valid() and _toast_tween.is_running():
+		if _toast_queue.size() < 4 and not _toast_queue.has(msg) and _toast_label.text != msg:
+			_toast_queue.append(msg)
+		return
 	if _toast == null:
+		_toast_holder = Control.new()
+		_toast_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_toast_holder)
 		_toast = Control.new()
 		_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_toast.position = TOAST_RECT.position
 		_toast.size = TOAST_RECT.size
-		add_child(_toast)
+		_toast_holder.add_child(_toast)
+		_place_toast()
 		_toast_label = Label.new()
 		_toast_label.size = Vector2(TOAST_RECT.size.x, 20)
 		_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -310,6 +334,39 @@ func toast(msg: String) -> void:
 	_toast_tween.tween_property(_toast, "position:y", TOAST_RECT.position.y, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_toast_tween.chain().tween_interval(2.2)
 	_toast_tween.chain().tween_property(_toast, "modulate:a", 0.0, 0.5)
+	_toast_tween.chain().tween_callback(_next_toast)
+
+
+func _next_toast() -> void:
+	_toast_tween = null              # (o callback roda DENTRO do tween, que ainda conta como rodando)
+	if not _toast_queue.is_empty():
+		toast(_toast_queue.pop_front())
+
+
+## Conquista liberada (sinal Achievements.unlocked): aviso com o título dela.
+func _on_achievement(id: String) -> void:
+	var a: Dictionary = AchievementData.find(id)
+	var title := String(a.get("title", ""))
+	if title != "":
+		toast("Conquista  ·  %s" % title)
+
+
+## A legenda de caminhada (CaptionBar, no topo) informa a base da faixa dela a
+## cada quadro; -1 = nenhuma legenda na tela.
+func set_caption_band(bottom: float) -> void:
+	_caption_bottom = bottom
+	_place_toast()
+
+
+## O toast fica na faixa dele (TOAST_RECT) ou logo abaixo da legenda, se ela
+## estiver no ar.
+func _place_toast() -> void:
+	if _toast_holder == null:
+		return
+	var want := 0.0
+	if _caption_bottom > 0.0:
+		want = maxf(0.0, _caption_bottom + 4.0 - TOAST_RECT.position.y)
+	_toast_holder.position.y = want
 
 
 ## R21: fora de combate (nenhum inimigo vivo perto, sem dano/golpe por 4 s) as
@@ -327,7 +384,7 @@ func _process_calm(delta: float) -> void:
 	var target := CALM_ALPHA if _calm >= CALM_AFTER else 1.0
 	var rate := (1.0 - CALM_ALPHA) / (0.15 if target > _calm_a else 0.6)
 	_calm_a = move_toward(_calm_a, target, delta * rate)
-	_counters.modulate.a = _calm_a * (1.0 - _recede)
+	_counters.modulate.a = _calm_a * (1.0 - _recede) * (1.0 - _scene_k)
 
 
 func _enemy_near() -> bool:
@@ -353,6 +410,16 @@ func _process_low_hp(delta: float) -> void:
 			_low_t = -1.0
 	var want := 1.0 if _low_t >= 0.0 and _low_t < LOW_HP_MAX_TIME - 0.6 else 0.0
 	_low_fade = move_toward(_low_fade, want, delta * (2.5 if want > _low_fade else 1.6))
+	# Um batimento por pulso da vinheta (0,9 Hz), no pico; o Áudio decide o volume
+	# e segura o intervalo mínimo (Audio.low_health_pulse, se existir).
+	if _low_fade > 0.5:
+		var beat := int(floor(_t * 0.9 + 0.75))   # vira no pico do seno (fase 0,25)
+		if beat != _low_beat:
+			_low_beat = beat
+			if Audio.has_method("low_health_pulse"):
+				Audio.call("low_health_pulse")
+	else:
+		_low_beat = -1
 
 
 ## Intensidade da vinheta agora (α 0,12–0,18 pulsando a 0,9 Hz; 0 = nada).
@@ -372,12 +439,30 @@ func _update_recede(delta: float) -> void:
 			want = 1.0
 			break
 	_recede = move_toward(_recede, want, delta * 5.0)
+	# Cena/diálogo no ar (QA C2): dicas de controle, combo e faíscas/arma somem;
+	# medalhão, barras e Anéis ficam (a cena B usa as gemas do HUD).
+	_scene_k = move_toward(_scene_k, 1.0 if scene_active() else 0.0, delta * 6.0)
 	var a := 1.0 - _recede
 	_canvas.modulate.a = a
-	_counters.modulate.a = a * _calm_a
-	_combo_label.modulate.a = a
+	_counters.modulate.a = a * _calm_a * (1.0 - _scene_k)
+	_combo_label.modulate.a = a * (1.0 - _scene_k)
 	if _toast != null:
 		_toast.visible = _recede < 0.99
+
+
+## Há cena no ar? Caixa de diálogo aberta, Cinemática (card/ilustração) ou a
+## Encenação dirigindo uma cena (Staging.is_active(), se existir — pedido à
+## encenação; sem ele vale só a caixa/Cinemática, que cobrem as cenas 64/68).
+func scene_active() -> bool:
+	for c in get_tree().root.get_children():
+		if (c is DialogueBox or c is Cinematic) and not c.is_queued_for_deletion():
+			return true
+	var lv := get_tree().current_scene
+	if lv != null:
+		for c in lv.get_children():
+			if c is Staging and c.has_method("is_active") and bool(c.call("is_active")):
+				return true
+	return false
 
 
 ## Chamado (via grupo "hud") pelo chefe ao nascer — e de novo quando uma forma
@@ -737,11 +822,11 @@ func _distinct_actions(h: Array) -> int:
 	return d.size()
 
 
-## Alpha da dica atual (entra 0,25 s, sai 0,4 s).
+## Alpha da dica atual (entra 0,25 s, sai 0,4 s; some durante cena/diálogo).
 func hint_alpha() -> float:
 	if _hint.is_empty():
 		return 0.0
-	return clampf(minf(_hint_t / 0.25, (HINT_TIME - _hint_t) / 0.4), 0.0, 1.0)
+	return clampf(minf(_hint_t / 0.25, (HINT_TIME - _hint_t) / 0.4), 0.0, 1.0) * (1.0 - _scene_k)
 
 
 func _input(event: InputEvent) -> void:
@@ -1145,7 +1230,7 @@ class _HudCanvas extends Control:
 		var a: float = bb.show
 		var x0 := cx - w * 0.5
 		var y: float = BOSS_BAR_Y + (1.0 - a) * 8.0
-		var rect := Rect2(x0, y, w, 7)
+		var rect := Rect2(x0, y, w, 8)
 		var name_full: String = String(bb.node.get("display_name")) if is_instance_valid(bb.node) else bb.last_name
 		bb.last_name = name_full
 		var parts := name_full.split(",", false, 1)
@@ -1154,8 +1239,9 @@ class _HudCanvas extends Control:
 		var phase2: bool = bb.phase >= 2
 		var pf: float = bb.flash
 		var down: bool = bb.down
-		# placa escura atrás de nome + barra (contraste sobre qualquer cenário)
-		var plate := Rect2(x0 - 26.0, y - 17.0, w + 44.0, 41.0)
+		# placa escura atrás de nome + barra (contraste sobre qualquer cenário;
+		# Onda 3: mais densa — sobre chão claro/flash a barra sumia)
+		var plate := Rect2(x0 - 30.0, y - 18.0, w + 52.0, 42.0)
 		var steps := 12
 		for i in steps:
 			var t0 := float(i) / steps
@@ -1165,7 +1251,7 @@ class _HudCanvas extends Control:
 			var px0 := plate.position.x + plate.size.x * t0
 			var px1 := plate.position.x + plate.size.x * t1
 			draw_polygon(PackedVector2Array([Vector2(px0, plate.position.y), Vector2(px1, plate.position.y), Vector2(px1, plate.end.y), Vector2(px0, plate.end.y)]),
-				PackedColorArray([Color(0.01, 0.025, 0.035, 0.62 * k0 * a), Color(0.01, 0.025, 0.035, 0.62 * k1 * a), Color(0.01, 0.025, 0.035, 0.62 * k1 * a), Color(0.01, 0.025, 0.035, 0.62 * k0 * a)]))
+				PackedColorArray([Color(0.01, 0.025, 0.035, 0.84 * k0 * a), Color(0.01, 0.025, 0.035, 0.84 * k1 * a), Color(0.01, 0.025, 0.035, 0.84 * k1 * a), Color(0.01, 0.025, 0.035, 0.84 * k0 * a)]))
 		var name_col := Color(0.62, 0.6, 0.68, a) if down else Color(CodexStyle.GOLD_HI.lerp(Color.WHITE, pf * 0.6), a)
 		_txt(Vector2(x0, y - 5.0), main_name, CodexStyle.display_bold(), 12 if solo else 10, name_col, HORIZONTAL_ALIGNMENT_CENTER, w, 5)
 		if down:
@@ -1174,28 +1260,39 @@ class _HudCanvas extends Control:
 			var pl := 0.6 + 0.4 * sin(hud._t * 4.0)
 			_txt(Vector2(x0, y + 18.0), "refazendo-se", CodexStyle.italic(), 9, Color(0.82, 0.78, 0.92, a * pl), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
 		else:
-			var lo := CodexStyle.EMBER.darkened(0.3) if phase2 else Color("9a7a3c")
-			var hi := Color("ffb070") if phase2 else Color("f2d690")
+			# Fase I ouro vivo; fase II carmim-brasa (a identidade vermelha do HUD).
+			var lo := Color("c43a2e") if phase2 else Color("e3aa48")
+			var hi := Color("ffb27a") if phase2 else Color("fff2c6")
 			_bar(rect, bb.ratio, bb.ghost, lo, hi, pf * 0.5)
+			# trilho vazio com contorno interno escuro: o fim da vida lê de longe
+			var empty_x := rect.position.x + rect.size.x * clampf(bb.ghost, 0.0, 1.0)
+			if empty_x < rect.end.x - 6.0:
+				draw_line(Vector2(empty_x, rect.position.y + 1.5), Vector2(rect.end.x - 5.0, rect.position.y + 1.5), Color(1, 1, 1, 0.06 * a), 1.0)
 			# marcador de fase em 50 %
 			var mx := rect.position.x + w * 0.5
 			var mcol := CodexStyle.EMBER.lerp(Color.WHITE, pf) if phase2 else CodexStyle.GOLD_HI
 			draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), Color(0.01, 0.03, 0.04, 0.9), 1.4)
 			draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), mcol, 0.6)
 			CodexStyle.draw_diamond(self, Vector2(mx, rect.position.y - 4.0), 2.4 + pf * 1.5, mcol, Color(0, 0, 0, 0.7))
-			# linha de baixo: subtítulo (só com um chefe) e "FASE II" do lado de dentro
+			# linha de baixo (y+18, a 8 px da borda da tela): subtítulo centrado e
+			# "FASE II" na MESMA linha, alinhado à ponta direita da barra (antes
+			# descia para y+28 e saía cortado na base da tela).
 			if solo and sub != "":
-				_txt(Vector2(x0, y + 18.0), sub, CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.75 * a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
+				_txt(Vector2(x0, y + 18.0), sub, CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.8 * a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
 			if phase2:
 				var fx := (x0 + w - 74.0) if solo else (x0 + w * 0.5 - 37.0)
-				var fy := y + (28.0 if solo and sub != "" else 18.0)
-				_txt(Vector2(fx, fy), "FASE II", CodexStyle.display_bold(), 8, Color(Color("ffb070").lerp(Color.WHITE, pf), a), HORIZONTAL_ALIGNMENT_RIGHT if solo else HORIZONTAL_ALIGNMENT_CENTER, 74.0, 3)
+				_txt(Vector2(fx, y + 18.0), "FASE II", CodexStyle.display_bold(), 8, Color(Color("ffb070").lerp(Color.WHITE, pf), a), HORIZONTAL_ALIGNMENT_RIGHT if solo else HORIZONTAL_ALIGNMENT_CENTER, 74.0, 3)
 		# medalhão da fase à ESQUERDA da barra (longe da borda e do terminal)
-		var mc := Vector2(rect.position.x - 15.0, rect.position.y + 3.5)
-		draw_circle(mc, 7.0, Color(0.01, 0.03, 0.04, 0.92 * a))
+		# (r 8,5 e algarismo de 7 px: o "II" respira dentro do anel, sem tocar a borda)
+		var mc := Vector2(rect.position.x - 17.0, rect.position.y + 4.0)
+		draw_circle(mc, 8.5, Color(0.01, 0.03, 0.04, 0.95 * a))
 		var ring_col := Color(0.6, 0.58, 0.7, a) if down else (Color(CodexStyle.EMBER.lerp(Color.WHITE, pf), a) if phase2 else Color(CodexStyle.GOLD, a))
-		draw_arc(mc, 7.0, 0.0, TAU, 20, ring_col, 1.0, true)
-		_txt(mc + Vector2(-10.0, 3.2), "II" if phase2 and not down else "I", CodexStyle.display_bold(), 8, ring_col, HORIZONTAL_ALIGNMENT_CENTER, 20.0, 2)
+		draw_arc(mc, 8.5, 0.0, TAU, 24, ring_col, 1.0, true)
+		draw_arc(mc, 6.6, 0.0, TAU, 24, Color(ring_col, 0.3 * a), 0.5, true)
+		var mfont: Font = CodexStyle.display_bold()
+		var mtxt := "II" if phase2 and not down else "I"
+		var asc := mfont.get_ascent(7) - mfont.get_descent(7)
+		_txt(mc + Vector2(-10.0, asc * 0.5 - 0.5), mtxt, mfont, 7, ring_col, HORIZONTAL_ALIGNMENT_CENTER, 20.0, 2)
 
 	# --- dica de controle (topo central) -----------------------------------------------
 	func _draw_hint() -> void:
@@ -1266,7 +1363,7 @@ class _HudCanvas extends Control:
 	func _draw_combo_tag() -> void:
 		if hud._combo_label.text == "":
 			return
-		_txt(Vector2(500, 90), "golpes", CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.8), HORIZONTAL_ALIGNMENT_RIGHT, 120, 3)
+		_txt(Vector2(500, 90), "golpes", CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.8 * (1.0 - hud._scene_k)), HORIZONTAL_ALIGNMENT_RIGHT, 120, 3)
 
 
 ## Gema solta (detach_ring): brilha, gira de leve e voa.
