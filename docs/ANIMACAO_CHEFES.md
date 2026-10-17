@@ -163,3 +163,7 @@ No jogo (`CharacterArt`, seção "CHEFES POR QUADROS"): troca seca, mola amortec
 (avanço, curvatura) para o hold da preparação e o estalo do golpe, afterimage na entrada do
 golpe, contorno pulsante no telegrafo, gibs do último quadro, shader
 `assets/painted/shaders/painted_boss.gdshader`.
+
+
+O mesmo pipeline também anima as criaturas comuns, a família dos Arcontes (nos quadros do seu chefe, em escala de criatura) e os NPCs (Soter, Velkar, Adormecido): receitas com `"group": "creatures"` e `old_sheet`/`old_rect`. Estado e capturas em `docs/onda2/ARTE_GPT.md`.
+
