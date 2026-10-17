@@ -226,6 +226,11 @@ func reset_run() -> void:
 	bonus_max_health = 0
 	bonus_max_mana = 0
 	items.clear()
+	# Contadores da loja explícitos desde o início do run: o bônus de vida/Éter
+	# também recebe presentes (Soter, recompensas do mapa), então só save
+	# ANTIGO (sem as entradas) deduz as compras do bônus.
+	_flag_set("vida", "0")
+	_flag_set("eter", "0")
 	sleepers_freed = 0
 	unlocked_skills.clear()
 	unlocked_skills.append("m_s1")   # a Esfera Solar é inata; os Anéis vêm dos Arcontes

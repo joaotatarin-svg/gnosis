@@ -101,13 +101,17 @@ const KINDS := {
 ## (orbs = base + por_eon × Éon), +vida máx. (hp), +Éter máx. (mp), cura inteira
 ## na próxima tela (heal). Valores modestos de propósito: o playtest (#8) achou a
 ## economia generosa demais — quem calibra é o diretor de progressão.
+## Calibrado pela Progressão (Onda 6, docs/onda2/PROGRESSAO6.md): vida/Éter do
+## mapa vêm DE GRAÇA e fora dos tetos da loja — com os valores antigos uma rota
+## "só perigo/Arena/segredo" somava até ~210 de vida (mais que a trilha inteira
+## da loja, +200). Agora ~0,75 disso e só para quem troca santuário por risco.
 const REWARDS := {
 	"combat": {"orbs": 6, "per_eon": 3},
-	"hazard": {"hp": 5},
-	"platform": {"mp": 5},
+	"hazard": {"hp": 4},
+	"platform": {"mp": 4},
 	"sanctuary": {"heal": true},
-	"challenge": {"orbs": 30, "per_eon": 10, "hp": 8},
-	"secret": {"orbs": 20, "per_eon": 6, "hp": 10, "mp": 10},
+	"challenge": {"orbs": 30, "per_eon": 10, "hp": 6},
+	"secret": {"orbs": 20, "per_eon": 6, "hp": 8, "mp": 8},
 }
 
 ## Requisito de cada tipo ("" = livre).

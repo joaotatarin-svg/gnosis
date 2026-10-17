@@ -75,6 +75,13 @@ func _cases_tracks() -> void:
 	check(Progression.skill_next_tier("r_fome") == 2, "Anel 2 Nv.2 sai junto com o Anel")
 	check(Progression.hp_buy_cap() == 5 and Progression.mp_buy_cap() == 3, "tetos sobem com o grau (vida 5, Éter 3)")
 	check(Progression.heal_cost() == 50 + 15 * 2, "Restauração escala com o grau (80)")
+	# Presentes (mapa +4/+6/+8, Soter +25) não contam como compra num run novo.
+	_new_run()
+	Progression.buy_max_health(6, 0)
+	Progression.buy_max_health(8, 0)
+	Progression.bonus_max_health += 25
+	Progression.buy_max_mana(4, 0)
+	check(Progression.hp_buys() == 0 and Progression.mp_buys() == 0 and Progression.hp_buy_cap() == 3, "presentes do mapa/Soter não gastam compras da loja")
 	# Save antigo: sem contador "#vida" → deduz do bônus (20 + dom de 25 do Soter).
 	Progression.items.clear()
 	Progression.bonus_max_health = 45
