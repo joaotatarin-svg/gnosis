@@ -408,3 +408,14 @@ Padrão A' (larva flutuante): células 0–5 = ondulação flutuando (alto→des
 - `cri_3_bruto_motion_a.png` — padrão A. Nota 8. Fiel ao bruto_b, mesma escala (h≈385–425), passada pesada. Chat da criatura 3.
 Padrão A'' (cão quadrúpede): células 0–5 = trote (diagonal A toca → baixo → passagem → impulso → diagonal B toca → passagem) · 6 recover_0 · 7 recover_1.
 - `cri_4_cao_motion_a.png` — padrão A'' (trote). Nota 8. Fiel, escala igual (h≈245–290), patas alternando; células muito largas (encostam a 1–6 px umas das outras, sem tocar). Chat da criatura 4.
+- `cri_5_escudeiro_motion_a.png` — padrão A. Nota 7.5. Fiel (escudo do sol no braço do lado da câmera, lança), mesma escala (h≈370–395).
+  Pontas da lança chegam às bordas (q3 até x=1536). rec_0 mostra o escudo virado de lado (troca de vista momentânea). Chat da criatura 5.
+- `cri_6_conjurador_motion_a.png` — padrão A. Nota 7.5. Fiel, mesma escala (h≈410–436); manto cobre as pernas, então o andar se lê mais pelo
+  cajado/pés que aparecem; mantos quase encostam entre células (1–8 px). Chat da criatura 6.
+
+Sophia (chat https://chatgpt.com/c/6ad32fd5-1254-83e9-993b-a2f7e95cfa44):
+- `s15_recover_a.png` 2×4 — células: 0 rec_light1 · 1 rec_light2 · 2 rec_light3 · 3 rec_heavy · 4 rec_cast · 5 rec_air_land · 6 rec_dodge · 7 rec_hurt.
+  Nota 7.5. Fiel, escala ok (h≈305–470 conforme a pose). Cada célula é uma pose de transição isolada (1 quadro por golpe, não sequência).
+  Ressalva: o cajado muda de mão/lado entre células (ex.: rec_cast vertical na frente; rec_light1 cruzado) — usar cada célula só com o golpe correspondente.
+  q0 encosta na borda esquerda (x=2), a estocada q2 avança até x≈1248 (passa da célula, não toca).
+- `s16_idle_a.png` 2×4 — células: idle_0..idle_7 (ciclo contínuo de respiração).

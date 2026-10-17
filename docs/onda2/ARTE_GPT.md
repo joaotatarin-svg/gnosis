@@ -244,3 +244,6 @@ faixa `gifs/andar_bots_antes_depois.png`. Honesto: no glutão o rastejar de 6 qu
 
 **Bloco 3: criaturas larva, espadachim, bruto** (escalas 0,932 / 1,015 / 0,992; larva = padrão A' flutuando em laço) — `gifs/criaturas_andar_quadros_1.png`, `gifs/andar_criaturas1_depois.gif`. Preparado também: `tools/anim/sophia_motion.py` (S15/S16) e o padrão B dos chefes em `add_motion.py`; o CharacterArt já toca `rec_*` ao voltar pro parado.
 
+
+**Bloco 4: criaturas cão, escudeiro, conjurador** (cão = trote A'', escala fixa 1,0 — a medida automática de quadrúpede dava 1,085 pela pose; escudeiro 0,984; conjurador 1,0) — `gifs/criaturas_andar_quadros_2.png`, `gifs/andar_criaturas2_depois.gif`. As 6 criaturas e os 7 bots têm intermediários desenhados.
+
