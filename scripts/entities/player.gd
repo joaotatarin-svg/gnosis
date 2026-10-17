@@ -21,10 +21,22 @@ const PARRY_WINDOW := 0.18       # aparar = apertar bloqueio pouco antes do golp
 const BLOCK_CHIP := 0.25         # fração do dano que passa ao bloquear (não aparar)
 const RIG_HEIGHT := 68.0         # altura da Sophia ilustrada (px de mundo)
 # --- feedback (NEURO_SATISFACAO R1/R10; docs/COMBATE.md §7) ---
-const FLASH_FADE := 0.11         # R1: o flash some em 110 ms REAIS depois do hitstop
+const FLASH_FADE := 0.11         # R1: flash ESCURO (modulate) some em 110 ms REAIS
+# F1 (QA visual): o flash claro NÃO pinta mais a Sophia (o modulate > 1 sobre a
+# pintura virava silhueta laranja CHAPADA). Agora é uma camada ADITIVA por cima
+# do corpo (FlashLayer): a pintura continua legível e só "acende".
+const FLASH_TIME := 0.10         # F1: o flash inteiro dura ≤ 100 ms REAIS
+const FLASH_HOLD := 0.035        # cheio nos primeiros 35 ms, depois apaga
+const FLASH_ADD := 0.6           # brilho somado no pico (0..1, × força do Juice)
 const VIB_AMP := 1.5             # R1: vibração da vítima (px) durante o hitstop
 const VIB_STEP_MS := 33          # troca de lado a cada ~33 ms reais
-const HURT_TINT := Color(2.2, 0.9, 0.9, 1)   # R10: dano sem vermelho saturado (antes 4,1,1)
+const HURT_TINT := Color(2.2, 1.95, 1.85, 1) # F1: dano = branco quente (antes 2,2/0,9/0,9 → laranja chapado)
+# Contra-ataque (aparo perfeito → janela curta → golpe forte; quadros "riposte").
+const RIPOSTE_WINDOW := 0.4      # s depois do aparo em que o ataque vira contra-ataque
+const RIPOSTE_DMG := 1.5         # × o dano do pesado simples
+const RIPOSTE_WINDUP := 0.06     # sai quase na hora (o inimigo está atordoado)
+const RIPOSTE_REACH := 26.0      # px: distância de contato do golpe (hitbox em x=20, ±17)
+const RIPOSTE_DASH := 560.0      # teto do avanço (px/s)
 const DEAD_DECEL := 600.0        # morta: freia o deslize até parar
 
 var data: CharacterData
@@ -82,6 +94,10 @@ var _flash_t: float = -1.0       # <0 = sem flash ativo
 var _vib_amp: float = 0.0
 var _vib_until_ms: int = 0
 var _vib_seen: bool = false
+var _flash_layer: FlashLayer = null   # F1: camada aditiva por cima do corpo
+var _riposte_t: float = 0.0          # >0 = janela do contra-ataque aberta
+var _riposte_target: Node = null
+var riposting: bool = false          # o golpe atual é o contra-ataque
 
 @onready var visual: CharacterArt = $Visual
 @onready var hitbox: Hitbox = $Hitbox
@@ -127,6 +143,13 @@ func _ready() -> void:
 	# O herói fica mais "foda" conforme a arma/itens evoluem.
 	Progression.weapon_level_changed.connect(func(_lvl): _refresh_look())
 	Progression.stats_changed.connect(_refresh_look)
+	# Regra de travessia do Éon (#41): névoa do Torpor, correntes da Corrente.
+	_attach_eon_rule.call_deferred()
+
+
+## Liga a regra de travessia da tela (se houver) — depois que a fase montou.
+func _attach_eon_rule() -> void:
+	EonRule.attach(self)
 
 
 func _physics_process(delta: float) -> void:
@@ -228,6 +251,10 @@ func _tick_timers(delta: float) -> void:
 				visual.modulate = Color(1, 1, 1, 1)
 	if _perfect_cd > 0.0:
 		_perfect_cd -= delta
+	if _riposte_t > 0.0:
+		_riposte_t -= delta
+	if riposting and state != State.ATTACK:
+		riposting = false
 
 	# Contador de combo esfria se você parar de acertar.
 	if combo_show_timer > 0.0:
@@ -273,6 +300,8 @@ func _process_free(delta: float) -> void:
 
 	if Input.is_action_just_pressed("dodge"):
 		_start_dodge()
+		return
+	if _riposte_input():
 		return
 	if Input.is_action_pressed("block"):
 		_enter_block()
@@ -354,6 +383,7 @@ func _seq_equals(a: Array, b: Array) -> bool:
 
 func _do_move(move: ComboData) -> void:
 	current_move = move
+	riposting = false
 	state = State.ATTACK
 	windup_timer = move.windup_time()      # carrega antes de conectar (pesado = mais)
 	action_timer = move.duration
@@ -404,6 +434,8 @@ func _process_attack(delta: float) -> void:
 				Audio.play_sfx(_swing_sfx())   # o corte sai do wind-up
 			if not air_move:
 				velocity.x = facing * current_move.lunge * (1.35 if current_move.is_heavy() else 1.0)
+			if riposting:
+				velocity.x = facing * _riposte_lunge()
 			# (R3: o tremor do pesado sai do Hitbox SÓ se acertar)
 			# Golpe de área no chão (Fúria da Mônada / Colapso).
 			if current_move.aoe_radius > 0.0 and not air_move:
@@ -470,6 +502,18 @@ func _process_attack(delta: float) -> void:
 			attack_cd = current_move.recovery_time()
 
 
+## Contra-ataque: avança o bastante para alcançar quem foi aparado (o aparo
+## empurra o inimigo atordoado para longe), com teto RIPOSTE_DASH px/s.
+func _riposte_lunge() -> float:
+	var base: float = current_move.lunge * 1.35
+	var tgt := _riposte_target
+	_riposte_target = null
+	if tgt == null or not is_instance_valid(tgt) or not (tgt is Node2D):
+		return base
+	var gap: float = absf((tgt as Node2D).global_position.x - global_position.x) - RIPOSTE_REACH
+	return clampf(gap / 0.16, base, RIPOSTE_DASH)
+
+
 ## Chamado pelo Hitbox quando um golpe do herói acerta — alimenta o combo.
 ## (R4: o som e o VFX do impacto saem UMA vez no Hitbox, no ponto de contato.)
 func register_hit() -> void:
@@ -517,6 +561,8 @@ func _process_block(delta: float) -> void:
 		velocity.y += GRAVITY * delta
 	velocity.x = move_toward(velocity.x, 0.0, 900.0 * delta)
 	block_time += delta
+	if _riposte_input():
+		return
 	if not Input.is_action_pressed("block"):
 		state = State.IDLE
 
@@ -529,8 +575,49 @@ func _parry(attacker: Node) -> void:
 	Audio.play_sfx("parry")
 	VfxLibrary.parry(get_parent(), global_position + Vector2(16.0 * facing, -16.0))
 	_flash(Color(3, 3, 4, 1))
+	# quadros desenhados do aparo (Pedido 6 da Arte) — antes o CharacterArt
+	# "adivinhava" o aparo pelo flash azul (modulate.b > 3,5), que não existe mais
+	visual.play_action("parry")
 	if attacker != null and attacker.has_method("stagger"):
 		attacker.stagger()
+	# abre a janela do contra-ataque
+	_riposte_t = RIPOSTE_WINDOW
+	_riposte_target = attacker
+
+
+## Ataque apertado com a janela do contra-ataque aberta → contra-ataque.
+func _riposte_input() -> bool:
+	if _riposte_t <= 0.0 or not is_on_floor():
+		return false
+	if not (Input.is_action_just_pressed("attack_light") or Input.is_action_just_pressed("attack_heavy")):
+		return false
+	_start_riposte()
+	return true
+
+
+## CONTRA-ATAQUE: o pesado simples, mais rápido e ×RIPOSTE_DMG, virado para quem
+## foi aparado, com os quadros "riposte" (estocada, giro, follow). O combo
+## continua a partir do pesado.
+func _start_riposte() -> void:
+	_riposte_t = 0.0
+	var move := _find_move(["heavy"] as Array[String], false)
+	if move == null:
+		move = _find_move(["light"] as Array[String], false)
+	if move == null:
+		return
+	if _riposte_target != null and is_instance_valid(_riposte_target) and _riposte_target is Node2D:
+		var dx: float = (_riposte_target as Node2D).global_position.x - global_position.x
+		if dx != 0.0:
+			facing = int(signf(dx))
+			if visual:
+				visual.scale.x = facing * absf(visual.scale.x)
+	combo_sequence = [move.sequence[0]] as Array[String]
+	_do_move(move)
+	riposting = true
+	windup_timer = minf(windup_timer, RIPOSTE_WINDUP)
+	pending_dmg = int(round(pending_dmg * RIPOSTE_DMG))
+	Juice.kick(float(facing), true)
+	visual.play_action("riposte")
 
 
 func _blocked(damage: int, source_position: Vector2) -> void:
@@ -838,21 +925,41 @@ func _squash(target: Vector2) -> void:
 	t.tween_property(visual, "scale", Vector2(facing, 1.0), 0.16)
 
 
-## R1/R10: flash INSTANTÂNEO (no mesmo quadro), mantido enquanto durar o
-## hitstop e apagado em FLASH_FADE s REAIS; força limitada pelo Juice (≤3/s
-## cheios, "Reduzir flashes"). `vibrate` > 0 = a vítima treme no hitstop.
+## R1/R10 + F1: flash INSTANTÂNEO (no mesmo quadro), ≤ FLASH_TIME s REAIS
+## (cheio por FLASH_HOLD, depois apaga), força limitada pelo Juice (≤ 3 cheios/s,
+## "Reduzir flashes" × 0,5). Cor CLARA (algum canal > 1) = camada ADITIVA por
+## cima do corpo na matiz da cor — a pintura não vira silhueta chapada. Cor
+## ESCURA (todos ≤ 1, ex.: calada pelo Silêncio) = tinge o modulate e volta.
+## `vibrate` > 0 = a vítima treme no hitstop.
 func _flash(color: Color, vibrate: float = 0.0) -> void:
 	if visual == null:
 		return
 	var k: float = Juice.flash_strength(self, false)
-	_flash_col = Color(1, 1, 1, 1).lerp(color, k)
-	_flash_col.a = 1.0
-	_flash_t = 0.0
-	visual.modulate = _flash_col
+	var peak: float = maxf(color.r, maxf(color.g, color.b))
+	if peak > 1.0:
+		var hue := Color(color.r / peak, color.g / peak, color.b / peak, 1.0)
+		var amount: float = FLASH_ADD * k * clampf((peak - 1.0) / 2.0, 0.35, 1.0)
+		_flash_overlay().fire(hue, amount)
+	else:
+		_flash_col = Color(1, 1, 1, 1).lerp(color, k)
+		_flash_col.a = 1.0
+		_flash_t = 0.0
+		visual.modulate = _flash_col
 	if vibrate > 0.0:
 		_vib_amp = vibrate
 		_vib_until_ms = Time.get_ticks_msec() + 250
 		_vib_seen = false
+
+
+## A camada do flash claro (criada na 1ª vez, irmã do Visual, logo depois dele).
+func _flash_overlay() -> FlashLayer:
+	if _flash_layer == null or not is_instance_valid(_flash_layer):
+		_flash_layer = FlashLayer.new()
+		_flash_layer.name = "FlashLayer"
+		_flash_layer.art = visual
+		add_child(_flash_layer)
+		move_child(_flash_layer, visual.get_index() + 1)
+	return _flash_layer
 
 
 ## Flash e vibração correm em tempo REAL (o hitstop deixa o jogo a 5 %).
@@ -881,3 +988,67 @@ func _process(delta: float) -> void:
 		elif _vib_seen or now > _vib_until_ms:
 			_vib_amp = 0.0
 			visual.position = Vector2.ZERO
+	# depois da vibração: a camada copia a posição já tremida do corpo
+	if _flash_layer != null and is_instance_valid(_flash_layer):
+		_flash_layer.tick(real_dt)
+
+
+## F1: FLASH ADITIVO da Sophia. Redesenha a malha do corpo (a mesma que o
+## CharacterArt acabou de desenhar: `_body_mesh`/`_body_xform`/`_body_tex`) com
+## um shader de soma (VfxLibrary.flash_add_shader) na matiz do flash. A pintura
+## por baixo continua com textura — só clareia — e a camada some em ≤ 100 ms.
+## Copia a curvatura (bend/body_h) do material do corpo para casar a silhueta.
+class FlashLayer extends Node2D:
+	var art: CharacterArt
+	var hue: Color = Color.WHITE
+	var peak: float = 0.0
+	var t: float = -1.0               # s REAIS desde o disparo (<0 = apagado)
+	var _mat: ShaderMaterial
+	# No quadro do golpe o CharacterArt ainda não redesenhou a pose nova (a malha
+	# guardada é a da pose anterior → "fantasma" deslocado): a camada só aparece
+	# a partir do quadro seguinte.
+	var _hold_frames: int = 0
+
+	func _ready() -> void:
+		_mat = ShaderMaterial.new()
+		_mat.shader = VfxLibrary.flash_add_shader()
+		material = _mat
+		visible = false
+
+	func fire(p_hue: Color, amount: float) -> void:
+		hue = p_hue
+		peak = maxf(amount, peak if t >= 0.0 and t < Player.FLASH_HOLD else 0.0)
+		t = 0.0
+		_hold_frames = 1
+		_sync()
+
+	func tick(real_dt: float) -> void:
+		if t < 0.0:
+			return
+		t += real_dt
+		_hold_frames -= 1
+		if t >= Player.FLASH_TIME or art == null or not is_instance_valid(art):
+			t = -1.0
+			visible = false
+			return
+		_sync()
+
+	func _sync() -> void:
+		var a: float = peak
+		if t > Player.FLASH_HOLD:
+			a = peak * (1.0 - (t - Player.FLASH_HOLD) / (Player.FLASH_TIME - Player.FLASH_HOLD))
+		visible = _hold_frames <= 0
+		transform = art.transform
+		z_index = art.z_index
+		texture_filter = art.texture_filter
+		_mat.set_shader_parameter("flash", Color(hue.r, hue.g, hue.b, clampf(a, 0.0, 1.0) * art.modulate.a))
+		var src := art.material as ShaderMaterial
+		if src != null:
+			_mat.set_shader_parameter("bend", src.get_shader_parameter("bend"))
+			_mat.set_shader_parameter("body_h", src.get_shader_parameter("body_h"))
+		queue_redraw()
+
+	func _draw() -> void:
+		if art == null or not is_instance_valid(art) or art._body_mesh.is_empty() or art._body_tex == null or not art.visible:
+			return
+		CharacterArt.draw_grid(get_canvas_item(), art._body_mesh, art._body_xform, art._body_tex, Color.WHITE)

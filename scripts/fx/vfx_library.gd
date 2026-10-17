@@ -18,6 +18,89 @@ const Z := 32                   # acima dos personagens (gibs ficam em 6, HUD em
 
 static var _tex: Dictionary = {}          # nome -> Texture2D (cache)
 static var _add_mat: CanvasItemMaterial   # material aditivo (luz)
+static var _rim_shader: Shader            # contorno de leitura (R18), compilado 1×
+static var _flash_shader: Shader          # F1: flash aditivo da Sophia, compilado 1×
+
+## R18 (NEURO_SATISFACAO): cor do contorno de leitura por Éon — a mesma luz
+## das partículas de ambiente (0 Torpor … 6 Coroa, 7 Centro, 8 Mente).
+const EON_RIM := [Color(0.55, 0.8, 1.0), Color(1.0, 0.6, 0.3), Color(0.85, 0.88, 1.0),
+	Color(0.78, 0.72, 1.0), Color(0.95, 0.97, 1.0), Color(0.62, 1.0, 0.5), Color(1.0, 0.85, 0.42),
+	Color(1.0, 0.8, 0.5), Color(0.95, 0.5, 0.7)]
+
+
+static func eon_rim_color(eon_index: int) -> Color:
+	return EON_RIM[clampi(eon_index, 0, EON_RIM.size() - 1)]
+
+
+## Shader do CanvasGroup que desenha o personagem com um contorno externo de
+## ~1 px da base 640×360 (cor do Éon, α ≈ 0,5) — separa a silhueta pintada de
+## fundos escuros sem mexer na pintura (o CharacterArt fica intocado).
+## `rim_strength` 0 = desliga (morte/dissolução).
+static func rim_shader() -> Shader:
+	if _rim_shader == null:
+		_rim_shader = Shader.new()
+		_rim_shader.code = """
+shader_type canvas_item;
+render_mode unshaded;
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear;
+uniform vec4 rim_color : source_color = vec4(0.55, 0.8, 1.0, 0.5);
+uniform float rim_strength = 1.0;
+uniform float rim_px = 1.0;   // largura em px da base 640x360
+
+void fragment() {
+	vec4 c = textureLod(screen_texture, SCREEN_UV, 0.0);
+	if (c.a > 0.0001) {
+		c.rgb /= c.a;
+	}
+	// px da tela por px da base (360 de altura): o contorno não afina em 1080p
+	float k = max(1.0, (1.0 / SCREEN_PIXEL_SIZE.y) / 360.0) * rim_px;
+	vec2 d = SCREEN_PIXEL_SIZE * k;
+	float n = 0.0;
+	n = max(n, textureLod(screen_texture, SCREEN_UV + vec2(d.x, 0.0), 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV - vec2(d.x, 0.0), 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV + vec2(0.0, d.y), 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV - vec2(0.0, d.y), 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV + d * 0.7, 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV - d * 0.7, 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV + vec2(d.x, -d.y) * 0.7, 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV + vec2(-d.x, d.y) * 0.7, 0.0).a);
+	// só FORA da silhueta (onde o próprio pixel é transparente)
+	float edge = clamp(n - c.a, 0.0, 1.0) * rim_color.a * rim_strength;
+	vec4 body = COLOR * c;
+	vec4 rim = vec4(rim_color.rgb, edge * COLOR.a);
+	float oa = body.a + rim.a * (1.0 - body.a);
+	vec3 orgb = oa > 0.0001 ? (body.rgb * body.a + rim.rgb * rim.a * (1.0 - body.a)) / oa : vec3(0.0);
+	COLOR = vec4(orgb, oa);
+}
+"""
+	return _rim_shader
+
+
+## F1 (QA visual): flash ADITIVO por cima da pintura (Player.FlashLayer). Soma
+## `flash.rgb × flash.a` só onde o corpo tem alfa — a pintura clareia sem virar
+## silhueta chapada. O vertex repete a curvatura do painted_flex (bend/body_h)
+## para a camada casar com o corpo dobrado.
+static func flash_add_shader() -> Shader:
+	if _flash_shader == null:
+		_flash_shader = Shader.new()
+		_flash_shader.code = """
+shader_type canvas_item;
+render_mode blend_add, unshaded;
+uniform float body_h = 256.0;
+uniform float bend = 0.0;
+uniform vec4 flash = vec4(1.0, 1.0, 1.0, 0.0);
+
+void vertex() {
+	float h = clamp(-VERTEX.y / body_h, 0.0, 1.6);
+	VERTEX.x += bend * h * h;
+}
+
+void fragment() {
+	float a = texture(TEXTURE, UV).a;
+	COLOR = vec4(flash.rgb, a * flash.a);
+}
+"""
+	return _flash_shader
 
 
 static func tex(name: String) -> Texture2D:
@@ -623,65 +706,186 @@ static func _amb(p: CPUParticles2D, texture: String, amount: int, life: float, c
 
 
 # ===========================================================================
-# PRÉ-AQUECIMENTO
+# PRÉ-AQUECIMENTO (agente de Desempenho, Onda 2 — docs/onda2/PERF.md)
 # ===========================================================================
+## Chamado 1x no load da fase (Level._ready). Desenha por 3 quadros, sobre a
+## Sophia e QUASE TRANSPARENTE (alfa 0,01 em escala 0,25), o visual real
+## das criaturas da tela, os gibs, o afterimage, o esqueleto e os efeitos do
+## combate, e carrega (segurando a referência) as texturas da 1ª criatura/efeito.
+## O driver compila as variantes de shader e sobe as texturas AGORA, e não no
+## 1º golpe/1ª morte/1ª esquiva. Sem som, sem tremor, fora dos grupos do jogo.
+## Medido: um SubViewport invisível NÃO serve (as variantes de lá não valem
+## para a tela); alfa < 0,007 é descartado pelo Godot antes de desenhar.
 
-## Pré-aquece efeitos, shaders, texturas e a fonte dos números de dano para o
-## 1º golpe não engasgar (ONDA2: até 193 ms). Cria UMA vez cada efeito de
-## combate dentro de um nó quase transparente no centro da vista (precisa ser
-## DESENHADO para o shader compilar) e descarta tudo em ~0,4 s. Sem som, sem
-## tremor. Chamar uma vez quando a fase carrega: `VfxLibrary.prewarm(level)`.
-static func prewarm(parent: Node) -> void:
-	if parent == null or not is_instance_valid(parent) or not parent.is_inside_tree():
+## Texturas de VFX que o combate carrega sob demanda (assets/vfx/*.png, 128 px).
+const PREWARM_TEX := ["circle", "dirt", "flame", "flame2", "flare", "glow", "halo", "light",
+	"magic", "magic2", "scorch", "slash", "smoke", "smoke2", "spark", "spark2", "star",
+	"star2", "symbol", "trace", "twirl", "window"]
+## Folhas pintadas que as criaturas e os gibs usam (carregadas no 1º desenho).
+const PREWARM_SHEETS := ["inhabitants", "archons"]
+const PREWARM_ALPHA := 0.01      # >= 0,007 (abaixo disso o Godot nem desenha)
+const PREWARM_FRAMES := 3
+
+## Referências seguradas até a próxima fase (o cache de recursos do Godot solta
+## o que ninguém segura; sem isto o load() seguinte relê do disco).
+static var _warm_refs: Array = []
+
+
+static func prewarm(level: Node) -> void:
+	if level == null or not level.is_inside_tree():
 		return
-	var holder := Node2D.new()
-	holder.name = "VfxPrewarm"
-	holder.modulate = Color(1, 1, 1, 0.004)          # invisível na prática, mas desenhado
-	parent.add_child(holder)
-	var cam := parent.get_viewport().get_camera_2d()
-	var p: Vector2 = cam.get_screen_center_position() if cam != null else Vector2(320, 180)
-	holder.global_position = Vector2.ZERO
-	# texturas usadas pelos efeitos de combate
-	for n in ["spark", "spark2", "glow", "halo", "slash", "smoke", "smoke2", "star", "star2", "circle", "flame", "flame2", "magic", "magic2", "twirl", "symbol", "light", "trace"]:
+	_warm_refs.clear()
+	# 1) Disco → memória → GPU: texturas de VFX, folhas das criaturas e o
+	#    boneco articulado da variante do Éon (família do Arconte).
+	for n in PREWARM_TEX:
 		tex(n)
-	# partículas/sprites (multimesh + aditivo + normal)
-	hit(holder, p, false)
-	hit(holder, p, true)
-	parry(holder, p)
-	dodge_perfect(holder, p)
-	enemy_death(holder, p)
-	elite_death(holder, p)
-	cast(holder, p)
-	nova_ring(holder, p, 60.0)
-	spark_pickup(holder, p)
-	dust(holder, p)
-	tell_glint(holder, p, false)
-	tell_glint(holder, p, true)
-	ImpactBurst.spawn(holder, p, Color(1, 0.9, 0.7))
-	DamageNumber.spawn(holder, p, 1234567890, Color(1, 0.9, 0.6))   # glifos 0–9
-	# desmembramento: peça vetorial, peça pintada (shader limpo) e gotas de luz
-	var poly := PackedVector2Array([Vector2(-4, -4), Vector2(4, -4), Vector2(4, 4), Vector2(-4, 4)])
-	var parts: Array = [{"pts": poly, "col": Color(0.5, 0.5, 0.5)}]
-	var t: Texture2D = tex("glow")
-	if t != null:
-		parts.append({"pts": poly, "col": Color.WHITE, "tex": t, "size": Vector2(8, 8), "flip": 1.0})
-	Gib.burst(holder, p, parts, 1.0, p.y + 400.0, Vector2.ZERO, Color(1, 0.9, 0.5), Color(0.1, 0.1, 0.1))
-	# shaders da pintura (afterimage/curvatura) num sprite de 8 px
-	for path in ["res://assets/shaders/painted_ghost.gdshader", "res://assets/shaders/painted_flex.gdshader"]:
-		if ResourceLoader.exists(path):
-			var sp := Sprite2D.new()
-			sp.texture = t
-			sp.scale = Vector2.ONE * 0.06
-			var m := ShaderMaterial.new()
-			m.shader = load(path)
-			sp.material = m
-			holder.add_child(sp)
-			sp.global_position = p
-	var sp2 := Sprite2D.new()
-	sp2.texture = t
-	sp2.scale = Vector2.ONE * 0.06
-	sp2.material = PaintedLibrary.material()
-	holder.add_child(sp2)
-	sp2.global_position = p
-	# some com tudo depois de alguns quadros desenhados (tempo REAL)
-	parent.get_tree().create_timer(0.4, true, false, true).timeout.connect(holder.queue_free)
+	var screen: int = RunManager.current_screen if RunManager.run_active else 0
+	var sheets: Array = PREWARM_SHEETS.duplicate()
+	if RunManager.run_active and (RunManager.is_king_screen(screen) or RunManager.is_final(screen)):
+		sheets.append("yaldabaoth")
+	for sh in sheets:
+		_warm_refs.append(PaintedLibrary.sheet(sh))
+	var eon: int = RunManager.eon_index(screen) if RunManager.run_active else -1
+	var puppet_tex: Texture2D = null
+	if eon >= 0 and eon < 7 and not RunManager.is_king_screen(screen):
+		if ResourceLoader.exists(BossPuppet.BAKE_PATH):
+			_warm_refs.append(load(BossPuppet.BAKE_PATH))
+		for layer in ["body", "parts", "arm_l", "arm_r"]:
+			var path: String = BossPuppet.DERIVED + BossPuppet.NAMES[eon] + "_" + layer + ".png"
+			if ResourceLoader.exists(path):
+				var t = load(path)
+				_warm_refs.append(t)
+				if puppet_tex == null:
+					puppet_tex = t
+	# 2) Compilar as variantes: um palco quase transparente no centro da câmera.
+	var stage := Node2D.new()
+	stage.name = "PrewarmStage"
+	stage.modulate = Color(1, 1, 1, PREWARM_ALPHA)
+	stage.scale = Vector2.ONE * 0.25
+	# o diálogo de abertura PAUSA a árvore: sem isto o boneco não é montado nem
+	# as partículas emitem, e nada disso chega a ser desenhado (medido)
+	stage.process_mode = Node.PROCESS_MODE_ALWAYS
+	level.add_child(stage)
+	# Em cima da Sophia (a câmera a segue). NÃO usar o centro da câmera: no
+	# `_ready` da fase a câmera ainda não foi posicionada e o palco caía fora da
+	# tela (medido: o que fica fora da tela não é desenhado e não compila nada).
+	var pl = level.get("player")
+	var cam := level.get_viewport().get_camera_2d()
+	if pl is Node2D and (pl as Node2D).is_inside_tree():
+		stage.global_position = (pl as Node2D).global_position + Vector2(0, -30)
+	elif cam != null:
+		stage.global_position = cam.get_screen_center_position()
+	else:
+		stage.global_position = Vector2(320, 180)
+	var at := stage.global_position
+	var col := Color(1.0, 0.85, 0.5)
+	# 2a) folhas pintadas com o material das pinturas (rect + painted_clean),
+	#     pequenas (só sobem e amarram a textura; o visual real das criaturas,
+	#     abaixo, é que amostra os mesmos mipmaps do jogo)
+	for t in _warm_refs:
+		if t is Texture2D:
+			var spr := Sprite2D.new()
+			spr.texture = t
+			spr.material = PaintedLibrary.material()
+			spr.scale = Vector2.ONE * 0.1
+			stage.add_child(spr)
+	# 2b) as criaturas desta tela: o VISUAL real (CharacterArt, sem Enemy: fora
+	#     do grupo "enemy", sem física/IA) — material próprio, folha, e o boneco
+	#     articulado da variante do Éon — e o 1º desmembramento de cada uma
+	#     (gibs reais, recortes da folha + painted_clean).
+	var types: Array = []
+	for id in Bestiary.types_for_screen(screen):
+		if not id in types:
+			types.append(id)
+	for id in types:
+		var prof = Bestiary.get_type(id).get("profile", null)
+		if prof == null:
+			continue
+		var art := CharacterArt.new()
+		stage.add_child(art)
+		art.set_profile(prof)
+		var parts: Array = art.gib_parts()
+		if not parts.is_empty():
+			Gib.burst(stage, at, parts, 1.0, at.y + 9999.0, Vector2.ZERO, col, Color.BLACK)
+	# 2b') contorno de leitura dos inimigos (R18, combate2): CanvasGroup com o
+	#      shader do contorno — variante própria (backbuffer + screen_texture).
+	var rim := CanvasGroup.new()
+	rim.fit_margin = 6.0
+	rim.clear_margin = 6.0
+	var rim_m := ShaderMaterial.new()
+	rim_m.shader = rim_shader()
+	rim.material = rim_m
+	stage.add_child(rim)
+	var rim_spr := Sprite2D.new()
+	rim_spr.texture = tex("glow")
+	rim_spr.scale = Vector2.ONE * 0.1
+	rim.add_child(rim_spr)
+	# 2b'') flash aditivo da Sophia (F1): a variante compila agora, não no 1º dano
+	var fl := Sprite2D.new()
+	fl.texture = tex("glow")
+	fl.scale = Vector2.ONE * 0.1
+	var fl_m := ShaderMaterial.new()
+	fl_m.shader = flash_add_shader()
+	fl_m.set_shader_parameter("flash", Color(1, 1, 1, 0.5))
+	fl.material = fl_m
+	stage.add_child(fl)
+	# 2c) afterimage da esquiva (painted_ghost em malha de triângulos, sobre o
+	#     atlas da Sophia). A camada é top_level (coordenadas de MUNDO): o alfa
+	#     vai na cor da cópia.
+	var ghosts := CharacterArt.AfterimageLayer.new()
+	stage.add_child(ghosts)
+	var db: Dictionary = CharacterArt.frame_db("sophia")
+	var tex: Texture2D = db.atlas if not db.is_empty() else PaintedLibrary.sheet("inhabitants")
+	var mesh: Dictionary = CharacterArt.grid_mesh("prewarm", Rect2(0, 0, 64, 64), Vector2(32, 64), Vector2(tex.get_width(), tex.get_height()))
+	ghosts.add(Transform2D(0.0, Vector2(0.25, 0.25), 0.0, at), mesh, tex, Color(0.55, 0.85, 1.0, PREWARM_ALPHA * 2.0), 0.5)
+	# 2d) boneco articulado (Skeleton2D deforma Polygon2D: shader de esqueleto)
+	var sk := Skeleton2D.new()
+	sk.name = "Sk"
+	var bone := Bone2D.new()
+	bone.name = "B"
+	bone.rest = Transform2D.IDENTITY
+	bone.set_autocalculate_length_and_angle(false)
+	bone.set_length(8.0)
+	sk.add_child(bone)
+	stage.add_child(sk)
+	var poly := Polygon2D.new()
+	poly.texture = puppet_tex if puppet_tex != null else PaintedLibrary.sheet("inhabitants")
+	poly.polygon = PackedVector2Array([Vector2(-6, -6), Vector2(6, -6), Vector2(6, 6), Vector2(-6, 6)])
+	poly.uv = PackedVector2Array([Vector2(0, 0), Vector2(32, 0), Vector2(32, 32), Vector2(0, 32)])
+	stage.add_child(poly)
+	poly.skeleton = poly.get_path_to(sk)
+	poly.add_bone(NodePath("B"), PackedFloat32Array([1.0, 1.0, 1.0, 1.0]))
+	# 2e) os efeitos do combate, pelas funções reais
+	#     (boss_death fica de fora: sacode a câmera; os nós dele já estão cobertos)
+	hit(stage, at, false, col)
+	hit(stage, at, true, col)
+	parry(stage, at)
+	dodge_perfect(stage, at)
+	cast(stage, at)
+	nova_ring(stage, at, 10.0)
+	dust(stage, at)
+	spark_pickup(stage, at)
+	enemy_death(stage, at, col)
+	elite_death(stage, at, col)
+	boss_appear(stage, at, col)
+	boss_phase2(stage, at, col)
+	tell_glint(stage, at, false)
+	tell_glint(stage, at, true)
+	portal(stage, at, Color(0.8, 0.9, 1.0), 0.1)
+	var trail_host := Node2D.new()
+	stage.add_child(trail_host)
+	projectile_trail(trail_host, col)
+	ImpactBurst.spawn(stage, at, col)
+	DamageNumber.spawn(stage, at, 1234567890, col, true)   # todos os glifos 0–9 da fonte (ignora a opção)
+	# 3) Some depois de PREWARM_FRAMES quadros DESENHADOS (compila no desenho).
+	var left := [PREWARM_FRAMES]
+	var done := func() -> void:
+		left[0] -= 1
+		if left[0] == 0 and is_instance_valid(stage):
+			stage.queue_free()
+	RenderingServer.frame_post_draw.connect(done)
+	stage.tree_exited.connect(func(): RenderingServer.frame_post_draw.disconnect(done), CONNECT_ONE_SHOT)
+	# Sem janela (headless: bot de balance, QAs) não há quadro desenhado e o
+	# frame_post_draw nunca vem — o palco ficaria para sempre rodando (ALWAYS).
+	if DisplayServer.get_name() == "headless":
+		level.get_tree().create_timer(0.5, true, false, true).timeout.connect(stage.queue_free)
