@@ -167,10 +167,27 @@ objetos REAIS do jogo e não imitações. `vfx_prewarm.patch` (gerado sobre `int
 troca só o corpo da função; a chamada no início do `Level._ready` continua; mantive a boa
 ideia de lá (número de dano 1234567890 = todos os glifos) e o `tell_glint` do Combate.
 
-**Prova ponta a ponta**: apliquei os patches numa cópia do projeto e rodei a sonda SEM o
-prewarm da sonda (o próprio `Level._ready` pré-aqueceu): 0 variantes e 0 MB de textura nos
-eventos de 1ª vez — na base antiga (`/home/user/caps/perf/patch_e2e_t3.json`) e na cópia de
-`integracao/onda1` (E2E_ONDA1).
+**Prova ponta a ponta — integrado × proposto, no `integracao/onda1` atual (dd25cdb).** Duas
+cópias do projeto: uma como está (prewarm integrado), outra com os 2 patches; a sonda roda SEM o
+prewarm dela (`prewarm=0`: quem pré-aquece é o próprio `Level._ready`). 3 rodadas, cache frio,
+tela 3, mínimo entre rodadas (`/home/user/caps/perf/final_onda1/RESUMO.md`):
+
+| Evento | excesso da 1ª vez, ms (llvmpipe) integrado → proposto | CPU headless | variantes | textura |
+|---|---|---|---|---|
+| 1º inimigo | **146 → 14** | 34 → 3 | 0 → 0 | 8,0 → 0 MB |
+| 1º desmembramento | **121 → 4** | 3 → 2 | 1 → 0 | — |
+| 1ª esquiva | **83 → 3** | 2 → 0 | 1 → 0 | — |
+| 1ª variante do Éon | **160 → 0** | 12 → 0 | 1 → 0 | 1,0 → 0 MB |
+| 1ª morte da variante | **43 → 5** | 56 → 0 | 0 → 0 | 7,2 → 0,1 MB |
+| fase 2 de chefe (VFX) | 41 → 0 | 2 → 0 | 0 → 0 | — |
+| 1º golpe leve | 33 → 32 (resíduo) | 1 → 6 | 0 → 0 | — |
+| morte de chefe (VFX) | 40 → 31 (fora do prewarm) | 0 → 0 | 0 → 0 | — |
+
+Variantes compiladas durante a luta (soma dos 30 eventos): integrado **[3, 3, 2]** → proposto
+**[0, 0, 0]**. Captura do 1º quadro da fase, integrado (esq.) × proposto (dir.), mesma câmera:
+`/home/user/caps/perf/prewarm_onda1_integrado_vs_proposto_f1.png` — a diferença de pixels na
+região do palco (média 7,1; p95 12) é igual à do resto da tela (7,4; 10: partículas/animação),
+ou seja, o palco não aparece.
 
 ## 6. Alocação por quadro (brief item 3 / REVISAO #16)
 `tools/perf/run.sh alloc` (µs por chamada, melhor de 5; variou 3–5× entre rodadas com a carga):
@@ -218,18 +235,14 @@ Maior arquivo: `derived/sophia_frames.png` (5,7 MB no pck; 2048² com mipmaps = 
 - Os eventos de chefe (fase 2, morte) foram medidos como VFX isolados, não com o chefe real.
 
 ## 9. Validação
-`tools/validate.sh` no meu worktree e na cópia com os 2 patches aplicados — iguais à base:
+`tools/validate.sh` no meu worktree (só mudei ferramentas): igual à base da Onda 1 —
 ```
-# meu worktree (dir2/perf) — tools/validate.sh
-Scripts        OK         6s  pass=0  code=0
-ScriptCheck    OK         2s  pass=0  code=0
-CodexQA        FALHOU    17s  pass=32  code=1   | QA FAIL: diretório de save independente
-AudioQA        FALHOU     5s  pass=23  code=1   | QA FAIL: duck(): música -4.4 → -4.4 → -4.4 dB
-GnoseQA        OK        17s  pass=18  code=0
-SaveQA         OK         1s  pass=13  code=0
-PuppetQA/HeroQA/WaveQA OK
-# cópia do projeto com vfx_prewarm.patch + character_art_alloc.patch aplicados
-SCRIPTCHECK: 110 scripts, 0 com erro
-(mesmo resumo acima: só os 2 vermelhos conhecidos)
+Scripts OK · ScriptCheck OK · GnoseQA 18 · SaveQA 13 · PuppetQA/HeroQA/WaveQA OK
+CodexQA FALHOU pass=32 | QA FAIL: diretório de save independente   (falso conhecido do override.cfg)
+AudioQA FALHOU pass=23 | QA FAIL: duck(): música -4.4 → -4.4 dB      (bug conhecido do Áudio)
 ```
-(`diretório de save independente` = falso conhecido do override.cfg; `duck()` = bug conhecido do Áudio.)
+Cópia do `integracao/onda1` atual (dd25cdb) com `vfx_prewarm.patch` + `character_art_alloc.patch`:
+```
+Scripts OK · ScriptCheck OK (132 scripts, 0 com erro) · CodexQA 53 · AudioQA 46 · GnoseQA 18
+SaveQA 41 · PuppetQA OK · HeroQA OK · WaveQA OK  →  TUDO VERDE
+```
