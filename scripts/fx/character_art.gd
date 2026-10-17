@@ -1652,9 +1652,13 @@ func _draw_painted(s: float) -> void:
 	_body_tex = tex
 	_body_tip = tip
 	_draw_smear()
+	if hero and tip != Vector2.INF:
+		_draw_weapon_glow(tip)
 	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 	# O nível da arma mantém feedback visual sem trocar os atributos do combate.
-	if profile.has("hero") and profile.has("pauldrons"):
+	# (Com os quadros desenhados o nível aparece no cristal do cajado —
+	# _draw_weapon_glow; as marcas antigas só valem na reserva das 6 poses.)
+	if profile.has("hero") and profile.has("pauldrons") and frame_db("sophia").is_empty():
 		var strength: float = 0.22 if not profile.has("aura") else 0.65
 		draw_arc(Vector2(0,-29*s),8*s,-2.8,-0.35,24,Color(profile.eye,strength),0.7,true)
 		var marks: int = 1 + int(profile.has("helmet")) + int(profile.has("bracers")) + int(profile.has("aura"))
@@ -1694,6 +1698,48 @@ func _on_frame_changed(seq: Dictionary, seq_name: String, i: int, tip: Vector2) 
 		_impact = 1.0
 
 
+## Nível da arma da Sophia (1..5): override do QA ou Progression (só leitura).
+func _weapon_level() -> int:
+	if weapon_level_override > 0:
+		return clampi(weapon_level_override, 1, 5)
+	return clampi(int(Progression.weapon_level), 1, 5)
+
+
+## PROGRESSÃO DA ARMA VISÍVEL (#46), sem arte nova: o cristal do cajado (ponta
+## medida por quadro no atlas) ganha halo maior, cor mais quente e pulso a cada
+## nível; nível 3+ cintila em cruz; 4+ motes orbitam o cristal; 5 ganha um
+## anel dourado. (Bracelete: sem posição medida por quadro — fica de fora.) Desenhado no espaço do corpo (curva junto).
+func _draw_weapon_glow(tip: Vector2) -> void:
+	var lvl: int = _weapon_level()
+	var body: float = profile.height * 1.19
+	var t: float = _wind_time
+	var cast_boost: float = 1.2 if anim_state in ["cast", "windup_cast", "attack_heavy"] else 1.0
+	var core: Color = Color(0.55, 0.9, 1.0).lerp(Color(1.0, 0.97, 0.85), clampf((lvl - 2) / 3.0, 0.0, 1.0))
+	var pulse: float = 1.0 + 0.12 * sin(t * (2.0 + lvl * 0.6))
+	var radii := [1.3, 1.9, 2.5, 3.1, 3.8]
+	var alphas := [0.10, 0.17, 0.24, 0.31, 0.38]
+	var r: float = float(radii[lvl - 1]) * pulse * cast_boost * body / 55.0
+	var a: float = float(alphas[lvl - 1]) * cast_boost
+	# halo em camadas (de fora pra dentro)
+	draw_circle(tip, r * 1.6, Color(core, a * 0.35))
+	draw_circle(tip, r, Color(core, a))
+	draw_circle(tip, r * 0.45, Color(1, 1, 1, minf(1.0, a * 1.6)))
+	if lvl >= 3:
+		# cintilação em cruz, girando devagar
+		var ang: float = t * 0.8
+		var len: float = r * (1.6 + 0.3 * (lvl - 3))
+		for k in 2:
+			var d := Vector2.from_angle(ang + k * PI * 0.5) * len
+			draw_line(tip - d, tip + d, Color(core, a * 0.9), 0.5 + 0.1 * lvl, true)
+	if lvl >= 4:
+		# motes orbitando o cristal
+		for k in lvl - 2:
+			var o: float = t * (1.6 + k * 0.3) + k * TAU / float(lvl - 2)
+			draw_circle(tip + Vector2(cos(o), sin(o) * 0.6) * r * 2.2, 0.5 + 0.1 * lvl, Color(core, 0.75))
+	if lvl >= 5:
+		draw_arc(tip, r * 1.35, 0.0, TAU, 28, Color(1.0, 0.85, 0.45, 0.55 * pulse), 0.6, true)
+
+
 ## Arco de smear do cajado: varre da ponta do quadro anterior até a ponta do
 ## golpe em volta do ombro, ~0,11 s, mais forte na cabeça do arco.
 func _draw_smear() -> void:
@@ -1722,15 +1768,26 @@ func _draw_smear() -> void:
 		var r: float = lerpf(r0, r1, u)
 		outer.append(c + Vector2.from_angle(ang) * r)
 		inner.append(c + Vector2.from_angle(ang) * r * lerpf(0.86, 0.55, u))
+	# arma mais forte = rastro mais denso, mais quente e com faíscas (#46)
+	var lvl: int = _weapon_level() if painted.get("hero", false) else 1
+	var rich: float = 0.75 + 0.08 * lvl
+	var tone: Color = Color(0.80, 0.98, 1.0).lerp(Color(1.0, 0.95, 0.75), clampf((lvl - 3) / 2.0, 0.0, 1.0))
 	var pts := PackedVector2Array()
 	for j in n + 1:
 		pts.append(outer[j])
-		cols.append(Color(0.80, 0.98, 1.0, 0.85 * fade * pow(float(j) / n, 1.6)))
+		cols.append(Color(tone, minf(1.0, 0.85 * rich) * fade * pow(float(j) / n, 1.6)))
 	for j in range(n, -1, -1):
 		pts.append(inner[j])
 		cols.append(Color(0.55, 0.85, 1.0, 0.0))
 	if pts.size() >= 3:
 		draw_polygon(pts, cols)
+	if lvl >= 3:
+		# faíscas soltas ao longo do arco (mais a cada nível)
+		for j in (lvl - 2) * 3:
+			var u: float = fmod(0.13 + j * 0.37, 1.0)
+			var ang: float = a0 + da * u
+			var p: Vector2 = c + Vector2.from_angle(ang) * lerpf(r0, r1, u) * (1.0 + 0.06 * sin(j * 2.1))
+			draw_circle(p, 0.6 + 0.15 * lvl, Color(tone, 0.9 * fade * u))
 
 
 ## Dissolução: criaturas comuns (sem boneco) e a Sophia morta não usam;

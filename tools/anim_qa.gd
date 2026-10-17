@@ -412,7 +412,7 @@ func _weapon_board() -> void:
 			art.weapon_level_override = lvl
 			var sc: float = 200.0 / (p.height * 1.19)
 			art.scale = Vector2.ONE * sc
-			art.position = Vector2(110 + (lvl - 1) * 250 + (s - 1) * 70, 160 + s * 200) - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0 * sc)
+			art.position = Vector2(110 + (lvl - 1) * 250 + (s - 1) * 60, 225 + s * 235) - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0 * sc)
 			art.set_process(false)
 			art.set_anim(String(states[s][0]))
 			for f in int(float(states[s][1]) * 60.0):

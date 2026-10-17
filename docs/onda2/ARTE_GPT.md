@@ -179,3 +179,15 @@ menor alfa num raio de 4 texels) × cor × intensidade. No `CharacterArt`, todo 
 preparação** (soma ao contorno do telegrafo). `rim_enabled` desliga por personagem.
 Prancha (AnimQA `-- rim_board`): `gifs/contorno_inimigos_antes_depois.png` (Torpor, Silêncio, Centro;
 esquerda sem, direita com; parado e preparando) e o zoom `gifs/contorno_inimigos_zoom.png`.
+
+## #46 Progressão da arma visível na Sophia (níveis 1–5, sem arte nova)
+
+`CharacterArt._draw_weapon_glow`: no cristal do cajado (ponta medida por quadro no atlas) halo em camadas
+que cresce e esquenta por nível (ciano → branco-dourado), pulso; nível 3+ cintilação em cruz; 4+ motes
+orbitando; 5 anel dourado. Smear do cajado mais denso/quente por nível e com faíscas no 3+. Nível lido de
+`Progression.weapon_level` (só leitura; `weapon_level_override` para QA). As marcas antigas em arco
+(desenhadas fora do lugar com os quadros) ficam só na reserva das 6 poses.
+Limitações: o **bracelete não brilha** — não há posição do braço medida por quadro (estimar dava brilho
+flutuando fora do corpo); na **magia** a "ponta" medida é o orbe da mão livre (maior mancha ciano), então o
+halo engrossa o feitiço, não o cristal. Prancha: `gifs/arma_niveis_1a5.png` (AnimQA `-- weapon_board`:
+parada, golpe forte, magia × níveis 1→5).
