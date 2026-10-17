@@ -21,7 +21,7 @@ const GOLD := Color(1.0, 0.86, 0.5)
 const FOG_TINT := Color(0.78, 0.8, 0.86)
 const BLIND_TINT := Color(0.62, 0.68, 0.8)    # o Rei "esfria" quando a máscara cai
 const HEAD := Vector2(0.0, -150.0)            # rosto do Rei (px, local aos pés)
-const HAND := Vector2(-34.0, -96.0)           # mão do Rei (recebe as gemas)
+const HAND := Vector2(-66.0, -84.0)           # mão estendida do Rei (olhando à esquerda)
 
 var level: Node2D
 var player: Node2D
@@ -95,12 +95,24 @@ func play(lines: Array, choices: Array = [], scene: String = "") -> DialogueBox:
 ## A cena da tela 1 terminou: o Rei-figurante segura o lugar até o duelo
 ## começar (o Rei de verdade nasce na zona) e então some na coluna de luz.
 func zone_started() -> void:
-	if _king != null and is_instance_valid(_king):
-		var k := _king
-		_king = null
-		var t := create_tween()
-		t.tween_property(k, "modulate:a", 0.0, 0.25)
-		t.tween_callback(k.queue_free)
+	if _king == null or not is_instance_valid(_king):
+		return
+	var k := _king
+	_king = null
+	# O Rei de verdade só se desenha quando o mundo volta a rodar (o card de
+	# chefe congela tudo no quadro em que ele nasce): até lá, o figurante segura.
+	for i in 3:
+		await get_tree().process_frame     # o card nasce por call_deferred
+	while is_inside_tree() and get_tree().paused:
+		await get_tree().process_frame
+	if not is_inside_tree():
+		return
+	await get_tree().create_timer(0.1, true, false, true).timeout
+	if not is_instance_valid(k):
+		return
+	var t := create_tween()
+	t.tween_property(k, "modulate:a", 0.0, 0.25)
+	t.tween_callback(k.queue_free)
 	_clear_fog(1.2)
 
 
@@ -120,7 +132,7 @@ func _scene_open() -> void:
 		"rei":
 			# Cena A: a música do Limiar desce; a câmera trava e desliza.
 			_cam_take()
-			Audio.set_music_layer_volume(0.4, "rei")
+			_layer(0.4, "rei")
 		"roubo":
 			# "Sete." e a música do chefe CORTA SECA (sem crossfade).
 			Audio.stop_music(0.0)
@@ -132,10 +144,10 @@ func _scene_open() -> void:
 		"santuario":
 			# O tema da Voz, baixo (plantio — o roubo colhe).
 			Audio.play_music("theme")
-			Audio.set_music_layer_volume(0.45, "theme")
+			_layer(0.45, "theme")
 		"soter":
 			# M3: a música do Éon cai a −14 dB ao abrir o encontro ("Senta.").
-			Audio.set_music_layer_volume(0.22)
+			_layer(0.22, Audio.current_track)
 
 
 func _on_line(index: int, line: Dictionary) -> void:
@@ -173,7 +185,7 @@ func _on_line(index: int, line: Dictionary) -> void:
 			if index == 1:
 				# Só depois da 1ª fala da Voz entra a faixa do Limiar, baixa.
 				Audio.play_music("rei")
-				Audio.set_music_layer_volume(0.45, "rei")
+				_layer(0.45, "rei")
 				_music_stopped = false
 		"roubo":
 			if text.contains("aplaude"):
@@ -199,9 +211,10 @@ func _on_finished(box: DialogueBox) -> void:
 	if box != _box:
 		return
 	_flush()
+	if _scene != "santuario":
+		_layers_reset()
 	match _scene:
 		"rei":
-			Audio.set_music_layer_volume(1.0, "rei")
 			_cam_release(0.5)
 			# O Rei vai ao seu lugar no duelo e espera (zone_started o tira).
 			if _king != null and is_instance_valid(_king):
@@ -215,14 +228,12 @@ func _on_finished(box: DialogueBox) -> void:
 			_unlock()
 		"anagnorise":
 			_cam_release(0.6)
-		"soter":
-			Audio.set_music_layer_volume(1.0)
 		"santuario":
 			if _music_stopped:
 				await get_tree().create_timer(1.0, true, false, true).timeout
 			if not is_inside_tree():
 				return
-			Audio.set_music_layer_volume(1.0, "theme")
+			_layers_reset()
 			if RunManager.run_active:
 				Audio.play_music(Audio.track_for_screen(RunManager.current_screen))
 			_music_stopped = false
@@ -284,8 +295,11 @@ func _duel_x() -> float:
 ## O Rei de verdade se desfez no golpe final; o figurante volta onde ele caiu
 ## (ajoelhado) para a máscara rachar e ele afundar na névoa.
 func fall_at(pos: Vector2) -> void:
+	# O corpo de verdade some (o figurante assume o lugar dele).
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if e is Enemy and e.is_boss_enemy:
+			e.visible = false
 	_king = _make_king(Vector2(pos.x, _ground_y()))
-	_king.body.scale = Vector2(1.0, 0.9)
 	_king.modulate.a = 0.0
 	_tw().tween_property(_king, "modulate:a", 1.0, 0.35)
 
@@ -360,7 +374,7 @@ func _b_applause() -> void:
 		t.tween_callback(func() -> void:
 			Audio.play_sfx("parry", 0.02, -10.0)
 			if _king != null:
-				VfxLibrary._flash_sprite(self, _king.global_position + HAND, "spark", Color(1, 0.95, 0.8), 0.08, 0.3, 0.12))
+				VfxLibrary._flash_sprite(self, _king.hand(), "spark", Color(1, 0.95, 0.8), 0.08, 0.3, 0.12))
 
 
 ## Os 7 Anéis voam da mão dela para a mão dele, um a cada 0,8 s. O avanço da
@@ -383,7 +397,7 @@ func _steal_gem(i: int) -> void:
 		return
 	var dur := 0.7
 	if _hud != null and _hud.has_method("detach_ring"):
-		var to: Vector2 = get_viewport().get_canvas_transform() * (_king.global_position + HAND)
+		var to: Vector2 = get_viewport().get_canvas_transform() * (_king.hand())
 		dur = float(_hud.call("detach_ring", i, to))
 		if dur <= 0.0:
 			dur = 0.7
@@ -407,7 +421,7 @@ func _gem_arrives(i: int) -> void:
 	g.color = _ring_color(i)
 	g.index = i
 	add_child(g)
-	g.global_position = _king.global_position + HAND
+	g.global_position = _king.hand()
 	VfxLibrary._flash_sprite(self, g.global_position, "glow", Color(g.color, 0.9), 0.1, 0.5, 0.25)
 	_gems.append(g)
 	if _orbit == 0:
@@ -606,7 +620,7 @@ func _d_shrink() -> void:
 
 func _d_theme() -> void:
 	# O tema da Voz volta sozinho, lento — agora é dela.
-	Audio.set_music_layer_volume(0.7, "theme")
+	_layer(0.7, "theme")
 	Audio.play_music("theme", true, 0.85)
 	_music_stopped = false
 
@@ -763,6 +777,23 @@ func _beat() -> void:
 	t.tween_callback(func() -> void: Audio.play_sfx(s, 0.0, -9.0))
 
 
+## Volume de camada de uma faixa durante a cena (anotado para voltar a 1 no fim:
+## o nível fica guardado por faixa no Audio — o menu herdaria o tema baixo).
+var _layers: Dictionary = {}
+
+func _layer(t: float, track: String) -> void:
+	if track == "":
+		return
+	_layers[track] = true
+	Audio.set_music_layer_volume(t, track)
+
+
+func _layers_reset() -> void:
+	for track in _layers.keys():
+		Audio.set_music_layer_volume(1.0, String(track))
+	_layers.clear()
+
+
 func _tw() -> Tween:
 	var t := create_tween().set_ignore_time_scale(true)
 	_tweens.append(t)
@@ -814,6 +845,7 @@ func _process(delta: float) -> void:
 
 func _exit_tree() -> void:
 	PauseStack.pop(self)
+	_layers_reset()
 	_hud_release()
 	if _cam != null and is_instance_valid(_cam) and not _cam_saved.is_empty():
 		_cam.zoom = _cam_saved.zoom
@@ -830,6 +862,7 @@ class _King extends Node2D:
 	var body: Node2D
 	var art: CharacterArt
 	var orb: Sprite2D
+	var over: Node2D
 	var glint_on: bool = false
 	var _glint_a: float = 0.0
 	var _t: float = 0.0
@@ -859,10 +892,19 @@ class _King extends Node2D:
 		orb.position = Vector2(78.0, -168.0) + Vector2(0, -24.0)
 		orb.scale = Vector2.ONE * 72.0 / 550.0
 		body.add_child(orb)
+		# Desenhos POR CIMA da pintura (orbe aceso, rachadura, olho cego).
+		over = Node2D.new()
+		add_child(over)
+		over.draw.connect(_draw_over)
 
+	## A pintura olha para a esquerda; `d` > 0 vira o Rei para a direita.
 	func face(d: float) -> void:
-		_dir = signf(d) if d != 0.0 else 1.0
+		_dir = -1.0 if d > 0.0 else 1.0
 		body.scale.x = absf(body.scale.x) * _dir
+
+	## Onde a mão estendida está (mundo): recebe as gemas no roubo.
+	func hand() -> Vector2:
+		return global_position + Vector2(Staging.HAND.x * _dir, Staging.HAND.y)
 
 	func silhouette(k: float) -> void:
 		_sil = k
@@ -902,18 +944,19 @@ class _King extends Node2D:
 	func _process(delta: float) -> void:
 		_t += delta
 		_glint_a = maxf(0.0, _glint_a - delta * 0.8)
-		queue_redraw()
+		if over != null:
+			over.queue_redraw()
 
-	func _draw() -> void:
+	func _draw_over() -> void:
 		var head := Staging.HEAD
 		var orb_p := Vector2(orb.position.x * _dir, orb.position.y)
 		# O orbe-olho: o único ponto de luz da silhueta (pulsa 0,8 Hz).
 		if glint_on or _glint_a > 0.0:
 			var p := 0.55 + 0.45 * sin(_t * TAU * 0.8)
 			var a := maxf(p * (1.0 - _sil * 0.6) if glint_on else 0.0, _glint_a)
-			draw_circle(orb_p, 13.0, Color(1.0, 0.92, 0.55, 0.18 * a))
-			draw_circle(orb_p, 6.0, Color(1.0, 0.95, 0.7, 0.55 * a))
-			draw_circle(orb_p, 2.5, Color(1, 1, 0.9, a))
+			over.draw_circle(orb_p, 13.0, Color(1.0, 0.92, 0.55, 0.18 * a))
+			over.draw_circle(orb_p, 6.0, Color(1.0, 0.95, 0.7, 0.55 * a))
+			over.draw_circle(orb_p, 2.5, Color(1, 1, 0.9, a))
 		# A rachadura (queda da tela 1): 3 segmentos brancos sobre a máscara.
 		if _crack > 0.0:
 			var pts := [head + Vector2(-3, -14), head + Vector2(2, -5), head + Vector2(-2, 3), head + Vector2(4, 13)]
@@ -921,29 +964,35 @@ class _King extends Node2D:
 			for s in 3:
 				var k := clampf(n - float(s), 0.0, 1.0)
 				if k > 0.0:
-					draw_line(pts[s], pts[s].lerp(pts[s + 1], k), Color(1, 1, 1, 0.95), 1.6)
+					var q: Vector2 = pts[s].lerp(pts[s + 1], k)
+					over.draw_line(pts[s], q, Color(0.12, 0.08, 0.06, 0.95), 2.0)
+					over.draw_line(pts[s] + Vector2(1, 0), q + Vector2(1, 0), Color(1, 0.95, 0.8, 0.8), 0.8)
 		# O rosto por trás da máscara: preto, um olho cego (branco-leitoso, sem pupila).
 		if _blind > 0.0:
 			var sy := 1.0 - _collapse * 0.8
 			var hp := Vector2(head.x, head.y * sy)
-			draw_circle(hp, 13.0, Color(0.02, 0.02, 0.04, _blind))
-			draw_circle(hp + Vector2(0, -1), 5.0, Color(0.9, 0.92, 0.95, 0.9 * _blind))
-			draw_circle(hp + Vector2(0, -1), 8.0, Color(0.9, 0.92, 0.95, 0.15 * _blind))
+			over.draw_set_transform(hp, 0.0, Vector2(1.0, 1.55))
+			over.draw_circle(Vector2.ZERO, 12.5, Color(0.02, 0.02, 0.04, _blind))
+			over.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			over.draw_circle(hp + Vector2(0, -3), 8.0, Color(0.9, 0.92, 0.95, 0.15 * _blind))
+			over.draw_circle(hp + Vector2(0, -3), 4.5, Color(0.9, 0.92, 0.95, 0.9 * _blind))
 		# A máscara caindo: desce 30 px girando 20° e some.
 		if _mask_off > 0.0 and _mask_off < 1.0:
-			draw_set_transform(head + Vector2(6.0 * _mask_off, 30.0 * _mask_off), deg_to_rad(20.0) * _mask_off * _dir, Vector2.ONE)
-			var mc := Color(0.95, 0.9, 0.78, 1.0 - _mask_off)
+			over.draw_set_transform(head + Vector2(6.0 * _mask_off, 30.0 * _mask_off), deg_to_rad(20.0) * _mask_off * _dir, Vector2.ONE)
+			var mc := Color(0.95, 0.92, 0.82, 1.0 - _mask_off)
 			var oval := PackedVector2Array()
 			for i in 16:
 				var a2 := TAU * float(i) / 16.0
-				oval.append(Vector2(cos(a2) * 11.0, sin(a2) * 15.0))
-			draw_colored_polygon(oval, mc)
-			draw_line(Vector2(-6, -3), Vector2(-2, -3), Color(0.1, 0.08, 0.06, mc.a), 2.0)
-			draw_line(Vector2(2, -3), Vector2(6, -3), Color(0.1, 0.08, 0.06, mc.a), 2.0)
-			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+				oval.append(Vector2(cos(a2) * 13.0, sin(a2) * 21.0))
+			over.draw_colored_polygon(oval, mc)
+			var ink := Color(0.1, 0.08, 0.06, mc.a)
+			over.draw_line(Vector2(-6, -6), Vector2(-6, 2), ink, 2.0)
+			over.draw_line(Vector2(6, -6), Vector2(6, 2), ink, 2.0)
+			over.draw_line(Vector2(0, -4), Vector2(0, 10), Color(ink, mc.a * 0.5), 1.0)
+			over.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		# O motor: um núcleo negro no meio dos anéis.
 		if _collapse > 0.0:
-			draw_circle(Vector2(0, -60), 10.0 * _collapse, Color(0.01, 0.01, 0.02, _collapse))
+			over.draw_circle(Vector2(0, -60), 10.0 * _collapse, Color(0.01, 0.01, 0.02, _collapse))
 
 
 ## Uma gema de Anel no mundo (o roubo e a devolução).
