@@ -49,6 +49,8 @@ var _blips: int = 0
 var _height: float = 48.0
 var _fight_armed: bool = true     # a próxima luta de chefe da tela ainda corta a chegada
 var _in_fight: bool = false
+var _lines_shown: int = 0
+const MIN_FS := 11                # menor corpo aceito ao apertar para 1 linha
 
 
 func _ready() -> void:
@@ -125,7 +127,9 @@ func clear() -> void:
 
 func _process(delta: float) -> void:
 	# Pausa / diálogo / loja / card: some e congela (a fala não "queima" escondida).
-	var paused := get_tree().paused or PauseStack.is_held()
+	# Também com CENA no ar sem pausa (Cinemática, rubrica/ilustração da Encenação —
+	# HUD.scene_active): a legenda espera e aparece depois (QA2 #4).
+	var paused := get_tree().paused or PauseStack.is_held() or _scene_on()
 	_root.visible = not paused
 	_report_band()
 	if paused:
@@ -190,15 +194,21 @@ func _show(l: Dictionary) -> void:
 	# Com retrato, o texto abre espaço à esquerda (o medalhão fica dentro da faixa).
 	_text.offset_left = 62.0 if _strip.portrait != null else 24.0
 	_blip = DialogueBox.blip_for(who)
-	var fs := GameManager.caption_font_size() + 1
-	_text.add_theme_font_size_override("font_size", fs)
-	# Altura pelo texto de verdade (1–3 linhas): a faixa não reserva espaço à toa.
+	# Hierarquia do topo (QA2 #10): a legenda usa o tamanho das Opções SEM o +1 de
+	# antes (13 px no M — o mesmo corpo da caixa de diálogo, legível em 640×360) e,
+	# se o texto passa de 1 linha por pouco, desce 1 px para caber numa linha só.
+	var fs := GameManager.caption_font_size()
 	var lw := STRIP_W - (62.0 if _strip.portrait != null else 24.0) - 24.0
 	var font: Font = CodexStyle.body()
-	var tsz := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, lw, fs, -1, TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND)
+	var nlines := _lines_for(font, text, lw, fs)
+	if nlines == 2 and fs - 1 >= MIN_FS and _lines_for(font, text, lw, fs - 1) == 1:
+		fs -= 1
+		nlines = 1
+	_text.add_theme_font_size_override("font_size", fs)
+	# Altura pelo texto de verdade (1–3 linhas): a faixa não reserva espaço à toa.
 	var line_h := ceilf(float(fs) * 1.15)
-	var nlines := clampi(int(ceilf(tsz.y / maxf(1.0, font.get_height(fs)))), 1, 3)
 	_height = 21.0 + line_h * float(nlines)
+	_lines_shown = nlines
 	_layout(-1.0)
 	_text.text = text
 	_text.visible_characters = 0
@@ -211,6 +221,23 @@ func _show(l: Dictionary) -> void:
 	_kill_tween()
 	_tween = create_tween()
 	_tween.tween_property(_root, "modulate:a", 1.0, 0.25)
+
+
+## Quantas linhas o texto ocupa (1–3) na largura `lw` com a fonte `fs`.
+func _lines_for(font: Font, text: String, lw: float, fs: int) -> int:
+	var tsz := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, lw, fs, -1, TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND)
+	return clampi(int(ceilf(tsz.y / maxf(1.0, font.get_height(fs)) - 0.01)), 1, 3)
+
+
+## Cena no ar (Cinemática na raiz, caixa, Encenação dirigindo)? Pergunta ao HUD.
+func _scene_on() -> bool:
+	var hud := get_tree().get_first_node_in_group("hud")
+	return hud != null and hud.has_method("scene_active") and bool(hud.call("scene_active"))
+
+
+## Linhas da fala atual (QA/sonda).
+func shown_lines() -> int:
+	return _lines_shown
 
 
 ## Posição da faixa: topo central, fixa (o chefe não a empurra mais).

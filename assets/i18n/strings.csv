@@ -68,29 +68,29 @@ game_content._build_characters.9922e5,Flor Podre,Rotten Bloom,golpe_magia,,,scri
 game_content._build_characters.36846d,Planta um canteiro de veneno que fere quem pisa.,Plants a poison patch that hurts whoever steps in.,golpe_magia,,,scripts/autoload/game_content.gd:97,
 game_content._build_characters.64af3e,Coroa Partida,Broken Crown,golpe_magia,,,scripts/autoload/game_content.gd:98,
 game_content._build_characters.ac2791,A coroa do Arconte se parte em luz: dano enorme em área.,The Archon's crown shatters into light: huge area damage.,golpe_magia,,,scripts/autoload/game_content.gd:98,
-game_manager.finish_demo.c408cf,Fim da demo,End of the demo,ui,,,scripts/autoload/game_manager.gd:244 scripts/ui/end_screen.gd:137,
-game_manager.finish_demo.02a6f8,Obrigado por jogar. O resto da subida continua no jogo completo.,Thank you for playing. The rest of the climb continues in the full game.,ui,,,scripts/autoload/game_manager.gd:245,
-game_manager.screen_title.f0f1c5,Limiar — O Rei,Threshold — The King,ui,,,scripts/autoload/game_manager.gd:282,
-game_manager.screen_title.a0294c,A Mente,The Mind,ui,,,scripts/autoload/game_manager.gd:283 scripts/autoload/run_manager.gd:273 scripts/data/bestiary_lore.gd:212 scripts/data/bestiary_lore.gd:214,
-game_manager.screen_title.e9ad2c,O Centro %s,The Center %s,ui,,,scripts/autoload/game_manager.gd:284,format string: manter os %
-game_manager.screen_title.a13df8,%s · Chegada,%s · Arrival,ui,,,scripts/autoload/game_manager.gd:285,format string: manter os %
-game_manager.screen_title.76f65a,%s · O Desafio,%s · The Challenge,ui,,,scripts/autoload/game_manager.gd:286,format string: manter os %
-game_manager.screen_title.bcc8a0,%s · Antessala,%s · Antechamber,ui,,,scripts/autoload/game_manager.gd:287,format string: manter os %
-game_manager.screen_title.4907e4,%s · O Arconte,%s · The Archon,ui,,,scripts/autoload/game_manager.gd:288,format string: manter os %
-game_manager.screen_title.8bca3a,%s · Travessia %s,%s · Crossing %s,ui,,,scripts/autoload/game_manager.gd:292,format string: manter os %
-game_manager._roman.ca73ab,I,I,ui,,,scripts/autoload/game_manager.gd:296 scripts/ui/hud.gd:1294,
-game_manager._roman.e95267,II,II,ui,,,scripts/autoload/game_manager.gd:296 scripts/ui/hud.gd:1294,
-game_manager._roman.a6178c,III,III,ui,,,scripts/autoload/game_manager.gd:296,
-game_manager._roman.932eaa,IV,IV,ui,,,scripts/autoload/game_manager.gd:296,
-game_manager._roman.c9ee56,V,V,ui,,,scripts/autoload/game_manager.gd:296,
-game_manager._roman.85ebe3,VI,VI,ui,,,scripts/autoload/game_manager.gd:296,
-game_manager._roman.0ea48f,VII,VII,ui,,,scripts/autoload/game_manager.gd:296,
-game_manager._roman.8985af,VIII,VIII,ui,,,scripts/autoload/game_manager.gd:296,
-game_manager._roman.b04dce,IX,IX,ui,,,scripts/autoload/game_manager.gd:296,
-game_manager.difficulty_name.45e118,Normal,Normal,ui,,,scripts/autoload/game_manager.gd:353 scripts/autoload/game_manager.gd:357 scripts/ui/pregame.gd:14,
-game_manager.difficulty_name.36dc8f,Difícil,Hard,ui,,,scripts/autoload/game_manager.gd:354 scripts/ui/pregame.gd:14,
-game_manager.difficulty_name.3e6659,Muito Difícil,Very Hard,ui,,,scripts/autoload/game_manager.gd:355 scripts/ui/pregame.gd:14,
-game_manager.difficulty_name.83caa2,Campeão,Champion,ui,,,scripts/autoload/game_manager.gd:356 scripts/ui/pregame.gd:14,
+game_manager.finish_demo.c408cf,Fim da demo,End of the demo,ui,,,scripts/autoload/game_manager.gd:249 scripts/ui/end_screen.gd:137,
+game_manager.finish_demo.02a6f8,Obrigado por jogar. O resto da subida continua no jogo completo.,Thank you for playing. The rest of the climb continues in the full game.,ui,,,scripts/autoload/game_manager.gd:250,
+game_manager.screen_title.f0f1c5,Limiar — O Rei,Threshold — The King,ui,,,scripts/autoload/game_manager.gd:287,
+game_manager.screen_title.a0294c,A Mente,The Mind,ui,,,scripts/autoload/game_manager.gd:288 scripts/autoload/run_manager.gd:273 scripts/data/bestiary_lore.gd:212 scripts/data/bestiary_lore.gd:214,
+game_manager.screen_title.e9ad2c,O Centro %s,The Center %s,ui,,,scripts/autoload/game_manager.gd:289,format string: manter os %
+game_manager.screen_title.a13df8,%s · Chegada,%s · Arrival,ui,,,scripts/autoload/game_manager.gd:290,format string: manter os %
+game_manager.screen_title.76f65a,%s · O Desafio,%s · The Challenge,ui,,,scripts/autoload/game_manager.gd:291,format string: manter os %
+game_manager.screen_title.bcc8a0,%s · Antessala,%s · Antechamber,ui,,,scripts/autoload/game_manager.gd:292,format string: manter os %
+game_manager.screen_title.4907e4,%s · O Arconte,%s · The Archon,ui,,,scripts/autoload/game_manager.gd:293,format string: manter os %
+game_manager.screen_title.8bca3a,%s · Travessia %s,%s · Crossing %s,ui,,,scripts/autoload/game_manager.gd:297,format string: manter os %
+game_manager._roman.ca73ab,I,I,ui,,,scripts/autoload/game_manager.gd:301 scripts/ui/hud.gd:1396,
+game_manager._roman.e95267,II,II,ui,,,scripts/autoload/game_manager.gd:301 scripts/ui/hud.gd:1396,
+game_manager._roman.a6178c,III,III,ui,,,scripts/autoload/game_manager.gd:301,
+game_manager._roman.932eaa,IV,IV,ui,,,scripts/autoload/game_manager.gd:301,
+game_manager._roman.c9ee56,V,V,ui,,,scripts/autoload/game_manager.gd:301,
+game_manager._roman.85ebe3,VI,VI,ui,,,scripts/autoload/game_manager.gd:301,
+game_manager._roman.0ea48f,VII,VII,ui,,,scripts/autoload/game_manager.gd:301,
+game_manager._roman.8985af,VIII,VIII,ui,,,scripts/autoload/game_manager.gd:301,
+game_manager._roman.b04dce,IX,IX,ui,,,scripts/autoload/game_manager.gd:301,
+game_manager.difficulty_name.45e118,Normal,Normal,ui,,,scripts/autoload/game_manager.gd:358 scripts/autoload/game_manager.gd:362 scripts/ui/pregame.gd:14,
+game_manager.difficulty_name.36dc8f,Difícil,Hard,ui,,,scripts/autoload/game_manager.gd:359 scripts/ui/pregame.gd:14,
+game_manager.difficulty_name.3e6659,Muito Difícil,Very Hard,ui,,,scripts/autoload/game_manager.gd:360 scripts/ui/pregame.gd:14,
+game_manager.difficulty_name.83caa2,Campeão,Champion,ui,,,scripts/autoload/game_manager.gd:361 scripts/ui/pregame.gd:14,
 gnosis.STELAS.f8a7d0,O Limiar,The Threshold,eon_nome,,18,scripts/autoload/gnosis.gd:30 scripts/autoload/run_manager.gd:277 scripts/data/bestiary_lore.gd:212,
 gnosis.STELAS.f5b4db,"A Mônada, o Inefável","The Monad, the Ineffable",estela_titulo,,60,scripts/autoload/gnosis.gd:30,
 gnosis.STELAS.e86ca6,"Antes dos mundos, antes de o tempo contar, havia o Um.","Before the worlds, before time began to count, there was the One.",estela,,170,scripts/autoload/gnosis.gd:32,
@@ -936,9 +936,8 @@ stela.open.bfded4,Crônica desbloqueada: %s  (%d/%d),Chronicle unlocked: %s  (%d
 stela._ready.f08366,ESTELA  ·  %s,STELE  ·  %s,ui_estela,,,scripts/entities/stela.gd:244,format string: manter os %
 stela._ready.0b4c7d,Kenoma,Kenoma,ui_estela,,,scripts/entities/stela.gd:244,
 stela._ready.7be33a,Fonte: %s,Source: %s,ui_estela,,,scripts/entities/stela.gd:273 scripts/ui/chronicles.gd:186,format string: manter os %
-stela._ready.4deab3,• nova Crônica  %d/%d,• new Chronicle  %d/%d,ui_estela,,,scripts/entities/stela.gd:283,format string: manter os %
-stela._ready.9f1fce,Crônica %d/%d,Chronicle %d/%d,ui_estela,,,scripts/entities/stela.gd:283,format string: manter os %
-stela._ready.1fd862,      %s fechar,      %s close,ui_estela,,,scripts/entities/stela.gd:284,format string: manter os %
+stela._ready.4deab3,• nova Crônica  %d/%d,• new Chronicle  %d/%d,ui_estela,,,scripts/entities/stela.gd:290,format string: manter os %
+stela._ready.9f1fce,Crônica %d/%d,Chronicle %d/%d,ui_estela,,,scripts/entities/stela.gd:290,format string: manter os %
 cinematic.prologue.56bd6b,"No princípio havia o Um. Dele emanaram os Éons, aos pares,
 como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
 like overflowing light. There nothing slept. Nothing forgot.",card_cinema,,240,scripts/fx/cinematic.gd:151,
@@ -1123,7 +1122,7 @@ codex_menu._on_new_campaign.b88117,"Isso apaga o progresso salvo — %s — e as
 Finais vistos e opções ficam.","This erases your saved progress — %s — and this journey's sparks and upgrades.
 Endings seen and options are kept.",ui,,,scripts/ui/codex_menu.gd:216,format string: manter os %
 codex_menu._on_new_campaign.2c92c9,Apagar e começar,Erase and start,ui,,,scripts/ui/codex_menu.gd:217,
-codex_menu._open_trial.c63558,Provação,Trial,ui,,,scripts/ui/codex_menu.gd:247 scripts/ui/hud.gd:962,
+codex_menu._open_trial.c63558,Provação,Trial,ui,,,scripts/ui/codex_menu.gd:247 scripts/ui/hud.gd:1060,
 codex_menu._open_trial.d37464,Escolha o Arconte do 3º encontro,Choose the Archon for the 3rd encounter,ui,,,scripts/ui/codex_menu.gd:249,
 codex_menu._open_trial.d1a79e,%s  ·  %s,%s  ·  %s,ui,,,scripts/ui/codex_menu.gd:256 scripts/ui/moves_screen.gd:122,format string: manter os %
 controls_menu._ready.0ba15d,Controles,Controls,ui,,,scripts/ui/controls_menu.gd:49 scripts/ui/options_menu.gd:107,
@@ -1177,46 +1176,46 @@ end_screen._build_demo.b20f6c,Adicione GNOSIS à sua lista de desejos.,Add GNOSI
 end_screen._build_demo.671b28,Lista de desejos,Wishlist,ui,,,scripts/ui/end_screen.gd:162,
 gallery._build_header.0ccaf6,Encontrados  %d / %d,Found  %d / %d,ui,,,scripts/ui/gallery.gd:78,format string: manter os %
 gallery._show.ab4581,AINDA NÃO ENCONTRADO,NOT YET FOUND,ui,,,scripts/ui/gallery.gd:175,
-hud._on_weapon.3b2ee9,lança o inimigo para o alto,launches the enemy into the air,ui,,,scripts/ui/hud.gd:266,
-hud._on_weapon.d40c9a,golpe no ar,air strike,ui,,,scripts/ui/hud.gd:268,
-hud._on_achievement.87fa2b,Conquista  ·  %s,Achievement  ·  %s,toast,,60,scripts/ui/hud.gd:351,format string: manter os %
-hud._queue_screen_hints.97ec4f,golpe leve,light strike,ui,,,scripts/ui/hud.gd:770,
-hud._queue_screen_hints.df3f2e,golpe forte,heavy strike,ui,,,scripts/ui/hud.gd:770,
-hud._queue_screen_hints.3c90a7,"bloquear · no tempo, apara","block · on time, parries",ui,,,scripts/ui/hud.gd:771,
-hud._queue_screen_hints.6b344d,sequência do cajado,staff combo,ui,,,scripts/ui/hud.gd:773,
-hud._queue_screen_hints.61dfe8,Esfera Solar (gasta Éter),Sun Orb (costs Aether),ui,,,scripts/ui/hud.gd:774,
-hud._queue_screen_hints.f4f473,telegrafo amarelo:,yellow tell:,ui,,,scripts/ui/hud.gd:776,
-hud._queue_screen_hints.e9b353,vermelho:,red:,ui,,,scripts/ui/hud.gd:776,
-hud._queue_screen_hints.bd84ff,pausa · Golpes & Controles,pause · Moves & Controls,ui,,,scripts/ui/hud.gd:777,
-hud._check_ring_hints.385e09,usar o Anel equipado (gasta Éter),use the equipped Ring (costs Aether),ui,,,scripts/ui/hud.gd:789,
-hud._check_ring_hints.beab08,trocar de Anel,switch Ring,ui,,,scripts/ui/hud.gd:791,
-hud.key_label.84c4c5,Analógico,Stick,ui,,,scripts/ui/hud.gd:861 scripts/ui/hud.gd:938 scripts/ui/input_glyphs.gd:159 scripts/ui/input_glyphs.gd:164,
-hud.key_label.f999e2,%s  %s,%s  %s,ui,,,scripts/ui/hud.gd:861,format string: manter os %
-hud._key_name.f61d6e,Espaço,Space,ui,,,scripts/ui/hud.gd:906 scripts/ui/input_glyphs.gd:229,
-hud._key_name.1f7a4f,Esc,Esc,ui,,,scripts/ui/hud.gd:907 scripts/ui/input_glyphs.gd:230,
-hud._key_name.469d5b,Shift,Shift,ui,,,scripts/ui/hud.gd:908 scripts/ui/input_glyphs.gd:231,
-hud._key_name.2b9ece,Enter,Enter,ui,,,scripts/ui/hud.gd:909 scripts/ui/input_glyphs.gd:235,
-hud._key_name.71815f,Esq.,Left,ui,,,scripts/ui/hud.gd:910,
-hud._key_name.72acb3,Dir.,Right,ui,,,scripts/ui/hud.gd:911,
-hud._key_name.4effab,Cima,Up,ui,,,scripts/ui/hud.gd:912,
-hud._key_name.74fd00,Baixo,Down,ui,,,scripts/ui/hud.gd:913,
-hud._pad_button_name.6dcd4c,A,A,ui,,,scripts/ui/hud.gd:919 scripts/ui/input_glyphs.gd:252 scripts/ui/input_glyphs.gd:253,
-hud._pad_button_name.ae4f28,B,B,ui,,,scripts/ui/hud.gd:920 scripts/ui/input_glyphs.gd:252 scripts/ui/input_glyphs.gd:253,
-hud._pad_button_name.c032ad,X,X,ui,,,scripts/ui/hud.gd:921 scripts/ui/input_glyphs.gd:254 scripts/ui/input_glyphs.gd:255,
-hud._pad_button_name.23eb4d,Y,Y,ui,,,scripts/ui/hud.gd:922 scripts/ui/input_glyphs.gd:254 scripts/ui/input_glyphs.gd:255,
-hud._pad_button_name.2d1958,LB,LB,ui,,,scripts/ui/hud.gd:923 scripts/ui/input_glyphs.gd:256,
-hud._pad_button_name.38026d,RB,RB,ui,,,scripts/ui/hud.gd:924 scripts/ui/input_glyphs.gd:257,
-hud._pad_button_name.952f37,Start,Start,ui,,,scripts/ui/hud.gd:926,
-hud._pad_button_name.53157e,D-pad Esq.,D-pad Left,ui,,,scripts/ui/hud.gd:927,
-hud._pad_button_name.b7d05d,D-pad Dir.,D-pad Right,ui,,,scripts/ui/hud.gd:928,
-hud._pad_button_name.442f4a,D-pad Cima,D-pad Up,ui,,,scripts/ui/hud.gd:929,
-hud._pad_button_name.237b1b,D-pad Baixo,D-pad Down,ui,,,scripts/ui/hud.gd:930,
-hud._pad_button_name.67c850,Botão %d,Button %d,ui,,,scripts/ui/hud.gd:931 scripts/ui/input_glyphs.gd:268,format string: manter os %
-hud._pad_axis_name.6c62fb,LT,LT,ui,,,scripts/ui/hud.gd:936 scripts/ui/input_glyphs.gd:275,
-hud._pad_axis_name.bc410c,RT,RT,ui,,,scripts/ui/hud.gd:937 scripts/ui/input_glyphs.gd:276,
-hud._pad_axis_name.e39ae1,Eixo %d,Axis %d,ui,,,scripts/ui/hud.gd:939 scripts/ui/input_glyphs.gd:280,format string: manter os %
-hud._draw_counters.a602bb,Arma Nv. %d,Weapon Lv. %d,ui,,,scripts/ui/hud.gd:1104 scripts/ui/moves_screen.gd:169,format string: manter os %
-hud._draw_one_boss.794201,FASE II,PHASE II,ui,,,scripts/ui/hud.gd:1285,
+hud._on_weapon.3b2ee9,lança o inimigo para o alto,launches the enemy into the air,ui,,,scripts/ui/hud.gd:272,
+hud._on_weapon.d40c9a,golpe no ar,air strike,ui,,,scripts/ui/hud.gd:274,
+hud._on_achievement.87fa2b,Conquista  ·  %s,Achievement  ·  %s,toast,,60,scripts/ui/hud.gd:406,format string: manter os %
+hud._queue_screen_hints.97ec4f,golpe leve,light strike,ui,,,scripts/ui/hud.gd:833,
+hud._queue_screen_hints.df3f2e,golpe forte,heavy strike,ui,,,scripts/ui/hud.gd:833,
+hud._queue_screen_hints.3c90a7,"bloquear · no tempo, apara","block · on time, parries",ui,,,scripts/ui/hud.gd:834,
+hud._queue_screen_hints.6b344d,sequência do cajado,staff combo,ui,,,scripts/ui/hud.gd:836,
+hud._queue_screen_hints.61dfe8,Esfera Solar (gasta Éter),Sun Orb (costs Aether),ui,,,scripts/ui/hud.gd:837,
+hud._queue_screen_hints.f4f473,telegrafo amarelo:,yellow tell:,ui,,,scripts/ui/hud.gd:839,
+hud._queue_screen_hints.e9b353,vermelho:,red:,ui,,,scripts/ui/hud.gd:839,
+hud._queue_screen_hints.bd84ff,pausa · Golpes & Controles,pause · Moves & Controls,ui,,,scripts/ui/hud.gd:840,
+hud._check_ring_hints.385e09,usar o Anel equipado (gasta Éter),use the equipped Ring (costs Aether),ui,,,scripts/ui/hud.gd:852,
+hud._check_ring_hints.beab08,trocar de Anel,switch Ring,ui,,,scripts/ui/hud.gd:854,
+hud.key_label.84c4c5,Analógico,Stick,ui,,,scripts/ui/hud.gd:959 scripts/ui/hud.gd:1036 scripts/ui/input_glyphs.gd:159 scripts/ui/input_glyphs.gd:164,
+hud.key_label.f999e2,%s  %s,%s  %s,ui,,,scripts/ui/hud.gd:959,format string: manter os %
+hud._key_name.f61d6e,Espaço,Space,ui,,,scripts/ui/hud.gd:1004 scripts/ui/input_glyphs.gd:229,
+hud._key_name.1f7a4f,Esc,Esc,ui,,,scripts/ui/hud.gd:1005 scripts/ui/input_glyphs.gd:230,
+hud._key_name.469d5b,Shift,Shift,ui,,,scripts/ui/hud.gd:1006 scripts/ui/input_glyphs.gd:231,
+hud._key_name.2b9ece,Enter,Enter,ui,,,scripts/ui/hud.gd:1007 scripts/ui/input_glyphs.gd:235,
+hud._key_name.71815f,Esq.,Left,ui,,,scripts/ui/hud.gd:1008,
+hud._key_name.72acb3,Dir.,Right,ui,,,scripts/ui/hud.gd:1009,
+hud._key_name.4effab,Cima,Up,ui,,,scripts/ui/hud.gd:1010,
+hud._key_name.74fd00,Baixo,Down,ui,,,scripts/ui/hud.gd:1011,
+hud._pad_button_name.6dcd4c,A,A,ui,,,scripts/ui/hud.gd:1017 scripts/ui/input_glyphs.gd:252 scripts/ui/input_glyphs.gd:253,
+hud._pad_button_name.ae4f28,B,B,ui,,,scripts/ui/hud.gd:1018 scripts/ui/input_glyphs.gd:252 scripts/ui/input_glyphs.gd:253,
+hud._pad_button_name.c032ad,X,X,ui,,,scripts/ui/hud.gd:1019 scripts/ui/input_glyphs.gd:254 scripts/ui/input_glyphs.gd:255,
+hud._pad_button_name.23eb4d,Y,Y,ui,,,scripts/ui/hud.gd:1020 scripts/ui/input_glyphs.gd:254 scripts/ui/input_glyphs.gd:255,
+hud._pad_button_name.2d1958,LB,LB,ui,,,scripts/ui/hud.gd:1021 scripts/ui/input_glyphs.gd:256,
+hud._pad_button_name.38026d,RB,RB,ui,,,scripts/ui/hud.gd:1022 scripts/ui/input_glyphs.gd:257,
+hud._pad_button_name.952f37,Start,Start,ui,,,scripts/ui/hud.gd:1024,
+hud._pad_button_name.53157e,D-pad Esq.,D-pad Left,ui,,,scripts/ui/hud.gd:1025,
+hud._pad_button_name.b7d05d,D-pad Dir.,D-pad Right,ui,,,scripts/ui/hud.gd:1026,
+hud._pad_button_name.442f4a,D-pad Cima,D-pad Up,ui,,,scripts/ui/hud.gd:1027,
+hud._pad_button_name.237b1b,D-pad Baixo,D-pad Down,ui,,,scripts/ui/hud.gd:1028,
+hud._pad_button_name.67c850,Botão %d,Button %d,ui,,,scripts/ui/hud.gd:1029 scripts/ui/input_glyphs.gd:268,format string: manter os %
+hud._pad_axis_name.6c62fb,LT,LT,ui,,,scripts/ui/hud.gd:1034 scripts/ui/input_glyphs.gd:275,
+hud._pad_axis_name.bc410c,RT,RT,ui,,,scripts/ui/hud.gd:1035 scripts/ui/input_glyphs.gd:276,
+hud._pad_axis_name.e39ae1,Eixo %d,Axis %d,ui,,,scripts/ui/hud.gd:1037 scripts/ui/input_glyphs.gd:280,format string: manter os %
+hud._draw_counters.a602bb,Arma Nv. %d,Weapon Lv. %d,ui,,,scripts/ui/hud.gd:1202 scripts/ui/moves_screen.gd:169,format string: manter os %
+hud._draw_one_boss.794201,FASE II,PHASE II,ui,,,scripts/ui/hud.gd:1387,
 input_glyphs.DEVICE_NAMES.84601a,Teclado,Keyboard,ui,,,scripts/ui/input_glyphs.gd:23,
 input_glyphs.DEVICE_NAMES.288e67,Xbox,Xbox,ui,,,scripts/ui/input_glyphs.gd:23,
 input_glyphs.DEVICE_NAMES.92f1af,PlayStation,PlayStation,ui,,,scripts/ui/input_glyphs.gd:23,
@@ -1266,6 +1265,7 @@ input_glyphs._ps_face.fa0035,Cruz,Cross,ui,,,scripts/ui/input_glyphs.gd:290,
 input_glyphs._ps_face.3053b7,Círculo,Circle,ui,,,scripts/ui/input_glyphs.gd:290,
 input_glyphs._ps_face.4ada0c,Quadrado,Square,ui,,,scripts/ui/input_glyphs.gd:290,
 input_glyphs._ps_face.41660a,Triângulo,Triangle,ui,,,scripts/ui/input_glyphs.gd:290,
+input_glyphs.card_hint.9f320c,avança,continue,ui,,,scripts/ui/input_glyphs.gd:319,
 input_rebind.ACTIONS.2e5178,Saltar,Jump,ui,,,scripts/ui/input_rebind.gd:21,
 input_rebind.ACTIONS.2e7906,Aparar / bloquear,Parry / block,ui,,,scripts/ui/input_rebind.gd:23,
 input_rebind.ACTIONS.affa74,Anel (magia),Ring (spell),ui,,,scripts/ui/input_rebind.gd:24,

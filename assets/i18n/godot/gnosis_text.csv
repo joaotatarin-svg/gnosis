@@ -938,7 +938,6 @@ Kenoma,Kenoma
 Fonte: %s,Source: %s
 • nova Crônica  %d/%d,• new Chronicle  %d/%d
 Crônica %d/%d,Chronicle %d/%d
-      %s fechar,      %s close
 "No princípio havia o Um. Dele emanaram os Éons, aos pares,
 como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
 like overflowing light. There nothing slept. Nothing forgot."
@@ -1266,6 +1265,7 @@ Cruz,Cross
 Círculo,Circle
 Quadrado,Square
 Triângulo,Triangle
+avança,continue
 Saltar,Jump
 Aparar / bloquear,Parry / block
 Anel (magia),Ring (spell)

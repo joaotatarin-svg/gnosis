@@ -1,0 +1,5 @@
+# Lote 12 — UI Onda 5 (17/10/2026): rodapés com glifos do dispositivo (QA2 #13).
+# "fechar"/"pula" são palavras soltas que o extrator descarta (parecem id): =pt<TAB>en.
+input_glyphs.card_hint.9f320c	continue
+=fechar	close
+=pula	skip

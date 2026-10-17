@@ -49,6 +49,7 @@ const EON_RIGHT := 626.0
 const TOAST_RECT := Rect2(120, 88, 400, 30)
 const HINT_Y := 46.0              # centro vertical da faixa de dicas (topo central)
 const HINT_TIME := 4.2            # s visível (tempo de jogo, para na pausa)
+const TOAST_GAP := 0.35           # s entre um toast e o próximo (e depois de uma cena)
 const SPARK_POP := 0.12           # s do pop do contador (1,0→1,15→1,0)
 ## R21 (respiro): faíscas e arma recuam para α 0,6 após 4 s sem combate e
 ## voltam a 1,0 em 150 ms. Vida e Éter ficam sempre inteiras.
@@ -61,6 +62,9 @@ const LOW_HP := 0.25
 const LOW_HP_MAX_TIME := 8.0
 ## O Combate já chama spark_orb_arrived()? (vale para o resto da sessão)
 static var orb_mode: bool = false
+## Ações que a jogadora já usou nesta sessão (dicas aprendidas não voltam — QA2 #10).
+static var _used_actions: Dictionary = {}
+const HINT_ACTIONS := ["jump", "attack_light", "attack_heavy", "dodge", "block", "skill1", "skill2", "ring_prev", "ring_next", "pause"]
 const HINT_ICON_H := 13.0         # altura do ícone de tecla/botão nas dicas
 
 var _canvas: _HudCanvas
@@ -121,6 +125,8 @@ var _low_t: float = -1.0             # s de vinheta de vida baixa (-1 = desligad
 var _low_fade: float = 0.0           # 0..1 intensidade (entra/sai suave)
 var _low_beat: int = -1              # último pulso da vinheta que já bateu o coração (Audio)
 var _toast_queue: Array[String] = [] # avisos esperando a vez (conquista + Crônica juntas)
+var _toast_wait: float = 0.0         # respiro antes do próximo toast (fila / fim de cena)
+var _toast_ms: int = 0               # relógio real do último quadro (o respiro ignora câmera lenta)
 
 
 func _ready() -> void:
@@ -178,6 +184,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_update_recede(delta)
+	_process_toasts()
 	if get_tree().paused:
 		# Estado congelado, mas o desenho segue (no roubo a caixa pausa o mundo e
 		# o encaixe da gema precisa apagar/acender na hora).
@@ -295,10 +302,19 @@ func _on_combo(count: int) -> void:
 ## numa faixa própria (TOAST_RECT). Texto longo encolhe a fonte para caber.
 ## Dois avisos juntos (Crônica + conquista) fazem fila: um de cada vez.
 func toast(msg: String) -> void:
-	if _toast != null and _toast_tween != null and _toast_tween.is_valid() and _toast_tween.is_running():
-		if _toast_queue.size() < 4 and not _toast_queue.has(msg) and _toast_label.text != msg:
+	if msg == "":
+		return
+	# Toast no ar, ou cena/card/pausa na tela (QA2 #4/#5): entra na FILA e só
+	# aparece quando o jogo voltar (ver _process_toasts) — nunca por cima de
+	# card de chefe, rubrica ou caixa de diálogo, e nunca "queima" escondido.
+	if _toast_busy() or toast_held() or _toast_wait > 0.0:
+		if _toast_queue.size() < 6 and not _toast_queue.has(msg) and not (_toast_busy() and _toast_label.text == msg):
 			_toast_queue.append(msg)
 		return
+	_show_toast(msg)
+
+
+func _show_toast(msg: String) -> void:
 	if _toast == null:
 		_toast_holder = Control.new()
 		_toast_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -330,6 +346,7 @@ func toast(msg: String) -> void:
 	_toast.modulate = Color(1, 1, 1, 0)
 	_toast.position.y = TOAST_RECT.position.y + 6.0
 	_toast_tween = create_tween().set_parallel(true)
+	_toast_tween.set_ignore_time_scale(true)      # o aviso dura o mesmo na câmera lenta
 	_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.22)
 	_toast_tween.tween_property(_toast, "position:y", TOAST_RECT.position.y, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_toast_tween.chain().tween_interval(2.2)
@@ -339,8 +356,52 @@ func toast(msg: String) -> void:
 
 func _next_toast() -> void:
 	_toast_tween = null              # (o callback roda DENTRO do tween, que ainda conta como rodando)
-	if not _toast_queue.is_empty():
-		toast(_toast_queue.pop_front())
+	_toast_wait = TOAST_GAP          # o próximo da fila sai em _process_toasts
+
+
+## Há um toast na tela agora (entrando, parado ou saindo)?
+func _toast_busy() -> bool:
+	return _toast != null and _toast_tween != null and _toast_tween.is_valid() and _toast_tween.is_running()
+
+
+## Toasts seguram (QA2 #4/#5): card de chefe / Cinemática, cena dirigida
+## (caixa de diálogo, rubrica, ilustração — scene_active) ou mundo pausado
+## (pausa, loja, Estela). Avisos esperam na fila e saem quando o jogo volta.
+func toast_held() -> bool:
+	return get_tree().paused or PauseStack.is_held() or _recede > 0.0 or scene_active()
+
+
+## Roda todo quadro (inclusive com a árvore pausada): segura o toast que
+## estiver na tela quando uma cena começa (volta pra FRENTE da fila e reaparece
+## inteiro depois) e solta a fila quando o jogo volta, com um respiro.
+func _process_toasts() -> void:
+	var held := toast_held()
+	var now := Time.get_ticks_msec()
+	var dt_real := 0.0 if _toast_ms == 0 else float(now - _toast_ms) / 1000.0
+	_toast_ms = now
+	if held:
+		_toast_wait = TOAST_GAP
+		if _toast_busy():
+			var cur := _toast_label.text
+			_toast_tween.kill()
+			_toast_tween = null
+			_toast.modulate.a = 0.0
+			if cur != "" and not _toast_queue.has(cur):
+				_toast_queue.push_front(cur)
+		return
+	if _toast_wait > 0.0:
+		# tempo REAL: câmera lenta/hitstop não seguram o aviso
+		_toast_wait -= minf(dt_real, 0.5)
+		return
+	if not _toast_busy() and not _toast_queue.is_empty():
+		_show_toast(_toast_queue.pop_front())
+
+
+## Toast visível agora? [texto, alpha efetivo] — QA/sonda.
+func toast_state() -> Array:
+	if _toast == null:
+		return ["", 0.0]
+	return [_toast_label.text, _toast.modulate.a if _toast.is_visible_in_tree() else 0.0]
 
 
 ## Conquista liberada (sinal Achievements.unlocked): aviso com o título dela.
@@ -463,6 +524,14 @@ func scene_active() -> bool:
 			if c is Staging and c.has_method("is_active") and bool(c.call("is_active")):
 				return true
 	return false
+
+
+## Alpha das barras de chefe agora (0 = escondidas: sem chefe, card ou cena) — QA.
+func boss_bar_alpha() -> float:
+	var m := 0.0
+	for o in bosses:
+		m = maxf(m, float(o.show))
+	return m * (1.0 - _scene_k) * (1.0 - _recede)
 
 
 ## Chamado (via grupo "hud") pelo chefe ao nascer — e de novo quando uma forma
@@ -798,7 +867,10 @@ func _process_hints(delta: float) -> void:
 		_hint_gap -= delta
 		if _hint_gap > 0.0:
 			return
-		_hint = hints.pop_front()
+		var nxt: Array = hints.pop_front()
+		if _hint_learned(nxt):
+			return                   # já sabe (usou tudo o que ela ensina): não ocupa o topo
+		_hint = nxt
 		_hint_t = 0.0
 		_hint_done.clear()
 		return
@@ -812,6 +884,31 @@ func _process_hints(delta: float) -> void:
 	if _hint_t >= HINT_TIME:
 		_hint = []
 		_hint_gap = 0.5
+
+
+## A dica só ENSINA teclas (todo segmento tem tecla) e a jogadora já usou todas
+## nesta sessão? Então não aparece (QA2 #10: o topo não repete o que ela já sabe).
+## Sempre saem: dicas com texto sem tecla ("telegrafo amarelo:") ou com um
+## complemento depois de "·" ("bloquear · no tempo, apara") — ensinam leitura, não
+## só a tecla — e as de SEQUÊNCIA (a mesma tecla repetida: "sequência do cajado").
+func _hint_learned(h: Array) -> bool:
+	if h.is_empty():
+		return true
+	for seg in h:
+		var ks: Array = seg.get("keys", [])
+		if ks.is_empty() or String(seg.get("text", "")).contains("·"):
+			return false
+		var seen := {}
+		for a in ks:
+			if seen.has(a) or not _used_actions.has(String(a)):
+				return false
+			seen[a] = true
+	return true
+
+
+## Ação usada nesta sessão? (QA/sonda)
+func action_used(a: String) -> bool:
+	return _used_actions.has(a)
 
 
 func _distinct_actions(h: Array) -> int:
@@ -842,6 +939,13 @@ func _input(event: InputEvent) -> void:
 		use_pad = true
 	elif event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > 0.5:
 		use_pad = true
+	# Memória do que ela já usou (vale pela sessão; dicas aprendidas não voltam).
+	if event.is_pressed() and not event.is_echo() and not get_tree().paused:
+		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+			_used_actions["@move"] = true
+		for a in HINT_ACTIONS:
+			if InputMap.has_action(a) and event.is_action_pressed(a):
+				_used_actions[a] = true
 	if not _hint.is_empty() and not get_tree().paused:
 		for seg in _hint:
 			for a in seg.get("keys", []):
@@ -1228,7 +1332,11 @@ class _HudCanvas extends Control:
 			_draw_one_boss(vis[1], 454.0, 216.0, false)
 
 	func _draw_one_boss(bb, cx: float, w: float, solo: bool) -> void:
-		var a: float = bb.show
+		# Cena no ar (rubrica/caixa/ilustração — QA2 #5): as barras recolhem junto
+		# com dicas e combo; voltam quando a cena acaba.
+		var a: float = bb.show * (1.0 - hud._scene_k)
+		if a <= 0.01:
+			return
 		var x0 := cx - w * 0.5
 		var y: float = BOSS_BAR_Y + (1.0 - a) * 8.0
 		var rect := Rect2(x0, y, w, 8)

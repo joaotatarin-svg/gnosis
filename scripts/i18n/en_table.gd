@@ -3,7 +3,6 @@ extends RefCounted
 ## Chave = texto em português exato; valor = inglês. Lido por GnosisTranslation.
 
 const EXACT := {
-	"      %s fechar": "      %s close",
 	"   ·   PALETA %d / 3": "   ·   PALETTE %d / 3",
 	"%02d   %s": "%02d   %s",
 	"%02d  %s": "%02d  %s",
@@ -1175,6 +1174,7 @@ const EXACT := {
 	"apare no tempo": "parry on time",
 	"articulações": "joints",
 	"asas": "wings",
+	"avança": "continue",
 	"bloquear · no tempo, apara": "block · on time, parries",
 	"boca": "maw",
 	"boca costurada": "sewn mouth",
@@ -1202,6 +1202,7 @@ const EXACT := {
 	"esquive": "dodge",
 	"faísca": "spark",
 	"fecha": "close",
+	"fechar": "close",
 	"garras": "claws",
 	"gavinhas": "tendrils",
 	"golpe forte": "heavy strike",
@@ -1228,6 +1229,7 @@ const EXACT := {
 	"pausa": "pause",
 	"pausa · Golpes & Controles": "pause · Moves & Controls",
 	"primeiro": "first",
+	"pula": "skip",
 	"pular": "jump",
 	"pálpebra": "eyelid",
 	"qualquer tecla avança  ·  Esc pula": "any key continues  ·  Esc skips",
