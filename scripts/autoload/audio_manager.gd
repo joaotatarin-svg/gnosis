@@ -74,7 +74,8 @@ const VOICE_ALONE_PITCH := 0.9    # anagnórise: o tema volta sozinho, mais lent
 const VOICE_ALONE_FADE := 4.0
 const SCENE_FADE := 2.0           # entrada/saída do tema no santuário
 const SCENE_DUCK_SCALE := 0.35    # roubo/anagnórise: a música É a cena — diálogo abaixa só ~3 dB
-const FOG_DUCK_DB := -8.0         # cena A: "a música do Limiar desce a 40 %"
+const FOG_DUCK_DB := -8.0
+const RING_NOTE_HOLD_MS := 1500   # após um ring_note, o sinal de Anel não toca som próprio         # cena A: "a música do Limiar desce a 40 %"
 ## Faixas opcionais: tocam se o arquivo existir, sem ele o jogo usa a reserva.
 ## `menu` = tema do menu (opções por síntese aguardando o João; sem arquivo = `theme`).
 const OPTIONAL_MUSIC := ["menu"]
@@ -222,16 +223,23 @@ var _lp_slots: Array[Vector2i] = []  # (bus, índice do efeito) de cada filtro
 var _layer_db: Dictionary = {}       # faixa -> dB extra pedido (set_music_layer_volume)
 var _layer_now: float = 0.0          # dB extra aplicado agora (anda até o pedido)
 var _env_us: int = 0                 # relógio da camada (µs)
-var _temp_duck_db: float = 0.0       # duck_music(): abaixada temporária (tweenada)
-var _temp_duck_tween: Tween
+var _temp_duck_db: float = 0.0       # duck_music(): abaixada temporária (relógio real)
+var _td_active: bool = false         # envelope da abaixada: desce em _td_in, segura _td_hold,
+var _td_t0: int = 0                  # volta em _td_out (µs do PEDIDO em _td_t0)
+var _td_from: float = 0.0
+var _td_db: float = 0.0
+var _td_in: float = 0.0
+var _td_hold: float = 0.0
+var _td_out: float = 0.0
 var _music_pitch: float = 1.0
 var _pitch_tween: Tween
 var _shut_down: bool = false
 
 # --- tema da Voz / cenas ---
 var voice_theme_mode: String = ""    # "", "santuario", "roubo", "sozinha"
-var _scene_token: int = 0            # invalida o corte agendado do roubo
+var _roubo_due_us: int = 0           # µs do corte agendado tema → `roubo` (0 = nenhum)
 var _duck_scale: float = 1.0         # 1 = ducking de diálogo cheio; menor nas cenas musicais
+var _ring_note_ms: int = -100000     # último ring_note (a cena já tocou a gema: o sinal não repete)
 
 # --- memória pros ganchos por sinal ---
 var _last_weapon: int = 1
@@ -603,12 +611,34 @@ func set_music_pitch(pitch: float, fade: float = 1.0) -> void:
 ## pra uma fala ou um golpe de cena. Soma com o ducking de diálogo.
 ## Abaixada longa: `duck_music(999, -14)` e depois `duck_music(0, 0)` solta.
 func duck_music(seconds: float, db: float = -12.0) -> void:
-	if _temp_duck_tween != null and _temp_duck_tween.is_valid():
-		_temp_duck_tween.kill()
-	_temp_duck_tween = create_tween().set_ignore_time_scale(true)
-	_temp_duck_tween.tween_method(_set_temp_duck, _temp_duck_db, db, DUCK_IN)
-	_temp_duck_tween.tween_interval(maxf(seconds, 0.0))
-	_temp_duck_tween.tween_method(_set_temp_duck, db, 0.0, DUCK_OUT)
+	_start_temp_duck(db, DUCK_IN, maxf(seconds, 0.0), DUCK_OUT)
+
+
+## Envelope da abaixada por relógio real (como o ducking): um quadro longo não
+## pula nem engole o fade — antes era Tween e atrasava sob carga.
+func _start_temp_duck(db: float, secs_in: float, hold: float, secs_out: float) -> void:
+	_td_from = _temp_duck_db
+	_td_db = db
+	_td_in = maxf(secs_in, 0.0001)
+	_td_hold = hold
+	_td_out = maxf(secs_out, 0.0001)
+	_td_t0 = Time.get_ticks_usec()
+	_td_active = true
+	_wake()
+
+
+func _temp_duck_value(now: int) -> float:
+	var t := float(now - _td_t0) / 1000000.0
+	if t < _td_in:
+		return lerpf(_td_from, _td_db, t / _td_in)
+	t -= _td_in
+	if t < _td_hold:
+		return _td_db
+	t -= _td_hold
+	if t < _td_out:
+		return lerpf(_td_db, 0.0, t / _td_out)
+	_td_active = false
+	return 0.0
 
 
 func _set_temp_duck(v: float) -> void:
@@ -737,7 +767,7 @@ func _update_ambience(screen: int) -> void:
 	play_ambience(ambience_for_screen(screen), vol)
 
 
-# --- Envelopes (ducking / slow-mo / camada) por tempo REAL ---------------
+# --- Envelopes (ducking / slow-mo / camada / duck_music) por tempo REAL ---
 #
 # Antes o ducking era um Tween criado no quadro do pedido. Tween (e timer) novo
 # recebe no 1º passo o delta INTEIRO do quadro em que nasceu — inclusive o tempo
@@ -776,6 +806,15 @@ func _process(_delta: float) -> void:
 		_slow = _env_value(_slow_env, _slow_t0, _slow_target, now)
 		_apply_lowpass()
 		busy = true
+	if _td_active:
+		_temp_duck_db = _temp_duck_value(now)
+		busy = true
+	if _roubo_due_us > 0:
+		busy = true
+		if now >= _roubo_due_us:
+			_roubo_due_us = 0
+			if not _shut_down:
+				play_music("roubo", false, 1.0, 0.0)
 	var layer_goal := float(_layer_db.get(_playing_track, 0.0))
 	if _layer_now != layer_goal:
 		_layer_now = move_toward(_layer_now, layer_goal, clampf(dt, 0.0, 0.1) * LAYER_RATE_DB)
@@ -954,8 +993,7 @@ func _on_state_changed(new_state: int) -> void:
 func _reset_music_mods() -> void:
 	_end_scene_music()
 	_layer_db.clear()
-	if _temp_duck_tween != null and _temp_duck_tween.is_valid():
-		_temp_duck_tween.kill()
+	_td_active = false
 	_temp_duck_db = 0.0
 	if not is_equal_approx(_music_pitch, 1.0):
 		set_music_pitch(1.0, 0.0)
@@ -988,7 +1026,7 @@ func menu_track() -> String:
 ##   ""          — fim: volta à música da tela (Éon/Arconte/Provação).
 ## Em "roubo"/"sozinha" o diálogo abaixa a música só ~3 dB (a música É a cena).
 func voice_theme(mode: String) -> void:
-	_scene_token += 1
+	_roubo_due_us = 0
 	voice_theme_mode = mode
 	match mode:
 		"santuario":
@@ -1003,12 +1041,10 @@ func voice_theme(mode: String) -> void:
 			stop_music(0.0)               # recomeça do início mesmo se o tema já tocava
 			play_music(VOICE_THEME, false, VOICE_STOLEN_PITCH, 0.0)
 			_apply_volumes()
-			var token := _scene_token
-			# Timer que ignora time_scale e pausa: 3 s REAIS (a cena roda em slow-mo/pausa).
-			get_tree().create_timer(VOICE_STOLEN_SECS, true, false, true).timeout.connect(
-				func() -> void:
-					if token == _scene_token and not _shut_down:
-						play_music("roubo", false, 1.0, 0.0))
+			# 3 s de relógio REAL desde o pedido (ver _process). Um timer novo
+			# disparava cedo sob carga: recebe no 1º passo o quadro inteiro.
+			_roubo_due_us = Time.get_ticks_usec() + int(VOICE_STOLEN_SECS * 1000000.0)
+			_wake()
 		"sozinha":
 			_duck_scale = SCENE_DUCK_SCALE
 			_layer_db.erase(VOICE_THEME)
@@ -1029,7 +1065,7 @@ func voice_theme(mode: String) -> void:
 ## Desfaz o estado de cena (troca de tela, menu, Provação): cancela o corte
 ## agendado do roubo e devolve o ducking de diálogo ao normal.
 func _end_scene_music() -> void:
-	_scene_token += 1
+	_roubo_due_us = 0
 	voice_theme_mode = ""
 	if _temp_duck_db < -0.01:          # abaixada de cena (ex.: névoa) não atravessa a tela
 		_release_temp_duck(DUCK_OUT)
@@ -1040,13 +1076,11 @@ func _end_scene_music() -> void:
 
 ## Solta a abaixada de `duck_music` em `secs` (0 = na hora).
 func _release_temp_duck(secs: float) -> void:
-	if _temp_duck_tween != null and _temp_duck_tween.is_valid():
-		_temp_duck_tween.kill()
 	if secs <= 0.0:
+		_td_active = false
 		_set_temp_duck(0.0)
 		return
-	_temp_duck_tween = create_tween().set_ignore_time_scale(true)
-	_temp_duck_tween.tween_method(_set_temp_duck, _temp_duck_db, 0.0, secs)
+	_start_temp_duck(0.0, secs, 0.0, 0.0)
 
 
 ## Som de um `cue` de fala (ROTEIRO §5). Devolve true se o cue é conhecido
@@ -1108,6 +1142,7 @@ func cue(cue_name: String) -> bool:
 ## cada gema; devolução (`returning`): `ring_gain` um semitom ABAIXO a cada uma.
 func ring_note(index: int, returning: bool = false) -> bool:
 	var i := clampi(index, 0, 6)
+	_ring_note_ms = Time.get_ticks_msec()
 	if returning:
 		return play_sfx_pitched("ring_gain", pow(2.0, -float(i) / 12.0), -4.0)
 	return play_sfx_pitched("ring_steal", pow(2.0, float(i) / 12.0), -2.0)
@@ -1131,7 +1166,9 @@ func _on_rings() -> void:
 	var rings: int = Progression.rings.size()
 	var restored: int = Progression.restored_rings.size()
 	var stolen: bool = Progression.rings_stolen
-	if _in_game():
+	# Se a cena acabou de tocar as gemas (ring_note), o sinal não toca de novo.
+	var scene_played := Time.get_ticks_msec() - _ring_note_ms < RING_NOTE_HOLD_MS
+	if _in_game() and not scene_played:
 		if stolen and not _last_stolen:
 			play_sfx("ring_steal")
 		elif restored > _last_restored:
@@ -1193,7 +1230,8 @@ func shutdown(settle: bool = false) -> void:
 		return
 	_shut_down = true
 	set_process(false)
-	for t in [_music_tween, _amb_tween, _temp_duck_tween, _pitch_tween]:
+	_td_active = false
+	for t in [_music_tween, _amb_tween, _pitch_tween]:
 		if t != null and (t as Tween).is_valid():
 			(t as Tween).kill()
 	var all: Array[AudioStreamPlayer] = []

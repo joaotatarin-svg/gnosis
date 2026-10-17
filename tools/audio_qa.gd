@@ -74,7 +74,7 @@ func _run() -> void:
 		var dir := DirAccess.open(AUDIO_DIR + sub)
 		if dir == null:
 			continue
-		var names: Array = sfx_names if sub == "sfx" else (music_names if sub == "music" else amb_names)
+		var names: Array = sfx_names if sub == "sfx" else ((music_names + Audio.OPTIONAL_MUSIC) if sub == "music" else amb_names)
 		for f in dir.get_files():
 			var ext := f.get_extension().to_lower()
 			if not AUDIO_EXTS.has(ext):
@@ -354,7 +354,7 @@ func _run() -> void:
 	var t_roubo := Time.get_ticks_msec()
 	await _wait_real(Audio.VOICE_STOLEN_SECS - 0.4)
 	var early: String = Audio._playing_track
-	while Audio._playing_track != "roubo" and Time.get_ticks_msec() - t_roubo < int(Audio.VOICE_STOLEN_SECS * 1000.0) + 600:
+	while Audio._playing_track != "roubo" and Time.get_ticks_msec() - t_roubo < int(Audio.VOICE_STOLEN_SECS * 1000.0) + 900:
 		await get_tree().process_frame
 	var cut_ms := Time.get_ticks_msec() - t_roubo
 	var n_roubo := 0
@@ -362,7 +362,8 @@ func _run() -> void:
 		if m.playing:
 			n_roubo += 1
 	check(sanct_ok and stolen_ok and early == "theme" and Audio._playing_track == "roubo" and n_roubo == 1
-		and is_equal_approx(Audio._music_pitch, 1.0) and absf(cut_ms - Audio.VOICE_STOLEN_SECS * 1000.0) < 400.0,
+		and is_equal_approx(Audio._music_pitch, 1.0) and cut_ms >= int(Audio.VOICE_STOLEN_SECS * 1000.0) - 20
+		and cut_ms <= int(Audio.VOICE_STOLEN_SECS * 1000.0) + 800,
 		"tema da Voz: santuário (−3 dB) → roubo a 0,75 → corte seco para 'roubo' em %d ms (%d player)" % [cut_ms, n_roubo])
 	# Uma troca de cena no meio cancela o corte agendado.
 	Audio.voice_theme("roubo")
@@ -373,6 +374,7 @@ func _run() -> void:
 	var s0 := AudioServer.get_bus_volume_db(music_bus)
 	Audio.duck(true)
 	await _wait_real(0.4)
+	await get_tree().process_frame
 	var s1 := AudioServer.get_bus_volume_db(music_bus)
 	Audio.duck(false)
 	await _wait_real(1.0)
@@ -383,6 +385,7 @@ func _run() -> void:
 	# Névoa (cena A): abaixada longa; a troca de tela solta.
 	Audio.cue("fog_thickens")
 	await _wait_real(0.4)
+	await get_tree().process_frame     # o _process do Audio roda DEPOIS deste ponto do quadro
 	var fog_db: float = Audio._temp_duck_db
 	Audio._end_scene_music()
 	await _wait_real(1.0)
@@ -426,6 +429,33 @@ func _run() -> void:
 	check(steal_p.size() == 2 and ret_p.size() == 2 and steal_p[1] > steal_p[0] and ret_p[1] < ret_p[0]
 		and is_equal_approx(steal_p[1] / steal_p[0], pow(2.0, 1.0 / 12.0)),
 		"ring_note: roubo sobe um semitom por gema %s, a volta desce %s" % [str(steal_p), str(ret_p)])
+
+	# (b17) Depois de um ring_note, o sinal de Anel (Progression) não toca o som
+	#       de novo (senão o roubo soaria 8 gemas, a volta dobraria). Sem a cena, toca.
+	var keep_state = GameManager.state
+	var keep_stolen: bool = Progression.rings_stolen
+	GameManager.state = GameManager.State.PLAYING
+	await _wait_real(0.1)
+	for k in Audio._players.size():
+		if Audio._pl_name[k] == "ring_steal":
+			Audio._players[k].stop()
+	var before := Audio.voices_playing("ring_steal")
+	Audio.ring_note(6, false)
+	var after_note := Audio.voices_playing("ring_steal")
+	Audio._last_stolen = false
+	Progression.rings_stolen = true
+	Audio._on_rings()
+	var after_signal := Audio.voices_playing("ring_steal")
+	Audio._ring_note_ms = -100000
+	Audio._last_stolen = false
+	await _wait_real(0.06)
+	Audio._on_rings()
+	var plain_signal := Audio.voices_playing("ring_steal")
+	Progression.rings_stolen = keep_stolen
+	Audio._last_stolen = keep_stolen
+	GameManager.state = keep_state
+	check(before == 0 and after_note == 1 and after_signal == 1 and plain_signal == 2,
+		"sinal de Anel não repete a gema que a cena tocou (%d → %d → %d); sem cena toca (%d)" % [before, after_note, after_signal, plain_signal])
 
 	# (c) tocar SFX inexistente não gera erro (cache negativa) — e o pool aguenta rajada.
 	Audio.play_sfx("__nao_existe__")
