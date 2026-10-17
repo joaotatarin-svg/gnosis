@@ -9,7 +9,7 @@ extends Node
 ##     --path . --resolution 1280x720 res://tools/ui_menus/MenuProbe.tscn -- <pasta_saida> [seção ...]
 ## Sem capturas (testes de tempo confiáveis — a janela no llvmpipe roda a poucos fps):
 ##   godot --headless --audio-driver Dummy --path . res://tools/ui_menus/MenuProbe.tscn -- <pasta> [seção ...]
-## Seções: glifos loja pausa pilha voltar cronicas opcoes controles estela provacao creditos bestiario (padrão: todas)
+## Seções: glifos loja pausa pilha voltar cronicas opcoes controles estela provacao creditos bestiario demo (padrão: todas)
 ## + opcoes_provacao (só quando pedida: confere a REVISAO #13, que é do SaveManager/Técnico)
 ## Imprime "UIM OK: ..." / "UIM FALHA: ..." e no fim "UIM RESULT: N ok, M falha(s)".
 ## O B do controle em `ui_cancel` (e o A em `ui_accept`) é mapeado AQUI se o
@@ -211,6 +211,8 @@ class Worker extends Node:
 			await _credits()
 		if want("bestiario"):
 			await _bestiary()
+		if want("demo"):
+			await _demo_end()
 		PauseStack.clear()
 		print("UIM RESULT: %d ok, %d falha(s)" % [ok, fail])
 		get_tree().quit()
@@ -792,6 +794,40 @@ class Worker extends Node:
 		Credits.licenses_path = "res://assets/LICENSES.md"
 
 	## L2: nomes do Bestiário cabem nas células.
+	## #52/#27: pré-jogo sem spoiler; card de fim da demo + "Lista de desejos".
+	func _demo_end() -> void:
+		await go("res://scenes/ui/PreGame.tscn", 1.0)
+		var info: String = get_tree().current_scene.get_node("Center/VBox/Info").text
+		check(not info.contains("Centro") and not info.contains("Mente") and not info.contains("telas"), "pré-jogo: sem 'Centro'/'Mente'/'telas' [%s]" % info)
+		check(info.contains("~2–3 horas") or info.contains("Demo"), "pré-jogo: duração estimada [%s]" % info)
+		await shot("pregame_info")
+		ProjectSettings.set_setting("gnosis/store_url", "https://store.steampowered.com/app/0/GNOSIS/")
+		EndScreen.demo_card = true
+		await go("res://scenes/ui/EndScreen.tscn", 1.0)
+		var es := get_tree().current_scene
+		var all := labels_text(es)
+		check(all.contains("Fim da demo") and all.contains("Obrigado por jogar"), "demo: card 'Fim da demo — obrigado por jogar'")
+		var wl: Button = es.get_node("Center/Panel/VBox/Buttons/Retry")
+		check(wl.text == "Lista de desejos" and not wl.disabled and focus() == wl, "demo: botão 'Lista de desejos' com foco (URL configurada)")
+		check(not EndScreen.demo_card, "demo: o card é de uma vez só")
+		await shot("demo_fim")
+		ProjectSettings.set_setting("gnosis/store_url", "")
+		EndScreen.demo_card = true
+		await go("res://scenes/ui/EndScreen.tscn", 1.0)
+		wl = get_tree().current_scene.get_node("Center/Panel/VBox/Buttons/Retry")
+		check(wl.disabled, "demo: sem URL o botão fica desligado")
+		if GameManager.has_signal("demo_finished") and "demo" in GameManager:
+			GameManager.set("demo", true)
+			EndScreen.ensure_demo_hook()
+			await wait(0.2)
+			await go("res://scenes/ui/MainMenu.tscn", 0.8)
+			GameManager.emit_signal("demo_finished")
+			await wait(1.2)
+			check(scene_path().contains("EndScreen") and labels_text(get_tree().current_scene).contains("Fim da demo"), "demo: sinal demo_finished abre o card [%s]" % scene_path())
+			GameManager.set("demo", false)
+		else:
+			print("UIM nota: GameManager.demo_finished ainda não existe (Técnico2) — só o card foi testado")
+
 	## #35/#26: Bestiário com ficha (lore + dica), nomes cabem, trancados "???".
 	func _bestiary() -> void:
 		await go("res://scenes/ui/Gallery.tscn", 1.2)

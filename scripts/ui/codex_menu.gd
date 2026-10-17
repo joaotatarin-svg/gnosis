@@ -19,6 +19,7 @@ var _title_items: Array = []
 
 func _ready() -> void:
 	CodexSession.leave_demo()
+	EndScreen.ensure_demo_hook()
 	RunManager.end_run()
 	Progression.reset_run()
 	GameManager.set_state(GameManager.State.MENU)
@@ -93,7 +94,7 @@ func _build_actions() -> void:
 	# --- Continuar (só com checkpoint salvo) ---
 	if has_save:
 		var sc := clampi(int(RunManager.saved_run.get("screen", 1)), 1, RunManager.MAX_SCREEN)
-		var cont := CodexStyle.button(self, "Continuar  ·  %s, tela %d" % [RunManager.eon_name(sc), sc], Vector2(COL_X, y), COL_W, func():
+		var cont := CodexStyle.button(self, "Continuar  ·  %s" % GameManager.screen_title(sc), Vector2(COL_X, y), COL_W, func():
 			RunManager.continue_run(), true)
 		_first_focus = cont
 		_buttons.append(cont)
@@ -156,7 +157,7 @@ func _on_new_campaign() -> void:
 		return
 	var sc := clampi(int(RunManager.saved_run.get("screen", 1)), 1, RunManager.MAX_SCREEN)
 	CodexStyle.confirm(self, "Começar de novo?",
-		"Isso apaga o progresso salvo — %s, tela %d — e as faíscas e melhorias desta jornada.\nFinais vistos e opções ficam." % [RunManager.eon_name(sc), sc],
+		"Isso apaga o progresso salvo — %s — e as faíscas e melhorias desta jornada.\nFinais vistos e opções ficam." % GameManager.screen_title(sc),
 		"Apagar e começar", func():
 			RunManager.saved_run = {}
 			SaveManager.save_game()

@@ -26,6 +26,7 @@ const DIFF_DESCS := [
 
 func _ready() -> void:
 	CodexSession.leave_demo()           # veio da Provação? encerra o sandbox
+	EndScreen.ensure_demo_hook()        # demo: o fim do Athoth abre o card de fim
 	CodexStyle.apply_existing(self, true)
 	var hero: CharacterData = GameContent.characters[0] if GameContent.characters.size() > 0 else null
 	if hero:
@@ -44,7 +45,8 @@ func _ready() -> void:
 	$Center/VBox.add_child(rule)
 	$Center/VBox.move_child(rule, 1)
 	var info: Label = $Center/VBox/Info
-	info.text = "%d telas  ·  sete Éons  ·  sete Arcontes  ·  o Centro  ·  a Mente" % RunManager.MAX_SCREEN
+	# Sem spoiler da estrutura (#52): nada de "o Centro"/"a Mente" nem "68 telas".
+	info.text = info_text()
 	info.add_theme_font_override("font", CodexStyle.display())
 	info.add_theme_font_size_override("font_size", 8)
 	info.add_theme_color_override("font_color", CodexStyle.GOLD)
@@ -63,6 +65,12 @@ func _ready() -> void:
 	diff_box.add_theme_constant_override("separation", 8)
 	$Center/VBox/Start.grab_focus()
 	CodexStyle.stagger_in([$Center/VBox], 0.0, 0.0)
+
+
+static func info_text() -> String:
+	if "demo" in GameManager and bool(GameManager.get("demo")):
+		return "Demo  ·  o Limiar e o Torpor  ·  ~20 minutos"
+	return "Sete Éons  ·  Sete Arcontes  ·  ~2–3 horas"
 
 
 func _build_diffs() -> void:
