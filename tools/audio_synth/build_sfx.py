@@ -38,7 +38,7 @@ CAT = {
 	"structure": -15.0, "reward": -13.0, "spark": -25.0, "lore": -18.0, "tick": -30.0,
 	"ui": -22.0, "ui_soft": -27.0, "ui_big": -18.0, "shop": -18.0,
 	"blip": -25.0,
-	"story": -15.0, "story_soft": -17.0, "story_whisper": -21.0,
+	"story": -15.0, "story_soft": -17.0, "story_whisper": -21.0, "story_heart": -18.0,
 }
 CEIL = -1.0
 
