@@ -47,7 +47,7 @@ func _on_body_entered(body: Node) -> void:
 
 
 func _do_soter(player: Node) -> void:
-	var d := DialogueBox.play(Narrative.soter_meeting(meeting), Narrative.soter_blessings())
+	var d := _dialog(Narrative.soter_meeting(meeting), Narrative.soter_blessings(), "soter")
 	var choice: int = await d.choice_made
 	match choice:
 		0:
@@ -73,6 +73,15 @@ func _do_soter(player: Node) -> void:
 	var n := meeting
 	t.tween_callback(func() -> void: Gnosis.captions(Narrative.after_soter(n)))
 	t.tween_callback(queue_free)
+
+
+## Diálogo pela encenação do Level (cues como `wait_2s`/`chime`, música
+## baixa) quando houver; senão, a caixa pura.
+func _dialog(lines: Array, choices: Array, scene: String) -> DialogueBox:
+	var lv := get_parent()
+	if lv != null and lv.has_method("stage"):
+		return lv.call("stage").play(lines, choices, scene)
+	return DialogueBox.play(lines, choices)
 
 
 func _do_velkar() -> void:

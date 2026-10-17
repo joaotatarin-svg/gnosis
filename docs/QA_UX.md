@@ -27,3 +27,38 @@ fora do monitor e é limitada ao tamanho dele, então tela cheia real / ultrawid
 mede feel/timing); dano é "curado" acima de 40% para a sonda não morrer.
 
 Relatório de bugs da passada: `C:\gnosis-wt\_caps\qa-ux\BUGS.md`.
+
+## Linux / nuvem (Onda 2)
+
+Sem monitor: `RENDER=headless` (padrão) roda com `--headless --fixed-fps 60` — rápido e
+determinístico, SEM PNG (as sondas detectam o headless e só registram o momento da foto).
+`RENDER=xvfb` grava os PNGs numa janela virtual (Xvfb + opengl3/llvmpipe; ~2–5× mais lento
+e com 1–2 fps numa máquina compartilhada).
+
+```
+bash tools/qa_ux/run_all.sh /home/user/caps/qa/run_h 2 fight            # 68 telas, ~10 min
+RENDER=xvfb TEMPO=500 bash tools/qa_ux/run_all.sh /home/user/caps/qa/run_x 2 fight "1 10 68"
+godot --headless --audio-driver Dummy --fixed-fps 60 --path . res://tools/qa_ux/UiProbe.tscn -- <pasta>
+xvfb-run -a -s "-screen 0 1280x720x24" godot --audio-driver Dummy --rendering-driver opengl3 \
+  --path . --resolution 1280x720 res://tools/qa_ux/MiscProbe.tscn -- <pasta>
+python3 tools/qa_ux/contact_sheet.py <pasta_run> <pasta_pranchas> 8
+```
+`run_all.sh` grava `RESUMO.txt` (uma linha por tela + `TOTAL`). "resources still in use at
+exit" (REVISAO #15) não conta como erro. Em xvfb, com 1–2 fps, a pilotagem por tempo fica
+imprecisa (ex.: a UiProbe viu o checkpoint antes do diálogo de morte nascer) — o veredito
+vale pelo headless; o xvfb é para OLHAR.
+
+## QAs de regressão (`tools/regressao/`)
+
+Um teste headless por bug conhecido (B1, A1–A6, REVISAO #1/#3/#10). PASS = o bug não
+acontece mais. Descrevem o COMPORTAMENTO (o que o jogador vê), não a implementação.
+```
+tools/regressao/run_all.sh              # todos; tabela ID · estado · falhas
+tools/regressao/run_all.sh A3 R1        # só alguns
+AUTOTESTE=1 tools/regressao/run_all.sh B1   # o teste simula a correção → deve dar PASS
+godot --headless --audio-driver Dummy --fixed-fps 60 --path . res://tools/regressao/Reg.tscn -- A4
+```
+Saída `REG|<ID>|CHECK|<nome>|OK/FALHA|<detalhe>` e `REG|<ID>|PASS|FAIL|BROKEN`. Esperas são em
+QUADROS (1/60 s de jogo). R3 grava no `user://` e recusa rodar sem `override.cfg` isolado.
+Contratos que os testes leem: A3 → `hud.boss_bars() -> Array` de `{node, ratio, phase}`;
+R10 → `PauseStack.push/pop`.

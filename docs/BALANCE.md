@@ -4,12 +4,21 @@
 > compra na loja) e mede POR TELA: tempo, dano tomado e "quase-mortes" (vida
 > < 45% → conta 1 morte e cura, pra medição nunca parar). **O bot NÃO bloqueia
 > nem faz parry** — o dano dele é TETO, não média: um humano mediano toma ~1/3.
-> Rodar: `& $godot --headless --path . res://tools/BalanceBot.tscn -- 1 68 4`
-> (passa de 10 min: dispare em background com a saída redirecionada pra um
-> log — ex.: `Start-Process $godot -ArgumentList "--headless","--path",".",
-> "res://tools/BalanceBot.tscn","--","1","68","4" -RedirectStandardOutput
-> shotsalance.log` — e leia o log). Desde a r4 o bot ANDA pra direita entre
-> as zonas de combate e o timeout é por ZONA (100 s parada → mata a zona).
+> **Rodar (desde a r8, 17/10/2026):** `tools/balance/run.sh <rotulo> [ini] [fim] [vel] [seed] [opções]`
+> (Linux/nuvem; sempre `--headless --audio-driver Dummy --fixed-fps 60`). Gera
+> `<rotulo>.txt` (tabela), `.csv` (por tela, com **dano por fonte**, faíscas
+> ganhas, vida máx.) e `.log` em `/home/user/caps/balance/runs/`. Comparar:
+> `python3 tools/balance/compare.py A.csv B.csv [--telas]`. Opções do bot:
+> `ia=2` (sai de poça, esquiva tiro), `loja=gasta|teto`, `tempo=legado`.
+> Desde a r4 o bot ANDA pra direita entre as zonas de combate e o timeout é
+> por ZONA (100 s parada → mata a zona).
+>
+> **ATENÇÃO — r1 a r7 (e a 1ª r8) estão infladas.** No Godot 4, `time_scale`
+> NÃO aumenta os passos de física, só o delta: em vel 8 cada passo de física
+> era 0,13 s de jogo (física a 7,5 Hz) e o bot reagia/soltava botão nesse
+> ritmo. Medido nas telas 1–19: vel 8 legado = 2096 de dano; vel 2 legado =
+> 868; bot corrigido = 464 (vel 8) / 555 (vel 1). Os números antigos servem
+> só para comparar entre si, não com os novos.
 
 ## Rodada 1 (2026-09-11, antes do balance) — moedor de carne
 - **Morte real na tela 17.** 19 quase-mortes até lá. Tela 8 (1º Arconte): 208
@@ -67,3 +76,23 @@ conhecida do bot (fica parado na poça, ignora servos). r6→r7 não mudou nada
 (246→249): a partir daqui o número do bot é limitação do próprio bot, não dos
 valores. Um humano com esquiva e parry sofre bem menos — **playtest do João
 decide a r8**. Duração de uma run pelo bot: ~72 min de jogo (humano: 2–2,5 h).
+
+
+## Rodada 8 — bot corrigido (17/10/2026, Onda 2, nuvem)
+
+**O bot estava medindo errado desde a r4.** Em vel 8 a física rodava a 7,5 Hz (o Godot 4 não
+aumenta os passos de física com `time_scale`). Corrigido: o bot joga no passo de física e acelera
+subindo `physics_ticks_per_second`. Com `--fixed-fps 60` + semente por tela, duas rodadas dão as
+mesmas 67 telas (a 68 sorteia pelo RNG global — pedido à Encenação). Detalhe em `docs/onda2/BALANCE.md`.
+
+| Rodada | Bot | Tempo de jogo | Dano | Quase-mortes | Timeouts |
+|---|---|---|---|---|---|
+| r8 legado | vel 8, física grossa | 68,7 min | 17 527 | 214 | 4 |
+| **r8** | vel 1, física 60 Hz | **30,3 min** | **6 880** | **70** | **0** |
+| r8_gasta | idem + gasta sobra em +vida | 30,4 min | 7 079 | 2 (vida 2 680) | 0 |
+| r8_teto | idem + P1 simulada (preço 60×(n+1), 10 compras) | 30,3 min | 7 074 | 21 (vida 320) | 0 |
+
+Leitura: Torpor/Fome fáceis, subida na Corrente, pico em Belias (tela 55: 639, 376 de poça),
+antessala da Coroa (63: 358), Armupiel (432) e Mente (440). A economia sobra 11 mil faíscas: sem
+teto, comprar vida desliga a dificuldade. Propostas P1–P4 em `docs/onda2/BALANCE.md`.
+Achado grave: soft-lock possível na batalha final (`docs/pedidos/onda2_balance.md` §1).

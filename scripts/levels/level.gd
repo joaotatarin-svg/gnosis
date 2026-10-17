@@ -33,6 +33,16 @@ var _end_x: float = 1720.0        # parede fixa da direita
 var _zone_walls: Array = []       # paredes móveis da zona trancada
 var _cam_locked: bool = false     # câmera presa na zona (restaurar ao destrancar)
 var _ready_done: bool = false
+# DESFECHO ÚNICO da tela (REVISAO #1): vitória (tela/chefe vencido) OU morte
+# (volta ao checkpoint) — nunca as duas. Quem SELA primeiro manda. A vitória
+# sela na hora; a morte só sela quando acaba a queda (DEATH_GRACE s de jogo):
+# se o chefe/a tela cair nessa janela (golpe em voo, veneno, Esfera), conta a
+# vitória e a Sophia se levanta ali mesmo com 1 de vida.
+var _resolved: bool = false
+var _death_pending: bool = false  # caiu; a morte ainda não selou o desfecho
+const DEATH_GRACE := 1.5          # segundos de JOGO (timer não corre pausado)
+var _staging: Staging = null      # encenação das cenas (staging.gd), criada sob demanda
+var _last_boss_pos: Vector2 = Vector2.ZERO   # onde o chefe caiu (a queda do Rei)
 
 @onready var spawns: Node2D = $Spawns
 @onready var player: Player = $Player
@@ -45,6 +55,8 @@ func _ready() -> void:
 	GameManager.set_state(GameManager.State.PLAYING)
 	if player:
 		player.died.connect(_on_player_died)
+	# Pré-aquece VFX/shaders/gibs no load da fase (evita o engasgo do 1º golpe).
+	VfxLibrary.prewarm(self)
 
 	if RunManager.run_active:
 		zones = RunManager.zone_plan(screen)
@@ -132,19 +144,24 @@ func _play_narrative_beats() -> void:
 			if not is_inside_tree():
 				return
 		if Narrative.once("intro"):
-			await DialogueBox.play(Narrative.intro()).finished
-			await DialogueBox.play(Narrative.king_intro()).finished
+			await stage().play(Narrative.intro(), [], "intro").finished
+			# Cena A: o Rei sai da névoa (ROTEIRO §2).
+			await stage().play(Narrative.king_intro(), [], "rei").finished
 		return
 	if RunManager.is_eon_start(screen) and Narrative.once("eon_%d" % RunManager.eon_index(screen)):
 		await DialogueBox.play(Narrative.eon_intro(RunManager.eon_index(screen))).finished
 	elif screen == RunManager.CENTER_FIRST and Narrative.once("centro"):
-		await DialogueBox.play(Narrative.center_intro()).finished
+		# Cena C: a descida ao Centro, depois o "Voz?" (ROTEIRO §2).
+		await stage().descend()
+		if not is_inside_tree():
+			return
+		await stage().play(Narrative.center_intro(), [], "centro").finished
 
 	if RunManager.is_final(screen):
 		if Narrative.once("mente"):
 			await DialogueBox.play(Narrative.final_pre()).finished
 	elif RunManager.is_archon_screen(screen) and Narrative.once("tentacao_%d" % screen):
-		var d := DialogueBox.play(Narrative.temptation(RunManager.boss_id_for(screen)), ["Recusar", "Ceder"])
+		var d := stage().play(Narrative.temptation(RunManager.boss_id_for(screen)), ["Recusar", "Ceder"], "tentacao")
 		var choice: int = await d.choice_made
 		if choice == 0:
 			await DialogueBox.play(Narrative.refusal_response()).finished
@@ -292,6 +309,8 @@ func _start_zone(i: int) -> void:
 	_place_spawns(c)
 	if RunManager.run_active:
 		Gnosis.zone_started(screen, i, zones.size())
+	if _staging != null:
+		_staging.zone_started()      # o Rei de cena (tela 1) dá lugar ao de verdade
 	_start_wave()
 
 
@@ -304,6 +323,9 @@ func _lock_zone(c: float) -> void:
 	_set_camera_limits(c - ZONE_HALF, c + ZONE_HALF)
 	_cam_locked = true
 	Audio.play_sfx("zone_lock")
+	# Misericórdia oculta (Combate) recomeça a cada zona trancada.
+	if player and player.health and player.health.has_method("reset_mercy"):
+		player.health.call("reset_mercy")
 
 
 func _unlock_zone() -> void:
@@ -348,7 +370,7 @@ func _start_wave() -> void:
 			var fb := FinalBattle.new()
 			fb.name = "FinalBattle"
 			add_child(fb)
-			fb.won.connect(_win)
+			fb.won.connect(_on_final_won)
 			fb.start(self, enemy_scene, spawns.get_children())
 		return
 	if enemy_scene == null or wave_index >= waves.size():
@@ -402,6 +424,8 @@ func _on_enemy_defeated(e) -> void:
 	# No Centro, quebrar um eco devolve o caco de memória daquele Anel.
 	if e is Enemy and String(e.type_id).begins_with("eco_"):
 		_restore_echo(String(e.type_id).trim_prefix("eco_"))
+	if e is Enemy and e.is_boss_enemy:
+		_last_boss_pos = e.global_position
 	alive -= 1
 	if alive > 0:
 		return
@@ -409,12 +433,16 @@ func _on_enemy_defeated(e) -> void:
 	if wave_index >= waves.size():
 		_on_zone_cleared()
 	else:
-		await get_tree().create_timer(0.8).timeout
+		await get_tree().create_timer(0.8, false).timeout
 		if is_inside_tree():
 			_start_wave()
 
 
 func _on_screen_cleared() -> void:
+	if _resolved:
+		return                     # a morte já selou o desfecho desta tela
+	_resolved = true
+	_rescue_if_fallen()            # caiu junto com o chefe: a vitória vale
 	if not RunManager.run_active:
 		SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
 		return
@@ -427,14 +455,15 @@ func _on_screen_cleared() -> void:
 		_win()
 	elif RunManager.is_king_screen(screen):
 		# O Rei "cai": o selo racha, os 7 tronos acordam. Sem loja — é prólogo.
-		await DialogueBox.play(Narrative.king_fall()).finished
+		stage().fall_at(_last_boss_pos)
+		await stage().play(Narrative.king_fall(), [], "rei_queda").finished
 		RunManager.advance_and_reload()
 	elif RunManager.is_archon_screen(screen):
 		# Arconte caído: a essência vira um ANEL (uma magia nova).
 		await _grant_ring()
 		if RunManager.is_theft_screen(screen):
-			# O ROUBO: o Rei reaparece, leva os 7 Anéis, a máscara cai.
-			await DialogueBox.play(Narrative.theft()).finished
+			# O ROUBO (cena B): o Rei reaparece, leva os 7 Anéis, a máscara cai.
+			await stage().play(Narrative.theft(), [], "roubo").finished
 			Progression.steal_rings()
 			RunManager.advance_and_reload()
 		else:
@@ -442,7 +471,13 @@ func _on_screen_cleared() -> void:
 			RunManager.pending_advance = true
 			SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
 	elif RunManager.screen_role(screen) == "trial":
-		# O Campeão caiu: SANTUÁRIO do meio do Éon (loja); ao fechar, avança.
+		# O Campeão caiu: SANTUÁRIO do meio do Éon — antes da loja, a conversa
+		# da dupla (o afeto que o roubo vai colher; ROTEIRO §5, gancho 1).
+		if Narrative.once("santuario_%d" % screen):
+			await stage().play(Narrative.sanctuary(RunManager.eon_index(screen)), [], "santuario").finished
+			if not is_inside_tree():
+				return
+		# Loja; ao fechar, avança.
 		RunManager.pending_advance = true
 		SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
 	else:
@@ -497,7 +532,31 @@ func _restore_echo(boss_id: String) -> void:
 	for skill in ch.skills:
 		if skill.ring == boss_id:
 			get_tree().call_group("hud", "toast", Narrative.echo_shard(boss_id, skill.display_name))
-			return
+			break
+	# A LEMBRANÇA verdadeira que volta com o caco (legendas, sem pausar). A
+	# música = memória (`centro` entra no 1º caco e sobe por caco) é do Áudio,
+	# pelo sinal de caco devolvido.
+	Juice.slow_mo(0.3, 0.6)          # M8: o caco quebra devagar
+	Gnosis.captions(Narrative.echo_memory(boss_id))
+
+
+## A encenação da tela (cenas A–D, ROTEIRO §2): um nó só, criado na 1ª vez.
+func stage() -> Staging:
+	if _staging == null or not is_instance_valid(_staging):
+		_staging = Staging.new()
+		_staging.name = "Staging"
+		add_child(_staging)
+		_staging.setup(self, player)
+	return _staging
+
+
+## As duas formas caíram juntas (FinalBattle.won): mesmo desfecho único.
+func _on_final_won() -> void:
+	if _resolved:
+		return
+	_resolved = true
+	_rescue_if_fallen()
+	_win()
 
 
 func _win() -> void:
@@ -505,11 +564,16 @@ func _win() -> void:
 	RunManager.clear_saved_run()   # o run acabou de verdade — "Continuar" some
 	RunManager.end_run()
 	GameManager.set_state(GameManager.State.GAME_OVER)
-	# O dilema final: Ascensão / Ruptura / Semente (esta exige os Adormecidos).
-	var d := DialogueBox.play(Narrative.final_lines(), Narrative.final_choices(Progression.sleepers_freed))
+	# Cena D, a anagnórise, e o dilema final: Ascensão / Ruptura / Semente
+	# (esta exige os Adormecidos).
+	if has_node("FinalBattle"):
+		stage().final_battle = get_node("FinalBattle")
+	var d := stage().play(Narrative.final_lines(), Narrative.final_choices(Progression.sleepers_freed), "anagnorise")
 	var idx: int = await d.choice_made
 	Narrative.apply_ending(idx)
 	SaveManager.save_game()
+	# A fala curta do final escolhido, antes do epílogo (ROTEIRO §5, gancho 6).
+	await DialogueBox.play(Narrative.ending_lines(idx)).finished
 	# EPÍLOGO em cards (final escolhido + Crônicas N/18 + créditos), depois o EndScreen.
 	await Cinematic.epilogue(Narrative.ending, Gnosis.chronicles_count(), Gnosis.chronicles_total()).finished
 	SceneManager.change_scene("res://scenes/ui/EndScreen.tscn")
@@ -521,25 +585,66 @@ func _on_player_died() -> void:
 	# Fora de run (cena de teste direto): fim simples, como era.
 	if not RunManager.run_active:
 		SaveManager.save_game()
-		await get_tree().create_timer(1.3).timeout
+		await get_tree().create_timer(1.3, false).timeout
+		if not is_inside_tree():
+			return
 		GameManager.end_title = "Você caiu no Kenoma"
 		GameManager.end_subtitle = "Chegou até a Tela %d." % screen
 		SceneManager.change_scene("res://scenes/ui/EndScreen.tscn")
 		return
-	# CHECKPOINT: a morte não pega. Algo te recompõe — antes do roubo é a Voz
-	# (o carcereiro precisa da chave viva), depois são os próprios cacos.
-	# Custo: parte das faíscas escorre na queda.
+	if _resolved:
+		# A tela já foi vencida (o chefe caiu antes, no mesmo quadro, ou o golpe
+		# final ainda estava no ar): a queda não desfaz a vitória.
+		_rescue_if_fallen()
+		return
+	# A queda: a morte só sela o desfecho quando ela acaba. Timer de JOGO (não
+	# corre com o mundo pausado) e ligado a este nó (some com a tela).
+	_death_pending = true
+	get_tree().create_timer(DEATH_GRACE, false).timeout.connect(_commit_death)
+
+
+## Fim da queda: se nada venceu a tela nesse meio-tempo, a morte manda.
+## CHECKPOINT: a morte não pega. Algo te recompõe — antes do roubo é a Voz
+## (o carcereiro precisa da chave viva), depois são os próprios cacos.
+## Custo: parte das faíscas escorre na queda.
+func _commit_death() -> void:
+	if not is_inside_tree() or not _death_pending:
+		return
+	_death_pending = false
+	if _resolved:
+		return
+	_resolved = true
 	RunManager.deaths_this_run += 1
 	var lost := int(Progression.orbs * 0.2)
 	if lost > 0:
 		Progression.add_orbs(-lost)
 	SaveManager.save_game()
-	await get_tree().create_timer(1.5).timeout
+	await DialogueBox.play(Narrative.death_revive(screen, RunManager.deaths_this_run, lost)).finished
 	if not is_inside_tree():
 		return
-	await DialogueBox.play(Narrative.death_revive(screen, RunManager.deaths_this_run, lost)).finished
 	Audio.play_sfx("revive")
 	RunManager.respawn_at_checkpoint()
+
+
+## A Sophia caída numa tela já vencida se levanta ali mesmo, com 1 de vida
+## (sem contar a morte, sem perder faíscas). Usa `player.revive(hp)` se o
+## Combate expuser; senão, levanta pelo estado público do Player.
+func _rescue_if_fallen() -> void:
+	_death_pending = false
+	if player == null or player.health == null or not player.health.is_dead():
+		return
+	if player.has_method("revive"):
+		player.call("revive", 1)
+	else:
+		player.health.current_health = 1
+		player.health.health_changed.emit(player.health.current_health, player.health.max_health)
+		player.state = Player.State.IDLE
+		player.velocity = Vector2.ZERO
+		player.invuln_timer = maxf(player.invuln_timer, 1.2)
+	if GameManager.state == GameManager.State.GAME_OVER and not (RunManager.run_active and RunManager.is_final(screen)):
+		GameManager.set_state(GameManager.State.PLAYING)
+	Audio.play_sfx("revive")
+	VfxLibrary.dodge_perfect(self, player.global_position + Vector2(0, -20))
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -49,3 +49,44 @@ Ferramentas: `tools/qa_ux/*` (ver `docs/QA_UX.md`). Todos os Godot com `--audio-
 
 ## Ferramentas
 `C:\gnosis-wt\qa-ux\tools\qa_ux\` (RunProbe, run_all.sh, UiProbe, PadProbe, MiscProbe, contact_sheet.py, montage.py) — manual em `C:\gnosis-wt\qa-ux\docs\QA_UX.md`.
+
+---
+
+# Passada 2 — Linux/nuvem, `integracao/onda1` (17/10/2026, cargo `qa`, branch `dir2/qa`)
+
+Base: `dir2/qa` = `integracao/onda1` (c1beb1c) + só ferramentas de QA. Sondas portadas para Linux
+(`docs/QA_UX.md` § Linux). Capturas/logs em `/home/user/caps/qa/` (fora do git).
+
+**Run das 68 telas (headless, `--fixed-fps 60`, modo fight):** 68/68 avançam (68 termina no
+EndScreen), 0 `BUG?`, 0 `SCRIPT ERROR`; só "resources still in use at exit" (REVISAO #15) em 37 logs.
+Chão: y 285,9–286,0 em todas. Resumo: `/home/user/caps/qa/run_h/RESUMO.txt`.
+**Xvfb (PNG):** telas 1–13 e 19, 28, 37, 46, 55, 64, 65, 68 — todas avançam, 0 erro. Pranchas:
+`/home/user/caps/qa/pranchas/`, `/home/user/caps/qa/pranchas_chefes/prancha_19-68.png`.
+**UiProbe/PadProbe/MiscProbe:** rodadas headless (`/home/user/caps/qa/h/`) e em xvfb
+(`/home/user/caps/qa/{ui,pad,misc}/`).
+
+## Bug → teste → estado (QAs de regressão, `tools/regressao/run_all.sh`, 2 rodadas idênticas)
+
+| ID | Teste | Estado hoje | O que o teste viu |
+|---|---|---|---|
+| B1 | `reg_b1.gd` | **FALHA** 6/6 | `ui_accept`=Enter, Kp Enter, Space; `ui_cancel`=Escape. A não aciona "Nova campanha"; tentação continua aberta e pausada; B não fecha loja nem pausa. Autoteste (A/B adicionados ao InputMap) → PASS 6/6. |
+| A1 | `reg_a1.gd` | **FALHA** 2/8 | Melhorou (Esc fecha só a loja, setas navegam, Enter compra, foco volta à pausa), mas com 0 faíscas o foco nasce em "Voltar ao jogo"/"Seguir caminho" e não no 1º item (especificação do brief ui-menus). |
+| A2 | `reg_a2.gd` | **PASSA** 4/4 | Corrigido na onda 1: a CaptionBar some com a árvore pausada (pausa, loja, Opções, Golpes). Fica como guarda contra regressão (atenção quando a pausa migrar para PauseStack). |
+| A3 | `reg_a3.gd` | **FALHA** 6/9 | HUD sem `boss_bars()`. Pela barra única de hoje (MiscProbe): nome "O Colosso Oco" com o Rei na tela; bater no Rei baixa a barra do Colosso para 40% e marca "FASE II"; Rei cai → barra some com o Colosso vivo e cheio. Captura: `/home/user/caps/qa/run_x2/s68_arrive.png`. |
+| A4 | `reg_a4.gd` | **FALHA** 3/3 | Morte no ar: y=213 com chão 286 após 1,2 s, anim "jump"; de pé: anim "idle" (nunca "dead"). |
+| A5 | `reg_a5.gd` | **FALHA** 4/8 | Parede esquerda, virada para a direita: x de tela −50 (zona trancada da tela 10 e arena da 5). Virada para a esquerda: câmera mostra 90 px além do limite. |
+| A6 | `reg_a6.gd` | **FALHA** 1/3 | Estouro corrigido (textos mais curtos: botões x 146–591 dentro do painel 36–604, sem corte). Falta: "Semente" trancado sem motivo visível (só tooltip). |
+| R1 (REVISAO #1) | `reg_r1.gd` | **FALHA** 6/6 | Cenários a (20 quadros) e b (mesmo quadro): Anel dado, loja aberta, diálogo de morte por cima da loja, termina na tela 2 com `arconte_sono`. |
+| R3 (REVISAO #3) | `reg_r3.gd` | **FALHA** 3/4 | save.json zerado ou cortado → best=1, sem "Continuar", sem finais; chronicles.json zerado → 0 lidas. Gravação normal OK. |
+| R10 (REVISAO #10) | `reg_r10.gd` | **FALHA** 3/5 | Fechar um diálogo despausa com a loja ou a pausa abertas; diálogo de morte nasce com o mundo pausado por outro dono (PauseStack). |
+
+## Outros achados da passada 2
+- **Probe desatualizada (corrigida):** a UiProbe apertava Enter na loja com 0 faíscas com o foco em
+  "Voltar ao jogo" (fechava a loja) e o Esc seguinte fechava a pausa → `SCRIPT ERROR` e travamento.
+  A MiscProbe lia `_boss_box`/`_boss_name` do HUD antigo.
+- **L1 continua:** B não volta em Crônicas, Ateliê, Opções, Bestiário (some com B1).
+- **L2 resolvido:** nomes do Bestiário agora quebram em 2 linhas (`/home/user/caps/qa/ui/ui25_Gallery_navegado.png`).
+- **M1 continua:** legenda cobre os pés do Rei na tela 68 (`s68_arrive.png`).
+- **Esc durante o card de chefe** (tela 10) não abre a pausa (`MISC|esc_no_card|pausa_aberta=false`) — S, pode ser intencional.
+- **Artefato, não bug:** em xvfb a 1–2 fps a UiProbe viu "morreu na 4, voltou na 4"; no headless a
+  mesma sonda vê o checkpoint certo (tela 2, faíscas 100→80, HP cheio).

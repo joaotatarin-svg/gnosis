@@ -6,12 +6,27 @@ extends CanvasLayer
 ##   · os 7 ANÉIS como gemas na cor de cada Arconte: vazio (encaixe apagado),
 ##     equipado (gema acesa + halo), roubado (encaixe rachado, cinza)
 ##   · progresso do Éon (canto direito): 9 marcos ligados por um fio
-##   · barra do CHEFE na base: nome em versalete, marcador de fase em 50 %
-## Fala com o jogo pelo grupo "hud": show_boss(e), boss_phase(n), toast(msg).
+##   · respiro (R21): faíscas/arma recuam a α 0,6 fora de combate; vinheta de
+##     vida baixa (R22) abaixo de 25 %, no máximo 8 s por dano
+##   · barra do CHEFE na base: nome em versalete, marcador de fase em 50 %,
+##     medalhão I/II à esquerda; até DUAS barras lado a lado (batalha final:
+##     Rei e Colosso, cada uma com a vida e a FASE do seu chefe; quem cai e vai
+##     se refazer mostra "refazendo-se" com a barra cinza enchendo)
+## Fala com o jogo pelo grupo "hud": show_boss(e), boss_phase(n[, chefe]),
+## toast(msg), boss_area_top() (a legenda usa para ficar acima da barra),
+## boss_bars() -> [{node, ratio, phase, down, name}] (contrato de QA).
 ## API da encenação (Onda 2): ring_dot_global_pos(i), ring_dot_world_pos(i),
-## detach_ring(i, alvo) — a gema salta do encaixe e voa (sinal ring_detach_finished).
+## detach_ring(i, alvo) — a gema salta do encaixe e voa (sinal ring_detach_finished);
+## restore_ring(i, origem) — o inverso: a gema volta voando e o encaixe reacende
+## (sinal ring_restore_finished).
+## Combate: spark_orb_arrived() — cada orbe que CHEGA sobe o contador em 1 (pop
+## 1,0→1,15→1,0 em 120 ms); sem chamadas, o contador corre sozinho como antes.
+## Dicas de controle (QA-UX A7): telas 1–3 e 1ª vez de cada mecânica, no topo
+## central, com as teclas do dispositivo em uso (último InputEvent); somem sozinhas
+## e nunca pausam. show_hint(segmentos) para outros usarem.
 
 signal ring_detach_finished(index: int)
+signal ring_restore_finished(index: int)
 
 const PORTRAIT := "res://assets/ui/portraits/sophia.png"
 
@@ -26,11 +41,31 @@ const RING_DX := 15.0
 const BOSS_W := 320.0
 const BOSS_BAR_Y := 334.0        # topo da barra do chefe
 const EON_RIGHT := 626.0
+## Toast numa faixa SÓ DELE (QA-UX M2): abaixo da fileira de Anéis (y 62) e do
+## nome do Anel, à esquerda do contador de golpes (x ≥ 520), acima das cabeças.
+const TOAST_RECT := Rect2(120, 88, 400, 30)
+const HINT_Y := 46.0              # centro vertical da faixa de dicas (topo central)
+const HINT_TIME := 4.2            # s visível (tempo de jogo, para na pausa)
+const SPARK_POP := 0.12           # s do pop do contador (1,0→1,15→1,0)
+## R21 (respiro): faíscas e arma recuam para α 0,6 após 4 s sem combate e
+## voltam a 1,0 em 150 ms. Vida e Éter ficam sempre inteiras.
+const CALM_AFTER := 4.0
+const CALM_ALPHA := 0.6
+const COMBAT_RANGE := 380.0
+## R22 (vida baixa): abaixo de 25 % uma vinheta vermelho-escura (α 0,12–0,18)
+## pulsa a ~0,9 Hz por no máximo 8 s; só volta se ela tomar dano de novo.
+const LOW_HP := 0.25
+const LOW_HP_MAX_TIME := 8.0
+## O Combate já chama spark_orb_arrived()? (vale para o resto da sessão)
+static var orb_mode: bool = false
 
 var _canvas: _HudCanvas
+var _counters: _HudCanvas            # faíscas + arma numa camada própria (recuam fora de combate)
 var _combo_label: Label
 var _toast: Control
 var _toast_label: Label
+var _toast_tween: Tween
+var _recede: float = 0.0             # 0..1: HUD recolhido (card de chefe da Cinemática)
 
 # estado das barras
 var hp: float = 1.0
@@ -47,6 +82,8 @@ var mp_shown: float = 1.0
 var sparks: int = 0
 var sparks_shown: float = 0.0
 var _spark_pulse: float = 0.0
+var _spark_pop: float = 0.0          # s restantes do pop (spark_orb_arrived)
+var _spark_hold: float = 0.0         # segura a contagem automática esperando os orbes
 var weapon: int = 1
 var _weapon_flash: float = 0.0
 
@@ -54,28 +91,46 @@ var _weapon_flash: float = 0.0
 var ring_skills: Array = []         # SkillData na ordem dos Arcontes
 var _ring_pop: Array[float] = []    # animação de ganho por anel
 var _detached: Dictionary = {}      # índice -> true enquanto a gema está fora
+var _incoming: Dictionary = {}      # índice -> true enquanto a gema VOLTA (restore_ring)
 
-# chefe
-var boss: Node = null
-var boss_ratio: float = 1.0
-var boss_ghost: float = 1.0
-var _boss_hold: float = 0.0
-var boss_phase_n: int = 1
-var _boss_show: float = 0.0         # 0..1 (entrada)
-var _boss_phase_flash: float = 0.0
+# dicas de controle
+var hints: Array = []               # fila de dicas: cada uma = Array de segmentos
+var _hint: Array = []               # dica atual
+var _hint_t: float = 0.0            # tempo da dica atual
+var _hint_gap: float = 1.2          # respiro antes da próxima
+var _hint_done: Dictionary = {}     # ações da dica atual já usadas
+var use_pad: bool = false           # último InputEvent veio do controle?
+
+# chefes (até 2 barras; ver _BossBar)
+var bosses: Array = []               # [_BossBar] na ordem em que nasceram
+var boss: Node = null                # o 1º chefe vivo (compatibilidade)
 
 var _t: float = 0.0
 var _portrait: Texture2D
+var _calm: float = 0.0               # s sem combate
+var _calm_a: float = 1.0             # alpha atual das faíscas/arma
+var _combat_check: float = 0.0
+var _low_t: float = -1.0             # s de vinheta de vida baixa (-1 = desligada)
+var _low_fade: float = 0.0           # 0..1 intensidade (entra/sai suave)
 
 
 func _ready() -> void:
 	add_to_group("hud")
+	# Roda com a árvore pausada SÓ para recolher durante o card de chefe (M4);
+	# o estado do jogo (barras, faíscas) continua congelado na pausa.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_portrait = load(PORTRAIT) if ResourceLoader.exists(PORTRAIT) else null
 	_canvas = _HudCanvas.new()
 	_canvas.hud = self
 	_canvas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_canvas)
+	_counters = _HudCanvas.new()
+	_counters.hud = self
+	_counters.only_counters = true
+	_counters.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_counters.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_counters)
 	_build_combo()
 
 	var ch: CharacterData = GameManager.selected_character
@@ -102,9 +157,19 @@ func _ready() -> void:
 	sparks_shown = float(sparks)
 	weapon = Progression.weapon_level
 	RunManager.screen_changed.connect(func(_s): _canvas.queue_redraw())
+	use_pad = Input.get_connected_joypads().size() > 0
+	_queue_screen_hints()
+	_check_ring_hints()
 
 
 func _process(delta: float) -> void:
+	_update_recede(delta)
+	if get_tree().paused:
+		# Estado congelado, mas o desenho segue (no roubo a caixa pausa o mundo e
+		# o encaixe da gema precisa apagar/acender na hora).
+		_canvas.queue_redraw()
+		_counters.queue_redraw()
+		return
 	_t += delta
 	# Vida: a barra viva sobe suave (cura) e desce na hora (dano); a fantasma
 	# segura 0,45 s e drena.
@@ -121,25 +186,27 @@ func _process(delta: float) -> void:
 		hp_ghost = hp_shown
 	_hp_flash = maxf(0.0, _hp_flash - delta * 6.0)
 	mp_shown = move_toward(mp_shown, mp / maxf(1.0, mp_max), delta * 1.6)
-	# Faíscas: o número corre até o total.
-	if sparks_shown != float(sparks):
+	# Faíscas: o número corre até o total (gasto desce na hora). Com os orbes
+	# do Combate (spark_orb_arrived), a subida espera as chegadas e só corre o
+	# resto quando elas param.
+	if float(sparks) < sparks_shown:
+		sparks_shown = float(sparks)
+	elif _spark_hold > 0.0:
+		_spark_hold -= delta
+	elif sparks_shown != float(sparks):
 		var step := maxf(1.0, absf(float(sparks) - sparks_shown) * delta * 6.0)
 		sparks_shown = move_toward(sparks_shown, float(sparks), step)
 	_spark_pulse = maxf(0.0, _spark_pulse - delta * 2.5)
-	_weapon_flash = maxf(0.0, _weapon_flash - delta * 1.5)
+	_spark_pop = maxf(0.0, _spark_pop - delta)
+	_process_hints(delta)
+	_weapon_flash = maxf(0.0, _weapon_flash - delta * 0.6)
 	for i in _ring_pop.size():
 		_ring_pop[i] = maxf(0.0, _ring_pop[i] - delta * 1.8)
-	# Chefe
-	if boss != null:
-		_boss_show = minf(1.0, _boss_show + delta * 3.0)
-		if _boss_hold > 0.0:
-			_boss_hold -= delta
-		elif boss_ghost > boss_ratio:
-			boss_ghost = move_toward(boss_ghost, boss_ratio, delta * (0.15 + (boss_ghost - boss_ratio) * 1.4))
-	else:
-		_boss_show = maxf(0.0, _boss_show - delta * 2.0)
-	_boss_phase_flash = maxf(0.0, _boss_phase_flash - delta * 1.2)
+	_process_bosses(delta)
+	_process_calm(delta)
+	_process_low_hp(delta)
 	_canvas.queue_redraw()
+	_counters.queue_redraw()
 
 
 # --- sinais do jogo ------------------------------------------------------------
@@ -151,6 +218,10 @@ func _on_hp(current: int, maximum: int) -> void:
 	if hp < before:
 		_hp_hold = 0.45
 		_hp_flash = 1.0
+		_calm = 0.0
+		# R22: dano abaixo de 25 % (re)acende a vinheta por até 8 s.
+		if hp > 0.0 and hp / hp_max < LOW_HP:
+			_low_t = 0.0
 
 
 func _on_mp(current: int, maximum: int) -> void:
@@ -161,24 +232,34 @@ func _on_mp(current: int, maximum: int) -> void:
 func _on_sparks(total: int) -> void:
 	if total > sparks:
 		_spark_pulse = 1.0
+		if orb_mode:
+			_spark_hold = 1.2      # os orbes ainda estão voando
 	sparks = total
 
 
 func _on_weapon(level: int) -> void:
 	if level > weapon:
-		_weapon_flash = 1.0
+		_weapon_flash = 1.6        # acende os losangos e mostra "Arma Nv. N"
+		# 1ª vez de cada mecânica que a arma destrava (ver GameContent combos)
+		if RunManager.run_active and not CodexSession.active:
+			if level >= 2 and Narrative.once("dica_arma_2"):
+				show_hint([{"keys": ["attack_light", "attack_light", "attack_heavy"], "text": "lança o inimigo para o alto"}])
+			if level >= 3 and Narrative.once("dica_arma_3"):
+				show_hint([{"keys": ["jump", "attack_light"], "text": "golpe no ar"}, {"keys": ["jump", "attack_heavy"], "text": "queda"}])
 	weapon = level
 
 
 func _on_rings_changed() -> void:
 	for i in ring_skills.size():
 		var sk: SkillData = ring_skills[i]
-		if Progression.ring_usable(sk.ring) and not bool(_canvas.last_usable.get(i, false)):
+		if Progression.ring_usable(sk.ring) and not bool(_canvas.last_usable.get(i, false)) and not _incoming.has(i):
 			_ring_pop[i] = 1.0
 	_detached.clear()
+	_check_ring_hints()
 
 
 func _on_combo(count: int) -> void:
+	_calm = 0.0
 	if count < 2:
 		_combo_label.text = ""
 		return
@@ -190,64 +271,298 @@ func _on_combo(count: int) -> void:
 
 # --- API pública ------------------------------------------------------------------
 
-## Aviso curto no centro da tela (cacos de memória, Crônicas, quedas na batalha final).
+## Aviso curto (cacos de memória, Crônicas, quedas na batalha final) numa
+## faixa própria (TOAST_RECT). Texto longo encolhe a fonte para caber.
 func toast(msg: String) -> void:
 	if _toast == null:
 		_toast = Control.new()
 		_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_toast.position = Vector2(70, 72)
-		_toast.size = Vector2(500, 34)
+		_toast.position = TOAST_RECT.position
+		_toast.size = TOAST_RECT.size
 		add_child(_toast)
 		_toast_label = Label.new()
-		_toast_label.size = Vector2(500, 20)
+		_toast_label.size = Vector2(TOAST_RECT.size.x, 20)
 		_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_toast_label.add_theme_font_override("font", CodexStyle.display())
-		_toast_label.add_theme_font_size_override("font_size", 13)
 		_toast_label.add_theme_color_override("font_color", CodexStyle.GOLD_HI)
 		_toast_label.add_theme_color_override("font_outline_color", Color(0.01, 0.03, 0.04, 0.92))
 		_toast_label.add_theme_constant_override("outline_size", 5)
+		_toast_label.clip_text = true
 		_toast.add_child(_toast_label)
-		CodexStyle.rule(_toast, Vector2(150, 22), 200, Color(CodexStyle.GOLD, 0.9))
+		CodexStyle.rule(_toast, Vector2(TOAST_RECT.size.x * 0.5 - 100.0, 22), 200, Color(CodexStyle.GOLD, 0.9))
+	var fs := 13
+	var font: Font = CodexStyle.display()
+	while fs > 9 and font.get_string_size(msg, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > TOAST_RECT.size.x - 8.0:
+		fs -= 1
+	_toast_label.add_theme_font_size_override("font_size", fs)
 	_toast_label.text = msg
+	if _toast_tween != null and _toast_tween.is_valid():
+		_toast_tween.kill()
 	_toast.modulate = Color(1, 1, 1, 0)
-	_toast.position.y = 78
-	var t := create_tween().set_parallel(true)
-	t.tween_property(_toast, "modulate:a", 1.0, 0.22)
-	t.tween_property(_toast, "position:y", 72.0, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	t.chain().tween_interval(2.2)
-	t.chain().tween_property(_toast, "modulate:a", 0.0, 0.5)
+	_toast.position.y = TOAST_RECT.position.y + 6.0
+	_toast_tween = create_tween().set_parallel(true)
+	_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.22)
+	_toast_tween.tween_property(_toast, "position:y", TOAST_RECT.position.y, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_toast_tween.chain().tween_interval(2.2)
+	_toast_tween.chain().tween_property(_toast, "modulate:a", 0.0, 0.5)
 
 
-## Chamado (via grupo "hud") pelo chefe ao nascer.
+## R21: fora de combate (nenhum inimigo vivo perto, sem dano/golpe por 4 s) as
+## faíscas e a arma recuam; qualquer sinal de luta as traz de volta em 150 ms.
+func _process_calm(delta: float) -> void:
+	_combat_check -= delta
+	if _combat_check <= 0.0:
+		_combat_check = 0.25
+		if _enemy_near() or boss != null:
+			_calm = 0.0
+	_calm += delta
+	# Faíscas subindo / arma nova: mostra inteiro.
+	if _spark_pulse > 0.0 or _spark_pop > 0.0 or _weapon_flash > 0.0:
+		_calm = 0.0
+	var target := CALM_ALPHA if _calm >= CALM_AFTER else 1.0
+	var rate := (1.0 - CALM_ALPHA) / (0.15 if target > _calm_a else 0.6)
+	_calm_a = move_toward(_calm_a, target, delta * rate)
+	_counters.modulate.a = _calm_a * (1.0 - _recede)
+
+
+func _enemy_near() -> bool:
+	var pl := get_tree().get_first_node_in_group("player") as Node2D
+	if pl == null:
+		return false
+	for e in get_tree().get_nodes_in_group("enemy"):
+		var n := e as Node2D
+		if n == null or not is_instance_valid(n):
+			continue
+		if n is Enemy and (n as Enemy).estate == Enemy.EState.DEAD:
+			continue
+		if n.global_position.distance_to(pl.global_position) <= COMBAT_RANGE:
+			return true
+	return false
+
+
+func _process_low_hp(delta: float) -> void:
+	var frac := hp / maxf(1.0, hp_max)
+	if _low_t >= 0.0:
+		_low_t += delta
+		if _low_t >= LOW_HP_MAX_TIME or frac >= LOW_HP or hp <= 0.0:
+			_low_t = -1.0
+	var want := 1.0 if _low_t >= 0.0 and _low_t < LOW_HP_MAX_TIME - 0.6 else 0.0
+	_low_fade = move_toward(_low_fade, want, delta * (2.5 if want > _low_fade else 1.6))
+
+
+## Intensidade da vinheta agora (α 0,12–0,18 pulsando a 0,9 Hz; 0 = nada).
+func low_hp_alpha() -> float:
+	if _low_fade <= 0.0:
+		return 0.0
+	var pulse := 0.5 + 0.5 * sin(_t * TAU * 0.9)
+	return _low_fade * lerpf(0.12, 0.18, pulse)
+
+
+## Card de chefe / cards da Cinemática na tela: o HUD inteiro recua (some em
+## 0,2 s) para a tarja não cortar a barra de vida ao meio (QA-UX M4).
+func _update_recede(delta: float) -> void:
+	var want := 0.0
+	for c in get_tree().root.get_children():
+		if c is Cinematic and not c.is_queued_for_deletion():
+			want = 1.0
+			break
+	_recede = move_toward(_recede, want, delta * 5.0)
+	var a := 1.0 - _recede
+	_canvas.modulate.a = a
+	_counters.modulate.a = a * _calm_a
+	_combo_label.modulate.a = a
+	if _toast != null:
+		_toast.visible = _recede < 0.99
+
+
+## Chamado (via grupo "hud") pelo chefe ao nascer — e de novo quando uma forma
+## da batalha final se refaz (aí a barra dela volta a encher, fase I).
 func show_boss(e: Node) -> void:
-	boss = e
-	boss_phase_n = int(e.get("phase")) if e.get("phase") != null else 1
-	boss_ratio = float(e.health.current_health) / maxf(1.0, float(e.health.max_health))
-	boss_ghost = boss_ratio
-	_boss_show = 0.0
-	if not e.health.health_changed.is_connected(_on_boss_hp):
-		e.health.health_changed.connect(_on_boss_hp)
-	if not e.health.died.is_connected(_on_boss_died):
-		e.health.died.connect(_on_boss_died)
-
-
-func _on_boss_hp(c: int, m: int) -> void:
-	var r := float(c) / maxf(1.0, float(m))
-	if r < boss_ratio:
-		_boss_hold = 0.5
-	boss_ratio = clampf(r, 0.0, 1.0)
-
-
-func _on_boss_died() -> void:
-	boss = null
-
-
-## Chamado pelo chefe ao entrar na fase 2.
-func boss_phase(n: int) -> void:
-	if boss == null:
+	if e == null or not is_instance_valid(e) or not ("health" in e) or e.get("health") == null:
 		return
-	boss_phase_n = n
-	_boss_phase_flash = 1.0
+	var bb := _bar_of(e)
+	if bb == null:
+		bb = _BossBar.new()
+		bb.node = e
+		bosses.append(bb)
+		var hc := _on_boss_hp.bind(e)
+		if not e.health.health_changed.is_connected(hc):
+			e.health.health_changed.connect(hc)
+		var dc := _on_boss_died.bind(e)
+		if not e.health.died.is_connected(dc):
+			e.health.died.connect(dc)
+	bb.phase = int(e.get("phase")) if e.get("phase") != null else 1
+	bb.ratio = float(e.health.current_health) / maxf(1.0, float(e.health.max_health))
+	bb.ghost = bb.ratio
+	bb.down = false
+	bb.leaving = false
+	bb.revive_k = 0.0
+	_refresh_main_boss()
+
+
+func _on_boss_hp(c: int, m: int, e: Node) -> void:
+	var bb := _bar_of(e)
+	if bb == null:
+		return
+	var r := clampf(float(c) / maxf(1.0, float(m)), 0.0, 1.0)
+	if r < bb.ratio:
+		bb.hold = 0.5
+	bb.ratio = r
+	if r > 0.0 and bb.down:
+		bb.down = false
+		bb.ghost = r
+
+
+func _on_boss_died(e: Node) -> void:
+	var bb := _bar_of(e)
+	if bb == null:
+		return
+	bb.ratio = 0.0
+	# Batalha final: a forma que cai vai se refazer enquanto a outra viver.
+	var other_alive := false
+	for o in bosses:
+		var ob: _BossBar = o
+		if ob != bb and not ob.down and not ob.leaving and is_instance_valid(ob.node):
+			other_alive = true
+	if bool(e.get("revivable")) and other_alive:
+		bb.down = true
+		bb.revive_k = 0.0
+	else:
+		bb.leaving = true
+		# Caiu a última: as que esperavam refazer-se também saem.
+		for o in bosses:
+			var ob: _BossBar = o
+			if ob.down:
+				ob.leaving = true
+	_refresh_main_boss()
+
+
+## Chamado pelo chefe ao entrar na fase 2. `who` diz QUAL chefe; sem ele
+## (contrato antigo do enemy.gd: boss_phase(2)), vale o chefe cuja propriedade
+## `phase` já chegou a `n` — com dois chefes, a fase vai para o certo.
+func boss_phase(n: int, who: Node = null) -> void:
+	var hit := false
+	for o in bosses:
+		var bb: _BossBar = o
+		if not is_instance_valid(bb.node) or bb.leaving:
+			continue
+		var matches := false
+		if who != null:
+			matches = bb.node == who
+		else:
+			var p = bb.node.get("phase")
+			matches = p != null and int(p) >= n and bb.phase < n
+		if matches:
+			bb.phase = n
+			bb.flash = 1.0
+			hit = true
+	if not hit and who == null:
+		# Sem `phase` legível: com um só chefe, é dele.
+		var live := _live_bars()
+		if live.size() == 1:
+			(live[0] as _BossBar).phase = n
+			(live[0] as _BossBar).flash = 1.0
+
+
+## Contrato para QA (regressão A3): uma entrada por barra viva, na ordem em
+## que os chefes nasceram: {node, ratio (0..1), phase (1/2), down (refazendo-se), name}.
+func boss_bars() -> Array:
+	var out: Array = []
+	for o in bosses:
+		var bb: _BossBar = o
+		if bb.leaving or not is_instance_valid(bb.node):
+			continue
+		out.append({"node": bb.node, "ratio": bb.ratio, "phase": bb.phase, "down": bb.down,
+			"name": String(bb.node.get("display_name"))})
+	return out
+
+
+## Topo da área da(s) barra(s) de chefe na base (360 = nenhuma). A legenda
+## (CaptionBar) termina acima disto.
+func boss_area_top() -> float:
+	for o in bosses:
+		if (o as _BossBar).show > 0.05:
+			return BOSS_BAR_Y - 18.0
+	return 360.0
+
+
+func _bar_of(e: Node) -> _BossBar:
+	for o in bosses:
+		if (o as _BossBar).node == e:
+			return o
+	return null
+
+
+func _live_bars() -> Array:
+	return bosses.filter(func(o): return not (o as _BossBar).leaving and is_instance_valid((o as _BossBar).node))
+
+
+func _refresh_main_boss() -> void:
+	boss = null
+	for o in bosses:
+		var bb: _BossBar = o
+		if not bb.leaving and not bb.down and is_instance_valid(bb.node):
+			boss = bb.node
+			return
+
+
+func _process_bosses(delta: float) -> void:
+	var revive_src: Node = null
+	for i in range(bosses.size() - 1, -1, -1):
+		var bb: _BossBar = bosses[i]
+		if not is_instance_valid(bb.node):
+			bb.leaving = true
+		if bb.leaving:
+			bb.show = maxf(0.0, bb.show - delta * 2.0)
+			if bb.show <= 0.0:
+				_disconnect_boss(bb)
+				bosses.remove_at(i)
+			continue
+		bb.show = minf(1.0, bb.show + delta * 3.0)
+		if bb.hold > 0.0:
+			bb.hold -= delta
+		elif bb.ghost > bb.ratio:
+			bb.ghost = move_toward(bb.ghost, bb.ratio, delta * (0.15 + (bb.ghost - bb.ratio) * 1.4))
+		if bb.ghost < bb.ratio:
+			bb.ghost = bb.ratio
+		bb.flash = maxf(0.0, bb.flash - delta * 1.2)
+		if bb.down:
+			# Quanto falta para refazer-se: lido do FinalBattle (se existir).
+			if revive_src == null:
+				revive_src = _find_revive_source(bb.node)
+			var k := bb.revive_k + delta / 14.0
+			if revive_src != null:
+				var ds = revive_src.get("down_since")
+				var lim = revive_src.get("REVIVE_AFTER")
+				if ds is Dictionary and ds.has(bb.node):
+					k = float(ds[bb.node]) / maxf(0.1, float(lim) if lim != null else 14.0)
+			bb.revive_k = clampf(k, 0.0, 1.0)
+
+
+func _disconnect_boss(bb: _BossBar) -> void:
+	if not is_instance_valid(bb.node) or bb.node.get("health") == null:
+		return
+	var h = bb.node.health
+	var hc := _on_boss_hp.bind(bb.node)
+	if h.health_changed.is_connected(hc):
+		h.health_changed.disconnect(hc)
+	var dc := _on_boss_died.bind(bb.node)
+	if h.died.is_connected(dc):
+		h.died.disconnect(dc)
+
+
+## O nó que conta o tempo de "refazer" (FinalBattle.down_since), sem depender da classe.
+func _find_revive_source(e: Node) -> Node:
+	var scope: Array = []
+	if is_instance_valid(e) and e.get_parent() != null:
+		scope.append(e.get_parent())
+	if get_tree().current_scene != null:
+		scope.append(get_tree().current_scene)
+	for sc in scope:
+		for c in (sc as Node).get_children():
+			if "down_since" in c:
+				return c
+	return null
 
 
 ## Centro da gema do Anel `i` em coordenadas de TELA (viewport base 640×360).
@@ -286,8 +601,220 @@ func detach_ring(i: int, to: Vector2 = Vector2(320, 170)) -> float:
 	t.tween_callback(func():
 		gem.queue_free()
 		ring_detach_finished.emit(i))
-	Audio.play_sfx("ring_steal")
+	# Nota por gema: sobe 1 semitom a cada Anel arrancado (Audio.ring_note).
+	if Audio.has_method("ring_note"):
+		Audio.call("ring_note", i, false)
+	else:
+		Audio.play_sfx("ring_steal")
 	return dur
+
+
+## Anima a gema `i` VOLTANDO: nasce em `from` (coordenadas de TELA; padrão = o
+## centro, onde a Sophia recebe os Anéis na cena D), desce em arco e assenta no
+## encaixe, que reacende com o pop. O encaixe fica apagado durante o voo mesmo
+## que o Progression já tenha devolvido o Anel. Devolve a duração (s).
+func restore_ring(i: int, from: Vector2 = Vector2(320, 190)) -> float:
+	if i < 0 or i >= ring_skills.size():
+		return 0.0
+	_incoming[i] = true
+	_detached.erase(i)
+	var sk: SkillData = ring_skills[i]
+	var gem := _FlyingGem.new()
+	gem.color = sk.color
+	gem.position = from
+	gem.lift = 1.0
+	gem.modulate.a = 0.0
+	_canvas.add_child(gem)
+	var to := ring_dot_global_pos(i)
+	var dur := 0.7
+	var t := gem.create_tween()
+	t.tween_property(gem, "modulate:a", 1.0, 0.12)
+	t.tween_method(func(k: float):
+		gem.position = from.lerp(to, k) + Vector2(0, -sin(k * PI) * 30.0)
+		gem.spin = 1.0 - k, 0.0, 1.0, dur - 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	t.tween_property(gem, "lift", 0.0, 0.1)
+	t.tween_callback(func():
+		gem.queue_free()
+		_incoming.erase(i)
+		if i < _ring_pop.size():
+			_ring_pop[i] = 1.0
+		ring_restore_finished.emit(i))
+	# O som da gema que VOLTA é do HUD (decisão do chefe): nota descendente por
+	# Anel quando o Áudio tiver ring_note; senão o ring_gain simples.
+	if Audio.has_method("ring_note"):
+		Audio.call("ring_note", i, true)
+	else:
+		Audio.play_sfx("ring_gain")
+	return dur
+
+
+## Um orbe de faísca CHEGOU na Sophia: o contador sobe 1 (até o total já
+## creditado) com um pop curto. Chamado pelo spark_orb.gd (grupo "hud").
+func spark_orb_arrived(amount: int = 1) -> void:
+	orb_mode = true
+	if sparks_shown < float(sparks):
+		sparks_shown = minf(float(sparks), floorf(sparks_shown) + float(maxi(1, amount)))
+	_spark_pop = SPARK_POP
+	_spark_hold = 0.4               # mais orbes podem vir; o resto corre depois
+
+
+# --- dicas de controle -----------------------------------------------------------------
+
+## Enfileira uma dica. `segs` = [{keys: ["jump"], text: "pular"}, ...]; as teclas
+## saem do InputMap no formato do dispositivo em uso.
+func show_hint(segs: Array) -> void:
+	if CodexSession.active or segs.is_empty():
+		return
+	hints.append(segs)
+
+
+func _queue_screen_hints() -> void:
+	if CodexSession.active or not RunManager.run_active:
+		return
+	var sc := RunManager.current_screen
+	if sc < 1 or sc > 3 or not Narrative.once("dica_tela_%d" % sc):
+		return
+	match sc:
+		1:
+			show_hint([{"keys": ["@move"], "text": "mover"}, {"keys": ["jump"], "text": "pular"}])
+			show_hint([{"keys": ["attack_light"], "text": "golpe leve"}, {"keys": ["attack_heavy"], "text": "golpe forte"}])
+			show_hint([{"keys": ["dodge"], "text": "esquiva"}, {"keys": ["block"], "text": "bloquear · no tempo, apara"}])
+		2:
+			show_hint([{"keys": ["attack_light", "attack_light", "attack_light"], "text": "sequência do cajado"}])
+			show_hint([{"keys": ["skill2"], "text": "Esfera Solar (gasta Éter)"}])
+		3:
+			show_hint([{"keys": [], "text": "telegrafo amarelo:"}, {"keys": ["block"], "text": "apara"}, {"keys": [], "text": "vermelho:"}, {"keys": ["dodge"], "text": "esquiva"}])
+			show_hint([{"keys": ["pause"], "text": "pausa · Golpes & Controles"}])
+
+
+## 1ª vez com um Anel (e com dois, para trocar).
+func _check_ring_hints() -> void:
+	if CodexSession.active or not RunManager.run_active:
+		return
+	var usable := 0
+	for sk in ring_skills:
+		if Progression.ring_usable((sk as SkillData).ring):
+			usable += 1
+	if usable >= 1 and Narrative.once("dica_anel"):
+		show_hint([{"keys": ["skill1"], "text": "usar o Anel equipado (gasta Éter)"}])
+	if usable >= 2 and Narrative.once("dica_trocar_anel"):
+		show_hint([{"keys": ["ring_prev", "ring_next"], "text": "trocar de Anel"}])
+
+
+func _process_hints(delta: float) -> void:
+	if _hint.is_empty():
+		if hints.is_empty():
+			return
+		_hint_gap -= delta
+		if _hint_gap > 0.0:
+			return
+		_hint = hints.pop_front()
+		_hint_t = 0.0
+		_hint_done.clear()
+		return
+	_hint_t += delta
+	# Usou tudo o que a dica pede: encurta (a dica já cumpriu o papel).
+	var need := 0
+	for seg in _hint:
+		need += (seg.get("keys", []) as Array).size()
+	if need > 0 and _hint_done.size() >= _distinct_actions(_hint) and _hint_t < HINT_TIME - 0.8:
+		_hint_t = HINT_TIME - 0.8
+	if _hint_t >= HINT_TIME:
+		_hint = []
+		_hint_gap = 0.5
+
+
+func _distinct_actions(h: Array) -> int:
+	var d := {}
+	for seg in h:
+		for a in seg.get("keys", []):
+			d[a] = true
+	return d.size()
+
+
+## Alpha da dica atual (entra 0,25 s, sai 0,4 s).
+func hint_alpha() -> float:
+	if _hint.is_empty():
+		return 0.0
+	return clampf(minf(_hint_t / 0.25, (HINT_TIME - _hint_t) / 0.4), 0.0, 1.0)
+
+
+func _input(event: InputEvent) -> void:
+	# Dispositivo em uso = o do último InputEvent relevante.
+	if event is InputEventKey or event is InputEventMouseButton:
+		use_pad = false
+	elif event is InputEventJoypadButton:
+		use_pad = true
+	elif event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > 0.5:
+		use_pad = true
+	if not _hint.is_empty() and not get_tree().paused:
+		for seg in _hint:
+			for a in seg.get("keys", []):
+				if a == "@move":
+					if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+						_hint_done[a] = true
+				elif InputMap.has_action(a) and event.is_action_pressed(a):
+					_hint_done[a] = true
+
+
+## Rótulo curto da tecla/botão de `action` para o dispositivo em uso.
+func key_label(action: String) -> String:
+	if action == "@move":
+		return "Analógico" if use_pad else "%s  %s" % [key_label("move_left"), key_label("move_right")]
+	if not InputMap.has_action(action):
+		return "?"
+	var evs := InputMap.action_get_events(action)
+	if use_pad:
+		for e in evs:
+			if e is InputEventJoypadButton:
+				return _pad_button_name((e as InputEventJoypadButton).button_index)
+		for e in evs:
+			if e is InputEventJoypadMotion:
+				return _pad_axis_name((e as InputEventJoypadMotion).axis, (e as InputEventJoypadMotion).axis_value)
+	for e in evs:
+		if e is InputEventKey:
+			var k := e as InputEventKey
+			var code := k.keycode if k.keycode != KEY_NONE else k.physical_keycode
+			return _key_name(code)
+	return "?"
+
+
+static func _key_name(code: Key) -> String:
+	match code:
+		KEY_SPACE: return "Espaço"
+		KEY_ESCAPE: return "Esc"
+		KEY_SHIFT: return "Shift"
+		KEY_ENTER: return "Enter"
+		KEY_LEFT: return "Esq."
+		KEY_RIGHT: return "Dir."
+		KEY_UP: return "Cima"
+		KEY_DOWN: return "Baixo"
+	return OS.get_keycode_string(code)
+
+
+static func _pad_button_name(b: JoyButton) -> String:
+	match b:
+		JOY_BUTTON_A: return "A"
+		JOY_BUTTON_B: return "B"
+		JOY_BUTTON_X: return "X"
+		JOY_BUTTON_Y: return "Y"
+		JOY_BUTTON_LEFT_SHOULDER: return "LB"
+		JOY_BUTTON_RIGHT_SHOULDER: return "RB"
+		JOY_BUTTON_BACK: return "Back"
+		JOY_BUTTON_START: return "Start"
+		JOY_BUTTON_DPAD_LEFT: return "D-pad Esq."
+		JOY_BUTTON_DPAD_RIGHT: return "D-pad Dir."
+		JOY_BUTTON_DPAD_UP: return "D-pad Cima"
+		JOY_BUTTON_DPAD_DOWN: return "D-pad Baixo"
+	return "Botão %d" % int(b)
+
+
+static func _pad_axis_name(axis: JoyAxis, _v: float) -> String:
+	match axis:
+		JOY_AXIS_TRIGGER_LEFT: return "LT"
+		JOY_AXIS_TRIGGER_RIGHT: return "RT"
+		JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y: return "Analógico"
+	return "Eixo %d" % int(axis)
 
 
 # --- montagem ------------------------------------------------------------------------
@@ -319,21 +846,44 @@ func screen_title() -> String:
 class _HudCanvas extends Control:
 	var hud
 	var last_usable: Dictionary = {}
+	var only_counters: bool = false
 
 	func _draw() -> void:
+		if only_counters:
+			_draw_counters()
+			return
+		_draw_low_hp()
 		_draw_medal()
 		_draw_bars()
-		_draw_counters()
 		_draw_rings()
 		_draw_eon()
 		_draw_boss()
 		_draw_combo_tag()
+		_draw_hint()
 
 	# --- texto com contorno -----------------------------------------------------------
 	func _txt(pos: Vector2, s: String, font: Font, size: int, col: Color, align: int = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0, outline: int = 4) -> void:
 		if outline > 0:
 			draw_string_outline(font, pos, s, align, width, size, outline, Color(0.01, 0.03, 0.04, 0.85 * col.a))
 		draw_string(font, pos, s, align, width, size, col)
+
+	# --- vinheta de vida baixa (R22) ----------------------------------------------------
+	func _draw_low_hp() -> void:
+		var a: float = hud.low_hp_alpha()
+		if a <= 0.0:
+			return
+		var edge := Color(0.32, 0.02, 0.03, a)
+		var clear := Color(0.32, 0.02, 0.03, 0.0)
+		var o := Rect2(0, 0, 640, 360)
+		var i := Rect2(70, 50, 500, 260)
+		var quads := [
+			[o.position, Vector2(o.end.x, 0), Vector2(i.end.x, i.position.y), i.position],
+			[Vector2(o.end.x, 0), o.end, i.end, Vector2(i.end.x, i.position.y)],
+			[o.end, Vector2(0, o.end.y), Vector2(i.position.x, i.end.y), i.end],
+			[Vector2(0, o.end.y), o.position, i.position, Vector2(i.position.x, i.end.y)],
+		]
+		for q in quads:
+			draw_polygon(PackedVector2Array(q), PackedColorArray([edge, edge, clear, clear]))
 
 	# --- medalhão ----------------------------------------------------------------------
 	func _draw_medal() -> void:
@@ -366,7 +916,8 @@ class _HudCanvas extends Control:
 		var outer := rect.grow(1.5)
 		draw_colored_polygon(_wedge(outer, s + 1.5), Color(0.01, 0.03, 0.04, 0.8))
 		draw_colored_polygon(_wedge(rect, s), Color("1a1418") if c_lo.r > c_lo.b else Color("0f1a24"))
-		if ghost > frac:
+		# (fantasma estreita demais vira polígono degenerado: só a partir de 2 chanfros)
+		if ghost > frac and rect.size.x * ghost >= s * 2.0 + 0.5:
 			var g := Rect2(rect.position, Vector2(rect.size.x * ghost, rect.size.y))
 			draw_colored_polygon(_wedge(g, s), Color(CodexStyle.SPARK, 0.75))
 		if frac > 0.0:
@@ -404,10 +955,16 @@ class _HudCanvas extends Control:
 		var y := 43.0
 		var p: float = hud._spark_pulse
 		CodexStyle.draw_spark(self, Vector2(63, y), 4.6 + p * 1.6)
-		_txt(Vector2(71, y + 4.0), str(int(round(hud.sparks_shown))), CodexStyle.body_bold(), 12, CodexStyle.SPARK.lerp(Color.WHITE, p))
+		# pop do orbe: 1,0 → 1,15 → 1,0 em SPARK_POP (escala em volta do número)
+		var pk: float = 1.0 - hud._spark_pop / SPARK_POP if hud._spark_pop > 0.0 else 1.0
+		var sc := 1.0 + 0.15 * sin(pk * PI)
+		var piv := Vector2(71, y)
+		draw_set_transform(piv - piv * sc, 0.0, Vector2(sc, sc))
+		_txt(Vector2(71, y + 4.0), str(int(round(hud.sparks_shown))), CodexStyle.body_bold(), 12, CodexStyle.SPARK.lerp(Color.WHITE, maxf(p, 0.6 * sin(pk * PI))))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		# arma: um cajado com gema + 5 losangos de nível
 		var x0 := 118.0
-		var wf: float = hud._weapon_flash
+		var wf: float = minf(1.0, hud._weapon_flash)
 		draw_line(Vector2(x0 - 3, y + 5), Vector2(x0 + 3, y - 5), CodexStyle.GOLD, 1.1, true)
 		draw_circle(Vector2(x0 + 3.6, y - 5.8), 1.9, Color("63e2d2").lerp(Color.WHITE, wf))
 		draw_arc(Vector2(x0 + 3.6, y - 5.8), 2.6, 0.0, TAU, 12, CodexStyle.GOLD, 0.6, true)
@@ -418,6 +975,10 @@ class _HudCanvas extends Control:
 				CodexStyle.draw_diamond(self, c, 3.4, CodexStyle.GOLD_HI.lerp(Color.WHITE, wf * 0.8), Color(0, 0, 0, 0.7))
 			else:
 				CodexStyle.draw_diamond(self, c, 3.0, Color(0.02, 0.05, 0.07, 0.75), Color(CodexStyle.GOLD, 0.5))
+		# arma subiu: o rótulo aparece ao lado dos losangos e se apaga
+		if wf > 0.0:
+			var tx := x0 + 11.0 + Progression.MAX_WEAPON_LEVEL * 8.5 + 2.0
+			_txt(Vector2(tx, y + 3.5), "Arma Nv. %d" % hud.weapon, CodexStyle.display(), 8, Color(CodexStyle.GOLD_HI, clampf(wf, 0.0, 1.0)), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 3)
 
 	# --- os 7 Anéis -----------------------------------------------------------------------
 	func _draw_rings() -> void:
@@ -431,7 +992,7 @@ class _HudCanvas extends Control:
 			var sk: SkillData = hud.ring_skills[i]
 			var c := Vector2(RING_X0 + RING_DX * i, RING_Y)
 			var owned: bool = Progression.rings.has(sk.ring)
-			var usable: bool = Progression.ring_usable(sk.ring) and not hud._detached.has(i)
+			var usable: bool = Progression.ring_usable(sk.ring) and not hud._detached.has(i) and not hud._incoming.has(i)
 			last_usable[i] = usable
 			var selected: bool = i == sel and usable
 			# encaixe (sempre)
@@ -528,41 +1089,132 @@ class _HudCanvas extends Control:
 				draw_circle(c, r, col)
 				draw_arc(c, r, 0.0, TAU, 12, Color(CodexStyle.GOLD, 0.8 if i <= cur else 0.45), 0.6, true)
 
-	# --- chefe ----------------------------------------------------------------------------
+	# --- chefe(s) --------------------------------------------------------------------------
 	func _draw_boss() -> void:
-		var show: float = hud._boss_show
-		if show <= 0.0:
+		var vis: Array = []
+		for o in hud.bosses:
+			if o.show > 0.0:
+				vis.append(o)
+		if vis.is_empty():
 			return
-		var a := show
-		var w: float = BOSS_W
-		var x0 := 320.0 - w * 0.5
+		vis = vis.slice(0, 2)
+		if vis.size() == 1:
+			_draw_one_boss(vis[0], 320.0, BOSS_W, true)
+		else:
+			_draw_one_boss(vis[0], 186.0, 216.0, false)
+			_draw_one_boss(vis[1], 454.0, 216.0, false)
+
+	func _draw_one_boss(bb, cx: float, w: float, solo: bool) -> void:
+		var a: float = bb.show
+		var x0 := cx - w * 0.5
 		var y: float = BOSS_BAR_Y + (1.0 - a) * 8.0
 		var rect := Rect2(x0, y, w, 7)
-		var name_full: String = String(hud.boss.display_name) if hud.boss != null else ""
+		var name_full: String = String(bb.node.get("display_name")) if is_instance_valid(bb.node) else bb.last_name
+		bb.last_name = name_full
 		var parts := name_full.split(",", false, 1)
 		var main_name := parts[0].strip_edges() if parts.size() > 0 else name_full
 		var sub := parts[1].strip_edges() if parts.size() > 1 else ""
-		var phase2: bool = hud.boss_phase_n >= 2
-		var pf: float = hud._boss_phase_flash
-		# placa escura atrás do nome
-		_txt(Vector2(x0, y - 5.0), main_name, CodexStyle.display_bold(), 12, Color(CodexStyle.GOLD_HI.lerp(Color.WHITE, pf * 0.6), a), HORIZONTAL_ALIGNMENT_CENTER, w, 5)
-		if sub != "":
-			_txt(Vector2(x0, y + 18.0), sub, CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.75 * a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
-		var lo := CodexStyle.EMBER.darkened(0.3) if phase2 else Color("9a7a3c")
-		var hi := Color("ffb070") if phase2 else Color("f2d690")
-		_bar(rect, hud.boss_ratio, hud.boss_ghost, lo, hi, pf * 0.5)
-		# terminal esquerdo (simetria)
-		CodexStyle.draw_diamond(self, Vector2(rect.position.x - 7.0, rect.position.y + 3.5), 2.2, CodexStyle.GOLD, Color(0, 0, 0, 0.6))
-		# marcador de fase em 50 %
-		var mx := rect.position.x + w * 0.5
-		var mcol := CodexStyle.EMBER.lerp(Color.WHITE, pf) if phase2 else CodexStyle.GOLD_HI
-		draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), Color(0.01, 0.03, 0.04, 0.9), 1.4)
-		draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), mcol, 0.6)
-		CodexStyle.draw_diamond(self, Vector2(mx, rect.position.y - 4.0), 2.4 + pf * 1.5, mcol, Color(0, 0, 0, 0.7))
-		if phase2:
-			_txt(Vector2(rect.end.x - 40, y - 5.0), "II", CodexStyle.display_bold(), 10, Color(CodexStyle.EMBER.lerp(Color.WHITE, pf), a), HORIZONTAL_ALIGNMENT_RIGHT, 40, 4)
+		var phase2: bool = bb.phase >= 2
+		var pf: float = bb.flash
+		var down: bool = bb.down
+		# placa escura atrás de nome + barra (contraste sobre qualquer cenário)
+		var plate := Rect2(x0 - 26.0, y - 17.0, w + 44.0, 41.0)
+		var steps := 12
+		for i in steps:
+			var t0 := float(i) / steps
+			var t1 := float(i + 1) / steps
+			var k0 := sin(t0 * PI)
+			var k1 := sin(t1 * PI)
+			var px0 := plate.position.x + plate.size.x * t0
+			var px1 := plate.position.x + plate.size.x * t1
+			draw_polygon(PackedVector2Array([Vector2(px0, plate.position.y), Vector2(px1, plate.position.y), Vector2(px1, plate.end.y), Vector2(px0, plate.end.y)]),
+				PackedColorArray([Color(0.01, 0.025, 0.035, 0.62 * k0 * a), Color(0.01, 0.025, 0.035, 0.62 * k1 * a), Color(0.01, 0.025, 0.035, 0.62 * k1 * a), Color(0.01, 0.025, 0.035, 0.62 * k0 * a)]))
+		var name_col := Color(0.62, 0.6, 0.68, a) if down else Color(CodexStyle.GOLD_HI.lerp(Color.WHITE, pf * 0.6), a)
+		_txt(Vector2(x0, y - 5.0), main_name, CodexStyle.display_bold(), 12 if solo else 10, name_col, HORIZONTAL_ALIGNMENT_CENTER, w, 5)
+		if down:
+			# caída: barra cinza-violeta enchendo até se refazer
+			_bar(rect, bb.revive_k, bb.revive_k, Color(0.3, 0.28, 0.38), Color(0.62, 0.58, 0.74), 0.0)
+			var pl := 0.6 + 0.4 * sin(hud._t * 4.0)
+			_txt(Vector2(x0, y + 18.0), "refazendo-se", CodexStyle.italic(), 9, Color(0.82, 0.78, 0.92, a * pl), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
 		else:
-			_txt(Vector2(rect.end.x - 40, y - 5.0), "I", CodexStyle.display_bold(), 10, Color(CodexStyle.GOLD, 0.8 * a), HORIZONTAL_ALIGNMENT_RIGHT, 40, 4)
+			var lo := CodexStyle.EMBER.darkened(0.3) if phase2 else Color("9a7a3c")
+			var hi := Color("ffb070") if phase2 else Color("f2d690")
+			_bar(rect, bb.ratio, bb.ghost, lo, hi, pf * 0.5)
+			# marcador de fase em 50 %
+			var mx := rect.position.x + w * 0.5
+			var mcol := CodexStyle.EMBER.lerp(Color.WHITE, pf) if phase2 else CodexStyle.GOLD_HI
+			draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), Color(0.01, 0.03, 0.04, 0.9), 1.4)
+			draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), mcol, 0.6)
+			CodexStyle.draw_diamond(self, Vector2(mx, rect.position.y - 4.0), 2.4 + pf * 1.5, mcol, Color(0, 0, 0, 0.7))
+			# linha de baixo: subtítulo (só com um chefe) e "FASE II" do lado de dentro
+			if solo and sub != "":
+				_txt(Vector2(x0, y + 18.0), sub, CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.75 * a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
+			if phase2:
+				var fx := (x0 + w - 74.0) if solo else (x0 + w * 0.5 - 37.0)
+				var fy := y + (28.0 if solo and sub != "" else 18.0)
+				_txt(Vector2(fx, fy), "FASE II", CodexStyle.display_bold(), 8, Color(Color("ffb070").lerp(Color.WHITE, pf), a), HORIZONTAL_ALIGNMENT_RIGHT if solo else HORIZONTAL_ALIGNMENT_CENTER, 74.0, 3)
+		# medalhão da fase à ESQUERDA da barra (longe da borda e do terminal)
+		var mc := Vector2(rect.position.x - 15.0, rect.position.y + 3.5)
+		draw_circle(mc, 7.0, Color(0.01, 0.03, 0.04, 0.92 * a))
+		var ring_col := Color(0.6, 0.58, 0.7, a) if down else (Color(CodexStyle.EMBER.lerp(Color.WHITE, pf), a) if phase2 else Color(CodexStyle.GOLD, a))
+		draw_arc(mc, 7.0, 0.0, TAU, 20, ring_col, 1.0, true)
+		_txt(mc + Vector2(-10.0, 3.2), "II" if phase2 and not down else "I", CodexStyle.display_bold(), 8, ring_col, HORIZONTAL_ALIGNMENT_CENTER, 20.0, 2)
+
+	# --- dica de controle (topo central) -----------------------------------------------
+	func _draw_hint() -> void:
+		var a: float = hud.hint_alpha()
+		if a <= 0.0:
+			return
+		var font: Font = CodexStyle.display()
+		var tfont: Font = CodexStyle.italic()
+		var ks := 8
+		var ts := 10
+		# mede
+		var items: Array = []        # [tipo, texto, largura]
+		var first := true
+		for seg in hud._hint:
+			if not first:
+				items.append(["sep", "·", 10.0])
+			first = false
+			for act in seg.get("keys", []):
+				var lab: String = hud.key_label(act)
+				var used: bool = hud._hint_done.has(act)
+				items.append(["key", lab, font.get_string_size(lab, HORIZONTAL_ALIGNMENT_LEFT, -1, ks).x + 8.0, used])
+			var tx := String(seg.get("text", ""))
+			if tx != "":
+				items.append(["txt", tx, tfont.get_string_size(tx, HORIZONTAL_ALIGNMENT_LEFT, -1, ts).x + 4.0])
+		var total := 0.0
+		for it in items:
+			total += float(it[2]) + 3.0
+		var x := 320.0 - total * 0.5
+		var y: float = HINT_Y
+		# placa que se dissolve nas pontas
+		var pw := total + 40.0
+		var px := 320.0 - pw * 0.5
+		var steps := 10
+		for i in steps:
+			var t0 := float(i) / steps
+			var t1 := float(i + 1) / steps
+			var k0 := sin(t0 * PI)
+			var k1 := sin(t1 * PI)
+			var c0 := Color(0.01, 0.025, 0.035, 0.7 * k0 * a)
+			var c1 := Color(0.01, 0.025, 0.035, 0.7 * k1 * a)
+			draw_polygon(PackedVector2Array([Vector2(px + pw * t0, y - 9.0), Vector2(px + pw * t1, y - 9.0), Vector2(px + pw * t1, y + 9.0), Vector2(px + pw * t0, y + 9.0)]),
+				PackedColorArray([c0, c1, c1, c0]))
+		for it in items:
+			var w: float = it[2]
+			match String(it[0]):
+				"key":
+					var used: bool = it[3]
+					var r := Rect2(x, y - 6.5, w, 13.0)
+					draw_rect(r, Color(0.02, 0.05, 0.07, 0.95 * a))
+					draw_rect(r, Color(CodexStyle.GOLD_HI if used else CodexStyle.GOLD, a), false, 0.8)
+					_txt(Vector2(x, y + 3.0), String(it[1]), font, ks, Color(CodexStyle.GOLD_HI if used else CodexStyle.PAPER, a), HORIZONTAL_ALIGNMENT_CENTER, w, 0)
+				"txt":
+					_txt(Vector2(x + 2.0, y + 3.5), String(it[1]), tfont, ts, Color(CodexStyle.PAPER, 0.92 * a), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 3)
+				"sep":
+					_txt(Vector2(x, y + 3.5), "·", tfont, ts, Color(CodexStyle.GOLD, a), HORIZONTAL_ALIGNMENT_CENTER, w, 0)
+			x += w + 3.0
 
 	func _draw_combo_tag() -> void:
 		if hud._combo_label.text == "":
@@ -588,3 +1240,18 @@ class _FlyingGem extends Node2D:
 		draw_colored_polygon(PackedVector2Array([Vector2(0, -s), Vector2(w, 0), Vector2.ZERO]), color.lightened(0.5))
 		pts.append(pts[0])
 		draw_polyline(pts, Color("ecd498"), 0.7, true)
+
+
+## Estado de UMA barra de chefe.
+class _BossBar extends RefCounted:
+	var node: Node
+	var last_name: String = ""
+	var ratio: float = 1.0
+	var ghost: float = 1.0
+	var hold: float = 0.0
+	var phase: int = 1
+	var flash: float = 0.0
+	var show: float = 0.0           # 0..1 (entrada/saída)
+	var down: bool = false          # caiu e vai se refazer (batalha final)
+	var revive_k: float = 0.0       # 0..1 até refazer-se
+	var leaving: bool = false

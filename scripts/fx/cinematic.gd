@@ -2,7 +2,8 @@ extends CanvasLayer
 class_name Cinematic
 ## Cinemática leve, toda por código: cards de texto sobre a pintura do Éon
 ## (prólogo, epílogo) e o CARD DE CHEFE com letterbox. Pausa o mundo enquanto
-## toca (process ALWAYS) e devolve o estado de pausa anterior ao terminar.
+## toca (process ALWAYS) pela pilha de pausa (PauseStack): ao terminar, larga só
+## a SUA pausa — se um diálogo ou a loja ainda seguram o mundo, ele continua parado.
 ## Uso:  await Cinematic.prologue().finished
 ##       Cinematic.boss_card("ATHOTH", "Arconte do Torpor")
 ##       await Cinematic.epilogue("semente", 7, 18).finished
@@ -15,7 +16,6 @@ const TEXT_W := 470.0
 var cards: Array = []              # [{title, text, bg, time}]
 var boss: Dictionary = {}          # {name, title} → modo card de chefe
 var _idx: int = -1
-var _was_paused: bool = false
 var _done: bool = false
 var _advance: bool = false
 var _skip_all: bool = false
@@ -95,8 +95,7 @@ static func epilogue(ending: String, chron_n: int, chron_total: int) -> Cinemati
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 95
-	_was_paused = get_tree().paused
-	get_tree().paused = true
+	PauseStack.push(self)
 	if not boss.is_empty():
 		_build_boss()
 		_run_boss()
@@ -312,9 +311,15 @@ func _finish() -> void:
 	if _done:
 		return
 	_done = true
-	get_tree().paused = _was_paused
+	PauseStack.pop(self)
 	finished.emit()
 	queue_free()
+
+
+## Apagado sem passar por _finish (troca de cena): não segura a pausa.
+func _exit_tree() -> void:
+	if not _done:
+		PauseStack.pop(self)
 
 
 func _unhandled_input(event: InputEvent) -> void:
