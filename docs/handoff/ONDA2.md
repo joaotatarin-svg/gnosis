@@ -14,7 +14,16 @@
   | audio | audio_manager.gd, assets/audio, assets/LICENSES.md, tools/audio_synth |
   | cenario | scenery.gd, scenery_library.gd, shaders scenery_*, assets/backgrounds, tools/scenery |
   | loja | assets/store (novo), tools/store |
+  | qa | tools/qa_ux, tools/qa, tools/regressao, docs/QA_UX*.md |
+  | balance | tools/balance_bot.gd, tools/balance, docs/BALANCE.md |
+  | perf | tools/perf_probe.gd, tools/perf |
+  | i18n | assets/i18n, tools/i18n |
+  | (só leitura) revisor de código e crítico de jogo | — |
 - LIVRES para a sessão LOCAL (arte GPT, branch `dir2/arte-gpt`): artes/gpt, assets/painted, boss_puppet.gd, painted_library.gd, character_art.gd, docs/ANIMACAO_CHEFES.md.
+- **PARA A SESSÃO LOCAL (bastão):** o João te deu a MESMA autonomia do chefe: disparar quantos subagentes/diretores
+  quiser, criar cargos, mudar regras para otimizar, encerrar/iniciar agentes — cada um com branch `dir2/<cargo>` e
+  arquivos que NÃO se cruzam com a tabela acima (na dúvida, pergunte à nuvem por send_message antes de pegar um arquivo).
+  Regras da nuvem para agentes: `REGRAS_DIRETORES.md` + (na nuvem) /home/user/wt/REGRAS_NUVEM.md.
 - Bastão para a sessão local agendado no servidor para 07:12 UTC. Batida de integração da nuvem a cada hora (min 47).
 
 
