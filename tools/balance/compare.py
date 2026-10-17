@@ -83,6 +83,8 @@ def resumo(a: dict) -> None:
     for name, ks in by_trecho(a).items():
         x = tot(a, ks)
         print("%-14s %6.1f %7d %6d %4d" % (name, x["time"], x["dmg"], x["deaths"], x["timeout"]))
+    print("\nFaíscas: ganhas no run %d · sobrando no fim %d · vida máx. na última tela %d" % (
+        sum(r["earned"] for r in a.values()), a[max(a)]["orbs"], a[max(a)]["maxhp"]))
     st = src_total(a)
     print("\nDano por fonte (top 15):")
     for k, v in sorted(st.items(), key=lambda kv: -kv[1])[:15]:

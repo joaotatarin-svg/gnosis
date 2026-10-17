@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # GNOSIS — rodada do BOT DE BALANCE em UM comando (Linux/nuvem).
-# Uso: tools/balance/run.sh <rotulo> [tela_ini=1] [tela_fim=68] [vel=8] [seed=1]
+# Uso: tools/balance/run.sh <rotulo> [tela_ini=1] [tela_fim=68] [vel=8] [seed=1] [opções do bot...]
+#   Opções extras vão direto ao bot (ex.: loja=gasta).
 #   Gera <OUT>/<rotulo>.txt (tabela), .csv (por tela, com dano por fonte) e .log.
 #   Sempre --fixed-fps 60 (determinístico: mesma semente = mesma rodada).
 #   Variáveis: OUT (padrão /home/user/caps/balance/runs), GODOT (padrão godot),
@@ -12,13 +13,15 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 PROJ="$(cd "$HERE/../.." && pwd)"
 LABEL="${1:?uso: run.sh <rotulo> [ini] [fim] [vel] [seed]}"
 INI="${2:-1}"; FIM="${3:-68}"; VEL="${4:-8}"; SEED="${5:-1}"
+shift $(( $# < 5 ? $# : 5 ))
+EXTRA=("$@")
 OUT="${OUT:-/home/user/caps/balance/runs}"
 GODOT="${GODOT:-godot}"
 TIMEOUT="${TIMEOUT:-3600}"
 mkdir -p "$OUT"
 CMD=(timeout --kill-after=10 "$TIMEOUT" "$GODOT" --headless --audio-driver Dummy --fixed-fps 60
-	--path "$PROJ" res://tools/BalanceBot.tscn -- "$INI" "$FIM" "$VEL" "seed=$SEED" "out=$OUT/$LABEL")
-echo "balance: $LABEL (telas $INI-$FIM, vel $VEL, seed $SEED) -> $OUT/$LABEL.{txt,csv,log}"
+	--path "$PROJ" res://tools/BalanceBot.tscn -- "$INI" "$FIM" "$VEL" "seed=$SEED" "out=$OUT/$LABEL" "${EXTRA[@]}")
+echo "balance: $LABEL (telas $INI-$FIM, vel $VEL, seed $SEED ${EXTRA[*]}) -> $OUT/$LABEL.{txt,csv,log}"
 if [ "${BG:-0}" = "1" ]; then
 	nohup "${CMD[@]}" >"$OUT/$LABEL.log" 2>&1 &
 	echo "em segundo plano (pid $!). Progresso: grep BAT $OUT/$LABEL.log | tail -1"

@@ -15,6 +15,9 @@ extends Node
 ##   loja=gasta = na loja pós-chefe, depois de arma e magias, gasta o resto em
 ##          +20 de vida máx. (guarda 100). Padrão (loja=classica) = só arma e
 ##          magias, igual às rodadas r1–r8 (comparável com o histórico).
+##   ia=2 = bot "v2" (Onda 2): além do clássico, SAI de poça hostil (veneno de
+##          Belias) e ESQUIVA de projétil que vem na direção dele. Ainda não
+##          bloqueia nem faz parry. Padrão ia=1 = clássico (r1–r8).
 ##   out  = base dos arquivos de saída (gera <base>.txt e <base>.csv); padrão
 ##          user://balance. O .csv tem uma linha por tela e o dano por FONTE.
 ## DETERMINISMO (Onda 2): rode SEMPRE com --fixed-fps 60 — sem isso o delta
@@ -30,6 +33,8 @@ func _ready() -> void:
 			w.base_seed = int(a.substr(5))
 		elif a.begins_with("loja="):
 			w.shop_mode = a.substr(5)
+		elif a.begins_with("ia="):
+			w.ai_level = int(a.substr(3))
 		elif a.begins_with("out="):
 			w.out_base = a.substr(4)
 		else:
@@ -49,6 +54,7 @@ class BalanceWorker extends Node:
 	var speed: float = 3.0
 	var base_seed: int = 1
 	var out_base: String = "user://balance"
+	var ai_level: int = 1                # 1 = clássico (r1–r8); 2 = sai de poça e esquiva tiro
 	var shop_mode: String = "classica"   # "classica" (r1–r8) ou "gasta" (+vida máx.)
 
 	const ZONE_TIMEOUT := 100.0        # s de jogo numa zona sem limpar = travada
@@ -88,6 +94,7 @@ class BalanceWorker extends Node:
 	var _mhp: int = 0                  # vida máxima ao entrar na tela
 	var _earned: int = 0               # faíscas ganhas na tela
 	var _orbs_seen: int = 0
+	var _zones_hz: Array = []          # poças/zonas vivas (IA v2 sai de cima)
 	var _projs: Array = []             # projéteis hostis vivos, marcados com quem atirou
 	# padrão de golpes do bot: mistura strings reais (LLL, LLH, HH, LLLH)
 	const PATTERN := ["light", "light", "light", "heavy", "light", "light", "heavy", "heavy", "heavy"]
@@ -229,6 +236,8 @@ class BalanceWorker extends Node:
 				lv._advance_via_exit()
 			return
 		_idle_clear = 0.0
+		if ai_level >= 2 and _evade(pl):
+			return
 		var dx := target.global_position.x - pl.global_position.x
 		# esquiva quando o golpe está armado perto (telegrafo)
 		if _dodge_cd <= 0.0 and target.estate == Enemy.EState.WINDUP and absf(dx) < 150.0:
@@ -303,6 +312,8 @@ class BalanceWorker extends Node:
 	func _on_node_added(n: Node) -> void:
 		if n is Projectile:
 			_tag_projectile.call_deferred(n)
+		elif n is HazardZone:
+			_zones_hz.append(n)
 
 	func _tag_projectile(pj: Projectile) -> void:
 		if not is_instance_valid(pj) or pj.target_team != "player":
@@ -339,6 +350,49 @@ class BalanceWorker extends Node:
 				if is_instance_valid(e) and e is Enemy and (e.is_boss_enemy or e.is_champion):
 					_boss = str(e.type_id)
 					break
+
+	## IA v2: o que um humano faz sem pensar. Retorna true se usou o quadro.
+	func _evade(pl: Player) -> bool:
+		# 1) Projétil hostil vindo na minha direção, perto → rola (i-frames).
+		if _dodge_cd <= 0.0:
+			for pj in _projs:
+				if not is_instance_valid(pj):
+					continue
+				var rel: Vector2 = pl.global_position - pj.global_position
+				if absf(rel.x) < 85.0 and absf(rel.y) < 50.0 and signf(rel.x) == signf(float(pj.direction)):
+					Input.action_press("dodge")
+					_release_later("dodge")
+					_dodge_cd = 1.0
+					return true
+		# 2) Em cima de poça hostil (dano contínuo) → anda para fora.
+		_zones_hz = _zones_hz.filter(func(x): return is_instance_valid(x))
+		var px: float = pl.global_position.x
+		if not _in_pool(px, pl.global_position.y):
+			return false
+		# Procura o chão livre mais perto (as poças da Praga fazem rastro e se
+		# sobrepõem): varre para os dois lados e anda para o lado mais curto.
+		var go := ""
+		for step in range(1, 80):
+			var d := float(step) * 10.0
+			if not _in_pool(px + d, pl.global_position.y):
+				go = "move_right"
+				break
+			if not _in_pool(px - d, pl.global_position.y):
+				go = "move_left"
+				break
+		if go == "":
+			return false                 # chão todo tomado: segue lutando
+		Input.action_release("move_left" if go == "move_right" else "move_right")
+		Input.action_press(go)
+		return true
+
+	func _in_pool(x: float, y: float) -> bool:
+		for hz in _zones_hz:
+			if not is_instance_valid(hz) or hz.hostile_to != "player" or hz.kind == "sleep":
+				continue
+			if absf(x - hz.global_position.x) <= hz.radius + 12.0 and absf(y - hz.global_position.y) < 60.0:
+				return true
+		return false
 
 	func _release_later(a: String) -> void:
 		await get_tree().create_timer(0.05, true, false, true).timeout
@@ -402,7 +456,7 @@ class BalanceWorker extends Node:
 		for k in keys:
 			parts.append("%s=%d" % [k, int(_src_total[k])])
 		lines.append("FONTES: " + ", ".join(parts))
-		lines.append("seed=%d vel=%.1f telas %d-%d loja=%s" % [base_seed, speed, first_screen, last_screen, shop_mode])
+		lines.append("seed=%d vel=%.1f telas %d-%d loja=%s ia=%d" % [base_seed, speed, first_screen, last_screen, shop_mode, ai_level])
 		var f := FileAccess.open(out_base + ".txt", FileAccess.WRITE)
 		for l in lines:
 			print("BAL ", l)
