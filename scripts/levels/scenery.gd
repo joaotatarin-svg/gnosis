@@ -677,6 +677,7 @@ class FloorBand extends Node2D:
 		_mat.set_shader_parameter("band_h", 136.0)
 		_mat.set_shader_parameter("reflect_amt", lk.reflect)
 		_mat.set_shader_parameter("glow", lk.glow)
+		_mat.set_shader_parameter("crack_amt", float(lk.get("crack", 1.1)))
 		material = _mat
 
 	func _process(_delta: float) -> void:
