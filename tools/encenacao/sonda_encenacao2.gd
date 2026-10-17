@@ -164,5 +164,36 @@ class _W extends Node:
 				elite_type = String(e.type_id)
 		_check("antessala_coroa_elite_nao_invocador", elite_type != "-" and elite_type != "invocador", "wave=%s elite=%s" % [str(last_wave), elite_type])
 
+		# 4) 1º imparável do run (tela 2): câmera lenta + dica "esquive".
+		await _goto(2)
+		for _i in 60:
+			var b2 := _box()
+			if b2 != null:
+				b2._finish()
+			await get_tree().process_frame
+		lv = get_tree().current_scene as Level
+		for _i in 10:
+			await get_tree().process_frame
+		var el: Enemy = lv.enemy_scene.instantiate()
+		el.type_id = "servo"
+		el.is_elite = true
+		lv.add_child(el)
+		el.global_position = lv.player.global_position + Vector2(60, 0)
+		await get_tree().process_frame
+		el.estate = Enemy.EState.WINDUP
+		el.attack_timer = Enemy.GLINT_LEAD * 0.5
+		var slow := false
+		for _i in 6:
+			await get_tree().process_frame
+			if Engine.time_scale < 0.9:
+				slow = true
+		var hud := get_tree().get_first_node_in_group("hud")
+		var txt := ""
+		if hud != null:
+			for h in ([hud.get("_hint")] + (hud.get("hints") as Array)):
+				for seg in h:
+					txt += String(seg.get("text", "")) + " "
+		_check("imparavel_dica_esquive", Narrative.seen.has("dica_imparavel") and slow and txt.contains("esquive"), "lento=%s dicas='%s'" % [str(slow), txt.left(80)])
+
 		print("SONDA|fim|%s|%d falha(s)" % ["PASS" if _fails == 0 else "FAIL", _fails])
 		get_tree().quit()
