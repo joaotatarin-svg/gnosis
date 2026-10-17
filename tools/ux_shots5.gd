@@ -57,6 +57,8 @@ class Worker extends Node:
 			await get_tree().process_frame
 
 	func shot(name: String) -> void:
+		if DisplayServer.get_name() == "headless":
+			return                   # headless: só as conferências
 		await RenderingServer.frame_post_draw
 		await RenderingServer.frame_post_draw
 		var img := get_viewport().get_texture().get_image()
@@ -318,6 +320,13 @@ class Worker extends Node:
 			get_tree().root.add_child(p)
 			await wait(0.5)
 			await shot("estela_%s" % ("teclado" if dev == InputGlyphs.Device.KEYBOARD else "xbox"))
+			# corpo exibido = linhas traduzidas (no inglês saía em português)
+			var first := I18n.t(String((entry.get("lines", [""]) as Array)[0]))
+			var found := false
+			for l in p.find_children("*", "Label", true, false):
+				if (l as Label).text.begins_with(first) and (l as Label).text.length() > first.length():
+					found = true
+			_check(found, "Estela: corpo exibido no idioma atual [%s…]" % first.left(30))
 			p.queue_free()
 			await wait(0.2)
 		InputGlyphs.set_device(InputGlyphs.Device.KEYBOARD)

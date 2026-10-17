@@ -1102,9 +1102,9 @@ Crônicas,Chronicles
 %02d   %s,%02d   %s
 "Estela ainda não lida.
 Onde: %s
-Chegue perto e aperte o golpe leve (J / X) para ler.","Stele not yet read.
+Chegue perto e aperte %s para ler.","Stele not yet read.
 Where: %s
-Get close and press light strike (J / X) to read."
+Get close and press %s to read."
 SOPHIA,SOPHIA
 a faísca que não se curva,the spark that does not bow
 O DESPERTAR   ·   v%s,THE AWAKENING   ·   v%s

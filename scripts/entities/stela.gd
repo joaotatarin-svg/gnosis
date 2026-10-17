@@ -194,6 +194,16 @@ func _draw() -> void:
 	draw_line(Vector2(0, -14), Vector2(0, -10), ink, 1.0, false)
 
 
+## Corpo da Estela para exibir: cada linha traduzida (i18n) e unidas por "\n".
+## O bloco inteiro não casa com a tabela (a chave é a linha) — no inglês o painel
+## e as Crônicas mostravam o corpo em português (achado da UI5).
+static func body_text(lines: Array) -> String:
+	var shown := PackedStringArray()
+	for ln in lines:
+		shown.append(I18n.t(String(ln)))
+	return "\n".join(shown)
+
+
 ## Painel de leitura da Estela: pausa o mundo, mostra título + linhas + fonte
 ## histórica; fecha com golpe leve / pulo / Enter / Esc.
 class StelaPanel extends CanvasLayer:
@@ -261,7 +271,8 @@ class StelaPanel extends CanvasLayer:
 
 		var body := Label.new()
 		var lines: Array = entry.get("lines", [])
-		body.text = "\n".join(PackedStringArray(lines))
+		body.text = Stela.body_text(lines)
+		body.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED   # já traduzido linha a linha
 		body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		body.custom_minimum_size = Vector2(text_w, 0)
 		body.add_theme_font_size_override("font_size", 11)

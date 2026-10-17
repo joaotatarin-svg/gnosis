@@ -4646,27 +4646,27 @@ msgid "Crônica desbloqueada: %s  (%d/%d)"
 msgstr "Chronicle unlocked: %s  (%d/%d)"
 
 #. stela._ready.f08366  [ui_estela]
-#: scripts/entities/stela.gd:244
+#: scripts/entities/stela.gd:254
 msgid "ESTELA  ·  %s"
 msgstr "STELE  ·  %s"
 
 #. stela._ready.0b4c7d  [ui_estela]
-#: scripts/entities/stela.gd:244
+#: scripts/entities/stela.gd:254
 msgid "Kenoma"
 msgstr "Kenoma"
 
 #. stela._ready.7be33a  [ui_estela]
-#: scripts/entities/stela.gd:273
+#: scripts/entities/stela.gd:284
 msgid "Fonte: %s"
 msgstr "Source: %s"
 
 #. stela._ready.4deab3  [ui_estela]
-#: scripts/entities/stela.gd:290
+#: scripts/entities/stela.gd:301
 msgid "• nova Crônica  %d/%d"
 msgstr "• new Chronicle  %d/%d"
 
 #. stela._ready.9f1fce  [ui_estela]
-#: scripts/entities/stela.gd:290
+#: scripts/entities/stela.gd:301
 msgid "Crônica %d/%d"
 msgstr "Chronicle %d/%d"
 
@@ -5200,10 +5200,10 @@ msgstr "%d of %d Stelae read — the teaching of the ancients, stone by stone"
 msgid "%02d   %s"
 msgstr "%02d   %s"
 
-#. chronicles._refresh.74ade2  [ui]
-#: scripts/ui/chronicles.gd:195
-msgid "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler."
-msgstr "Stele not yet read.\nWhere: %s\nGet close and press light strike (J / X) to read."
+#. chronicles._refresh.9e8a61  [ui]
+#: scripts/ui/chronicles.gd:197
+msgid "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte %s para ler."
+msgstr "Stele not yet read.\nWhere: %s\nGet close and press %s to read."
 
 #. codex_menu._build_legacy_backdrop.457f61  [ui]
 #: scripts/ui/codex_menu.gd:121
@@ -5541,202 +5541,202 @@ msgid "AINDA NÃO ENCONTRADO"
 msgstr "NOT YET FOUND"
 
 #. hud._on_weapon.3b2ee9  [ui]
-#: scripts/ui/hud.gd:272
+#: scripts/ui/hud.gd:273
 msgid "lança o inimigo para o alto"
 msgstr "launches the enemy into the air"
 
 #. hud._on_weapon.d40c9a  [ui]
-#: scripts/ui/hud.gd:274
+#: scripts/ui/hud.gd:275
 msgid "golpe no ar"
 msgstr "air strike"
 
 #. hud._on_achievement.87fa2b  [toast]
-#: scripts/ui/hud.gd:406
+#: scripts/ui/hud.gd:412
 msgid "Conquista  ·  %s"
 msgstr "Achievement  ·  %s"
 
 #. hud._queue_screen_hints.97ec4f  [ui]
-#: scripts/ui/hud.gd:833
+#: scripts/ui/hud.gd:839
 msgid "golpe leve"
 msgstr "light strike"
 
 #. hud._queue_screen_hints.df3f2e  [ui]
-#: scripts/ui/hud.gd:833
+#: scripts/ui/hud.gd:839
 msgid "golpe forte"
 msgstr "heavy strike"
 
 #. hud._queue_screen_hints.3c90a7  [ui]
-#: scripts/ui/hud.gd:834
+#: scripts/ui/hud.gd:840
 msgid "bloquear · no tempo, apara"
 msgstr "block · on time, parries"
 
 #. hud._queue_screen_hints.6b344d  [ui]
-#: scripts/ui/hud.gd:836
+#: scripts/ui/hud.gd:842
 msgid "sequência do cajado"
 msgstr "staff combo"
 
 #. hud._queue_screen_hints.61dfe8  [ui]
-#: scripts/ui/hud.gd:837
+#: scripts/ui/hud.gd:843
 msgid "Esfera Solar (gasta Éter)"
 msgstr "Sun Orb (costs Aether)"
 
 #. hud._queue_screen_hints.f4f473  [ui]
-#: scripts/ui/hud.gd:839
+#: scripts/ui/hud.gd:845
 msgid "telegrafo amarelo:"
 msgstr "yellow tell:"
 
 #. hud._queue_screen_hints.e9b353  [ui]
-#: scripts/ui/hud.gd:839
+#: scripts/ui/hud.gd:845
 msgid "vermelho:"
 msgstr "red:"
 
 #. hud._queue_screen_hints.bd84ff  [ui]
-#: scripts/ui/hud.gd:840
+#: scripts/ui/hud.gd:846
 msgid "pausa · Golpes & Controles"
 msgstr "pause · Moves & Controls"
 
 #. hud._check_ring_hints.385e09  [ui]
-#: scripts/ui/hud.gd:852
+#: scripts/ui/hud.gd:858
 msgid "usar o Anel equipado (gasta Éter)"
 msgstr "use the equipped Ring (costs Aether)"
 
 #. hud._check_ring_hints.beab08  [ui]
-#: scripts/ui/hud.gd:854
+#: scripts/ui/hud.gd:860
 msgid "trocar de Anel"
 msgstr "switch Ring"
 
 #. hud.key_label.84c4c5  [ui]
-#: scripts/ui/hud.gd:959
+#: scripts/ui/hud.gd:965
 msgid "Analógico"
 msgstr "Stick"
 
 #. hud.key_label.f999e2  [ui]
-#: scripts/ui/hud.gd:959
+#: scripts/ui/hud.gd:965
 msgid "%s  %s"
 msgstr "%s  %s"
 
 #. hud._key_name.f61d6e  [ui]
-#: scripts/ui/hud.gd:1004
+#: scripts/ui/hud.gd:1010
 msgid "Espaço"
 msgstr "Space"
 
 #. hud._key_name.1f7a4f  [ui]
-#: scripts/ui/hud.gd:1005
+#: scripts/ui/hud.gd:1011
 msgid "Esc"
 msgstr "Esc"
 
 #. hud._key_name.469d5b  [ui]
-#: scripts/ui/hud.gd:1006
+#: scripts/ui/hud.gd:1012
 msgid "Shift"
 msgstr "Shift"
 
 #. hud._key_name.2b9ece  [ui]
-#: scripts/ui/hud.gd:1007
+#: scripts/ui/hud.gd:1013
 msgid "Enter"
 msgstr "Enter"
 
 #. hud._key_name.71815f  [ui]
-#: scripts/ui/hud.gd:1008
+#: scripts/ui/hud.gd:1014
 msgid "Esq."
 msgstr "Left"
 
 #. hud._key_name.72acb3  [ui]
-#: scripts/ui/hud.gd:1009
+#: scripts/ui/hud.gd:1015
 msgid "Dir."
 msgstr "Right"
 
 #. hud._key_name.4effab  [ui]
-#: scripts/ui/hud.gd:1010
+#: scripts/ui/hud.gd:1016
 msgid "Cima"
 msgstr "Up"
 
 #. hud._key_name.74fd00  [ui]
-#: scripts/ui/hud.gd:1011
+#: scripts/ui/hud.gd:1017
 msgid "Baixo"
 msgstr "Down"
 
 #. hud._pad_button_name.6dcd4c  [ui]
-#: scripts/ui/hud.gd:1017
+#: scripts/ui/hud.gd:1023
 msgid "A"
 msgstr "A"
 
 #. hud._pad_button_name.ae4f28  [ui]
-#: scripts/ui/hud.gd:1018
+#: scripts/ui/hud.gd:1024
 msgid "B"
 msgstr "B"
 
 #. hud._pad_button_name.c032ad  [ui]
-#: scripts/ui/hud.gd:1019
+#: scripts/ui/hud.gd:1025
 msgid "X"
 msgstr "X"
 
 #. hud._pad_button_name.23eb4d  [ui]
-#: scripts/ui/hud.gd:1020
+#: scripts/ui/hud.gd:1026
 msgid "Y"
 msgstr "Y"
 
 #. hud._pad_button_name.2d1958  [ui]
-#: scripts/ui/hud.gd:1021
+#: scripts/ui/hud.gd:1027
 msgid "LB"
 msgstr "LB"
 
 #. hud._pad_button_name.38026d  [ui]
-#: scripts/ui/hud.gd:1022
+#: scripts/ui/hud.gd:1028
 msgid "RB"
 msgstr "RB"
 
 #. hud._pad_button_name.952f37  [ui]
-#: scripts/ui/hud.gd:1024
+#: scripts/ui/hud.gd:1030
 msgid "Start"
 msgstr "Start"
 
 #. hud._pad_button_name.53157e  [ui]
-#: scripts/ui/hud.gd:1025
+#: scripts/ui/hud.gd:1031
 msgid "D-pad Esq."
 msgstr "D-pad Left"
 
 #. hud._pad_button_name.b7d05d  [ui]
-#: scripts/ui/hud.gd:1026
+#: scripts/ui/hud.gd:1032
 msgid "D-pad Dir."
 msgstr "D-pad Right"
 
 #. hud._pad_button_name.442f4a  [ui]
-#: scripts/ui/hud.gd:1027
+#: scripts/ui/hud.gd:1033
 msgid "D-pad Cima"
 msgstr "D-pad Up"
 
 #. hud._pad_button_name.237b1b  [ui]
-#: scripts/ui/hud.gd:1028
+#: scripts/ui/hud.gd:1034
 msgid "D-pad Baixo"
 msgstr "D-pad Down"
 
 #. hud._pad_button_name.67c850  [ui]
-#: scripts/ui/hud.gd:1029
+#: scripts/ui/hud.gd:1035
 msgid "Botão %d"
 msgstr "Button %d"
 
 #. hud._pad_axis_name.6c62fb  [ui]
-#: scripts/ui/hud.gd:1034
+#: scripts/ui/hud.gd:1040
 msgid "LT"
 msgstr "LT"
 
 #. hud._pad_axis_name.bc410c  [ui]
-#: scripts/ui/hud.gd:1035
+#: scripts/ui/hud.gd:1041
 msgid "RT"
 msgstr "RT"
 
 #. hud._pad_axis_name.e39ae1  [ui]
-#: scripts/ui/hud.gd:1037
+#: scripts/ui/hud.gd:1043
 msgid "Eixo %d"
 msgstr "Axis %d"
 
 #. hud._draw_counters.a602bb  [ui]
-#: scripts/ui/hud.gd:1202
+#: scripts/ui/hud.gd:1208
 msgid "Arma Nv. %d"
 msgstr "Weapon Lv. %d"
 
 #. hud._draw_one_boss.794201  [ui]
-#: scripts/ui/hud.gd:1387
+#: scripts/ui/hud.gd:1393
 msgid "FASE II"
 msgstr "PHASE II"
 
