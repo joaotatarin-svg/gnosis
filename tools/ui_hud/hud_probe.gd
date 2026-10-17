@@ -123,6 +123,7 @@ class P extends Node:
 			"pad": await _pad()
 			"dialog_api": await _dialog_api()
 			"feet": await _feet()
+			"respiro": await _respiro()
 		print("HUDP|FIM")
 		get_tree().quit()
 
@@ -365,6 +366,25 @@ class P extends Node:
 		await key(KEY_J)
 		await wait(0.2)
 		print("HUDP|api|fechou=%s line_shown=%s held=%d paused=%s" % [str(fin[0]), str(log), PauseStack.count(), str(get_tree().paused)])
+
+	func _respiro() -> void:
+		await level_at(2)
+		var h := hud()
+		var pl := get_tree().get_first_node_in_group("player")
+		for e in get_tree().get_nodes_in_group("enemy"):
+			e.queue_free()
+		await wait(0.5)
+		print("HUDP|respiro|alpha_inicio=%.2f" % h._calm_a)
+		await wait(4.8)
+		print("HUDP|respiro|alpha_apos_5s_calmo=%.2f" % h._calm_a)
+		await shot("respiro_calmo")
+		pl.health.take_damage(int(pl.health.max_health * 0.8))
+		await wait(0.2)
+		print("HUDP|respiro|alpha_apos_dano=%.2f vinheta=%.3f" % [h._calm_a, h.low_hp_alpha()])
+		await wait(0.6)
+		await shot("vida_baixa")
+		await wait(8.0)
+		print("HUDP|respiro|vinheta_apos_8s=%.3f low_t=%.2f hp=%d/%d ts=%.2f" % [h.low_hp_alpha(), h._low_t, h.hp, h.hp_max, Engine.time_scale])
 
 	func _feet() -> void:
 		for sc in [1, 2, 10, 30, 64, 68]:

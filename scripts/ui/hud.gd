@@ -6,6 +6,8 @@ extends CanvasLayer
 ##   · os 7 ANÉIS como gemas na cor de cada Arconte: vazio (encaixe apagado),
 ##     equipado (gema acesa + halo), roubado (encaixe rachado, cinza)
 ##   · progresso do Éon (canto direito): 9 marcos ligados por um fio
+##   · respiro (R21): faíscas/arma recuam a α 0,6 fora de combate; vinheta de
+##     vida baixa (R22) abaixo de 25 %, no máximo 8 s por dano
 ##   · barra do CHEFE na base: nome em versalete, marcador de fase em 50 %,
 ##     medalhão I/II à esquerda; até DUAS barras lado a lado (batalha final:
 ##     Rei e Colosso, cada uma com a vida e a FASE do seu chefe; quem cai e vai
@@ -45,10 +47,20 @@ const TOAST_RECT := Rect2(120, 88, 400, 30)
 const HINT_Y := 46.0              # centro vertical da faixa de dicas (topo central)
 const HINT_TIME := 4.2            # s visível (tempo de jogo, para na pausa)
 const SPARK_POP := 0.12           # s do pop do contador (1,0→1,15→1,0)
+## R21 (respiro): faíscas e arma recuam para α 0,6 após 4 s sem combate e
+## voltam a 1,0 em 150 ms. Vida e Éter ficam sempre inteiras.
+const CALM_AFTER := 4.0
+const CALM_ALPHA := 0.6
+const COMBAT_RANGE := 380.0
+## R22 (vida baixa): abaixo de 25 % uma vinheta vermelho-escura (α 0,12–0,18)
+## pulsa a ~0,9 Hz por no máximo 8 s; só volta se ela tomar dano de novo.
+const LOW_HP := 0.25
+const LOW_HP_MAX_TIME := 8.0
 ## O Combate já chama spark_orb_arrived()? (vale para o resto da sessão)
 static var orb_mode: bool = false
 
 var _canvas: _HudCanvas
+var _counters: _HudCanvas            # faíscas + arma numa camada própria (recuam fora de combate)
 var _combo_label: Label
 var _toast: Control
 var _toast_label: Label
@@ -95,6 +107,11 @@ var boss: Node = null                # o 1º chefe vivo (compatibilidade)
 
 var _t: float = 0.0
 var _portrait: Texture2D
+var _calm: float = 0.0               # s sem combate
+var _calm_a: float = 1.0             # alpha atual das faíscas/arma
+var _combat_check: float = 0.0
+var _low_t: float = -1.0             # s de vinheta de vida baixa (-1 = desligada)
+var _low_fade: float = 0.0           # 0..1 intensidade (entra/sai suave)
 
 
 func _ready() -> void:
@@ -108,6 +125,12 @@ func _ready() -> void:
 	_canvas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_canvas)
+	_counters = _HudCanvas.new()
+	_counters.hud = self
+	_counters.only_counters = true
+	_counters.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_counters.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_counters)
 	_build_combo()
 
 	var ch: CharacterData = GameManager.selected_character
@@ -145,6 +168,7 @@ func _process(delta: float) -> void:
 		# Estado congelado, mas o desenho segue (no roubo a caixa pausa o mundo e
 		# o encaixe da gema precisa apagar/acender na hora).
 		_canvas.queue_redraw()
+		_counters.queue_redraw()
 		return
 	_t += delta
 	# Vida: a barra viva sobe suave (cura) e desce na hora (dano); a fantasma
@@ -179,7 +203,10 @@ func _process(delta: float) -> void:
 	for i in _ring_pop.size():
 		_ring_pop[i] = maxf(0.0, _ring_pop[i] - delta * 1.8)
 	_process_bosses(delta)
+	_process_calm(delta)
+	_process_low_hp(delta)
 	_canvas.queue_redraw()
+	_counters.queue_redraw()
 
 
 # --- sinais do jogo ------------------------------------------------------------
@@ -191,6 +218,10 @@ func _on_hp(current: int, maximum: int) -> void:
 	if hp < before:
 		_hp_hold = 0.45
 		_hp_flash = 1.0
+		_calm = 0.0
+		# R22: dano abaixo de 25 % (re)acende a vinheta por até 8 s.
+		if hp > 0.0 and hp / hp_max < LOW_HP:
+			_low_t = 0.0
 
 
 func _on_mp(current: int, maximum: int) -> void:
@@ -228,6 +259,7 @@ func _on_rings_changed() -> void:
 
 
 func _on_combo(count: int) -> void:
+	_calm = 0.0
 	if count < 2:
 		_combo_label.text = ""
 		return
@@ -275,6 +307,57 @@ func toast(msg: String) -> void:
 	_toast_tween.chain().tween_property(_toast, "modulate:a", 0.0, 0.5)
 
 
+## R21: fora de combate (nenhum inimigo vivo perto, sem dano/golpe por 4 s) as
+## faíscas e a arma recuam; qualquer sinal de luta as traz de volta em 150 ms.
+func _process_calm(delta: float) -> void:
+	_combat_check -= delta
+	if _combat_check <= 0.0:
+		_combat_check = 0.25
+		if _enemy_near() or boss != null:
+			_calm = 0.0
+	_calm += delta
+	# Faíscas subindo / arma nova: mostra inteiro.
+	if _spark_pulse > 0.0 or _spark_pop > 0.0 or _weapon_flash > 0.0:
+		_calm = 0.0
+	var target := CALM_ALPHA if _calm >= CALM_AFTER else 1.0
+	var rate := (1.0 - CALM_ALPHA) / (0.15 if target > _calm_a else 0.6)
+	_calm_a = move_toward(_calm_a, target, delta * rate)
+	_counters.modulate.a = _calm_a * (1.0 - _recede)
+
+
+func _enemy_near() -> bool:
+	var pl := get_tree().get_first_node_in_group("player") as Node2D
+	if pl == null:
+		return false
+	for e in get_tree().get_nodes_in_group("enemy"):
+		var n := e as Node2D
+		if n == null or not is_instance_valid(n):
+			continue
+		if n is Enemy and (n as Enemy).estate == Enemy.EState.DEAD:
+			continue
+		if n.global_position.distance_to(pl.global_position) <= COMBAT_RANGE:
+			return true
+	return false
+
+
+func _process_low_hp(delta: float) -> void:
+	var frac := hp / maxf(1.0, hp_max)
+	if _low_t >= 0.0:
+		_low_t += delta
+		if _low_t >= LOW_HP_MAX_TIME or frac >= LOW_HP or hp <= 0.0:
+			_low_t = -1.0
+	var want := 1.0 if _low_t >= 0.0 and _low_t < LOW_HP_MAX_TIME - 0.6 else 0.0
+	_low_fade = move_toward(_low_fade, want, delta * (2.5 if want > _low_fade else 1.6))
+
+
+## Intensidade da vinheta agora (α 0,12–0,18 pulsando a 0,9 Hz; 0 = nada).
+func low_hp_alpha() -> float:
+	if _low_fade <= 0.0:
+		return 0.0
+	var pulse := 0.5 + 0.5 * sin(_t * TAU * 0.9)
+	return _low_fade * lerpf(0.12, 0.18, pulse)
+
+
 ## Card de chefe / cards da Cinemática na tela: o HUD inteiro recua (some em
 ## 0,2 s) para a tarja não cortar a barra de vida ao meio (QA-UX M4).
 func _update_recede(delta: float) -> void:
@@ -286,6 +369,7 @@ func _update_recede(delta: float) -> void:
 	_recede = move_toward(_recede, want, delta * 5.0)
 	var a := 1.0 - _recede
 	_canvas.modulate.a = a
+	_counters.modulate.a = a * _calm_a
 	_combo_label.modulate.a = a
 	if _toast != null:
 		_toast.visible = _recede < 0.99
@@ -758,11 +842,15 @@ func screen_title() -> String:
 class _HudCanvas extends Control:
 	var hud
 	var last_usable: Dictionary = {}
+	var only_counters: bool = false
 
 	func _draw() -> void:
+		if only_counters:
+			_draw_counters()
+			return
+		_draw_low_hp()
 		_draw_medal()
 		_draw_bars()
-		_draw_counters()
 		_draw_rings()
 		_draw_eon()
 		_draw_boss()
@@ -774,6 +862,24 @@ class _HudCanvas extends Control:
 		if outline > 0:
 			draw_string_outline(font, pos, s, align, width, size, outline, Color(0.01, 0.03, 0.04, 0.85 * col.a))
 		draw_string(font, pos, s, align, width, size, col)
+
+	# --- vinheta de vida baixa (R22) ----------------------------------------------------
+	func _draw_low_hp() -> void:
+		var a: float = hud.low_hp_alpha()
+		if a <= 0.0:
+			return
+		var edge := Color(0.32, 0.02, 0.03, a)
+		var clear := Color(0.32, 0.02, 0.03, 0.0)
+		var o := Rect2(0, 0, 640, 360)
+		var i := Rect2(70, 50, 500, 260)
+		var quads := [
+			[o.position, Vector2(o.end.x, 0), Vector2(i.end.x, i.position.y), i.position],
+			[Vector2(o.end.x, 0), o.end, i.end, Vector2(i.end.x, i.position.y)],
+			[o.end, Vector2(0, o.end.y), Vector2(i.position.x, i.end.y), i.end],
+			[Vector2(0, o.end.y), o.position, i.position, Vector2(i.position.x, i.end.y)],
+		]
+		for q in quads:
+			draw_polygon(PackedVector2Array(q), PackedColorArray([edge, edge, clear, clear]))
 
 	# --- medalhão ----------------------------------------------------------------------
 	func _draw_medal() -> void:
