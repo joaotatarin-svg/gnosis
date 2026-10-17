@@ -466,7 +466,7 @@
  {
   "name": "heartbeat",
   "cat": "story_heart",
-  "dur": 1.92,
+  "dur": 0.75,
   "ch": 2,
   "Mmax": -18.0,
   "peak": -5.3
@@ -942,6 +942,22 @@
   "ch": 1,
   "Mmax": -18.7,
   "peak": -1.0
+ },
+ {
+  "name": "tell_parry",
+  "cat": "tell",
+  "dur": 0.33,
+  "ch": 2,
+  "Mmax": -17.0,
+  "peak": -3.2
+ },
+ {
+  "name": "tell_unblock",
+  "cat": "tell_low",
+  "dur": 0.33,
+  "ch": 2,
+  "Mmax": -14.0,
+  "peak": -2.9
  },
  {
   "name": "ui_advance",

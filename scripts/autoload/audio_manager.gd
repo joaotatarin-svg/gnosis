@@ -26,7 +26,8 @@ extends Node
 ## ESTÉREO: `play_sfx(nome, -1, 0, posição_no_mundo)` ou `play_sfx_at` dão um pan
 ## discreto pelo x NA TELA (no máximo 50 % para um lado). Sem posição = centro.
 ##
-## BUSES: Master (limitador) ← Music, Ambience, SFX ← (UI, Voice, SFX_L2/L1/R1/R2).
+## BUSES: Master (limitador) ← Music, Ambience, SFX ← (UI, Voice, SFX_L2/L1/R1/R2);
+## Master ← Tell ← (Tell_L2/L1/R1/R2): avisos do combate, sem o abafado do slow-mo.
 ## UI = ui_*/shop_*/subtitle_tick; Voice = blip_* (vozes "gromelô", monofônico:
 ## a sílaba nova corta a anterior, como uma boca). SFX_Lx/Rx = pan fixo.
 
@@ -62,6 +63,11 @@ const SLOW_BUSES := ["SFX", "Music", "Ambience"]
 # quantizado em 5 posições (buses com AudioEffectPanner fixo).
 const PAN_MAX := 0.5
 const PAN_BUSES := {-2: "SFX_L2", -1: "SFX_L1", 1: "SFX_R1", 2: "SFX_R2"}
+## Avisos do combate (R5) num bus PRÓPRIO, fora do passa-baixas da câmera lenta
+## (o aviso é informação: não pode sumir numa esquiva perfeita). Segue o slider
+## de SFX; tem os seus degraus de pan (Tell_L2 … Tell_R2).
+const TELL_BUS := "Tell"
+const TELL_PAN_BUSES := {-2: "Tell_L2", -1: "Tell_L1", 1: "Tell_R1", 2: "Tell_R2"}
 const NO_POS := Vector2(INF, INF)
 const EON_TRACKS := ["torpor", "fome", "corrente", "silencio", "espelho", "praga", "coroa"]
 # Tema da Voz (ROTEIRO §5 #8): `theme` é a música DELA. Santuário = baixo, por
@@ -75,7 +81,11 @@ const VOICE_ALONE_FADE := 4.0
 const SCENE_FADE := 2.0           # entrada/saída do tema no santuário
 const SCENE_DUCK_SCALE := 0.35    # roubo/anagnórise: a música É a cena — diálogo abaixa só ~3 dB
 const FOG_DUCK_DB := -8.0
-const RING_NOTE_HOLD_MS := 1500   # após um ring_note, o sinal de Anel não toca som próprio         # cena A: "a música do Limiar desce a 40 %"
+const RING_NOTE_HOLD_MS := 1500   # após um ring_note, o sinal de Anel não toca som próprio
+# Coração (R22 / intro): `heartbeat` é UMA batida lub-dub; a intro toca duas.
+const HEART_GAP := 1.1            # s entre as 2 batidas da intro (~55 bpm: acordando)
+const HEART_PULSE_DB := -6.0      # vinheta de vida baixa: bem por baixo (o arquivo já está a −18 LUFS)
+const HEART_PULSE_MIN_MS := 600   # nunca mais que ~1,6 batida/s, mesmo se o HUD chamar mais
 ## Faixas opcionais: tocam se o arquivo existir, sem ele o jogo usa a reserva.
 ## `menu` = tema do menu (opções por síntese aguardando o João; sem arquivo = `theme`).
 const OPTIONAL_MUSIC := ["menu"]
@@ -123,6 +133,8 @@ const CATALOG := {
 		"fog_swell", "king_step", "mask_light", "voice_merge", "whisper",
 		# --- roteiro: intro, roubo e anagnórise (ROTEIRO §2, sons ★) ---
 		"heartbeat", "clap", "child_breath",
+		# --- avisos do combate (R5): brilho do telegrafo; o Combate chama ---
+		"tell_parry", "tell_unblock",
 	],
 	"music": [
 		"theme", "rei",
@@ -151,7 +163,7 @@ const PITCH_FAMILIES := {
 	0.06: ["step", "land", "jump", "cloth", "dodge", "gib_"],
 	0.05: ["boss_step", "king_step"],
 	0.03: ["blip_"],
-	0.0: ["ui_", "shop_", "subtitle_", "stele_", "ring_", "shard", "spark", "weapon_", "boss_", "zone_", "level_", "portal_", "cast_"],
+	0.0: ["tell_", "heartbeat", "ui_", "shop_", "subtitle_", "stele_", "ring_", "shard", "spark", "weapon_", "boss_", "zone_", "level_", "portal_", "cast_"],
 }
 
 ## Sons frequentes que ganham ±1,5 dB de volume aleatório (R11: "não enjoa").
@@ -234,12 +246,18 @@ var _td_out: float = 0.0
 var _music_pitch: float = 1.0
 var _pitch_tween: Tween
 var _shut_down: bool = false
+## Sorteios do áudio (tom, variação, ponto da ambiência) num gerador PRÓPRIO:
+## antes usavam o global (randf/randi) em quantidades que dependem do relógio
+## real (anti-spam) e desalinhavam o sorteio do jogo (pedido do Balance).
+var _rng := RandomNumberGenerator.new()
 
 # --- tema da Voz / cenas ---
 var voice_theme_mode: String = ""    # "", "santuario", "roubo", "sozinha"
 var _roubo_due_us: int = 0           # µs do corte agendado tema → `roubo` (0 = nenhum)
 var _duck_scale: float = 1.0         # 1 = ducking de diálogo cheio; menor nas cenas musicais
 var _ring_note_ms: int = -100000     # último ring_note (a cena já tocou a gema: o sinal não repete)
+var _later: Array = []               # [µs, nome, dB]: SFX agendados por relógio real (ver _process)
+var _pulse_ms: int = -100000         # último low_health_pulse
 
 # --- memória pros ganchos por sinal ---
 var _last_weapon: int = 1
@@ -258,6 +276,10 @@ func _ready() -> void:
 	for k in PAN_BUSES:
 		_ensure_bus(PAN_BUSES[k], "SFX")
 		_ensure_panner(PAN_BUSES[k], PAN_MAX * float(k) / 2.0)
+	_ensure_bus(TELL_BUS, "Master")
+	for k in TELL_PAN_BUSES:
+		_ensure_bus(TELL_PAN_BUSES[k], TELL_BUS)
+		_ensure_panner(TELL_PAN_BUSES[k], PAN_MAX * float(k) / 2.0)
 	_ensure_limiter()
 	_ensure_lowpass()
 	for i in POOL:
@@ -359,7 +381,7 @@ func play_sfx(sfx_name: String, pitch_var: float = -1.0, volume_db: float = 0.0,
 	var real_name: String = ALIASES.get(sfx_name, sfx_name)
 	if pitch_var < 0.0:
 		pitch_var = _pitch_for(real_name)
-	return _play(real_name, 1.0 + randf_range(-pitch_var, pitch_var), volume_db, world_pos, false)
+	return _play(real_name, 1.0 + _rng.randf_range(-pitch_var, pitch_var), volume_db, world_pos, false)
 
 
 ## Toca um efeito com tom EXATO (sem aleatório nem volume sorteado): arpejos,
@@ -396,7 +418,7 @@ func _play(real_name: String, pitch: float, volume_db: float, world_pos: Vector2
 		stream = _pick_variant(real_name, now - last_ms < SEQ_WINDOW_MS)
 	_last_play_ms[real_name] = now
 	if not exact and _jitters(real_name):
-		volume_db += randf_range(-VOLUME_JITTER_DB, VOLUME_JITTER_DB)
+		volume_db += _rng.randf_range(-VOLUME_JITTER_DB, VOLUME_JITTER_DB)
 	var p: AudioStreamPlayer
 	if real_name.begins_with("blip_"):
 		p = _voice                    # voz: a sílaba nova corta a anterior
@@ -406,8 +428,11 @@ func _play(real_name: String, pitch: float, volume_db: float, world_pos: Vector2
 		_pl_name[i] = real_name
 		_pl_start[i] = now
 		var bus := _bus_for(real_name)
-		if bus == "SFX" and world_pos.is_finite():
-			bus = PAN_BUSES.get(_pan_step(pan_for(world_pos)), "SFX")
+		if world_pos.is_finite():
+			if bus == "SFX":
+				bus = PAN_BUSES.get(_pan_step(pan_for(world_pos)), "SFX")
+			elif bus == TELL_BUS:
+				bus = TELL_PAN_BUSES.get(_pan_step(pan_for(world_pos)), TELL_BUS)
 		p.bus = bus
 	p.stream = stream
 	p.pitch_scale = pitch
@@ -483,6 +508,8 @@ func blip_for_speaker(speaker: String) -> String:
 func _bus_for(sfx_name: String) -> String:
 	if sfx_name.begins_with("ui_") or sfx_name.begins_with("shop_") or sfx_name == "subtitle_tick":
 		return "UI"
+	if sfx_name.begins_with("tell_"):
+		return TELL_BUS
 	return "SFX"
 
 
@@ -532,11 +559,11 @@ func _pick_variant(sfx_name: String, recent: bool):
 		if not recent:
 			i = 0
 		elif last >= list.size() - 1:
-			i = list.size() - 1 - randi() % 2     # no topo: alterna as duas mais agudas
+			i = list.size() - 1 - _rng.randi() % 2     # no topo: alterna as duas mais agudas
 		else:
 			i = last + 1
 	else:
-		i = randi() % (list.size() - 1)
+		i = _rng.randi() % (list.size() - 1)
 		if last >= 0 and i >= last:
 			i += 1
 	_last_variant[sfx_name] = i
@@ -721,7 +748,7 @@ func play_ambience(amb_name: String, volume_db: float = 0.0) -> void:
 	new.stream = stream
 	new.volume_db = SILENT_DB
 	# começa num ponto aleatório: duas telas do mesmo Éon não soam idênticas
-	new.play(randf() * maxf(stream.get_length() - 1.0, 0.0))
+	new.play(_rng.randf() * maxf(stream.get_length() - 1.0, 0.0))
 	_kill_amb_tween()
 	_amb_tween = create_tween().set_ignore_time_scale(true).set_parallel(true)
 	_amb_tween.tween_property(new, "volume_db", volume_db, AMB_FADE).from(SILENT_DB)
@@ -809,6 +836,9 @@ func _process(_delta: float) -> void:
 	if _td_active:
 		_temp_duck_db = _temp_duck_value(now)
 		busy = true
+	if not _later.is_empty():
+		busy = true
+		_fire_later(now)
 	if _roubo_due_us > 0:
 		busy = true
 		if now >= _roubo_due_us:
@@ -917,11 +947,14 @@ func _connect_context() -> void:
 
 
 ## Faixa certa pra uma tela do run (só pela ESTRUTURA — nunca número fixo).
+## "" = silêncio: o Centro antes do 1º caco devolvido (cena C, "memória =
+## música"). Quem religar a música por esta função (voltar da pausa, trocar de
+## tela) respeita o silêncio.
 func track_for_screen(screen: int) -> String:
 	if RunManager.is_final(screen):
 		return "mente"
 	if RunManager.is_center(screen):
-		return "centro"
+		return "centro" if Progression.restored_rings.size() > 0 else ""
 	if RunManager.is_king_screen(screen):
 		return "rei"
 	if RunManager.is_archon_screen(screen):
@@ -1092,8 +1125,9 @@ func cue(cue_name: String) -> bool:
 	if _shut_down:
 		return CUES.has(cue_name)
 	match cue_name:
-		"heartbeat":                 # intro: coração no escuro
+		"heartbeat":                 # intro: coração no escuro (2 batidas)
 			play_sfx("heartbeat")
+			play_sfx_later("heartbeat", HEART_GAP, -2.0)
 		"fog_thickens":              # cena A: névoa adensa; a música do Limiar desce a 40 %
 			play_sfx("fog_swell")
 			duck_music(9999.0, FOG_DUCK_DB)
@@ -1151,6 +1185,36 @@ func ring_note(index: int, returning: bool = false) -> bool:
 	return play_sfx_pitched("ring_steal", pow(2.0, float(i) / 12.0), -2.0)
 
 
+## Toca `sfx_name` daqui a `secs` segundos de RELÓGIO REAL (pausa e câmera
+## lenta não atrasam). Para sequências curtas de cena (as 2 batidas da intro).
+func play_sfx_later(sfx_name: String, secs: float, volume_db: float = 0.0) -> void:
+	if _shut_down:
+		return
+	_later.append([Time.get_ticks_usec() + int(maxf(secs, 0.0) * 1000000.0), sfx_name, volume_db])
+	_wake()
+
+
+func _fire_later(now: int) -> void:
+	var keep: Array = []
+	for item in _later:
+		if now >= int(item[0]):
+			play_sfx(String(item[1]), -1.0, float(item[2]))
+		else:
+			keep.append(item)
+	_later = keep
+
+
+## Aviso de vida baixa (R22): UMA batida grave de coração, bem por baixo da
+## mixagem. O HUD chama a cada pulso da vinheta (~0,9 Hz, no máximo 8 s).
+## Dono do volume = Áudio: quem chama não passa dB. Devolve true se tocou.
+func low_health_pulse() -> bool:
+	var now := Time.get_ticks_msec()
+	if now - _pulse_ms < HEART_PULSE_MIN_MS:
+		return false
+	_pulse_ms = now
+	return play_sfx("heartbeat", 0.0, HEART_PULSE_DB)
+
+
 # --- Ganchos por sinal (Progression) ------------------------------------
 
 func _in_game() -> bool:
@@ -1202,6 +1266,7 @@ func set_volume(bus_name: String, linear: float) -> void:
 func _apply_volumes() -> void:
 	_set_bus("Master", master_vol, 0.0)
 	_set_bus("SFX", sfx_vol, 0.0)
+	_set_bus(TELL_BUS, sfx_vol, 0.0)
 	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck * _duck_scale + _temp_duck_db + _layer_now + SLOW_MUSIC_DB * _slow)
 	_set_bus("Ambience", music_vol, DUCK_AMB_DB * _duck)
 
@@ -1234,6 +1299,7 @@ func shutdown(settle: bool = false) -> void:
 	_shut_down = true
 	set_process(false)
 	_td_active = false
+	_later.clear()
 	for t in [_music_tween, _amb_tween, _pitch_tween]:
 		if t != null and (t as Tween).is_valid():
 			(t as Tween).kill()

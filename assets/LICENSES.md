@@ -23,6 +23,7 @@ usados. Packs brutos: fora do git (`assets/_packs/` da cópia original).
 | `sfx/blip_*` (5 × 4), `ui_open` | vozes "gromelô" por formantes, sino de abrir — `build_sfx.py` |
 | `sfx/fog_swell`, `mask_light`, `voice_merge`, `whisper` | cena do Rei — `story.py` |
 | `sfx/heartbeat`, `clap`, `child_breath` | intro, roubo e anagnórise — `story.py` (Onda 2) |
+| `sfx/tell_parry`, `tell_unblock` | avisos do combate (R5) — `tells.py` (Onda 2b) |
 | `sfx/boss_appear` | stinger sintetizado + rosnado LRSF (CC-BY) |
 | camadas em `boss_phase2`, `boss_die`, `level_clear`, `ring_gain`, `hit_heavy*`, `step_heavy*`, `boss_step*`, `king_step*`, `launcher`, `parry` | sub-grave, coro, sino ou surto sintetizados sobre o pack |
 

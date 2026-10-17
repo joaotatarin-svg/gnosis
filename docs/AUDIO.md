@@ -87,7 +87,8 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
   teto −1 dBFS com limitador. Golpe −12, pesado −10, swing −18, passo −20 (o player toca a −6 dB),
   magia −13 (Coroa −11), chefe −10, UI −22, ui_move −27, blip −25, faísca −25, legenda −30.
   Transientes muito curtos (passo, soco) ficam 1–4 dB abaixo do alvo porque o teto de pico manda.
-- **Buses:** Master (HardLimiter −0,5 dB) ← Music, Ambience, SFX ← (UI, Voice). UI = `ui_*`, `shop_*`,
+- **Buses:** Master (HardLimiter −1 dB) ← Music, Ambience, SFX ← (UI, Voice, SFX_L2…R2), Tell ← (Tell_L2…R2).
+  Tell = `tell_*` (avisos do combate): segue o slider de SFX e NÃO passa pelo passa-baixas da câmera lenta. UI = `ui_*`, `shop_*`,
   `subtitle_tick`; Voice = `blip_*` (monofônico). Sliders: Master, SFX (inclui UI/Voz), Música (inclui ambiência).
 - **Ducking:** DialogueBox/Cinematic na árvore → música −9 dB, ambiência −5 dB (entra 0,25 s, sai 0,8 s).
 
@@ -98,7 +99,19 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
 `play_ambience(nome, volume_db=0)` · `stop_ambience(fade)` · `duck(on)` · `is_ducked()` · `play_blip(falante)` ·
 `blip_for_speaker(falante)` · `has_sfx/has_music/has_ambience` · `variants_of(nome)` · `set_volume(bus, linear)` ·
 `track_for_screen(tela)` · `ambience_for_screen(tela)` · `play_sfx_pitched(nome, tom, dB)` · `voice_theme(modo)` ·
-`cue(nome)` · `ring_note(i, devolvendo)` · `menu_track()` · `shutdown()`.
+`cue(nome)` · `ring_note(i, devolvendo)` · `menu_track()` · `shutdown()` ·
+`play_sfx_later(nome, s, dB)` · `low_health_pulse()` (Onda 2b).
+
+### Avisos do combate e vida baixa (Onda 2b — NEURO R5 e R22)
+
+| Som | Quem chama | Como soa |
+|---|---|---|
+| `tell_parry` | Combate, no brilho AMARELO (golpe aparável), `play_sfx("tell_parry", -1, 0, pos)` | "tim" redondo e agudo, ~0,15 s (Lá6 + parcial de barra 2,76× + Lá7), pico no 1º ms = a janela de parry abriu |
+| `tell_unblock` | Combate, no losango VERMELHO (imparável), idem | "vuum" áspero e grave, ~0,3 s: serra 75→140 Hz saturada, AM 33 Hz, sopro 200–900 Hz; cresce até o golpe |
+| `heartbeat` | HUD: `Audio.low_health_pulse()` a cada pulso da vinheta | UMA batida lub-dub (~0,7 s), a −6 dB do arquivo; no máximo 1 a cada 0,6 s |
+
+Os avisos tocam com tom FIXO (sem variação aleatória: o ouvido aprende o ritmo) e passam ao lado do
+passa-baixas da câmera lenta (bus `Tell`), para o aviso nunca sumir durante uma esquiva perfeita.
 
 ### Tema da Voz e API das cenas (Onda 2 — ROTEIRO §2 e §5 #8)
 
@@ -114,7 +127,7 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
 
 | `cue` | Som |
 |---|---|
-| `heartbeat` | `heartbeat` (2 batidas abafadas) |
+| `heartbeat` | `heartbeat` 2× (1,1 s de relógio real entre as batidas; o arquivo tem UMA) |
 | `fog_thickens` | `fog_swell` + música −8 dB ("desce a 40 %") até `king_emerges` ou a troca de tela |
 | `king_emerges` | `king_step`; na tela do Rei também `boss_appear` −8 dB e a música volta em 2 s |
 | `mask_lights` / `mask_cracks` | `mask_light` / `block` −4 dB (estalo seco) |
@@ -254,9 +267,11 @@ Var = nº de arquivos (`nome`, `nome_2`...). M-max = loudness momentânea máx. 
 | `sfx/mask_light.ogg` | S | 1 | -17.0 | novo |
 | `sfx/voice_merge.ogg` | S | 1 | -15.0 | novo |
 | `sfx/whisper.ogg` | S | 1 | -21.0 | novo |
-| `sfx/heartbeat.ogg` | S | 1 | -18.0 | onda 2 |
+| `sfx/heartbeat.ogg` | S | 1 | -18.0 | onda 2 (2b: UMA batida) |
 | `sfx/clap.ogg` | S | 1 | -15.2 | onda 2 |
 | `sfx/child_breath.ogg` | S | 1 | -21.0 | onda 2 |
+| `sfx/tell_parry.ogg` | S | 1 | -17.0 | onda 2b |
+| `sfx/tell_unblock.ogg` | S | 1 | -14.0 | onda 2b |
 
 | Música | Faixa (Kevin MacLeod) | Loop (s) | Alvo LUFS |
 |---|---|---|---|
