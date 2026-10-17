@@ -1,0 +1,84 @@
+--- a/scripts/fx/character_art.gd
++++ b/scripts/fx/character_art.gd
+@@ -54,6 +54,7 @@
+ func set_profile(p: ArtProfile) -> void:
+ 	profile = p
+ 	painted = PaintedLibrary.character(p)
++	_painted_mesh = {}
+ 	material = _flex_material()
+ 	# Pinturas grandes exibidas a ~1/4: mipmap evita cintilar a borda (o
+ 	# BossPuppet, filho deste nó, herda o filtro).
+@@ -1409,17 +1410,23 @@
+ 	RenderingServer.canvas_item_add_triangle_array(ci, grid.idx, pts, cols, grid.uvs, PackedInt32Array(), PackedFloat32Array(), tex.get_rid())
+ 
+ 
++## Cadeia de reserva estado → sequências (const: antes era um dicionário
++## montado a cada quadro — REVISAO #16).
++const HERO_CHAIN := {
++	"walk": ["run"], "charge": ["run"], "dodge_back": ["dodge"], "attack_up": ["attack_heavy", "attack"],
++	"attack_air": ["attack_heavy", "attack"], "attack_dive": ["attack_air", "attack_heavy", "attack"],
++	"windup_heavy": ["windup"], "windup_cast": ["cast"], "fall": ["jump"], "dead": ["hurt"],
++	"recover": ["idle"], "attack_heavy": ["attack"],
++}
++## Âncoras (pés) das 6 poses antigas da Sophia (reserva sem banco de quadros).
++const HERO_FALLBACK_ANCHORS := [Vector2(269,492),Vector2(268,488),Vector2(267,493),Vector2(265,453),Vector2(239,455),Vector2(236,468)]
++
++
+ ## Estado de animação → sequência do banco (com cadeia de reserva).
+ func _hero_seq(states: Dictionary) -> String:
+ 	var st: String = anim_state
+ 	if st == "dodge" and dodge_back:
+ 		st = "dodge_back"
+-	var chain := {
+-		"walk": ["run"], "charge": ["run"], "dodge_back": ["dodge"], "attack_up": ["attack_heavy", "attack"],
+-		"attack_air": ["attack_heavy", "attack"], "attack_dive": ["attack_air", "attack_heavy", "attack"],
+-		"windup_heavy": ["windup"], "windup_cast": ["cast"], "fall": ["jump"], "dead": ["hurt"],
+-		"recover": ["idle"], "attack_heavy": ["attack"],
+-	}
+ 	if _rise_t > 0.0 and st in ["idle", "walk"] and states.has("rise"):
+ 		return "rise"
+ 	if _land_t > 0.0 and st in ["idle", "walk"] and states.has("land"):
+@@ -1432,7 +1439,7 @@
+ 		return "ready"
+ 	if states.has(st):
+ 		return st
+-	for alt in chain.get(st, []):
++	for alt in HERO_CHAIN.get(st, []):
+ 		if states.has(alt):
+ 			return alt
+ 	return "idle"
+@@ -1521,9 +1528,8 @@
+ 			elif anim_state in ["windup", "windup_heavy", "windup_cast", "block"]: frame = 3
+ 			elif anim_state.begins_with("attack"): frame = 4
+ 			elif anim_state == "cast": frame = 5
+-			var anchors := [Vector2(269,492),Vector2(268,488),Vector2(267,493),Vector2(265,453),Vector2(239,455),Vector2(236,468)]
+ 			rect = Rect2((frame % 3) * 512, (frame / 3) * 512, 512, 512)
+-			anchor = rect.position + anchors[frame]
++			anchor = rect.position + HERO_FALLBACK_ANCHORS[frame]
+ 			tex = PaintedLibrary.sheet("sophia")
+ 			body_h = 466.0
+ 			m = _hero_motion()
+@@ -1539,7 +1545,14 @@
+ 		if not hero and painted.sheet == "yaldabaoth":
+ 			h = 190.0
+ 		k = h / body_h
+-		mesh = grid_mesh("%s:%s@%s:%s" % [painted.get("sheet", "sophia"), rect, anchor, painted.get("flip", false)], rect, anchor, Vector2(tex.get_width(), tex.get_height()), painted.get("flip", false))
++		# Criatura: folha/recorte fixos até o próximo set_profile → a malha fica
++		# guardada na instância (a chave formatada custava ~10 µs/quadro cada).
++		if not hero and not _painted_mesh.is_empty():
++			mesh = _painted_mesh
++		else:
++			mesh = grid_mesh("%s:%s@%s:%s" % [painted.get("sheet", "sophia"), rect, anchor, painted.get("flip", false)], rect, anchor, Vector2(tex.get_width(), tex.get_height()), painted.get("flip", false))
++			if not hero:
++				_painted_mesh = mesh
+ 	# --- uniforms do shader (curvatura, vento, dissolução) ---
+ 	mat.set_shader_parameter("body_h", body_h * k)
+ 	mat.set_shader_parameter("bend", float(m[5]))
+@@ -1582,6 +1595,7 @@
+ 		draw_arc(Vector2(0,GROUND_Y*s-30*s),24*s,0.15,2.7,40,Color(profile.eye,0.38),1.0,true)
+ 
+ 
++var _painted_mesh: Dictionary = {}        # malha da pintura da criatura (cache por instância)
+ var _body_xform := Transform2D.IDENTITY   # último transform do corpo (afterimage)
+ var _body_mesh: Dictionary = {}
+ var _body_tex: Texture2D
