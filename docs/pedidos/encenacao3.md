@@ -37,3 +37,12 @@ convivem.
 `--position 4000,4000` NÃO esconde a janela nesta máquina: o Godot recoloca a janela dentro da área
 dos monitores (medido: abriu em L=1486,T=761, metade em cada monitor). O João disse que gosta de ver
 as capturas "no cantinho" — usar `--position 1200,600`.
+
+## 6. CENÁRIO/TÉCNICO — pilar de primeiro plano sobre o Soter (tela 17)
+Na tela 17 o Soter (no descanso do meio) fica atrás de um pilar escuro de primeiro plano (`fgcol` do
+`scenery.gd`). Sugestão: não pôr pilar de primeiro plano a ±80 px de um `NpcEncounter`/`Sleeper`.
+Prova: `C:\gnosis-wt\_caps\encenacao3\gif\npc_soter_depois.png`.
+
+## 7. BALANCE — tela 68
+A Mente agora é uma arena trancada de 940 px (antes a tela inteira) e o Rei pisca para o outro lado
+quando as formas se empilham. Rodar o bot da 68 de novo.
