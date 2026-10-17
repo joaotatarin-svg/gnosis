@@ -28,26 +28,33 @@
   `duck_music(s, db)`, `set_music_layer_volume(t)`), `play_blip(falante)`. Volume padrão 1ª execução:
   Master 0,7, Música 0,6 (pedido do João).
 
-**Falta / problemas conhecidos (honesto):**
-- **Ninguém OUVIU nada ainda.** Avaliei só por medição e espectrograma (`tools/audio_synth/spectro.py`).
-  O João precisa ouvir as amostras (lista no relatório) — principalmente magias, blips e ambiências.
-- **AudioQA: 1 falha aberta** — `duck(): música -4.4 → -4.4 → -4.4 dB`: no teste headless o tween do
-  `duck(true/false)` não muda o bus (o `duck_music()` com o mesmo padrão PASSA, e o DialogueBox liga o
-  estado `is_ducked()` corretamente). Investigar `_update_duck`/`_set_duck` (suspeita: o tween é criado
-  mas não roda/é morto; testar com print dentro de `_set_duck`). Até lá o ducking de diálogo pode não
-  abaixar a música de fato.
-- Tema do menu NÃO foi refeito (Gregorian Chant serve; a Narrativa disse que `theme` vira o tema da Voz).
-- Faísca/orbe: o som de COLETA toca pelo sinal de Progression (já existia). Um som de orbe **chegando**
-  em Sophia e de **estouro** quando o orbe sai precisa de 1 linha em `spark_orb.gd` (pedido em
-  `docs/pedidos/audio.md`).
-- `save_manager.gd` usa 0,9/0,7 como fallback de volume quando o save não tem a chave — pedir ao
-  Técnico pra igualar a 0,7/0,6 (pedido feito).
-- Ninguém chama ainda: `step_heavy`, `cloth`, `boss_step`, `blip_*`, `ui_open`, os 5 da cena do Rei (os
-  outros diretores vão ligar).
+**Onda 2 (17/10/2026, branch `dir2/audio`, nuvem):**
+- AudioQA 45/45 (era 23/24): o "bug do ducking" era do TESTE (timer nascido no quadro da carga disparava
+  no mesmo quadro). Ducking, slow-mo, camada, `duck_music` e o corte do roubo agora são envelopes por
+  RELÓGIO REAL desde o pedido (`_process`), não Tween/Timer — sob carga (load 60 na nuvem) o Tween
+  atrasava e o Timer disparava ~0,4 s cedo.
+- Provação antes do run (REVISAO #8); `shutdown()` ao fechar (REVISAO #15); `play_sfx_pitched`; faísca na
+  CHEGADA do orbe (anti-spam 20 ms, 6 vozes); slow-mo (passa-baixas + música −4 dB) via
+  `Juice.slowmo_changed` se existir; R11 (3 vozes do mesmo som, ±1,5 dB, ±4/6 % de tom, limitador −1 dB),
+  R13 (Éon −3 dB), R14 (pan discreto pela tela).
+- **Tema da Voz e API das cenas**: `voice_theme()`, `cue()`, `ring_note()` (tabela acima). Sons ★ novos
+  por síntese: `heartbeat`, `clap`, `child_breath`.
+- **Tema do menu**: 3 opções por síntese em `tools/audio_synth/menu_theme.py` (A Esferas, B Coro,
+  C Caixinha) — NÃO instaladas; o menu segue com `theme` até o João escolher.
 
-**Próximos passos exatos:** (1) consertar o teste/efeito do `duck()`; (2) João ouve `_caps/audio/opcoes/`
-e escolhe opção por magia → mudar `CHOICE` em `tools/audio_synth/magic.py` e rodar
-`python tools/audio_synth/build_sfx.py cast_solar ...`; (3) rodar AudioQA; (4) playtest com som real.
+**Falta / problemas conhecidos (honesto):**
+- **Ninguém OUVIU nada ainda** (nem as magias da Onda 1, nem nada da Onda 2). Tudo foi avaliado por
+  medição e espectrograma. Lista de amostras no relatório `docs/onda2/AUDIO.md`.
+- As opções de tema do menu são síntese aditiva (voz por formantes, vidro, caixinha): podem soar
+  "de computador" perto das faixas do Kevin MacLeod. Se nenhuma servir, a reserva é ficar com `theme`.
+- A Staging (Encenação) toca os sons das cenas por conta própria; `Audio.cue()` existe e bate com as
+  escolhas dela, mas quem encena usa um OU outro. Bugs achados lá estão em `docs/pedidos/onda2_audio.md`
+  (o principal: `roubo` tocado em loop sem ponto de loop).
+- `save_manager.gd` ainda usa 0,9/0,7 de fallback de volume (pedido ao Técnico).
+
+**Próximos passos exatos:** (1) João ouve as amostras e escolhe o tema do menu →
+`python3 tools/audio_synth/menu_theme.py --install <a|b|c>` → AudioQA; (2) escolhe opção por magia →
+`CHOICE` em `magic.py` → `build_sfx.py cast_...`; (3) Encenação aplica os pedidos; (4) playtest com som.
 
 **Como validar (SEMPRE com `--audio-driver Dummy` — não tocar nos alto-falantes):**
 ```
@@ -64,6 +71,7 @@ python tools/audio_synth/measure.py assets/audio saida.json                  # l
 | `build_sfx.py` | todos os SFX: packs + camadas, variações, normalização por categoria |
 | `magic.py` | magias, projéteis, nova, faísca (síntese; `python magic.py` grava as 3 opções em `_caps/audio/opcoes/`) |
 | `story.py` | SFX da cena do Rei (síntese) |
+| `menu_theme.py` | tema do menu: 3 opções (loop de 64 s, −16 LUFS); `--install <x>` grava `music/menu.ogg` |
 | `build_music.py` | masteriza as músicas a partir dos MP3 originais, acha e costura o loop |
 | `build_ambience.py` | ambiências periódicas (loop perfeito por construção) |
 | `measure.py` · `seam_clips.py` · `spectro.py` | medição, clipes da emenda, mosaico de espectrogramas |
