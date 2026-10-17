@@ -221,3 +221,17 @@ parada, golpe forte, magia × níveis 1→5).
 - Capturas: `gifs/harmas_andando_antes.gif` × `gifs/harmas_andando_depois.gif` e
   `gifs/harmas_andando_antes_depois.png` (no trecho capturado o Harmas anda pouco: o "antes" não chega a
   mostrar o quadro fundido; o "depois" não tem nenhum quadro fundido por construção).
+
+## FLUIDEZ (FILA 7) — intermediários desenhados
+
+`boss_frames.py` ganhou `extra_sheets` (folhas `<id>_motion_a` do mesmo chat, mesma pipeline; escala
+normalizada pela pose quase parada `recover_1` × `idle_0` da folha principal → mesma escala e linha de
+pés). `tools/anim_bosses/add_motion.py <receita>=<folha>` liga a folha (padrão A das criaturas/bots):
+- `walk` = 6 quadros desenhados (contato A, desce A, passagem A, sobe A, contato B, passagem B) pela distância;
+- `recover` = golpe → recover_0 → recover_1 → parado, pelo progresso real do inimigo.
+
+**Bloco 1 (bots 1–4: sonâmbulo, glutão, carcereiro, mudo):** escalas medidas 0,995 / 1,032 / 1,008 / 1,013
+(nenhuma destoou → nada no REFAZER). Opacidade/sem-RIFE do PuppetQA verde. GIFs do andar:
+`gifs/andar_bots_antes.gif` × `gifs/andar_bots_depois.gif` (AnimQA `-- film_walk x sonambulo glutao carcereiro`),
+faixa `gifs/andar_bots_antes_depois.png`. Honesto: no glutão o rastejar de 6 quadros tem diferenças sutis
+(o produtor avisou) — fica mais "vivo", não muito mais legível.
