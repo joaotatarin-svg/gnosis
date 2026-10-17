@@ -53,6 +53,8 @@ const GLINT_LEAD := 0.18          # R5: brilho de aviso 180 ms antes do golpe (=
 const GLINT_BOOST := 0.35         # o brilho clareia o tingimento por um instante
 const GLINT_TIME := 0.12          # duração do brilho no corpo (s de jogo)
 const FLASH_FADE := 0.11          # R1: o flash some em 110 ms REAIS depois do hitstop
+const TELEGRAPH_RIM_A := 0.9      # contorno do telegrafo nos chefes por quadros (Pedido 2 da Arte)
+const DEATH_POSE_TIME := 0.4      # chefe: segura o quadro "death" antes de se partir (s REAIS; Pedido 4 da Arte)
 const VIB_LIGHT := 1.5            # R1: vibração da vítima (px), golpe leve
 const VIB_HEAVY := 3.0            # golpe pesado / lançador / magia
 const VIB_STEP_MS := 33           # troca de lado a cada ~33 ms reais
@@ -561,7 +563,13 @@ func _begin_windup() -> void:
 	# R5: tinge 45 % (a arte pintada não escurece) e guarda como cor-base: um
 	# flash de dano no meio do telegrafo volta para ELA, não para branco.
 	var tell := TELEGRAPH_UNBLOCKABLE if attack_hitbox.unblockable else TELEGRAPH_PARRYABLE
-	_tint_base = Color(1, 1, 1, 1).lerp(tell, TELEGRAPH_TINT)
+	if _framed():
+		# Pedido 2 da Arte: chefe por quadros = CONTORNO pulsante na cor do aviso
+		# (o CharacterArt desenha); a pintura do quadro de preparação fica intacta.
+		visual.telegraph_color = Color(tell.r, tell.g, tell.b, TELEGRAPH_RIM_A)
+		_tint_base = Color(1, 1, 1, 1)
+	else:
+		_tint_base = Color(1, 1, 1, 1).lerp(tell, TELEGRAPH_TINT)
 	_glint_done = attack_timer <= GLINT_LEAD
 	_glint_t = -1.0
 	if visual and _flash_t < 0.0:
@@ -608,6 +616,8 @@ func _begin_strike() -> void:
 	estate = EState.STRIKE
 	attack_timer = strike_time
 	_tint_base = Color(1, 1, 1, 1)
+	if _framed():
+		visual.telegraph_color.a = 0.0   # o golpe saiu: o contorno apaga já
 	_glint_t = -1.0
 	if visual and _flash_t < 0.0:
 		visual.modulate = Color(1, 1, 1, 1)
@@ -1091,21 +1101,13 @@ func _on_died() -> void:
 	var dismember := force_dismember or _last_hit_heavy or is_boss_enemy or behavior == "exploder"
 	var parts: Array = visual.gib_parts()
 	if dismember and not parts.is_empty():
-		var facing := signf(visual.scale.x)
-		if facing == 0.0:
-			facing = 1.0
-		var ground := global_position.y + 24.0 * _art_scale
-		var kick := _last_kick
 		if is_boss_enemy:
-			kick *= 1.6
-			Juice.shake(0.9)
+			# Pedido 4 da Arte: o quadro de morte desenhado aparece ~0,4 s (pose
+			# "dead" + começo da dissolução) e SÓ ENTÃO o corpo se parte.
 			Juice.hit_stop(0.18)
-		Gib.burst(get_parent(), visual.global_position, parts, facing, ground, kick, eye_color, visual._ink())
-		ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), eye_color)
-		visual.visible = false
-		if _orb != null:
-			_orb.visible = false
-		queue_free()
+			_death_pose_then_burst()
+		else:
+			_burst_gibs(parts)
 	else:
 		# MORTE POR DISSOLUÇÃO: o shader desfaz a pintura em ruído com borda
 		# luminosa (CharacterArt._dissolve_amount, ~0,9 s); o cartão não tomba.
@@ -1114,6 +1116,54 @@ func _on_died() -> void:
 		t.tween_interval(0.95)
 		t.tween_property(visual, "modulate:a", 0.0, 0.12)
 		t.tween_callback(queue_free)
+
+
+## Chefe: pose de morte por DEATH_POSE_TIME s REAIS (ignora câmera lenta e
+## pausa — a cena que começa logo depois não pode segurar o corpo em pé) e
+## depois desmembra. Se a árvore estiver pausada nessa hora (diálogo/cena), não
+## espalha gibs congelados no ar: o corpo só some.
+func _death_pose_then_burst() -> void:
+	velocity = Vector2.ZERO
+	hurtbox.set_deferred("monitoring", false)
+	visual.set_anim("dead")
+	var t := create_tween().set_ignore_time_scale(true)
+	t.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	t.tween_interval(DEATH_POSE_TIME)
+	t.tween_callback(func() -> void:
+		if get_tree().paused:
+			visual.visible = false
+			if _orb != null:
+				_orb.visible = false
+			queue_free()
+			return
+		var parts: Array = visual.gib_parts()   # do quadro de morte já desenhado
+		if parts.is_empty():
+			queue_free()
+			return
+		Juice.shake(0.9)
+		_burst_gibs(parts))
+
+
+## Desmembramento: peças que voam e quicam + estouro; o corpo some.
+func _burst_gibs(parts: Array) -> void:
+	var facing := signf(visual.scale.x)
+	if facing == 0.0:
+		facing = 1.0
+	var ground := global_position.y + 24.0 * _art_scale
+	var kick := _last_kick
+	if is_boss_enemy:
+		kick *= 1.6
+	Gib.burst(get_parent(), visual.global_position, parts, facing, ground, kick, eye_color, visual._ink())
+	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), eye_color)
+	visual.visible = false
+	if _orb != null:
+		_orb.visible = false
+	queue_free()
+
+
+## Chefe que toca quadros desenhados (contorno no telegrafo, quadro de morte).
+func _framed() -> bool:
+	return visual != null and visual.has_method("has_boss_frames") and visual.has_boss_frames()
 
 
 ## Liga/desliga o contorno de leitura (0..1).
