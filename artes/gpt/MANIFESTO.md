@@ -401,3 +401,6 @@ Padrão A (bots/criaturas) `<id>_motion_a.png`, 2×4: 0 walk_contact_A · 1 walk
 - `bot_4_mudo_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈403–448); rolos flutuantes balançam junto (alguns soltos — agrupar). Chat do bot 4.
 - `bot_5_reflexo_motion_a.png` — padrão A. Nota 8 (APROVADA). Alternativa `bot_5_reflexo_motion_b.png` (A/B; passos mais uniformes, nota 7.5). Chat do bot 5.
 - `bot_6_esporos_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈396–430), passos de corcunda legíveis; rec_0 com a corcunda empinada. Chat do bot 6.
+- `bot_7_pretoriano_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈430–460), escudo sempre à frente; recuperação mostra a lança voltando. Chat do bot 7.
+Padrão A' (larva flutuante): células 0–5 = ondulação flutuando (alto→desce→baixo→sobe→alto oposto→desce) · 6 recover_0 · 7 recover_1.
+- `cri_1_larva_motion_a.png` — padrão A' (flutuar). Nota 8. Fiel; ondulação suave (corpo sobe/desce, faixas ondulam). Chat da criatura 1.

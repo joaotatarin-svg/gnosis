@@ -238,3 +238,6 @@ faixa `gifs/andar_bots_antes_depois.png`. Honesto: no glutão o rastejar de 6 qu
 
 **Bloco 2 (parcial): reflexo** (folha motion_a aprovada; escala 1,032) — `gifs/reflexo_andar_quadros.png`. Faltam esporos, pretoriano, 6 criaturas, S15/S16 da Sophia e os 9 chefes (ainda não chegaram).
 
+
+**Bloco 2: esporos e pretoriano** (escalas 0,979 / 0,972) — `gifs/esporos_pretoriano_andar_quadros.png`, `gifs/andar_bots2_depois.gif` (reflexo, esporos, pretoriano). Os 7 bots têm andar de 6 quadros desenhados + recuperação.
+
