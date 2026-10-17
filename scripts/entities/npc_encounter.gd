@@ -40,15 +40,49 @@ func _on_body_entered(body: Node) -> void:
 	if triggered or not body.is_in_group("player"):
 		return
 	triggered = true
+	# O encontro anima COM o mundo pausado pela caixa (fala, abençoa, ajoelha).
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	if kind == "soter":
 		_do_soter(body)
 	else:
 		_do_velkar()
 
 
+## A pose de quem fala (atlas do GPT — docs/onda2/ARTE_GPT.md §NPCs): ele fala
+## (`talk`) nas próprias falas e escuta (`idle`) nas da Sophia; o Velkar se
+## ajoelha quando conta do pai e se ergue para dar as faíscas.
+func _on_line(_index: int, line: Dictionary) -> void:
+	if _art == null:
+		return
+	var who := String(line.get("speaker", ""))
+	var text := String(line.get("text", ""))
+	if kind == "velkar":
+		if text.begins_with("Lá em cima não há tirano"):
+			_art.set_anim("kneel")
+			return
+		if _art.anim_state == "kneel":
+			if text.begins_with("Quando chegares nele"):
+				_art.set_anim("rise")          # levanta (0,4 s) e volta a falar
+				var t := create_tween()
+				t.tween_interval(0.5)
+				t.tween_callback(_art.set_anim.bind("talk"))
+			return                             # ajoelhado durante "Tu choras por ele?" e "Era meu pai."
+	if who.to_lower().contains(kind):
+		_art.set_anim("talk")
+	else:
+		_art.set_anim("idle")
+
+
 func _do_soter(player: Node) -> void:
 	var d := _dialog(Narrative.soter_meeting(meeting), Narrative.soter_blessings(), "soter")
+	d.line_shown.connect(_on_line)
+	_art.set_anim("talk")
 	var choice: int = await d.choice_made
+	# A bênção: as mãos sobem antes da luz (bless, 2 quadros).
+	_art.set_anim("bless")
+	await get_tree().create_timer(0.55, true, false, true).timeout
+	if not is_inside_tree():
+		return
 	match choice:
 		0:
 			if player.health:
@@ -67,7 +101,9 @@ func _do_soter(player: Node) -> void:
 				player.health.heal(25)
 	# Soter parte em luz.
 	AoeNova.spawn(get_parent(), global_position + Vector2(0, -10), 0, 60.0, Color(1.0, 0.95, 0.7))
+	_art.set_anim("fade")                    # vira as costas e se desfaz em luz
 	var t := create_tween()
+	t.tween_interval(0.3)
 	t.tween_property(self, "modulate:a", 0.0, 0.8)
 	# A Voz volta a falar só depois que ele some — ela não o viu (o Cego não o vê).
 	var n := meeting
@@ -87,15 +123,23 @@ func _dialog(lines: Array, choices: Array, scene: String) -> DialogueBox:
 func _do_velkar() -> void:
 	# Termina numa escolha sem efeito mecânico ("Vem comigo" / "Fica em paz").
 	var d := DialogueBox.play(Narrative.velkar_meeting(), Narrative.velkar_choices())
+	d.line_shown.connect(_on_line)
+	_art.set_anim("talk")
 	var choice: int = await d.choice_made
+	# A despedida: a mão no peito, sem voltar a falar.
+	_art.set_anim("farewell")
 	await DialogueBox.play(Narrative.velkar_farewell(choice)).finished
 	if not is_inside_tree():
 		return
 	Progression.add_orbs(150)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -20), Color(0.75, 0.6, 0.5))
-	# Velkar fica — mancando pro canto dele. Só escurece um pouco.
+	# Velkar fica — mancando pro canto dele (walk, devagar), e escurece um pouco.
+	_art.set_anim("walk")
 	var t := create_tween()
-	t.tween_property(self, "modulate", Color(0.7, 0.7, 0.7, 1.0), 1.0)
+	t.tween_property(self, "global_position:x", global_position.x + 46.0, 2.6)
+	t.parallel().tween_property(self, "modulate", Color(0.7, 0.7, 0.7, 1.0), 2.6)
+	t.tween_callback(_art.set_anim.bind("idle"))
+	t.tween_callback(func() -> void: process_mode = Node.PROCESS_MODE_INHERIT)
 
 
 ## Ouro indica encontro, nunca hostilidade. A sombra ancora os pés no palco.
