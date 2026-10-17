@@ -39,7 +39,12 @@ func _ready() -> void:
 	_head = CodexStyle.label(hud, "", Vector2(LIST_X, 40), 11, CodexStyle.MUTED, 360)
 	_head.add_theme_font_override("font", CodexStyle.italic())
 	_back = CodexStyle.button(hud, "Voltar", Vector2(536, 12), 84, _leave, false, "ui_back")
-	CodexStyle.label(hud, "W/S · setas · D-pad escolhem   ·   Esc / B volta", Vector2(LIST_X, 340), 10, Color(CodexStyle.MUTED, 0.85), 400)
+	var hint := InputGlyphs.Hint.new()     # segue o dispositivo em uso (#33)
+	hint.pairs = [["@nav", "escolhem"], ["ui_cancel", "volta"]]
+	hint.position = Vector2(LIST_X, 338)
+	hint.size = Vector2(300, 16)
+	hint.align = 0
+	hud.add_child(hint)
 
 	# Lista (esquerda): linhas focáveis com estilo de "marcador de página".
 	for i in _entries.size():

@@ -649,7 +649,7 @@ class Worker extends Node:
 			await wait(1.2)
 		await shot("estela_prompt")
 		print("UIM estela: zona=%s vivos=%d inimigo_perto=%s pode_ler=%s" % [lv.zone_active, living_enemies().size(), st._enemy_near(), st.can_read()])
-		check(st._prompt.text == "J / X · ler a Estela", "estela: prompt '%s'" % st._prompt.text)
+		check(st._prompt.text.ends_with("· ler a Estela") and st._prompt.text.begins_with(InputGlyphs.label("attack_light")), "estela: prompt pelo dispositivo '%s'" % st._prompt.text)
 		# 1) sem inimigo, sem combo → abre
 		await key(KEY_J)
 		await wait(0.4)

@@ -78,7 +78,7 @@ func _ready() -> void:
 	_back = CodexStyle.button(panel, "Voltar", Vector2(PANEL_SIZE.x - 18 - 110, 294), 110, close, false, "")
 	var l := InputGlyphs.listener()
 	if l != null:
-		l.connect("device_changed", func(_d: int): _refresh())
+		l.connect("device_changed", _on_device_changed)
 	_refresh()
 	if not _rows.is_empty():
 		_rows[0].kb.grab_focus()
@@ -125,6 +125,10 @@ func _slot_button(row: HBoxContainer) -> Button:
 	CodexStyle._wire(b, "")
 	row.add_child(b)
 	return b
+
+
+func _on_device_changed(_d: int) -> void:
+	_refresh()
 
 
 func _refresh() -> void:
