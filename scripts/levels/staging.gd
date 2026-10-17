@@ -24,6 +24,8 @@ const HEAD := Vector2(0.0, -188.0)            # rosto (máscara) do Rei (px, loc
 # A descida do Centro (cena C): o roteiro pede 200 px, mas a pintura de fundo
 # acaba ~120 px acima do enquadramento normal (aparecia a borda) — 120.
 const DESCENT := 120.0
+# Cena D: a câmera desce um pouco para a Sophia ficar ACIMA da caixa de diálogo.
+const D_LIFT := 48.0
 const HAND := Vector2(-66.0, -84.0)           # mão estendida do Rei (olhando à esquerda)
 
 var level: Node2D
@@ -44,7 +46,6 @@ var _gem_born: Dictionary = {}                 # índice -> true (já nasceu no 
 var _orbit: int = 0                            # 0 parado · 1 órbita · 2 motor (3 anéis)
 var _orbit_t: float = 0.0
 var _orbit_weak: bool = false                  # "...espera... eu... lembro..."
-var _sink_y: float = 0.0
 var _little: _Little
 var _aura: Sprite2D
 var _locked: bool = false
@@ -206,9 +207,9 @@ func _on_line(index: int, line: Dictionary) -> void:
 				Audio.duck_music(5.0, -10.0)
 		"anagnorise":
 			if text.begins_with("Fui eu que fechei"):
-				_cam_to(1.32, Vector2(0, 16), 1.2)        # baixa à altura dela
+				_cam_to(1.32, Vector2(0, D_LIFT - 10.0), 1.2)   # baixa à altura dela
 			elif text.begins_with("Falta o mais difícil"):
-				_cam_to(1.0, Vector2.ZERO, 1.4)           # abre o quadro
+				_cam_to(1.0, Vector2(0, D_LIFT * 0.6), 1.4)     # abre o quadro
 
 
 func _on_finished(box: DialogueBox) -> void:
@@ -464,10 +465,10 @@ func _b_sink() -> void:
 	_orbit = 2
 	_orbit_weak = false
 	_king.collapse(_tw())
+	# Colapsa (0,8 s), o motor gira à vista (1 s), afunda (1,6 s), preto (0,8 s).
 	var t := _tw()
-	t.tween_interval(0.5)
-	t.tween_property(self, "_sink_y", 120.0, 1.6).set_ease(Tween.EASE_IN)
-	t.parallel().tween_property(_king, "global_position:y", _king.global_position.y + 120.0, 1.6).set_ease(Tween.EASE_IN)
+	t.tween_interval(1.8)
+	t.tween_property(_king, "global_position:y", _king.global_position.y + 120.0, 1.6).set_ease(Tween.EASE_IN)
 	t.tween_property(_black, "color:a", 1.0, 0.8)
 	_crack_ground(_king.global_position)
 	Audio.play_sfx("dive")
@@ -532,7 +533,8 @@ func _kneel() -> void:
 func _d_rings_return() -> void:
 	Audio.stop_music(0.0)
 	_music_stopped = true
-	_cam_to(0.9, Vector2.ZERO, 0.8)
+	# Recua para enquadrar os três (ela e as duas formas caídas).
+	_cam_to(0.8, Vector2(_frame_forms_dx(), D_LIFT), 0.8)
 	var pts: Array = []
 	if final_battle != null and is_instance_valid(final_battle) and final_battle.has_method("release_rings"):
 		pts = final_battle.call("release_rings")
@@ -545,8 +547,21 @@ func _d_rings_return() -> void:
 	for i in 7:
 		t.tween_callback(_return_gem.bind(i, pts[i]))
 		t.tween_interval(0.35)
-	t.tween_interval(0.4)
-	_cam_to(1.25, Vector2.ZERO, 3.5)
+	t.tween_interval(0.6)
+	# Depois, push-in nela (1,0 → 1,25).
+	t.tween_callback(_cam_to.bind(1.25, Vector2(0, D_LIFT), 2.0))
+
+
+## Deslocamento X da câmera (a partir da Sophia) que põe as formas caídas no quadro.
+func _frame_forms_dx() -> float:
+	if player == null or final_battle == null or not is_instance_valid(final_battle) or not "forms" in final_battle:
+		return 0.0
+	var xs: Array = [player.global_position.x]
+	for f in final_battle.get("forms"):
+		if is_instance_valid(f):
+			xs.append((f as Node2D).global_position.x)
+	var mid := (float(xs.min()) + float(xs.max())) * 0.5
+	return clampf(mid - player.global_position.x, -260.0, 260.0)
 
 
 func _return_gem(i: int, from: Vector2) -> void:
@@ -554,6 +569,7 @@ func _return_gem(i: int, from: Vector2) -> void:
 		return
 	var g := _Gem.new()
 	g.color = _ring_color(i)
+	g.scale = Vector2.ONE * 1.7
 	add_child(g)
 	g.global_position = from
 	var chest := player.global_position + Vector2(0, -22)
@@ -565,7 +581,7 @@ func _return_gem(i: int, from: Vector2) -> void:
 	t.tween_method(func(k: float) -> void:
 		if is_instance_valid(g):
 			var a := a0 + k * PI * 1.5
-			g.global_position = chest + Vector2(cos(a), sin(a)) * r0 * (1.0 - k), 0.0, 1.0, 0.6).set_ease(Tween.EASE_IN)
+			g.global_position = chest + Vector2(cos(a), sin(a)) * r0 * (1.0 - k), 0.0, 1.0, 1.0).set_ease(Tween.EASE_IN)
 	t.tween_callback(func() -> void:
 		if is_instance_valid(g):
 			VfxLibrary._flash_sprite(self, chest, "glow", Color(g.color, 0.9), 0.15, 0.7, 0.3)
@@ -598,6 +614,11 @@ func _d_shrink() -> void:
 		if forms.size() >= 2:
 			rei = forms[0] if is_instance_valid(forms[0]) else null
 			col = forms[1] if is_instance_valid(forms[1]) else null
+	# Acompanha o Colosso encolhendo; depois volta para o pé dela.
+	_cam_to(0.95, Vector2(_frame_forms_dx(), D_LIFT), 1.0)
+	var back := _tw()
+	back.tween_interval(3.0)
+	back.tween_callback(_cam_to.bind(1.3, Vector2(0, D_LIFT), 1.2))
 	var t := _tw()
 	if col != null:
 		t.tween_property(col, "scale", Vector2(0.25, 0.25), 3.0).set_trans(Tween.TRANS_SINE)
@@ -609,6 +630,7 @@ func _d_shrink() -> void:
 		t.parallel().tween_property(rei, "modulate", Color(0.8, 0.82, 0.9, 0.0), 1.6)
 	# O pequeno: encolhido e cego, ao lado do pé dela.
 	_little = _Little.new()
+	_little.scale = Vector2.ONE * 1.5
 	add_child(_little)
 	var side := 1.0
 	if player != null:
@@ -1038,6 +1060,7 @@ class _Little extends Node2D:
 		var breath := 1.0 + 0.04 * sin(_t * 2.4)
 		var body := Color(0.08, 0.07, 0.1).lerp(Color(1, 0.95, 0.8), glow)
 		draw_set_transform(Vector2(0, -7), 0.0, Vector2(1.0, breath))
+		draw_circle(Vector2.ZERO, 9.0, Color(0.85, 0.82, 0.95, 0.18))   # contorno pálido (lê no escuro)
 		draw_circle(Vector2.ZERO, 7.5, body)
 		draw_circle(Vector2(3, -6), 4.6, body)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
