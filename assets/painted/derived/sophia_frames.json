@@ -1,0 +1,633 @@
+{
+ "character": "sophia",
+ "atlas": "res://assets/painted/derived/sophia_frames.png",
+ "flex": "res://assets/painted/derived/sophia_frames_flex.png",
+ "body_px": 256.0,
+ "atlas_size": [
+  2048,
+  512
+ ],
+ "frames": {
+  "s0.idle": {
+   "rect": [
+    0,
+    0,
+    142,
+    276
+   ],
+   "foot_y": 268.54,
+   "bottom": 268.54,
+   "top": 12.54,
+   "hip_y": 148.16,
+   "pelvis_x": 81.41,
+   "center_x": 76.67,
+   "front_x": 109.81,
+   "rear_x": 40.75,
+   "boots": 2,
+   "tip": [
+    125.87,
+    22.29
+   ],
+   "scale": 0.54468
+  },
+  "s1a.run_contact": {
+   "rect": [
+    0,
+    276,
+    268,
+    226
+   ],
+   "foot_y": 218.97,
+   "bottom": 218.97,
+   "top": 7.09,
+   "hip_y": 119.29,
+   "pelvis_x": 136.31,
+   "center_x": 154.25,
+   "front_x": 229.06,
+   "rear_x": 43.04,
+   "boots": 2,
+   "tip": [
+    21.59,
+    130.96
+   ],
+   "scale": 0.54468
+  },
+  "s0.run_b": {
+   "rect": [
+    328,
+    0,
+    226,
+    255
+   ],
+   "foot_y": 245.11,
+   "bottom": 247.84,
+   "top": 7.09,
+   "hip_y": 132.91,
+   "pelvis_x": 114.0,
+   "center_x": 134.93,
+   "front_x": 61.94,
+   "rear_x": 61.94,
+   "boots": 1,
+   "tip": [
+    20.93,
+    139.35
+   ],
+   "scale": 0.54468
+  },
+  "s1b.run_pass": {
+   "rect": [
+    268,
+    276,
+    249,
+    225
+   ],
+   "foot_y": 217.88,
+   "bottom": 217.88,
+   "top": 6.54,
+   "hip_y": 118.2,
+   "pelvis_x": 134.55,
+   "center_x": 152.88,
+   "front_x": 154.41,
+   "rear_x": 82.49,
+   "boots": 2,
+   "tip": [
+    23.74,
+    127.85
+   ],
+   "scale": 0.54468
+  },
+  "s0.run_a": {
+   "rect": [
+    554,
+    0,
+    233,
+    253
+   ],
+   "foot_y": 242.94,
+   "bottom": 245.66,
+   "top": 7.09,
+   "hip_y": 131.82,
+   "pelvis_x": 107.64,
+   "center_x": 125.85,
+   "front_x": 209.78,
+   "rear_x": 45.87,
+   "boots": 2,
+   "tip": [
+    21.08,
+    140.83
+   ],
+   "scale": 0.54468
+  },
+  "s1b.jump_b": {
+   "rect": [
+    975,
+    0,
+    198,
+    236
+   ],
+   "foot_y": 226.6,
+   "bottom": 229.32,
+   "top": 19.62,
+   "hip_y": 129.1,
+   "pelvis_x": 87.94,
+   "center_x": 94.56,
+   "front_x": 57.65,
+   "rear_x": 57.65,
+   "boots": 1,
+   "tip": [
+    181.51,
+    36.75
+   ],
+   "scale": 0.54468
+  },
+  "s1a.jump_tuck": {
+   "rect": [
+    1028,
+    276,
+    201,
+    219
+   ],
+   "foot_y": 209.71,
+   "bottom": 211.89,
+   "top": 8.72,
+   "hip_y": 114.94,
+   "pelvis_x": 89.86,
+   "center_x": 92.91,
+   "front_x": 75.17,
+   "rear_x": 75.17,
+   "boots": 1,
+   "tip": [
+    182.97,
+    23.35
+   ],
+   "scale": 0.54468
+  },
+  "s1a.dodge_back": {
+   "rect": [
+    1173,
+    0,
+    257,
+    235
+   ],
+   "foot_y": 227.69,
+   "bottom": 227.69,
+   "top": 11.45,
+   "hip_y": 125.83,
+   "pelvis_x": 131.13,
+   "center_x": 116.55,
+   "front_x": 238.71,
+   "rear_x": 198.9,
+   "boots": 2,
+   "tip": [
+    115.15,
+    20.44
+   ],
+   "scale": 0.54468
+  },
+  "s1a.hurt": {
+   "rect": [
+    1430,
+    0,
+    209,
+    235
+   ],
+   "foot_y": 227.69,
+   "bottom": 228.23,
+   "top": 16.89,
+   "hip_y": 128.55,
+   "pelvis_x": 112.13,
+   "center_x": 98.85,
+   "front_x": 176.19,
+   "rear_x": 77.03,
+   "boots": 2,
+   "tip": [
+    190.87,
+    40.26
+   ],
+   "scale": 0.54468
+  },
+  "s1b.hurt_b": {
+   "rect": [
+    1639,
+    0,
+    217,
+    234
+   ],
+   "foot_y": 226.6,
+   "bottom": 227.14,
+   "top": 12.54,
+   "hip_y": 125.83,
+   "pelvis_x": 107.9,
+   "center_x": 102.18,
+   "front_x": 193.03,
+   "rear_x": 62.39,
+   "boots": 2,
+   "tip": [
+    178.72,
+    23.44
+   ],
+   "scale": 0.54468
+  },
+  "s1a.dead_lying": {
+   "rect": [
+    1229,
+    276,
+    312,
+    101
+   ],
+   "foot_y": 93.69,
+   "bottom": 94.24,
+   "top": 8.18,
+   "hip_y": 53.39,
+   "pelvis_x": 155.06,
+   "center_x": 147.98,
+   "front_x": 286.19,
+   "rear_x": 125.12,
+   "boots": 3,
+   "tip": [
+    288.41,
+    78.22
+   ],
+   "scale": 0.54468
+  },
+  "s1a.block": {
+   "rect": [
+    517,
+    276,
+    257,
+    221
+   ],
+   "foot_y": 214.07,
+   "bottom": 214.61,
+   "top": 7.09,
+   "hip_y": 116.57,
+   "pelvis_x": 102.0,
+   "center_x": 109.38,
+   "front_x": 214.14,
+   "rear_x": 16.84,
+   "boots": 2,
+   "tip": [
+    232.66,
+    39.21
+   ],
+   "scale": 0.54468
+  },
+  "s0.prep": {
+   "rect": [
+    142,
+    0,
+    186,
+    260
+   ],
+   "foot_y": 251.96,
+   "bottom": 252.53,
+   "top": 7.73,
+   "hip_y": 137.06,
+   "pelvis_x": 96.58,
+   "center_x": 84.15,
+   "front_x": 167.33,
+   "rear_x": 20.1,
+   "boots": 2,
+   "tip": [
+    23.05,
+    14.26
+   ],
+   "scale": 0.57736
+  },
+  "s0.strike": {
+   "rect": [
+    774,
+    276,
+    254,
+    220
+   ],
+   "foot_y": 212.43,
+   "bottom": 212.98,
+   "top": 6.54,
+   "hip_y": 115.48,
+   "pelvis_x": 89.57,
+   "center_x": 101.4,
+   "front_x": 190.56,
+   "rear_x": 15.87,
+   "boots": 2,
+   "tip": [
+    231.28,
+    43.03
+   ],
+   "scale": 0.54468
+  },
+  "s0.cast": {
+   "rect": [
+    787,
+    0,
+    188,
+    252
+   ],
+   "foot_y": 245.11,
+   "bottom": 245.66,
+   "top": 12.54,
+   "hip_y": 135.63,
+   "pelvis_x": 85.51,
+   "center_x": 77.66,
+   "front_x": 120.57,
+   "rear_x": 24.89,
+   "boots": 2,
+   "tip": [
+    168.32,
+    40.33
+   ],
+   "scale": 0.54468
+  }
+ },
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "f": "s0.idle",
+     "anchor": [
+      81.41,
+      268.54
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "run": {
+   "frames": [
+    {
+     "f": "s1a.run_contact",
+     "anchor": [
+      136.31,
+      218.97
+     ]
+    },
+    {
+     "f": "s0.run_b",
+     "anchor": [
+      114.0,
+      245.11
+     ]
+    },
+    {
+     "f": "s1b.run_pass",
+     "anchor": [
+      134.55,
+      217.88
+     ]
+    },
+    {
+     "f": "s0.run_a",
+     "anchor": [
+      107.64,
+      242.94
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false,
+   "cycle_bodies": 1.6,
+   "steps": [
+    0,
+    2
+   ]
+  },
+  "jump": {
+   "frames": [
+    {
+     "f": "s1b.jump_b",
+     "anchor": [
+      87.94,
+      249.47
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "fall": {
+   "frames": [
+    {
+     "f": "s1a.jump_tuck",
+     "anchor": [
+      89.86,
+      235.31
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "dodge": {
+   "frames": [
+    {
+     "f": "s1a.run_contact",
+     "anchor": [
+      136.31,
+      218.97
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "dodge_back": {
+   "frames": [
+    {
+     "f": "s1a.dodge_back",
+     "anchor": [
+      131.13,
+      227.69
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "hurt": {
+   "frames": [
+    {
+     "f": "s1a.hurt",
+     "anchor": [
+      117.69,
+      227.69
+     ]
+    },
+    {
+     "f": "s1b.hurt_b",
+     "anchor": [
+      103.05,
+      226.6
+     ]
+    }
+   ],
+   "dur": [
+    0.14
+   ],
+   "loop": false
+  },
+  "dead": {
+   "frames": [
+    {
+     "f": "s1a.hurt",
+     "anchor": [
+      98.85,
+      228.23
+     ]
+    },
+    {
+     "f": "s1a.dead_lying",
+     "anchor": [
+      147.98,
+      94.24
+     ]
+    }
+   ],
+   "dur": [
+    0.16
+   ],
+   "loop": false
+  },
+  "block": {
+   "frames": [
+    {
+     "f": "s1a.block",
+     "anchor": [
+      185.74,
+      214.07
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "windup": {
+   "frames": [
+    {
+     "f": "s0.prep",
+     "anchor": [
+      138.93,
+      251.96
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "attack": {
+   "frames": [
+    {
+     "f": "s0.prep",
+     "anchor": [
+      138.93,
+      251.96
+     ]
+    },
+    {
+     "f": "s0.strike",
+     "anchor": [
+      162.16,
+      212.43
+     ]
+    }
+   ],
+   "dur": [
+    0.035
+   ],
+   "loop": false,
+   "smear_at": 1
+  },
+  "windup_heavy": {
+   "frames": [
+    {
+     "f": "s0.prep",
+     "anchor": [
+      138.93,
+      251.96
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "attack_heavy": {
+   "frames": [
+    {
+     "f": "s0.strike",
+     "anchor": [
+      162.16,
+      212.43
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false,
+   "smear_at": 0
+  },
+  "attack_up": {
+   "frames": [
+    {
+     "f": "s0.strike",
+     "anchor": [
+      162.16,
+      212.43
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "attack_air": {
+   "frames": [
+    {
+     "f": "s0.strike",
+     "anchor": [
+      89.57,
+      235.85
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "attack_dive": {
+   "frames": [
+    {
+     "f": "s0.strike",
+     "anchor": [
+      89.57,
+      235.85
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "windup_cast": {
+   "frames": [
+    {
+     "f": "s0.cast",
+     "anchor": [
+      92.17,
+      245.11
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  },
+  "cast": {
+   "frames": [
+    {
+     "f": "s0.cast",
+     "anchor": [
+      92.17,
+      245.11
+     ]
+    }
+   ],
+   "dur": [],
+   "loop": false
+  }
+ }
+}

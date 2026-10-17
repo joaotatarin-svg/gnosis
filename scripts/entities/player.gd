@@ -158,9 +158,13 @@ func _sync_anim() -> void:
 			elif current_move.is_heavy():
 				visual.set_anim("windup_heavy" if windup_timer > 0.0 else "attack_heavy")
 			else:
-				visual.set_anim("attack")
+				# antecipação curta (o wind-up do leve) no quadro de preparo, e
+				# troca SECA pro golpe — o smear do cajado nasce na troca
+				visual.set_anim("windup" if windup_timer > 0.0 else "attack")
 		State.HURT: visual.set_anim("hurt")
-		State.DODGE: visual.set_anim("dodge")
+		State.DODGE:
+			visual.dodge_back = dodge_dir != facing
+			visual.set_anim("dodge")
 		State.BLOCK: visual.set_anim("block")
 		State.RUN: visual.set_anim("walk")
 		State.JUMP: visual.set_anim("jump")
@@ -273,14 +277,8 @@ func _process_free(delta: float) -> void:
 	else:
 		state = State.IDLE
 
-	# Passos discretos a cada ~0,3 s andando no chão (mais lentos na névoa).
-	if state == State.RUN:
-		_step_timer -= delta
-		if _step_timer <= 0.0:
-			_step_timer = 0.3 * (1.6 if status_slow > 0.0 else 1.0)
-			Audio.play_sfx("step", 0.08, -6.0)
-	else:
-		_step_timer = 0.08
+	# Passos: o CharacterArt toca "step" no quadro de apoio do pé da corrida
+	# (fase pela distância) — sem timer aqui, pra som e desenho baterem.
 
 
 # --- Combo (leve/forte) ------------------------------------------------
@@ -794,6 +792,11 @@ func _cast_sfx(skill: SkillData) -> String:
 func _squash(target: Vector2) -> void:
 	if visual == null:
 		return
+	# Squash limitado a ±7% e sempre do lado pra onde ela olha (pintura
+	# esticada/virada vira "foto"; a deformação forte fica no shader).
+	var sx: float = 1.0 + clampf(absf(target.x) - 1.0, -0.07, 0.07)
+	var sy: float = 1.0 + clampf(target.y - 1.0, -0.07, 0.07)
+	target = Vector2(facing * sx, sy)
 	var t := create_tween()
 	t.tween_property(visual, "scale", target, 0.06)
 	t.tween_property(visual, "scale", Vector2(facing, 1.0), 0.16)

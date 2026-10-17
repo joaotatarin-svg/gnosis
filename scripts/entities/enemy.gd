@@ -875,6 +875,7 @@ func _on_died() -> void:
 	# Batalha final: a forma cai mas fica (pode se refazer).
 	if revivable:
 		hurtbox.set_deferred("monitoring", false)
+		visual.dissolve_max = 0.55          # desfaz só em parte: pode se refazer
 		visual.set_anim("dead")
 		var tr := create_tween()
 		tr.tween_property(visual, "modulate", Color(0.6, 0.6, 0.7, 0.25), 0.6)
@@ -902,10 +903,12 @@ func _on_died() -> void:
 			_orb.visible = false
 		queue_free()
 	else:
+		# MORTE POR DISSOLUÇÃO: o shader desfaz a pintura em ruído com borda
+		# luminosa (CharacterArt._dissolve_amount, ~0,9 s); o cartão não tomba.
 		visual.set_anim("dead")
 		var t := create_tween()
-		t.tween_interval(0.9)
-		t.tween_property(visual, "modulate:a", 0.0, 0.5)
+		t.tween_interval(0.95)
+		t.tween_property(visual, "modulate:a", 0.0, 0.12)
 		t.tween_callback(queue_free)
 
 

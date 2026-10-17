@@ -54,7 +54,10 @@ var _dead := 0.0         # 0..1 corpo caindo
 func set_profile(p: ArtProfile) -> void:
 	profile = p
 	painted = PaintedLibrary.character(p)
-	material = PaintedLibrary.material()
+	material = _flex_material()
+	# Pinturas grandes exibidas a ~1/4: mipmap evita cintilar a borda (o
+	# BossPuppet, filho deste nó, herda o filtro).
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	if is_instance_valid(boss_puppet):
 		remove_child(boss_puppet)
 		boss_puppet.queue_free()
@@ -118,10 +121,14 @@ func set_anim(state: String) -> void:
 	if state != anim_state:
 		anim_state = state
 		anim_time = 0.0
+		# giro do manto na esquiva (contrato com o Áudio: some se não houver arquivo)
+		if state == "dodge" and painted.get("hero", false) and is_visible_in_tree():
+			Audio.play_sfx("cloth", 0.1, -4.0)
 
 
 func _process(delta: float) -> void:
 	anim_time += delta
+	_tick_visual(delta)
 	if is_instance_valid(boss_puppet):
 		boss_puppet.visible = texture == null
 		boss_puppet.modulate = self_modulate
@@ -1285,53 +1292,248 @@ func _codex_regalia(s: float) -> void:
 		draw_polyline(_closed(skirt,s),metal,0.6*s,true)
 
 
+# =========================================================================
+# PINTURA ANIMADA (Sophia por quadros desenhados · criaturas de peça única)
+# =========================================================================
+# Regras (docs/ANIMACAO.md): troca SECA entre quadros pintados, escala única
+# por personagem, pé travado pela âncora de cada quadro (JSON offline),
+# rotação do corpo inteiro ≤ MAX_ROT, squash ≤ ±MAX_SQUASH, inclinação e
+# curvatura no VERTEX SHADER (painted_flex: deslocamento ∝ altura², pés
+# pregados), vento no cabelo/manto por máscara, smear do cajado, afterimages
+# e morte por dissolução.
+
+const MAX_ROT := 0.12
+const MAX_SQUASH := 0.07
+const FLEX_SHADER := "res://assets/shaders/painted_flex.gdshader"
+const FRAMES_JSON := "res://assets/painted/derived/%s_frames.json"
+const MESH_COLS := 6
+const MESH_ROWS := 10
+
+static var _frame_dbs: Dictionary = {}     # personagem → {meta, atlas, flex} (ou {} se não houver)
+static var _mesh_cache: Dictionary = {}    # chave do quadro+âncora → grade {pts, uvs, idx}
+
+var motion_distance: float = 0.0   # distância horizontal percorrida (fase da corrida/passo)
+var dodge_back: bool = false        # esquiva pra trás (o player liga; usa o quadro de recuo)
+var dissolve_max: float = 1.0       # forma que pode se refazer dissolve só até aqui
+var _last_x: float = INF
+var _wind_time: float = 0.0
+var _flex_mat: ShaderMaterial
+var _shown_key: String = ""         # quadro desenhado agora (troca → smear/passo)
+var _shown_tip: Vector2 = Vector2.INF
+var _smear: Dictionary = {}
+var _smear_clock: float = 0.0
+var _ghosts: AfterimageLayer
+var _ghost_timer: float = 0.0
+var _impact: float = 0.0            # squash de impacto (pouso na morte etc.)
+var _step_phase: int = -1
+
+
+## Banco de quadros desenhados do personagem (atlas + JSON gerados por
+## tools/anim/build_frames.py). Vazio = usa as 6 poses antigas.
+static func frame_db(character: String) -> Dictionary:
+	if _frame_dbs.has(character):
+		return _frame_dbs[character]
+	var db: Dictionary = {}
+	var path: String = FRAMES_JSON % character
+	var data = null
+	if ResourceLoader.exists(path):
+		var res = load(path)
+		if res is JSON:
+			data = res.data
+	if data == null and FileAccess.file_exists(path):
+		data = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if typeof(data) == TYPE_DICTIONARY and ResourceLoader.exists(String(data.atlas)):
+		db = {"meta": data, "atlas": load(String(data.atlas))}
+		if ResourceLoader.exists(String(data.get("flex", ""))):
+			db["flex"] = load(String(data.flex))
+	_frame_dbs[character] = db
+	return db
+
+
+## Material próprio (cada personagem tem uniforms de curvatura/vento/dissolução).
+func _flex_material() -> ShaderMaterial:
+	if _flex_mat == null:
+		_flex_mat = ShaderMaterial.new()
+		_flex_mat.shader = load(FLEX_SHADER)
+	return _flex_mat
+
+
+## Grade de vértices (MESH_COLS×MESH_ROWS) de um retângulo da folha, com os
+## vértices em px da folha RELATIVOS À ÂNCORA (y=0 = pé). Devolve
+## {pts, uvs, idx}; o desenho escala pro mundo e o shader dobra por altura.
+## (Triângulos direto no RenderingServer: sem recurso Mesh por quadro, o
+## lote de polígonos do canvas cuida de dezenas de personagens.)
+static func grid_mesh(key: String, rect: Rect2, anchor: Vector2, sheet_size: Vector2, flip: bool = false) -> Dictionary:
+	if _mesh_cache.has(key):
+		return _mesh_cache[key]
+	var verts := PackedVector2Array()
+	var uvs := PackedVector2Array()
+	var idx := PackedInt32Array()
+	for r in MESH_ROWS + 1:
+		for c in MESH_COLS + 1:
+			var fx: float = float(c) / MESH_COLS
+			var fy: float = float(r) / MESH_ROWS
+			var px: float = rect.position.x + rect.size.x * fx
+			var py: float = rect.position.y + rect.size.y * fy
+			var vx: float = px - anchor.x
+			if flip:
+				vx = -vx
+			verts.append(Vector2(vx, py - anchor.y))
+			uvs.append(Vector2(px, py) / sheet_size)
+	for r in MESH_ROWS:
+		for c in MESH_COLS:
+			var i: int = r * (MESH_COLS + 1) + c
+			idx.append_array([i, i + 1, i + MESH_COLS + 2, i, i + MESH_COLS + 2, i + MESH_COLS + 1])
+	var grid := {"pts": verts, "uvs": uvs, "idx": idx}
+	_mesh_cache[key] = grid
+	return grid
+
+
+## Desenha a grade no item `ci` com os pontos já transformados por `xf`.
+static func draw_grid(ci: RID, grid: Dictionary, xf: Transform2D, tex: Texture2D, col: Color) -> void:
+	var pts: PackedVector2Array = xf * PackedVector2Array(grid.pts)
+	var cols := PackedColorArray()
+	cols.resize(pts.size())
+	cols.fill(col)
+	RenderingServer.canvas_item_add_triangle_array(ci, grid.idx, pts, cols, grid.uvs, PackedInt32Array(), PackedFloat32Array(), tex.get_rid())
+
+
+## Estado de animação → sequência do banco (com cadeia de reserva).
+func _hero_seq(states: Dictionary) -> String:
+	var st: String = anim_state
+	if st == "dodge" and dodge_back:
+		st = "dodge_back"
+	var chain := {
+		"walk": ["run"], "charge": ["run"], "dodge_back": ["dodge"], "attack_up": ["attack_heavy", "attack"],
+		"attack_air": ["attack_heavy", "attack"], "attack_dive": ["attack_air", "attack_heavy", "attack"],
+		"windup_heavy": ["windup"], "windup_cast": ["cast"], "fall": ["jump"], "dead": ["hurt"],
+		"recover": ["idle"], "attack_heavy": ["attack"],
+	}
+	if states.has(st):
+		return st
+	for alt in chain.get(st, []):
+		if states.has(alt):
+			return alt
+	return "idle"
+
+
+## Índice do quadro: corrida pela DISTÂNCIA percorrida; o resto por tempo
+## (dur[i] por quadro, o último segura; loop/fps opcionais).
+func _seq_index(seq: Dictionary, seq_name: String) -> int:
+	var n: int = seq.frames.size()
+	if n <= 1:
+		return 0
+	if seq_name == "run":
+		var cycle: float = float(seq.get("cycle_bodies", 1.6)) * profile.height * 1.19
+		return int(fposmod(motion_distance / maxf(cycle, 1.0), 1.0) * n) % n
+	if seq.get("loop", false) and float(seq.get("fps", 0.0)) > 0.0:
+		return int(anim_time * float(seq.fps)) % n
+	var t: float = anim_time
+	var durs: Array = seq.get("dur", [])
+	for i in n - 1:
+		var d: float = float(durs[i]) if i < durs.size() else (float(durs.back()) if not durs.is_empty() else 0.1)
+		if t < d:
+			return i
+		t -= d
+	return n - 1
+
+
 func _draw_painted(s: float) -> void:
-	var tex: Texture2D
-	var rect: Rect2
-	var flip: float = -1.0 if painted.get("flip",false) else 1.0
 	var tint := Color.WHITE
 	if profile.painted_id == "sombra_sophia":
 		tint = Color("745581")
-	if painted.get("hero",false):
-		var frame: int = 0
-		if anim_state in ["walk","charge"]: frame = 1 + int(anim_time * 9.0) % 2
-		elif anim_state in ["jump","fall","dodge"]: frame = 2
-		elif anim_state in ["windup","windup_heavy","windup_cast","block"]: frame = 3
-		elif anim_state.begins_with("attack"): frame = 4
-		elif anim_state == "cast": frame = 5
-		var anchors := [Vector2(269,492),Vector2(268,488),Vector2(267,493),Vector2(265,453),Vector2(239,455),Vector2(236,468)]
-		var body_heights := [466.0,445.0,449.0,350.0,378.0,403.0]
-		var factor: float = profile.height * 1.19 / body_heights[frame]
-		tex = PaintedLibrary.region("sophia",Rect2((frame%3)*512,(frame/3)*512,512,512))
-		rect = Rect2(-anchors[frame].x*factor,GROUND_Y*s-anchors[frame].y*factor,512*factor,512*factor)
-	else:
-		tex = PaintedLibrary.region(painted.sheet,painted.rect)
-		var h: float = profile.height * 1.30
-		if painted.sheet == "yaldabaoth": h = 190.0
-		var w: float = h * tex.get_width()/tex.get_height()
-		rect = Rect2(-w*0.5,GROUND_Y*s-h,w,h)
-		if painted.sheet == "inhabitants" and not profile.painted_id in ["soter","velkar","sleeper"]:
-			tint = Color.WHITE.lerp(profile.primary.lightened(0.3),0.22)
-	var breath: float = sin(anim_time*2.5)*0.006 if anim_state == "idle" else 0.0
-	var lean: float = _lean * (0.4 if painted.get("hero",false) else 0.7)
-	var oy: float = _bob
-	var crouch: float = _crouch * 0.45
-	# Criaturas sem boneco: o corpo inteiro anda, recua, avança e encolhe.
-	var m: Array = [0.0, 0.0, 1.0, 1.0]
-	if painted.get("hero", false):
-		# Sophia: os estados sem quadro próprio ganham movimento de corpo inteiro.
+	var mat: ShaderMaterial = _flex_material()
+	var hero: bool = painted.get("hero", false)
+	var db: Dictionary = frame_db("sophia") if hero else {}
+	var tex: Texture2D
+	var mesh: Dictionary
+	var k: float               # px da folha → px do mundo
+	var body_h: float          # altura do corpo em px da folha (base da curvatura)
+	var m: Array               # [ox, rot, sx, sy, oy, bend(px de mundo)]
+	var tip := Vector2.INF
+	var flex_tex: Texture2D = null
+	if hero and not db.is_empty():
+		var meta: Dictionary = db.meta
+		var seq_name: String = _hero_seq(meta.states)
+		var seq: Dictionary = meta.states[seq_name]
+		var i: int = _seq_index(seq, seq_name)
+		var e: Dictionary = seq.frames[i]
+		var fr: Dictionary = meta.frames[e.f]
+		var rr: Array = fr.rect
+		var rect := Rect2(rr[0], rr[1], rr[2], rr[3])
+		var anchor := Vector2(e.anchor[0], e.anchor[1])
+		tex = db.atlas
+		flex_tex = db.get("flex", null)
+		# âncora e ponta do cajado vêm em px LOCAIS do quadro; a grade usa px do atlas
+		mesh = grid_mesh("sophia:%s@%s" % [e.f, anchor], rect, rect.position + anchor, Vector2(tex.get_width(), tex.get_height()))
+		body_h = float(meta.body_px)
+		k = profile.height * 1.19 / body_h
+		if fr.tip != null:
+			tip = (Vector2(fr.tip[0], fr.tip[1]) - anchor) * k
+		var key: String = seq_name + ":" + str(i)
+		if key != _shown_key:
+			_on_frame_changed(seq, seq_name, i, tip)
+			_shown_key = key
 		m = _hero_motion()
-		crouch = 0.0
-		if anim_state in HERO_MOTION_STATES:
-			lean = 0.0
-			oy = m[4]
 	else:
-		m = _painted_motion()
-		if anim_state == "dead": lean += _dead * 1.3
-	draw_set_transform(Vector2(m[0]*s,GROUND_Y*s+oy*s),lean+m[1],Vector2(flip*m[2],(1.0-crouch+breath)*m[3]))
-	rect.position.y -= GROUND_Y*s
-	draw_texture_rect(tex,rect,false,tint)
-	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+		var rect: Rect2
+		var anchor: Vector2
+		if hero:
+			# reserva: 6 poses antigas, mesma ESCALA (sem normalizar por altura)
+			var frame: int = 0
+			if anim_state in ["walk", "charge"]: frame = 1 + int(fposmod(motion_distance / (profile.height * 0.9), 1.0) * 2.0) % 2
+			elif anim_state in ["jump", "fall", "dodge"]: frame = 2
+			elif anim_state in ["windup", "windup_heavy", "windup_cast", "block"]: frame = 3
+			elif anim_state.begins_with("attack"): frame = 4
+			elif anim_state == "cast": frame = 5
+			var anchors := [Vector2(269,492),Vector2(268,488),Vector2(267,493),Vector2(265,453),Vector2(239,455),Vector2(236,468)]
+			rect = Rect2((frame % 3) * 512, (frame / 3) * 512, 512, 512)
+			anchor = rect.position + anchors[frame]
+			tex = PaintedLibrary.sheet("sophia")
+			body_h = 466.0
+			m = _hero_motion()
+		else:
+			tex = PaintedLibrary.sheet(painted.sheet)
+			rect = painted.rect
+			anchor = Vector2(rect.position.x + rect.size.x * 0.5, rect.end.y)
+			body_h = rect.size.y
+			if painted.sheet == "inhabitants" and not profile.painted_id in ["soter", "velkar", "sleeper"]:
+				tint = Color.WHITE.lerp(profile.primary.lightened(0.3), 0.22)
+			m = _painted_motion()
+		var h: float = profile.height * 1.19 if hero else profile.height * 1.30
+		if not hero and painted.sheet == "yaldabaoth":
+			h = 190.0
+		k = h / body_h
+		mesh = grid_mesh("%s:%s@%s:%s" % [painted.get("sheet", "sophia"), rect, anchor, painted.get("flip", false)], rect, anchor, Vector2(tex.get_width(), tex.get_height()), painted.get("flip", false))
+	# --- uniforms do shader (curvatura, vento, dissolução) ---
+	mat.set_shader_parameter("body_h", body_h * k)
+	mat.set_shader_parameter("bend", float(m[5]))
+	mat.set_shader_parameter("wind_time", _wind_time)
+	mat.set_shader_parameter("use_flex", flex_tex != null)
+	if flex_tex != null:
+		mat.set_shader_parameter("flex_mask", flex_tex)
+	var running: bool = anim_state in ["walk", "charge", "dodge", "jump", "fall"]
+	mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
+	mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
+	mat.set_shader_parameter("texel", Vector2(1.0 / tex.get_width(), 1.0 / tex.get_height()))
+	mat.set_shader_parameter("hem_wave", 2.0 if profile.body == ArtProfile.Body.WRAITH else 0.0)
+	mat.set_shader_parameter("dissolve", _dissolve_amount())
+	mat.set_shader_parameter("glow_color", profile.eye)
+	# --- desenho: corpo (transform limitado) + malha da pintura ---
+	var rot: float = clampf(float(m[1]), -MAX_ROT, MAX_ROT)
+	var sx: float = clampf(float(m[2]), 1.0 - MAX_SQUASH, 1.0 + MAX_SQUASH)
+	var sy: float = clampf(float(m[3]) * (1.0 - _impact * 0.06), 1.0 - MAX_SQUASH, 1.0 + MAX_SQUASH)
+	sx *= 1.0 + _impact * 0.06
+	var origin := Vector2(float(m[0]) * s, GROUND_Y * s + float(m[4]) * s)
+	draw_set_transform(origin, rot, Vector2(sx, sy))
+	var mt := Transform2D(0.0, Vector2(k, k), 0.0, Vector2.ZERO)
+	draw_grid(get_canvas_item(), mesh, mt, tex, tint)
+	_body_xform = Transform2D(rot, Vector2(sx, sy), 0.0, origin) * mt
+	_body_mesh = mesh
+	_body_tex = tex
+	_body_tip = tip
+	_draw_smear()
+	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 	# O nível da arma mantém feedback visual sem trocar os atributos do combate.
 	if profile.has("hero") and profile.has("pauldrons"):
 		var strength: float = 0.22 if not profile.has("aura") else 0.65
@@ -1345,20 +1547,119 @@ func _draw_painted(s: float) -> void:
 		draw_arc(Vector2(0,GROUND_Y*s-30*s),24*s,0.15,2.7,40,Color(profile.eye,0.38),1.0,true)
 
 
-## Estados da Sophia em que `_hero_motion` assume a pose inteira (a inclinação
-## e o afundar genéricos de `_compute_pose` são ignorados).
-const HERO_MOTION_STATES := ["dodge", "hurt", "block", "jump", "fall", "dead", "attack_air", "attack_dive", "cast"]
+var _body_xform := Transform2D.IDENTITY   # último transform do corpo (afterimage)
+var _body_mesh: Dictionary = {}
+var _body_tex: Texture2D
+var _body_tip := Vector2.INF
 
 
-## Movimento procedural da Sophia (folha de 6 quadros; os estados sem quadro
-## reaproveitam um parecido). O corpo inteiro conta a ação: a esquiva é um
-## mergulho que gira pra frente, o dano recua e comprime, o bloqueio trava
-## agachado, pulo/queda esticam e comprimem, a morte tomba pra trás com quique,
-## o golpe aéreo gira, o mergulho aponta pro chão e a magia recua e avança.
-## Só desenho: combate, hitboxes e tempos não mudam. `pose_progress` não é
-## alimentado no herói, então tudo sai de `anim_time`.
-## Devolve [deslocamento x, rotação, escala x, escala y, deslocamento y]
-## (deslocamentos em unidades do corpo; y positivo = afunda).
+## Troca de quadro: passo no chão (som), início do smear do cajado.
+func _on_frame_changed(seq: Dictionary, seq_name: String, i: int, tip: Vector2) -> void:
+	if seq_name == "run" and i in seq.get("steps", []) and is_visible_in_tree():
+		Audio.play_sfx("step", 0.08, -6.0)
+	if seq.has("smear_at") and i == int(seq.smear_at) and tip != Vector2.INF and _body_tip != Vector2.INF:
+		_smear = {"a": _body_tip, "b": tip}
+		_smear_clock = 0.0
+	if anim_state == "dead" and i == seq.frames.size() - 1 and seq.frames.size() > 1:
+		_impact = 1.0
+
+
+## Arco de smear do cajado: varre da ponta do quadro anterior até a ponta do
+## golpe em volta do ombro, ~0,11 s, mais forte na cabeça do arco.
+func _draw_smear() -> void:
+	if _smear.is_empty():
+		return
+	var life: float = 0.11
+	if _smear_clock > life:
+		_smear = {}
+		return
+	var fade: float = 1.0 - _smear_clock / life
+	var a: Vector2 = _smear.a
+	var b: Vector2 = _smear.b
+	var c := Vector2(0.0, -profile.height * 1.19 * 0.74)     # ombro, aproximado
+	var a0: float = (a - c).angle()
+	var a1: float = (b - c).angle()
+	var da: float = wrapf(a1 - a0, -PI, PI)
+	var r0: float = (a - c).length()
+	var r1: float = (b - c).length()
+	var n: int = 14
+	var outer := PackedVector2Array()
+	var inner := PackedVector2Array()
+	var cols := PackedColorArray()
+	for j in n + 1:
+		var u: float = float(j) / n
+		var ang: float = a0 + da * u
+		var r: float = lerpf(r0, r1, u)
+		outer.append(c + Vector2.from_angle(ang) * r)
+		inner.append(c + Vector2.from_angle(ang) * r * lerpf(0.86, 0.55, u))
+	var pts := PackedVector2Array()
+	for j in n + 1:
+		pts.append(outer[j])
+		cols.append(Color(0.80, 0.98, 1.0, 0.85 * fade * pow(float(j) / n, 1.6)))
+	for j in range(n, -1, -1):
+		pts.append(inner[j])
+		cols.append(Color(0.55, 0.85, 1.0, 0.0))
+	if pts.size() >= 3:
+		draw_polygon(pts, cols)
+
+
+## Dissolução: criaturas comuns (sem boneco) e a Sophia morta não usam;
+## a forma das criaturas se desfaz em ruído com borda luminosa.
+func _dissolve_amount() -> float:
+	if anim_state != "dead" or painted.get("hero", false):
+		return 0.0
+	return clampf((anim_time - 0.12) / 0.75, 0.0, 1.0) * dissolve_max
+
+
+## Avança relógios visuais (chamado por _process).
+func _tick_visual(delta: float) -> void:
+	_wind_time += delta
+	_smear_clock += delta
+	_impact = move_toward(_impact, 0.0, delta * 6.0)
+	if is_inside_tree():
+		var x: float = global_position.x
+		if _last_x != INF:
+			motion_distance += absf(x - _last_x)
+		_last_x = x
+	# passo das criaturas: fase pela distância (meia passada = um apoio)
+	if not painted.is_empty() and not painted.get("hero", false) and not painted.has("puppet") and anim_state in ["walk", "charge"]:
+		if profile.body != ArtProfile.Body.WRAITH:
+			var stride: float = profile.height * (0.55 if profile.body != ArtProfile.Body.BEAST else 0.4)
+			var ph: int = int(motion_distance / maxf(stride, 1.0))
+			if _step_phase >= 0 and ph != _step_phase and is_visible_in_tree():
+				var heavy: bool = profile.body in [ArtProfile.Body.BRUTE, ArtProfile.Body.COLOSSUS] or profile.height >= 70.0
+				Audio.play_sfx_at("step_heavy" if heavy else "step", global_position, 0.1)
+			_step_phase = ph
+	else:
+		_step_phase = -1
+	# afterimages: esquiva (rastro contínuo) e golpe forte (no instante do golpe)
+	if painted.get("hero", false) and not _body_mesh.is_empty():
+		_ghost_timer -= delta
+		if anim_state == "dodge" and _ghost_timer <= 0.0 and anim_time < 0.26:
+			spawn_afterimage(Color(0.55, 0.85, 1.0, 0.55), 0.09)
+			_ghost_timer = 0.035
+		elif anim_state == "attack_heavy" and anim_time < 0.09 and _ghost_timer <= 0.0:
+			spawn_afterimage(Color(1.0, 0.92, 0.6, 0.6), 0.08)
+			_ghost_timer = 0.03
+
+
+## Cópia translúcida do corpo neste instante, parada no mundo, que some em
+## `life` s (60–90 ms). Aditiva e tingida — lê como rastro de luz.
+func spawn_afterimage(col: Color, life: float = 0.08) -> void:
+	if _body_mesh.is_empty() or not is_inside_tree():
+		return
+	if _ghosts == null or not is_instance_valid(_ghosts):
+		_ghosts = AfterimageLayer.new()
+		_ghosts.show_behind_parent = true
+		add_child(_ghosts)
+	_ghosts.add(get_global_transform() * _body_xform, _body_mesh, _body_tex, col, life)
+
+
+## Movimento procedural da Sophia SOBRE os quadros desenhados: só empurrões
+## pequenos (recuo, avanço, impacto). Sem girar o cartão: rotação ≤ 0,12 rad,
+## squash ≤ ±7%; a inclinação vira CURVATURA no shader (bend, px de mundo no
+## topo da cabeça, pés pregados).
+## Devolve [ox, rot, sx, sy, oy, bend] (ox/oy em unidades do corpo).
 func _hero_motion() -> Array:
 	var t := anim_time
 	var ox := 0.0
@@ -1366,153 +1667,146 @@ func _hero_motion() -> Array:
 	var rot := 0.0
 	var sx := 1.0
 	var sy := 1.0
+	var bend := 0.0
 	match anim_state:
+		"idle":
+			sy = 1.0 + sin(t * 2.5) * 0.006
+			bend = sin(t * 1.3) * 0.6
+		"walk", "charge":
+			bend = 1.5
 		"dodge":
-			# rolamento (~0.30 s): gira rápido pra frente e segue crescendo,
-			# agachado e esticado, deslizando pra frente — mergulho, não passo
 			var k := clampf(t / 0.30, 0.0, 1.0)
-			var e := ease(k, 0.45)
-			rot = 0.25 + 1.05 * e
-			sx = 1.10
-			sy = 0.80
-			# gira em torno do quadril (não dos pés): a cabeça desce e as pernas
-			# sobem — silhueta de rolamento, não de tropeço
-			var hip: float = 14.0 * sy
-			ox = 3.0 + 7.0 * e - hip * sin(rot)
-			oy = -hip * (1.0 - cos(rot)) - 1.5 * sin(k * PI)
+			var e := sin(k * PI)
+			if dodge_back:
+				ox = -2.0 * e
+				bend = -4.0 * e
+			else:
+				ox = 2.5 * e
+				bend = 6.0 * e
+				sx = 1.0 + 0.06 * e
+				sy = 1.0 - 0.06 * e
 		"hurt":
-			# recuo e squash que relaxam em 0.25 s
 			var k := 1.0 - clampf(t / 0.25, 0.0, 1.0)
-			ox = -4.5 * k
-			rot = -0.16 * k
-			sx = 1.0 - 0.08 * k
-			sy = 1.0 + 0.06 * k
-			oy = -1.0 * k
+			ox = -3.0 * k
+			bend = -4.0 * k
+			sx = 1.0 - 0.04 * k
+			sy = 1.0 + 0.04 * k
 		"block":
-			# quadro de preparação, agachado, levemente pra trás e travado
-			ox = -1.0
-			rot = -0.05
-			sy = 0.92
-			sx = 1.03
-		"jump":
-			rot = 0.04
-			sx = 0.96
-			sy = 1.06
-		"fall":
-			rot = 0.02
-			sx = 1.03
 			sy = 0.97
-		"dead":
-			# tomba pra trás devagar (aceleração de queda), bate e quica
-			var k := clampf(t / 0.70, 0.0, 1.0)
-			var fall := pow(clampf(k / 0.72, 0.0, 1.0), 1.8)
-			var bounce := 0.0
-			if k > 0.72:
-				bounce = sin((k - 0.72) / 0.28 * PI) * 0.16
-			rot = -1.4 * fall + bounce
-			oy = 4.5 * fall
-			ox = -2.0 * fall
-			sy = 1.0 - 0.06 * fall
+			bend = -1.0
+		"jump":
+			var k := 1.0 - clampf(t / 0.2, 0.0, 1.0)
+			sx = 1.0 - 0.05 * k
+			sy = 1.0 + 0.06 * k
+		"fall":
+			sy = 0.98
+		"windup", "windup_heavy", "windup_cast":
+			var e := clampf(t / 0.08, 0.0, 1.0)
+			sy = 1.0 - 0.03 * e
+			bend = -2.5 * e
+			if anim_state == "windup_heavy":
+				ox = sin(t * 40.0) * 0.25 * e      # tremor curto segurando o peso
+		"attack", "attack_up":
+			var k := 1.0 - clampf(t / 0.18, 0.0, 1.0)
+			bend = 3.5 * k
+			sx = 1.0 + 0.04 * k
+			sy = 1.0 - 0.03 * k
+		"attack_heavy":
+			var k := 1.0 - clampf(t / 0.25, 0.0, 1.0)
+			bend = 5.0 * k
+			sx = 1.0 + 0.06 * k
+			sy = 1.0 - 0.06 * k
+			ox = 1.5 * k
 		"attack_air":
-			# giro parcial no ar
-			var k := clampf(t / 0.32, 0.0, 1.0)
-			rot = 0.6 * k
-			ox = 1.5 + 1.5 * k
-			sx = 1.04
+			rot = 0.10 * clampf(t / 0.32, 0.0, 1.0)
+			bend = 2.0
 		"attack_dive":
-			# mergulho: inclinação forte pra frente, apontando pro chão
-			var k := clampf(t / 0.25, 0.0, 1.0)
-			rot = 0.35 + 0.25 * k
-			ox = 2.0
-			sx = 1.06
-			sy = 0.95
+			rot = 0.12
+			bend = 4.0
+			sy = 1.04
 		"cast":
-			# recua no início e avança no fim: a magia sai do corpo
 			var k := clampf(t / 0.30, 0.0, 1.0)
 			var e := smoothstep(0.0, 1.0, k)
-			ox = lerpf(-2.0, 2.5, e)
-			rot = lerpf(-0.05, 0.08, e)
-			sx = 1.0 + 0.05 * sin(k * PI)
+			ox = lerpf(-1.5, 1.5, e)
+			bend = lerpf(-2.0, 2.5, e)
+			sx = 1.0 + 0.04 * sin(k * PI)
 			sy = 1.0 - 0.03 * sin(k * PI)
-	return [ox, rot, sx, sy, oy]
+	return [ox, clampf(rot, -MAX_ROT, MAX_ROT), sx, sy, oy, bend]
 
 
-## Movimento procedural das criaturas pintadas (ilustração de peça única, sem
-## boneco). Como não há membros, o corpo inteiro conta a ação: passo com
-## balanço e squash, recuo comprimido no preparar (telegrafo), avanço esticado
-## no golpe, recuo no dano. Espectros flutuam; feras galopam.
-## Devolve [deslocamento x (unidades do corpo), rotação extra, escala x, escala y].
+## Movimento das criaturas pintadas (peça única, sem boneco): o corpo inteiro
+## conta a ação SEM girar o cartão — passo com quique e squash moderado pela
+## DISTÂNCIA (os pés não patinam no ritmo), recuo comprimido no preparar,
+## avanço esticado no golpe; inclinações viram curvatura no shader.
+## Devolve [ox, rot, sx, sy, oy, bend].
 func _painted_motion() -> Array:
 	var t := anim_time
 	var p: float = maxf(pose_progress, 0.0)
-	var fury: float = motion_fury
 	var wraith: bool = profile.body == ArtProfile.Body.WRAITH
 	var beast: bool = profile.body == ArtProfile.Body.BEAST
 	var ox := 0.0
-	var rot := 0.0
+	var oy := 0.0
 	var sx := 1.0
 	var sy := 1.0
+	var bend := 0.0
+	var stride_len: float = profile.height * (0.4 if beast else 0.55)
+	var ph: float = fposmod(motion_distance / maxf(stride_len, 1.0), 1.0)   # 0..1 por passo
 	match anim_state:
-		"walk":
-			var stride: float = clampf(motion_stride, 0.35, 1.5)
+		"walk", "charge":
 			if wraith:
-				# espectro: flutua e balança devagar, sem passo
-				rot = sin(t * 2.2) * 0.05
-				sx = 1.0 + sin(t * 2.2) * 0.02
-			elif beast:
-				# fera: galope curto, corpo estica e comprime
-				var ph := sin(t * 11.0 * fury)
-				rot = ph * 0.07
-				sx = 1.0 + absf(ph) * 0.06
-				sy = 1.0 - absf(ph) * 0.05
+				oy = sin(t * 2.2) * 1.2
+				bend = sin(t * 1.7) * 1.5
 			else:
-				# bípede: balança de um pé pro outro (mesma frequência do _bob)
-				var ph := sin(t * 9.0 * fury)
-				rot = ph * 0.05 * stride
-				sx = 1.0 - absf(ph) * 0.03 * stride
-				sy = 1.0 + absf(ph) * 0.03 * stride
-		"charge":
-			ox = 2.0
-			rot = 0.12
-			sx = 1.12
-			sy = 0.92
+				var lift: float = sin(ph * PI)            # 0 no apoio, 1 no meio do passo
+				oy = -lift * (1.4 if beast else 1.1)
+				sy = 1.0 + 0.035 * lift - 0.035 * (1.0 - lift)
+				sx = 1.0 - 0.02 * lift
+				bend = 2.0 + sin(ph * TAU) * (1.2 if beast else 0.8)
+				if anim_state == "charge":
+					bend += 4.0
+					ox = 2.0
 		"windup", "windup_heavy", "windup_cast":
-			# recua e comprime rápido, depois segura tremendo (telegrafo legível)
 			var e := ease(p, 0.45)
-			var tremor: float = sin(t * 38.0) * 0.012 * e
-			ox = -3.0 * e
-			rot = -0.06 * e + tremor
-			sx = 1.0 - 0.06 * e
+			var tremor: float = sin(t * 38.0) * 0.3 * e
+			ox = -3.0 * e + tremor
+			sx = 1.0 - 0.05 * e
 			sy = 1.0 + 0.05 * e
+			bend = -4.0 * e
 			if anim_state == "windup_heavy":
-				ox = -1.5 * e
-				sy = 1.0 + 0.10 * e
+				ox = -1.5 * e + tremor
+				sy = 1.0 + 0.07 * e
 		"attack", "attack_heavy", "cast":
-			# golpe: avança e estica no começo, depois assenta
 			var e := ease(clampf(p if pose_progress >= 0.0 else t / 0.25, 0.0, 1.0), 0.35)
 			var punch: float = sin(e * PI)
 			ox = (1.5 if anim_state == "cast" else 7.0) * punch
-			rot = 0.14 * punch
-			sx = 1.0 + 0.12 * punch
-			sy = 1.0 - 0.08 * punch
+			bend = 6.0 * punch
+			sx = 1.0 + 0.06 * punch
+			sy = 1.0 - 0.05 * punch
 			if anim_state == "attack_heavy":
-				rot = 0.16 * punch
-				sy = 1.0 - 0.14 * punch
+				sy = 1.0 - 0.07 * punch
 		"recover":
-			# volta pro repouso ainda inclinado à frente
 			var back: float = 1.0 - p
 			ox = 2.0 * back
-			rot = 0.05 * back
+			bend = 2.0 * back
 		"hurt":
 			var k := 1.0 - clampf(t / 0.25, 0.0, 1.0)
 			ox = -3.5 * k
-			rot = -0.10 * k
-			sx = 1.0 - 0.10 * k
-			sy = 1.0 + 0.08 * k
+			bend = -4.0 * k
+			sx = 1.0 - 0.06 * k
+			sy = 1.0 + 0.06 * k
+		"dead":
+			# afunda um pouco enquanto dissolve (sem tombar o cartão)
+			var k := clampf(t / 0.5, 0.0, 1.0)
+			sy = 1.0 - 0.05 * k
+			bend = -2.0 * k
 		_:
 			if wraith:
-				rot = sin(t * 1.7) * 0.03
-	return [ox, rot, sx, sy]
+				oy = sin(t * 1.7) * 1.0
+				bend = sin(t * 1.3) * 1.2
+			else:
+				sy = 1.0 + sin(t * 2.0) * 0.008
+	return [ox, 0.0, sx, sy, oy, bend]
+
 
 
 func _painted_gibs(s: float) -> Array:
@@ -1529,3 +1823,37 @@ func _painted_gibs(s: float) -> Array:
 			var points := PackedVector2Array([Vector2(x,y),Vector2(x+w/3*flip,y),Vector2(x+w/3*flip,y+h/3),Vector2(x,y+h/3)])
 			parts.append({"pts":points,"col":Color.WHITE,"kind":"painted","tex":PaintedLibrary.region(painted.sheet,tile),"size":Vector2(w/3,h/3),"flip":flip})
 	return parts
+
+
+## Camada de afterimages: cópias do corpo paradas no MUNDO (top_level) que
+## somem em 60–90 ms. Desenho aditivo tingido (shader painted_ghost).
+class AfterimageLayer extends Node2D:
+	var items: Array = []    # {xf, mesh, tex, col, life, t}
+	static var ghost_material: ShaderMaterial
+
+	func _ready() -> void:
+		top_level = true
+		global_transform = Transform2D.IDENTITY
+		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		if ghost_material == null:
+			ghost_material = ShaderMaterial.new()
+			ghost_material.shader = load("res://assets/shaders/painted_ghost.gdshader")
+		material = ghost_material
+
+	func add(xf: Transform2D, mesh: Dictionary, tex: Texture2D, col: Color, life: float) -> void:
+		items.append({"xf": xf, "mesh": mesh, "tex": tex, "col": col, "life": life, "t": 0.0})
+		queue_redraw()
+
+	func _process(delta: float) -> void:
+		if items.is_empty():
+			return
+		for it in items:
+			it.t += delta
+		items = items.filter(func(it): return it.t < it.life)
+		queue_redraw()
+
+	func _draw() -> void:
+		for it in items:
+			var c: Color = it.col
+			c.a *= 1.0 - it.t / it.life
+			CharacterArt.draw_grid(get_canvas_item(), it.mesh, it.xf, it.tex, c)
