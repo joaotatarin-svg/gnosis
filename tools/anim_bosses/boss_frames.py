@@ -148,6 +148,8 @@ def build(name: str, use_rife: bool = True) -> None:
 	cells = R.get("cells", ["idle_0", "idle_1", "walk_0", "walk_1", "windup", "strike", "hurt", "death"])
 	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells)
 	fit = old_fit(os.path.join(ROOT, R["old_body"]), bool(R.get("old_flip", True)))
+	# correção de tamanho (silhueta nova com asas/coroa mais altas que a antiga)
+	fit["body_frac"] = round(fit["body_frac"] * float(R.get("size_fix", 1.0)), 5)
 	ref = R.get("ref", "idle_0")
 	ref_m = measure(raw[ref][0])
 	ref_body_src = ref_m["foot_y"] - ref_m["top"]

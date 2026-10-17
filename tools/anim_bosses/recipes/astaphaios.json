@@ -1,0 +1,77 @@
+{
+ "_doc": "Receita dos quadros de astaphaios (tools/anim_bosses/boss_frames.py). Folha do GPT 2x4 olhando p/ direita.",
+ "sheet": "artes/gpt/boss_5_astaphaios_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "old_body": "assets/painted/derived/puppets/astaphaios_body.png",
+ "old_flip": true,
+ "kind": "biped",
+ "body_px": 300,
+ "size_fix": 1.0,
+ "anchors": {},
+ "anchor_fix": {},
+ "inbetween": {
+  "idle": [
+   "idle_0",
+   "idle_1",
+   2
+  ]
+ },
+ "flex": {},
+ "hem_wave": 0.0,
+ "states": {
+  "idle": {
+   "pingpong": [
+    "idle_0",
+    "idle_1"
+   ],
+   "loop": true,
+   "fps": 4.0
+  },
+  "walk": {
+   "frames": [
+    "walk_0",
+    "idle_0",
+    "walk_1",
+    "idle_1"
+   ],
+   "cycle_bodies": 0.9
+  },
+  "windup": {
+   "frames": [
+    "windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "recover": {
+   "frames": [
+    "strike",
+    "idle_0"
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.14
+   ]
+  }
+ }
+}

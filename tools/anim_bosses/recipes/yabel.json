@@ -1,0 +1,86 @@
+{
+ "_doc": "Receita dos quadros de yabel (tools/anim_bosses/boss_frames.py). Folha do GPT 2x4 olhando p/ direita.",
+ "sheet": "artes/gpt/boss_4_yabel_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "old_body": "assets/painted/derived/puppets/yabel_body.png",
+ "old_flip": true,
+ "kind": "spirit",
+ "body_px": 300,
+ "size_fix": 1.0,
+ "anchors": {
+  "death": "lying"
+ },
+ "anchor_fix": {},
+ "inbetween": {
+  "idle": [
+   "idle_0",
+   "idle_1",
+   2
+  ],
+  "walk": [
+   "walk_0",
+   "walk_1",
+   2
+  ]
+ },
+ "flex": {
+  "cloth_top": 0.5,
+  "cloth_amp": 2.0
+ },
+ "hem_wave": 1.2,
+ "states": {
+  "idle": {
+   "pingpong": [
+    "idle_0",
+    "idle_1"
+   ],
+   "loop": true,
+   "fps": 4.0
+  },
+  "walk": {
+   "pingpong": [
+    "walk_0",
+    "walk_1"
+   ],
+   "loop": true,
+   "fps": 6.0
+  },
+  "windup": {
+   "frames": [
+    "windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "recover": {
+   "frames": [
+    "strike",
+    "idle_0"
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.14
+   ]
+  }
+ }
+}

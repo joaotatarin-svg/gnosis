@@ -1,0 +1,409 @@
+{
+ "character": "bosses/belias",
+ "atlas": "res://assets/painted/derived/bosses/belias_frames.png",
+ "flex": "",
+ "sil": "res://assets/painted/derived/bosses/belias_frames_sil.png",
+ "body_px": 300.0,
+ "kind": "beast",
+ "fit": {
+  "body_frac": 0.69979,
+  "foot_gap": 0.09091,
+  "dx": 0.02066,
+  "rect_px": [
+   427,
+   473
+  ]
+ },
+ "cloth_amp": 0.0,
+ "hem_wave": 0.0,
+ "atlas_size": [
+  2048,
+  1024
+ ],
+ "frames": {
+  "idle_0": {
+   "rect": [
+    0,
+    346,
+    380,
+    325
+   ],
+   "top": 7.95,
+   "foot_y": 307.95,
+   "bottom": 315.74,
+   "pelvis_x": 210.96,
+   "mid": false
+  },
+  "idle_0-idle_1_25": {
+   "rect": [
+    1343,
+    0,
+    361,
+    327
+   ],
+   "top": 9.0,
+   "foot_y": 309.0,
+   "bottom": 316.0,
+   "pelvis_x": 195.16,
+   "mid": true
+  },
+  "idle_0-idle_1_50": {
+   "rect": [
+    991,
+    0,
+    352,
+    331
+   ],
+   "top": 9.0,
+   "foot_y": 314.0,
+   "bottom": 322.0,
+   "pelvis_x": 182.83,
+   "mid": true
+  },
+  "idle_0-idle_1_75": {
+   "rect": [
+    643,
+    0,
+    348,
+    334
+   ],
+   "top": 50.0,
+   "foot_y": 316.0,
+   "bottom": 325.0,
+   "pelvis_x": 157.18,
+   "mid": true
+  },
+  "idle_1": {
+   "rect": [
+    295,
+    0,
+    348,
+    342
+   ],
+   "top": 50.81,
+   "foot_y": 324.51,
+   "bottom": 333.27,
+   "pelvis_x": 153.04,
+   "mid": false
+  },
+  "walk_0": {
+   "rect": [
+    380,
+    346,
+    377,
+    313
+   ],
+   "top": 8.92,
+   "foot_y": 295.29,
+   "bottom": 305.03,
+   "pelvis_x": 196.39,
+   "mid": false
+  },
+  "walk_0-walk_1_25": {
+   "rect": [
+    1125,
+    346,
+    375,
+    308
+   ],
+   "top": 9.0,
+   "foot_y": 292.0,
+   "bottom": 297.0,
+   "pelvis_x": 195.53,
+   "mid": true
+  },
+  "walk_0-walk_1_50": {
+   "rect": [
+    1500,
+    346,
+    373,
+    304
+   ],
+   "top": 9.0,
+   "foot_y": 290.0,
+   "bottom": 293.0,
+   "pelvis_x": 192.54,
+   "mid": true
+  },
+  "walk_0-walk_1_75": {
+   "rect": [
+    375,
+    671,
+    372,
+    300
+   ],
+   "top": 53.0,
+   "foot_y": 288.0,
+   "bottom": 290.0,
+   "pelvis_x": 186.42,
+   "mid": true
+  },
+  "walk_1": {
+   "rect": [
+    0,
+    671,
+    375,
+    301
+   ],
+   "top": 11.84,
+   "foot_y": 289.44,
+   "bottom": 292.36,
+   "pelvis_x": 192.29,
+   "mid": false
+  },
+  "windup": {
+   "rect": [
+    757,
+    346,
+    368,
+    313
+   ],
+   "top": 23.53,
+   "foot_y": 300.16,
+   "bottom": 304.05,
+   "pelvis_x": 200.98,
+   "mid": false
+  },
+  "strike": {
+   "rect": [
+    747,
+    671,
+    454,
+    269
+   ],
+   "top": 34.25,
+   "foot_y": 250.48,
+   "bottom": 260.22,
+   "pelvis_x": 255.27,
+   "mid": false
+  },
+  "hurt": {
+   "rect": [
+    0,
+    0,
+    295,
+    346
+   ],
+   "top": 11.84,
+   "foot_y": 333.27,
+   "bottom": 337.17,
+   "pelvis_x": 155.75,
+   "mid": false
+  },
+  "death": {
+   "rect": [
+    1201,
+    671,
+    389,
+    168
+   ],
+   "top": 36.19,
+   "foot_y": 157.95,
+   "bottom": 158.92,
+   "pelvis_x": 189.21,
+   "mid": false
+  }
+ },
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "f": "idle_0",
+     "anchor": [
+      210.96,
+      307.95
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_25",
+     "anchor": [
+      191.96,
+      310.51
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_50",
+     "anchor": [
+      175.96,
+      314.51
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_75",
+     "anchor": [
+      162.96,
+      317.51
+     ]
+    },
+    {
+     "f": "idle_1",
+     "anchor": [
+      153.04,
+      324.51
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_75",
+     "anchor": [
+      162.96,
+      317.51
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_50",
+     "anchor": [
+      175.96,
+      314.51
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_25",
+     "anchor": [
+      191.96,
+      310.51
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 4.0
+  },
+  "walk": {
+   "frames": [
+    {
+     "f": "walk_0",
+     "anchor": [
+      196.39,
+      295.29
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_25",
+     "anchor": [
+      194.39,
+      292.29
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_50",
+     "anchor": [
+      192.39,
+      290.29
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_75",
+     "anchor": [
+      190.39,
+      288.29
+     ]
+    },
+    {
+     "f": "walk_1",
+     "anchor": [
+      192.29,
+      289.44
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_75",
+     "anchor": [
+      190.39,
+      288.29
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_50",
+     "anchor": [
+      192.39,
+      290.29
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_25",
+     "anchor": [
+      194.39,
+      292.29
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 9.0
+  },
+  "windup": {
+   "frames": [
+    {
+     "f": "windup",
+     "anchor": [
+      200.98,
+      300.16
+     ]
+    }
+   ]
+  },
+  "attack": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      255.27,
+      250.48
+     ]
+    }
+   ]
+  },
+  "recover": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      255.27,
+      250.48
+     ]
+    },
+    {
+     "f": "idle_0",
+     "anchor": [
+      210.96,
+      307.95
+     ]
+    }
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      155.75,
+      333.27
+     ]
+    }
+   ]
+  },
+  "dead": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      155.75,
+      333.27
+     ]
+    },
+    {
+     "f": "death",
+     "anchor": [
+      198.72,
+      158.92
+     ]
+    }
+   ],
+   "dur": [
+    0.14
+   ]
+  }
+ }
+}

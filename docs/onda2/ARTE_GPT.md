@@ -1,4 +1,4 @@
-# ARTE GPT — chefes por quadros desenhados (Onda 2, sessão local)
+﻿# ARTE GPT — chefes por quadros desenhados (Onda 2, sessão local)
 
 Branch `dir2/arte-gpt` (base `integracao/onda1`). Diretor de animação de chefes por quadros.
 
@@ -43,7 +43,25 @@ Ver Pedidos.
 
 | Chefe | Folha | Estado | Capturas (C:\gnosis-wt\_caps\arte-gpt\) |
 |---|---|---|---|
-| Athoth | `artes/gpt/boss_1_athoth_a.png` | **integrado** (14 quadros, 6 meios RIFE) | `gifs/athoth_antes_jogo_leve.gif`, `gifs/athoth_depois_jogo_leve.gif`, `gifs/athoth_prancha_antes_depois.png`, `athoth_contact.png` |
+| Athoth | `artes/gpt/boss_1_athoth_a.png` (3/4; refação em perfil a caminho) | **integrado** (14 quadros, 6 meios RIFE) | `gifs/athoth_antes_jogo_leve.gif`, `gifs/athoth_depois_jogo_leve.gif`, `gifs/athoth_prancha_antes_depois.png`, `athoth_contact.png` |
+| Harmas | `boss_2_harmas_a.png` (RGBA, alfa já vem pronto) | **integrado** (11 quadros, 3 meios) | `gifs/prancha_arconte_fome.png`, `gifs/harmas_depois_jogo_leve.gif` |
+| Galila | `boss_3_galila_b.png` (_a rejeitada pelo produtor) | **integrado** (11/3) | `gifs/prancha_arconte_corrente.png`, `gifs/galila_depois_jogo_leve.gif` |
+| Yabel | `boss_4_yabel_a.png` | **integrado** (14/6, espectro: andar em vaivém) | `gifs/prancha_arconte_silencio.png`, `gifs/yabel_depois_jogo_leve.gif` |
+| Astaphaios | `boss_5_astaphaios_a.png` | **integrado** (11/3; véus pela desmistura do key_array, 0 px magenta/rosado) | `gifs/prancha_arconte_espelho.png`, `gifs/astaphaios_depois_jogo_leve.gif` |
+| Belias | `boss_6_belias_a.png` (quadrúpede) | **integrado** (14/6, galope em vaivém; fatiado por componentes) | `gifs/prancha_arconte_praga.png`, `gifs/belias_depois_jogo_leve.gif` |
+| Armupiel | `boss_7_armupiel_a.png` | **integrado** (11/3) | `gifs/prancha_arconte_coroa.png`, `gifs/armupiel_depois_jogo_leve.gif` |
+| Colosso | `boss_8_colosso_b.png` (_a rejeitada) | **integrado** (11/3) | `gifs/prancha_colosso.png`, `gifs/final_depois_jogo_leve.gif` |
+| Rei / Rei final / Yaldabaoth | `boss_9_rei_a.png` (fundo rosa 248,3,185 — a chave estima a cor pela moldura) | **integrado** (14/6) | `gifs/prancha_rei_final.png`, `gifs/rei_depois_jogo_leve.gif`, `t68b/last_small.png` |
+
+Bípedes andam com 4 quadros pela DISTÂNCIA (walk_0 → idle_0 → walk_1 → idle_1, ciclo = 0,9
+altura do corpo); espectros, fera e Rei em vaivém com meios do RIFE. Tamanho: altura do corpo
+igual ao boneco em todos (PuppetQA); a largura muda onde a vista mudou (Colosso e Rei em perfil
+ficaram mais estreitos que a pintura frontal antiga; Belias com espinhos mais baixos).
+
+**Tela 68 (Rei "não aparece")**: conferido no renderer real — os dois chefes existem; o Rei
+final aparece com os quadros novos (`_caps/arte-gpt/t68/both.png`, `t68b/last_small.png`). O
+Colosso nasce FORA da tela (x≈1774 px de imagem com a Sophia em 460) e entra andando; a barra
+mostra o nome do Colosso desde o início. Não é arte → Pedido 4.
 
 ## QAs
 - `PuppetQA` (check) ganhou `_check_frames()`: estados obrigatórios, retângulos no atlas,
@@ -69,5 +87,7 @@ Ver Pedidos.
    `visual.telegraph_color = TELEGRAPH_*` (e zerar `telegraph_color.a` no golpe) quando
    `visual.has_boss_frames()`; os demais inimigos podem continuar no tom chapado ou ganhar o mesmo
    contorno depois.
+4. **level.gd / final_battle.gd (tela 68)**: o Colosso nasce fora da tela (≈ +1300 px da Sophia) e a
+   barra única mostra o nome dele enquanto só o Rei está visível — já listado como A3 no QA-UX.
 3. **enemy.gd (morte do chefe)**: opcional — tocar o estado `dead` (quadro `death` + dissolução)
    ~0,4 s antes do desmembramento, para o quadro de morte desenhado aparecer.

@@ -92,3 +92,60 @@ Downloads voltaram a funcionar no Chrome (Browser 2) com <a download>.
 - Observações: a névoa/orbes roxos do windup/strike se misturam com o magenta (franja rosada maior: ~9,8 mil px quase-magenta) —
   recorte precisa de cuidado ou refazer a névoa por FX. As esferas do strike (q5) chegam perto do q6 (caixas se sobrepõem, pixels não).
   death = desmoronando no chão (h≈306).
+
+## Chefe 2 — Harmas (Fome)
+- Arquivo: `boss_2_harmas_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32079-c4c4-83ea-9bdb-6090af4e51b5
+- ATENÇÃO: veio com FUNDO TRANSPARENTE (RGBA, alfa real) em vez de magenta — melhor para o recorte.
+- Nota: 7.5/10. Figurino idêntico à ref (elmo com chifres, bocarra no torso, placas e correntes). Vista ~3/4 virada p/ direita
+  (o prompt pediu perfil verdadeiro; a bocarra do torso força um ângulo mais frontal). Windup (punhos ao alto, boca abrindo), strike
+  (punhos no chão, boca aberta), hurt e death (de joelhos) legíveis. Sem efeitos.
+
+## Chefe 3 — Galila (Corrente)
+- Arquivo APROVADO: `boss_3_galila_b.png` — 2×4. Rejeitada: `boss_3_galila_a.png` (espada do strike invadia a célula do hurt).
+  Chat: https://chatgpt.com/c/6ad32126-5f34-83e9-90b0-3c7567370899 (2 gerações)
+- Nota: 8.5/10. PERFIL lateral de verdade, olhando p/ direita; figurino idêntico (elmo-coroa com chifres, correntes com gaiolas-lanterna,
+  trapos, espadão). windup (agachado, espada atrás, corrente na mão), strike (estocada com espada), hurt, death (de joelhos apoiado na espada).
+  8 quadros separados, sem efeitos. Fundo magenta.
+
+## Chefe 4 — Yabel (Silêncio)
+- Arquivo: `boss_4_yabel_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad3228b-6d58-83e9-8479-f9995814a72a
+- Nota: 7.5/10. Fiel (máscara pálida, coroa + halo, asas escuras, pergaminhos e faixas). Perfil/3-4 leve p/ direita; o windup
+  (asas abertas, braços erguidos) é frontal. strike = asas p/ frente + palmas, só 2–3 linhas finas de onda (efeito mínimo, ok).
+- Observações: as asas do windup e do strike chegam muito perto uma da outra (separadas por ~12 px); a ponta da asa do windup encosta
+  na borda esquerda (x≈8).
+
+## Chefe 5 — Astaphaios (Espelho)
+- Arquivo: `boss_5_astaphaios_a.png` — 2×4, 1 geração (a 1ª mensagem saiu sem anexo; reenviei a ref no mesmo chat).
+  Chat: https://chatgpt.com/c/6ad3230b-ff1c-83e9-a0c2-672e9b3ca59e
+- Nota: 8/10. PERFIL verdadeiro p/ direita; armadura prateada, halo, cajado-espelho e cristais fiéis. windup (cajado recuado na horizontal),
+  strike (estocada com o espelho à frente), hurt, death (de joelhos, espelho no chão).
+- Observações: os VÉUS são translúcidos e misturam com o magenta (~29 mil px "quase-magenta") — recorte com chroma simples vai deixar
+  véu rosado; usar despill/recolorir véu ou aceitar véu mais opaco. Cristais flutuantes = pixels soltos ao redor (poucos).
+
+## Chefe 6 — Belias (Praga)
+- Arquivo: `boss_6_belias_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32401-26c8-83e9-8f37-2a7ca039529f
+- Nota: 8/10. Quadrúpede em PERFIL, virado p/ DIREITA (a ref olhava p/ esquerda — invertido corretamente); cogumelos, espinhos,
+  chifres e cauda fiéis. walk_0/walk_1 com passada de fera; windup (agachado, boca abrindo), strike (bote com mandíbula aberta),
+  hurt (empinando), death (deitado de lado).
+- Observações: walk_1 e death encostam na borda DIREITA da imagem (x≈1535) e idle_0 na esquerda (x≈4) — pode ter 1–3 px do focinho/cauda
+  cortados. Cogumelos com hastes finas = detalhe fino no recorte.
+
+## Chefe 7 — Armupiel (Coroa)
+- Arquivo: `boss_7_armupiel_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32493-254c-83ea-8ac9-af7fe095a44b
+- Nota: 8/10. PERFIL p/ direita; armadura dourada, elmo-coroa espinhoso, capa azul com estrelas, correntes e espadão fiéis.
+  windup (espadão acima da cabeça), strike (golpe descendente, lâmina no chão à frente), hurt, death (de joelhos apoiado na espada).
+  Sem efeitos, fundo magenta limpo (139 px quase-magenta), 8 quadros separados.
+
+## Chefe 8 — Colosso Oco
+- Arquivo APROVADO: `boss_8_colosso_b.png` — 2×4. Rejeitada: `boss_8_colosso_a.png` (punhos do windup encostavam nos pés do quadro de cima; windup frontal).
+  Chat: https://chatgpt.com/c/6ad32512-c6ac-83e9-8cae-b2d6e29bff0f (2 gerações)
+- Nota: 8/10. Perfil p/ direita (leve 3/4 p/ mostrar o núcleo oco brilhando); pedra + placas douradas, tecido azul-cinza fiéis.
+  windup (punho erguido atrás do ombro, perfil), strike (punhos no chão, poucas pedrinhas), hurt (lascas), death (desmoronando de joelhos).
+  Fundo magenta limpo; 8 quadros separados (pedrinhas soltas = pixels pequenos ao redor).
+
+## Chefe 9 — Rei / Yaldabaoth
+- Arquivo: `boss_9_rei_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32602-4348-83e8-a85a-0befbca24e16
+- ATENÇÃO: o fundo veio ROSA-MAGENTA (≈ RGB 248,3,185, igual ao da ref), NÃO #FF00FF — chapado e uniforme; chavear por essa cor.
+- Nota: 8/10. Perfil p/ direita; manto marfim com faixa dourada, máscara branca com fendas, capuz-coroa fiéis. windup (braço erguido
+  com o orbe-olho dourado), strike (gesto régio à frente com o orbe), hurt (mangas p/ cima), death (afundando de joelhos, manto no chão).
+  8 quadros separados; mantos encostam nas bordas laterais (x≈4 e x≈1534).

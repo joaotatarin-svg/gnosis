@@ -37,6 +37,7 @@ func _ready() -> void:
 		"film_criaturas": _film_creatures()
 		"film_boss": _film_boss(args[2] if args.size() >= 3 else "arconte_sono")
 		"boss_board": await _boss_board(args[2] if args.size() >= 3 else "")
+		"shader_cmp": await _shader_cmp()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -269,6 +270,26 @@ func _boss_board(only: String) -> void:
 		_save((out if out != "" else "user://boss_board") + "_" + id + ".png")
 		stage.queue_free()
 		await get_tree().process_frame
+	get_tree().quit()
+
+
+## Sophia e uma criatura com o shader painted_flex (cor ao quadrado) × o
+## painted_boss (cor do vértice separada): prova do achado do shader.
+func _shader_cmp() -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	for col in 2:
+		var art := _sophia(Vector2(140 + col * 260, GROUND), 2.0)
+		var cr := _creature("servo", Vector2(230 + col * 260, GROUND), 1.6)
+		for a in [art, cr]:
+			a.set_process(false)
+			a.set_anim("idle")
+			if col == 1:
+				a._flex_material().shader = load(CharacterArt.BOSS_SHADER)
+			a.queue_redraw()
+		_label("painted_flex (hoje)" if col == 0 else "cor do vértice 1x (corrigido)", Vector2(80 + col * 260, 20))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://shader_cmp.png")
 	get_tree().quit()
 
 
