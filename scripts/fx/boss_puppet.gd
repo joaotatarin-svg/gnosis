@@ -27,6 +27,13 @@ const PARTS := {
 		"crystal_5": [[Vector2(.715,.245),Vector2(.765,.245),Vector2(.78,.32),Vector2(.755,.395),Vector2(.725,.395),Vector2(.71,.32)]],
 		"crystal_6": [[Vector2(.815,.185),Vector2(.885,.185),Vector2(.935,.33),Vector2(.895,.485),Vector2(.845,.485),Vector2(.805,.33)]]},
 }
+# Camadas de membro (antebraço/punho por cima do corpo). Polígono = "hole" de
+# build_puppets.py: ali o corpo foi reconstruído e NÃO segue esse braço.
+const LAYERS := {
+	1: {"arm_l": [Vector2(.07,.48),Vector2(.285,.48),Vector2(.285,.57),Vector2(.23,.62),Vector2(.21,.70),Vector2(.20,.765),Vector2(.12,.775),Vector2(.055,.72),Vector2(.06,.55)],
+		"arm_r": [Vector2(.70,.45),Vector2(.95,.45),Vector2(.955,.62),Vector2(.975,.865),Vector2(.80,.865),Vector2(.79,.76),Vector2(.715,.745),Vector2(.695,.62)]},
+	7: {"arm_l": [Vector2(.0,.40),Vector2(.27,.40),Vector2(.275,.50),Vector2(.205,.62),Vector2(.195,.745),Vector2(.0,.745)]},
+}
 # Tecido/capa por boneco: [lado, x, y_topo, y_base, osso_pai].
 const CLOTH := {
 	1: [["c",.50,.56,.90,"hip"]],
@@ -40,7 +47,13 @@ const ZONES := {
 	2: [["cage_l",Rect2(.07,.23,.14,.64)],["cage_r",Rect2(.755,.19,.10,.33)]],
 }
 
+# Malhas/pesos pré-calculados (tools/anim_bosses/bake_meshes.gd): sem engasgo
+# na 1ª aparição. A chave inclui versão + hash do esqueleto: se o layout mudar
+# sem novo bake, a malha é recalculada em tempo de jogo (correto, só mais lento).
+const MESH_VERSION := 3
+const BAKE_PATH := DERIVED+"mesh_cache.res"
 static var _mesh_cache: Dictionary = {}
+static var _bake_loaded: bool = false
 
 var skeleton: Skeleton2D
 var skin: Polygon2D
@@ -56,10 +69,13 @@ var gait: float = 0.0
 var debug_bones: bool = false
 var debug_layer: Node2D
 var pieces: Array[Polygon2D] = []
+var limb_layers: Array[Polygon2D] = []
 var paint: Dictionary = {}
 var vertex_count: int = 0
 var triangle_count: int = 0
 var grid := Vector2i.ZERO
+var layout_hash: int = 0
+var from_bake: bool = true
 ## Textura por estado (futuro: quadros pintados por estado). Mesmo tamanho e
 ## coordenadas da camada corpo; a malha e os pesos continuam valendo.
 var state_textures: Dictionary = {}
@@ -89,6 +105,7 @@ func configure(p: Dictionary) -> void:
 	skeleton.name = "Skeleton"
 	add_child(skeleton)
 	_layout()
+	layout_hash = (str(joint_uv)+str(LAYERS.get(identity,""))+str(ZONES.get(identity,""))+str(CLOTH.get(identity,""))).hash()
 	hip_rest = bones.hip.rest.origin
 	for id in bones:
 		ang[id] = 0.0
@@ -104,6 +121,12 @@ func configure(p: Dictionary) -> void:
 ## Esvazia o cache de malhas (QA mede o custo da 1ª montagem).
 static func clear_cache() -> void:
 	_mesh_cache.clear()
+	_bake_loaded = false
+
+
+## Todas as malhas já montadas (o bake grava isto).
+static func cache() -> Dictionary:
+	return _mesh_cache
 
 
 ## Monta a malha (na 1ª animação, quando a escala já é conhecida). Pode ser
@@ -262,8 +285,8 @@ func _distance_to_segment(p: Vector2, a: Vector2, b: Vector2) -> float:
 	return p.distance_to(a+v*clampf((p-a).dot(v)/maxf(v.length_squared(),0.01),0,1))
 
 
-func _weights(uv: Vector2) -> Dictionary:
-	if kind == "biped": return _weights_biped(uv)
+func _weights(uv: Vector2, layer: String = "") -> Dictionary:
+	if kind == "biped": return _weights_biped(uv,layer)
 	# Espectros, Rei e fera: campo contínuo original (já aprovado), sem mudança.
 	var result: Dictionary = {}
 	var active: Array = []
@@ -302,7 +325,7 @@ func _top4(weighted: Array) -> Dictionary:
 	return result
 
 
-func _weights_biped(uv: Vector2) -> Dictionary:
+func _weights_biped(uv: Vector2, layer: String = "") -> Dictionary:
 	# Distância ao osso + portões por região (braço não puxa o tronco, perna
 	# não puxa a cintura). A suavização na malha espalha depois entre vizinhos.
 	var j: Dictionary = joint_uv
@@ -313,15 +336,35 @@ func _weights_biped(uv: Vector2) -> Dictionary:
 	var r_bottom: float = maxf(j.hand_r[0].y,j.hand_r[1].y)
 	var p: Vector2 = _point(uv)
 	var weighted: Array = []
-	for zone in ZONES.get(identity,[]):
-		var r: Rect2 = zone[1]
-		if r.has_point(uv): return {zone[0]:1.0}
+	if layer == "":
+		for zone in ZONES.get(identity,[]):
+			var r: Rect2 = zone[1]
+			if r.has_point(uv): return {zone[0]:1.0}
+	# Camada de membro: só o próprio braço (e o peito, na emenda do ombro).
+	# Corpo sob a camada: aquele braço não puxa o que foi reconstruído ali.
+	var only: Array = []
+	var skip: Array = []
+	if layer.begins_with("arm_"):
+		var side: String = layer.trim_prefix("arm_")
+		only = ["chest","arm_"+side,"fore_"+side,"hand_"+side]
+	else:
+		for lid in LAYERS.get(identity,{}):
+			if Geometry2D.is_point_in_polygon(uv,PackedVector2Array(LAYERS[identity][lid])):
+				var side: String = String(lid).trim_prefix("arm_")
+				skip.append_array(["arm_"+side,"fore_"+side,"hand_"+side])
 	for id in bones:
 		if id == "weapon" or String(id).begins_with("cage_"): continue
+		if not only.is_empty() and not id in only: continue
+		if id in skip: continue
 		var d: float = _distance_to_segment(p,points[id],ends[id])
 		# Membros quase rígidos (armadura não estica); junta curta entre eles.
 		var limb: bool = _group(id) in ["arm","leg"]
 		var w: float = 1.0/pow(1.0+d*(0.30 if limb else 0.22),6 if limb else 4)
+		if not only.is_empty():
+			# Camada de membro inteira é do braço; peito só na emenda de cima.
+			if id == "chest": w *= 0.3
+			weighted.append([id,w])
+			continue
 		if id in ["arm_l","fore_l","hand_l"]:
 			w *= 1.0-smoothstep(lx_in+0.0,lx_in+0.06,uv.x)
 			w *= 1.0-smoothstep(l_bottom+0.04,l_bottom+0.12,uv.y)
@@ -381,20 +424,50 @@ func _build_body(cols: int, rows: int) -> void:
 	skin.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	if keyed: skin.material = PaintedLibrary.material()
 	skin.skeleton = NodePath("../Skeleton")
-	var key: String = "%d:%d:%d:%s" % [identity,cols,rows,tex.resource_path]
-	if not _mesh_cache.has(key): _mesh_cache[key] = _make_mesh(tex,uv_rect,keyed,cols,rows)
-	var mesh: Dictionary = _mesh_cache[key]
-	skin.polygon = mesh.polygon
-	skin.uv = mesh.uv
-	skin.polygons = mesh.polygons
-	vertex_count = mesh.polygon.size()
-	triangle_count = mesh.polygons.size()
+	_fill_skin(skin,tex,uv_rect,keyed,cols,rows,"")
 	add_child(skin)
 	move_child(skin,skeleton.get_index()+1)
-	for id in bones: skin.add_bone(skeleton.get_path_to(bones[id]),mesh.weights[id])
+	vertex_count = skin.polygon.size()
+	triangle_count = skin.polygons.size()
+	if keyed: return
+	# Antebraços em camada própria, desenhados por cima do corpo.
+	for lid in LAYERS.get(identity,{}):
+		var ltex: Texture2D = _layer_texture(lid)
+		if ltex == null: continue
+		var limb := Polygon2D.new()
+		limb.name = "Layer_"+lid
+		limb.texture = ltex
+		limb.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		limb.skeleton = NodePath("../Skeleton")
+		_fill_skin(limb,ltex,Rect2(Vector2.ZERO,ltex.get_size()),false,cols,rows,lid)
+		add_child(limb)
+		move_child(limb,skin.get_index()+1)
+		limb_layers.append(limb)
+		vertex_count += limb.polygon.size()
+		triangle_count += limb.polygons.size()
 
 
-func _make_mesh(tex: Texture2D, uv_rect: Rect2, keyed: bool, cols: int, rows: int) -> Dictionary:
+func _fill_skin(target: Polygon2D, tex: Texture2D, uv_rect: Rect2, keyed: bool, cols: int, rows: int, layer: String) -> void:
+	var key: String = "%d:%d:%d:%s:%s:%d:%d" % [identity,cols,rows,tex.resource_path,layer,MESH_VERSION,layout_hash]
+	if not _bake_loaded:
+		_bake_loaded = true
+		if ResourceLoader.exists(BAKE_PATH):
+			var baked = load(BAKE_PATH)
+			if baked != null and baked.has_meta("cache"):
+				var stored: Dictionary = baked.get_meta("cache")
+				for k in stored:
+					if not _mesh_cache.has(k): _mesh_cache[k] = stored[k]
+	if not _mesh_cache.has(key):
+		from_bake = false
+		_mesh_cache[key] = _make_mesh(tex,uv_rect,keyed,cols,rows,layer)
+	var mesh: Dictionary = _mesh_cache[key]
+	target.polygon = mesh.polygon
+	target.uv = mesh.uv
+	target.polygons = mesh.polygons
+	for id in bones: target.add_bone(skeleton.get_path_to(bones[id]),mesh.weights[id])
+
+
+func _make_mesh(tex: Texture2D, uv_rect: Rect2, keyed: bool, cols: int, rows: int, layer: String = "") -> Dictionary:
 	var img: Image = tex.get_image()
 	if img.is_compressed(): img.decompress()
 	var size := Vector2(img.get_width()-1,img.get_height()-1)
@@ -450,7 +523,7 @@ func _make_mesh(tex: Texture2D, uv_rect: Rect2, keyed: bool, cols: int, rows: in
 	var ids: Array = bones.keys()
 	var count: int = vertices.size()
 	var per_vertex: Array = []
-	for v in count: per_vertex.append(_weights(grid_uv[v]))
+	for v in count: per_vertex.append(_weights(grid_uv[v],layer))
 	var field: Array = []
 	for id in ids:
 		var f := PackedFloat32Array()

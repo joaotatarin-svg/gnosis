@@ -44,6 +44,7 @@ func _ready() -> void:
 		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	if mode == "boards": await _boards(out)
 	elif mode == "seq": await _sequence(out)
+	elif mode == "perf": await _perf()
 	else: _check()
 	print("PUPPET QA: ",failures," falhas")
 	get_tree().quit(0 if failures == 0 else 1)
@@ -103,6 +104,7 @@ func _check() -> void:
 		puppet.call("ensure_built")
 		var ms: float = (Time.get_ticks_usec()-t0)/1000.0
 		check(puppet.skin != null,"Sem malha: "+entry.name)
+		check(puppet.from_bake,"Malha fora do bake (rode tools/anim_bosses/bake_meshes.gd): "+entry.name)
 		check(puppet.skin.get_bone_count() == puppet.bones.size(),"Vínculos incompletos: "+entry.name)
 		var n: int = puppet.skin.polygon.size()
 		var bad: int = 0
@@ -110,6 +112,11 @@ func _check() -> void:
 			var sum: float = 0
 			for bone in puppet.skin.get_bone_count(): sum += puppet.skin.get_bone_weights(bone)[v]
 			if absf(sum-1.0) > 0.001: bad += 1
+		for limb in puppet.limb_layers:
+			for v in limb.polygon.size():
+				var sum: float = 0
+				for bone in limb.get_bone_count(): sum += limb.get_bone_weights(bone)[v]
+				if absf(sum-1.0) > 0.001: bad += 1
 		check(bad == 0,"Pesos não normalizados: %s (%d)" % [entry.name,bad])
 		for piece in puppet.pieces:
 			check(piece.get_parent() != null and piece.polygon.size() >= 3,"Peça solta: "+entry.name)
@@ -117,7 +124,7 @@ func _check() -> void:
 		var joint: Bone2D = puppet.bones.head if puppet.kind == "beast" else puppet.bones.arm_l
 		check(absf(joint.rotation) > 0.01,"Articulação imóvel: "+entry.name)
 		var cells: int = puppet.grid.x*puppet.grid.y*2
-		table.append("%-24s grade %2dx%2d  vértices %4d  triângulos %4d (de %d)  peças %d  montagem %.0f ms" % [entry.name,puppet.grid.x,puppet.grid.y,n,puppet.triangle_count,cells,puppet.pieces.size(),ms])
+		table.append("%-24s grade %2dx%2d  vértices %4d  triângulos %4d (de %d)  camadas %d  peças %d  montagem %.0f ms" % [entry.name,puppet.grid.x,puppet.grid.y,puppet.vertex_count,puppet.triangle_count,cells,puppet.limb_layers.size(),puppet.pieces.size(),ms])
 		art.queue_free()
 	for line in table: print(line)
 
@@ -203,3 +210,26 @@ func _tint_weights(puppet: BossPuppet) -> void:
 		for v in colors.size(): colors[v] += c*w[v]
 	for v in colors.size(): colors[v].a = 1.0
 	skin.vertex_colors = colors
+
+
+## Custo por quadro: 1 chefe + 8 criaturas animando juntos (janela real).
+func _perf() -> void:
+	var arts: Array = []
+	var list: Array = [entries[6]]
+	for i in 8: list.append(entries[9 + i%2])
+	for i in list.size():
+		var art := _make(list[i],self)
+		_place(art,80+i*70,300,120 if i == 0 else 70)
+		art.set_process(true)
+		art.set_anim(["walk","idle","windup","attack"][i%4])
+		arts.append(art)
+	for i in 30: await get_tree().process_frame
+	var t0: int = Time.get_ticks_usec()
+	var drive_us: int = 0
+	for f in 300:
+		var a: int = Time.get_ticks_usec()
+		for art in arts: art.boss_puppet.drive(art.anim_state,fmod(f/60.0,1.0),STEP,-1.0,1.0,1.0)
+		drive_us += Time.get_ticks_usec()-a
+		await get_tree().process_frame
+	var total_ms: float = (Time.get_ticks_usec()-t0)/1000.0/300.0
+	print("PERF: 9 bonecos | drive (GDScript) %.2f ms/quadro | quadro total %.2f ms (inclui vsync/render)" % [drive_us/1000.0/300.0,total_ms])

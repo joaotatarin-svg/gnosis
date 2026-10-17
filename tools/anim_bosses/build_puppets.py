@@ -30,6 +30,18 @@ PARTS = {
 }
 
 
+# Camadas de membro: o antebraço/punho sai do corpo para mexer por cima dele.
+# "cut" = o que vai para a camada (sobrepõe um pouco o braço de cima, sem
+# costura); "hole" = o que é reconstruído no corpo (fica DENTRO do cut).
+# Mantenha os "hole" em sincronia com BossPuppet.LAYERS.
+LAYERS = {
+	1: {"arm_l": {"cut": [(.06,.40),(.25,.40),(.30,.47),(.29,.57),(.235,.62),(.215,.70),(.20,.765),(.12,.775),(.055,.72),(.055,.55)],
+			"hole": [(.07,.48),(.285,.48),(.285,.57),(.23,.62),(.21,.70),(.20,.765),(.12,.775),(.055,.72),(.06,.55)]},
+		"arm_r": {"cut": [(.70,.36),(.95,.36),(.955,.62),(.975,.865),(.80,.865),(.79,.76),(.715,.745),(.695,.62),(.69,.50)],
+			"hole": [(.70,.45),(.95,.45),(.955,.62),(.975,.865),(.80,.865),(.79,.76),(.715,.745),(.695,.62)]}},
+	7: {"arm_l": {"cut": [(.0,.33),(.27,.33),(.275,.50),(.205,.62),(.195,.745),(.0,.745)],
+			"hole": [(.0,.40),(.27,.40),(.275,.50),(.205,.62),(.195,.745),(.0,.745)]}},
+}
 METHOD = "shiftmap"
 # Alcance (fração da largura) da busca de corpo dos dois lados da peça.
 REACH = {4: 0.05}
@@ -91,7 +103,14 @@ def build(identity, preview_dir=None):
 	body_rgb = rgb.copy()
 	body_a = alpha.copy()
 	parts = PARTS.get(identity, {})
-	if parts:
+	layers = LAYERS.get(identity, {})
+	for lid, lay in layers.items():
+		m = common.poly_mask(alpha.shape, lay["cut"], 1.0)
+		la = m * alpha
+		common.save_rgba(os.path.join(common.OUT, name + "_" + lid + ".png"), common.pad_color(rgb, la), la)
+		if preview_dir:
+			cv2.imwrite(os.path.join(preview_dir, name + "_" + lid + "_prev.png"), common.preview(rgb, la))
+	if parts or layers:
 		parts_a = np.zeros_like(alpha)
 		hole = np.zeros_like(alpha)
 		for pid, poly in parts.items():
@@ -99,20 +118,28 @@ def build(identity, preview_dir=None):
 				m = common.poly_mask(alpha.shape, sub, 0.6)
 				parts_a = np.maximum(parts_a, m * alpha)
 				hole = np.maximum(hole, m)
+		for lay in layers.values():
+			hole = np.maximum(hole, common.poly_mask(alpha.shape, lay["hole"], 0.6))
 		# Buraco do corpo um pouco maior que a peça: sem fantasma da borda da lâmina.
 		hole_b = (hole > 0.02).astype(np.uint8)
 		hole_b = cv2.dilate(hole_b, np.ones((5, 5), np.uint8))
 		rest = (alpha > 0.5).astype(np.uint8) * (1 - hole_b)
 		behind = body_behind(rest, hole_b, int(REACH.get(identity, 0.30) * w))
+		if layers:
+			# Membro em camada: o corpo vizinho continua um pouco por baixo dele
+			# (sem isso o joelho/tronco mostra o corte reto do polígono).
+			dist = cv2.distanceTransform((1 - rest).astype(np.uint8), cv2.DIST_L2, 5)
+			behind |= (hole_b > 0) & (dist <= 0.035 * w)
 		fill = inpaint(rgb, alpha, hole_b)
 		body_rgb = np.where(hole_b[..., None] > 0, fill, rgb)
 		body_a = np.where(hole_b > 0, 0.0, alpha)
 		soft = cv2.GaussianBlur(behind.astype(np.float32), (0, 0), 1.2)
 		body_a = np.maximum(body_a, np.where(hole_b > 0, np.clip(soft * 1.6, 0, 1), 0))
-		parts_rgb = common.pad_color(rgb, parts_a)
-		common.save_rgba(os.path.join(common.OUT, name + "_parts.png"), parts_rgb, parts_a)
-		if preview_dir:
-			cv2.imwrite(os.path.join(preview_dir, name + "_parts_prev.png"), common.preview(rgb, parts_a))
+		if parts:
+			parts_rgb = common.pad_color(rgb, parts_a)
+			common.save_rgba(os.path.join(common.OUT, name + "_parts.png"), parts_rgb, parts_a)
+			if preview_dir:
+				cv2.imwrite(os.path.join(preview_dir, name + "_parts_prev.png"), common.preview(rgb, parts_a))
 	body_a = drop_islands(body_a, int(0.0015 * w * h))
 	body_rgb = common.pad_color(body_rgb, body_a)
 	common.save_rgba(os.path.join(common.OUT, name + "_body.png"), body_rgb, body_a)
