@@ -44,6 +44,21 @@ const DEATH_GRACE := 1.5          # segundos de JOGO (timer não corre pausado)
 var _staging: Staging = null      # encenação das cenas (staging.gd), criada sob demanda
 var _last_boss_pos: Vector2 = Vector2.ZERO   # onde o chefe caiu (a queda do Rei)
 
+# ABERTURA (backlog #6): na tela 1 a Sophia acorda à ESQUERDA, com a Estela
+# "logo adiante"; o resto da intro vira legenda enquanto ela anda, e a Cena A
+# (o Rei sai da névoa) só abre quando ela chega ao gatilho do duelo.
+const KING_SPAWN_X := -470.0
+var _king_scene_pending: bool = false   # Cena A ainda não tocou (abre no gatilho)
+var _king_scene_running: bool = false
+# TENTAÇÃO EM CENA (#18): o Arconte já está no palco durante a conversa (parado,
+# sem IA); ao cruzar o gatilho, ESSE corpo entra na luta, com o card de chefe.
+var _staged_boss: Enemy = null
+# DICAS DO DUELO (#10): 1º telegrafo aparável e 1º imparável do run.
+const TUTOR_SLOW_SCALE := 0.25
+const TUTOR_SLOW_TIME := 0.3          # s reais de câmera lenta
+var _tutor_parry_done: bool = false
+var _tutor_unblock_done: bool = false
+
 @onready var spawns: Node2D = $Spawns
 @onready var player: Player = $Player
 
@@ -63,6 +78,11 @@ func _ready() -> void:
 	else:
 		zones = [[_test_wave()]]  # rodando Level01.tscn direto (teste)
 	_layout_arena()
+	if RunManager.run_active and RunManager.is_king_screen(screen) and player != null:
+		player.global_position.x = KING_SPAWN_X
+		_snap_camera()
+	_tutor_parry_done = Narrative.seen.has("dica_aparar")
+	_tutor_unblock_done = Narrative.seen.has("dica_imparavel")
 
 	# Cenário do Éon (scenery.gd): céu+astro, skyline, props, névoa, chão com
 	# relevo, primeiro plano e vinheta. Se houver PNG do Éon, ele é usado.
@@ -85,15 +105,100 @@ func _ready() -> void:
 ## Gatilho das zonas: o jogador anda pra direita e, ao cruzar centro-430 de uma
 ## zona ainda não iniciada, ela tranca e as waves nascem.
 func _process(_delta: float) -> void:
+	if _ready_done and player != null and RunManager.run_active:
+		_tutor_watch()
 	if not _ready_done or zone_active or zones.is_empty() or player == null:
 		return
-	if GameManager.state != GameManager.State.PLAYING:
+	if GameManager.state != GameManager.State.PLAYING or _king_scene_running:
 		return
 	var next := zone_index + 1
 	if next >= zones.size():
 		return
 	if player.global_position.x >= zone_center(next) - ZONE_TRIGGER:
+		if _king_scene_pending:
+			_play_king_scene()      # a Cena A abre no gatilho; o duelo vem depois
+			return
 		_start_zone(next)
+
+
+## Cena A (ROTEIRO §2): o Rei sai da névoa quando ela chega ao gatilho do duelo.
+## As legendas da caminhada que sobraram (jogador apressado) são descartadas:
+## a caixa assume a cena e nada fala por cima do duelo (#21).
+func _play_king_scene() -> void:
+	_king_scene_pending = false
+	_king_scene_running = true
+	_clear_captions()
+	await stage().play(Narrative.king_intro(), [], "rei").finished
+	_king_scene_running = false
+
+
+## Esvazia a fila de legendas (CaptionBar vive no autoload Gnosis).
+func _clear_captions() -> void:
+	var cap = Gnosis.get("_caption")
+	if cap != null and is_instance_valid(cap) and cap.has_method("clear"):
+		cap.call("clear")
+
+
+## A câmera pula para a Sophia (sem deslizar do ponto antigo).
+func _snap_camera() -> void:
+	if player == null or not player.has_node("Camera2D"):
+		return
+	var cam: Camera2D = player.get_node("Camera2D")
+	if cam.has_method("snap"):
+		cam.call("snap")
+	else:
+		cam.reset_smoothing()
+
+
+# --- dicas do duelo (#10) -----------------------------------------------------
+
+## O 1º telegrafo AMARELO (aparável) de um chefe e o 1º VERMELHO (imparável) do
+## run: câmera lenta curta + dica de controle no HUD (`show_hint`, com a tecla
+## do dispositivo em uso). Cada dica toca uma vez por run (Narrative.seen: com
+## checkpoint a tela recarrega e ela não repete). O Rei-tutorial só tem golpe
+## aparável; o 1º imparável costuma ser o Elite do fim da tela 2.
+func _tutor_watch() -> void:
+	if _tutor_parry_done and _tutor_unblock_done:
+		return
+	if CodexSession.active or get_tree().paused:
+		return
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if not (e is Enemy) or not ("estate" in e) or int(e.get("estate")) != Enemy.EState.WINDUP:
+			continue
+		# A janela de aparar abre GLINT_LEAD s antes do golpe (o brilho de aviso).
+		if float(e.get("attack_timer")) > Enemy.GLINT_LEAD:
+			continue
+		var hb = e.get("attack_hitbox")
+		var unb: bool = hb != null and bool(hb.get("unblockable"))
+		if unb and not _tutor_unblock_done:
+			_tutor_unblock_done = true
+			Narrative.once("dica_imparavel")
+			_tutor_hint(e, [{"keys": [], "text": "brilho vermelho não se apara:"}, {"keys": ["dodge"], "text": "esquive"}],
+				"Vermelho não se apara: esquive.")
+			return
+		if not unb and not _tutor_parry_done and bool(e.get("is_boss_enemy")):
+			_tutor_parry_done = true
+			Narrative.once("dica_aparar")
+			_tutor_hint(e, [{"keys": [], "text": "brilho amarelo:"}, {"keys": ["block"], "text": "apare no tempo"}],
+				"Brilho amarelo: bloqueie no tempo e apare.")
+			return
+
+
+func _tutor_hint(_e: Node, segs: Array, fallback: String) -> void:
+	Juice.slow_mo(TUTOR_SLOW_SCALE, TUTOR_SLOW_TIME)
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud != null and hud.has_method("show_hint_now"):
+		hud.call("show_hint_now", segs)
+	elif hud != null and hud.has_method("show_hint") and "hints" in hud:
+		# Sem a API "agora": a dica fura a fila (as da tela 1 podem estar esperando).
+		# A dica que estiver na tela (ex.: "mover · pular") cede o lugar já.
+		var q: Array = hud.get("hints")
+		q.push_front(segs)
+		if "_hint" in hud and "_hint_gap" in hud:
+			hud.set("_hint", [])
+			hud.set("_hint_gap", 0.0)
+	elif hud != null and hud.has_method("toast"):
+		hud.call("toast", fallback)
 
 
 func zone_center(i: int) -> float:
@@ -144,9 +249,11 @@ func _play_narrative_beats() -> void:
 			if not is_inside_tree():
 				return
 		if Narrative.once("intro"):
+			# Só o escuro, o coração e "Acorda." — depois, o controle (#6). O
+			# resto da intro são as legendas de chegada (walk_arrival da tela 1).
 			await stage().play(Narrative.intro(), [], "intro").finished
-			# Cena A: o Rei sai da névoa (ROTEIRO §2).
-			await stage().play(Narrative.king_intro(), [], "rei").finished
+			# Cena A: o Rei sai da névoa quando ela chega ao duelo (_process).
+			_king_scene_pending = Narrative.once("rei")
 		return
 	if RunManager.is_eon_start(screen) and Narrative.once("eon_%d" % RunManager.eon_index(screen)):
 		await DialogueBox.play(Narrative.eon_intro(RunManager.eon_index(screen))).finished
@@ -159,15 +266,72 @@ func _play_narrative_beats() -> void:
 
 	if RunManager.is_final(screen):
 		if Narrative.once("mente"):
-			await DialogueBox.play(Narrative.final_pre()).finished
+			# A fala de chegada da Mente entra na caixa (depois do clarão): a
+			# batalha dupla começa logo em seguida e nada fala por cima dela (#21).
+			var pre: Array = Narrative.final_pre()
+			var arr: Array = _take_arrival_lines()
+			for k in arr.size():
+				pre.insert(mini(1 + k, pre.size()), arr[k])
+			await DialogueBox.play(pre).finished
 	elif RunManager.is_archon_screen(screen) and Narrative.once("tentacao_%d" % screen):
-		var d := stage().play(Narrative.temptation(RunManager.boss_id_for(screen)), ["Recusar", "Ceder"], "tentacao")
+		# TENTAÇÃO EM CENA (#18): o Arconte nasce ANTES da conversa, enquadrado,
+		# parado (o mundo está pausado pela caixa); a fala de chegada da Sophia
+		# (que olha para ele) abre a caixa; o card de chefe vem depois da escolha.
+		_stage_archon()
+		# 2 quadros para o Arconte se montar (pose do boneco) antes de a caixa
+		# congelar o mundo — a IA dele nem chega a andar.
+		for _i in 2:
+			await get_tree().process_frame
+		if not is_inside_tree():
+			return
+		var lines: Array = _take_arrival_lines()
+		lines.append_array(Narrative.temptation(RunManager.boss_id_for(screen)))
+		var d := stage().play(lines, ["Recusar", "Ceder"], "tentacao")
 		var choice: int = await d.choice_made
 		if choice == 0:
 			await DialogueBox.play(Narrative.refusal_response()).finished
 		else:
 			Progression.add_orbs(80)      # o suborno do Arconte
 			await DialogueBox.play(Narrative.concession_response()).finished
+		# Até ela cruzar o gatilho, o Arconte espera parado (sem IA, sem golpe).
+		if _staged_boss != null and is_instance_valid(_staged_boss):
+			_staged_boss.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+## A fala de chegada da tela (walk_arrival) sai da LEGENDA e vai para a caixa:
+## marca a legenda como já dita (o Gnosis.setup_screen não a repete) e devolve
+## as falas. Nas telas de chefe (#21) a legenda cairia em cima da luta.
+func _take_arrival_lines() -> Array:
+	if not Narrative.once("walk_a_%d" % screen):
+		return []
+	return Narrative.walk_arrival(screen)
+
+
+## Tentação em cena (#18): o Arconte nasce ANTES da conversa, no ponto onde
+## nasceria no duelo, virado para ela e PARADO (a caixa pausa o mundo; depois
+## da escolha o process dele fica desligado até o gatilho: sem IA, sem golpe). A Sophia fica a um passo do gatilho; a Staging ("tentacao") enquadra
+## os dois. Depois da escolha nada muda até ela andar: no gatilho a zona tranca,
+## este mesmo corpo acorda (_start_wave) e só então vem o card de chefe.
+func _stage_archon() -> void:
+	if enemy_scene == null or zones.is_empty() or player == null:
+		return
+	var wave0: Array = (zones[0] as Array)[0]
+	if wave0.is_empty():
+		return
+	var c := zone_center(0)
+	player.global_position.x = c - ZONE_TRIGGER - 10.0
+	if "facing" in player:
+		player.set("facing", 1)
+	_snap_camera()
+	_place_spawns(c)
+	var e: Enemy = enemy_scene.instantiate()
+	e.type_id = wave0[0]
+	add_child(e)
+	e.global_position = (spawns.get_child(0) as Node2D).global_position
+	var vis = e.get("visual")
+	if vis is Node2D and player.global_position.x < e.global_position.x:
+		(vis as Node2D).scale.x = -absf((vis as Node2D).scale.x)
+	_staged_boss = e
 
 
 ## Cenário do Éon via Scenery (Background.tscn). O chão visual, o primeiro plano
@@ -386,11 +550,26 @@ func _start_wave() -> void:
 	var from_edge := zone_active and wave_index >= 1
 	var c := zone_center(maxi(0, zone_index))
 	alive = 0
+	# Em tela normal, o último inimigo da última wave da ÚLTIMA zona é um Elite —
+	# menos o Invocador (Balance P4): Invocador Elite (×2,2 de vida, recua e chama
+	# larvas) fazia da antessala da Coroa (63) quase um Arconte. Passa ao anterior.
+	var elite_i := wave.size() - 1
+	while elite_i > 0 and String(wave[elite_i]) == "invocador":
+		elite_i -= 1
 	for i in wave.size():
+		# Tentação em cena: o Arconte que já estava no palco é ESTE corpo.
+		if i == 0 and is_boss and wave_index == 0 and _staged_boss != null and is_instance_valid(_staged_boss) \
+				and String(_staged_boss.type_id) == String(wave[0]):
+			var sb := _staged_boss
+			_staged_boss = null
+			sb.process_mode = Node.PROCESS_MODE_INHERIT
+			sb.defeated.connect(_on_enemy_defeated)
+			sb.minion_spawned.connect(_on_minion)
+			alive += 1
+			continue
 		var e := enemy_scene.instantiate()
 		e.type_id = wave[i]
-		# Em tela normal, o último inimigo da última wave da ÚLTIMA zona é um Elite.
-		if not is_boss and is_last_wave and is_last_zone and i == wave.size() - 1:
+		if not is_boss and is_last_wave and is_last_zone and i == elite_i:
 			e.is_elite = true
 		# Desafio do Éon: o bot da última wave é o CAMPEÃO.
 		if is_trial and is_last_wave and wave[i] == eon_bot:
@@ -410,7 +589,20 @@ func _start_wave() -> void:
 		if is_boss and wave_index == 0:
 			Gnosis.boss_card(RunManager.boss_id_for(screen), screen)
 		elif is_trial and is_last_wave and wave.has(eon_bot):
-			Gnosis.boss_card("campeao", screen)
+			_champion_card()
+
+
+## Card do Campeão com o NOME do bot do Éon (#20): "O GLUTÃO · Guardião do
+## santuário da Fome" — não o "O CAMPEÃO" genérico (que ainda colidia com a
+## dificuldade "Campeão"). Nada na Provação (sandbox), como no Gnosis.
+func _champion_card() -> void:
+	if CodexSession.active:
+		return
+	var c: Dictionary = Narrative.champion_card(RunManager.eon_index(screen))
+	if c.is_empty():
+		Gnosis.boss_card("campeao", screen)
+		return
+	Cinematic.boss_card(String(c.name), String(c.title))
 
 
 ## Invocações (invocador, Coroa, Espelho) contam na wave: precisam morrer também.

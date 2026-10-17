@@ -22,10 +22,15 @@ var _t: float = 0.0
 var _done: bool = false
 var _first_fall_done: bool = false
 var _rings_free: bool = false       # a anagnórise levou os Anéis (não desenha mais)
+# Sorteio PRÓPRIO da batalha (Balance): o randi() global também é consumido
+# pelo Áudio/gibs em quantidades que dependem do relógio real — a tela 68 dava
+# dano diferente em duas rodadas iguais do bot. Semeado pela tela.
+var _rng: RandomNumberGenerator
 
 
 func start(parent: Node, scene: PackedScene, spawn_points: Array) -> void:
 	enemy_scene = scene
+	_rng = _screen_rng(RunManager.MAX_SCREEN)
 	var rei := _spawn("rei_final", parent, spawn_points[0].global_position)
 	var col := _spawn("colosso", parent, spawn_points[spawn_points.size() - 1].global_position + Vector2(120, 0))
 	forms = [rei, col]
@@ -35,6 +40,18 @@ func start(parent: Node, scene: PackedScene, spawn_points: Array) -> void:
 	get_tree().call_group("hud", "toast", "As duas formas precisam cair juntas.")
 	# Card das duas faces (letterbox), como todo chefe ao nascer.
 	Gnosis.boss_card("demiurgo", RunManager.MAX_SCREEN)
+
+
+## RNG da tela: `RunManager.screen_rng(tela)` (Técnico) se existir; senão um
+## próprio, com a mesma semente sempre (determinístico por tela).
+func _screen_rng(s: int) -> RandomNumberGenerator:
+	if RunManager.has_method("screen_rng"):
+		var r = RunManager.call("screen_rng", s)
+		if r is RandomNumberGenerator:
+			return r
+	var own := RandomNumberGenerator.new()
+	own.seed = hash("final_%d" % s)
+	return own
 
 
 func _spawn(id: String, parent: Node, pos: Vector2) -> Enemy:
@@ -139,7 +156,7 @@ func _process(delta: float) -> void:
 		_spawn_timer = RING_SPAWN_EVERY
 		_larvas = _larvas.filter(func(l): return is_instance_valid(l) and l.estate != Enemy.EState.DEAD)
 		if _larvas.size() < MAX_LARVAS:
-			var k := randi() % 7
+			var k := (_rng.randi() if _rng != null else randi()) % 7
 			var pos := _ring_pos(k)
 			var l := _spawn("larva" if k % 2 == 0 else "larva_ardente", get_parent(), Vector2(pos.x, arena_center.y))
 			ImpactBurst.spawn(get_parent(), l.global_position, Color(1, 0.85, 0.5))
