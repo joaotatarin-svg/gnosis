@@ -24,6 +24,16 @@ class_name DialogueBox
 ## aperto acidental de quem vinha pulando falas).
 ## Voz: a cada 2 letras visíveis `Audio.play_blip(falante)` (se existir; senão o
 ## blip antigo por `play_sfx`). Sem arquivo de som, fica mudo.
+## RUBRICA (backlog #22) — modo `narration`: fala SEM falante cujo texto é só uma
+## rubrica entre parênteses (ou com `mode: "narration"`) não usa a caixa: o texto
+## aparece centralizado, em itálico, sem os parênteses, sobre um véu.
+##   · `dark` (padrão: só na 1ª fala da caixa) = tela escura (abre a cena no escuro);
+##   · senão véu leve na base, para a Encenação seguir visível (anéis voando etc.).
+##   O campo `dark: true/false` da fala manda no padrão.
+## Velocidade do texto: `GameManager.settings["text_speed"]` (multiplicador 0,5/1/2;
+## 0, ≥10 ou "instant" = instantâneo) — ver text_speed(). A legenda usa o mesmo.
+## Rodapé "continuar" mostra o botão de avançar no dispositivo em uso (InputGlyphs,
+## quando existir; sem ele, só o texto).
 
 signal finished
 signal choice_made(index: int)
@@ -42,6 +52,11 @@ const WAIT_CUE := "wait_2s"
 const WAIT_SECONDS := 2.0
 const CHOICE_GUARD := 0.25        # s em que ui_accept não escolhe (aperto acidental)
 const CHOICE_SEP := 10.0
+const NARR_WIDTH := 460.0         # largura do texto da rubrica (centralizado)
+const NARR_DARK_A := 0.97         # véu da rubrica escura
+const NARR_FADE := 0.45           # s da troca caixa ↔ rubrica
+const ADVANCE_ACTION := "jump"    # botão mostrado no rodapé (pular/A também avança)
+const GLYPHS_PATH := "res://scripts/ui/input_glyphs.gd"
 
 var lines: Array = []
 var choices: Array = []      # String ou {text: String, enabled: bool}
@@ -72,6 +87,16 @@ var _blip_count: int = 0
 var _blip: String = "blip_npc"
 var _t: float = 0.0
 var _portrait: Texture2D
+var _box: Control                 # véu de base + caixa + placa + texto + escolhas
+var _narr: Control                # camada da rubrica (véu + texto centralizado)
+var _narr_veil: _NarrVeil
+var _narr_text: Label
+var _narr_on: bool = false        # fala atual é rubrica?
+var _narr_dark: bool = false
+var _mode_tween: Tween
+var _mode_set: bool = false       # já houve a 1ª fala (sem fade cruzado nela)
+var _cont: _Cont                  # rodapé "continuar" (fica fora de _box)
+var _speed: float = 1.0           # text_speed() lido ao abrir
 
 
 static func play(p_lines: Array, p_choices: Array = []) -> DialogueBox:
@@ -127,23 +152,52 @@ func _ready() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.theme = CodexStyle.theme()
 	add_child(_root)
+	_speed = text_speed()
+
+	# Rubrica: véu + texto centralizado (embaixo da caixa na ordem; só um aparece).
+	_narr = Control.new()
+	_narr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_narr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_narr.modulate.a = 0.0
+	_root.add_child(_narr)
+	_narr_veil = _NarrVeil.new()
+	_narr_veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_narr_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_narr.add_child(_narr_veil)
+	_narr_text = Label.new()
+	_narr_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_narr_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_narr_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_narr_text.add_theme_font_override("font", CodexStyle.italic())
+	_narr_text.add_theme_font_size_override("font_size", GameManager.caption_font_size() + 3)
+	_narr_text.add_theme_color_override("font_color", CodexStyle.PAPER)
+	_narr_text.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	_narr_text.add_theme_constant_override("outline_size", 4)
+	_narr_text.add_theme_constant_override("line_spacing", 2)
+	_narr_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_narr.add_child(_narr_text)
+
+	_box = Control.new()
+	_box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(_box)
 
 	# Véu leve na base (o texto assenta sobre o cenário).
 	var veil := _Veil.new()
 	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(veil)
+	_box.add_child(veil)
 
 	_panel = Panel.new()
 	_panel.add_theme_stylebox_override("panel", CodexStyle.panel_frame(0.95))
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(_panel)
+	_box.add_child(_panel)
 
 	_deco = _Deco.new()
 	_deco.box = self
 	_deco.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_deco.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(_deco)
+	_box.add_child(_deco)
 
 	# Placa do nome: aba sobre a borda de cima do painel.
 	_plate = Panel.new()
@@ -155,7 +209,7 @@ func _ready() -> void:
 	pf.chamfer = 4.0
 	_plate.add_theme_stylebox_override("panel", pf)
 	_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(_plate)
+	_box.add_child(_plate)
 	_speaker = Label.new()
 	_speaker.add_theme_font_override("font", CodexStyle.display())
 	_speaker.add_theme_font_size_override("font_size", 10)
@@ -174,13 +228,13 @@ func _ready() -> void:
 	_text.add_theme_color_override("font_color", CodexStyle.PAPER)
 	_text.add_theme_constant_override("line_spacing", 1)
 	_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(_text)
+	_box.add_child(_text)
 
 	_choice_box = HBoxContainer.new()
 	_choice_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	_choice_box.add_theme_constant_override("separation", int(CHOICE_SEP))
 	_choice_box.visible = false
-	_root.add_child(_choice_box)
+	_box.add_child(_choice_box)
 
 	# Motivo da opção bloqueada (visível, não só tooltip de mouse).
 	_reason = Label.new()
@@ -192,7 +246,14 @@ func _ready() -> void:
 	_reason.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_reason.clip_text = true
 	_reason.visible = false
-	_root.add_child(_reason)
+	_box.add_child(_reason)
+
+	# Rodapé "continuar" (desenha na caixa OU sob a rubrica).
+	_cont = _Cont.new()
+	_cont.box = self
+	_cont.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_cont.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(_cont)
 
 	# Com escolhas, a caixa já nasce alta se não houver fala antes delas.
 	_tall = not choices.is_empty() and lines.size() <= 1
@@ -222,8 +283,15 @@ func _show_line() -> void:
 	_blip = blip_for(who)
 	_speaker.text = who
 	_plate.visible = who != ""
-	_text.text = String(l.get("text", ""))
-	_text.visible_characters = 0
+	var narr := is_narration(l)
+	_set_narration(narr, bool(l.get("dark", idx == 0)) if narr else false)
+	if narr:
+		_narr_text.text = narration_text(String(l.get("text", "")))
+		_text.text = ""
+	else:
+		_text.text = String(l.get("text", ""))
+		_narr_text.text = ""
+	_label().visible_characters = 0
 	_shown = 0.0
 	_pause = 0.0
 	_blip_count = 0
@@ -234,8 +302,83 @@ func _show_line() -> void:
 	_deco.queue_redraw()
 	if String(l.get("cue", "")) == WAIT_CUE:
 		_wait_until = _clock + WAIT_SECONDS
+	# Texto instantâneo (Opções): a fala já nasce inteira.
+	if is_inf(_speed):
+		reveal_all()
 	# No INÍCIO da fala (antes da 1ª letra): a Encenação reage ao `cue` já aqui.
 	line_shown.emit(idx, l)
+
+
+## A fala é uma RUBRICA (modo narration)? Sem falante e o texto todo entre
+## parênteses — ou `mode: "narration"` explícito.
+static func is_narration(l: Dictionary) -> bool:
+	var mode := String(l.get("mode", ""))
+	if mode != "":
+		return mode == "narration"
+	if String(l.get("speaker", "")).strip_edges() != "":
+		return false
+	var t := String(l.get("text", "")).strip_edges()
+	return t.length() > 2 and t.begins_with("(") and t.ends_with(")") and t.count("(") == 1
+
+
+## Texto da rubrica sem os parênteses de fora (o itálico já marca a rubrica).
+static func narration_text(t: String) -> String:
+	var s := t.strip_edges()
+	if s.begins_with("(") and s.ends_with(")"):
+		s = s.substr(1, s.length() - 2).strip_edges()
+	return s
+
+
+## Velocidade do texto das Opções: multiplicador sobre as letras por segundo.
+## `settings["text_speed"]` = 0,5 / 1 / 2 (número ou "2x"); 0, ≥ 10 ou "instant…"
+## = instantâneo (devolve INF). Sem a chave, 1.
+static func text_speed() -> float:
+	var v = GameManager.settings.get("text_speed", 1.0)
+	if v is String:
+		var s := (v as String).strip_edges().to_lower()
+		if s.begins_with("inst"):
+			return INF
+		v = s.trim_suffix("x").trim_suffix("×").replace(",", ".").to_float()
+	if not (v is float or v is int):
+		return 1.0
+	var f := float(v)
+	if f <= 0.0 or f >= 10.0:
+		return INF
+	return clampf(f, 0.25, 4.0)
+
+
+## Script do InputGlyphs (do ui-menus) se existir; null = sem glifos.
+static func glyphs():
+	return load(GLYPHS_PATH) if ResourceLoader.exists(GLYPHS_PATH) else null
+
+
+## Rótulo que está sendo digitado (caixa ou rubrica).
+func _label() -> Label:
+	return _narr_text if _narr_on else _text
+
+
+## Liga/desliga o modo rubrica com fade cruzado (caixa ↔ véu + texto central).
+func _set_narration(on: bool, dark: bool) -> void:
+	var first := not _mode_set
+	_mode_set = true
+	_narr_dark = dark
+	_narr_veil.dark = dark
+	_narr_veil.queue_redraw()
+	_narr_text.size = Vector2(NARR_WIDTH, 120.0 if dark else 64.0)
+	_narr_text.position = Vector2((640.0 - NARR_WIDTH) * 0.5, 120.0 if dark else 262.0)
+	if on == _narr_on and not first:
+		return
+	_narr_on = on
+	if _mode_tween != null and _mode_tween.is_valid():
+		_mode_tween.kill()
+	if first:
+		# 1ª fala: nada de fade cruzado (a entrada geral já acende o _root).
+		_narr.modulate.a = 1.0 if on else 0.0
+		_box.modulate.a = 0.0 if on else 1.0
+		return
+	_mode_tween = create_tween().set_parallel(true)
+	_mode_tween.tween_property(_narr, "modulate:a", 1.0 if on else 0.0, NARR_FADE)
+	_mode_tween.tween_property(_box, "modulate:a", 0.0 if on else 1.0, NARR_FADE * 0.7)
 
 
 ## Posiciona painel, placa, texto, retrato, botões e motivo a partir de `_rect`.
@@ -300,6 +443,7 @@ func _waiting() -> bool:
 func reveal_all() -> void:
 	_typing = false
 	_text.visible_characters = -1
+	_narr_text.visible_characters = -1
 
 
 func is_typing() -> bool:
@@ -311,37 +455,39 @@ func _process(delta: float) -> void:
 	_clock += delta / maxf(0.01, Engine.time_scale)
 	_t += delta
 	_deco.queue_redraw()
+	_cont.queue_redraw()
 	if not _typing:
 		return
 	if _pause > 0.0:
 		_pause -= delta
 		return
-	var total := _text.get_total_character_count()
+	var lab := _label()
+	var total := lab.get_total_character_count()
 	var before := int(_shown)
-	_shown += delta * CPS
+	_shown += delta * CPS * _speed
 	var now := mini(int(_shown), total)
-	var txt := _text.text
+	var txt := lab.text
 	for i in range(before, now):
 		var ch := txt[i] if i < txt.length() else ""
-		if ch != " " and ch != "\n":
+		if ch != " " and ch != "\n" and not _narr_on:
 			_blip_count += 1
 			if _blip_count % 2 == 1:
 				_play_blip()
 		# respiro na pontuação
 		if ch in [".", "!", "?", "…"]:
-			_pause = 0.2
+			_pause = 0.2 / _speed
 			_shown = float(i + 1)
 			now = i + 1
 			break
 		elif ch in [",", ";", ":", "—"]:
-			_pause = 0.08
+			_pause = 0.08 / _speed
 			_shown = float(i + 1)
 			now = i + 1
 			break
-	_text.visible_characters = now
+	lab.visible_characters = now
 	if now >= total:
 		_typing = false
-		_text.visible_characters = -1
+		lab.visible_characters = -1
 
 
 ## Blip de voz: API nova do Áudio por falante; sem ela, o som antigo por nome.
@@ -356,6 +502,7 @@ func _show_choices() -> void:
 	_in_choices = true
 	_typing = false
 	_text.visible_characters = -1
+	_set_narration(false, false)       # escolha sempre na caixa
 	_set_tall(true)
 	_choice_box.visible = true
 	_choices_at = _clock
@@ -456,6 +603,10 @@ func _exit_tree() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# Dispositivo em uso para o rodapé (o ouvinte do InputGlyphs também faz; idempotente).
+	var g = glyphs()
+	if g != null:
+		g.note_event(event)
 	# Guarda: quem vinha apertando para pular falas não escolhe sem querer.
 	if _in_choices and event.is_action_pressed("ui_accept") and _clock - _choices_at < CHOICE_GUARD:
 		get_viewport().set_input_as_handled()
@@ -495,13 +646,12 @@ class _Veil extends Control:
 		draw_polygon(pts, PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0.0, 0.02, 0.03, 0.55), Color(0.0, 0.02, 0.03, 0.55)]))
 
 
-## Retrato em medalhão + indicador de "continuar" (losango que respira).
+## Retrato em medalhão (o "continuar" está em _Cont).
 class _Deco extends Control:
 	var box
 	func _draw() -> void:
 		var c: Vector2 = box.portrait_center()
 		var r: float = PORTRAIT_R
-		var rect: Rect2 = box._rect
 		if box._portrait != null:
 			draw_circle(c + Vector2(0, 1.5), r + 4.0, Color(0, 0, 0, 0.45))
 			draw_circle(c, r + 2.5, CodexStyle.INK_DEEP)
@@ -512,9 +662,57 @@ class _Deco extends Control:
 			for k in 4:
 				var a := k * PI * 0.5
 				CodexStyle.draw_diamond(self, c + Vector2(cos(a), sin(a)) * (r + 2.8), 2.0, CodexStyle.GOLD_HI)
-		# "continuar": losango respirando no canto, só com a fala completa
-		# (some enquanto a Encenação trava o avanço ou o cue wait_2s segura)
-		if not box._typing and not box._in_choices and not box._locked and not box._waiting():
-			var p := Vector2(rect.end.x - 18.0, rect.end.y - 12.0 + sin(box._t * 5.0) * 1.5)
-			CodexStyle.draw_diamond(self, p, 3.4, CodexStyle.GOLD_HI, Color(0, 0, 0, 0.6))
-			draw_string(CodexStyle.display(), Vector2(rect.end.x - 140.0, rect.end.y - 9.0), "continuar", HORIZONTAL_ALIGNMENT_RIGHT, 112.0, 7, Color(CodexStyle.MUTED, 0.8))
+
+
+## Rodapé "continuar": losango respirando + botão de avançar no dispositivo em
+## uso. Só com a fala completa (some enquanto a Encenação trava o avanço ou o
+## cue wait_2s segura). Na caixa: canto de baixo à direita; na rubrica: centrado
+## abaixo do texto.
+class _Cont extends Control:
+	var box
+	func _draw() -> void:
+		if box._typing or box._in_choices or box._locked or box._waiting():
+			return
+		var g = DialogueBox.glyphs()
+		var font: Font = CodexStyle.display()
+		var word := "continuar"
+		var ww := font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, 7).x
+		var ih := 10.0
+		var iw: float = g.icon_width(ADVANCE_ACTION, ih) if g != null else 0.0
+		var bob := sin(box._t * 5.0) * 1.5
+		var a: float = 0.8
+		if box._narr_on:
+			# centrado sob o texto da rubrica
+			var cy: float = box._narr_text.position.y + box._narr_text.size.y + 14.0
+			var total := ww + (iw + 5.0 if g != null else 0.0) + 12.0
+			var x := 320.0 - total * 0.5
+			if g != null:
+				g.draw_icon(self, Vector2(x + iw * 0.5, cy), ADVANCE_ACTION, ih, null, -1, a)
+				x += iw + 5.0
+			draw_string(font, Vector2(x, cy + 2.5), word, HORIZONTAL_ALIGNMENT_LEFT, -1, 7, Color(CodexStyle.MUTED, a))
+			CodexStyle.draw_diamond(self, Vector2(x + ww + 8.0, cy + bob), 2.6, CodexStyle.GOLD_HI, Color(0, 0, 0, 0.6))
+			return
+		var rect: Rect2 = box._rect
+		var p := Vector2(rect.end.x - 18.0, rect.end.y - 12.0 + bob)
+		CodexStyle.draw_diamond(self, p, 3.4, CodexStyle.GOLD_HI, Color(0, 0, 0, 0.6))
+		var wx := rect.end.x - 28.0 - ww
+		draw_string(font, Vector2(wx, rect.end.y - 9.0), word, HORIZONTAL_ALIGNMENT_LEFT, -1, 7, Color(CodexStyle.MUTED, a))
+		if g != null:
+			g.draw_icon(self, Vector2(wx - 4.0 - iw * 0.5, rect.end.y - 11.5), ADVANCE_ACTION, ih, null, -1, a)
+
+
+## Véu da rubrica: escuro (tela quase preta, abre a cena) ou leve na base
+## (a Encenação segue visível por cima do texto).
+class _NarrVeil extends Control:
+	var dark: bool = false
+	func _draw() -> void:
+		if dark:
+			draw_rect(Rect2(Vector2.ZERO, size), Color(0.0, 0.006, 0.01, NARR_DARK_A))
+			return
+		var top := 210.0
+		var mid := 268.0
+		var c0 := Color(0.0, 0.01, 0.015, 0.0)
+		var c1 := Color(0.0, 0.01, 0.015, 0.62)
+		draw_polygon(PackedVector2Array([Vector2(0, top), Vector2(size.x, top), Vector2(size.x, mid), Vector2(0, mid)]),
+			PackedColorArray([c0, c0, c1, c1]))
+		draw_rect(Rect2(0, mid, size.x, size.y - mid), c1)
