@@ -30,7 +30,7 @@ const M_CHOQUE := "choque"
 const M_DETERMINADA := "determinada"
 const M_IRONICO := "ironico"
 const M_MEDO := "medo"
-const M_PEQUENO := "pequeno"     # o Cego pequeno (retrato pedido à UI/arte)
+const M_OLHANDO := "olhando"     # o Cego pequeno olha para ela (retrato cego_pequeno_olhando)
 const M_QUEBRADO := "quebrado"
 const M_REGIO := "regio"
 const M_REVELADO := "revelado"
@@ -617,7 +617,7 @@ func final_lines() -> Array:
 		_m(_c(SOPHIA, "Eles não são o teu corpo. São o meu: cacos meus, que tu forjaste em correntes.", "flash"), M_DETERMINADA),
 		_m(_l(SOPHIA, "Vim te buscar. E os meus próprios cacos me fizeram esquecer até isso."), M_TRISTE),
 		_c(NARRADOR, "(O Colosso se abre. Está oco. Lá no fundo, encolhido e cego, alguém pequeno.)", "colossus_shrinks"),
-		_m(_l(CEGO, "...mãe? eu não queria ser cego. eu só queria que alguém olhasse para mim."), M_PEQUENO),
+		_m(_l(CEGO, "...mãe? eu não queria ser cego. eu só queria que alguém olhasse para mim."), M_OLHANDO),
 		_m(_l(SOPHIA, "Fui eu que fechei a nuvem. Fui eu que te deixei lá. Agora eu estou olhando."), M_TERNURA),
 		_m(_c(SOPHIA, "Levanta. Eu te seguro.", "theme_alone"), M_TERNURA),
 		_m(_c(SOPHIA, "(recolhe-o para dentro de si) Meu nome é Sophia. Fui eu que te dei o teu.", "reclaim"), M_TERNURA),
