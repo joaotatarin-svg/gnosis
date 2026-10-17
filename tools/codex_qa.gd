@@ -49,6 +49,15 @@ class Worker extends Node:
 	## REVISAO #2/#4/#6/#7: o preset leva licenças e o banco de controles, deixa
 	## ferramentas/arte bruta de fora, e nada do jogo aponta para elas; patches
 	## só da versão do projeto.
+	## Espera o SceneManager terminar (transições + fila), com teto de 10 s —
+	## máquina lenta não pode virar falso negativo.
+	func _until_idle() -> void:
+		await get_tree().process_frame
+		var t0 := Time.get_ticks_msec()
+		while SceneManager.is_busy() and Time.get_ticks_msec() - t0 < 10000:
+			await get_tree().process_frame
+		await wait(0.2)
+
 	func _check_build_and_patches() -> void:
 		var cfg := ConfigFile.new()
 		var ok := cfg.load("res://export_presets.cfg") == OK
@@ -180,15 +189,19 @@ class Worker extends Node:
 		PauseStack.push(holder)
 		SceneManager.change_scene("res://scenes/ui/Chronicles.tscn")
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
-		await wait(1.0)
+		await _until_idle()
 		check(get_tree().current_scene.scene_file_path == "res://scenes/ui/MainMenu.tscn" and not SceneManager.is_busy(), "troca: pedido com o véu descendo vira o destino")
 		check(PauseStack.count() == 0 and not get_tree().paused, "troca de cena zera a pilha de pausa")
 		check(not CodexSession.active, "menu encerra sandbox")
 		SceneManager.change_scene("res://scenes/ui/Chronicles.tscn")
-		await wait(0.35)
-		var mid_swap: bool = get_tree().current_scene.scene_file_path == "res://scenes/ui/Chronicles.tscn" and SceneManager.is_busy()
+		# Espera a cena nova entrar (véu ainda abrindo) e pede outra na hora.
+		var guard_f: int = 0
+		while (get_tree().current_scene == null or get_tree().current_scene.scene_file_path != "res://scenes/ui/Chronicles.tscn") and guard_f < 600:
+			guard_f += 1
+			await get_tree().process_frame
+		var mid_swap: bool = SceneManager.is_busy()
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
-		await wait(1.5)
+		await _until_idle()
 		check(mid_swap and get_tree().current_scene.scene_file_path == "res://scenes/ui/MainMenu.tscn" and not SceneManager.is_busy(), "troca: pedido com o véu abrindo roda em seguida")
 		check(RunManager.saved_run.get("test", "") == "preservar", "checkpoint anterior preservado")
 		check(not SaveManager.persist_enabled, "preferência anterior de persistência restaurada")
