@@ -113,24 +113,29 @@ class Worker extends Node:
 			Gnosis.STELAS.size(), " Estelas")
 
 		# (a) caixa de diálogo: ≤ 2 linhas a 13 px (M) e ≤ 3 a 16 px (G)
-		var d := DialogueBox.play([{"speaker": "QA", "text": "..."}])
-		await wait(0.2)
-		print("  caixa: largura do texto ", int(d._text.size.x), " px (viewport ", get_viewport().get_visible_rect().size, ")")
+		# Uma caixa nova por tamanho de legenda (a DialogueBox lê o tamanho no _ready).
 		var bad: Array = []
 		var max_lines: Dictionary = {}
-		for size in [13, 16]:
-			d._text.add_theme_font_size_override("font_size", size)
-			await get_tree().process_frame
-			var lim: int = 2 if size == 13 else 3
+		var old_cap: int = int(GameManager.settings.get("caption_size", 1))
+		for opt in [1, 2]:
+			GameManager.settings["caption_size"] = opt
+			var size: int = GameManager.caption_font_size()
+			var d := DialogueBox.play([{"speaker": "QA", "text": "..."}])
+			await wait(0.2)
+			var lim: int = 2 if opt == 1 else 3
 			for l in dialog:
 				d._text.text = String(l.text)
 				var n: int = d._text.get_line_count()
 				max_lines[size] = maxi(int(max_lines.get(size, 0)), n)
 				if n > lim:
 					bad.append("%dpx %d linhas: %s" % [size, n, String(l.text).left(70)])
-		d._finish()
+			# Autoteste da medição: 200 caracteres têm de dar ≥ 3 linhas.
+			d._text.text = "palavra ".repeat(25)
+			print("  autoteste %d px: 200 caracteres = %d linhas (largura %d px)" % [size, d._text.get_line_count(), int(d._text.size.x)])
+			d._finish()
+			await wait(0.1)
+		GameManager.settings["caption_size"] = old_cap
 		print("  maior fala: ", max_lines.get(13, 0), " linhas a 13 px · ", max_lines.get(16, 0), " a 16 px")
-		await wait(0.1)
 		for b in bad.slice(0, 12):
 			print("  CAIXA: ", b)
 		check(bad.is_empty(), "todas as falas cabem na caixa (M ≤ 2 linhas, G ≤ 3)")

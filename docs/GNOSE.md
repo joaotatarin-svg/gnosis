@@ -9,7 +9,7 @@
 | Canal | Arquivo | O que faz | Pausa? |
 |---|---|---|---|
 | **Estelas** | `scripts/entities/stela.gd` (+ tabela em `scripts/autoload/gnosis.gd`) | 18 pedras escritas nos descansos entre zonas. Perto delas aparece "J · ler a Estela"; golpe leve (J / X) ou Enter abre o painel (título + 5–6 linhas + fonte histórica). Ler desbloqueia a Crônica. | Sim (painel) |
-| **Legendas de caminhada** | `scripts/ui/caption_bar.gd` + `Narrative.walk_arrival/walk_cleared` | ~95 falas curtas (3–5 s) na base da tela, na chegada e ao limpar cada zona. A Voz comenta o Éon com o viés dela; a Sophia responde a si mesma; as dúvidas crescem Éon a Éon. Nunca repete no run (`Narrative.once`). | Não |
+| **Legendas de caminhada** | `scripts/ui/caption_bar.gd` + `Narrative.walk_arrival/walk_cleared` | 184 falas curtas (3–5 s) na base da tela, na chegada e ao limpar as zonas 0 e 1 (a 3ª zona e o Desafio ficam em silêncio). Cada fala tem endereço fixo Éon × tela × zona (mapa em `docs/ROTEIRO.md`). A Voz comenta o Éon com o viés dela; a Sophia responde a si mesma; as dúvidas crescem Éon a Éon. Nunca repete no run (`Narrative.once`). | Não |
 | **Cinemáticas** | `scripts/fx/cinematic.gd` | `prologue()` (6 cards do mito, tela 1, uma vez por run) · `boss_card(nome, título)` (letterbox + nome + título, congela 1,8 s ao nascer Rei / Arconte / Campeão / batalha dupla) · `epilogue(final, n, total)` (cards do final + "Crônicas N/18" + créditos, antes do EndScreen). Qualquer tecla avança, Esc pula. | Sim |
 | **Crônicas** | `scripts/ui/chronicles.gd` + `scenes/ui/Chronicles.tscn` | Caderno navegável (W/S, setas, gamepad; Esc volta ao menu). Trancadas mostram "???" + dica de onde ficam. Persistem ENTRE runs em `user://chronicles.json` (o `Gnosis` salva sozinho, sem SaveManager). | — |
 
@@ -35,24 +35,24 @@ fontes; a Sophia verbaliza a dúvida sem nunca entregar a virada.
 
 | # | id | Tela | Éon | Título | Fonte histórica |
 |---|---|---|---|---|---|
-| 1 | `monada` | 1 | O Limiar | A Mônada, o Inefável | Apócrifo de João (NHC II,1); Evangelho da Verdade (NHC I,3) |
-| 2 | `pleroma` | 3 | Torpor | O Pleroma e os Éons | Irineu, Contra as Heresias I,1; Apócrifo de João |
-| 3 | `sophia` | 8 | Torpor | Sophia, a Sabedoria | Apócrifo de João 9–10; Irineu I,2–4; Hipólito VI |
-| 4 | `cego` | 12 | Fome | O Aborto Cego (Yaldabaoth / Saklas / Samael) | Apócrifo de João 10–11; Hipóstase dos Arcontes (NHC II,4) |
-| 5 | `kenoma` | 15 | Fome | O Kenoma e a Hyle | Irineu I,4–5; Evangelho da Verdade |
-| 6 | `arcontes` | 17 | Fome | Os Sete Arcontes e as Esferas | Apócrifo de João 10–12; Orígenes, Contra Celso VI |
+| 1 | `monada` | 1 | O Limiar | A Mônada, o Inefável | Apócrifo de João (NHC II,1, 2–4); Irineu I,1,1 |
+| 2 | `pleroma` | 3 | Torpor | O Pleroma e os Éons | Irineu, Contra as Heresias I,1,1–3 (Ptolomeu) |
+| 3 | `sophia` | 8 | Torpor | Sophia, a Sabedoria | Apócrifo de João 9–10; Irineu I,2–4; Hipólito VI,29–36 |
+| 4 | `cego` | 12 | Fome | O Aborto Cego (Yaldabaoth / Saklas / Samael) | Apócrifo de João 10–13; Hipóstase dos Arcontes (NHC II,4, 87, 94–95) |
+| 5 | `kenoma` | 15 | Fome | O Kenoma e a Hyle | Irineu I,4–5; Evangelho da Verdade 24–25 |
+| 6 | `arcontes` | 17 | Fome | Os Sete Arcontes e as Esferas | Apócrifo de João 10–12 / BG 8502,2; Orígenes, Contra Celso VI,31; Poimandres (CH I,25–26) |
 | 7 | `heimarmene` | 21 | Corrente | Heimarmene, o Destino em Corrente | Apócrifo de João 28; Excertos de Teódoto 69–78 |
-| 8 | `barro` | 25 | Corrente | O Homem de Barro e a Faísca | Apócrifo de João 15–20; Hipóstase dos Arcontes |
-| 9 | `gnose` | 30 | Silêncio | A Gnose: saber é lembrar | Evangelho da Verdade; Excertos de Teódoto 78; Tomé 3 |
-| 10 | `nag_hammadi` | 33 | Silêncio | Nag Hammadi, 1945 | Robinson, The Nag Hammadi Library (1977) |
-| 11 | `apocrifo` | 35 | Silêncio | O Apócrifo de João | NHC II,1 / III,1 / IV,1; BG 8502,2 |
+| 8 | `barro` | 25 | Corrente | O Homem de Barro e a Faísca | Apócrifo de João 14–21; Hipóstase 87–88; Irineu I,24,1 |
+| 9 | `gnose` | 30 | Silêncio | A Gnose: saber é lembrar | Excertos de Teódoto 78,2; Livro de Tomé, o Atleta (NHC II,7, 138); Evangelho da Verdade |
+| 10 | `nag_hammadi` | 33 | Silêncio | Nag Hammadi, 1945 | Robinson (org.), The Nag Hammadi Library in English (1977) |
+| 11 | `apocrifo` | 35 | Silêncio | O Apócrifo de João | NHC II,1 / III,1 / IV,1; BG 8502,2; Irineu I,29 |
 | 12 | `pistis` | 39 | Espelho | Pistis Sophia e os Arrependimentos | Pistis Sophia (Códice Askew), livros I–II |
-| 13 | `mestres` | 43 | Espelho | Valentino e Basílides | Irineu I; Clemente, Stromata; Hipólito VII |
-| 14 | `tome` | 48 | Praga | O Evangelho de Tomé | NHC II,2, lógia 1, 3, 70, 113 |
+| 13 | `mestres` | 43 | Espelho | Valentino e Basílides | Irineu I,1–8 e I,24; Hipólito VII,20–27; Clemente, Stromata; Tertuliano, Contra os Valentinianos 4 |
+| 14 | `tome` | 48 | Praga | O Evangelho de Tomé | Evangelho de Tomé (NHC II,2), ditos 1, 3, 70, 113 |
 | 15 | `perola` | 52 | Praga | O Hino da Pérola | Atos de Tomé 108–113 |
-| 16 | `chamado` | 57 | Coroa | O Chamado e o Despertar | Apócrifo de João 30–31; Evangelho da Verdade 22 |
-| 17 | `docetismo` | 61 | Coroa | Docetismo: o corpo aparente | Irineu I,24; 2º Tratado do Grande Set (NHC VII,2); Apocalipse de Pedro (NHC VII,3) |
-| 18 | `retorno` | 66 | O Centro | A Salvação como Retorno | Tomé 18; Tratado Tripartite (NHC I,5); Irineu I,7 |
+| 16 | `chamado` | 57 | Coroa | O Chamado e o Despertar | Apócrifo de João 30–31; Evangelho da Verdade 21–22; Atos de Tomé 110 |
+| 17 | `docetismo` | 61 | Coroa | Docetismo: o corpo aparente | Irineu I,24,4; 2º Tratado do Grande Set (NHC VII,2, 56); Apocalipse de Pedro (NHC VII,3, 81–83) |
+| 18 | `retorno` | 66 | O Centro | A Salvação como Retorno | Tomé 18; Irineu I,7,1; Sobre a Origem do Mundo (NHC II,5, 126–127); Tratado Tripartite (NHC I,5) |
 
 Posição: em telas com 2–3 zonas a Estela fica no descanso ENTRE zonas
 (índice `1 + tela % (n-1)`, 200 px à esquerda do centro, longe do baú/Adormecido/
@@ -76,6 +76,8 @@ os Arcontes). O docetismo é apresentado como disputa histórica, sem tomar part
   (o `tools/gnose_qa.gd` faz isso).
 
 ## Validação
+Etapa **TEXTO** do GnoseQA (17/10/2026): mede com as fontes reais cada fala da caixa (13/16 px), cada legenda (2 linhas), cada painel de Estela (≤ 330 px) e cada card; confere repetição, glossário/registro (`docs/ESTILO_TEXTO.md`) e a regra de ouro.
+
 `tools/GnoseQA.tscn` (com janela salva `shots/gnose_*.png`; headless só valida):
 Estela instanciada → prompt ao chegar perto → painel pausa → Crônica desbloqueia
 → painel fecha → card de chefe congela/libera na tela 10 → prólogo e epílogo

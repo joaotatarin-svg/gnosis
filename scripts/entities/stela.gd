@@ -30,7 +30,7 @@ func _ready() -> void:
 	area.body_exited.connect(_on_body_exited)
 
 	_prompt = Label.new()
-	_prompt.text = "J · ler a Estela"
+	_prompt.text = "J / X · ler a Estela"
 	_prompt.position = Vector2(-60.0, -100.0)
 	_prompt.size = Vector2(120.0, 14.0)
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

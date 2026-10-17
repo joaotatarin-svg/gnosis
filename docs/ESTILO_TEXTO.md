@@ -117,6 +117,10 @@ mencionam Jesus/salmos ficam **neutras e marcadas como citação**.
 - **Rubrica** (ação visível): entre parênteses, **minúscula inicial**,
   presente, ≤ 10 palavras, no começo da fala: `(sai da névoa) Tão bem...`
 - **Pensamento** da Sophia: frase inteira entre parênteses, maiúscula inicial.
+- **Narrador** na caixa (ex.: o custo da queda): falante vazio `""`, rubrica entre
+  parênteses com maiúscula — "(A luz te costura de volta. 37 faíscas escorrem…)".
+- **Marcação de cena**: falas encenadas levam `cue` (ver `docs/ROTEIRO.md` §2);
+  o texto nunca depende do efeito para ser entendido.
 - **CAIXA ALTA**: no máximo **uma palavra** por fala, para grito. Nunca frase.
 - **Números**: por extenso nas falas ("o sétimo Anel", "treze arrependimentos");
   algarismos só na UI e em datas/referências das Estelas (1945, NHC II,1).
@@ -126,7 +130,7 @@ mencionam Jesus/salmos ficam **neutras e marcadas como citação**.
 
 | Lugar | Limite | Por quê |
 |---|---|---|
-| Fala na **caixa de diálogo** | **≤ 2 linhas** no tamanho M (13 px) e **≤ 3** no G (16 px) — na prática ≤ 135 caracteres | caixa de 520 px; a 3ª linha a 13 px empurra o "▸ continuar" |
+| Fala na **caixa de diálogo** | **≤ 2 linhas** no tamanho M (13 px) e **≤ 3** no G (16 px) — na prática ≤ 115 caracteres (medido: ~75 car./linha a 13 px, ~55 a 16 px) | texto de 488 px; a 3ª linha a 13 px empurra o "▸ continuar" |
 | **Legenda** de caminhada | **≤ 2 linhas** a 11 px — na prática ≤ 95 caracteres | faixa de 26 px; dura 3–5,2 s |
 | Linha de **Estela** | ≤ 170 caracteres; **≤ 6 linhas**; painel inteiro ≤ 330 px de altura | painel 500 px a 11 px |
 | **Card de chefe** | nome ≤ 18 caracteres; título ≤ 52 | letterbox de 600 px |
