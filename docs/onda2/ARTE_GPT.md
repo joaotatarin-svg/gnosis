@@ -264,3 +264,6 @@ golpe = impacto → seguimento; recuperação = seguimento → parado. Os quadro
 dessas sequências (duas poses "máximas" diferentes dariam pulo). Harmas: folha motion veio magenta (a original
 era RGBA) — mesma escala/cor no recorte. GIFs: `gifs/harmas_andar_golpe_antes.gif` × `_depois.gif`,
 `gifs/galila_andar_golpe_antes.gif` × `_depois.gif`; quadros `gifs/chefes_motion_1.png`.
+
+**Bloco 7: chefes Yabel, Astaphaios, Belias (padrão C).** Escalas 0,988 / 1,009 / 1,023. Yabel: a preparação nova é de perfil (a antiga era frontal) — melhor. Quadros `gifs/chefes_motion_2.png`; GIF `gifs/belias_andar_golpe_depois.gif`.
+

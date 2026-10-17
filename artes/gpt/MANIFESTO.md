@@ -434,3 +434,7 @@ Chefes (padrão C) `boss_<n>_<nome>_motion_a.png` 2×4: 0 walk_c0 (contato) · 1
   pode haver salto se misturar com o windup antigo; usar estes dois em sequência). Asas com reflexo arroxeado perto do magenta (despill). Chat do Yabel.
 - `boss_5_astaphaios_motion_a.png` — padrão C. Nota 7.5. Fiel, perfil, mesma escala (h≈370–480). Véus continuam translúcidos (~13,5 mil px
   quase-magenta, metade da versão original) — despill. Cajado do windup cruza a borda das células (x≈8 e a estocada vai até 1210, sem tocar). Chat do Astaphaios.
+- `boss_6_belias_motion_a.png` — padrão C (passada de fera). Nota 8. Fiel, mesma escala (h≈245–325), perfil p/ direita. Figuras ocupam a célula
+  inteira na largura (encostam 1–3 px entre si, sem tocar); q3 até x=1534. Chat do Belias.
+- `boss_7_armupiel_motion_a.png` — padrão C. Nota 8. Fiel, perfil, mesma escala (h≈410–467); windup em 2 etapas com espadão erguido,
+  strike com lâmina fincada no chão. Chat do Armupiel.
