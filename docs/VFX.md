@@ -64,3 +64,69 @@ Texturas: `assets/_packs/build_assets.py` (`VFX`) recorta do Particle Pack;
 - `tools/shot.gd`: um parâmetro `[frames_depois]` pra capturar N frames após
   o `kill`/`hurt` (hoje o evento é no meio e a captura no fim — os efeitos de
   0,3–0,8 s já sumiram na foto).
+
+---
+
+# CENÁRIO v3 (Diretor de Cenário, onda 1 — 17/10/2026)
+
+Arquivos: `scripts/levels/scenery.gd` (reescrito), `scripts/fx/scenery_library.gd`
+(novo, `SceneryLibrary`), `assets/shaders/scenery_{floor,rays,fog,prop}.gdshader`,
+`assets/backgrounds/eon_<i>_{far,mid,near,floor,fgcol}.png` + `fg_rubble/fg_pillar.png`
+(23 MB), `tools/scenery/` (pipeline e ferramentas).
+
+## Pipeline offline — `python tools/scenery/build_backgrounds.py [--no-ai] [--only 0,3]`
+- Recorta as 9 pinturas de `assets/painted/eons.png` (bordas medidas: COLS/ROWS).
+- Upscale: Real-ESRGAN ncnn-vulkan (modelo `realesrgan-x4plus`, roda na RX 7600;
+  exe em `C:\Users\jmtat\gnosis-tools\realesrgan\`, release oficial BSD-3) 4× →
+  Lanczos até 3× + 15% de Lanczos misturado (devolve textura de pincel). Sem o exe:
+  Lanczos + unsharp adaptativo. Cache em `%LOCALAPPDATA%\gnosis_scenery_cache`.
+- Camadas: GrabCut guiado por faixas (ASAS = bordas laterais → `mid`; ENTULHO da
+  base → `near`), refinado com guided filter. `far` = pintura com as asas
+  preenchidas por reflexo + névoa. `floor` = chão pintado abaixo da linha.
+  `fgcol` = asa esquerda escurecida/desfocada (coluna de primeiro plano).
+- Reescreve o bloco `# >>> GERADO` de `scenery_library.gd` (tamanhos, névoa, céu).
+- Profundidade por IA (MiDaS small) foi testada e descartada: borrões inúteis nessas pinturas.
+
+## Montagem em runtime (scenery.gd)
+ParallaxBackground: céu → FAR (0,03) → raios (shader, foco no astro do Éon; Mente =
+raios de VAZIO) → névoa longe → MID asas (0,14) → névoa perto → NEAR (0,32) → props
+pintados integrados (0,55/0,75; shader `prop`: névoa por distância, borda de cima
+acesa, chama ciano recolorida p/ cor do Éon, sombra de contato). Camadas espelhadas
+([ladrilho][invertido]) = sem emenda. Ganchos do Level (sem mexer em level.gd):
+- `build_ground`: FloorBand (shader: chão pintado em perspectiva, 1:1 nos pés,
+  reflexo do fundo via screen texture, névoa no horizonte, poça de luz na faixa de
+  luta, escurece p/ a câmera), névoa rasteira sobre os pés, FloorDecor (entulho no
+  chão à frente da luta, em perspectiva), arena simétrica de chefe (obeliscos +
+  braseiros com luz), e `_integrate_platforms` (deferred: sombra projetada, sombra
+  no chão, borda acesa, coluna de luz, poeira).
+- `build_foreground`: entulho desfocado (parallax 1,35), colunas da pintura nos
+  descansos (não em chefe), bokeh (na Mente, sombra).
+Constantes de enquadramento: FLOOR_Y 292 (horizonte), FEET_Y 310, PAINT_H 280, CAM_TOP 44.
+
+## Ferramentas
+- `tools/scenery/caps.sh <prefixo> [telas]` — capturas de aceite (SHOT=... troca a cena;
+  `res://tools/scenery/CleanShot.tscn` esconde legendas; arg `nohud` esconde HUD).
+- `tools/scenery/bench.sh [telas]` — tempo de quadro. ATENÇÃO: nesta máquina trava em
+  144 fps (6,94 ms) antes E depois; só prova "≥144 fps", não mede o custo real.
+
+## ESTADO PARA A PRÓXIMA SESSÃO
+Feito (validado: editor headless 0 SCRIPT ERROR; capturas):
+- Entregáveis 1 (pipeline + camadas), 2 (chão/primeiro plano), 3 (plataformas),
+  4 parcial (raios, névoa em camadas, faíscas em órbita no Centro, vazio na Mente;
+  partículas por Éon continuam as de `VfxLibrary.ambient`), 5 (arena simétrica;
+  código vetorial morto `_build_far/_build_mid/_make_prop/_build_near/_ring`,
+  CelestialBody e FogPuff removidos).
+- Capturas: antes `C:\gnosis-wt\_caps\cenario\antes_<tela>.png` (+`antes_grid.png`);
+  depois `c3_<tela>.png` (`c3_grid0/1.png`, sem legenda) e `c4_22.png` (com FloorDecor).
+Falta:
+1. Entregável 6 (marketing `assets/store/`: ícone 512, cápsulas 460×215 e 616×353,
+   hero 1920×620) — NÃO feito.
+2. Faixa `near` tem bordas retas/blocadas em Silêncio e Centro (GrabCut); melhorar
+   a máscara (ex.: trimap mais justo por Éon) ou suavizar o topo.
+3. Na arena de chefe, o obelisco esquerdo aparece no meio da tela no início (câmera
+   ainda não centrada na arena); considerar pôr a cenografia numa ParallaxLayer.
+4. Partículas novas por profundidade (motes longe/perto por Éon) além do bokeh.
+5. Medir custo real de GPU (bench precisa vsync de fato desligado ou contador de GPU).
+6. Atualizar `assets/backgrounds/README.txt` (ainda descreve só o PNG único).
+Próximos passos exatos: rodar `python tools/scenery/build_backgrounds.py` só se mudar
+`eons.png`; depois `tools/scenery/caps.sh depois` (todas as 8 telas) e comparar com `antes_*`.

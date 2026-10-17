@@ -412,7 +412,60 @@ func build_ground(parent: Node2D, ground_top_y: float) -> void:
 	parent.add_child(gf)
 	if is_boss():
 		_build_boss_arena(parent, ground_top_y)
+	# entulho espalhado no chão À FRENTE da faixa de luta, em perspectiva
+	var dec := FloorDecor.new()
+	dec.setup(eon, ground_top_y, _rng(7), is_boss())
+	dec.z_index = 20
+	parent.add_child(dec)
 	_integrate_platforms.call_deferred(parent)
+
+
+class FloorDecor extends Node2D:
+	## Pedras e entulho pintados espalhados no chão entre os pés e a câmera.
+	## Cada peça anda no ritmo da perspectiva do chão na sua profundidade
+	## (mesma conta do shader do chão) — o chão vira um plano 2.5D de verdade.
+	var _items: Array = []          # [{node, x, y}]
+	var _feet: float = 310.0
+	const BAND := 136.0
+	const PERSP := 0.45
+
+	func setup(e: int, feet_y: float, r: RandomNumberGenerator, boss: bool) -> void:
+		_feet = feet_y
+		var mat := SceneryLibrary.prop_material(e, 0.0, 0.35, 0.5)
+		var x := -900.0 + r.randf_range(0.0, 200.0)
+		var span := 1800.0 if boss else 5200.0
+		while x < span:
+			var t := r.randf()                       # 0 = rente à luta, 1 = colado na câmera
+			var y := feet_y + 14.0 + t * 78.0
+			var h := lerpf(12.0, 34.0, t) * r.randf_range(0.8, 1.25)
+			var holder := Node2D.new()
+			var sh := Sprite2D.new()
+			sh.texture = Scenery._blob_texture()
+			sh.scale = Vector2(h * 1.4 / 64.0, h * 0.3 / 64.0)
+			sh.modulate = Color(0, 0, 0, 0.5)
+			holder.add_child(sh)
+			var s := PaintedLibrary.sprite(3, h)
+			s.material = mat
+			s.position.y = 2.0
+			s.modulate = Color(1, 1, 1).darkened(t * 0.45)
+			if r.randf() < 0.5:
+				s.scale.x = -s.scale.x
+			holder.add_child(s)
+			holder.position = Vector2(x, y)
+			add_child(holder)
+			_items.append({"node": holder, "x": x, "y": y})
+			x += r.randf_range(170.0, 360.0) if not boss else r.randf_range(260.0, 480.0)
+
+	func _process(_delta: float) -> void:
+		var cam := get_viewport().get_camera_2d()
+		if cam == null:
+			return
+		var cx := cam.get_screen_center_position().x
+		for it in _items:
+			var s := maxf(0.55, 1.0 + (float(it.y) - _feet) / BAND * PERSP)
+			var n: Node2D = it.node
+			n.position.x = cx + (float(it.x) - cx) * s
+			n.scale = Vector2.ONE * s
 
 
 class FloorBand extends Node2D:
