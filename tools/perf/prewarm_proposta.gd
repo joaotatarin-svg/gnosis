@@ -5,7 +5,7 @@ extends RefCounted
 ## `VfxLibrary.prewarm(self)` no `Level._ready` já existe lá.
 ## Patch pronto: tools/perf/patches/vfx_prewarm.patch (gera_patch.py regenera).
 ##
-## O que faz: no load da fase, desenha por 3 quadros, no centro da câmera e
+## O que faz: no load da fase, desenha por 3 quadros, sobre a Sophia e
 ## QUASE TRANSPARENTE (alfa 0,01 em escala 0,25: ~2/255 de brilho em poucos
 ## pixels, atrás do card de abertura), cada combinação nó × material que o
 ## combate só usaria pela 1ª vez no meio da luta; e carrega (segurando a
@@ -63,19 +63,32 @@ static func prewarm(level: Node) -> void:
 	stage.name = "PrewarmStage"
 	stage.modulate = Color(1, 1, 1, PREWARM_ALPHA)
 	stage.scale = Vector2.ONE * 0.25
+	# o diálogo de abertura PAUSA a árvore: sem isto o boneco não é montado nem
+	# as partículas emitem, e nada disso chega a ser desenhado (medido)
+	stage.process_mode = Node.PROCESS_MODE_ALWAYS
 	level.add_child(stage)
+	# Em cima da Sophia (a câmera a segue). NÃO usar o centro da câmera: no
+	# `_ready` da fase a câmera ainda não foi posicionada e o palco caía fora da
+	# tela (medido: o que fica fora da tela não é desenhado e não compila nada).
+	var pl = level.get("player")
 	var cam := level.get_viewport().get_camera_2d()
-	stage.global_position = cam.get_screen_center_position() if cam != null else Vector2(320, 180)
+	if pl is Node2D and (pl as Node2D).is_inside_tree():
+		stage.global_position = (pl as Node2D).global_position + Vector2(0, -30)
+	elif cam != null:
+		stage.global_position = cam.get_screen_center_position()
+	else:
+		stage.global_position = Vector2(320, 180)
 	var at := stage.global_position
 	var col := Color(1.0, 0.85, 0.5)
 	# 2a) folhas pintadas com o material das pinturas (rect + painted_clean),
-	#     na escala em que aparecem no jogo (~1/5: usa os mesmos mipmaps)
+	#     pequenas (só sobem e amarram a textura; o visual real das criaturas,
+	#     abaixo, é que amostra os mesmos mipmaps do jogo)
 	for t in _warm_refs:
 		if t is Texture2D:
 			var spr := Sprite2D.new()
 			spr.texture = t
 			spr.material = PaintedLibrary.material()
-			spr.scale = Vector2.ONE * 0.8
+			spr.scale = Vector2.ONE * 0.1
 			stage.add_child(spr)
 	# 2b) as criaturas desta tela: o VISUAL real (CharacterArt, sem Enemy: fora
 	#     do grupo "enemy", sem física/IA) — material próprio, folha, e o boneco
