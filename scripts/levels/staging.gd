@@ -62,6 +62,14 @@ var _ducked: bool = false                      # abaixou a música (soter) — s
 var _fx_layer: CanvasLayer                     # abaixo da caixa (90): flash e preto
 var _white: ColorRect
 var _black: ColorRect
+# ILUSTRAÇÕES das cenas (Onda 3): 07 roubo (B), 08 descida (C), 09 anagnórise (D)
+# entram como um card de tela cheia ATRÁS da caixa (na camada dos efeitos, entre o
+# preto e o flash), com Ken Burns lento; saem na fala seguinte.
+var _art_rect: TextureRect
+var _art_kb: Tween
+var _art_line: int = -2                        # fala em que a ilustração entrou
+var _line_idx: int = -1                        # fala atual da caixa
+var _descending: bool = false                  # a descida do Centro (cena C, sem caixa)
 
 
 func _ready() -> void:
@@ -103,6 +111,13 @@ func play(lines: Array, choices: Array = [], scene: String = "") -> DialogueBox:
 	_box.finished.connect(_on_finished.bind(_box))
 	_scene_open()
 	return _box
+
+
+## Há cena dirigida no ar? (entre play() e o fim do _on_finished, a descida do
+## Centro sem caixa, ou uma ilustração de cena na tela). O HUD (ui3) chama por
+## has_method para esconder dicas/combo/faíscas durante as cenas (QA C2).
+func is_active() -> bool:
+	return _scene != "" or _descending or _art_on()
 
 
 ## A cena da tela 1 terminou: o Rei-figurante segura o lugar até o duelo
@@ -169,6 +184,9 @@ func _scene_open() -> void:
 
 func _on_line(index: int, line: Dictionary) -> void:
 	_flush()
+	_line_idx = index
+	if _art_on() and index != _art_line:
+		_hide_art(0.8)                 # a ilustração da cena dura uma fala
 	if index == 0:
 		# O golpe final pode criar o número DEPOIS de a cena abrir (a morte do
 		# chefe chama a cena no meio do golpe): limpa de novo na 1ª fala.
@@ -231,6 +249,7 @@ func _on_finished(box: DialogueBox) -> void:
 	if box != _box:
 		return
 	_flush()
+	_hide_art(0.5)
 	if _ducked:
 		Audio.duck_music(0.0, 0.0)
 		_ducked = false
@@ -474,6 +493,9 @@ func _b_mask_falls() -> void:
 	t.tween_method(_king.cool, 0.0, 1.0, 0.6)
 	_flash_white(0.08)
 	Juice.shake(0.5)
+	# O clarão abre na ILUSTRAÇÃO do roubo (07): os anéis voando para a mão dele,
+	# a máscara caindo. Some na fala seguinte, já com o Rei cego no palco.
+	_show_art(7, 0.3, Vector2(0.35, -0.45), 7.0)
 	# O tema da Voz distorcido → corte → `roubo`: é do Áudio (cue `mask_falls`).
 	_music_stopped = false
 
@@ -502,6 +524,7 @@ func _b_sink() -> void:
 ## paleta vai do dourado da Coroa ao cinza-violeta do Centro → a Sophia cai de
 ## joelhos e se ergue. Sem música (só vento): a `centro` entra no 1º caco.
 func descend() -> void:
+	_descending = true
 	PauseStack.push(self)
 	Audio.stop_music(0.0)
 	_black.color.a = 1.0
@@ -516,7 +539,16 @@ func descend() -> void:
 	cm.color = Color(1.25, 1.0, 0.6)
 	add_child(cm)
 	var t := _tw()
-	t.tween_interval(1.0)
+	if Cinematic.art_texture(8) != null:
+		# A queda em ILUSTRAÇÃO (08): do preto, ela cai de cabeça entre os cacos
+		# (a deriva desce com ela); volta ao preto e o jogo segue a descida.
+		t.tween_interval(0.3)
+		t.tween_callback(_show_art.bind(8, 0.7, Vector2(0.0, -0.9), 4.0))
+		t.tween_interval(3.0)
+		t.tween_callback(_hide_art.bind(0.6))
+		t.tween_interval(0.7)
+	else:
+		t.tween_interval(1.0)
 	t.tween_property(_black, "color:a", 0.0, 0.6)
 	if _cam != null:
 		t.parallel().tween_property(_cam, "base_offset", Vector2(_cam_saved.base_offset), 2.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -524,6 +556,7 @@ func descend() -> void:
 	t.tween_callback(_kneel)
 	t.tween_interval(1.5)
 	await t.finished
+	_descending = false
 	if not is_inside_tree():
 		return
 	PauseStack.pop(self)
@@ -679,6 +712,10 @@ func _little_pose(who: String, text: String) -> void:
 		_little.set_anim("trembling")
 	elif text.begins_with("Levanta."):
 		_little.set_anim("reach")
+		# Ele estende a mão; depois, a ILUSTRAÇÃO da anagnórise (09): ela o abraça.
+		var t := _tw()
+		t.tween_interval(1.3)
+		t.tween_callback(_show_art.bind(9, 0.9, Vector2(-0.3, 0.35), 7.0))
 
 
 func _d_theme() -> void:
@@ -734,6 +771,40 @@ func _hide_boss_bodies() -> void:
 		for c in level.get_children():
 			if c is Gib:
 				(c as Node2D).visible = false
+
+
+## Card de ilustração da cena (nº de Cinematic.ART): tela cheia, atrás da caixa
+## e do flash, entra em `fade` s com Ken Burns de `dur` s. Dura até a próxima fala
+## (ou `_hide_art`). Sem o arquivo, não faz nada (a cena segue no palco).
+func _show_art(n: int, fade: float, dir: Vector2, dur: float) -> void:
+	var tex := Cinematic.art_texture(n)
+	if tex == null:
+		return
+	if _art_rect == null:
+		# Na camada dos efeitos, ENTRE o preto e o branco: cobre o preto (a descida
+		# começa no escuro) e o clarão branco passa por cima dela (o roubo).
+		_art_rect = Cinematic.make_art_rect()
+		_fx_layer.add_child(_art_rect)
+		_fx_layer.move_child(_art_rect, _black.get_index() + 1)
+	if _art_kb != null and _art_kb.is_valid():
+		_art_kb.kill()
+	_art_rect.texture = tex
+	_art_rect.modulate = Color(1, 1, 1, 0)
+	_art_line = _line_idx
+	_art_kb = Cinematic.ken_burns(_art_rect, self, dur, dir)
+	_tw().tween_property(_art_rect, "modulate:a", 1.0, fade)
+
+
+func _hide_art(fade: float) -> void:
+	if not _art_on():
+		return
+	_art_line = -2
+	var t := _tw()
+	t.tween_property(_art_rect, "modulate:a", 0.0, fade)
+
+
+func _art_on() -> bool:
+	return _art_rect != null and is_instance_valid(_art_rect) and _art_line != -2
 
 
 ## C1 (QA visual): o número de dano do último golpe ficava CONGELADO na tela a
