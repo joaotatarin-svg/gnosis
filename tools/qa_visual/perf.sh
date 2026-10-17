@@ -11,7 +11,7 @@ SEG="${4:-12}"
 GODOT="${GODOT:-/c/Users/jmtat/AppData/Local/Microsoft/WinGet/Packages/GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe/Godot_v4.7.1-stable_win64_console.exe}"
 mkdir -p "$OUT"
 OUTW="$(cygpath -m "$OUT" 2>/dev/null || echo "$OUT")"
-for t in $TELAS; do for n in $NS; do for v in 0 1; do
+for t in $TELAS; do for n in $NS; do for v in ${VSYNCS:-0 1}; do
 	name="t${t}_n${n}_v${v}"
 	timeout 240 "$GODOT" --audio-driver Dummy --path "$WT" --resolution 1280x720 --position 4000,4000 \
 		res://tools/qa_visual/PerfTimeline.tscn -- tela=$t n=$n seg=$SEG vsync=$v ataque=1 out="$OUTW/$name.json" > "$OUT/$name.log" 2>&1
