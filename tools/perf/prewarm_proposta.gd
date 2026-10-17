@@ -1,10 +1,9 @@
 extends RefCounted
 ## CORREÇÃO PROPOSTA (agente de Desempenho, Onda 2) — NÃO faz parte do jogo ainda.
-## É o corpo de `VfxLibrary.prewarm(level)`: o dono de `scripts/fx/vfx_library.gd`
-## copia `prewarm` (+ constantes e `_warm_refs`) para lá e o dono de `level.gd`
-## chama `VfxLibrary.prewarm(self)` no `_ready` da fase, logo depois de
-## `_spawn_extras()` (antes de `await _play_narrative_beats()`).
-## Patch pronto: tools/perf/patches/vfx_prewarm.patch.
+## É o corpo de `VfxLibrary.prewarm(level)`: substitui o prewarm que está em
+## `integracao/onda1` (que não funciona — docs/onda2/PERF.md §5). A chamada
+## `VfxLibrary.prewarm(self)` no `Level._ready` já existe lá.
+## Patch pronto: tools/perf/patches/vfx_prewarm.patch (gera_patch.py regenera).
 ##
 ## O que faz: no load da fase, desenha por 3 quadros, no centro da câmera e
 ## QUASE TRANSPARENTE (alfa 0,01 em escala 0,25: ~2/255 de brilho em poucos
