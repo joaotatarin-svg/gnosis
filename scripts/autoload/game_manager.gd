@@ -26,6 +26,9 @@ const SETTINGS_DEFAULT := {
 	"shake": 1.0,
 	"rumble": true,
 	"caption_size": 1,
+	# Acessibilidade: corta clarões/flashes de tela cheia (fotossensibilidade).
+	# Quem desenha flash lê `Juice.reduce_flashes` (espelhado em apply_settings).
+	"reduce_flashes": false,
 }
 var settings: Dictionary = SETTINGS_DEFAULT.duplicate()
 
@@ -55,6 +58,8 @@ func apply_settings() -> void:
 			juice.set("shake_mult", shake_multiplier())
 		if "rumble_enabled" in juice:
 			juice.set("rumble_enabled", rumble_enabled())
+		if "reduce_flashes" in juice:
+			juice.set("reduce_flashes", reduce_flashes())
 	if DisplayServer.get_name() == "headless":
 		return
 	var want := DisplayServer.WINDOW_MODE_FULLSCREEN if bool(settings["fullscreen"]) else DisplayServer.WINDOW_MODE_WINDOWED
@@ -71,6 +76,11 @@ func shake_multiplier() -> float:
 ## Vibração do controle ligada?
 func rumble_enabled() -> bool:
 	return SaveCoerce.as_bool(settings.get("rumble", true), true)
+
+
+## Reduzir clarões (acessibilidade) ligado?
+func reduce_flashes() -> bool:
+	return SaveCoerce.as_bool(settings.get("reduce_flashes", false), false)
 
 
 ## Tamanho de fonte das legendas conforme a opção (P/M/G).
@@ -104,21 +114,40 @@ func _roman(n: int) -> String:
 	return r[clampi(n - 1, 0, r.size() - 1)]
 
 
-## Updates leves: carrega patch_*.pck da pasta do executável por cima do jogo
-## base (só no build exportado). Ordem alfabética = patch mais novo por último.
+## Updates leves: carrega patch_<versão>_*.pck da pasta do executável por cima
+## do jogo base (só no build exportado). Ordem alfabética = patch mais novo por
+## último. REVISAO #7: só entra patch da MESMA `config/version` do projeto — um
+## patch velho esquecido na pasta não reverte as correções da versão nova; o
+## resto é ignorado com aviso. Limite conhecido: isto roda no _ready do 2º
+## autoload, então um patch NÃO consegue trocar scripts de autoload (já
+## carregados) — para isso, instalador/depot novo.
 func _load_patches() -> void:
 	if not OS.has_feature("standalone"):
 		return
 	var dir := DirAccess.open(OS.get_executable_path().get_base_dir())
 	if dir == null:
 		return
-	var patches: Array[String] = []
-	for f in dir.get_files():
-		if f.begins_with("patch_") and f.ends_with(".pck"):
-			patches.append(f)
-	patches.sort()
-	for p in patches:
-		ProjectSettings.load_resource_pack(dir.get_current_dir().path_join(p))
+	var version := String(ProjectSettings.get_setting("application/config/version", ""))
+	for p in patch_files_for(dir.get_files(), version):
+		if not ProjectSettings.load_resource_pack(dir.get_current_dir().path_join(p)):
+			push_warning("GameManager: patch %s não pôde ser montado." % p)
+
+
+## Filtra (e ordena) os nomes de arquivo que são patch válido para a versão:
+## `patch_<versão>_<algo>.pck`. Qualquer outro `patch_*.pck` é ignorado com print.
+## Função pura (sem disco) para o CodexQA testar.
+static func patch_files_for(files: PackedStringArray, version: String) -> Array[String]:
+	var out: Array[String] = []
+	var prefix := "patch_%s_" % version
+	for f in files:
+		if not (f.begins_with("patch_") and f.get_extension().to_lower() == "pck"):
+			continue
+		if version != "" and f.begins_with(prefix) and f.length() > prefix.length() + 4:
+			out.append(f)
+		else:
+			print("GameManager: patch ignorado (não é da versão %s): %s" % [version, f])
+	out.sort()
+	return out
 
 
 func set_state(new_state: State) -> void:

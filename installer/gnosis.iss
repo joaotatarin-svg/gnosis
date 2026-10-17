@@ -1,12 +1,15 @@
 ; Instalador do GNOSIS — Inno Setup (https://jrsoftware.org/isinfo.php)
 ; 1) Exporte o jogo no Godot (builds/GNOSIS.exe + GNOSIS.pck)
 ; 2) Abra este arquivo no Inno Setup Compiler e clique em Compile
-; Saída: installer/Output/GNOSIS-Setup-0.1.0.exe
+; Saída: installer/Output/GNOSIS-Setup-<versão>.exe (padrão 1.1.0; mude com /DAppVersion=x.y.z)
 
 #define AppName "GNOSIS"
 #ifndef AppVersion
-#define AppVersion "1.0.0"
+#define AppVersion "1.1.0"
 #endif
+; PENDENTE (decisão do João): "Estudio Jogo" é provisório. O AppId abaixo
+; também NUNCA pode mudar depois do 1º instalador publicado (é ele que o
+; Windows usa para atualizar/desinstalar) — não troque sem decidir isso antes.
 #define AppPublisher "Estudio Jogo"
 #define AppExe "GNOSIS.exe"
 
@@ -34,8 +37,13 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "..\builds\GNOSIS.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\builds\GNOSIS.pck"; DestDir: "{app}"; Flags: ignoreversion
-; Patches menores: solte patch_*.pck em builds/ e descomente:
-; Source: "..\builds\patch_*.pck"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+; Licenças que a distribuição EXIGE junto da obra: atribuições CC-BY das
+; músicas/SFX (LICENSES.md) e o aviso MIT do motor Godot (LICENSE_godot.txt).
+Source: "..\assets\LICENSES.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LICENSE_godot.txt"; DestDir: "{app}"; Flags: ignoreversion
+; Patches menores: o jogo só monta patch_<versão>_*.pck da MESMA versão do
+; projeto (ex.: patch_1.1.0_01.pck). Solte-os em builds/ e descomente:
+; Source: "..\builds\patch_{#AppVersion}_*.pck"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"

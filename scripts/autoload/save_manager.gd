@@ -22,9 +22,19 @@ extends Node
 var SAVE_PATH: String = "user://save.json"
 const SAVE_VERSION := 2
 
+## Volumes da 1ª execução (sem save) e de save sem a chave: Master 0,7 e
+## Música 0,6 — a mixagem nova vem forte; 100% de cara assustava.
+const DEFAULT_VOLUMES := {"Master": 0.7, "SFX": 0.9, "Music": 0.6}
+
 ## Ferramentas de dev (shot/balance_bot/combat_test) desligam isto pra não
 ## sujarem o save real do jogador com runs sintéticos.
 var persist_enabled: bool = true
+
+## REVISAO #13: a Provação (sandbox) desliga SÓ o progresso do run — melhor
+## tela, finais e "Continuar" ficam como estão no disco —, mas opções e volumes
+## mudados lá dentro continuam sendo gravados. (`persist_enabled` = false é o
+## interruptor das ferramentas: aí nada vai ao disco.)
+var persist_run: bool = true
 
 ## Aviso pendente pro menu (run antigo descartado). O menu lê e limpa.
 var notice: String = ""
@@ -50,17 +60,31 @@ func save_game() -> void:
 		"vol_music": Audio.music_vol,
 		"settings": GameManager.settings,
 	}
+	if not persist_run:
+		# Progresso: o que já está no disco (ou nada de run, se não há save).
+		var old = read_json_safe(SAVE_PATH).data
+		if typeof(old) == TYPE_DICTIONARY:
+			for k in ["save_version", "best_screen", "endings_seen", "run"]:
+				if old.has(k):
+					data[k] = old[k]
+				elif k == "run":
+					data[k] = {}
+		else:
+			data["run"] = {}
 	write_json_atomic(SAVE_PATH, data)
 
 
 func load_game() -> bool:
 	if not _any_copy_exists(SAVE_PATH):
+		_apply_default_volumes()
 		GameManager.apply_settings()   # padrões (e espelho no Juice)
 		return false
 	var got := read_json_safe(SAVE_PATH)
 	if typeof(got.data) != TYPE_DICTIONARY:
 		push_warning("SaveManager: save.json ilegível (e sem cópia de segurança) — começando do zero (arquivo preservado até o próximo save).")
 		notice = "O arquivo de save estava ilegível e foi ignorado."
+		_apply_default_volumes()
+		GameManager.apply_settings()
 		return false
 	if got.from != "main":
 		push_warning("SaveManager: save.json danificado — progresso recuperado de %s." % got.path)
@@ -82,9 +106,9 @@ func load_game() -> bool:
 			run = {}
 	RunManager.saved_run = run if typeof(run) == TYPE_DICTIONARY else {}
 	# --- áudio ---
-	Audio.set_volume("Master", clampf(_float(d.get("vol_master", 0.9), 0.9), 0.0, 1.0))
-	Audio.set_volume("SFX", clampf(_float(d.get("vol_sfx", 0.9), 0.9), 0.0, 1.0))
-	Audio.set_volume("Music", clampf(_float(d.get("vol_music", 0.7), 0.7), 0.0, 1.0))
+	for bus in [["Master", "vol_master"], ["SFX", "vol_sfx"], ["Music", "vol_music"]]:
+		var dv: float = DEFAULT_VOLUMES[bus[0]]
+		Audio.set_volume(bus[0], clampf(_float(d.get(bus[1], dv), dv), 0.0, 1.0))
 	# --- opções (só chaves conhecidas; o resto fica no padrão) ---
 	# REVISAO #5: cada opção só entra se o TIPO bater com o padrão (número
 	# int/float é intercambiável). `shake: [1]` ou `fullscreen: "sim"` ficam
@@ -170,6 +194,12 @@ func _parse_file(path: String) -> Variant:
 	if txt.strip_edges().is_empty():
 		return null
 	return JSON.parse_string(txt)
+
+
+## Volumes padrão (1ª execução / save ilegível).
+func _apply_default_volumes() -> void:
+	for bus in DEFAULT_VOLUMES:
+		Audio.set_volume(bus, DEFAULT_VOLUMES[bus])
 
 
 ## Lê e limpa o aviso pendente (menu principal).
