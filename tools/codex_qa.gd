@@ -28,9 +28,42 @@ class Worker extends Node:
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("res://shots/codex-" + name + ".png")
 
+	func _has_pad(action: StringName, button: int) -> bool:
+		for ev in InputMap.action_get_events(action):
+			if ev is InputEventJoypadButton and ev.button_index == button:
+				return true
+		return false
+
+	func _has_axis(action: StringName, axis: int, sign_value: float) -> bool:
+		for ev in InputMap.action_get_events(action):
+			if ev is InputEventJoypadMotion and ev.axis == axis and signf(ev.axis_value) == signf(sign_value):
+				return true
+		return false
+
+	func _has_key(action: StringName, key: int) -> bool:
+		for ev in InputMap.action_get_events(action):
+			if ev is InputEventKey and (ev.keycode == key or ev.physical_keycode == key):
+				return true
+		return false
+
 	func _run() -> void:
 		SaveManager.persist_enabled = false
-		check(ProjectSettings.globalize_path("user://").contains("GNOSIS-Codex"), "diretório de save independente")
+		# Save isolado: o jogo usa a SUA pasta (GNOSIS-Codex) — ou, num worktree de
+		# dev, a do override.cfg (GNOSIS-WT-<cargo>) — e nunca o user:// genérico
+		# (app_userdata/<nome>) nem o de outro projeto. A pasta real tem que bater
+		# com o nome configurado (prova que o motor está usando a configuração).
+		var udir_name := String(ProjectSettings.get_setting("application/config/custom_user_dir_name", ""))
+		var udir := ProjectSettings.globalize_path("user://").trim_suffix("/")
+		check(bool(ProjectSettings.get_setting("application/config/use_custom_user_dir", false))
+			and (udir_name == "GNOSIS-Codex" or udir_name.begins_with("GNOSIS-WT-"))
+			and udir.get_file() == udir_name, "diretório de save independente (%s)" % udir.get_file())
+		# QA_UX B1: só de controle o jogador precisa confirmar (A) e voltar (B) em
+		# todo menu; as teclas de fábrica continuam.
+		check(_has_pad(&"ui_accept", JOY_BUTTON_A) and _has_key(&"ui_accept", KEY_ENTER), "controle: A confirma (ui_accept) e Enter continua")
+		check(_has_pad(&"ui_cancel", JOY_BUTTON_B) and _has_key(&"ui_cancel", KEY_ESCAPE), "controle: B volta (ui_cancel) e Esc continua")
+		for dir in [[&"ui_up", JOY_BUTTON_DPAD_UP, JOY_AXIS_LEFT_Y, -1.0], [&"ui_down", JOY_BUTTON_DPAD_DOWN, JOY_AXIS_LEFT_Y, 1.0],
+				[&"ui_left", JOY_BUTTON_DPAD_LEFT, JOY_AXIS_LEFT_X, -1.0], [&"ui_right", JOY_BUTTON_DPAD_RIGHT, JOY_AXIS_LEFT_X, 1.0]]:
+			check(_has_pad(dir[0], dir[1]) and _has_axis(dir[0], dir[2], dir[3]), "controle: %s com D-pad e analógico" % dir[0])
 		get_tree().change_scene_to_file("res://scenes/ui/CharacterAtelier.tscn")
 		await wait()
 		var atelier = get_tree().current_scene

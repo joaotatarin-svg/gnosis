@@ -178,6 +178,53 @@ func _register_inputs() -> void:
 	for i in 7:
 		_add_action("ring_%d" % (i + 1), [num_keys[i]])
 	_add_action("pause",        [KEY_ESCAPE, KEY_P], [JOY_BUTTON_START])
+	_register_ui_pad()
+
+
+## Navegação de MENUS com controle (QA_UX B1): o Godot 4.7 só traz teclado em
+## `ui_accept`/`ui_cancel` — sem isto, quem joga só de controle não confirma
+## nem volta em nenhuma tela (softlock na 1ª tentação). A = confirmar, B =
+## voltar (convenção Xbox/Steam Deck; no DualSense é ✕/○ pela posição). As
+## teclas de fábrica ficam; só ACRESCENTAMOS os botões. As setas de UI já vêm
+## com D-pad + analógico esquerdo no motor, mas garantimos aqui (idempotente)
+## para não depender do padrão de uma versão futura.
+## Conflito? Não: A/B também são pulo/esquiva, mas a UI só recebe `ui_*` quando
+## um Control tem foco (menus, diálogos com o mundo pausado).
+func _register_ui_pad() -> void:
+	_ensure_pad("ui_accept", [JOY_BUTTON_A])
+	_ensure_pad("ui_cancel", [JOY_BUTTON_B])
+	_ensure_pad("ui_up",    [JOY_BUTTON_DPAD_UP],    [[JOY_AXIS_LEFT_Y, -1.0]])
+	_ensure_pad("ui_down",  [JOY_BUTTON_DPAD_DOWN],  [[JOY_AXIS_LEFT_Y, 1.0]])
+	_ensure_pad("ui_left",  [JOY_BUTTON_DPAD_LEFT],  [[JOY_AXIS_LEFT_X, -1.0]])
+	_ensure_pad("ui_right", [JOY_BUTTON_DPAD_RIGHT], [[JOY_AXIS_LEFT_X, 1.0]])
+
+
+## Acrescenta botões/eixos de controle a uma ação SEM duplicar o que já existe
+## (o motor compara botão/eixo e sentido) e sem tocar nas teclas.
+func _ensure_pad(action: String, buttons: Array, motions: Array = []) -> void:
+	if not InputMap.has_action(action):
+		InputMap.add_action(action)
+	for b in buttons:
+		var ev := InputEventJoypadButton.new()
+		ev.button_index = b
+		if not InputMap.action_has_event(action, ev):
+			InputMap.action_add_event(action, ev)
+	for m in motions:
+		var ev := InputEventJoypadMotion.new()
+		ev.axis = m[0]
+		ev.axis_value = m[1]
+		if not InputMap.action_has_event(action, ev):
+			InputMap.action_add_event(action, ev)
+
+
+## Ação tem pelo menos um botão de controle? (QA: B1 não pode voltar.)
+func action_has_pad_button(action: String, button: int) -> bool:
+	if not InputMap.has_action(action):
+		return false
+	for ev in InputMap.action_get_events(action):
+		if ev is InputEventJoypadButton and (ev as InputEventJoypadButton).button_index == button:
+			return true
+	return false
 
 
 ## SDL_GameControllerDB (github.com/mdqinc/SDL_GameControllerDB, licença zlib):
