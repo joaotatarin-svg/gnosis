@@ -5,8 +5,12 @@ var completed: bool = false
 var result_layer: CanvasLayer
 var phase_label: Label
 ## Faixa de dicas de controle: segue o dispositivo em uso e o remapeamento
-## (QA P3 · #33, via `InputGlyphs`).
+## (QA P3 · #33, via `InputGlyphs`). `hint_bar` desenha os ÍCONES (tecla,
+## botões Xbox/PlayStation/Switch/Deck) e se redesenha sozinho quando o último
+## input troca de dispositivo; `hint_label` guarda o mesmo conteúdo em texto
+## (invisível — contrato da sonda de menus e leitura em log).
 var hint_label: Label
+var hint_bar: InputGlyphs.Hint
 
 const HINTS := [["@move", "mover"], ["jump", "saltar"], [["attack_light", "attack_heavy"], "golpes"], ["dodge", "esquiva"], ["block", "aparar"], ["skill1", "anel"], ["skill2", "esfera"]]
 
@@ -51,6 +55,22 @@ func _ready() -> void:
 	phase_label = CodexStyle.label(layer, "", Vector2(390, 13), 10, CodexStyle.GOLD, 230)
 	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	hint_label = CodexStyle.label(layer, "", Vector2(18, 341), 8, CodexStyle.MUTED, 615)
+	hint_label.visible = false
+	# Placa escura que se dissolve nas pontas (legível sobre qualquer chão).
+	var plate := _HintPlate.new()
+	plate.position = Vector2(0, 334)
+	plate.size = Vector2(640, 22)
+	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(plate)
+	hint_bar = InputGlyphs.Hint.new()
+	hint_bar.icon_h = 11.0
+	hint_bar.font_size = 8
+	hint_bar.gap = 11.0
+	hint_bar.color = Color(CodexStyle.PAPER, 0.82)
+	hint_bar.position = Vector2(10, 338)
+	hint_bar.size = Vector2(620, 14)
+	hint_bar.pairs = HINTS
+	layer.add_child(hint_bar)
 	var l := InputGlyphs.listener()
 	if l != null:
 		l.connect("device_changed", _on_device_changed)
@@ -66,6 +86,8 @@ func _on_device_changed(_d: int) -> void:
 func _refresh_hints() -> void:
 	if hint_label != null:
 		hint_label.text = InputGlyphs.hint(HINTS, -1, "   ")
+	if hint_bar != null:
+		hint_bar.queue_redraw()
 
 
 func _process(delta: float) -> void:
@@ -142,3 +164,17 @@ func _show_result(won: bool) -> void:
 		Audio.play_sfx("ui_back")
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn"))
 	first.grab_focus()
+
+
+## Fundo da faixa de dicas: azul-noite que se dissolve nas pontas.
+class _HintPlate extends Control:
+	func _draw() -> void:
+		var steps := 12
+		for i in steps:
+			var t0 := float(i) / steps
+			var t1 := float(i + 1) / steps
+			var c0 := Color(0.01, 0.025, 0.035, 0.6 * sin(t0 * PI))
+			var c1 := Color(0.01, 0.025, 0.035, 0.6 * sin(t1 * PI))
+			draw_polygon(PackedVector2Array([Vector2(size.x * t0, 0), Vector2(size.x * t1, 0), Vector2(size.x * t1, size.y), Vector2(size.x * t0, size.y)]),
+				PackedColorArray([c0, c1, c1, c0]))
+

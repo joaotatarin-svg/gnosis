@@ -9,9 +9,13 @@ class_name CaptionBar
 ## em versalete, retrato pequeno quando houver; o texto entra em máquina de
 ## escrever com o "blip" de voz do falante (mesmos sons do DialogueBox).
 ## O tamanho do texto segue as Opções (Legendas P/M/G).
-## Lugar (QA-UX M1): na BASE da tela, abaixo da linha do chão (pés em y≈242 e
-## telegrafos de chão até ≈265 na base 640×360) — faixa termina em y 354; com a
-## barra do chefe no ar a faixa sobe e termina logo acima dela (hud.boss_area_top()).
+## Lugar (QA-UX M1, Onda 3): no TOPO, logo abaixo da faixa de dicas do HUD
+## (y 66 na base 640×360), centrada e mais estreita que antes (420 px) — com o
+## zoom 1,2 da câmera a base da tela é chão de luta (pés, telegrafos de chão,
+## barra do chefe) e a legenda ficava nas canelas da Sophia. O topo central é
+## céu/arquitetura em todas as telas; a faixa é mais discreta (véu α 0,5) e cresce
+## para baixo só o que o texto pedir. O HUD sabe onde ela está
+## (hud.set_caption_band) para o toast nascer logo abaixo.
 ## Some (QA-UX A2/L4/M4): árvore pausada ou PauseStack segurando (pausa, loja,
 ## opções, golpes, diálogo, card de chefe), Sophia morta (a fila é descartada) e
 ## fora de uma tela do run.
@@ -25,9 +29,9 @@ const SPEAKER_COLOR := Color("ecd498")
 const MIN_TIME := 3.0
 const MAX_TIME := 5.2
 const CPS := 55.0
-const BOTTOM_Y := 354.0           # base da faixa sem chefe (base 640×360)
-const BOSS_GAP := 4.0             # folga acima do nome do chefe
-const MIN_TOP_Y := 250.0          # nunca sobe além disto (pés em ≈242)
+const TOP_Y := 66.0               # topo da faixa (abaixo das dicas do HUD, y 37–55)
+const STRIP_W := 420.0            # largura da faixa (centrada; livre dos Anéis e do combo)
+const STRIP_A := 0.5              # véu da faixa (era 0,72 na base: no topo, mais discreta)
 
 var _queue: Array = []            # [{speaker, text}]
 var _time_left: float = 0.0       # tempo da fala atual
@@ -42,8 +46,7 @@ var _shown: float = 0.0
 var _typing: bool = false
 var _blip: String = "blip_npc"
 var _blips: int = 0
-var _bottom: float = BOTTOM_Y     # base atual da faixa (desliza quando o chefe entra)
-var _height: float = 56.0
+var _height: float = 48.0
 var _fight_armed: bool = true     # a próxima luta de chefe da tela ainda corta a chegada
 var _in_fight: bool = false
 
@@ -53,9 +56,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS   # só pra se ESCONDER na pausa
 	_root = Control.new()
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Faixa na base da tela, abaixo dos pés (ver _layout).
-	_root.position = Vector2(640.0 * 0.12, BOTTOM_Y - _height)
-	_root.size = Vector2(640.0 * 0.76, _height)
+	# Faixa no topo central (ver _layout).
+	_root.position = Vector2(320.0 - STRIP_W * 0.5, TOP_Y)
+	_root.size = Vector2(STRIP_W, _height)
 	_root.modulate.a = 0.0
 	add_child(_root)
 
@@ -80,8 +83,8 @@ func _ready() -> void:
 
 	_text = Label.new()
 	_text.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_text.offset_left = 34.0
-	_text.offset_right = -34.0
+	_text.offset_left = 24.0
+	_text.offset_right = -24.0
 	_text.offset_top = 17.0
 	_text.offset_bottom = -3.0
 	_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -122,6 +125,7 @@ func _process(delta: float) -> void:
 	# Pausa / diálogo / loja / card: some e congela (a fala não "queima" escondida).
 	var paused := get_tree().paused or PauseStack.is_held()
 	_root.visible = not paused
+	_report_band()
 	if paused:
 		return
 	# Fora de uma tela do run (menu, Crônicas, fim), nada fica pendurado.
@@ -179,12 +183,19 @@ func _show(l: Dictionary) -> void:
 	var text := String(l.get("text", ""))
 	var who := String(l.get("speaker", ""))
 	_speaker.text = who
-	_strip.portrait = DialogueBox.portrait_for(who)
+	_strip.portrait = DialogueBox.portrait_for(who, String(l.get("mood", "")))
+	# Com retrato, o texto abre espaço à esquerda (o medalhão fica dentro da faixa).
+	_text.offset_left = 62.0 if _strip.portrait != null else 24.0
 	_blip = DialogueBox.blip_for(who)
-	_text.add_theme_font_size_override("font_size", GameManager.caption_font_size() + 1)
-	# Legenda grande precisa de mais altura (2 linhas cabem sempre).
 	var fs := GameManager.caption_font_size() + 1
-	_height = 20.0 + ceilf(float(fs) * 1.15) * 2.0
+	_text.add_theme_font_size_override("font_size", fs)
+	# Altura pelo texto de verdade (1–3 linhas): a faixa não reserva espaço à toa.
+	var lw := STRIP_W - (62.0 if _strip.portrait != null else 24.0) - 24.0
+	var font: Font = CodexStyle.body()
+	var tsz := font.get_multiline_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, lw, fs, -1, TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND)
+	var line_h := ceilf(float(fs) * 1.15)
+	var nlines := clampi(int(ceilf(tsz.y / maxf(1.0, font.get_height(fs)))), 1, 3)
+	_height = 21.0 + line_h * float(nlines)
 	_layout(-1.0)
 	_text.text = text
 	_text.visible_characters = 0
@@ -199,19 +210,26 @@ func _show(l: Dictionary) -> void:
 	_tween.tween_property(_root, "modulate:a", 1.0, 0.25)
 
 
-## Posição da faixa: base em BOTTOM_Y, ou logo acima da barra do chefe.
-## `delta < 0` = sem animação (encaixa na hora).
-func _layout(delta: float) -> void:
-	var target := BOTTOM_Y
+## Posição da faixa: topo central, fixa (o chefe não a empurra mais).
+## `delta` fica por compatibilidade (antes animava a subida acima da barra).
+func _layout(_delta: float) -> void:
+	_root.position = Vector2(320.0 - STRIP_W * 0.5, TOP_Y)
+	_root.size = Vector2(STRIP_W, _height)
+
+
+## Avisa o HUD onde a faixa está agora (base em y, ou -1 = sem legenda na tela),
+## para o toast não nascer embaixo dela.
+func _report_band() -> void:
 	var hud := get_tree().get_first_node_in_group("hud")
-	if hud != null and hud.has_method("boss_area_top"):
-		var top: float = hud.call("boss_area_top")
-		if top < BOTTOM_Y:
-			target = top - BOSS_GAP
-	target = maxf(target, MIN_TOP_Y + _height)
-	_bottom = target if delta < 0.0 else move_toward(_bottom, target, delta * 160.0)
-	_root.position = Vector2(640.0 * 0.12, _bottom - _height)
-	_root.size = Vector2(640.0 * 0.76, _height)
+	if hud == null or not hud.has_method("set_caption_band"):
+		return
+	var on := _root.visible and _root.modulate.a > 0.05
+	hud.call("set_caption_band", (TOP_Y + _height) if on else -1.0)
+
+
+## Retângulo da faixa (base 640×360) — QA/sonda.
+func band_rect() -> Rect2:
+	return Rect2(_root.position, _root.size)
 
 
 ## Começou a luta de chefe (1ª barra viva na tela)? Corta a chegada (#21).
@@ -262,6 +280,7 @@ class _Strip extends Control:
 		var w := size.x
 		var h := size.y
 		var steps := 16
+		var va: float = STRIP_A
 		for i in steps:
 			var a := float(i) / steps
 			var b := float(i + 1) / steps
@@ -270,13 +289,12 @@ class _Strip extends Control:
 			var x0 := w * a
 			var x1 := w * b
 			draw_polygon(PackedVector2Array([Vector2(x0, 0), Vector2(x1, 0), Vector2(x1, h), Vector2(x0, h)]),
-				PackedColorArray([Color(0.02, 0.045, 0.06, 0.72 * ka), Color(0.02, 0.045, 0.06, 0.72 * kb), Color(0.02, 0.045, 0.06, 0.72 * kb), Color(0.02, 0.045, 0.06, 0.72 * ka)]))
-			var g := Color(CodexStyle.GOLD, 0.6)
+				PackedColorArray([Color(0.02, 0.045, 0.06, va * ka), Color(0.02, 0.045, 0.06, va * kb), Color(0.02, 0.045, 0.06, va * kb), Color(0.02, 0.045, 0.06, va * ka)]))
+			var g := Color(CodexStyle.GOLD, 0.45)
 			draw_line(Vector2(x0, 0), Vector2(x1, 0), Color(g, g.a * ka * ka), 0.6, true)
-			draw_line(Vector2(x0, h), Vector2(x1, h), Color(g, g.a * 0.6 * ka * ka), 0.6, true)
 		CodexStyle.draw_diamond(self, Vector2(w * 0.5, 0), 2.2, CodexStyle.GOLD_HI)
 		if portrait != null:
-			var c := Vector2(19.0, h * 0.5 + 2.0)
+			var c := Vector2(44.0, h * 0.5 + 1.0)
 			var r := 12.0
 			draw_circle(c, r + 2.0, CodexStyle.INK_DEEP)
 			draw_texture_rect(portrait, Rect2(c - Vector2(r, r), Vector2(r, r) * 2.0), false)

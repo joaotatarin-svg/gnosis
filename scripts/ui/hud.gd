@@ -67,9 +67,12 @@ var _canvas: _HudCanvas
 var _counters: _HudCanvas            # faíscas + arma numa camada própria (recuam fora de combate)
 var _combo_label: Label
 var _toast: Control
+var _toast_holder: Control           # desloca o toast para baixo da legenda (CaptionBar no topo)
+var _caption_bottom: float = -1.0    # base da faixa de legenda (-1 = sem legenda)
 var _toast_label: Label
 var _toast_tween: Tween
 var _recede: float = 0.0             # 0..1: HUD recolhido (card de chefe da Cinemática)
+var _scene_k: float = 0.0            # 0..1: cena/diálogo no ar (some o HUD de combate não essencial)
 
 # estado das barras
 var hp: float = 1.0
@@ -172,6 +175,11 @@ func _process(delta: float) -> void:
 	if get_tree().paused:
 		# Estado congelado, mas o desenho segue (no roubo a caixa pausa o mundo e
 		# o encaixe da gema precisa apagar/acender na hora).
+		# Faíscas: atrás da loja/pausa o número mostra o total REAL (QA H2: ficava
+		# o valor velho congelado enquanto a loja mostrava o novo).
+		if sparks_shown != float(sparks):
+			sparks_shown = float(sparks)
+			_spark_hold = 0.0
 		_canvas.queue_redraw()
 		_counters.queue_redraw()
 		return
@@ -203,7 +211,8 @@ func _process(delta: float) -> void:
 		sparks_shown = move_toward(sparks_shown, float(sparks), step)
 	_spark_pulse = maxf(0.0, _spark_pulse - delta * 2.5)
 	_spark_pop = maxf(0.0, _spark_pop - delta)
-	_process_hints(delta)
+	if _scene_k <= 0.0:
+		_process_hints(delta)      # durante cena a dica espera (não "queima" escondida)
 	_weapon_flash = maxf(0.0, _weapon_flash - delta * 0.6)
 	for i in _ring_pop.size():
 		_ring_pop[i] = maxf(0.0, _ring_pop[i] - delta * 1.8)
@@ -280,11 +289,15 @@ func _on_combo(count: int) -> void:
 ## faixa própria (TOAST_RECT). Texto longo encolhe a fonte para caber.
 func toast(msg: String) -> void:
 	if _toast == null:
+		_toast_holder = Control.new()
+		_toast_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_toast_holder)
 		_toast = Control.new()
 		_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_toast.position = TOAST_RECT.position
 		_toast.size = TOAST_RECT.size
-		add_child(_toast)
+		_toast_holder.add_child(_toast)
+		_place_toast()
 		_toast_label = Label.new()
 		_toast_label.size = Vector2(TOAST_RECT.size.x, 20)
 		_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -312,6 +325,24 @@ func toast(msg: String) -> void:
 	_toast_tween.chain().tween_property(_toast, "modulate:a", 0.0, 0.5)
 
 
+## A legenda de caminhada (CaptionBar, no topo) informa a base da faixa dela a
+## cada quadro; -1 = nenhuma legenda na tela.
+func set_caption_band(bottom: float) -> void:
+	_caption_bottom = bottom
+	_place_toast()
+
+
+## O toast fica na faixa dele (TOAST_RECT) ou logo abaixo da legenda, se ela
+## estiver no ar.
+func _place_toast() -> void:
+	if _toast_holder == null:
+		return
+	var want := 0.0
+	if _caption_bottom > 0.0:
+		want = maxf(0.0, _caption_bottom + 4.0 - TOAST_RECT.position.y)
+	_toast_holder.position.y = want
+
+
 ## R21: fora de combate (nenhum inimigo vivo perto, sem dano/golpe por 4 s) as
 ## faíscas e a arma recuam; qualquer sinal de luta as traz de volta em 150 ms.
 func _process_calm(delta: float) -> void:
@@ -327,7 +358,7 @@ func _process_calm(delta: float) -> void:
 	var target := CALM_ALPHA if _calm >= CALM_AFTER else 1.0
 	var rate := (1.0 - CALM_ALPHA) / (0.15 if target > _calm_a else 0.6)
 	_calm_a = move_toward(_calm_a, target, delta * rate)
-	_counters.modulate.a = _calm_a * (1.0 - _recede)
+	_counters.modulate.a = _calm_a * (1.0 - _recede) * (1.0 - _scene_k)
 
 
 func _enemy_near() -> bool:
@@ -372,12 +403,30 @@ func _update_recede(delta: float) -> void:
 			want = 1.0
 			break
 	_recede = move_toward(_recede, want, delta * 5.0)
+	# Cena/diálogo no ar (QA C2): dicas de controle, combo e faíscas/arma somem;
+	# medalhão, barras e Anéis ficam (a cena B usa as gemas do HUD).
+	_scene_k = move_toward(_scene_k, 1.0 if scene_active() else 0.0, delta * 6.0)
 	var a := 1.0 - _recede
 	_canvas.modulate.a = a
-	_counters.modulate.a = a * _calm_a
-	_combo_label.modulate.a = a
+	_counters.modulate.a = a * _calm_a * (1.0 - _scene_k)
+	_combo_label.modulate.a = a * (1.0 - _scene_k)
 	if _toast != null:
 		_toast.visible = _recede < 0.99
+
+
+## Há cena no ar? Caixa de diálogo aberta, Cinemática (card/ilustração) ou a
+## Encenação dirigindo uma cena (Staging.is_active(), se existir — pedido à
+## encenação; sem ele vale só a caixa/Cinemática, que cobrem as cenas 64/68).
+func scene_active() -> bool:
+	for c in get_tree().root.get_children():
+		if (c is DialogueBox or c is Cinematic) and not c.is_queued_for_deletion():
+			return true
+	var lv := get_tree().current_scene
+	if lv != null:
+		for c in lv.get_children():
+			if c is Staging and c.has_method("is_active") and bool(c.call("is_active")):
+				return true
+	return false
 
 
 ## Chamado (via grupo "hud") pelo chefe ao nascer — e de novo quando uma forma
@@ -737,11 +786,11 @@ func _distinct_actions(h: Array) -> int:
 	return d.size()
 
 
-## Alpha da dica atual (entra 0,25 s, sai 0,4 s).
+## Alpha da dica atual (entra 0,25 s, sai 0,4 s; some durante cena/diálogo).
 func hint_alpha() -> float:
 	if _hint.is_empty():
 		return 0.0
-	return clampf(minf(_hint_t / 0.25, (HINT_TIME - _hint_t) / 0.4), 0.0, 1.0)
+	return clampf(minf(_hint_t / 0.25, (HINT_TIME - _hint_t) / 0.4), 0.0, 1.0) * (1.0 - _scene_k)
 
 
 func _input(event: InputEvent) -> void:
@@ -1266,7 +1315,7 @@ class _HudCanvas extends Control:
 	func _draw_combo_tag() -> void:
 		if hud._combo_label.text == "":
 			return
-		_txt(Vector2(500, 90), "golpes", CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.8), HORIZONTAL_ALIGNMENT_RIGHT, 120, 3)
+		_txt(Vector2(500, 90), "golpes", CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.8 * (1.0 - hud._scene_k)), HORIZONTAL_ALIGNMENT_RIGHT, 120, 3)
 
 
 ## Gema solta (detach_ring): brilha, gira de leve e voa.

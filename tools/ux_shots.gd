@@ -21,6 +21,22 @@ class Worker extends Node:
 	var auto_finish: bool = true     # pula diálogos (menos quando fotografamos a caixa)
 	var nav_ok: int = 0
 	var nav_fail: int = 0
+	var chk_ok: int = 0
+	var chk_fail: int = 0
+
+	## Conferência pontual (Onda 3): imprime e conta.
+	func _check(ok: bool, what: String) -> void:
+		if ok:
+			chk_ok += 1
+		else:
+			chk_fail += 1
+		print("UX CHECK %s: %s" % ["OK" if ok else "FALHA", what])
+
+	func _caption_bar() -> Node:
+		for c in Gnosis.get_children():
+			if c is CaptionBar:
+				return c
+		return null
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
@@ -209,10 +225,33 @@ class Worker extends Node:
 			d.reveal_all()
 		await wait(0.25)
 		await shot("dialogo")
+		# C2 (Onda 3): com a caixa aberta, a dica de controle do HUD some.
+		var hud_d := get_tree().get_first_node_in_group("hud")
+		if hud_d != null and hud_d.has_method("hint_alpha"):
+			await wait(0.3)
+			var ha: float = hud_d.hint_alpha()
+			_check(ha < 0.05, "C2 dica escondida com diálogo (alpha %.2f)" % ha)
 		await press("ui_accept", true)       # avança (texto já completo)
 		await wait(0.2)
 		if is_instance_valid(d):
 			d._finish()
+		# 14a. Retratos por emoção (Onda 3): campo `mood` da fala.
+		var moods := [["Sophia", "choque", "...Não."], ["Yaldabaoth", "revelado", "Agora vês o que eu sou."],
+			["Soter", "triste", "Eu também esqueci, um dia."], ["Velkar", "arrependido", "Eu servi a mentira."]]
+		for mi in moods.size():
+			var md := DialogueBox.play([{"speaker": moods[mi][0], "text": moods[mi][2], "mood": moods[mi][1]}])
+			await wait(0.3)
+			md.reveal_all()
+			await wait(0.15)
+			var want: String = DialogueBox.portrait_for(moods[mi][0], moods[mi][1]).resource_path
+			_check(md._portrait != null and md._portrait.resource_path == want and want.contains(String(moods[mi][1])),
+				"mood %s/%s → %s" % [moods[mi][0], moods[mi][1], want])
+			if mi == 0 or mi == 1:
+				await shot("dialogo_mood_%d" % mi)
+			md._finish()
+			await wait(0.2)
+		var neutral: Texture2D = DialogueBox.portrait_for("Sophia")
+		_check(neutral != null and neutral.resource_path.ends_with("sophia_neutra.png"), "sem mood → neutra")
 		# 14b. Diálogo com escolha
 		var dc := DialogueBox.play([{"speaker": "Yaldabaoth", "text": "Curve-se, e eu te devolvo o sono."}], ["Recusar", "Ceder"])
 		await wait(0.3)
@@ -258,9 +297,13 @@ class Worker extends Node:
 				c._back()
 		await wait(0.3)
 		# 19. Pausa → Melhorias (loja)
+		Progression.add_orbs(37)             # H2: faíscas mudam com a árvore pausada
 		pause._open_upgrades()
 		await wait(0.5)
 		await shot("pause_loja")
+		var hud_l := get_tree().get_first_node_in_group("hud")
+		if hud_l != null:
+			_check(int(round(hud_l.sparks_shown)) == Progression.orbs, "H2 faíscas do HUD atrás da loja = %d (HUD %d)" % [Progression.orbs, int(round(hud_l.sparks_shown))])
 		await nav_check("loja")
 		for c in lv.get_children():
 			if c is CanvasLayer and c.has_method("_close") and c != pause:
@@ -314,10 +357,36 @@ class Worker extends Node:
 			boss._on_hit_received(int(boss.health.max_health * 0.55), plb.global_position, 10.0, false, null)
 		await wait(0.35)
 		await shot("hud_arconte_fase2")
+		await wait(1.4)
+		await shot("hud_arconte_fase2b")
+		# M1 (Onda 3): legenda durante a luta de chefe — fica no topo, longe dos pés.
+		Gnosis.caption("Sophia", "Ele lê o que eu vou fazer antes de mim. Então não pense: lembre.")
+		await wait(1.4)
+		await shot("hud_arconte_legenda")
+		var cb := _caption_bar()
+		if cb != null and cb.has_method("band_rect"):
+			var br: Rect2 = cb.band_rect()
+			_check(br.end.y < 150.0, "M1 legenda no topo (faixa %s)" % str(br))
+		var hud_t := get_tree().get_first_node_in_group("hud")
+		if hud_t != null:
+			hud_t.toast("Crônica desbloqueada: A Mônada, o Inefável  (1/18)")
+			await wait(0.6)
+			await shot("legenda_toast")
 		# 23. Provação: resultado final (vitória no 3º encontro)
 		CodexSession.start_demo()
 		await wait(2.5)
+		InputGlyphs.set_device(InputGlyphs.Device.KEYBOARD)
+		await wait(0.2)
 		await shot("hud_provacao")
+		# P3 (Onda 3): último input do controle → faixa com os botões do controle.
+		InputGlyphs.set_device(InputGlyphs.Device.XBOX)
+		await wait(0.2)
+		await shot("hud_provacao_pad")
+		var trp = get_tree().current_scene
+		if trp != null and "hint_label" in trp and trp.hint_label != null:
+			var ht: String = trp.hint_label.text
+			_check(ht.contains("LB") or ht.contains("RB"), "P3 Provação com controle [%s]" % ht)
+		InputGlyphs.set_device(InputGlyphs.Device.KEYBOARD)
 		CodexSession.stage = 2
 		var trial = get_tree().current_scene
 		trial.completed = true
@@ -326,5 +395,6 @@ class Worker extends Node:
 		await shot("provacao_final")
 		get_tree().paused = false
 		print("UX NAV: %d ok, %d falha(s)" % [nav_ok, nav_fail])
+		print("UX CHECK: %d ok, %d falha(s)" % [chk_ok, chk_fail])
 		print("UX SHOTS: fim")
 		get_tree().quit()
