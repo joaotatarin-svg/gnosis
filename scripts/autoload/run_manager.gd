@@ -52,8 +52,17 @@ func end_run() -> void:
 
 # --- checkpoints / continuar -------------------------------------------------
 
-## Onde a morte te devolve: início do trecho atual. Limiar → 1 · Éon → primeira
-## tela do Éon (2, 11, ..., 56) · Centro → 65 · Mente → 68.
+## Telas de CHECKPOINT dentro do Éon (offsets): chegada, o Desafio (santuário)
+## e a antessala do Arconte. Backlog #3: morrer no Arconte devolvia 8 telas.
+const CHECKPOINT_OFFSETS := [0, 4, 7]
+
+## Onde a morte te devolve: o último checkpoint ALCANÇADO no trecho atual.
+## Limiar → 1 · Éon → chegada (offset 0), Desafio/santuário (4) ou antessala (7)
+## — o maior que não passa da tela atual (ex.: morrer no Arconte 19 → 18;
+## na travessia 14 → 11; no Desafio 15 ou depois dele → 15) · Centro → 65 ·
+## Mente → 68. Como o run é linear, "a última tela de checkpoint alcançada" é
+## função só da tela atual: o "Continuar" (run_snapshot) usa a mesma conta.
+## O custo da morte continua no Level (−20% de faíscas).
 func checkpoint_for(screen: int) -> int:
 	if screen <= KING_SCREEN:
 		return KING_SCREEN
@@ -61,7 +70,18 @@ func checkpoint_for(screen: int) -> int:
 		return MAX_SCREEN
 	if screen >= CENTER_FIRST:
 		return CENTER_FIRST
-	return FIRST_EON_SCREEN + eon_index(screen) * EON_LEN
+	var first := FIRST_EON_SCREEN + eon_index(screen) * EON_LEN
+	var off := screen - first
+	var best := 0
+	for o in CHECKPOINT_OFFSETS:
+		if o <= off:
+			best = maxi(best, o)
+	return first + best
+
+
+## A tela é um checkpoint (a morte adiante volta para ela)?
+func is_checkpoint(screen: int) -> bool:
+	return checkpoint_for(screen) == screen
 
 
 ## Morte com run ativo: volta pro checkpoint com a progressão intacta.
@@ -145,9 +165,27 @@ func continue_run() -> void:
 
 ## Vitória: o run acabou de verdade — o "Continuar" some.
 func clear_saved_run() -> void:
+	if run_active and is_final(current_screen):
+		Progression.record_boss_beaten("demiurgo")
+		var ach := get_node_or_null("/root/Achievements")
+		if ach != null and ach.has_method("on_campaign_won"):
+			ach.call("on_campaign_won", int(GameManager.difficulty), deaths_this_run)
 	run_active = false
 	saved_run = {}
 	SaveManager.save_game()
+
+
+# --- sorteio determinístico ---------------------------------------------------
+
+## RNG PRÓPRIO de uma tela (BALANCE §3): semeado só pelo número da tela, então
+## a mesma tela sorteia a mesma sequência em todo run — independente do `randi()`
+## global que o Áudio/VFX também consomem. Cada chamada devolve um gerador
+## NOVO no começo da sequência: guarde-o enquanto a tela durar (ex.:
+## `final_battle` pega `RunManager.screen_rng(68)` no _ready).
+static func screen_rng(screen: int, salt: int = 0) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("gnosis/screen/%d/%d" % [screen, salt])
+	return rng
 
 
 # --- mapa do run ------------------------------------------------------------
@@ -331,6 +369,19 @@ func store_health(hp: int, max_hp: int) -> void:
 
 func advance_and_reload() -> void:
 	best_screen = maxi(best_screen, current_screen)
+	# Sair de uma tela de chefe = o chefe caiu (o Rei não dá Anel; os Arcontes
+	# já marcam no add_ring — aqui é idempotente).
+	if run_active and (is_king_screen(current_screen) or is_archon_screen(current_screen)):
+		var bid := boss_id_for(current_screen)
+		Progression.record_boss_beaten(bid)
+		var ach := get_node_or_null("/root/Achievements")
+		if ach != null and ach.has_method("on_boss_cleared"):
+			ach.call("on_boss_cleared", bid, current_screen)
+	# DEMO (#27): passar do Athoth encerra a demo (sem carregar a tela 11).
+	if run_active and GameManager.is_demo_end(current_screen):
+		clear_saved_run()
+		GameManager.finish_demo()
+		return
 	current_screen += 1
 	GameManager.current_screen = current_screen
 	SaveManager.save_game()        # o "Continuar" acompanha o checkpoint

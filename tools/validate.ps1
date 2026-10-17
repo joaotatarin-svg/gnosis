@@ -68,6 +68,7 @@ $fast = [ordered]@{
 	"PuppetQA" = "res://tools/PuppetQA.tscn"
 	"HeroQA"   = "res://tools/HeroQA.tscn"
 	"WaveQA"   = "res://tools/WaveQA.tscn"
+	"TecnicoQA" = "res://tools/tecnico/TecnicoQA.tscn"   # checkpoints/demo/desbloqueios/conquistas (--fixed-fps 60)
 }
 $slow = [ordered]@{
 	"CodexPlaytest" = "res://tools/CodexPlaytest.tscn"
@@ -132,7 +133,10 @@ foreach ($name in $todo.Keys) {
 		continue
 	}
 	Write-Host "-> $name..." -NoNewline
-	$r = Invoke-Step $name @("--headless", "--audio-driver", "Dummy", "--path", $Path, $scene, "--quit-after", "20000")
+	$stepArgs = @("--headless", "--audio-driver", "Dummy", "--path", $Path)
+	# A TecnicoQA troca de cena e conta tempo em quadros (como as regressões).
+	if ($name -eq "TecnicoQA") { $stepArgs += @("--fixed-fps", "60") }
+	$r = Invoke-Step $name ($stepArgs + @($scene, "--quit-after", "20000"))
 	$results += $r
 	Write-Host (" {0} ({1}s, {2} PASS)" -f $(if ($r.Ok) { "ok" } elseif ($r.TimedOut) { "TEMPO ESGOTADO" } else { "FALHOU" }), $r.Secs, $r.Passes)
 }

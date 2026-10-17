@@ -17,8 +17,73 @@ var items: Array = []        # itens = peças de gear que aparecem no herói
 const EON_BOTS := ["sonambulo", "glutao", "carcereiro", "mudo", "reflexo", "esporos", "pretoriano"]
 
 
+## Criaturas já ENCONTRADAS (backlog #26/#35): id → true. Meta-progresso
+## gravado no save (`bestiary_seen`); o Bestiário/Galeria só mostra as vistas.
+signal seen_changed(id: String)
+var _seen: Dictionary = {}
+
+
 func _ready() -> void:
 	_build()
+	# "Ao encontrar": todo Enemy que entra na árvore DURANTE a campanha marca o
+	# seu tipo como visto (Provação e cenas de teste fora de run não contam).
+	get_tree().node_added.connect(_on_node_added)
+
+
+# --- vistos (Bestiário) ---------------------------------------------------------
+
+## A criatura `id` já foi encontrada na campanha?
+func seen(id: String) -> bool:
+	return _seen.has(id)
+
+
+## Marca como vista. Devolve true se era inédita.
+func mark_seen(id: String) -> bool:
+	if id == "" or _seen.has(id):
+		return false
+	_seen[id] = true
+	seen_changed.emit(id)
+	# Vai ao disco no próximo save (fim da tela, morte, opções). NÃO grava aqui:
+	# um save no meio da tela gravaria as faíscas ganhas nela com a retomada
+	# no checkpoint (dava para repetir o trecho e acumular).
+	return true
+
+
+func seen_ids() -> Array[String]:
+	var out: Array[String] = []
+	for k in _seen:
+		out.append(String(k))
+	return out
+
+
+func set_seen_ids(ids: Array) -> void:
+	_seen.clear()
+	for id in ids:
+		_seen[String(id)] = true
+
+
+## Quantos tipos de wave (criaturas comuns + bots dos Éons) já foram vistos.
+func seen_wave_count() -> int:
+	var n := 0
+	for t in wave_types:
+		if _seen.has(t.id):
+			n += 1
+	return n
+
+
+func _on_node_added(node: Node) -> void:
+	if not (node is Enemy):
+		return
+	if not RunManager.run_active or CodexSession.active:
+		return
+	# O type_id costuma vir antes do add_child, mas o Level pode ajustá-lo no
+	# _ready: lê depois de pronto.
+	node.ready.connect(_mark_enemy_seen.bind(node), CONNECT_ONE_SHOT)
+
+
+func _mark_enemy_seen(node: Node) -> void:
+	if is_instance_valid(node) and RunManager.run_active and not CodexSession.active:
+		mark_seen(String(node.get("type_id")))
 
 
 ## Progresso do run (0 na tela 1, 1 na tela do 7º Arconte, até 1.15 no fim).

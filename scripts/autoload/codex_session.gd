@@ -33,6 +33,23 @@ func start_demo(boss: int = 0) -> void:
 	RunManager.begin()
 	_load_stage()
 
+## Desbloqueio da Provação (backlog #26): só os Arcontes JÁ VENCIDOS na
+## campanha (`Progression.bosses_beaten`). A UI lista só os liberados.
+func is_unlocked(boss: int) -> bool:
+	if boss < 0 or boss >= Bestiary.bosses.size():
+		return false
+	return Progression.is_boss_beaten(String(Bestiary.bosses[boss].id))
+
+
+## Índices (0..6) dos Arcontes liberados para a Provação.
+func unlocked_bosses() -> Array[int]:
+	var out: Array[int] = []
+	for i in Bestiary.bosses.size():
+		if is_unlocked(i):
+			out.append(i)
+	return out
+
+
 ## Tela "de mentira" do encontro (REVISAO #8): a mesma fórmula do
 ## `codex_trial.gd` — 1ª tela do Éon do Arconte escolhido nos encontros 1–2 e a
 ## tela do Arconte (última do Éon) no 3º. Era `2 + boss*7` (mapa antigo de 7
