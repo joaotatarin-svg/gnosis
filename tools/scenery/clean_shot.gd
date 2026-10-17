@@ -4,6 +4,7 @@ extends Node
 ## de texto por cima. Uso: ... res://tools/scenery/CleanShot.tscn -- <tela> <saida.png> [frames] [nohud] [x=<x>] [zone=<i>]
 ##   x=<x>     prende a Sophia nesse x de mundo (ex.: x=-690 = colada na parede esquerda)
 ##   zone=<i>  tranca a zona i logo no começo (mostra as paredes da arena)
+##   legacyfg  primeiro plano antigo (colunona em cada descanso) — capturas ANTES
 ##   face=<-1|1> vira a Sophia (a antecipação da câmera olha 90 px para esse lado)
 
 ## (O nó raiz desta cena é liberado quando o Shot troca de cena; quem esconde
@@ -14,6 +15,8 @@ func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	var cl := Cleaner.new()
 	cl.nohud = args.has("nohud")
+	# legacyfg = primeiro plano como era até a Onda 4 (colunona no descanso), p/ o ANTES
+	Scenery.Foreground.legacy = args.has("legacyfg")
 	for a in args:
 		if a.begins_with("x="):
 			cl.x = float(a.substr(2))
