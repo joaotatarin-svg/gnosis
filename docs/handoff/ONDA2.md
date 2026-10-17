@@ -24,6 +24,8 @@
   quiser, criar cargos, mudar regras para otimizar, encerrar/iniciar agentes — cada um com branch `dir2/<cargo>` e
   arquivos que NÃO se cruzam com a tabela acima (na dúvida, pergunte à nuvem por send_message antes de pegar um arquivo).
   Regras da nuvem para agentes: `REGRAS_DIRETORES.md` + (na nuvem) /home/user/wt/REGRAS_NUVEM.md.
+- **ORDEM DO JOÃO (vale para a nuvem e para a sessão local):** não parar no primeiro bloco — avançar bloco a bloco
+  (Onda 2 → portão de playtest → fechamento → build/loja) até a VERSÃO FINAL, ou o mais perto dela possível.
 - Bastão para a sessão local agendado no servidor para 07:12 UTC. Batida de integração da nuvem a cada hora (min 47).
 
 
