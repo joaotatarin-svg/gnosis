@@ -208,6 +208,18 @@ func _check_frames() -> void:
 			art._boss_shown = {"rect": Rect2(rr[0],rr[1],rr[2],rr[3]), "anchor": Vector2(meta.states.attack.frames[0].anchor[0],meta.states.attack.frames[0].anchor[1]), "k": k, "tex": atlas}
 		var gibs: Array = art.gib_parts()
 		check(gibs.size() == 9 and gibs[0].has("tex") and (gibs[0].tex as AtlasTexture).atlas == atlas,"Gibs do chefe não vêm do quadro: "+entry.name)
+		# MORTE ENCENADA: cambaleio → queda → pausa → cacos; o sinal sai no fim
+		# e a morte NÃO encolhe o corpo (o "murcha" que o João reclamou)
+		var done := [false]
+		art.death_finished.connect(func() -> void: done[0] = true)
+		art.play_boss_death()
+		var min_sy: float = 1.0
+		for f in 130:
+			art._process(1.0 / 60.0)
+			if art._death_t < CharacterArt.DEATH_BREAK:
+				min_sy = minf(min_sy, float(art._death_motion()[3]))
+		check(art._shattered and done[0], "Morte de chefe não estilhaça/termina: " + entry.name)
+		check(min_sy > 0.9, "Morte de chefe 'murcha' o corpo (escala %.2f): %s" % [min_sy, entry.name])
 		lines.append("%-24s QUADROS: %d quadros, %d estados, corpo %.1f px (boneco %.1f), atlas %dx%d" % [entry.name,meta.frames.size(),meta.states.size(),body_world,old_world,atlas.get_width(),atlas.get_height()])
 		art.queue_free()
 	for line in lines: print(line)

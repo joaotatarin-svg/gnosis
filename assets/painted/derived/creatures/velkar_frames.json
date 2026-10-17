@@ -33,7 +33,11 @@
    "bottom": 257.11,
    "pelvis_x": 94.69,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    130.06,
+    33.91
+   ]
   },
   "idle_0-idle_1_25": {
    "rect": [
@@ -47,7 +51,11 @@
    "bottom": 255.0,
    "pelvis_x": 88.49,
    "mid": true,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    129.88,
+    33.66
+   ]
   },
   "idle_0-idle_1_50": {
    "rect": [
@@ -61,7 +69,11 @@
    "bottom": 256.0,
    "pelvis_x": 87.72,
    "mid": true,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    131.72,
+    33.73
+   ]
   },
   "idle_0-idle_1_75": {
    "rect": [
@@ -75,7 +87,11 @@
    "bottom": 256.0,
    "pelvis_x": 83.84,
    "mid": true,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    132.17,
+    33.66
+   ]
   },
   "idle_1": {
    "rect": [
@@ -89,7 +105,11 @@
    "bottom": 258.22,
    "pelvis_x": 89.45,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    134.33,
+    34.47
+   ]
   },
   "talk_0": {
    "rect": [
@@ -103,7 +123,11 @@
    "bottom": 258.78,
    "pelvis_x": 84.71,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    112.46,
+    33.99
+   ]
   },
   "talk_1": {
    "rect": [
@@ -117,7 +141,11 @@
    "bottom": 258.22,
    "pelvis_x": 83.36,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    113.68,
+    35.54
+   ]
   },
   "kneel": {
    "rect": [
@@ -131,7 +159,11 @@
    "bottom": 169.33,
    "pelvis_x": 137.16,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    158.44,
+    18.91
+   ]
   },
   "rise": {
    "rect": [
@@ -145,7 +177,11 @@
    "bottom": 199.33,
    "pelvis_x": 124.38,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    159.25,
+    26.69
+   ]
   },
   "farewell": {
    "rect": [
@@ -159,7 +195,11 @@
    "bottom": 267.11,
    "pelvis_x": 94.4,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    123.96,
+    29.92
+   ]
   },
   "walk_away": {
    "rect": [
@@ -173,7 +213,11 @@
    "bottom": 242.11,
    "pelvis_x": 103.25,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    158.49,
+    33.34
+   ]
   }
  },
  "states": {
