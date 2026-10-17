@@ -101,11 +101,14 @@ def main() -> int:
         resumo(a)
         return 0
     b = load(args[1])
-    same = a == b
+    # Identidade só nos campos de JOGO (colunas novas do CSV não contam).
+    core = ("time", "dmg", "deaths", "timeout", "hits", "maxhit", "boss", "src")
+    def key(r): return None if r is None else tuple(str(r[k]) for k in core)
+    same = all(key(a.get(s)) == key(b.get(s)) for s in set(a) | set(b))
     print("A = %s\nB = %s" % (args[0], args[1]))
     print("IDÊNTICAS: %s" % ("SIM (determinístico)" if same else "NÃO"))
     if not same:
-        diff = [s for s in sorted(set(a) | set(b)) if a.get(s) != b.get(s)]
+        diff = [s for s in sorted(set(a) | set(b)) if key(a.get(s)) != key(b.get(s))]
         print("  1ª tela diferente: %s · telas diferentes: %d de %d" % (diff[0], len(diff), len(set(a) | set(b))))
     ta, tb = tot(a), tot(b)
     print("\n%-14s %15s %17s %13s %9s" % ("", "min (A→B)", "dano (A→B)", "q-mortes", "timeouts"))

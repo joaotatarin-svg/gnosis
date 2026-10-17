@@ -15,6 +15,8 @@ extends Node
 ##   loja=gasta = na loja pós-chefe, depois de arma e magias, gasta o resto em
 ##          +20 de vida máx. (guarda 100). Padrão (loja=classica) = só arma e
 ##          magias, igual às rodadas r1–r8 (comparável com o histórico).
+##   loja=teto  = SIMULA a proposta P1 do docs/onda2/BALANCE.md: +20 de vida
+##          máx. com preço crescente 60×(n+1) e no máximo 10 compras.
 ##   ia=2 = bot "v2" (Onda 2): além do clássico, SAI de poça hostil (veneno de
 ##          Belias) e ESQUIVA de projétil que vem na direção dele. Ainda não
 ##          bloqueia nem faz parry. Padrão ia=1 = clássico (r1–r8).
@@ -92,6 +94,7 @@ class BalanceWorker extends Node:
 	var _hits: int = 0                 # golpes que tiraram vida na tela
 	var _maxhit: int = 0               # maior golpe único na tela
 	var _mhp: int = 0                  # vida máxima ao entrar na tela
+	var _hp_buys: int = 0              # compras de +vida (loja=teto)
 	var _earned: int = 0               # faíscas ganhas na tela
 	var _orbs_seen: int = 0
 	var _zones_hz: Array = []          # poças/zonas vivas (IA v2 sai de cima)
@@ -407,6 +410,12 @@ class BalanceWorker extends Node:
 				if Progression.is_skill_unlocked(sk.id) and Progression.skill_level(sk.id) < sk.max_level \
 						and Progression.orbs >= Progression.skill_upgrade_cost(sk.id) + 150:
 					Progression.upgrade_skill(sk)
+		if shop_mode == "teto":
+			# Proposta P1 (simulada só no bot): preço sobe a cada compra, teto 10.
+			while _hp_buys < 10 and Progression.orbs >= 60 * (_hp_buys + 1) + 100:
+				if not Progression.buy_max_health(20, 60 * (_hp_buys + 1)):
+					break
+				_hp_buys += 1
 		if shop_mode == "gasta":
 			# Jogador "gastador": converte a sobra em vida máxima (preço fixo 60).
 			while Progression.orbs >= 60 + 100:
