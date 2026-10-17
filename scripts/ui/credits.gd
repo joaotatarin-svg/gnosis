@@ -7,15 +7,19 @@ class_name Credits
 ## Rola sozinho; ↑/↓ (teclado, D-pad, analógico) rolam na mão; Esc/B ou
 ## "Voltar" saem. Acessível pelo menu e pela tela de fim (vitória).
 
-const LICENSES := "res://assets/LICENSES.md"
 const SPEED := 16.0               # px/s rolando sozinho
 const MANUAL := 160.0             # px/s com o direcional
 
-## Atribuição mínima (cópia do bloco "Texto de atribuição" do LICENSES.md).
+## De onde ler os créditos (variável para as ferramentas de QA testarem a falta do arquivo).
+static var licenses_path: String = "res://assets/LICENSES.md"
+
+## Atribuição mínima OBRIGATÓRIA (CC-BY), embutida: vale quando o LICENSES.md
+## não vem no pacote exportado ou perdeu o bloco "## CRÉDITOS".
 const FALLBACK_ATTRIBUTION := [
-	"Música de Kevin MacLeod (incompetech.com), licenciada sob Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/",
-	"Efeitos sonoros: \"Fantasy Sound Effects Library\" e \"Magic SFX Preview Pack\" de Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0.",
-	"Demais sons e sprites de partícula: Kenney (kenney.nl) e autores CC0 do OpenGameArt.org.",
+	"Música: Kevin MacLeod (incompetech.com) — Licensed under Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/",
+	"Efeitos sonoros: \"Fantasy Sound Effects Library\" — Little Robot Sound Factory (www.littlerobotsoundfactory.com) — CC-BY 3.0 — https://creativecommons.org/licenses/by/3.0/",
+	"Efeitos CC0: Kenney (kenney.nl) e autores CC0 do OpenGameArt.org",
+	"Partículas: Kenney Particle Pack (CC0)",
 ]
 
 ## Para onde "Voltar" leva (a tela de fim manda pro menu também).
@@ -85,23 +89,22 @@ func _fill() -> void:
 	_gap(14)
 	_head("Desenvolvido com")
 	_line("Claude", 15, CodexStyle.PAPER, CodexStyle.display())
-	_small("(Anthropic)")
+	_small("(Anthropic)  ·  e Codex (OpenAI)")
+	_small("Arte ilustrada gerada por IA sob direção do autor")
 	_gap(14)
 	var lic := _read_licenses()
-	_head("Música")
-	if lic.tracks.size() > 0:
-		_line("Kevin MacLeod  ·  incompetech.com", 12, CodexStyle.PAPER, CodexStyle.body_bold())
-		_small(", ".join(PackedStringArray(lic.tracks)))
-		_small("Licença Creative Commons: By Attribution 4.0")
-		_small("https://creativecommons.org/licenses/by/4.0/")
-	_gap(10)
-	_head("Atribuição")
-	var attribution: Array = lic.attribution if lic.attribution.size() > 0 else FALLBACK_ATTRIBUTION
-	for a in attribution:
-		_para(String(a))
+	# Música e sons: o bloco "## CRÉDITOS" do LICENSES.md (ou a reserva embutida).
+	_head("Música e sons")
+	var lines: Array = lic.credits if lic.credits.size() > 0 else FALLBACK_ATTRIBUTION
+	for a in lines:
+		var t := String(a)
+		if t.begins_with("Faixas:"):
+			_small(t)
+		else:
+			_para(t)
 	if lic.packs.size() > 0:
 		_gap(10)
-		_head("Sons e partículas")
+		_head("Pacotes de sons e partículas")
 		for p in lic.packs:
 			_small(String(p))
 	_gap(10)
@@ -112,44 +115,33 @@ func _fill() -> void:
 	_gap(10)
 	_head("Motor")
 	_small("Godot Engine  —  © Juan Linietsky, Ariel Manzur e colaboradores (licença MIT)")
+	_small("godotengine.org/license")
 	_gap(40)
 	_line("Obrigado por despertar.", 13, CodexStyle.GOLD_HI, CodexStyle.italic())
 	_gap(160)
 
 
-## Lê o LICENSES.md: bloco de atribuição (linhas "> "), tabela de músicas e de packs.
+## Lê o LICENSES.md: o bloco "## CRÉDITOS" (cada linha "- " é uma linha de
+## crédito) e a tabela "## Packs" (pack — autor (licença)).
 func _read_licenses() -> Dictionary:
-	var out := {"attribution": [], "tracks": [], "packs": []}
-	if not FileAccess.file_exists(LICENSES):
+	var out := {"credits": [], "packs": []}
+	if not FileAccess.file_exists(licenses_path):
 		return out
-	var f := FileAccess.open(LICENSES, FileAccess.READ)
+	var f := FileAccess.open(licenses_path, FileAccess.READ)
 	if f == null:
 		return out
 	var section := ""
-	var para := ""
 	while not f.eof_reached():
 		var line := f.get_line().strip_edges()
 		if line.begins_with("## "):
 			section = line.substr(3).to_lower()
 			continue
-		if section.begins_with("texto de atribuição") and line.begins_with(">"):
-			var t := line.trim_prefix(">").strip_edges()
-			# Parágrafo novo quando o anterior fechou (ponto final ou fim de URL).
-			if para != "" and (para.ends_with(".") or para.ends_with("/")):
-				out.attribution.append(para)
-				para = t
-			else:
-				para = (para + " " + t).strip_edges()
-		elif section.begins_with("músicas") and line.begins_with("| `music/"):
-			var cells := line.split("|", false)
-			if cells.size() >= 2:
-				out.tracks.append(cells[1].strip_edges())
+		if section.begins_with("créditos") and line.begins_with("- "):
+			out.credits.append(line.substr(2).strip_edges())
 		elif section == "packs" and line.begins_with("|") and not line.begins_with("|---") and not line.begins_with("| Pack"):
 			var c := line.split("|", false)
 			if c.size() >= 3:
 				out.packs.append("%s  —  %s  (%s)" % [c[0].strip_edges(), c[1].strip_edges(), c[2].strip_edges().replace("**", "")])
-	if para != "":
-		out.attribution.append(para)
 	return out
 
 
