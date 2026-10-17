@@ -92,7 +92,7 @@ backlog do crítico em `docs/onda2/BACKLOG_CRITICO.md`; briefs em `docs/handoff/
 9. `painted_flex.gdshader` da Sophia (cor ao quadrado): correção de 1 linha espera o OK visual do João.
 
 **Decisões do João pendentes:** paleta da loja A/B e ícone Olho/Faísca (`assets/store/board.png`); tema do menu A/B/C e variações
-de chefe (`/home/user/caps/...` não existe no PC — regerar com `tools/audio_synth/menu_theme.py` e `boss_variants.py`);
+de chefe (amostras em `docs/onda2/amostras/`);
 "regra do nome" (#16, recomendado: ironia dramática); AppPublisher/AppId; GodotSteam; `gnosis/store_url`; declarar arte por IA na Steam;
 Athoth sempre liberado na Provação (hoje sim).
 
