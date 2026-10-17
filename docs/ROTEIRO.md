@@ -151,7 +151,7 @@ no código, ver `docs/pedidos/roteiro.md`). Tudo por código (tween, modulate,
 Polygon2D, VfxLibrary) — nenhum asset novo é obrigatório.
 
 ### Cena A — O Rei sai da névoa (tela 1) · ~9 s antes do duelo
-Contexto: termina o `intro` (Sophia: "…Quem és tu?" / Voz: "Chama-me Voz").
+Contexto: termina o `intro` (coração batendo no escuro → "Acorda. ...Isso. Devagar. Eu estou aqui." → "Chama-me Voz").
 O Rei ainda NÃO está no palco.
 
 | t | Imagem | C | S | Fala |
@@ -169,46 +169,57 @@ Silhueta = mesma do Colosso na tela 68 (regra de LORE: o contorno gentil sai da
 = rachadura branca desenhada por cima da máscara (Line2D, 3 segmentos, 0,3 s);
 `king_sinks` = ele afunda 60 px em 1,2 s enquanto a névoa o cobre.
 
-### Cena B — O roubo dos Anéis (tela 64) · ~22 s, o épico do jogo
-Contexto: Armupiel caiu; `ring_gained("arconte_coroa")` termina com a Voz:
-"Sete. Todos os sete… Não te mexas. Fica bem aí." O HUD mostra 7 ◆ coloridos.
+### Cena B — O roubo dos Anéis (tela 64) · ~25 s, o coração do jogo
+Contexto: Armupiel caiu; `ring_gained("arconte_coroa")` = a última fala dele
+("Diz a ele que eu... não. Ele não escuta.") e a Voz, seca: **"Sete."** A
+música do chefe **corta seca** logo depois (sem crossfade). O HUD mostra 7 ◆.
+Cada fala do roubo **colhe** um plantio (ver §4): o aplauso (tela 12), a janela
+e o rio (santuários 6 e 42), "ficar contigo" (santuário 60), "levanta" (mortes),
+e a frase do Cego da Estela 4 ("não há outro além de mim").
 
-| # | t | Imagem | C | S | Fala (`cue`) |
-|---|---|---|---|---|---|
-| 1 | 0,0–2,5 | silêncio de 0,6 s; a névoa do Limiar (a **mesma** da cena A, mesma cor) entra pela direita; o Rei sai **inteiro**, máscara sem rachadura, mesmo passo | push-in lento 1,0→1,12 | música corta em 0,3 s; `roubo` entra baixo; ★ `king_step` | Rei "Faísca perdida… fizeste tudo tão bem." (`king_emerges`) |
-| 2 | — | Sophia recua meio passo (pose de bloqueio) | — | — | Sophia "Tu caíste. Eu te vi cair." · Rei "Caí, para que tu subisses…" |
-| 3 | 0,0–5,6 | **os 7 Anéis voam**: para i em 0..6, a cada 0,8 s: `hud.detach_ring(i)` → gema-fantasma nasce em `hud.ring_dot_global_pos(i)` (convertido para o mundo pela câmera), arco de Bézier até a mão do Rei (0,7 s, ease in), rastro na cor do Anel (`SkillData.color`), pisca a mão dela; o ◆ do HUD fica cinza | trava no par Sophia–Rei; a cada gema, micro-zoom +0,01 | `ring_steal` em cada gema, tom subindo um semitom por gema; no 7º, `boss_phase2` abafado | Rei "(estende a mão…) Vem. Vem… vem." (`rings_fly`) — a fala fica na tela durante as 7 gemas; avançar fica bloqueado até a última chegar |
-| 4 | — | Sophia olha para cima, para o nada | corte para plano mais aberto | — | Sophia "Voz! Faz alguma coisa!" |
-| 5 | 0,0–1,5 | o Rei inclina a cabeça; a voz dele passa a sair com o **filtro da Voz** (se o áudio tiver voz) — sem voz gravada: a caixa troca a cor do nome "O Rei" para a cor da Voz durante a fala | estático, 1,5 s de silêncio antes do texto | ★ `voice_merge` (as duas vozes em uníssono) | Rei "Estou fazendo, Portadora. Sobe… ah, não. Agora já não precisas subir." (`voice_merge`) |
-| 6 | 0,0–1,2 | **a máscara cai**: o sprite do rosto desce 30 px girando 20° e some (alpha 0 em 0,6 s); no lugar, preto + **um olho cego** (círculo branco-leitoso, sem pupila) ; o modulate do Rei esfria (branco → cinza-azulado) | shake 6 px 0,3 s + flash branco 0,08 s | `boss_appear` grave, −4 semitons; a música para | Yaldabaoth "(a máscara cai…) Eu sou o Cego de quem te falei. E não há outro além de mim." (`mask_falls`) |
-| 7 | — | as 7 gemas orbitam a cabeça dele (raio 50 px, 1 volta/2 s) | — | — | Yaldabaoth "Sete Arcontes, sete Anéis: o meu corpo…" |
-| 8 | — | as gemas pulsam fracas, fora de ritmo | — | ★ sussurro (voz feminina reversa) | "Uma voz nos Anéis": "…espera… eu… lembro…" |
-| 9 | 0,0–2,5 | ele **vira o motor**: o manto colapsa vazio (scale.y 1→0,2), as gemas viram 3 anéis concêntricos girando (Line2D/arc) ao redor de um núcleo negro; tudo afunda 120 px no chão, que racha (VfxLibrary `portal` invertido, escuro) | segue a descida; fade para preto em 0,8 s no fim | `dive` + grave longo | Yaldabaoth "(vira um motor de anéis e afunda no chão) Desce, se tiveres coragem…" (`sink`) |
-| fim | — | `Progression.steal_rings()` → `advance_and_reload()` | — | — | — |
+| # | Imagem | C | S | Fala (`cue`) |
+|---|---|---|---|---|
+| 1 | Sophia sozinha, os 7 Anéis brilhando nos dedos | estático | silêncio 0,6 s | Voz "Chegaste. Todos os sete. Fizeste tudo tão bem, minha fiel." · Sophia "E agora? Tu prometeste me mostrar." |
+| 2 | 0–2,5 s: a névoa do Limiar (a **mesma** da cena A) entra pela direita; o Rei sai **inteiro**, máscara sem rachadura, mesmo passo | push-in lento 1,0→1,12 | ★ `king_step` | narrador "(Passos na névoa. Um vulto que tu conheces…)" (`king_emerges`) |
+| 3 | o Rei inclina a cabeça; **o rótulo da caixa continua "A Voz"**, mas a rubrica diz que sai da boca dele — o jogador entende pelo rótulo antes de qualquer explicação; sem voz gravada, a cor do nome da Voz pisca 1× | estático | ★ `voice_merge` (as duas vozes em uníssono) | Voz "(a voz já não vem de dentro de ti: vem da boca do Rei) Mostrar. Sim." (`voice_merge`) |
+| 4 | ele aplaude, devagar (2 palmas) | — | 2 palmas secas | Voz "(ele aplaude…) Eu disse que aplaudiria, se tivesse mãos. Tenho." · Sophia "...Não." |
+| 5 | 0–5,6 s: **os 7 Anéis voam**: para i em 0..6, a cada 0,8 s, `hud.detach_ring(i)` → gema-fantasma nasce em `hud.ring_dot_global_pos(i)` (convertida para o mundo pela câmera), arco de Bézier até a mão do Rei (0,7 s, ease in), rastro na cor do Anel (`SkillData.color`); o ◆ do HUD fica cinza | trava no par; micro-zoom +0,01 por gema; `Juice.shake(0.8)` na última | `ring_steal` por gema, um semitom acima a cada uma | narrador "(Os sete Anéis se arrancam dos teus dedos, um a um…)" (`rings_fly`) — avançar fica bloqueado até a 7ª gema chegar |
+| 6 | **a máscara cai**: o rosto desce 30 px girando 20° e some (alpha 0 em 0,6 s); no lugar, preto e **um olho cego** (círculo branco-leitoso sem pupila); o Rei esfria (branco → cinza-azulado). **Só agora** o rótulo vira "Yaldabaoth" | shake 6 px 0,3 s + flash branco 0,08 s | `theme` (o tema da Voz) com `pitch_scale` 0,75 por 3 s → corta → `roubo` entra | Yaldabaoth "(a máscara cai…) Eu sou o Cego de quem te falei. E não há outro além de mim." (`mask_falls`) |
+| 7 | as 7 gemas orbitam a cabeça dele (raio 50 px, 1 volta/2 s) | — | — | Yaldabaoth: o nome · "Nunca houve rio. Nunca houve janela…" · "O luto é a coleira mais macia." · Sophia "Eu chorei por eles." · "Choraste por mim…" |
+| 8 | as gemas pulsam fracas, fora de ritmo | — | ★ sussurro | "Uma voz nos Anéis": "...espera... eu... lembro..." |
+| 9 | ele baixa a cabeça; a música cai a −14 dB | aproxima | — | Yaldabaoth "(mais baixo, quase a Voz de antes) Tu disseste que ficavas comigo." |
+| 10 | **vira o motor**: o manto colapsa vazio (scale.y 1→0,2), as gemas viram 3 anéis concêntricos girando em volta de um núcleo negro; tudo afunda 120 px no chão, que racha | segue a descida; fade para preto em 0,8 s | `dive` + grave longo; música para | Yaldabaoth "(vira um motor de anéis…) Desta vez, não te levantes." (`sink`) |
+| fim | `Progression.steal_rings()` → `advance_and_reload()` | — | — | — |
 
-Regra: **nenhuma gema voa antes da fala 3**, e a palavra "Yaldabaoth" só
-aparece como nome do falante a partir da fala 6.
+Regra: **nenhuma gema voa antes da fala 5**; a palavra "Yaldabaoth" só aparece
+(como rótulo) a partir da fala 6. Teste de sentimento: ler em sequência as
+capturas dos santuários 6, 24, 60 e do roubo — se a 64 não parecer a colheita
+das outras, falta plantio, não texto na 64.
 
-### Cena C — A descida ao Centro (início da tela 65) · ~6 s antes do `center_intro`
-| t | Imagem | C | S |
-|---|---|---|---|
-| 0,0–1,0 | preto (vindo da cena B); o HUD dos Anéis mostra 7 ◆ cinzentos | — | grave contínuo; nenhum som da Voz |
-| 1,0–3,5 | o Centro aparece **de cima**: a câmera começa 200 px acima do chão e desce até a altura de jogo; a paleta vai do frio da Coroa (dourado) para o cinza-violeta do Centro (`CanvasModulate` em tween 2,5 s); engrenagens do chão giram devagar | descida com ease out | música `centro` em fade 2 s |
-| 3,5–5,0 | a Sophia cai de joelhos no centro e se ergue (pose de queda → idle) | assenta | `land` |
-| 5,0–6,0 | silêncio total 1 s (nem música) — a ausência da Voz se ouve | estático | — |
-| 6,0 | `center_intro`: "…Silêncio. Desde as cinzas, é a primeira vez que não há voz nenhuma na minha cabeça." | — | música volta |
+### Cena C — A descida ao Centro (início da tela 65) · ~8 s + `center_intro`
+| t | Imagem | C | S | Fala |
+|---|---|---|---|---|
+| 0,0–1,0 | preto (vindo da cena B); o HUD dos Anéis mostra 7 ◆ cinzentos | — | grave contínuo | — |
+| 1,0–3,5 | o Centro aparece **de cima**: a câmera começa 200 px acima do chão e desce até a altura de jogo; a paleta vai do dourado da Coroa para o cinza-violeta do Centro (`CanvasModulate` em tween 2,5 s); engrenagens do chão giram devagar | descida com ease out | **nenhuma música** (só vento) | — |
+| 3,5–5,0 | a Sophia cai de joelhos no centro e se ergue | assenta | `land` | — |
+| 5,0 | caixa de diálogo | estático | silêncio | narrador "(Silêncio. Nenhuma voz…)" (`wait_2s`: 2 s sem aceitar input) · Sophia "Voz?" · "..." · "Ninguém. ...Então eu." · "…Vou buscá-los." |
+| depois | a música `centro` **só entra no primeiro eco quebrado** e sobe um degrau a cada caco (memória = música) — pedido ao Áudio | — | — | `echo_memory` (legendas) a cada eco |
 
-### Cena D — A anagnórise (tela 68, após as duas formas caírem) · ~20 s
-Contexto: a batalha dupla terminou (`final_battle`). Os 7 Anéis giram no céu.
-| # | t | Imagem | C | S | Fala (`cue`) |
-|---|---|---|---|---|---|
-| 1 | 0,0–1,2 | as duas formas caem **juntas** (Rei de joelhos à esquerda, Colosso tomba à direita); os 7 Anéis **param** no ar | câmera recua para enquadrar os três | tudo para; 0,8 s de silêncio | — |
-| 2 | 1,2–4,0 | **os Anéis voltam**: um a um (0,35 s cada), cada um desce em espiral até o peito da Sophia (inverso da cena B: mesmas cores, agora entrando); o ◆ correspondente do HUD volta a colorir (`hud` reverso de `detach_ring`) | push-in na Sophia, 1,0→1,25 | `ring_gain` em cada um, tom DESCENDO até a tônica | Sophia "(as duas formas caem juntas…) Ah…" (`rings_return`) |
-| 3 | 4,0–4,4 | **clarão**: tela branca 0,12 s, decai em 0,3 s; ao voltar, a Sophia tem aura (modulate +20%) e o fundo da Mente fica menos escuro | shake 4 px | `nova` + acorde | Sophia "Agora eu vejo. Os Anéis são eu…" (`flash`) · "Eu entrei aqui de propósito…" · "Fizeram-me caçar a mim mesma. Para ti." |
-| 4 | 0,0–3,0 | **o Colosso encolhe**: scale 1→0,25 em 3 s (ease in-out), alpha da carcaça 1→0,4; revela-se **oco** (por dentro, só o olho cego, pequeno); o Rei enfraquecido se desfaz em névoa e a névoa entra no Colosso | acompanha o encolhimento, até o "minúsculo" caber ao lado do pé da Sophia | ★ respiração de criança | Yaldabaoth "…mãe? eu não queria ser cego…" (`colossus_shrinks`) — nome em minúsculas é proposital |
-| 5 | — | Sophia ajoelha (pose de bloqueio baixa) diante do pequeno | baixa à altura dela | música `epilogo` começa | Sophia "Eu estou olhando. Fui eu que te escondi numa nuvem…" |
-| 6 | 0,0–2,0 | ela abre a mão; o pequeno vira luz e entra na mão dela (partículas douradas sugadas) | push-in final | `revive` suave | Sophia "(ela abre a mão) Volta para dentro de quem te fez…" (`reclaim`) |
-| 7 | — | a Sophia de pé, inteira, sozinha na Mente clareada | abre o quadro | — | Sophia "Agora, a última escolha…" → botões Ascensão / Ruptura / Semente |
+### Cena D — A anagnórise (tela 68, após as duas formas caírem) · ~25 s
+Contexto: a batalha dupla terminou. Na 1ª queda de uma forma (durante a luta)
+já voltou o 7º Anel, com as legendas `seventh_ring()` ("eu desci de propósito…
+para te buscar") e `Juice.slow_mo(0.2, 1.2)`.
+
+| # | Imagem | C | S | Fala (`cue`) |
+|---|---|---|---|---|
+| 1 | as duas formas caem **juntas**; os 7 Anéis **param** no ar, depois descem em espiral até o peito da Sophia, um a um (0,35 s cada; inverso da cena B); o ◆ do HUD volta a colorir | recua para enquadrar os três; depois push-in na Sophia 1,0→1,25 | corte de música; `shard`/`ring_gain` por Anel, tom DESCENDO | narrador "(As duas formas caem juntas… e voltam para ti, um por um.)" (`rings_return`) |
+| 2 | **clarão**: branco 0,12 s, decai em 0,3 s; a Sophia ganha aura, a Mente clareia | shake 4 px | `nova` + acorde | Sophia "Eles não são o teu corpo. São o meu…" (`flash`) · "Vim te buscar…" |
+| 3 | **o Colosso se abre**: scale 1→0,25 em 3 s, carcaça a alpha 0,4; por dentro, oco, só o olho cego, pequeno; o Rei enfraquecido vira névoa e entra nele | acompanha até o "minúsculo" caber ao lado do pé dela | ★ respiração de criança | narrador "(O Colosso se abre. Está oco…)" (`colossus_shrinks`) · Yaldabaoth "...mãe? eu não queria ser cego…" (minúsculas de propósito) |
+| 4 | a Sophia ajoelha diante do pequeno | baixa à altura dela | silêncio | Sophia "Fui eu que fechei a nuvem. Fui eu que te deixei lá. Agora eu estou olhando." |
+| 5 | ela estende a mão | — | **`theme` volta sozinha, lenta** (o tema da Voz, agora dela) | Sophia "Levanta. Eu te seguro." (`theme_alone`) — a frase do carcereiro vira a da mãe |
+| 6 | o pequeno vira luz e entra na mão dela | push-in final | `revive` suave | Sophia "(recolhe-o para dentro de si) Meu nome é Sophia. Fui eu que te dei o teu." (`reclaim`) |
+| 7 | a Sophia de pé, inteira, sozinha na Mente clara | abre o quadro | — | Sophia "Falta o mais difícil…" → botões **Ascensão — levar todos · Ruptura — proteger · Semente — despertar** |
+| 8 | (depois da escolha) | — | — | `ending_lines(idx)` (2 falas) → epílogo em cards → créditos → card preto "...mãe?" (2,6 s) |
 
 ## 3. Relatório de mudanças de texto (Onda 1)
 
@@ -280,3 +291,82 @@ reais cada fala da caixa (13 e 16 px), cada legenda (2 linhas), cada painel de
 Estela (≤ 330 px), cada card de prólogo/epílogo (≤ 6 linhas); confere legendas
 repetidas, termos proibidos/registro e a regra de ouro (ninguém diz
 Yaldabaoth/Demiurgo antes do roubo).
+
+## 4. Plantio e colheita (direção emocional, Onda 1b)
+
+Implementado a partir de `NARRATIVA_EMOCIONAL.md` (Diretor de Narrativa
+Emocional), com cortes: o doc era direção, não lei.
+
+**Tese:** a Sophia tem medo de ser abandonada porque um dia abandonou (escondeu
+o filho numa nuvem — Apócrifo de João). A Voz precisa ser **amada** para o
+roubo doer; as lembranças **quentes** são falsas (a janela para o rio, dada pela
+Voz) e as **frias** são verdadeiras (voltam dos ecos no Centro: o poço de Merou,
+a nuvem, "Erras, Samael").
+
+| Plantio | Onde | Colheita |
+|---|---|---|
+| "Acorda. ...Isso. Devagar. Eu estou aqui." | intro (1) | o carcereiro esperava a chave |
+| "Tu tinhas uma casa com uma janela para o rio." | santuário Torpor (6) | roubo: "Nunca houve rio." |
+| "Bonito golpe. Eu teria aplaudido, se tivesse mãos." | zona limpa, tela 12 | roubo: "…se tivesse mãos. Tenho." |
+| "Falo. Tenho todo o tempo do mundo. ...Literalmente." | santuário Fome (15) | ele fez o tempo do mundo |
+| Harmas sabe da janela; "Essa é nossa." | tentação (19) | os dois são a mesma mente |
+| "Nada bonito de se ver." + o riso dela | santuário Corrente (24) | cabeça de leão (Estela 4) |
+| "(um silêncio longo demais) ...Sonhos." | santuário Silêncio (33) | ele ouviu a mãe lembrar do berço |
+| "Contavas os barcos errado de propósito…" | santuário Espelho (42) | ele se pôs num passado que não houve |
+| "Só sei que não quero ficar só de novo." | 5º Anel (46) | "de novo": a nuvem |
+| "Não tenho ombro. Mas tenho paciência de eras." | santuário Praga (51) | eras de espera pela chave |
+| "Ficar contigo? Se deixares." — "...Sim. Comigo. Sempre." | santuário Coroa (60) | roubo: "Tu disseste que ficavas comigo." |
+| "Dizem que um tal Soter anda por aqui. Eu nunca o vi." / "Com quem falavas? ...Não vi ninguém." | 17 | Soter: "o Cego não me vê" |
+| "Levanta." (as mortes) | todo o run | roubo: "Desta vez, não te levantes." · reclamar: "Levanta. Eu te seguro." |
+
+**Arcontes como filhos:** cada um tem entrada (tentação), fase 2 (legenda) e
+morte (1ª fala de `ring_gained`), e cada morte é seguida por uma micro-pausa da
+Voz "(...)" — um pai ouvindo um filho morrer, sem que se saiba. Depois de
+Armupiel, só "Sete.". Yabel morre com a versão branda ("Alguém respondeu a ele,
+uma vez, lá de cima. Eu ouvi."), que se completa no Centro ("Eu respondi lá de
+cima: Erras, Samael" — Hipóstase dos Arcontes 94–95).
+
+**Soter dá os nomes** (Ina, Merou, Tasso — inventados, sem carga religiosa):
+as pessoas eram reais; a verdade é mais humilde que a mentira (um poço, não um
+rio). **Velkar**: "Era meu pai." + escolha sem efeito ("Vem comigo" / "Fica em
+paz" → "Alguém tem de ficar com os que acordam tarde").
+
+**Cortes deliberados do doc:** a fala de Velkar "Tu inclinas a cabeça como quem
+escuta alguém" (pista forte demais); a morte de Yabel versão A ("Era a tua voz");
+rótulos longos dos finais (os 3 botões não cabem: medido); "A Voz" com adjetivos
+masculinos ("feio", "quieto", "sozinho" — o gênero da Voz ficaria igual ao do
+Rei); o "LEVANTA"/"MORRES" em caixa alta dupla; "pra" fora da boca da Sophia;
+"tela por tela" no epílogo Semente.
+
+## 5. Ganchos para a Onda 2 (funções de texto PRONTAS; arquivos de outros donos)
+
+Todas existem em `narrative.gd`/`gnosis.gd` e passam no GnoseQA (cabem na caixa
+ou na legenda, sem spoiler). Falta só a chamada no arquivo do dono:
+
+| # | Onde chamar (arquivo · função) | Linha a acrescentar | O que toca |
+|---|---|---|---|
+| 1 | `level.gd` · `_on_screen_cleared`, ramo `screen_role == "trial"`, ANTES de abrir a loja | `if Narrative.once("santuario_%d" % screen): await DialogueBox.play(Narrative.sanctuary(RunManager.eon_index(screen))).finished` | as 7 conversas do santuário (o afeto da Voz) |
+| 2 | `enemy.gd` · `_enter_phase2` | `if is_boss_enemy and RunManager.run_active: Gnosis.captions(Narrative.archon_phase2(type_id))` | fase 2 dos Arcontes (legenda) |
+| 3 | `level.gd` · `_restore_echo` (pode manter o toast) | `Gnosis.captions(Narrative.echo_memory(boss_id))` | as 6 lembranças verdadeiras do Centro |
+| 4 | `final_battle.gd` · bloco da 1ª queda (devolve o 7º Anel) | `Gnosis.captions(Narrative.seventh_ring())` (+ `Juice.slow_mo(0.2, 1.2)`) | "eu desci de propósito… para te buscar" |
+| 5 | `sleeper.gd` · ao acordar | `Gnosis.captions(Narrative.sleeper_line(screen))` | 14 Adormecidos (contrapeso moral do Semente) |
+| 6 | `level.gd` · `_win`, entre `apply_ending(idx)` e o epílogo | `await DialogueBox.play(Narrative.ending_lines(idx)).finished` | a fala curta de cada final |
+| 7 | `dialogue_box.gd` (UI) | emitir `line_shown(index, line)`; respeitar `cue == "wait_2s"` (2 s sem aceitar input) | encenação por `cue` |
+| 8 | `audio_manager.gd` (Áudio) | `play_music(faixa, pitch)`; corte seco; duck; volume de `centro` por cacos | tema da Voz = `theme` (santuários baixa → roubo distorcida → reclamar sozinha) |
+
+`cue`s usados: `heartbeat` (intro) · `fog_thickens`, `king_emerges`,
+`mask_lights`, `mask_cracks`, `king_sinks` (tela 1) · `wait_2s` (Soter 2,
+santuário do Silêncio, Centro) · `chime` (o nome de Ina) · `music_stop`
+(santuário da Coroa) · `king_emerges`, `voice_merge`, `rings_fly`,
+`mask_falls`, `sink` (roubo) · `rings_return`, `flash`, `colossus_shrinks`,
+`theme_alone`, `reclaim` (anagnórise).
+
+Já ligado nos MEUS arquivos (não precisa gancho): a legenda da Voz depois de
+cada Soter (`npc_encounter._do_soter` → `Narrative.after_soter`), a escolha e a
+despedida de Velkar, as 18 falas de morte por faixa (`death_revive`: antes do
+roubo por nº de quedas, Centro por cacos, Mente por contador próprio
+`final_deaths`), o card "...mãe?" depois dos créditos (`cinematic.gd`).
+
+Fora dos meus arquivos (pedido à UI): `codex_trial.gd:106` "Ir pra Campanha" →
+"Ir para a Campanha".
+

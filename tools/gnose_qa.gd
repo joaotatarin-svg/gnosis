@@ -85,17 +85,69 @@ class Worker extends Node:
 			groups.append(Narrative.ring_gained(String(b.id), "Coroa Partida", i + 1))
 		for n in 3:
 			groups.append(Narrative.soter_meeting(n))
-		for d in 4:
-			groups.append(Narrative.death_revive(20, d + 1, 137))
-		groups.append(Narrative.death_revive(RunManager.CENTER_FIRST, 1, 1))
-		groups.append(Narrative.death_revive(RunManager.MAX_SCREEN, 1, 0))
+		for e in 7:
+			groups.append(Narrative.sanctuary(e))
+		for i in 3:
+			groups.append(Narrative.ending_lines(i))
+		for i in 2:
+			groups.append(Narrative.velkar_farewell(i))
+		groups.append_array(pre_theft_deaths())
+		# Centro: falas por cacos recuperados (0, 1–2, 3–4, 5–6).
+		var saved: Array = Progression.restored_rings.duplicate()
+		for k in [0, 1, 3, 5]:
+			Progression.restored_rings.clear()
+			for j in k:
+				Progression.restored_rings.append("x%d" % j)
+			groups.append(Narrative.death_revive(RunManager.CENTER_FIRST, 1, 1))
+		Progression.restored_rings.assign(saved)
+		# Mente: contador próprio (1ª, 2ª, 3ª, 4ª+).
+		Narrative.final_deaths = 0
+		for i in 4:
+			groups.append(Narrative.death_revive(RunManager.MAX_SCREEN, 1, 0))
+		Narrative.final_deaths = 0
 		for g in groups:
 			out.append_array(g)
 		Narrative.refusals = 0
 		Narrative.concessions = 0
 		return out
 
-	## Legendas: [{screen, zone(-1 = chegada), line}] na ordem em que tocam no run.
+	## As falas de morte antes do roubo: todas as faixas (1–14 quedas) e a 1ª
+	## queda diante de um Arconte. Não deixa rastro em Narrative.seen.
+	func pre_theft_deaths() -> Array:
+		var groups: Array = []
+		for d in 14:
+			groups.append(Narrative.death_revive(20, d + 1, 137))
+		var key := "morte_arconte_%d" % RunManager.LAST_ARCHON_SCREEN
+		var had: bool = Narrative.seen.has(key)
+		groups.append(Narrative.death_revive(RunManager.LAST_ARCHON_SCREEN, 1, 0))
+		if not had:
+			Narrative.seen.erase(key)
+		return groups
+
+	## Legendas de gatilho (não dependem de tela/zona): fase 2 dos Arcontes,
+	## lembranças dos ecos, 7º Anel, Adormecidos e a Voz depois de Soter.
+	## Cada item: {screen (quando toca, p/ a regra de ouro), line}.
+	func trigger_captions() -> Array:
+		var out: Array = []
+		for i in 7:
+			var id := String(Bestiary.bosses[i].id)
+			var archon_screen := RunManager.FIRST_EON_SCREEN + i * RunManager.EON_LEN + RunManager.EON_LEN - 1
+			for l in Narrative.archon_phase2(id):
+				out.append({"screen": archon_screen, "line": l})
+			for l in Narrative.echo_memory(id):
+				out.append({"screen": RunManager.CENTER_FIRST, "line": l})
+		for l in Narrative.seventh_ring():
+			out.append({"screen": RunManager.MAX_SCREEN, "line": l})
+		for s in Narrative.SLEEPER_ORDER:
+			for l in Narrative.sleeper_line(int(s)):
+				out.append({"screen": int(s), "line": l})
+		for n in 3:
+			for l in Narrative.after_soter(n):
+				out.append({"screen": [17, 35, 53][n], "line": l})
+		return out
+
+	## Legendas: [{screen, zone(-1 = chegada), line}] na ordem em que tocam no run,
+	## mais as legendas de gatilho (zone -2).
 	func all_captions() -> Array:
 		var out: Array = []
 		for s in range(1, RunManager.MAX_SCREEN + 1):
@@ -104,6 +156,8 @@ class Worker extends Node:
 			for z in RunManager.zone_count(s):
 				for l in Narrative.walk_cleared(s, z):
 					out.append({"screen": s, "zone": z, "line": l})
+		for c in trigger_captions():
+			out.append({"screen": int(c.screen), "zone": -2, "line": c.line})
 		return out
 
 	func check_text() -> void:
@@ -135,6 +189,15 @@ class Worker extends Node:
 			d._finish()
 			await wait(0.1)
 		GameManager.settings["caption_size"] = old_cap
+		# Os 3 botões do final e os 3 de Soter cabem numa linha da caixa?
+		for ch in [Narrative.final_choices(4), Narrative.soter_blessings(), Narrative.velkar_choices()]:
+			var dc := DialogueBox.play([], ch)
+			await wait(0.2)
+			var w: float = dc._choice_box.get_combined_minimum_size().x
+			if w > 500.0:
+				bad.append("botões com %d px: %s" % [int(w), str(ch).left(60)])
+			dc._finish()
+			await wait(0.1)
 		print("  maior fala: ", max_lines.get(13, 0), " linhas a 13 px · ", max_lines.get(16, 0), " a 16 px")
 		for b in bad.slice(0, 12):
 			print("  CAIXA: ", b)
@@ -240,10 +303,24 @@ class Worker extends Node:
 				var t := String(c.line.text)
 				if t.contains("Yaldabaoth") or t.contains("Demiurgo") or String(c.line.speaker) == "Yaldabaoth":
 					spoil.append("tela %d: %s" % [int(c.screen), t.left(60)])
-		for g in [Narrative.intro(), Narrative.king_intro(), Narrative.king_fall(), Narrative.velkar_meeting()]:
+		# Tudo o que toca ANTES do roubo (caixa de diálogo).
+		var pre: Array = [Narrative.intro(), Narrative.king_intro(), Narrative.king_fall(),
+			Narrative.velkar_meeting(), Narrative.velkar_farewell(0), Narrative.velkar_farewell(1)]
+		for e in 7:
+			pre.append(Narrative.eon_intro(e))
+			pre.append(Narrative.sanctuary(e))
+			var id := String(Bestiary.bosses[e].id)
+			pre.append(Narrative.temptation(id))
+			pre.append(Narrative.ring_gained(id, "X", e + 1))
+		for n in 3:
+			pre.append(Narrative.soter_meeting(n))
+		pre.append_array(pre_theft_deaths())
+		for g in pre:
 			for l in g:
-				if String(l.text).contains("Yaldabaoth") or String(l.speaker) == "Yaldabaoth":
-					spoil.append(String(l.text).left(60))
+				var t := String(l.text)
+				if t.contains("Yaldabaoth") or t.contains("Demiurgo") or t.contains("meu corpo") \
+						or String(l.speaker) == "Yaldabaoth":
+					spoil.append(t.left(60))
 		for b in spoil:
 			print("  SPOILER: ", b)
 		check(spoil.is_empty(), "regra de ouro: ninguém diz Yaldabaoth/Demiurgo antes do roubo")

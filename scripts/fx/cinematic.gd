@@ -30,6 +30,18 @@ var _boss_name: Label
 var _boss_title: Label
 
 
+## Fonte de TÍTULO: `CodexStyle.display()` (Cinzel) quando a UI nova estiver
+## presente; senão, a serifada de corpo. Procurada pelo nome para este arquivo
+## compilar com e sem a UI nova (o corpo continua em `CodexStyle.serif()`).
+static func title_font() -> Font:
+	var s: Script = load("res://scripts/ui/codex_style.gd")
+	if s != null:
+		for m in s.get_script_method_list():
+			if String(m.get("name", "")) == "display":
+				return s.call("display")
+	return CodexStyle.serif()
+
+
 static func _spawn() -> Cinematic:
 	var c := Cinematic.new()
 	var tree := Engine.get_main_loop() as SceneTree
@@ -74,6 +86,9 @@ static func epilogue(ending: String, chron_n: int, chron_total: int) -> Cinemati
 		else "Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas." % (chron_total - chron_n)
 	c.cards.append({"title": "CRÔNICAS  %d / %d" % [chron_n, chron_total], "text": chron_line, "bg": 7, "time": 5.0})
 	c.cards.append({"title": "GNOSIS", "text": "João Tatarin — direção, produção e escolhas\nArte ilustrada gerada por IA sob direção do autor\nCódigo escrito com Claude (Anthropic) e Codex (OpenAI)\nSons e efeitos CC0/CC-BY — ver assets/LICENSES.md\n\nInspirado nos textos de Nag Hammadi, na Pistis Sophia\ne nos relatos de Irineu, Hipólito e Clemente.", "bg": 8, "time": 7.0})
+	# Depois dos créditos, em qualquer final: tela preta e só isto (bg -1 = sem
+	# pintura). Não contradiz nenhum final e abre a porta do Jogo 2.
+	c.cards.append({"title": "", "text": "...mãe?", "bg": -1, "time": 2.6})
 	return c
 
 
@@ -108,7 +123,7 @@ func _build_cards() -> void:
 	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bg)
 
-	# vinheta: escurece as bordas pra o texto assentar
+	# vinheta: escurece as bordas para o texto assentar
 	var vig := ColorRect.new()
 	vig.color = Color(0.0, 0.01, 0.02, 0.38)
 	vig.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -130,7 +145,7 @@ func _build_cards() -> void:
 	_title.add_theme_color_override("font_color", CodexStyle.GOLD)
 	_title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	_title.add_theme_constant_override("outline_size", 5)
-	_title.add_theme_font_override("font", CodexStyle.serif())
+	_title.add_theme_font_override("font", Cinematic.title_font())
 	_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_title)
 
@@ -241,7 +256,7 @@ func _build_boss() -> void:
 	_boss_name.add_theme_color_override("font_color", CodexStyle.GOLD)
 	_boss_name.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
 	_boss_name.add_theme_constant_override("outline_size", 7)
-	_boss_name.add_theme_font_override("font", CodexStyle.serif())
+	_boss_name.add_theme_font_override("font", Cinematic.title_font())
 	_boss_name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_boss_name.modulate.a = 0.0
 	add_child(_boss_name)
@@ -261,7 +276,7 @@ func _build_boss() -> void:
 	_boss_title.add_theme_color_override("font_color", CodexStyle.PAPER)
 	_boss_title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
 	_boss_title.add_theme_constant_override("outline_size", 4)
-	_boss_title.add_theme_font_override("font", CodexStyle.serif())
+	_boss_title.add_theme_font_override("font", Cinematic.title_font())
 	_boss_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_boss_title.modulate.a = 0.0
 	add_child(_boss_title)

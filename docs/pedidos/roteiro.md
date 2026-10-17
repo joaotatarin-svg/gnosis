@@ -18,6 +18,7 @@
 | `upgrade_menu.gd:72` | "+20 Vida máx   (60 faíscas)" | "+20 de vida máx.   (60 faíscas)" | mesmo formato da bênção de Soter ("Vigor (+25 de vida máx.)") |
 | `upgrade_menu.gd:73` | "+15 Éter máx   (60 faíscas)" | "+15 de Éter máx.   (60 faíscas)" | idem |
 | `upgrade_menu.gd:36` / `hud.gd:282` | "Arma Nv.%d" / "Arma Nv. %d" | padronizar "Arma Nv. %d" (com espaço) | consistência |
+| `levels/codex_trial.gd:106` | "Ir pra Campanha  →" | "Ir para a Campanha  →" | "pra" só na boca da Sophia |
 | `chronicles.gd:105` | "Chegue perto e aperte o golpe leve (J / X) para ler." | (ok) | — o prompt da Estela agora também diz "J / X · ler a Estela" |
 
 **Nome de magia mudou** (`game_content.gd`): o Anel de Armupiel passou de
@@ -48,3 +49,6 @@ Pedido: a `DialogueBox` (UI) emitir um sinal `line_shown(index: int, line:
 Dictionary)` ao mostrar cada fala — assim o Level dispara o efeito pelo `cue`
 sem a caixa saber de nada. Com o HUD expondo `ring_dot_global_pos(i)` e
 `detach_ring(i)`, o `rings_fly` faz as 7 gemas voarem (roteiro na cena B).
+
+## Onda 1b — ganchos das falas novas
+Ver `docs/ROTEIRO.md` §5 (santuários, fase 2 dos Arcontes, lembranças dos ecos, 7º Anel, Adormecidos, fala de cada final, `cue`/`wait_2s` na DialogueBox, tema da Voz no Áudio).

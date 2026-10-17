@@ -7,7 +7,7 @@ extends Node
 ## CONTRATO com o Level (scripts/levels/level.gd chama estes três métodos):
 ##  - setup_screen(level, screen, rest_points): no fim do _ready do Level, antes
 ##    das waves. `rest_points` = posições no mundo (pés no chão, y ≈ 298) dos
-##    descansos entre zonas de combate, da esquerda pra direita. Aqui entram a
+##    descansos entre zonas de combate, da esquerda para a direita. Aqui entram a
 ##    Estela da tela e a legenda de chegada.
 ##  - zone_started(screen, zone, total): waves de uma zona nasceram.
 ##  - zone_cleared(screen, zone, total): a zona foi limpa (zone == total-1 =
@@ -241,7 +241,7 @@ const BOSS_TITLES: Dictionary = {
 }
 
 var unlocked: Array = []          # ids das Crônicas lidas (persistem entre runs)
-var persist_enabled: bool = true  # ferramentas (QA/shot) desligam pra não sujar o disco
+var persist_enabled: bool = true  # ferramentas (QA/shot) desligam para não sujar o disco
 var _caption: CaptionBar
 var _by_screen: Dictionary = {}   # tela -> Estela
 
@@ -367,6 +367,15 @@ func zone_cleared(screen: int, zone: int, _total: int) -> void:
 ## Fala avulsa (outros sistemas podem usar).
 func caption(speaker: String, text: String) -> void:
 	_caption.say(speaker, text)
+
+
+## Várias falas {speaker, text} na fila de legendas (sem pausar o jogo). Usada
+## pelos ganchos da Onda 2: fase 2 dos Arcontes, lembranças dos ecos, 7º Anel,
+## Adormecidos e a Voz depois de Soter. Nada no Desafio Codex (sandbox).
+func captions(lines: Array) -> void:
+	if _sandbox():
+		return
+	_caption.say_lines(lines)
 
 
 ## Card de chefe ao nascer: id do Bestiário ("rei", "arconte_sono", ...,
