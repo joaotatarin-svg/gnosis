@@ -23,7 +23,7 @@
  "frames": {
   "idle_0": {
    "rect": [
-    476,
+    1231,
     0,
     220,
     315
@@ -37,7 +37,7 @@
   },
   "idle_0-idle_1_25": {
    "rect": [
-    696,
+    1451,
     0,
     222,
     315
@@ -51,7 +51,7 @@
   },
   "idle_0-idle_1_50": {
    "rect": [
-    918,
+    1673,
     0,
     224,
     315
@@ -65,8 +65,8 @@
   },
   "idle_0-idle_1_75": {
    "rect": [
-    1142,
     0,
+    345,
     225,
     315
    ],
@@ -79,7 +79,7 @@
   },
   "idle_1": {
    "rect": [
-    247,
+    498,
     0,
     229,
     316
@@ -91,65 +91,121 @@
    "mid": false,
    "translucent": false
   },
-  "walk_0": {
+  "walk_c0": {
    "rect": [
-    1367,
-    0,
-    250,
-    315
+    484,
+    345,
+    264,
+    313
    ],
-   "top": 8.0,
-   "foot_y": 306.67,
-   "bottom": 308.0,
-   "pelvis_x": 126.33,
+   "top": 8.01,
+   "foot_y": 304.66,
+   "bottom": 305.33,
+   "pelvis_x": 141.82,
    "mid": false,
    "translucent": false
   },
-  "walk_1": {
+  "walk_p0": {
    "rect": [
-    1617,
+    727,
     0,
-    255,
+    248,
+    316
+   ],
+   "top": 8.01,
+   "foot_y": 308.01,
+   "bottom": 308.68,
+   "pelvis_x": 136.35,
+   "mid": false,
+   "translucent": false
+  },
+  "walk_c1": {
+   "rect": [
+    225,
+    345,
+    259,
     314
    ],
    "top": 7.34,
-   "foot_y": 305.33,
-   "bottom": 306.0,
-   "pelvis_x": 125.64,
+   "foot_y": 306.0,
+   "bottom": 306.67,
+   "pelvis_x": 138.02,
    "mid": false,
    "translucent": false
   },
-  "windup": {
+  "walk_p1": {
    "rect": [
+    975,
     0,
-    0,
-    247,
-    345
-   ],
-   "top": 20.7,
-   "foot_y": 336.07,
-   "bottom": 337.4,
-   "pelvis_x": 114.24,
-   "mid": false,
-   "translucent": false
-  },
-  "strike": {
-   "rect": [
-    0,
-    345,
-    314,
-    286
+    256,
+    316
    ],
    "top": 7.34,
-   "foot_y": 277.27,
-   "bottom": 278.61,
-   "pelvis_x": 127.19,
+   "foot_y": 307.34,
+   "bottom": 308.68,
+   "pelvis_x": 140.4,
+   "mid": false,
+   "translucent": false
+  },
+  "windup_1": {
+   "rect": [
+    250,
+    0,
+    248,
+    317
+   ],
+   "top": 20.73,
+   "foot_y": 309.35,
+   "bottom": 310.02,
+   "pelvis_x": 123.94,
+   "mid": false,
+   "translucent": false
+  },
+  "windup_2": {
+   "rect": [
+    0,
+    0,
+    250,
+    345
+   ],
+   "top": 20.06,
+   "foot_y": 336.13,
+   "bottom": 336.8,
+   "pelvis_x": 118.12,
+   "mid": false,
+   "translucent": false
+  },
+  "strike_1": {
+   "rect": [
+    1310,
+    345,
+    297,
+    284
+   ],
+   "top": 6.67,
+   "foot_y": 275.87,
+   "bottom": 276.54,
+   "pelvis_x": 113.59,
+   "mid": false,
+   "translucent": false
+  },
+  "strike_2": {
+   "rect": [
+    1021,
+    345,
+    289,
+    285
+   ],
+   "top": 7.34,
+   "foot_y": 276.54,
+   "bottom": 276.54,
+   "pelvis_x": 135.76,
    "mid": false,
    "translucent": false
   },
   "hurt": {
    "rect": [
-    314,
+    748,
     345,
     273,
     286
@@ -163,7 +219,7 @@
   },
   "death": {
    "rect": [
-    587,
+    1607,
     345,
     256,
     201
@@ -242,17 +298,31 @@
   "walk": {
    "frames": [
     {
-     "f": "walk_0",
+     "f": "walk_c0",
      "anchor": [
-      126.33,
-      306.67
+      141.82,
+      304.66
      ]
     },
     {
-     "f": "walk_1",
+     "f": "walk_p0",
      "anchor": [
-      125.64,
-      305.33
+      136.35,
+      308.01
+     ]
+    },
+    {
+     "f": "walk_c1",
+     "anchor": [
+      138.02,
+      306.0
+     ]
+    },
+    {
+     "f": "walk_p1",
+     "anchor": [
+      140.4,
+      307.34
      ]
     }
    ],
@@ -261,32 +331,54 @@
   "windup": {
    "frames": [
     {
-     "f": "windup",
+     "f": "windup_1",
      "anchor": [
-      114.24,
-      336.07
+      123.94,
+      309.35
+     ]
+    },
+    {
+     "f": "windup_2",
+     "anchor": [
+      118.12,
+      336.13
      ]
     }
+   ],
+   "at": [
+    0.0,
+    0.3
    ]
   },
   "attack": {
    "frames": [
     {
-     "f": "strike",
+     "f": "strike_1",
      "anchor": [
-      127.19,
-      277.27
+      113.59,
+      275.87
+     ]
+    },
+    {
+     "f": "strike_2",
+     "anchor": [
+      135.76,
+      276.54
      ]
     }
+   ],
+   "at": [
+    0.0,
+    0.5
    ]
   },
   "recover": {
    "frames": [
     {
-     "f": "strike",
+     "f": "strike_2",
      "anchor": [
-      127.19,
-      277.27
+      135.76,
+      276.54
      ]
     },
     {
@@ -299,7 +391,7 @@
    ],
    "at": [
     0.0,
-    0.4
+    0.45
    ]
   },
   "hurt": {

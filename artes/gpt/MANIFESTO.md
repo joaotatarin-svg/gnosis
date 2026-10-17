@@ -438,3 +438,14 @@ Chefes (padrão C) `boss_<n>_<nome>_motion_a.png` 2×4: 0 walk_c0 (contato) · 1
   inteira na largura (encostam 1–3 px entre si, sem tocar); q3 até x=1534. Chat do Belias.
 - `boss_7_armupiel_motion_a.png` — padrão C. Nota 8. Fiel, perfil, mesma escala (h≈410–467); windup em 2 etapas com espadão erguido,
   strike com lâmina fincada no chão. Chat do Armupiel.
+- `boss_8_colosso_motion_a.png` — padrão C. Nota 8. Fiel ao colosso_b, mesma escala (h≈420–457); windup com punho erguido atrás (perfil),
+  strike com punhos no chão + lascas pequenas (soltas). q7 encosta na borda direita (x=1536). Chat do Colosso.
+- `boss_9_rei_motion_a.png` — padrão C (deslizar). Nota 8. Fiel ao rei_a, mesma escala (h≈420–465). Fundo de novo ROSA (≈248,1,190),
+  como o original — chavear por essa cor (o QA padrão vê 1 bloco; com a cor certa são 8 quadros). windup_2 sobe até y≈488. Chat do Rei.
+
+## Resumo Fila 7
+- 13 folhas A (7 bots + 6 criaturas), 2 da Sophia (s15, s16), 9 chefes (padrão C) = 24 folhas novas + 1 alternativa (bot_5_reflexo_motion_b).
+- ~26 pedidos de geração, 0 recusas, nenhum aviso de limite.
+
+# LOJA
+Chat da key art: https://chatgpt.com/c/6ad32ebc-f810-83e9-826e-765ea8ed5729

@@ -267,3 +267,6 @@ era RGBA) — mesma escala/cor no recorte. GIFs: `gifs/harmas_andar_golpe_antes.
 
 **Bloco 7: chefes Yabel, Astaphaios, Belias (padrão C).** Escalas 0,988 / 1,009 / 1,023. Yabel: a preparação nova é de perfil (a antiga era frontal) — melhor. Quadros `gifs/chefes_motion_2.png`; GIF `gifs/belias_andar_golpe_depois.gif`.
 
+
+**Bloco 8: chefes Armupiel, Colosso, Rei (padrão C; Rei com fundo rosa).** Escalas 1,000 / 0,998 / 1,002. Quadros `gifs/chefes_motion_3.png`; GIFs `gifs/arconte_coroa_andar_golpe_depois.gif`, `gifs/rei_final_andar_golpe_depois.gif`. **FILA 7 completa:** 9 chefes, 6 criaturas, 7 bots e a Sophia (S15/S16) com intermediários desenhados; nenhuma folha foi para o REFAZER.
+
