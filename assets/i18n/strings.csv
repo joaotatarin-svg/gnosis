@@ -760,12 +760,12 @@ seal_puzzle._build_hint.4778ec,OS TRÊS SELOS,THE THREE SEALS,ui,,,scripts/entit
 seal_puzzle._solve.b16c6d,selos abertos,seals opened,ui,,,scripts/entities/seal_puzzle.gd:79,
 stela._ready.c33be5,J / X · ler a Estela,J / X · read the Stele,ui_estela,,,scripts/entities/stela.gd:33,
 stela.open.bfded4,Crônica desbloqueada: %s  (%d/%d),Chronicle unlocked: %s  (%d/%d),ui_estela,,,scripts/entities/stela.gd:85,format string: manter os %
-stela._draw.f08366,ESTELA  ·  %s,STELE  ·  %s,ui_estela,,,scripts/entities/stela.gd:169,format string: manter os %
-stela._draw.0b4c7d,Kenoma,Kenoma,ui_estela,,,scripts/entities/stela.gd:169,
-stela._draw.7be33a,Fonte: %s,Source: %s,ui_estela,,,scripts/entities/stela.gd:198 scripts/ui/chronicles.gd:147,format string: manter os %
-stela._draw.4deab3,• nova Crônica  %d/%d,• new Chronicle  %d/%d,ui_estela,,,scripts/entities/stela.gd:208,format string: manter os %
-stela._draw.9f1fce,Crônica %d/%d,Chronicle %d/%d,ui_estela,,,scripts/entities/stela.gd:208,format string: manter os %
-stela._draw.adc6ff,      › fechar,      › close,ui_estela,,,scripts/entities/stela.gd:209,
+stela._ready.f08366,ESTELA  ·  %s,STELE  ·  %s,ui_estela,,,scripts/entities/stela.gd:169,format string: manter os %
+stela._ready.0b4c7d,Kenoma,Kenoma,ui_estela,,,scripts/entities/stela.gd:169,
+stela._ready.7be33a,Fonte: %s,Source: %s,ui_estela,,,scripts/entities/stela.gd:198 scripts/ui/chronicles.gd:147,format string: manter os %
+stela._ready.4deab3,• nova Crônica  %d/%d,• new Chronicle  %d/%d,ui_estela,,,scripts/entities/stela.gd:208,format string: manter os %
+stela._ready.9f1fce,Crônica %d/%d,Chronicle %d/%d,ui_estela,,,scripts/entities/stela.gd:208,format string: manter os %
+stela._ready.adc6ff,      › fechar,      › close,ui_estela,,,scripts/entities/stela.gd:209,
 cinematic.prologue.e5613a,"No princípio não havia princípio.
 Havia o Um — sem nome, sem medida, pleno.
 Os antigos o chamaram Mônada, Abismo, Silêncio.","In the beginning there was no beginning.
@@ -975,6 +975,7 @@ credits._fill.ceaed7,Motor,Engine,ui,,,scripts/ui/credits.gd:113,
 credits._fill.2ea63c,"Godot Engine  —  © Juan Linietsky, Ariel Manzur e colaboradores (licença MIT)","Godot Engine  —  © Juan Linietsky, Ariel Manzur and contributors (MIT license)",ui,,,scripts/ui/credits.gd:114,
 credits._fill.2a9b2b,Obrigado por despertar.,Thank you for waking.,ui,,,scripts/ui/credits.gd:116,
 credits._read_licenses.0f74a4,%s  —  %s  (%s),%s  —  %s  (%s),ui,,,scripts/ui/credits.gd:150,format string: manter os %
+dialogue_box._draw.fd5362,continuar,continue,ui,,,scripts/ui/dialogue_box.gd:328,
 end_screen._ready.69ebf6,A TRAVESSIA TERMINOU,THE CROSSING IS OVER,ui,,,scripts/ui/end_screen.gd:20,
 end_screen._ready.5f3e04,A FAÍSCA SE APAGOU,THE SPARK WENT OUT,ui,,,scripts/ui/end_screen.gd:20,
 end_screen._ready.1b0369,Fim,The End,ui,,,scripts/ui/end_screen.gd:25 scenes/ui/EndScreen.tscn:56,

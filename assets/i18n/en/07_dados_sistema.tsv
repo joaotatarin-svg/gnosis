@@ -103,12 +103,12 @@ seal_puzzle._build_hint.4778ec	THE THREE SEALS
 seal_puzzle._solve.b16c6d	seals opened
 stela._ready.c33be5	J / X · read the Stele
 stela.open.bfded4	Chronicle unlocked: %s  (%d/%d)
-stela._draw.f08366	STELE  ·  %s
-stela._draw.0b4c7d	Kenoma
-stela._draw.7be33a	Source: %s
-stela._draw.4deab3	• new Chronicle  %d/%d
-stela._draw.9f1fce	Chronicle %d/%d
-stela._draw.adc6ff	      › close
+stela._ready.f08366	STELE  ·  %s
+stela._ready.0b4c7d	Kenoma
+stela._ready.7be33a	Source: %s
+stela._ready.4deab3	• new Chronicle  %d/%d
+stela._ready.9f1fce	Chronicle %d/%d
+stela._ready.adc6ff	      › close
 cinematic.prologue.e5613a	In the beginning there was no beginning.\nThere was the One — nameless, measureless, full.\nThe ancients called it Monad, Depth, Silence.
 cinematic.prologue.06441e	From it the Aeons emanated, in pairs, like overflowing light.\nIn the Pleroma nothing slept. Nothing forgot.
 cinematic.prologue.ac3cdb	The youngest, Sophia — Wisdom — sought to reach the Source alone.\nFrom that unpartnered desire came a formless son,\nand she hid him in a cloud.

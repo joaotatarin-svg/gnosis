@@ -68,6 +68,9 @@ def forced(l):
 		return True
 	if f.endswith("character_atelier.gd") and l.text == "poses":
 		return True
+	# texto desenhado à mão (draw_string): não tem tradução automática — ver PLANO §3
+	if re.search(r"\bdraw_(multiline_)?string\(", l.line_src) and re.search(r",\s*$", b):
+		return True
 	# o código de dev/QA e avisos de console nunca chegam ao jogador
 	if re.search(r"\b(push_warning|push_error|printerr|print|print_debug|assert)\s*\(", b):
 		return False

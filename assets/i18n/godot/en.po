@@ -3780,32 +3780,32 @@ msgstr "J / X · read the Stele"
 msgid "Crônica desbloqueada: %s  (%d/%d)"
 msgstr "Chronicle unlocked: %s  (%d/%d)"
 
-#. stela._draw.f08366  [ui_estela]
+#. stela._ready.f08366  [ui_estela]
 #: scripts/entities/stela.gd:169
 msgid "ESTELA  ·  %s"
 msgstr "STELE  ·  %s"
 
-#. stela._draw.0b4c7d  [ui_estela]
+#. stela._ready.0b4c7d  [ui_estela]
 #: scripts/entities/stela.gd:169
 msgid "Kenoma"
 msgstr "Kenoma"
 
-#. stela._draw.7be33a  [ui_estela]
+#. stela._ready.7be33a  [ui_estela]
 #: scripts/entities/stela.gd:198
 msgid "Fonte: %s"
 msgstr "Source: %s"
 
-#. stela._draw.4deab3  [ui_estela]
+#. stela._ready.4deab3  [ui_estela]
 #: scripts/entities/stela.gd:208
 msgid "• nova Crônica  %d/%d"
 msgstr "• new Chronicle  %d/%d"
 
-#. stela._draw.9f1fce  [ui_estela]
+#. stela._ready.9f1fce  [ui_estela]
 #: scripts/entities/stela.gd:208
 msgid "Crônica %d/%d"
 msgstr "Chronicle %d/%d"
 
-#. stela._draw.adc6ff  [ui_estela]
+#. stela._ready.adc6ff  [ui_estela]
 #: scripts/entities/stela.gd:209
 msgid "      › fechar"
 msgstr "      › close"
@@ -4514,6 +4514,11 @@ msgstr "Thank you for waking."
 #: scripts/ui/credits.gd:150
 msgid "%s  —  %s  (%s)"
 msgstr "%s  —  %s  (%s)"
+
+#. dialogue_box._draw.fd5362  [ui]
+#: scripts/ui/dialogue_box.gd:328
+msgid "continuar"
+msgstr "continue"
 
 #. end_screen._ready.69ebf6  [ui]
 #: scripts/ui/end_screen.gd:20

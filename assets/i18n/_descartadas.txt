@@ -3015,7 +3015,6 @@ scripts/ui/dialogue_box.gd:290	[argumento-id de is_action_pressed (#0)]	'attack_
 scripts/ui/dialogue_box.gd:290	[argumento-id de is_action_pressed (#0)]	'jump'
 scripts/ui/dialogue_box.gd:290	[argumento-id de is_action_pressed (#0)]	'ui_accept'
 scripts/ui/dialogue_box.gd:295	[argumento-id de play_sfx (#0)]	'ui_advance'
-scripts/ui/dialogue_box.gd:328	[identificador]	'continuar'
 scripts/ui/end_screen.gd:13	[sem letras]	''
 scripts/ui/end_screen.gd:21	[argumento-id de add_theme_font_override (#0)]	'font'
 scripts/ui/end_screen.gd:22	[argumento-id de add_theme_font_size_override (#0)]	'font_size'

@@ -100,7 +100,7 @@ def scan_gd(path: Path) -> list[Lit]:
 			line_start = i + 1
 			# escopo: func / const / var no começo da linha
 			rest = src[line_start:line_start + 200]
-			m = re.match(r"(?:static\s+)?func\s+(\w+)", rest)
+			m = re.match(r"\s*(?:static\s+)?func\s+(\w+)", rest)   # inclui funções de classe interna
 			if m:
 				scope = m.group(1)
 			else:
