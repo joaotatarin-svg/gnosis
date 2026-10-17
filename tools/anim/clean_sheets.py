@@ -59,9 +59,10 @@ def magenta_residual(rgb: np.ndarray, alpha: np.ndarray) -> int:
 	return int(mag.sum())
 
 
-def clean_keyed(name: str) -> None:
-	img = Image.open(os.path.join(SRC, name + ".png")).convert("RGB")
-	c = np.asarray(img).astype(np.float32)
+def key_array(c: np.ndarray):
+	"""Recorta o fundo cromático de uma imagem RGB float (0..255).
+	Devolve (F, a, K): cor desmisturada, alfa 0..1 e a cor de fundo estimada.
+	Reutilizado por build_frames.py (folhas novas da Sophia)."""
 	border = np.concatenate([c[:4].reshape(-1, 3), c[-4:].reshape(-1, 3), c[:, :4].reshape(-1, 3), c[:, -4:].reshape(-1, 3)])
 	K = np.median(border, 0)
 	r, g, b = c[..., 0], c[..., 1], c[..., 2]
@@ -96,6 +97,13 @@ def clean_keyed(name: str) -> None:
 		w = np.clip(1.0 - a / 0.6, 0.0, 1.0)[..., None] * 0.7
 		F = F * (1.0 - w) + near * w
 	F = fill_transparent_rgb(F, a)
+	return F, a, K
+
+
+def clean_keyed(name: str) -> None:
+	img = Image.open(os.path.join(SRC, name + ".png")).convert("RGB")
+	c = np.asarray(img).astype(np.float32)
+	F, a, K = key_array(c)
 	out = np.dstack([F, a * 255.0]).round().astype(np.uint8)
 	os.makedirs(DST, exist_ok=True)
 	Image.fromarray(out, "RGBA").save(os.path.join(DST, name + ".png"), optimize=True)

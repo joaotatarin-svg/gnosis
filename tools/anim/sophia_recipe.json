@@ -1,0 +1,35 @@
+{
+ "_doc": "Receita do atlas da Sophia (tools/anim/build_frames.py). sources = folhas (grade colunas x linhas, nome de cada célula na ordem de leitura; '-' = ignorar). states = sequência por estado do CharacterArt: frames (fonte.célula), dur (s por quadro; o último segura), loop, anchor (front|rear|pelvis|air|lying). frame_fix = correção de escala por quadro. Ver docs/ANIMACAO.md.",
+ "character": "sophia",
+ "body_px": 256,
+ "ref_frame": "s0.idle",
+ "sources": {
+  "s0": {"file": "assets/painted/sophia.png", "grid": [3, 2], "scale": 1.0,
+   "cells": ["idle", "run_a", "run_b", "prep", "strike", "cast"]},
+  "s1a": {"file": "assets/painted/src/sophia_s1_a.png", "grid": [3, 2], "scale": 1.0,
+   "cells": ["dodge_back", "hurt", "dead_lying", "jump_tuck", "block", "run_contact"]},
+  "s1b": {"file": "assets/painted/src/sophia_s1_b.png", "grid": [3, 2], "scale": 1.0,
+   "cells": ["dodge_b", "hurt_b", "dead_lying_b", "jump_b", "block_b", "run_pass"]}
+ },
+ "frame_fix": {"s0.prep": {"scale": 1.06}},
+ "states": {
+  "idle": {"frames": ["s0.idle"], "anchor": "front"},
+  "run": {"frames": ["s1a.run_contact", "s0.run_b", "s1b.run_pass", "s0.run_a"], "anchor": "pelvis", "cycle_bodies": 1.6, "steps": [0, 2]},
+  "jump": {"frames": ["s1b.jump_b"], "anchor": "air"},
+  "fall": {"frames": ["s1a.jump_tuck"], "anchor": "air"},
+  "dodge": {"frames": ["s1a.run_contact"], "anchor": "pelvis"},
+  "dodge_back": {"frames": ["s1a.dodge_back"], "anchor": "pelvis"},
+  "hurt": {"frames": ["s1a.hurt", "s1b.hurt_b"], "dur": [0.14], "anchor": "rear"},
+  "dead": {"frames": ["s1a.hurt", "s1a.dead_lying"], "dur": [0.16], "anchor": "lying"},
+  "block": {"frames": ["s1a.block"], "anchor": "front"},
+  "windup": {"frames": ["s0.prep"], "anchor": "front"},
+  "attack": {"frames": ["s0.prep", "s0.strike"], "dur": [0.035], "anchor": "front", "smear_at": 1},
+  "windup_heavy": {"frames": ["s0.prep"], "anchor": "front"},
+  "attack_heavy": {"frames": ["s0.strike"], "anchor": "front", "smear_at": 0},
+  "attack_up": {"frames": ["s0.strike"], "anchor": "front"},
+  "attack_air": {"frames": ["s0.strike"], "anchor": "air"},
+  "attack_dive": {"frames": ["s0.strike"], "anchor": "air"},
+  "windup_cast": {"frames": ["s0.cast"], "anchor": "front"},
+  "cast": {"frames": ["s0.cast"], "anchor": "front"}
+ }
+}
