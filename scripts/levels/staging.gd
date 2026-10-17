@@ -53,7 +53,7 @@ var _gem_born: Dictionary = {}                 # índice -> true (já nasceu no 
 var _orbit: int = 0                            # 0 parado · 1 órbita · 2 motor (3 anéis)
 var _orbit_t: float = 0.0
 var _orbit_weak: bool = false                  # "...espera... eu... lembro..."
-var _little: _Little
+var _little: CegoPequeno                       # o Cego pequeno pintado (scripts/fx/cego_pequeno.gd)
 var _aura: Sprite2D
 var _locked: bool = false
 var _music_stopped: bool = false
@@ -97,6 +97,7 @@ func setup(p_level: Node2D, p_player: Node2D) -> void:
 ## (await .finished / .choice_made como sempre).
 func play(lines: Array, choices: Array = [], scene: String = "") -> DialogueBox:
 	_scene = scene
+	_clear_damage_numbers()
 	_box = DialogueBox.play(lines, choices)
 	_box.line_shown.connect(_on_line)
 	_box.finished.connect(_on_finished.bind(_box))
@@ -215,6 +216,7 @@ func _on_line(index: int, line: Dictionary) -> void:
 			if text.begins_with("(Como ele sabe"):
 				Audio.duck_music(5.0, -10.0)
 		"anagnorise":
+			_little_pose(who, text)
 			if text.begins_with("Fui eu que fechei"):
 				_cam_to(1.32, Vector2(0, D_LIFT - 10.0), 1.2)   # baixa à altura dela
 			elif text.begins_with("Falta o mais difícil"):
@@ -635,13 +637,15 @@ func _d_shrink() -> void:
 	back.tween_interval(3.0)
 	back.tween_callback(_cam_to.bind(1.3, Vector2(0, D_LIFT), 1.2))
 	# O pequeno: encolhido e cego, ao lado do pé dela.
-	_little = _Little.new()
+	_little = CegoPequeno.new()
 	_little.scale = Vector2.ONE * 1.5
 	add_child(_little)
 	var side := 1.0
 	if player != null:
 		side = float(player.get("facing")) if "facing" in player else 1.0
 		_little.global_position = player.global_position + Vector2(side * 30.0, 22.0)
+	# A pintura olha para a direita: ao lado direito dela, ele vira para ela.
+	_little.scale.x = -absf(_little.scale.x) * side
 	_little.modulate.a = 0.0
 	var spot := _little.global_position
 	var t := _tw()
@@ -659,6 +663,20 @@ func _d_shrink() -> void:
 	t.parallel().tween_property(_little, "modulate:a", 1.0, 1.0).set_delay(2.6)
 
 
+## O Cego pequeno (CegoPequeno) muda de pose pela fala: ouve "...mãe?" e olha
+## pra cima; treme quando ela assume a culpa; estende a mão no "Levanta."; no
+## `reclaim` volta à pose automática pelo `glow` (erguido → aninhado na mão dela).
+func _little_pose(who: String, text: String) -> void:
+	if _little == null or not is_instance_valid(_little):
+		return
+	if who == Narrative.YAL and text.begins_with("...mãe?"):
+		_little.set_anim("look_up")
+	elif text.begins_with("Fui eu que fechei"):
+		_little.set_anim("trembling")
+	elif text.begins_with("Levanta."):
+		_little.set_anim("reach")
+
+
 func _d_theme() -> void:
 	# O tema da Voz volta sozinho, lento — agora é dela (o Áudio, pelo cue `theme_alone`).
 	_music_stopped = false
@@ -668,10 +686,11 @@ func _d_reclaim() -> void:
 	if _little == null or player == null:
 		return
 	var hand := player.global_position + Vector2(10.0, -12.0)
+	_little.set_anim("")                  # volta ao glow: erguido → aninhado
 	var t := _tw()
 	t.tween_property(_little, "glow", 1.0, 0.5)
 	t.tween_property(_little, "global_position", hand, 0.7).set_trans(Tween.TRANS_SINE)
-	t.parallel().tween_property(_little, "scale", Vector2(0.3, 0.3), 0.7)
+	t.parallel().tween_property(_little, "scale", Vector2(0.3 * signf(_little.scale.x), 0.3), 0.7)
 	t.tween_callback(func() -> void:
 		VfxLibrary._flash_sprite(self, hand, "light", Color(1, 0.95, 0.75, 1), 0.2, 1.1, 0.5))
 	t.tween_property(_little, "modulate:a", 0.0, 0.3)
@@ -711,6 +730,21 @@ func _hide_boss_bodies() -> void:
 		for c in level.get_children():
 			if c is Gib:
 				(c as Node2D).visible = false
+
+
+## C1 (QA visual): o número de dano do último golpe ficava CONGELADO na tela a
+## cena inteira (a caixa pausa a árvore e ele não some). A cena começa sem eles.
+func _clear_damage_numbers() -> void:
+	if level == null or not is_instance_valid(level):
+		return
+	var stack: Array = [level]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		for c in n.get_children():
+			if c is DamageNumber:
+				c.queue_free()
+			elif c.get_child_count() > 0:
+				stack.append(c)
 
 
 func _clear_fog(dur: float) -> void:
@@ -1045,27 +1079,3 @@ class _Gem extends Node2D:
 		draw_colored_polygon(d, Color(color.r, color.g, color.b, 0.95 * maxf(dim, 0.4)))
 		draw_circle(Vector2(-1, -2), 1.4, Color(1, 1, 1, 0.8 * dim))
 
-
-## "Alguém pequeno": encolhido e cego, do tamanho do pé dela.
-class _Little extends Node2D:
-	var glow: float = 0.0
-	var _t: float = 0.0
-
-	func _ready() -> void:
-		process_mode = Node.PROCESS_MODE_ALWAYS
-
-	func _process(d: float) -> void:
-		_t += d
-		queue_redraw()
-
-	func _draw() -> void:
-		var breath := 1.0 + 0.04 * sin(_t * 2.4)
-		var body := Color(0.08, 0.07, 0.1).lerp(Color(1, 0.95, 0.8), glow)
-		draw_set_transform(Vector2(0, -7), 0.0, Vector2(1.0, breath))
-		draw_circle(Vector2.ZERO, 9.0, Color(0.85, 0.82, 0.95, 0.18))   # contorno pálido (lê no escuro)
-		draw_circle(Vector2.ZERO, 7.5, body)
-		draw_circle(Vector2(3, -6), 4.6, body)
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		draw_circle(Vector2(4.5, -13.5), 1.8, Color(0.92, 0.93, 0.96, 1.0 - glow * 0.5))
-		if glow > 0.0:
-			draw_circle(Vector2(0, -8), 16.0, Color(1, 0.95, 0.75, 0.25 * glow))
