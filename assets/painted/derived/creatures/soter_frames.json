@@ -1,0 +1,294 @@
+{
+ "character": "creatures/soter",
+ "atlas": "res://assets/painted/derived/creatures/soter_frames.png",
+ "flex": "",
+ "sil": "res://assets/painted/derived/creatures/soter_frames_sil.png",
+ "body_px": 240.0,
+ "kind": "npc",
+ "fit": {
+  "body_frac": 0.93053,
+  "foot_gap": 0.06105,
+  "dx": -0.09216,
+  "rect_px": [
+   425,
+   475
+  ]
+ },
+ "cloth_amp": 0.0,
+ "hem_wave": 0.0,
+ "atlas_size": [
+  2048,
+  512
+ ],
+ "frames": {
+  "idle_0": {
+   "rect": [
+    1110,
+    0,
+    141,
+    254
+   ],
+   "top": 7.11,
+   "foot_y": 247.11,
+   "bottom": 247.11,
+   "pelvis_x": 78.7,
+   "mid": false
+  },
+  "idle_0-idle_1_25": {
+   "rect": [
+    807,
+    0,
+    144,
+    255
+   ],
+   "top": 7.0,
+   "foot_y": 247.0,
+   "bottom": 247.0,
+   "pelvis_x": 78.96,
+   "mid": true
+  },
+  "idle_0-idle_1_50": {
+   "rect": [
+    658,
+    0,
+    149,
+    257
+   ],
+   "top": 7.0,
+   "foot_y": 249.0,
+   "bottom": 249.0,
+   "pelvis_x": 79.3,
+   "mid": true
+  },
+  "idle_0-idle_1_75": {
+   "rect": [
+    506,
+    0,
+    152,
+    259
+   ],
+   "top": 8.0,
+   "foot_y": 251.0,
+   "bottom": 251.0,
+   "pelvis_x": 79.23,
+   "mid": true
+  },
+  "idle_1": {
+   "rect": [
+    178,
+    0,
+    156,
+    261
+   ],
+   "top": 7.66,
+   "foot_y": 253.74,
+   "bottom": 253.74,
+   "pelvis_x": 80.72,
+   "mid": false
+  },
+  "talk_0": {
+   "rect": [
+    1251,
+    0,
+    171,
+    254
+   ],
+   "top": 7.11,
+   "foot_y": 247.11,
+   "bottom": 247.66,
+   "pelvis_x": 73.24,
+   "mid": false
+  },
+  "talk_1": {
+   "rect": [
+    1583,
+    0,
+    176,
+    249
+   ],
+   "top": 7.11,
+   "foot_y": 241.02,
+   "bottom": 241.58,
+   "pelvis_x": 83.06,
+   "mid": false
+  },
+  "bless_0": {
+   "rect": [
+    334,
+    0,
+    172,
+    261
+   ],
+   "top": 13.74,
+   "foot_y": 253.74,
+   "bottom": 253.74,
+   "pelvis_x": 71.58,
+   "mid": false
+  },
+  "bless_1": {
+   "rect": [
+    0,
+    0,
+    178,
+    279
+   ],
+   "top": 20.38,
+   "foot_y": 271.44,
+   "bottom": 271.44,
+   "pelvis_x": 83.34,
+   "mid": false
+  },
+  "turn_away": {
+   "rect": [
+    1422,
+    0,
+    161,
+    250
+   ],
+   "top": 7.66,
+   "foot_y": 243.24,
+   "bottom": 243.24,
+   "pelvis_x": 93.32,
+   "mid": false
+  },
+  "fade": {
+   "rect": [
+    951,
+    0,
+    159,
+    255
+   ],
+   "top": 10.42,
+   "foot_y": 243.79,
+   "bottom": 244.34,
+   "pelvis_x": 78.26,
+   "mid": false
+  }
+ },
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "f": "idle_0",
+     "anchor": [
+      78.7,
+      247.11
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_25",
+     "anchor": [
+      78.72,
+      247.74
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_50",
+     "anchor": [
+      79.72,
+      249.74
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_75",
+     "anchor": [
+      79.72,
+      251.74
+     ]
+    },
+    {
+     "f": "idle_1",
+     "anchor": [
+      80.72,
+      253.74
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_75",
+     "anchor": [
+      79.72,
+      251.74
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_50",
+     "anchor": [
+      79.72,
+      249.74
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_25",
+     "anchor": [
+      78.72,
+      247.74
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 3.0
+  },
+  "talk": {
+   "frames": [
+    {
+     "f": "talk_0",
+     "anchor": [
+      73.24,
+      247.11
+     ]
+    },
+    {
+     "f": "talk_1",
+     "anchor": [
+      83.06,
+      241.02
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 2.5
+  },
+  "bless": {
+   "frames": [
+    {
+     "f": "bless_0",
+     "anchor": [
+      71.58,
+      253.74
+     ]
+    },
+    {
+     "f": "bless_1",
+     "anchor": [
+      83.34,
+      271.44
+     ]
+    }
+   ],
+   "dur": [
+    0.35
+   ]
+  },
+  "fade": {
+   "frames": [
+    {
+     "f": "turn_away",
+     "anchor": [
+      93.32,
+      243.24
+     ]
+    },
+    {
+     "f": "fade",
+     "anchor": [
+      78.26,
+      243.79
+     ]
+    }
+   ],
+   "dur": [
+    0.4
+   ]
+  }
+ }
+}

@@ -1,0 +1,80 @@
+{
+ "_doc": "Receita do NPC sleeper (inhabitants índice 8). Folha do GPT 2x4: asleep_0, asleep_1, waking, awake, grateful, idle_0, talk_0, talk_1.",
+ "group": "creatures",
+ "sheet": "artes/gpt/npc_adormecido_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "asleep_0",
+  "asleep_1",
+  "waking",
+  "awake",
+  "grateful",
+  "idle_0",
+  "talk_0",
+  "talk_1"
+ ],
+ "ref": "awake",
+ "old_sheet": "assets/painted/derived/inhabitants.png",
+ "old_rect": [
+  850,
+  790,
+  397,
+  471
+ ],
+ "old_flip": false,
+ "kind": "npc",
+ "body_px": 240,
+ "anchors": {
+  "asleep_0": "lying",
+  "asleep_1": "lying"
+ },
+ "anchor_fix": {},
+ "inbetween": {
+  "asleep": [
+   "asleep_0",
+   "asleep_1",
+   2
+  ]
+ },
+ "flex": {},
+ "hem_wave": 0.0,
+ "states": {
+  "asleep": {
+   "pingpong": [
+    "asleep_0",
+    "asleep_1"
+   ],
+   "loop": true,
+   "fps": 2.5
+  },
+  "wake": {
+   "frames": [
+    "waking",
+    "awake",
+    "grateful",
+    "idle_0"
+   ],
+   "dur": [
+    0.45,
+    0.55,
+    1.1
+   ]
+  },
+  "idle": {
+   "frames": [
+    "idle_0"
+   ]
+  },
+  "talk": {
+   "frames": [
+    "talk_0",
+    "talk_1"
+   ],
+   "loop": true,
+   "fps": 2.5
+  }
+ }
+}

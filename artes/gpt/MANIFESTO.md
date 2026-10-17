@@ -193,3 +193,33 @@ Numeração = posição na criaturas_folha.png (3×3, esq→dir, cima→baixo). 
 - Arquivo: `cri_6_conjurador_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32aa4-0640-83ea-ab1a-f6cff168f18d
 - Nota: 8/10. Perfil p/ direita, fiel; walk 3 quadros; windup cajado acima da cabeça, strike cajado à frente com 1 orbe pequeno
   (componente solto), hurt, death (de joelhos, cajado no chão). Brilho mínimo.
+
+# NPCs (não lutam; template próprio 2×4)
+
+## NPC — Soter (ancião de branco, messiânico) — ref cri_7
+- Arquivo APROVADO: `npc_soter_a.png` — 2×4. Alternativa: `npc_soter_b.png` (A/B do ChatGPT; nota 7 — bênção sem luz, fade menos claro).
+  Chat: https://chatgpt.com/c/6ad32b24-2868-83e9-9b38-7002673cf088 (1 pedido, 2 imagens)
+- Quadros: 0 idle_0 · 1 idle_1 · 2 talk_0 · 3 talk_1 · 4 bless_0 · 5 bless_1 · 6 turn_away · 7 fade.
+- Nota: 8/10. Perfil p/ direita, fiel (cabelo/barba brancos, manto creme com sol dourado). FUNDO TRANSPARENTE (RGBA real) — as duas
+  variantes vieram assim; o fade é translúcido de verdade (alfa), e o brilho dourado da bênção é pequeno.
+
+## NPC — Velkar (Arconte arrependido, cavaleiro de capa lilás) — ref cri_8
+- Arquivo: `npc_velkar_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32bb6-e384-83e9-ae15-84c8352d4a53
+- Quadros: 0 idle_0 · 1 idle_1 · 2 talk_0 · 3 talk_1 · 4 kneel · 5 rise · 6 gesture_farewell · 7 walk_away.
+- Nota: 8/10. Perfil p/ direita, fiel (armadura escura, elmo com chifrinhos, capa lilás rasgada, correntes). Postura curvada e pesarosa.
+  A capa lilás é próxima do magenta mas separou bem (426 px quase-magenta). gesture_farewell sobe até y≈508 (perto da linha de cima, sem tocar).
+
+## NPC — Adormecido (alma presa, camponês) — ref cri_9
+- Arquivo: `npc_adormecido_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32c36-43d4-83e9-bcf5-2c5b9cd1ae8d
+- Quadros (9 estados pedidos não cabem em 8; ficou sem idle_1): 0 asleep_0 · 1 asleep_1 · 2 waking · 3 awake · 4 grateful · 5 idle_0 · 6 talk_0 · 7 talk_1.
+- Nota: 7.5/10. Perfil p/ direita, fiel (turbante cinza-azul, túnica rasgada, sandálias). Sequência acordar → de pé → reverência legível.
+- Observações: awake (q3) encosta no topo da imagem (y≈3); as figuras da linha de baixo estão um pouco maiores (h≈500) que o awake
+  (h≈459) — normalizar escala no recorte. Fundo magenta limpo.
+
+## Resumo da rodada noturna (chefes + criaturas + NPCs)
+- Chefes aprovados: boss_1_athoth_c, boss_2_harmas_a (fundo transparente), boss_3_galila_b, boss_4_yabel_a, boss_5_astaphaios_a,
+  boss_6_belias_a, boss_7_armupiel_a, boss_8_colosso_b, boss_9_rei_a (fundo rosa 248,3,185).
+- Criaturas aprovadas: cri_1_larva_a, cri_2_espadachim_a, cri_3_bruto_b, cri_4_cao_a, cri_5_escudeiro_a, cri_6_conjurador_a.
+- NPCs aprovados: npc_soter_a (fundo transparente), npc_velkar_a, npc_adormecido_a.
+- Rejeitadas/alternativas mantidas no disco: boss_1_athoth_a/b, boss_3_galila_a, boss_8_colosso_a, cri_3_bruto_a, npc_soter_b.
+- Pedidos de geração nesta rodada: 22 (5 foram correções) + 1 resposta sem imagem (anexo não chegou). Nenhum aviso de limite.

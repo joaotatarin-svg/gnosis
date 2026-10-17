@@ -1,0 +1,300 @@
+{
+ "character": "creatures/sleeper",
+ "atlas": "res://assets/painted/derived/creatures/sleeper_frames.png",
+ "flex": "",
+ "sil": "res://assets/painted/derived/creatures/sleeper_frames_sil.png",
+ "body_px": 240.0,
+ "kind": "npc",
+ "fit": {
+  "body_frac": 0.87473,
+  "foot_gap": 0.07431,
+  "dx": -0.02718,
+  "rect_px": [
+   397,
+   471
+  ]
+ },
+ "cloth_amp": 0.0,
+ "hem_wave": 0.0,
+ "atlas_size": [
+  2048,
+  512
+ ],
+ "frames": {
+  "asleep_0": {
+   "rect": [
+    1495,
+    0,
+    211,
+    101
+   ],
+   "top": 7.08,
+   "foot_y": 93.77,
+   "bottom": 94.31,
+   "pelvis_x": 118.55,
+   "mid": false
+  },
+  "asleep_0-asleep_1_25": {
+   "rect": [
+    1706,
+    0,
+    209,
+    101
+   ],
+   "top": 7.0,
+   "foot_y": 92.0,
+   "bottom": 93.0,
+   "pelvis_x": 117.0,
+   "mid": true
+  },
+  "asleep_0-asleep_1_50": {
+   "rect": [
+    1081,
+    0,
+    208,
+    103
+   ],
+   "top": 8.0,
+   "foot_y": 94.0,
+   "bottom": 95.0,
+   "pelvis_x": 117.66,
+   "mid": true
+  },
+  "asleep_0-asleep_1_75": {
+   "rect": [
+    1289,
+    0,
+    206,
+    103
+   ],
+   "top": 8.0,
+   "foot_y": 94.0,
+   "bottom": 95.0,
+   "pelvis_x": 116.99,
+   "mid": true
+  },
+  "asleep_1": {
+   "rect": [
+    877,
+    0,
+    204,
+    105
+   ],
+   "top": 6.54,
+   "foot_y": 97.56,
+   "bottom": 97.56,
+   "pelvis_x": 115.57,
+   "mid": false
+  },
+  "waking": {
+   "rect": [
+    684,
+    0,
+    193,
+    167
+   ],
+   "top": 7.08,
+   "foot_y": 159.86,
+   "bottom": 160.4,
+   "pelvis_x": 102.74,
+   "mid": false
+  },
+  "awake": {
+   "rect": [
+    409,
+    0,
+    113,
+    254
+   ],
+   "top": 7.08,
+   "foot_y": 247.08,
+   "bottom": 247.08,
+   "pelvis_x": 51.13,
+   "mid": false
+  },
+  "grateful": {
+   "rect": [
+    522,
+    0,
+    162,
+    227
+   ],
+   "top": 8.17,
+   "foot_y": 218.91,
+   "bottom": 219.45,
+   "pelvis_x": 50.51,
+   "mid": false
+  },
+  "idle_0": {
+   "rect": [
+    302,
+    0,
+    107,
+    274
+   ],
+   "top": 7.08,
+   "foot_y": 267.13,
+   "bottom": 267.13,
+   "pelvis_x": 47.55,
+   "mid": false
+  },
+  "talk_0": {
+   "rect": [
+    138,
+    0,
+    164,
+    278
+   ],
+   "top": 8.71,
+   "foot_y": 270.38,
+   "bottom": 270.92,
+   "pelvis_x": 54.48,
+   "mid": false
+  },
+  "talk_1": {
+   "rect": [
+    0,
+    0,
+    138,
+    279
+   ],
+   "top": 7.08,
+   "foot_y": 271.46,
+   "bottom": 271.46,
+   "pelvis_x": 51.6,
+   "mid": false
+  }
+ },
+ "states": {
+  "asleep": {
+   "frames": [
+    {
+     "f": "asleep_0",
+     "anchor": [
+      109.16,
+      94.31
+     ]
+    },
+    {
+     "f": "asleep_0-asleep_1_25",
+     "anchor": [
+      108.16,
+      94.56
+     ]
+    },
+    {
+     "f": "asleep_0-asleep_1_50",
+     "anchor": [
+      108.16,
+      96.56
+     ]
+    },
+    {
+     "f": "asleep_0-asleep_1_75",
+     "anchor": [
+      107.16,
+      96.56
+     ]
+    },
+    {
+     "f": "asleep_1",
+     "anchor": [
+      106.6,
+      97.56
+     ]
+    },
+    {
+     "f": "asleep_0-asleep_1_75",
+     "anchor": [
+      107.16,
+      96.56
+     ]
+    },
+    {
+     "f": "asleep_0-asleep_1_50",
+     "anchor": [
+      108.16,
+      96.56
+     ]
+    },
+    {
+     "f": "asleep_0-asleep_1_25",
+     "anchor": [
+      108.16,
+      94.56
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 2.5
+  },
+  "wake": {
+   "frames": [
+    {
+     "f": "waking",
+     "anchor": [
+      102.74,
+      159.86
+     ]
+    },
+    {
+     "f": "awake",
+     "anchor": [
+      51.13,
+      247.08
+     ]
+    },
+    {
+     "f": "grateful",
+     "anchor": [
+      50.51,
+      218.91
+     ]
+    },
+    {
+     "f": "idle_0",
+     "anchor": [
+      47.55,
+      267.13
+     ]
+    }
+   ],
+   "dur": [
+    0.45,
+    0.55,
+    1.1
+   ]
+  },
+  "idle": {
+   "frames": [
+    {
+     "f": "idle_0",
+     "anchor": [
+      47.55,
+      267.13
+     ]
+    }
+   ]
+  },
+  "talk": {
+   "frames": [
+    {
+     "f": "talk_0",
+     "anchor": [
+      54.48,
+      270.38
+     ]
+    },
+    {
+     "f": "talk_1",
+     "anchor": [
+      51.6,
+      271.46
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 2.5
+  }
+ }
+}

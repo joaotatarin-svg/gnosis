@@ -75,6 +75,12 @@ func set_profile(p: ArtProfile) -> void:
 	if fname != "" and not fname.contains("/"):
 		fname = "bosses/" + fname
 	_boss_db = frame_db(fname) if fname != "" else {}
+	# Adormecido: dorme enquanto o olho está apagado; o sleeper.gd troca o
+	# perfil (olho aceso) ao despertar → toca acordar → de pé → reverência.
+	var was_asleep: bool = _npc_asleep
+	_npc_asleep = p.painted_id == "sleeper" and p.eye.r < 0.8
+	if was_asleep and not _npc_asleep:
+		_npc_wake_t = 0.0
 	_flex_material().shader = load(BOSS_SHADER if has_boss_frames() else FLEX_SHADER)
 	_bsp = Vector2.ZERO
 	_bsv = Vector2.ZERO
@@ -1728,6 +1734,8 @@ func _tick_visual(delta: float) -> void:
 	_impact = move_toward(_impact, 0.0, delta * 6.0)
 	if has_boss_frames():
 		_tick_boss(delta)
+	if _npc_wake_t >= 0.0:
+		_npc_wake_t += delta
 	_land_t = maxf(0.0, _land_t - delta)
 	if _rise_t > 0.0:
 		_rise_t = maxf(0.0, _rise_t - delta)
@@ -1949,6 +1957,8 @@ var _bsp := Vector2.ZERO                          # mola: (avanço x, curvatura)
 var _bsv := Vector2.ZERO
 var _boss_state_seen: String = ""
 var _boss_shown: Dictionary = {}                  # último quadro desenhado (gibs)
+var _npc_asleep: bool = false                     # Adormecido ainda dormindo
+var _npc_wake_t: float = -1.0                     # s desde o despertar (-1 = não)
 ## Contorno do telegrafo (cor; a = intensidade). Nos chefes por quadros o tom
 ## chapado da preparação (Enemy.TELEGRAPH_*) vira este contorno pulsante.
 var telegraph_color := Color(0, 0, 0, 0)
@@ -1968,6 +1978,14 @@ func _boss_world_h() -> float:
 ## Estado de animação → sequência do atlas do chefe (com reserva).
 func _boss_seq(states: Dictionary) -> String:
 	var st: String = anim_state
+	if _npc_asleep and states.has("asleep"):
+		return "asleep"
+	if _npc_wake_t >= 0.0 and states.has("wake") and st == "idle":
+		var total: float = 0.0
+		for d in states.wake.get("dur", []):
+			total += float(d)
+		if _npc_wake_t < total + 0.3:
+			return "wake"
 	if states.has(st):
 		return st
 	var chain := {"charge": ["attack", "walk"], "windup_heavy": ["windup"], "windup_cast": ["windup"],
@@ -1999,6 +2017,16 @@ func _boss_index(seq: Dictionary) -> int:
 			if pose_progress >= float(at[j]):
 				idx = j
 		return idx
+	if _npc_wake_t >= 0.0 and is_same(_boss_db.meta.states.get("wake", {}), seq):
+		# acordar: relógio próprio (o estado do nó continua "idle")
+		var t: float = _npc_wake_t
+		var durs: Array = seq.get("dur", [])
+		for i in n - 1:
+			var d: float = float(durs[i]) if i < durs.size() else 0.3
+			if t < d:
+				return i
+			t -= d
+		return n - 1
 	return _seq_index(seq, "")
 
 

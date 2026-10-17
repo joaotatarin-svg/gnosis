@@ -147,6 +147,16 @@ def build(name: str, use_rife: bool = True) -> None:
 	sheet = os.path.join(ROOT, R["sheet"])
 	cells = R.get("cells", ["idle_0", "idle_1", "walk_0", "walk_1", "windup", "strike", "hurt", "death"])
 	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells)
+	# recolorir células (ex.: o "fade" do Soter veio rosado: o GPT pintou o
+	# fantasma já misturado ao magenta) — mantém a luminância, troca a cor
+	for cn, col in R.get("recolor", {}).items():
+		if cn in raw:
+			rgba, origin = raw[cn]
+			rgb = rgba[..., :3]
+			lum = (0.299 * rgb[..., 0] + 0.587 * rgb[..., 1] + 0.114 * rgb[..., 2])[..., None]
+			tgt = np.array(col, np.float32)
+			tl = 0.299 * tgt[0] + 0.587 * tgt[1] + 0.114 * tgt[2]
+			raw[cn] = (np.dstack([np.clip(lum * tgt / tl, 0, 255), rgba[..., 3]]), origin)
 	# grupo de saída: derived/<grupo>/ (bosses | creatures) e src/<grupo>/ (meios)
 	group = R.get("group", "bosses")
 	OUT = os.path.join(ROOT, "assets", "painted", "derived", group)

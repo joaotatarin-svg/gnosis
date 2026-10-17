@@ -38,6 +38,7 @@ func _ready() -> void:
 		"film_boss": _film_boss(args[2] if args.size() >= 3 else "arconte_sono")
 		"boss_board": await _boss_board(args[2] if args.size() >= 3 else "")
 		"shader_cmp": await _shader_cmp()
+		"npc_board": await _npc_board()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -290,6 +291,50 @@ func _shader_cmp() -> void:
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://shader_cmp.png")
+	get_tree().quit()
+
+
+## NPCs por quadros: Soter, Velkar (estados pedidos ao encontro) e o
+## Adormecido dormindo → despertando (troca de perfil como no sleeper.gd).
+func _npc_board() -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	var rows := [[Bestiary.soter_profile(), ["idle", "talk", "bless", "fade"]], [Bestiary.velkar_profile(), ["idle", "talk", "kneel", "farewell"]]]
+	for r in rows.size():
+		for i in rows[r][1].size():
+			var art := CharacterArt.new()
+			add_child(art)
+			art.set_profile(rows[r][0])
+			art.position = Vector2(60 + i * 110, 120 + r * 120) - Vector2(0, CharacterArt.GROUND_Y * art.profile.height / 44.0)
+			art.set_process(false)
+			art.set_anim(String(rows[r][1][i]))
+			for f in 40:
+				art._process(1.0 / 60.0)
+			_label(String(rows[r][1][i]), Vector2(40 + i * 110, 10 + r * 120))
+	# Adormecido: dormindo, depois acorda (0,3 / 0,8 / 1,5 / 3 s)
+	var times := [-1.0, 0.3, 0.8, 1.5, 3.0]
+	for i in times.size():
+		var art := CharacterArt.new()
+		add_child(art)
+		var p := ArtProfile.new()
+		p.body = ArtProfile.Body.HUMANOID
+		p.height = 42.0
+		p.painted_id = "sleeper"
+		p.primary = Color("435962")
+		p.eye = Color(0.5, 0.5, 0.55)
+		art.set_profile(p)
+		art.set_anim("idle")
+		art.position = Vector2(60 + i * 110, 340) - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0)
+		art.set_process(false)
+		if times[i] >= 0.0:
+			var q: ArtProfile = p.duplicate()
+			q.eye = Color(1.0, 0.92, 0.55)
+			art.set_profile(q)
+			for f in int(times[i] * 60.0):
+				art._process(1.0 / 60.0)
+		_label("dorme" if times[i] < 0.0 else "acorda %.1fs" % times[i], Vector2(40 + i * 110, 250))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://npc_board.png")
 	get_tree().quit()
 
 

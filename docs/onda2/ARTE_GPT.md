@@ -86,11 +86,15 @@ mostra o nome do Colosso desde o início. Não é arte → Pedido 4.
    `visual.telegraph_color = TELEGRAPH_*` (e zerar `telegraph_color.a` no golpe) quando
    `visual.has_boss_frames()`; os demais inimigos podem continuar no tom chapado ou ganhar o mesmo
    contorno depois.
-4. **level.gd / final_battle.gd (tela 68)**: o Colosso nasce fora da tela (≈ +1300 px da Sophia) e a
+3. **level.gd / final_battle.gd (tela 68)**: o Colosso nasce fora da tela (≈ +1300 px da Sophia) e a
    barra única mostra o nome dele enquanto só o Rei está visível — já listado como A3 no QA-UX.
-3. **enemy.gd (morte do chefe)**: opcional — tocar o estado `dead` (quadro `death` + dissolução)
+4. **enemy.gd (morte do chefe)**: opcional — tocar o estado `dead` (quadro `death` + dissolução)
    ~0,4 s antes do desmembramento, para o quadro de morte desenhado aparecer.
 
+5. **npc_encounter.gd** (encontros): os atlas já têm os estados; basta `_art.set_anim("talk")` ao abrir o
+   diálogo, `"bless"` na escolha do Soter (antes do AoeNova), `"fade"` no tween de saída do Soter;
+   Velkar: `"kneel"` durante a fala, `"farewell"` na despedida, `"walk"` ao mancar pro canto. Sem isso
+   eles ficam no `idle` (vaivém), que já anima.
 ## Criaturas (bloco extra, mesmo pipeline)
 
 Folhas `cri_<n>_<nome>` do produtor (2×4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt,
@@ -111,3 +115,15 @@ mola mexe o corpo inteiro sem girar o cartão (squash ≤ 7%, preparar recua, go
 Capturas: `gifs/criaturas_prancha_antes_depois.png` (pintura única × quadros), `gifs/criaturas_quadros.png`.
 Obs.: com o shader corrigido as criaturas ficam no brilho real da pintura (antes saíam escurecidas
 pela cor ao quadrado do `painted_flex`).
+
+## NPCs (Soter, Velkar, Adormecido)
+
+Mesmo pipeline (grupo `creatures`, índices 6–8 do `inhabitants`). Soter veio RGBA (alfa real);
+o quadro `fade` veio rosado (o GPT pintou o fantasma já misturado ao magenta) → receita com
+`recolor` (mantém a luminância, cor creme). Estados no atlas:
+- Soter: `idle` (vaivém + RIFE), `talk`, `bless`, `fade`.
+- Velkar: `idle`, `talk`, `kneel`, `rise`, `farewell`, `walk`.
+- Adormecido: `asleep` (vaivém, deitado), `wake` (acordar → de pé → reverência → parado), `idle`, `talk`.
+  Funciona SEM tocar no `sleeper.gd`: o CharacterArt dorme enquanto o olho do perfil está apagado
+  e, quando o `sleeper.gd` troca o perfil (olho aceso), toca o `wake` no relógio próprio.
+Prova: `gifs/npcs_estados.png` (AnimQA `-- npc_board`).
