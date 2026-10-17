@@ -274,6 +274,12 @@ func _play_narrative_beats() -> void:
 		# parado (o mundo está pausado pela caixa); a fala de chegada da Sophia
 		# (que olha para ele) abre a caixa; o card de chefe vem depois da escolha.
 		_stage_archon()
+		# 2 quadros para o Arconte se montar (pose do boneco) antes de a caixa
+		# congelar o mundo — a IA dele nem chega a andar.
+		for _i in 2:
+			await get_tree().process_frame
+		if not is_inside_tree():
+			return
 		var lines: Array = _take_arrival_lines()
 		lines.append_array(Narrative.temptation(RunManager.boss_id_for(screen)))
 		var d := stage().play(lines, ["Recusar", "Ceder"], "tentacao")
@@ -283,6 +289,9 @@ func _play_narrative_beats() -> void:
 		else:
 			Progression.add_orbs(80)      # o suborno do Arconte
 			await DialogueBox.play(Narrative.concession_response()).finished
+		# Até ela cruzar o gatilho, o Arconte espera parado (sem IA, sem golpe).
+		if _staged_boss != null and is_instance_valid(_staged_boss):
+			_staged_boss.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 ## A fala de chegada da tela (walk_arrival) sai da LEGENDA e vai para a caixa:
@@ -295,8 +304,8 @@ func _take_arrival_lines() -> Array:
 
 
 ## Tentação em cena (#18): o Arconte nasce ANTES da conversa, no ponto onde
-## nasceria no duelo, virado para ela e PARADO (process desligado: sem IA, sem
-## golpe). A Sophia fica a um passo do gatilho; a Staging ("tentacao") enquadra
+## nasceria no duelo, virado para ela e PARADO (a caixa pausa o mundo; depois
+## da escolha o process dele fica desligado até o gatilho: sem IA, sem golpe). A Sophia fica a um passo do gatilho; a Staging ("tentacao") enquadra
 ## os dois. Depois da escolha nada muda até ela andar: no gatilho a zona tranca,
 ## este mesmo corpo acorda (_start_wave) e só então vem o card de chefe.
 func _stage_archon() -> void:
@@ -306,15 +315,13 @@ func _stage_archon() -> void:
 	if wave0.is_empty():
 		return
 	var c := zone_center(0)
-	if player.global_position.x > c - ZONE_TRIGGER - 10.0 or player.global_position.x < c - ZONE_TRIGGER - 200.0:
-		player.global_position.x = c - ZONE_TRIGGER - 10.0
+	player.global_position.x = c - ZONE_TRIGGER - 10.0
 	if "facing" in player:
 		player.set("facing", 1)
 	_snap_camera()
 	_place_spawns(c)
 	var e: Enemy = enemy_scene.instantiate()
 	e.type_id = wave0[0]
-	e.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(e)
 	e.global_position = (spawns.get_child(0) as Node2D).global_position
 	var vis = e.get("visual")

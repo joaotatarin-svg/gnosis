@@ -295,7 +295,8 @@ func _a_mask_lights() -> void:
 	Juice.shake(0.15)
 
 
-## Tentação: centra o quadro entre a Sophia e o Arconte parado (zoom de jogo).
+## Tentação: centra o quadro entre a Sophia e o Arconte parado (zoom de jogo)
+## e sobe os dois acima da caixa.
 func _frame_boss() -> void:
 	if player == null:
 		return
@@ -307,7 +308,8 @@ func _frame_boss() -> void:
 	if boss == null:
 		return
 	var mid := (player.global_position.x + boss.global_position.x) * 0.5
-	_cam_to(1.0, Vector2(mid - _view_center().x, 0.0), 0.8)
+	# Desce o quadro como na cena D: os dois ficam ACIMA da caixa de diálogo.
+	_cam_to(1.0, Vector2(mid - _view_center().x, D_LIFT), 0.8)
 
 
 ## Onde o Rei espera o duelo (o 1º ponto de spawn da zona 0 do Level).
