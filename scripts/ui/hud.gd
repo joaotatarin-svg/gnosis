@@ -30,11 +30,16 @@ const RING_DX := 15.0
 const BOSS_W := 320.0
 const BOSS_BAR_Y := 334.0        # topo da barra do chefe
 const EON_RIGHT := 626.0
+## Toast numa faixa SÓ DELE (QA-UX M2): abaixo da fileira de Anéis (y 62) e do
+## nome do Anel, à esquerda do contador de golpes (x ≥ 520), acima das cabeças.
+const TOAST_RECT := Rect2(120, 88, 400, 30)
 
 var _canvas: _HudCanvas
 var _combo_label: Label
 var _toast: Control
 var _toast_label: Label
+var _toast_tween: Tween
+var _recede: float = 0.0             # 0..1: HUD recolhido (card de chefe da Cinemática)
 
 # estado das barras
 var hp: float = 1.0
@@ -69,6 +74,9 @@ var _portrait: Texture2D
 
 func _ready() -> void:
 	add_to_group("hud")
+	# Roda com a árvore pausada SÓ para recolher durante o card de chefe (M4);
+	# o estado do jogo (barras, faíscas) continua congelado na pausa.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_portrait = load(PORTRAIT) if ResourceLoader.exists(PORTRAIT) else null
 	_canvas = _HudCanvas.new()
 	_canvas.hud = self
@@ -104,6 +112,9 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_update_recede(delta)
+	if get_tree().paused:
+		return
 	_t += delta
 	# Vida: a barra viva sobe suave (cura) e desce na hora (dano); a fantasma
 	# segura 0,45 s e drena.
@@ -180,32 +191,56 @@ func _on_combo(count: int) -> void:
 
 # --- API pública ------------------------------------------------------------------
 
-## Aviso curto no centro da tela (cacos de memória, Crônicas, quedas na batalha final).
+## Aviso curto (cacos de memória, Crônicas, quedas na batalha final) numa
+## faixa própria (TOAST_RECT). Texto longo encolhe a fonte para caber.
 func toast(msg: String) -> void:
 	if _toast == null:
 		_toast = Control.new()
 		_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_toast.position = Vector2(70, 72)
-		_toast.size = Vector2(500, 34)
+		_toast.position = TOAST_RECT.position
+		_toast.size = TOAST_RECT.size
 		add_child(_toast)
 		_toast_label = Label.new()
-		_toast_label.size = Vector2(500, 20)
+		_toast_label.size = Vector2(TOAST_RECT.size.x, 20)
 		_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_toast_label.add_theme_font_override("font", CodexStyle.display())
-		_toast_label.add_theme_font_size_override("font_size", 13)
 		_toast_label.add_theme_color_override("font_color", CodexStyle.GOLD_HI)
 		_toast_label.add_theme_color_override("font_outline_color", Color(0.01, 0.03, 0.04, 0.92))
 		_toast_label.add_theme_constant_override("outline_size", 5)
+		_toast_label.clip_text = true
 		_toast.add_child(_toast_label)
-		CodexStyle.rule(_toast, Vector2(150, 22), 200, Color(CodexStyle.GOLD, 0.9))
+		CodexStyle.rule(_toast, Vector2(TOAST_RECT.size.x * 0.5 - 100.0, 22), 200, Color(CodexStyle.GOLD, 0.9))
+	var fs := 13
+	var font: Font = CodexStyle.display()
+	while fs > 9 and font.get_string_size(msg, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > TOAST_RECT.size.x - 8.0:
+		fs -= 1
+	_toast_label.add_theme_font_size_override("font_size", fs)
 	_toast_label.text = msg
+	if _toast_tween != null and _toast_tween.is_valid():
+		_toast_tween.kill()
 	_toast.modulate = Color(1, 1, 1, 0)
-	_toast.position.y = 78
-	var t := create_tween().set_parallel(true)
-	t.tween_property(_toast, "modulate:a", 1.0, 0.22)
-	t.tween_property(_toast, "position:y", 72.0, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	t.chain().tween_interval(2.2)
-	t.chain().tween_property(_toast, "modulate:a", 0.0, 0.5)
+	_toast.position.y = TOAST_RECT.position.y + 6.0
+	_toast_tween = create_tween().set_parallel(true)
+	_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.22)
+	_toast_tween.tween_property(_toast, "position:y", TOAST_RECT.position.y, 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_toast_tween.chain().tween_interval(2.2)
+	_toast_tween.chain().tween_property(_toast, "modulate:a", 0.0, 0.5)
+
+
+## Card de chefe / cards da Cinemática na tela: o HUD inteiro recua (some em
+## 0,2 s) para a tarja não cortar a barra de vida ao meio (QA-UX M4).
+func _update_recede(delta: float) -> void:
+	var want := 0.0
+	for c in get_tree().root.get_children():
+		if c is Cinematic and not c.is_queued_for_deletion():
+			want = 1.0
+			break
+	_recede = move_toward(_recede, want, delta * 5.0)
+	var a := 1.0 - _recede
+	_canvas.modulate.a = a
+	_combo_label.modulate.a = a
+	if _toast != null:
+		_toast.visible = _recede < 0.99
 
 
 ## Chamado (via grupo "hud") pelo chefe ao nascer — e de novo quando uma forma
