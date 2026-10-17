@@ -11,12 +11,17 @@ bots = {
 	"esporos": (6, "belias", "beast"),
 	"pretoriano": (7, "armupiel", "biped"),
 }
+VARIANT = {"glutao": "b"}     # folha aprovada quando há mais de uma (MANIFESTO do produtor)
+KEEP = ["size_fix", "fit_override", "kind", "states", "anchors", "anchor_fix", "flex", "hem_wave", "recolor"]
 done = []
 for bid, (n, archon, kind) in bots.items():
 	cands = sorted(glob.glob(os.path.join(OUT, "bot_%d_%s_*.png" % (n, bid))))
 	if not cands:
 		continue
 	src = cands[0]
+	want = os.path.join(OUT, "bot_%d_%s_%s.png" % (n, bid, VARIANT.get(bid, "a")))
+	if os.path.exists(want):
+		src = want
 	name = os.path.basename(src)[:-4]
 	shutil.copy(src, os.path.join(ROOT, "artes", "gpt", name + ".png"))
 	p = os.path.join(ROOT, "tools", "anim_bosses", "recipes", "bot_" + bid + ".json")
@@ -46,6 +51,14 @@ for bid, (n, archon, kind) in bots.items():
 			"dead": {"frames": ["hurt", "death"], "dur": [0.12]},
 		},
 	}
+	if os.path.exists(p):
+		# receita já ajustada à mão: mantém os ajustes, troca só a folha
+		old = json.load(open(p, encoding="utf-8"))
+		for k in KEEP:
+			if k in old:
+				R[k] = old[k]
+	if bid == "glutao" and "size_fix" not in R:
+		R["size_fix"] = 0.8      # folha _b: criatura-saco de quatro, mais baixa que o Harmas
 	json.dump(R, open(p, "w", encoding="utf-8", newline="\n"), indent=1, ensure_ascii=False)
 	done.append("bot_" + bid)
 print(" ".join(done))

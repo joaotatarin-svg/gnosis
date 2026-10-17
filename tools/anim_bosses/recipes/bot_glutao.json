@@ -1,7 +1,7 @@
 {
- "_doc": "Bot de Éon glutao (servo de harmas) — arte própria, substitui a miniatura do Arconte. Folha bot_2_glutao_a (2x4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt, death). Tamanho em tela = o da família antiga (camada do boneco do Arconte).",
+ "_doc": "Bot de Éon glutao (servo de harmas) — arte própria, substitui a miniatura do Arconte. Folha bot_2_glutao_b (2x4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt, death). Tamanho em tela = o da família antiga (camada do boneco do Arconte).",
  "group": "creatures",
- "sheet": "artes/gpt/bot_2_glutao_a.png",
+ "sheet": "artes/gpt/bot_2_glutao_b.png",
  "grid": [
   4,
   2
@@ -94,5 +94,6 @@
     0.12
    ]
   }
- }
+ },
+ "size_fix": 0.8
 }

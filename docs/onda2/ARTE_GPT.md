@@ -196,7 +196,7 @@ parada, golpe forte, magia × níveis 1→5).
 
 - **Arte própria** (folhas `bot_<n>_<id>` do produtor → receitas `tools/anim_bosses/recipes/bot_<id>.json`, grupo
   `creatures`, tamanho = o da família antiga): **os 7** — sonâmbulo, glutão, carcereiro, mudo, reflexo, esporos (corcunda bípede: `size_fix` 1,35 e `fit_override` pé no chão), pretoriano. `PaintedLibrary` passa a
-  usar `creatures/bot_<id>` quando o atlas existe (sem boneco; `reserve_puppet` guarda o índice só pro PuppetQA).
+  usar `creatures/bot_<id>`; os 7 ids **saíram do mapa `families`** (sem atlas, caem na pintura única das criaturas pelo tipo de corpo). Glutão usa a folha **_b** (criatura-saco de quatro, `size_fix` 0,8). O PuppetQA continua testando o boneco do Harmas/Armupiel em escala de criatura montado à parte (`puppet_idx`).
 - **Interino** só para os parentes sem folha (alado, fantasma, cornudo):
   quadros do Arconte com saturação × 0,45 + tinta da cor da criatura. Honesto: a silhueta continua a do
   Arconte (auréola/coroa) — só a arte própria resolve; ficam pequenos (escala da criatura).

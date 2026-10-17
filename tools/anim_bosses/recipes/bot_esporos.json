@@ -1,5 +1,5 @@
 {
- "_doc": "Bot de Éon esporos (servo de belias) — arte própria, substitui a miniatura do Arconte. Folha bot_6_esporos_a (2x4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt, death). Tamanho em tela = o da família antiga (camada do boneco do Arconte). Corcunda bípede: size_fix 1,35 (a família antiga era a fera Belias, mais baixa).",
+ "_doc": "Bot de Éon esporos (servo de belias) — arte própria, substitui a miniatura do Arconte. Folha bot_6_esporos_a (2x4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt, death). Tamanho em tela = o da família antiga (camada do boneco do Arconte).",
  "group": "creatures",
  "sheet": "artes/gpt/bot_6_esporos_a.png",
  "grid": [

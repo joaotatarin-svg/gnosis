@@ -54,8 +54,10 @@ static func character(p: ArtProfile) -> Dictionary:
 	var id: String = p.painted_id.trim_prefix("eco_")
 	if p.has("soter"): id = "soter"
 	if p.has("velkar"): id = "velkar"
-	# Variantes do Éon herdam a família do seu Arconte, em escala de criatura.
-	var families := {"sonambulo":"arconte_sono","glutao":"arconte_fome","carcereiro":"arconte_corrente","mudo":"arconte_silencio","reflexo":"arconte_espelho","esporos":"arconte_praga","pretoriano":"arconte_coroa","alado":"arconte_silencio","fantasma":"arconte_sono","cornudo":"arconte_corrente"}
+	# Parentes do Arconte (variantes sem arte própria) herdam a família dele, em
+	# escala de criatura. Os 7 BOTS de Éon (Bestiary.EON_BOTS) SAÍRAM daqui na
+	# Onda 2: têm arte própria (creatures/bot_<id>) e não são mais miniaturas.
+	var families := {"alado":"arconte_silencio","fantasma":"arconte_sono","cornudo":"arconte_corrente"}
 	var own: String = id                  # id antes da família (o chefe em pessoa)
 	id = families.get(id,id)
 	var bosses := ["arconte_sono", "arconte_fome", "arconte_corrente", "arconte_silencio", "arconte_espelho", "arconte_praga", "arconte_coroa", "colosso"]
@@ -69,15 +71,6 @@ static func character(p: ArtProfile) -> Dictionary:
 		# Sem atlas, o CharacterArt cai no boneco (fallback).
 		d["frames"] = BossPuppet.NAMES[boss]
 		d["family"] = own != id
-		# Bots de Éon com ARTE PRÓPRIA (folhas bot_<n>_<id> → creatures/bot_<id>):
-		# deixam de ser miniatura do Arconte. Os que ainda não têm folha seguem
-		# nos quadros do Arconte, mas com paleta própria (ver CharacterArt).
-		if own != id and ResourceLoader.exists(DERIVED_DIR + "creatures/bot_" + own + "_frames.png"):
-			d.erase("puppet")
-			d["reserve_puppet"] = boss       # PuppetQA ainda testa o boneco nessa escala
-			d["frames"] = "creatures/bot_" + own
-			d["family"] = false
-			d["bot"] = true
 		return d
 	if id in ["rei", "rei_final", "demiurgo"]:
 		return {"sheet":"yaldabaoth", "rect":Rect2(15,0,1046,1024), "flip":false, "puppet":8, "frames":"rei"}
@@ -96,6 +89,11 @@ static func character(p: ArtProfile) -> Dictionary:
 	# creatures/); sem atlas o CharacterArt segue na pintura única.
 	var creature_frames := ["larva","espadachim","bruto","cao","escudeiro","conjurador","soter","velkar","sleeper"]
 	d["frames"] = "creatures/" + creature_frames[index]
+	# Bots de Éon: arte própria (folhas bot_<n>_<id> → tools/anim_bosses/recipes/bot_<id>.json).
+	# Sem o atlas, caem na pintura única das criaturas pelo tipo de corpo.
+	if own in ["sonambulo", "glutao", "carcereiro", "mudo", "reflexo", "esporos", "pretoriano"]:
+		d["frames"] = "creatures/bot_" + own
+		d["bot"] = true
 	return d
 
 static func prop(index: int) -> Texture2D:

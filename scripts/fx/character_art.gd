@@ -1568,7 +1568,7 @@ func _draw_painted(s: float) -> void:
 		m[4] = float(m[4]) - float(meta.fit.foot_gap) * hw / s
 		_boss_shown = {"rect": rect, "anchor": anchor, "k": k, "tex": tex}
 		# criaturas comuns: mesma tinta leve por tipo da pintura única
-		if painted.get("sheet", "") == "inhabitants" and not profile.painted_id in ["soter", "velkar", "sleeper"]:
+		if painted.get("sheet", "") == "inhabitants" and not painted.get("bot", false) and not profile.painted_id in ["soter", "velkar", "sleeper"]:
 			tint = Color.WHITE.lerp(profile.primary.lightened(0.3), 0.22)
 	else:
 		var rect: Rect2
