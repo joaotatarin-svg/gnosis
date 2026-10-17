@@ -16,7 +16,8 @@ const NEED_VARIANTS := ["swing_light", "swing_heavy", "hit", "hit_heavy", "step"
 	"boss_step", "enemy_hurt", "block", "blip_voz", "blip_rei", "blip_sophia", "blip_estela", "blip_npc", "spark"]
 ## Contrato com Animação/UI: estes nomes TÊM de existir com arquivo.
 const CONTRACT := ["step", "step_heavy", "cloth", "boss_step", "blip_voz", "blip_rei", "blip_sophia",
-	"blip_estela", "blip_npc", "ui_move", "ui_confirm", "ui_back", "ui_open"]
+	"blip_estela", "blip_npc", "ui_move", "ui_confirm", "ui_back", "ui_open",
+	"fog_swell", "king_step", "mask_light", "voice_merge", "whisper"]
 
 var fails: int = 0
 
@@ -167,6 +168,22 @@ func _run() -> void:
 	get_tree().paused = false
 	await get_tree().process_frame
 	check(auto_ducked and not Audio.is_ducked(), "DialogueBox abaixa a música sozinho e devolve ao sair")
+
+	# (b7) API da Narrativa: duck_music temporário, camada por faixa, tom.
+	await get_tree().create_timer(1.0, true, false, true).timeout
+	var b0 := AudioServer.get_bus_volume_db(music_bus)
+	Audio.duck_music(0.3, -12.0)
+	await get_tree().create_timer(0.35, true, false, true).timeout
+	var b1 := AudioServer.get_bus_volume_db(music_bus)
+	await get_tree().create_timer(1.2, true, false, true).timeout
+	var b2 := AudioServer.get_bus_volume_db(music_bus)
+	check(b1 < b0 - 8.0 and absf(b2 - b0) < 0.5, "duck_music(0,3 s, -12): %.1f → %.1f → %.1f dB" % [b0, b1, b2])
+	Audio.set_music_layer_volume(0.0, "centro")
+	Audio.set_music_layer_volume(1.0, "centro")
+	Audio.set_music_pitch(0.8, 0.0)
+	Audio.set_music_pitch(1.0, 0.2)
+	Audio.play_music("theme", true, 0.9)
+	check(true, "set_music_layer_volume / set_music_pitch / play_music com tom não travam")
 
 	# (c) tocar SFX inexistente não gera erro (cache negativa) — e o pool aguenta rajada.
 	Audio.play_sfx("__nao_existe__")

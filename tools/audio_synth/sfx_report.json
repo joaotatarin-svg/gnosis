@@ -424,6 +424,14 @@
   "peak": -4.5
  },
  {
+  "name": "fog_swell",
+  "cat": "story_soft",
+  "dur": 3.11,
+  "ch": 2,
+  "Mmax": -17.0,
+  "peak": -6.2
+ },
+ {
   "name": "form_revive",
   "cat": "boss_soft",
   "dur": 1.6,
@@ -496,6 +504,30 @@
   "peak": -3.0
  },
  {
+  "name": "king_step",
+  "cat": "story",
+  "dur": 1.5,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -1.9
+ },
+ {
+  "name": "king_step_2",
+  "cat": "story",
+  "dur": 1.49,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -2.2
+ },
+ {
+  "name": "king_step_3",
+  "cat": "story",
+  "dur": 1.44,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -3.0
+ },
+ {
   "name": "land",
   "cat": "move",
   "dur": 0.12,
@@ -526,6 +558,14 @@
   "ch": 2,
   "Mmax": -13.2,
   "peak": -1.0
+ },
+ {
+  "name": "mask_light",
+  "cat": "story_soft",
+  "dur": 2.14,
+  "ch": 2,
+  "Mmax": -17.0,
+  "peak": -8.7
  },
  {
   "name": "nova",
@@ -936,12 +976,28 @@
   "peak": -11.3
  },
  {
+  "name": "voice_merge",
+  "cat": "story",
+  "dur": 2.18,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -5.4
+ },
+ {
   "name": "weapon_upgrade",
   "cat": "reward",
   "dur": 1.2,
   "ch": 1,
   "Mmax": -13.0,
   "peak": -4.6
+ },
+ {
+  "name": "whisper",
+  "cat": "story_whisper",
+  "dur": 1.55,
+  "ch": 2,
+  "Mmax": -21.0,
+  "peak": -8.7
  },
  {
   "name": "zone_clear",

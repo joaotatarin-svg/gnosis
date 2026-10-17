@@ -1,219 +1,345 @@
-# Áudio do GNOSIS — lista de compras DEFINITIVA
+# Áudio do GNOSIS — estado, mixagem e catálogo
 
-> **ESTADO (18/09/2026): TODOS os arquivos abaixo JÁ EXISTEM** — os 66 SFX e
-> as 14 músicas foram preenchidos com packs **CC0 / CC-BY** (Kenney,
-> OpenGameArt, Kevin MacLeod). Fontes, autores e licenças por arquivo em
-> `assets/LICENSES.md`; o script que monta tudo a partir dos packs brutos é
-> `assets/_packs/build_assets.py`. O jogo já toca som do menu ao epílogo.
-> **João pode substituir qualquer um** gerando o seu (prompts abaixo) e
-> salvando por cima com o **mesmo nome** — nada no código muda. A atribuição
-> CC-BY (texto pronto em `assets/LICENSES.md`) precisa ir nos créditos enquanto
-> algum arquivo CC-BY continuar em uso.
+> Diretor de Áudio, Onda 1 (17/10/2026), branch `dir/audio`. Tudo aqui é
+> CC0 / CC-BY / síntese própria (créditos: `assets/LICENSES.md`). Sem IA paga,
+> sem MusicGen/AudioCraft. Pipeline reprodutível em `tools/audio_synth/`.
 
-O código de áudio está **pronto e ligado**: todo evento do jogo já chama
-`Audio.play_sfx("<nome>")` ou a música certa é escolhida sozinha pelo contexto
-(menu, Rei, Éon, Arconte, Centro, Mente). Enquanto o arquivo não existir, o jogo
-segue em silêncio, **sem erro**. Você só precisa gerar os arquivos abaixo e
-soltar na pasta com o **nome exato**.
+## ESTADO PARA A PRÓXIMA SESSÃO
 
-- SFX → `assets/audio/sfx/<nome>.ogg` (aceita .ogg / .wav / .mp3)
-- Música → `assets/audio/music/<nome>.ogg`
-- Catálogo-mestre no código: `scripts/autoload/audio_manager.gd` (`const CATALOG`).
-  O `tools/AudioQA.tscn` confere que este documento, o catálogo, a pasta e as
-  chamadas no código batem.
+**Feito (commitado em `dir/audio`):**
+- Auditoria + mixagem de TODO o áudio (tabela antes/depois no fim). Música em −16 LUFS integrado
+  (eram de −8 a −27!), true peak ≤ −1 dBTP; ambiências −28 (Silêncio −31); SFX por categoria (M-max).
+- **Emenda dos loops de música consertada**: ponto de loop achado por similaridade (croma+MFCC+ataques),
+  ajuste fino de fase e crossfade compensado por correlação. Antes: o fim era fade/acorde final e voltava
+  'do nada' (degrau de até +40 dB na volta). Agora: degrau ≤ ~6 dB (variação musical normal), sem salto.
+  Algumas faixas pulam a introdução no loop (ver `tools/audio_synth/music_loops.json`).
+- **9 ambiências sintetizadas** (7 Éons + Limiar + Centro), loop perfeito por construção, player próprio
+  com crossfade de 2,5 s, escolhidas sozinhas pela tela (Arconte: −5 dB; Mente: nenhuma).
+- **Magias/projéteis/nova/faísca REFEITOS DO ZERO por síntese** (retorno do João: "bem paia"),
+  3 opções de cada geradas, escolhida a opção 2 (meio-termo) — ver §Magias. Faísca: tilintar
+  pentatônico que SOBE a escala quando coletada em sequência.
+- Stinger de chefe (`boss_appear`), camadas de coro em `boss_die`/`level_clear`/`ring_gain`, surto em `boss_phase2`.
+- Variações (`nome_2`, `nome_3`) dos eventos frequentes + sorteio sem repetir no `audio_manager.gd`.
+- Sons do contrato: `step`, `step_heavy`, `cloth`, `boss_step`, `blip_*` (5 falantes × 4 sílabas),
+  `ui_move`/`ui_confirm`/`ui_back`/`ui_open`; e os 5 da cena do Rei: `fog_swell`, `king_step` (3),
+  `mask_light`, `voice_merge`, `whisper`.
+- `audio_manager.gd`: buses Music/Ambience/SFX/UI/Voice, limitador no Master, ducking automático em
+  DialogueBox/Cinematic + `duck(on)`, API da Narrativa (`play_music(t, loop, pitch)`, `set_music_pitch`,
+  `duck_music(s, db)`, `set_music_layer_volume(t)`), `play_blip(falante)`. Volume padrão 1ª execução:
+  Master 0,7, Música 0,6 (pedido do João).
 
-Total: **66 SFX** + **14 músicas**.
+**Falta / problemas conhecidos (honesto):**
+- **Ninguém OUVIU nada ainda.** Avaliei só por medição e espectrograma (`tools/audio_synth/spectro.py`).
+  O João precisa ouvir as amostras (lista no relatório) — principalmente magias, blips e ambiências.
+- **AudioQA: 1 falha aberta** — `duck(): música -4.4 → -4.4 → -4.4 dB`: no teste headless o tween do
+  `duck(true/false)` não muda o bus (o `duck_music()` com o mesmo padrão PASSA, e o DialogueBox liga o
+  estado `is_ducked()` corretamente). Investigar `_update_duck`/`_set_duck` (suspeita: o tween é criado
+  mas não roda/é morto; testar com print dentro de `_set_duck`). Até lá o ducking de diálogo pode não
+  abaixar a música de fato.
+- Tema do menu NÃO foi refeito (Gregorian Chant serve; a Narrativa disse que `theme` vira o tema da Voz).
+- Faísca/orbe: o som de COLETA toca pelo sinal de Progression (já existia). Um som de orbe **chegando**
+  em Sophia e de **estouro** quando o orbe sai precisa de 1 linha em `spark_orb.gd` (pedido em
+  `docs/pedidos/audio.md`).
+- `save_manager.gd` usa 0,9/0,7 como fallback de volume quando o save não tem a chave — pedir ao
+  Técnico pra igualar a 0,7/0,6 (pedido feito).
+- Ninguém chama ainda: `step_heavy`, `cloth`, `boss_step`, `blip_*`, `ui_open`, os 5 da cena do Rei (os
+  outros diretores vão ligar).
 
-## Como pedir pra IA (regras que valem pra todos os prompts)
+**Próximos passos exatos:** (1) consertar o teste/efeito do `duck()`; (2) João ouve `_caps/audio/opcoes/`
+e escolhe opção por magia → mudar `CHOICE` em `tools/audio_synth/magic.py` e rodar
+`python tools/audio_synth/build_sfx.py cast_solar ...`; (3) rodar AudioQA; (4) playtest com som real.
 
-- **SFX:** ElevenLabs *Sound Effects* (elevenlabs.io/sound-effects). Cole o
-  prompt em inglês como está; marque duração próxima da "alvo"; gere 3–4
-  variações e fique com a mais seca. **Sem música, sem cauda de reverb longa**
-  (o jogo é rápido — cauda longa vira lama). Alternativa: Stable Audio.
-- **Música:** Suno ou Udio. Peça **instrumental, loopável, sem vocal com letra**
-  (coro "ooh/aah" pode). Cada faixa de Éon: 2–3 min. Gere 2 candidatas e escolha.
-- **Tom do jogo:** gnóstico, melancólico, sacro-mas-errado. Nada de "epic
-  trailer" genérico; pense em coral distante, sinos, órgão, cordas graves,
-  percussão surda. Referências de clima: God of War (2018), Blasphemous, Hades
-  (só na função dos SFX), Dark Souls (menus).
+**Como validar (SEMPRE com `--audio-driver Dummy` — não tocar nos alto-falantes):**
+```
+& $godot --headless --audio-driver Dummy --path . --editor --quit          # zero SCRIPT ERROR
+& $godot --headless --audio-driver Dummy --path . "res://tools/AudioQA.tscn" --quit-after 2000
+python tools/audio_synth/measure.py assets/audio saida.json                  # loudness de tudo
+```
 
----
+## Pipeline (`tools/audio_synth/`)
 
-## 1. SFX — Sophia (golpes)
+| Script | Faz |
+|---|---|
+| `common.py` | I/O, loudness BS.1770-4 (bate com o ffmpeg ebur128 em ±0,1 LU), limitador, síntese (sino modal, metal, voz por formantes, reverb linear e circular) |
+| `build_sfx.py` | todos os SFX: packs + camadas, variações, normalização por categoria |
+| `magic.py` | magias, projéteis, nova, faísca (síntese; `python magic.py` grava as 3 opções em `_caps/audio/opcoes/`) |
+| `story.py` | SFX da cena do Rei (síntese) |
+| `build_music.py` | masteriza as músicas a partir dos MP3 originais, acha e costura o loop |
+| `build_ambience.py` | ambiências periódicas (loop perfeito por construção) |
+| `measure.py` · `seam_clips.py` · `spectro.py` | medição, clipes da emenda, mosaico de espectrogramas |
 
-| Arquivo | Quando toca | Alvo | Prompt (ElevenLabs SFX) |
-|---|---|---|---|
-| `sfx/swing_light.ogg` | golpe leve sai do wind-up (`player.gd`) | 0,25 s | "fast light blade whoosh, short air swipe, tight and dry, no impact, no music, no reverb tail" |
-| `sfx/swing_heavy.ogg` | golpe pesado sai do wind-up | 0,4 s | "heavy two-handed blade swing, deep low whoosh with weight, slow arc, dry, no impact, no music, no reverb tail" |
-| `sfx/swing_air.ogg` | Giro Celeste (golpe aéreo leve) | 0,45 s | "spinning aerial blade whoosh, three quick rotating swipes, airy, dry, no music" |
-| `sfx/launcher.ogg` | lançador (golpe que joga o inimigo pro alto) | 0,4 s | "rising uppercut whoosh with a bright upward sweep, short, dry, no music, no reverb tail" |
-| `sfx/dive.ogg` | Queda Estelar (mergulho aéreo pesado) — o pouso toca `nova` | 0,5 s | "fast downward dive whoosh, falling blade with rising pitch, ends abruptly, dry, no music" |
-| `sfx/hit.ogg` | qualquer golpe leve acerta (também usado pelo Hitbox genérico) | 0,2 s | "short punchy melee impact, fantasy blade hitting flesh with a faint metallic edge, dry, no tail, no music" |
-| `sfx/hit_heavy.ogg` | golpe pesado acerta | 0,35 s | "heavy crushing melee impact, deep thud with bone crack and low sub punch, dry, short tail, no music" |
+Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia original).
 
-## 2. SFX — Sophia (defesa e movimento)
+## Mixagem
 
-| Arquivo | Quando toca | Alvo | Prompt |
-|---|---|---|---|
-| `sfx/parry.ogg` | parry perfeito (bloqueou dentro da janela) | 0,5 s | "metallic parry clang with a bright crystalline shimmer, satisfying deflect, short decay, no music" |
-| `sfx/block.ogg` | bloqueio absorvendo um golpe (sem parry) | 0,3 s | "dull shield block thud, muffled metal on leather, short, dry, no music" |
-| `sfx/dodge.ogg` | esquiva / rolamento | 0,3 s | "quick cloth dash whoosh, short air swipe with fabric rustle, dry, no music" |
-| `sfx/dodge_perfect.ogg` | esquiva perfeita (golpe passou durante o rolamento) | 0,6 s | "time-slow whoosh with a glassy reverse swell and a soft chime, brief, ethereal, no music" |
-| `sfx/jump.ogg` | pulo | 0,25 s | "light jump effort, short cloth whoosh and soft grunt-less push off stone, dry, no music" |
-| `sfx/land.ogg` | pouso após queda | 0,25 s | "soft two-foot landing on stone with light cloth settle, short, dry, no music" |
-| `sfx/step.ogg` | passo (a cada ~0,3 s andando; toca a -6 dB, tom varia) | 0,15 s | "single soft footstep on ancient stone floor, light sandal, dry, very short, no music" |
-| `sfx/rooted.ogg` | Corrente da Lei te prende no lugar | 0,5 s | "iron chain snapping taut around a body, short rattle then lock, dry, no music" |
-| `sfx/player_hurt.ogg` | Sophia toma dano | 0,35 s | "female hero pain grunt, short, restrained, with a faint light flicker sound, dry, no music" |
-| `sfx/player_die.ogg` | Sophia cai (0 HP) | 1,5 s | "hero falls, final breath and a spark of light dimming out, soft low drone fading, somber, no music" |
+- **Música:** −16 LUFS integrado, TP ≤ −1 dBTP; se o limitador precisaria cortar > 3 dB nos picos, a faixa
+  fica mais baixa (Rei −20,5, Roubo −19,4) em vez de esmagada. Silêncio −17,5 (quase silêncio).
+- **Ambiência:** −28 LUFS integrado (Silêncio −31). Segue o slider de Música.
+- **SFX:** alvo de *maior loudness momentânea* (M-max, mono medido como dual-mono) por categoria;
+  teto −1 dBFS com limitador. Golpe −12, pesado −10, swing −18, passo −20 (o player toca a −6 dB),
+  magia −13 (Coroa −11), chefe −10, UI −22, ui_move −27, blip −25, faísca −25, legenda −30.
+  Transientes muito curtos (passo, soco) ficam 1–4 dB abaixo do alvo porque o teto de pico manda.
+- **Buses:** Master (HardLimiter −0,5 dB) ← Music, Ambience, SFX ← (UI, Voice). UI = `ui_*`, `shop_*`,
+  `subtitle_tick`; Voice = `blip_*` (monofônico). Sliders: Master, SFX (inclui UI/Voz), Música (inclui ambiência).
+- **Ducking:** DialogueBox/Cinematic na árvore → música −9 dB, ambiência −5 dB (entra 0,25 s, sai 0,8 s).
 
-## 3. SFX — Magias (Esfera inata + os 7 Anéis)
+## API do `Audio` (compatível com a antiga)
 
-Cada Anel é a paixão de um Arconte virada contra o Kenoma — o som deve lembrar o Éon dele.
+`play_sfx(nome, pitch_var=-1, volume_db=0)` · `play_sfx_at(nome, pos)` · `play_music(faixa, loop=true, pitch=1.0)` ·
+`stop_music(fade)` · `set_music_pitch(p, fade=1)` · `duck_music(segundos, db=-12)` · `set_music_layer_volume(t, faixa='')` ·
+`play_ambience(nome, volume_db=0)` · `stop_ambience(fade)` · `duck(on)` · `is_ducked()` · `play_blip(falante)` ·
+`blip_for_speaker(falante)` · `has_sfx/has_music/has_ambience` · `variants_of(nome)` · `set_volume(bus, linear)` ·
+`track_for_screen(tela)` · `ambience_for_screen(tela)`.
 
-| Arquivo | Quando toca | Alvo | Prompt |
-|---|---|---|---|
-| `sfx/cast_solar.ogg` | Esfera Solar (inata): orbe que explode em área | 0,6 s | "holy light orb cast, warm solar shimmer whoosh launching forward, bright, short, no music" |
-| `sfx/cast_torpor.ogg` | Névoa do Sono (Anel do Torpor): nuvem que deixa lento | 0,9 s | "sleepy fog spell release, slow breathy exhale with muffled soft bells, dreamlike, short, no music" |
-| `sfx/cast_fome.ogg` | Boca Voraz (Anel da Fome): suga inimigos e morde | 0,8 s | "hungry vacuum pull ending in a sharp bite snap, gnawing wet texture, short, no music" |
-| `sfx/cast_corrente.ogg` | Corrente da Lei (Anel da Corrente): corrente que prende | 0,7 s | "iron chain launched forward with rattling links and a sharp metallic lock at the end, dry, no music" |
-| `sfx/cast_silencio.ogg` | Grito Mudo (Anel do Silêncio): atordoa ao redor | 0,9 s | "silent scream: sudden air pressure drop, sucked-out vacuum then a muted subsonic thump, eerie, no music" |
-| `sfx/cast_espelho.ogg` | Reflexo (Anel do Espelho): 5 s devolvendo golpes | 0,8 s | "mirror shield forming, glassy crystalline chime sweep with a silver reverse tone, short, no music" |
-| `sfx/cast_praga.ogg` | Flor Podre (Anel da Praga): canteiro de veneno | 0,9 s | "rotten flower blooming, wet squelch and buzzing spores with a sick low hum, short, no music" |
-| `sfx/cast_coroa.ogg` | Coroa da Mônada (Anel da Coroa): nova enorme | 1,4 s | "radiant crown nova: massive golden light burst with choir-like harmonic swell and deep boom, short tail, no music" |
-| `sfx/cast_fail.ogg` | sem Éter ou calada pelo Silêncio | 0,3 s | "spell fizzle, dry short sputter of light dying out, negative feedback, no music" |
+Falantes → voz: Sophia → `blip_sophia`; O Rei, Yaldabaoth e os 7 Arcontes → `blip_rei`; A Voz, Soter, ??? →
+`blip_voz`; Estela → `blip_estela`; resto → `blip_npc`. A UI chama `Audio.play_blip(speaker)` a cada
+caractere visível (ou a cada 2) — a sílaba nova corta a anterior; anti-spam de 40 ms.
 
-## 4. SFX — Inimigos e chefes
+## Magias (refeitas por síntese)
 
-| Arquivo | Quando toca | Alvo | Prompt |
-|---|---|---|---|
-| `sfx/enemy_hurt.ogg` | criatura comum toma dano (integração: `enemy.gd`) | 0,3 s | "creature pain grunt, small hollow monster, short, dry, no music" |
-| `sfx/enemy_die.ogg` | criatura comum morre (a faísca se liberta) | 0,8 s | "creature death: wet collapse with a soft magical light release, short dissipate, no music" |
-| `sfx/elite_die.ogg` | Elite morre | 1,0 s | "large creature death roar cut short, heavy body fall and a burst of released light, no music" |
-| `sfx/champion_die.ogg` | Campeão do Éon morre (tela Desafio) | 1,4 s | "champion monster death: deep roar, crushing collapse, bright light release with a low bell toll, no music" |
-| `sfx/boss_appear.ogg` | Arconte / Rei / Colosso aparece (barra de chefe) | 1,8 s | "boss reveal stinger: low brass-like drone swell, deep impact, distant choir shimmer, ominous, short tail" |
-| `sfx/boss_phase2.ogg` | chefe entra na fase 2 (50 % de vida) | 1,4 s | "boss enrage: rising distorted roar with a cracking energy surge and a deep boom, no music" |
-| `sfx/boss_die.ogg` | Arconte cai | 2,0 s | "archon death: massive body fall, shattering stone, long exhale of light, low choir sigh, no music" |
-| `sfx/revive.ogg` | Sophia recomposta no checkpoint (a Voz / os cacos) | 1,8 s | "hero reassembled from light: reverse shimmer converging, soft heartbeat and a warm inhale, no music" |
-| `sfx/form_revive.ogg` | batalha final: a forma caída do Demiurgo se refaz | 1,6 s | "dark resurrection surge, deep inhale of power, ominous rebuild with bone clicks and low drone, no music" |
+Estrutura: ATAQUE → CORPO tonal na nota do Anel → CAUDA (reverb/brilho). Opção escolhida: `CHOICE` em `magic.py`.
 
-## 5. SFX — Projéteis, área, pedaços
+| Som | Nota | Timbre |
+|---|---|---|
+| `sfx/cast_solar.ogg` | Mi maior | fwump de luz + pad morno + faíscas de cristal subindo |
+| `sfx/cast_torpor.ogg` | Ré | sopro abafado, sinos de caixinha caindo de tom, coro 'u' bocejando |
+| `sfx/cast_fome.ogg` | Mi | sucção ressonante subindo → 2 mordidas mastigadas + rosnado 'a→o' |
+| `sfx/cast_corrente.ogg` | Fá | elos chacoalhando acelerados → cadeado de metal afinado + soco |
+| `sfx/cast_silencio.ogg` | Sol | inspiração + coro subindo e CORTE seco → baque surdo e zumbido de ouvido |
+| `sfx/cast_espelho.ogg` | Lá | cristal ao contrário (o reflexo) → cristal real do outro lado + eco pingue-pongue |
+| `sfx/cast_praga.ogg` | Si♭ | gosma em formante, bolhas que estouram, enxame miúdo, zumbido desafinado |
+| `sfx/cast_coroa.ogg` | Dó | estrondo + coro masculino grave 'o→a' + metal + sinos dourados |
+| `sfx/cast_fail.ogg` | — | chiado seco que desce e morre (sem sino) |
+| `sfx/proj_fire / proj_hit` | — | zip de luz / estouro brilhante + sino curto (3 variações cada) |
+| `sfx/nova.ogg` | — | baque + onda de ruído que se afasta e abre no estéreo + ping |
+| `sfx/spark.ogg` | Mi pent. | tilintar cristalino (fundamental + parcial de taça + 5ª), ataque de 4 ms, 5 alturas |
 
-| Arquivo | Quando toca | Alvo | Prompt |
-|---|---|---|---|
-| `sfx/proj_fire.ogg` | projétil de luz nasce (Sophia ou Arconte) | 0,3 s | "magic light bolt launch, quick bright zip, dry, no music" |
-| `sfx/proj_hit.ogg` | projétil acerta (atenuado pela distância) | 0,3 s | "magic bolt impact, small bright burst with a soft crackle, dry, no music" |
-| `sfx/nova.ogg` | nova de área com dano (Fúria, Queda Estelar, Anéis) | 0,7 s | "expanding ring of light shockwave, quick whoosh outward with a bright ping, short tail, no music" |
-| `sfx/gib_bounce.ogg` | primeiro quique de um pedaço desmembrado (rate-limit) | 0,15 s | "small wet chunk hitting stone floor, single short splat-thud, dry, no music" |
+## Catálogo (todos os arquivos)
 
-## 6. SFX — Objetos da tela
+Fonte: **S** = síntese própria · **P+S** = pack + camada sintetizada · **P** = pack CC0/CC-BY.
+Var = nº de arquivos (`nome`, `nome_2`...). M-max = loudness momentânea máx. do arquivo principal.
 
-| Arquivo | Quando toca | Alvo | Prompt |
-|---|---|---|---|
-| `sfx/chest_hit.ogg` | golpe no baú fechado | 0,3 s | "blade hitting an old wooden chest, dull wood knock with metal fittings rattle, short, dry" |
-| `sfx/chest_open.ogg` | baú abre e solta faíscas | 1,0 s | "treasure chest lid opening with a warm sparkle of light spilling out, short, no music" |
-| `sfx/sleeper_wake.ogg` | um Adormecido desperta (faísca acende) | 1,2 s | "a sleeping soul waking: soft gasp, gentle rising chime and warm light bloom, tender, no music" |
-| `sfx/seal_right.ogg` | Selo golpeado na ordem certa | 0,5 s | "stone glyph lighting up, soft resonant ping with a faint choir tone, short, no music" |
-| `sfx/seal_wrong.ogg` | Selo errado (puzzle reseta) | 0,5 s | "wrong-answer buzz: low stone grind with a harsh muted thud, negative, short, no music" |
-| `sfx/seal_solved.ogg` | os 3 Selos resolvidos (chuva de faíscas) | 1,4 s | "puzzle solved: ascending three-note crystalline chime with a warm light burst, no music" |
-| `sfx/portal_open.ogg` | fenda de saída aparece (tela limpa) | 1,4 s | "portal of light tearing open, rising shimmer with a soft sustained hum, ethereal, short tail" |
-| `sfx/portal_enter.ogg` | Sophia entra na fenda (troca de tela) | 1,0 s | "stepping through a light portal: quick whoosh inward with a soft bloom and fade, no music" |
-
-## 7. SFX — Estrutura do run (zonas, faíscas, Anéis, Estelas, legendas)
-
-| Arquivo | Quando toca | Alvo | Prompt |
-|---|---|---|---|
-| `sfx/zone_lock.ogg` | bolsão de combate trava (paredes sobem) | 0,9 s | "arena lock: heavy stone slabs slamming shut with a low rumble, short, no music" |
-| `sfx/zone_clear.ogg` | bolsão limpo (paredes descem) | 1,0 s | "zone cleared: stone barriers sinking with a soft resolving chime, short, no music" |
-| `sfx/level_clear.ogg` | tela limpa (antes do portal / loja) | 1,6 s | "screen cleared fanfare, short sacred two-chord swell with a distant bell, no drums, short tail" |
-| `sfx/spark.ogg` | faísca coletada (automático: aumento pequeno de faíscas) | 0,2 s | "tiny spark pickup, bright short glassy tick, dry, no music" |
-| `sfx/weapon_upgrade.ogg` | arma sobe de nível (automático) | 1,2 s | "weapon empowered: blade being forged in light, metallic ring rising into a bright chord, no music" |
-| `sfx/ring_gain.ogg` | Arconte cai → Anel se condensa (automático) | 1,6 s | "sacred ring forming: crystalline resonance ascending and locking into place, holy, short tail, no music" |
-| `sfx/ring_steal.ogg` | o roubo: o Rei leva os 7 Anéis (automático) | 2,5 s | "seven chimes ripped away in reverse one after another, hollow loss, dark whoosh, ends in silence, no music" |
-| `sfx/shard.ogg` | caco de memória devolve o poder de um Anel (automático) | 0,8 s | "small memory shard clicking into place, soft crystalline warm tone, brief, no music" |
-| `sfx/stele_open.ogg` | Estela lida (inscrição de lore) | 1,0 s | "ancient stone tablet awakening: low rumble with a soft glowing hum and a page-turn whisper, no music" |
-| `sfx/stele_unlock.ogg` | nova entrada nas Crônicas | 1,0 s | "chronicle unlocked: quill scratch on parchment followed by a gentle sacred chime, no music" |
-| `sfx/subtitle_tick.ogg` | legenda de caminhada aparece (discreto) | 0,12 s | "very soft UI tick, single quiet wooden click, dry, no music" |
-
-## 8. SFX — Loja e interface
-
-| Arquivo | Quando toca | Alvo | Prompt |
-|---|---|---|---|
-| `sfx/shop_buy.ogg` | compra na loja confirmada | 0,6 s | "purchase confirmed: sparks being absorbed with a warm soft chime, short, no music" |
-| `sfx/shop_fail.ogg` | compra sem faíscas suficientes | 0,4 s | "denied: dull low double-thud, muted, negative, dry, no music" |
-| `sfx/ui_click.ogg` | botão pressionado (todo botão `CodexStyle.button`; slider de opções) | 0,15 s | "soft UI click, subtle warm wooden tick, dry, no music" |
-| `sfx/ui_move.ogg` | foco/mouse muda de botão | 0,1 s | "very soft UI hover tick, tiny stone tap, dry, no music" |
-| `sfx/ui_advance.ogg` | avança uma fala no diálogo | 0,15 s | "dialogue advance: soft parchment flick, quiet and short, dry, no music" |
-| `sfx/ui_choice.ogg` | escolha feita num diálogo (Recusar/Ceder, finais) | 0,7 s | "decision made: single low resonant bell with a short shimmer, weighty, no music" |
-| `sfx/ui_confirm.ogg` | confirmação de menu (iniciar campanha, salvar opções) | 0,4 s | "menu confirm: warm two-note rising tick, soft, dry, no music" |
-| `sfx/ui_back.ogg` | voltar / cancelar num menu | 0,3 s | "menu back: soft descending tick, dry, no music" |
-
-> Os nomes antigos `sfx/ui.ogg` e `sfx/cast.ogg` **não** são mais necessários: o
-> autoload redireciona `ui` → `ui_click`, `cast` → `cast_solar`, `stela` →
-> `stele_open` e `caption` → `subtitle_tick` (nomes usados pela narrativa).
-
----
-
-## 9. Músicas (14)
-
-Todas **instrumentais**, **loopáveis** (comece e termine no mesmo acorde/pad,
-sem fade no arquivo — o jogo faz o crossfade de 1,2 s). Os Éons seguem a obra
-alquímica: **nigredo** (Torpor, Fome, Corrente — preto, pesado), **albedo**
-(Silêncio, Espelho — branco, esvaziado), **rubedo** (Praga, Coroa — vermelho,
-febril, falso ouro).
-
-| Arquivo | Onde toca | BPM | Duração | Prompt (Suno/Udio) |
+| Arquivo | Fonte | Var | M-max | Novo? |
 |---|---|---|---|---|
-| `music/theme.ogg` | menu principal | 60 | 2–3 min, loop | "melancholic gnostic ambient, distant choir pads, slow bowed strings, faint bells, hopeful yet grieving, no drums, instrumental, loopable" |
-| `music/rei.ogg` | O Limiar (tela do Rei — chefe-tutorial) | 70 | 2 min, loop | "regal but hollow theme, muted low brass, slow processional drum, cathedral bells, warm melody with a wrong note underneath, instrumental, loopable" |
-| `music/eon_torpor.ogg` | Éon 1 — Torpor (nigredo) | 52 | 2–3 min, loop | "sleep-fog ambient, sub drones, muffled distant lullaby on music box, slow breathing texture, heavy eyelids, no drums, instrumental, loopable" |
-| `music/eon_fome.ogg` | Éon 2 — Fome (nigredo) | 84 | 2–3 min, loop | "gnawing hunger, hollow tribal percussion, throbbing bass pulse, scraping strings, wet textures, restless, instrumental, loopable" |
-| `music/eon_corrente.ogg` | Éon 3 — Corrente (nigredo) | 92 | 2–3 min, loop | "iron law march, chain clanks as percussion, anvil hits, low organ pedal, rigid rhythm, oppressive order, instrumental, loopable" |
-| `music/eon_silencio.ogg` | Éon 4 — Silêncio (albedo) | 60 | 2–3 min, loop | "near-silence ambient, sparse glass harmonics, long pauses, breath and wind, single piano notes far away, white and empty, no drums, instrumental, loopable" |
-| `music/eon_espelho.ogg` | Éon 5 — Espelho (albedo) | 76 | 2–3 min, loop | "mirror world, reversed piano phrases answered by their forward twin, silver shimmer pads, doubled melodies slightly out of phase, uncanny, instrumental, loopable" |
-| `music/eon_praga.ogg` | Éon 6 — Praga (rubedo) | 100 | 2–3 min, loop | "rot and swarm, buzzing insect textures, detuned sick strings, feverish pulse, low choir moans, decaying beauty, instrumental, loopable" |
-| `music/eon_coroa.ogg` | Éon 7 — Coroa (rubedo) | 110 | 2–3 min, loop | "false gold majesty, grand brass and full choir that cracks at the edges, timpani, triumphant but hollow, cathedral scale, instrumental, loopable" |
-| `music/boss.ogg` | tela de Arconte (os 7) e Provação | 128 | 2–3 min, loop | "hybrid orchestral boss battle, driving taiko and low brass, aggressive choir stabs, sacred-horror, relentless, instrumental, loopable" |
-| `music/roubo.ogg` | o roubo dos Anéis (após o 7º Arconte cair; ligado por one-liner no Level) | 50 | 60–90 s, sem loop | "betrayal cue: the regal theme inverted and slowed, no drums, descending choir, bells detuning, collapsing into a low drone, instrumental" |
-| `music/centro.ogg` | O Centro (ecos dos Arcontes devolvem cacos) | 64 | 2–3 min, loop | "memory shards, glassy plucked harp, slow heartbeat pulse, intimate and inward, fragments of the seven eon themes echoing softly, instrumental, loopable" |
-| `music/mente.ogg` | A Mente — batalha dupla (Rei + Colosso) | 132 | 3 min, loop | "final battle, full choir and pipe organ over pounding drums, layered themes clashing, apocalyptic sacred, relentless, instrumental, loopable" |
-| `music/epilogo.ogg` | tela de fim (3 finais) | 58 | 2 min, loop | "dawn after the war, solo piano with warm choir pads, slow resolution, bittersweet peace, no drums, instrumental, loopable" |
+| `sfx/swing_light.ogg` | P | 3 | -18.6 |  |
+| `sfx/swing_heavy.ogg` | P | 3 | -18.4 |  |
+| `sfx/swing_air.ogg` | P | 1 | -18.0 |  |
+| `sfx/launcher.ogg` | P+S | 1 | -16.2 |  |
+| `sfx/dive.ogg` | P | 1 | -16.2 |  |
+| `sfx/hit.ogg` | P+S | 3 | -13.9 |  |
+| `sfx/hit_heavy.ogg` | P+S | 3 | -11.9 |  |
+| `sfx/parry.ogg` | P+S | 1 | -13.1 |  |
+| `sfx/block.ogg` | P | 3 | -13.7 |  |
+| `sfx/dodge.ogg` | P | 1 | -20.3 |  |
+| `sfx/dodge_perfect.ogg` | P | 1 | -13.9 |  |
+| `sfx/jump.ogg` | P | 1 | -20.0 |  |
+| `sfx/land.ogg` | P | 2 | -20.0 |  |
+| `sfx/step.ogg` | P | 3 | -24.2 |  |
+| `sfx/rooted.ogg` | P | 1 | -13.0 |  |
+| `sfx/player_hurt.ogg` | P | 1 | -15.2 |  |
+| `sfx/player_die.ogg` | P | 1 | -13.0 |  |
+| `sfx/step_heavy.ogg` | P+S | 3 | -22.0 | novo |
+| `sfx/cloth.ogg` | P | 3 | -26.0 | novo |
+| `sfx/boss_step.ogg` | P+S | 3 | -14.2 | novo |
+| `sfx/cast_solar.ogg` | S | 1 | -13.0 |  |
+| `sfx/cast_torpor.ogg` | S | 1 | -13.0 |  |
+| `sfx/cast_fome.ogg` | S | 1 | -13.2 |  |
+| `sfx/cast_corrente.ogg` | S | 1 | -13.0 |  |
+| `sfx/cast_silencio.ogg` | S | 1 | -13.0 |  |
+| `sfx/cast_espelho.ogg` | S | 1 | -13.3 |  |
+| `sfx/cast_praga.ogg` | S | 1 | -13.0 |  |
+| `sfx/cast_coroa.ogg` | S | 1 | -11.0 |  |
+| `sfx/cast_fail.ogg` | S | 1 | -20.0 |  |
+| `sfx/enemy_hurt.ogg` | P | 3 | -17.0 |  |
+| `sfx/enemy_die.ogg` | P | 1 | -15.0 |  |
+| `sfx/elite_die.ogg` | P | 1 | -13.0 |  |
+| `sfx/champion_die.ogg` | P | 1 | -12.0 |  |
+| `sfx/boss_appear.ogg` | P+S | 1 | -10.2 |  |
+| `sfx/boss_phase2.ogg` | P+S | 1 | -10.0 |  |
+| `sfx/boss_die.ogg` | P+S | 1 | -10.3 |  |
+| `sfx/revive.ogg` | P | 1 | -14.0 |  |
+| `sfx/form_revive.ogg` | P | 1 | -14.0 |  |
+| `sfx/proj_fire.ogg` | S | 3 | -18.0 |  |
+| `sfx/proj_hit.ogg` | S | 3 | -16.8 |  |
+| `sfx/nova.ogg` | S | 1 | -12.2 |  |
+| `sfx/gib_bounce.ogg` | P | 1 | -26.2 |  |
+| `sfx/chest_hit.ogg` | P | 2 | -18.1 |  |
+| `sfx/chest_open.ogg` | P | 1 | -16.3 |  |
+| `sfx/sleeper_wake.ogg` | P | 1 | -14.0 |  |
+| `sfx/seal_right.ogg` | P | 1 | -16.0 |  |
+| `sfx/seal_wrong.ogg` | P | 1 | -21.7 |  |
+| `sfx/seal_solved.ogg` | P | 1 | -14.0 |  |
+| `sfx/portal_open.ogg` | P | 1 | -14.0 |  |
+| `sfx/portal_enter.ogg` | P | 1 | -14.0 |  |
+| `sfx/zone_lock.ogg` | P | 1 | -15.1 |  |
+| `sfx/zone_clear.ogg` | P | 1 | -15.2 |  |
+| `sfx/level_clear.ogg` | P+S | 1 | -13.2 |  |
+| `sfx/spark.ogg` | S | 5 | -25.0 |  |
+| `sfx/weapon_upgrade.ogg` | P | 1 | -13.0 |  |
+| `sfx/ring_gain.ogg` | P+S | 1 | -13.0 |  |
+| `sfx/ring_steal.ogg` | P | 1 | -13.0 |  |
+| `sfx/shard.ogg` | P | 1 | -20.9 |  |
+| `sfx/stele_open.ogg` | P | 1 | -18.8 |  |
+| `sfx/stele_unlock.ogg` | P | 1 | -18.0 |  |
+| `sfx/subtitle_tick.ogg` | P | 1 | -30.0 |  |
+| `sfx/shop_buy.ogg` | P | 1 | -18.3 |  |
+| `sfx/shop_fail.ogg` | P | 1 | -22.0 |  |
+| `sfx/ui_click.ogg` | P | 1 | -27.5 |  |
+| `sfx/ui_move.ogg` | P | 1 | -27.8 |  |
+| `sfx/ui_advance.ogg` | P | 1 | -22.0 |  |
+| `sfx/ui_choice.ogg` | P | 1 | -18.0 |  |
+| `sfx/ui_confirm.ogg` | P | 1 | -22.0 |  |
+| `sfx/ui_back.ogg` | P | 1 | -24.4 |  |
+| `sfx/ui_open.ogg` | S | 1 | -22.0 | novo |
+| `sfx/blip_voz.ogg` | S | 4 | -25.0 | novo |
+| `sfx/blip_rei.ogg` | S | 4 | -25.0 | novo |
+| `sfx/blip_sophia.ogg` | S | 4 | -25.0 | novo |
+| `sfx/blip_estela.ogg` | S | 4 | -25.0 | novo |
+| `sfx/blip_npc.ogg` | S | 4 | -25.0 | novo |
+| `sfx/fog_swell.ogg` | S | 1 | -17.0 | novo |
+| `sfx/king_step.ogg` | P+S | 3 | -15.0 | novo |
+| `sfx/mask_light.ogg` | S | 1 | -17.0 | novo |
+| `sfx/voice_merge.ogg` | S | 1 | -15.0 | novo |
+| `sfx/whisper.ogg` | S | 1 | -21.0 | novo |
 
-Regra de seleção (automática, no `audio_manager.gd`): menu → `theme` · tela do
-Rei → `rei` · Éon *i* → `eon_<nome>` · tela de Arconte → `boss` · Centro →
-`centro` · Mente → `mente`. `roubo` e `epilogo` são ligados por one-liner
-(`Audio.play_music("roubo")` no `level.gd` após o 7º Arconte cair;
-`Audio.play_music("epilogo")` no `end_screen.gd`). Se um arquivo não existir, a
-faixa anterior continua.
+| Música | Faixa (Kevin MacLeod) | Loop (s) | Alvo LUFS |
+|---|---|---|---|
+| `music/theme.ogg` | Gregorian Chant | 6.97 → 173.69 | -16.0 |
+| `music/rei.ogg` | Lord of the Land | 12.77 → 102.77 | -20.4 |
+| `music/eon_torpor.ogg` | Ossuary 1 - A Beginning | 2.09 → 112.97 | -16.0 |
+| `music/eon_fome.ogg` | Ritual | 39.47 → 214.94 | -16.0 |
+| `music/eon_corrente.ogg` | Oppressive Gloom | 7.43 → 170.14 | -16.0 |
+| `music/eon_silencio.ogg` | Ossuary 5 - Rest | 11.38 → 183.92 | -17.5 |
+| `music/eon_espelho.ogg` | Ossuary 6 - Air | 38.08 → 227.12 | -16.0 |
+| `music/eon_praga.ogg` | Unseen Horrors | 0.23 → 234.02 | -16.1 |
+| `music/eon_coroa.ogg` | Crossing the Chasm | 3.25 → 166.45 | -16.0 |
+| `music/boss.ogg` | Volatile Reaction | 29.72 → 132.69 | -16.0 |
+| `music/roubo.ogg` | Anguish | sem loop | -19.4 |
+| `music/centro.ogg` | Echoes of Time | 3.25 → 260.71 | -16.0 |
+| `music/mente.ogg` | Night of Chaos | 5.34 → 126.87 | -16.0 |
+| `music/epilogo.ogg` | Bittersweet | 13.0 → 112.0 | -16.0 |
 
----
+| Ambiência | Onde | Caráter |
+|---|---|---|
+| `amb/amb_torpor.ogg` | Éon 1 | sub que respira, sopro, caixinha de música abafada, coro 'u' |
+| `amb/amb_fome.ogg` | Éon 2 | pulso lub-dub, vento em osso, 2ª menor grave, roer |
+| `amb/amb_corrente.ogg` | Éon 3 | pedal de órgão, bigorna/elos a cada 4 s, vento de masmorra |
+| `amb/amb_silencio.ogg` | Éon 4 | ar branco, harmônicos de vidro, sino muito longe |
+| `amb/amb_espelho.ogg` | Éon 5 | pad prateado + gêmeo desafinado, sinos ao contrário respondidos do outro lado |
+| `amb/amb_praga.ogg` | Éon 6 | enxame, drone doente, gemidos de coro 'o' |
+| `amb/amb_coroa.ogg` | Éon 7 | coro em Ré maior com nota rachada, metal grave, sinos de catedral |
+| `amb/amb_limiar.ogg` | tela do Rei | salão oco, sino que dobra a cada 16 s |
+| `amb/amb_centro.ogg` | O Centro | coração lento, harpa de vidro com 7 notas (uma por Éon) |
 
-## 10. Export (o que entregar)
+## Loudness antes → depois (medido com `measure.py`)
 
-- Formato: **.ogg Vorbis**, 44,1 kHz, mono pros SFX (estéreo só se o efeito
-  tiver largura de verdade), estéreo pras músicas. Qualidade q5–q6 (~160 kb/s).
-- Loudness: músicas em **≈ -14 LUFS integrado**, pico ≤ -1 dBTP. SFX
-  normalizados com pico em **-3 dBFS** (curtos) — o jogo já dá -6 dB nos passos.
-- Corte o silêncio do começo (o ataque do som tem que estar no zero) e deixe no
-  máximo 100–200 ms de cauda nos SFX curtos.
-- Música: exporte o loop **sem fade** e confira que o fim emenda no começo.
-- Ferramenta grátis pra converter/normalizar: Audacity (Efeito → Loudness
-  Normalization; Exportar → OGG). Não precisa reiniciar nada: solte na pasta e
-  rode o jogo.
+I = integrado (LUFS) · M = M-max · TP = true peak (dBTP) · emenda = degrau de nível na volta do loop (dB).
 
-## 11. Como testar (checklist)
+| Arquivo | I antes | I depois | M antes | M depois | TP antes | TP depois | emenda antes | emenda depois |
+|---|---|---|---|---|---|---|---|---|
+| amb/amb_centro.ogg | — | -28.0 | — | -25.2 | — | -13.0 |  | 2.4 |
+| amb/amb_coroa.ogg | — | -28.0 | — | -25.2 | — | -16.3 |  | -0.4 |
+| amb/amb_corrente.ogg | — | -28.0 | — | -26.0 | — | -15.0 |  | 0.9 |
+| amb/amb_espelho.ogg | — | -28.0 | — | -24.8 | — | -16.0 |  | -4.2 |
+| amb/amb_fome.ogg | — | -28.1 | — | -26.6 | — | -14.5 |  | 0.7 |
+| amb/amb_limiar.ogg | — | -28.1 | — | -25.9 | — | -17.3 |  | -3.2 |
+| amb/amb_praga.ogg | — | -28.1 | — | -27.3 | — | -14.8 |  | -0.0 |
+| amb/amb_silencio.ogg | — | -31.1 | — | -27.0 | — | -19.4 |  | 1.0 |
+| amb/amb_torpor.ogg | — | -28.0 | — | -25.8 | — | -15.2 |  | -0.1 |
+| music/boss.ogg | -8.0 | -16.0 | -3.0 | -10.6 | 1.7 | -5.8 | 39.9 | 3.7 |
+| music/centro.ogg | -15.4 | -16.0 | -7.7 | -8.5 | -0.2 | -1.4 | 19.5 | 0.6 |
+| music/eon_coroa.ogg | -12.9 | -16.1 | -7.6 | -10.8 | 0.7 | -2.5 | 34.5 | -0.6 |
+| music/eon_corrente.ogg | -17.4 | -16.1 | -11.3 | -10.6 | -1.7 | -1.2 | 29.1 | 1.5 |
+| music/eon_espelho.ogg | -22.5 | -16.0 | -14.5 | -9.0 | -6.5 | -1.4 | 6.3 | -6.2 |
+| music/eon_fome.ogg | -17.3 | -16.0 | -10.0 | -9.1 | 0.2 | -1.3 | -2.4 | -3.2 |
+| music/eon_praga.ogg | -27.1 | -16.2 | -17.7 | -8.9 | -8.3 | -0.3 | 5.4 | -0.3 |
+| music/eon_silencio.ogg | -18.1 | -17.5 | -12.6 | -12.0 | -2.6 | -1.8 | 27.2 | 1.6 |
+| music/eon_torpor.ogg | -19.9 | -16.0 | -11.5 | -9.1 | -3.8 | -1.4 | 25.4 | -3.0 |
+| music/epilogo.ogg | -16.3 | -16.0 | -11.0 | -10.6 | -2.6 | -2.3 | 5.7 | -2.9 |
+| music/mente.ogg | -24.1 | -16.0 | -16.9 | -9.9 | -8.2 | -1.5 | 5.9 | -0.1 |
+| music/rei.ogg | -24.1 | -20.5 | -18.1 | -14.7 | -2.2 | -1.3 | 31.6 | 3.3 |
+| music/roubo.ogg | -22.5 | -19.4 | -11.9 | -9.2 | -1.6 | -1.3 | 16.0 | 32.4 |
+| music/theme.ogg | -15.9 | -16.0 | -10.4 | -10.7 | -1.7 | -1.7 | -2.6 | 4.8 |
+| sfx/blip_estela.ogg | — | -25.0 | — | -25.0 | — | -6.5 |  |  |
+| sfx/blip_npc.ogg | — | -24.9 | — | -24.9 | — | -10.6 |  |  |
+| sfx/blip_rei.ogg | — | -25.0 | — | -25.0 | — | -11.1 |  |  |
+| sfx/blip_sophia.ogg | — | -25.0 | — | -25.0 | — | -8.9 |  |  |
+| sfx/blip_voz.ogg | — | -24.9 | — | -24.9 | — | -12.5 |  |  |
+| sfx/block.ogg | -18.0 | -13.7 | -18.0 | -13.7 | -2.9 | -0.9 |  |  |
+| sfx/boss_appear.ogg | -15.8 | -13.2 | -13.6 | -10.2 | -2.8 | -0.7 |  |  |
+| sfx/boss_die.ogg | -16.2 | -15.2 | -13.4 | -10.3 | -3.3 | -0.9 |  |  |
+| sfx/boss_phase2.ogg | -12.5 | -12.8 | -11.8 | -10.0 | -3.1 | -0.7 |  |  |
+| sfx/boss_step.ogg | — | -19.1 | — | -14.2 | — | -0.9 |  |  |
+| sfx/cast_coroa.ogg | -18.4 | -15.8 | -14.5 | -11.0 | -2.8 | -1.4 |  |  |
+| sfx/cast_corrente.ogg | -13.4 | -15.8 | -13.4 | -13.0 | -2.5 | -2.2 |  |  |
+| sfx/cast_espelho.ogg | -10.6 | -16.5 | -9.7 | -13.3 | -2.7 | -0.9 |  |  |
+| sfx/cast_fail.ogg | -17.6 | -20.0 | -17.6 | -20.0 | -2.6 | -8.7 |  |  |
+| sfx/cast_fome.ogg | -19.1 | -15.0 | -16.9 | -13.2 | -3.2 | -0.8 |  |  |
+| sfx/cast_praga.ogg | -19.7 | -16.6 | -17.9 | -13.0 | -2.8 | -1.4 |  |  |
+| sfx/cast_silencio.ogg | -19.9 | -15.8 | -14.4 | -13.1 | -3.2 | -0.7 |  |  |
+| sfx/cast_solar.ogg | -13.2 | -17.4 | -11.6 | -13.0 | -3.1 | -2.0 |  |  |
+| sfx/cast_torpor.ogg | -19.5 | -15.7 | -16.0 | -13.0 | -3.1 | -3.7 |  |  |
+| sfx/champion_die.ogg | -13.4 | -13.2 | -12.2 | -12.0 | -3.1 | -2.9 |  |  |
+| sfx/chest_hit.ogg | -26.1 | -18.1 | -26.1 | -18.1 | -9.3 | -1.0 |  |  |
+| sfx/chest_open.ogg | -24.1 | -16.4 | -21.1 | -16.4 | -3.0 | -1.0 |  |  |
+| sfx/cloth.ogg | — | -26.1 | — | -26.1 | — | -8.6 |  |  |
+| sfx/dive.ogg | -19.5 | -16.4 | -19.5 | -16.4 | -3.5 | -1.1 |  |  |
+| sfx/dodge.ogg | -23.2 | -20.3 | -23.2 | -20.3 | -3.7 | -1.0 |  |  |
+| sfx/dodge_perfect.ogg | -21.4 | -17.2 | -21.2 | -14.0 | -2.7 | -1.0 |  |  |
+| sfx/elite_die.ogg | -15.5 | -15.2 | -13.2 | -13.0 | -3.0 | -2.7 |  |  |
+| sfx/enemy_die.ogg | -16.4 | -15.6 | -15.0 | -15.0 | -3.0 | -2.8 |  |  |
+| sfx/enemy_hurt.ogg | -18.0 | -17.3 | -18.0 | -17.3 | -2.2 | -3.1 |  |  |
+| sfx/fog_swell.ogg | — | -20.7 | — | -17.0 | — | -6.1 |  |  |
+| sfx/form_revive.ogg | -9.1 | -14.7 | -8.5 | -14.2 | -2.1 | -8.7 |  |  |
+| sfx/gib_bounce.ogg | -28.3 | -26.2 | -28.3 | -26.2 | -2.9 | -0.9 |  |  |
+| sfx/hit.ogg | -18.6 | -14.0 | -18.6 | -14.0 | -3.0 | -0.7 |  |  |
+| sfx/hit_heavy.ogg | -16.0 | -11.9 | -16.0 | -11.9 | -2.2 | -0.6 |  |  |
+| sfx/jump.ogg | -20.0 | -20.1 | -20.0 | -20.1 | -3.5 | -3.3 |  |  |
+| sfx/king_step.ogg | — | -19.6 | — | -15.0 | — | -2.0 |  |  |
+| sfx/land.ogg | -21.6 | -20.0 | -21.6 | -20.0 | -3.0 | -1.6 |  |  |
+| sfx/launcher.ogg | -22.1 | -16.4 | -22.1 | -16.4 | -3.0 | -1.2 |  |  |
+| sfx/level_clear.ogg | -24.8 | -18.6 | -20.2 | -13.3 | -3.5 | -0.9 |  |  |
+| sfx/mask_light.ogg | — | -21.0 | — | -17.0 | — | -8.8 |  |  |
+| sfx/nova.ogg | -15.7 | -16.3 | -13.9 | -12.3 | -3.0 | -0.4 |  |  |
+| sfx/parry.ogg | -21.6 | -15.8 | -19.2 | -13.1 | -7.1 | -0.9 |  |  |
+| sfx/player_die.ogg | -16.7 | -16.7 | -13.1 | -13.1 | -3.4 | -3.6 |  |  |
+| sfx/player_hurt.ogg | -18.3 | -15.5 | -18.3 | -15.5 | -2.5 | -1.0 |  |  |
+| sfx/portal_enter.ogg | -14.2 | -15.4 | -12.5 | -14.0 | -2.9 | -4.7 |  |  |
+| sfx/portal_open.ogg | -13.9 | -17.8 | -10.0 | -14.0 | -2.7 | -6.9 |  |  |
+| sfx/proj_fire.ogg | -12.5 | -18.2 | -12.5 | -18.2 | -2.8 | -4.3 |  |  |
+| sfx/proj_hit.ogg | -13.3 | -16.9 | -13.3 | -16.9 | -2.4 | -0.7 |  |  |
+| sfx/revive.ogg | -11.5 | -16.7 | -8.8 | -14.0 | -2.8 | -8.0 |  |  |
+| sfx/ring_gain.ogg | -18.8 | -16.4 | -15.0 | -13.0 | -3.1 | -2.6 |  |  |
+| sfx/ring_steal.ogg | -13.3 | -14.9 | -11.3 | -13.0 | -2.6 | -4.0 |  |  |
+| sfx/rooted.ogg | -14.4 | -13.2 | -14.4 | -13.2 | -2.0 | -1.7 |  |  |
+| sfx/seal_right.ogg | -19.4 | -19.2 | -16.4 | -16.0 | -2.2 | -2.0 |  |  |
+| sfx/seal_solved.ogg | -18.2 | -16.8 | -15.4 | -14.1 | -3.1 | -1.4 |  |  |
+| sfx/seal_wrong.ogg | -27.0 | -21.9 | -27.0 | -21.9 | -3.7 | -1.2 |  |  |
+| sfx/shard.ogg | -27.1 | -21.2 | -27.1 | -21.2 | -3.8 | -1.1 |  |  |
+| sfx/shop_buy.ogg | -23.5 | -19.3 | -22.1 | -18.5 | -3.4 | -1.5 |  |  |
+| sfx/shop_fail.ogg | -20.0 | -22.0 | -20.0 | -22.0 | -3.0 | -5.2 |  |  |
+| sfx/sleeper_wake.ogg | -11.2 | -16.0 | -9.2 | -14.0 | -2.9 | -7.5 |  |  |
+| sfx/spark.ogg | -24.0 | -25.0 | -24.0 | -25.0 | -3.4 | -10.8 |  |  |
+| sfx/stele_open.ogg | -27.5 | -22.0 | -23.6 | -19.0 | -3.9 | -1.0 |  |  |
+| sfx/stele_unlock.ogg | -17.4 | -19.7 | -15.3 | -18.0 | -3.2 | -5.4 |  |  |
+| sfx/step.ogg | -38.4 | -24.3 | -38.4 | -24.3 | -17.1 | -1.0 |  |  |
+| sfx/step_heavy.ogg | — | -22.0 | — | -22.0 | — | -2.8 |  |  |
+| sfx/subtitle_tick.ogg | -29.1 | -30.3 | -29.1 | -30.3 | -11.1 | -13.7 |  |  |
+| sfx/swing_air.ogg | -21.1 | -18.0 | -18.7 | -18.0 | -3.3 | -2.6 |  |  |
+| sfx/swing_heavy.ogg | -23.4 | -18.5 | -23.4 | -18.5 | -3.0 | -1.2 |  |  |
+| sfx/swing_light.ogg | -22.9 | -18.6 | -22.9 | -18.6 | -3.1 | -0.8 |  |  |
+| sfx/ui_advance.ogg | -20.6 | -22.1 | -20.6 | -22.1 | -3.0 | -5.5 |  |  |
+| sfx/ui_back.ogg | -28.8 | -24.7 | -28.8 | -24.7 | -2.7 | -1.1 |  |  |
+| sfx/ui_choice.ogg | -21.4 | -21.3 | -18.2 | -18.0 | -6.5 | -5.9 |  |  |
+| sfx/ui_click.ogg | -38.3 | -27.9 | -38.3 | -27.9 | -14.2 | -1.1 |  |  |
+| sfx/ui_confirm.ogg | -12.6 | -22.0 | -12.6 | -22.0 | -3.2 | -12.4 |  |  |
+| sfx/ui_move.ogg | -36.5 | -28.1 | -36.5 | -28.1 | -9.5 | -1.5 |  |  |
+| sfx/ui_open.ogg | — | -22.0 | — | -22.0 | — | -11.1 |  |  |
+| sfx/voice_merge.ogg | — | -16.8 | — | -15.0 | — | -5.4 |  |  |
+| sfx/weapon_upgrade.ogg | -14.0 | -15.7 | -11.4 | -13.0 | -3.1 | -4.6 |  |  |
+| sfx/whisper.ogg | — | -24.2 | — | -21.3 | — | -8.2 |  |  |
+| sfx/zone_clear.ogg | -23.2 | -20.1 | -18.0 | -15.2 | -2.7 | -0.7 |  |  |
+| sfx/zone_lock.ogg | -19.5 | -16.6 | -18.3 | -15.2 | -3.0 | -1.3 |  |  |
 
-1. `& $godot --headless --path . "res://tools/AudioQA.tscn" --quit-after 300`
-   → esperado `AUDIO QA: 0 falhas`. Ele confere: (a) todo nome do catálogo está
-   neste documento; (b) nenhum arquivo órfão na pasta (nome errado = o jogo nunca
-   toca); (c) tocar nome inexistente não dá erro; (d) crossfade/stop sem arquivo
-   não dá erro; (e) toda tela do run tem faixa do catálogo; (f) toda chamada
-   `play_sfx("…")` no código usa nome do catálogo.
-2. `& $godot --headless --path . "res://tools/CodexPlaytest.tscn" --quit-after 400`
-   → o bot joga com inputs reais; se um gancho quebrou o combate, ele acusa.
-3. Abra o jogo (`Jogar GNOSIS`) e passe pelo roteiro: menu (tema + cliques) →
-   Nova campanha → tela do Rei (`rei`, `boss_appear`) → andar (passos), pular
-   (`jump`/`land`), golpes leve/pesado, Esfera Solar (`cast_solar`) → tomar dano,
-   bloquear, parry → matar o Rei (`boss_die`) → Éon 1 (`eon_torpor`), baú, portal.
-4. Opções → sliders: a música responde ao "Música", os cliques ao "SFX".
-5. Se um som ficar alto/baixo demais, me diga o nome: o volume por som é
-   ajustado no código (`play_sfx(nome, pitch, volume_db)`), sem regerar.
+(Variações `_2`, `_3` omitidas da tabela; estão no `tools/audio_synth/sfx_report.json`.)
+

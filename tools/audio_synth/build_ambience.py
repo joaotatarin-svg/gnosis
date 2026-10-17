@@ -33,6 +33,24 @@ TARGET = -28.0
 TARGET_OVERRIDE = {"silencio": -31.0}
 
 
+def _circ(fn, x, *a):
+	"""Filtro IIR aplicado de forma CIRCULAR num sinal do tamanho do loop: aquece
+	o estado com os últimos 3 s (o que vem antes do começo, no loop) — sem
+	degrau na emenda. Em eventos curtos, filtro normal."""
+	if len(x) != N:
+		return fn(x, *a)
+	w = 3 * SR
+	return fn(np.concatenate([x[-w:], x]), *a)[w:]
+
+
+def clp(x, fc):
+	return _circ(C.lp, x, fc)
+
+
+def cbp(x, lo, hi):
+	return _circ(C.bp, x, lo, hi)
+
+
 def pf(f):
 	return C.periodic_freq(f, L)
 
@@ -50,16 +68,18 @@ def sine(f, phase=0.0):
 	return np.sin(2 * np.pi * pf(f) * T + phase)
 
 
-def drone(f, nh=12, tilt=1.4, beat=0.0):
-	"""Drone aditivo (harmônicos 1/k^tilt); beat = Hz de batimento (2ª cópia)."""
+def drone(f, nh=12, tilt=1.4, beat=0.0, seed=0):
+	"""Drone aditivo (harmônicos 1/k^tilt, fases aleatórias); beat = Hz de
+	batimento (2ª cópia)."""
 	f = pf(f)
+	r = C.rng(1000 + seed + int(f))
 	out = np.zeros(N)
 	for k in range(1, nh + 1):
 		if f * k > SR * 0.4:
 			break
-		out += np.sin(2 * np.pi * f * k * T) / k ** tilt
+		out += np.sin(2 * np.pi * f * k * T + r.uniform(0, 6.28)) / k ** tilt
 		if beat:
-			out += np.sin(2 * np.pi * pf(f * k + beat) * T + 1.0) / k ** tilt
+			out += np.sin(2 * np.pi * pf(f * k + beat) * T + r.uniform(0, 6.28)) / k ** tilt
 	return out
 
 
@@ -72,6 +92,9 @@ def choir_pad(notes, vowel="a", seed=0, shift=1.0, breath=0.1, voices=2, vib_dep
 			f0 = pf(note(m) * (1 + r.uniform(-0.003, 0.003)))
 			vr = pf(r.uniform(4.5, 5.8))
 			x = C.voice(f0, N, vowel, shift=shift, breath=0.0, seed=seed + i * 7 + v, nh=30, vib=(vr, vib_depth))
+			# fase inicial aleatória (rotação circular): sem isso todas as vozes
+			# "batem" juntas em t=0 e o ponto do loop vira um tique audível
+			x = np.roll(x, int(r.integers(N)))
 			out += C.pan(x, r.uniform(-0.8, 0.8))
 	if breath > 0:   # sopro: ruído periódico moldado pela vogal
 		w = C.noise(N, seed + 500, stereo=True)
@@ -152,13 +175,13 @@ def amb_torpor():
 	"""Névoa do sono: sub grave que respira, sopro lento, caixinha de música
 	abafada ao longe, coro em 'u' quase dormindo."""
 	breath_e = (0.5 - 0.5 * np.cos(2 * np.pi * pf(1 / 8.0) * T)) ** 2
-	sub = (sine(41.2) * 0.9 + C.lp(drone(82.4, 8, 1.6), 300) * 0.5) * (0.65 + 0.35 * breath_e)
+	sub = (sine(41.2) * 0.9 + clp(drone(82.4, 8, 1.6), 300) * 0.5) * (0.65 + 0.35 * breath_e)
 	breath = C.band_noise(N, 11, 200, 900, stereo=True) * (0.15 + 0.85 * breath_e)[:, None]
 	hum = choir_pad([40, 47], "u", seed=12, shift=0.9, breath=0.4, voices=2)
 	box = np.zeros((N, 2))
 	r = C.rng(13)
 	for i, m in enumerate([76, 79, 83, 86, 79, 74]):
-		b = C.lp(C.bell(note(m), 2.5, 0.9, seed=14 + i, bright=0.2), 1300)
+		b = clp(C.bell(note(m), 2.5, 0.9, seed=14 + i, bright=0.2), 1300)
 		place_wrap(box, C.pan(b, r.uniform(-0.6, 0.6)), 3.0 + i * 7.6 + r.uniform(-1, 1))
 	mix = st(sub) * 0.5 + breath * 0.18 + hum * 0.9 + box * 0.12
 	return C.reverb_circular(mix, rt60=4.0, wet=0.35, seed=21, lp_hz=3500)
@@ -175,14 +198,14 @@ def amb_fome():
 		place_wrap(beat, thud(55, 34, 0.35, 0.08, seed=i) * a, i * period)
 		place_wrap(beat, thud(48, 30, 0.35, 0.07, seed=i + 60) * a * 0.6, i * period + 0.22)
 	bone = resonant_noise(32, [(310, 18, 0), (470, 22, -3), (820, 25, -8)]) * (0.4 + 0.6 * lfo(1 / 12.0))[:, None]
-	grind = C.lp(drone(note(36), 10, 1.0) + drone(note(37), 10, 1.0), 450) * 0.25
+	grind = clp(drone(note(36), 10, 1.0) + drone(note(37), 10, 1.0), 450) * 0.25
 	gnaw = np.zeros((N, 2))
 	for i in range(9):
 		n = int(r.uniform(0.25, 0.6) * SR)
 		t = C.tvec(n)
-		g = C.bp(C.noise(n, 40 + i), 1200, 5000) * (r.random(n) < 0.03) * np.sin(np.pi * t / t[-1])
-		place_wrap(gnaw, C.pan(C.lp(g, 6000), r.uniform(-0.9, 0.9)), r.uniform(0, L))
-	mix = st(C.lp(beat, 200)) * 0.55 + bone * 0.05 + st(grind) * 0.45 + gnaw * 0.6
+		g = cbp(C.noise(n, 40 + i), 1200, 5000) * (r.random(n) < 0.03) * np.sin(np.pi * t / t[-1])
+		place_wrap(gnaw, C.pan(clp(g, 6000), r.uniform(-0.9, 0.9)), r.uniform(0, L))
+	mix = st(clp(beat, 200)) * 0.55 + bone * 0.05 + st(grind) * 0.45 + gnaw * 0.6
 	return C.reverb_circular(mix, rt60=2.5, wet=0.3, seed=22, lp_hz=5000)
 
 
@@ -190,12 +213,12 @@ def amb_corrente():
 	"""Corrente da Lei: pedal de órgão, bigorna e elos de ferro ao longe em
 	compasso rígido (a cada 4 s), vento baixo de masmorra."""
 	organ = (drone(note(24), 16, 0.9) * 0.6 + drone(note(36), 12, 1.1) * 0.4 + drone(note(43), 10, 1.3) * 0.25)
-	organ = C.lp(organ, 900) * (0.7 + 0.3 * lfo(1 / 16.0))
+	organ = clp(organ, 900) * (0.7 + 0.3 * lfo(1 / 16.0))
 	clank = np.zeros((N, 2))
 	r = C.rng(41)
 	for i in range(12):
 		f = 210 if i % 2 == 0 else 315
-		c = C.lp(C.metal_clang(f, 2.0, seed=42 + i, decay=0.8), 3500)
+		c = clp(C.metal_clang(f, 2.0, seed=42 + i, decay=0.8), 3500)
 		place_wrap(clank, C.pan(c, -0.4 if i % 2 == 0 else 0.4), i * 4.0, -2 if i % 4 == 0 else -6)
 		if i % 3 == 1:     # chocalho de elos
 			for k in range(4):
@@ -215,7 +238,7 @@ def amb_silencio():
 		glass += C.pan(sine(f, i) * e, [-0.7, 0.5, -0.2, 0.8, 0.0][i])
 	far = np.zeros((N, 2))
 	for i, at in enumerate([5.0, 21.0, 37.0]):
-		far = place_wrap(far, C.pan(C.lp(C.bell(note(69 + [0, 7, -5][i]), 5.0, 2.5, seed=52 + i, bright=0.3), 2500), (-0.5, 0.4, 0.0)[i]), at)
+		far = place_wrap(far, C.pan(clp(C.bell(note(69 + [0, 7, -5][i]), 5.0, 2.5, seed=52 + i, bright=0.3), 2500), (-0.5, 0.4, 0.0)[i]), at)
 	mix = air * 0.08 + glass * 0.012 + far * 0.06
 	return C.reverb_circular(mix, rt60=6.0, wet=0.5, seed=24, lp_hz=8000)
 
@@ -250,13 +273,14 @@ def amb_praga():
 		f = pf(r.uniform(140, 300))
 		wob = 1 + 0.02 * np.sin(2 * np.pi * pf(r.uniform(0.2, 1.0)) * T + r.uniform(0, 6))
 		x = C.saw_bl(f * wob, N, 20) * (0.5 + 0.5 * np.sin(2 * np.pi * pf(r.uniform(30, 55)) * T))
+		x = np.roll(x, int(r.integers(N)))       # fases espalhadas (sem tique no loop)
 		amp = lfo(1 / r.choice([6.0, 8.0, 12.0, 16.0]), r.uniform(0, 6)) ** 3
 		p = np.sin(2 * np.pi * pf(1 / r.choice([12.0, 16.0, 24.0])) * T + r.uniform(0, 6)) * 0.8
 		a = (p + 1) * np.pi / 4
 		swarm[:, 0] += x * amp * np.cos(a)
 		swarm[:, 1] += x * amp * np.sin(a)
-	swarm = C.bp(swarm, 300, 3500) / 8
-	sick = C.lp(drone(55.0, 8, 1.2, beat=3.3), 500) * 0.4
+	swarm = cbp(swarm, 300, 3500) / 8
+	sick = clp(drone(55.0, 8, 1.2, beat=3.3), 500) * 0.4
 	moan = choir_pad([45, 46, 52], "o", seed=72, shift=0.85, breath=0.3, voices=2, vib_depth=0.012) * (0.4 + 0.6 * lfo(1 / 16.0))[:, None]
 	mix = swarm * 0.5 + st(sick) * 0.35 + moan * 0.8
 	return C.reverb_circular(mix, rt60=3.0, wet=0.35, seed=26, lp_hz=5000)
@@ -267,7 +291,7 @@ def amb_coroa():
 	errada por baixo, metal grave, sinos de catedral ao longe."""
 	ch = choir_pad([50, 57, 62, 66, 69], "a", seed=81, shift=1.0, breath=0.15, voices=2) * (0.55 + 0.45 * lfo(1 / 24.0))[:, None]
 	crack = choir_pad([68], "a", seed=82, voices=1, vib_depth=0.01) * (lfo(1 / 16.0, 2.0) ** 6)[:, None]   # a rachadura
-	brass = C.lp(drone(note(38), 20, 1.0) + drone(note(45), 16, 1.0) * 0.6, 700) * (0.6 + 0.4 * lfo(1 / 48.0))
+	brass = clp(drone(note(38), 20, 1.0) + drone(note(45), 16, 1.0) * 0.6, 700) * (0.6 + 0.4 * lfo(1 / 48.0))
 	bells = np.zeros((N, 2))
 	for i in range(4):
 		b = C.bell(note(50), 8.0, 3.0, seed=83 + i, bright=0.6)
@@ -281,7 +305,7 @@ def amb_limiar():
 	"""O Limiar (sala do Rei): salão oco, vento baixo, um sino que dobra a
 	cada 16 s, drone em Sol grave."""
 	hall = resonant_noise(91, [(95, 10, 0), (190, 14, -4), (380, 16, -10)]) * (0.5 + 0.5 * lfo(1 / 16.0))[:, None]
-	dr = C.lp(drone(note(31), 12, 1.2, beat=0.5), 400)
+	dr = clp(drone(note(31), 12, 1.2, beat=0.5), 400)
 	toll = np.zeros((N, 2))
 	for i in range(3):
 		toll = place_wrap(toll, C.bell(note(43), 9.0, 3.5, seed=92 + i, bright=0.4), i * 16.0 + 2.0)
@@ -306,7 +330,7 @@ def amb_centro():
 		place_wrap(harp, C.pan(p, r.uniform(-0.6, 0.6)), at)
 		place_wrap(harp, C.pan(p, r.uniform(-0.6, 0.6)), at + 0.75, -9)     # eco
 	pad = choir_pad([50, 57, 65], "u", seed=103, voices=1, breath=0.2) * (0.5 + 0.5 * lfo(1 / 24.0))[:, None]
-	mix = st(C.lp(beat, 160)) * 0.4 + harp * 0.1 + pad * 0.6
+	mix = st(clp(beat, 160)) * 0.4 + harp * 0.1 + pad * 0.6
 	return C.reverb_circular(mix, rt60=3.5, wet=0.4, seed=29, lp_hz=7000)
 
 

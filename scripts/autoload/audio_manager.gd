@@ -72,6 +72,8 @@ const CATALOG := {
 		"ui_confirm", "ui_back", "ui_open",
 		# --- vozes "gromelô" (a UI chama por caractere/sílaba) ---
 		"blip_voz", "blip_rei", "blip_sophia", "blip_estela", "blip_npc",
+		# --- roteiro: "o Rei sai da névoa" (tela 1) ---
+		"fog_swell", "king_step", "mask_light", "voice_merge", "whisper",
 	],
 	"music": [
 		"theme", "rei",
@@ -95,7 +97,7 @@ const ALIASES := {
 ## Variação de tom por família de som (verificadas em ordem; resto ±4 %).
 const PITCH_FAMILIES := {
 	0.08: ["swing_", "hit", "step", "gib_", "enemy_hurt", "enemy_die", "proj_", "dodge", "land", "jump", "cloth"],
-	0.05: ["boss_step"],
+	0.05: ["boss_step", "king_step"],
 	0.03: ["blip_"],
 	0.0: ["ui_", "shop_", "subtitle_", "stele_", "ring_", "shard", "spark", "weapon_", "boss_", "zone_", "level_", "portal_", "cast_"],
 }
@@ -145,6 +147,11 @@ var _duck_holders: Dictionary = {}   # instance_id -> true (diálogos/cards vivo
 var _manual_duck: int = 0
 var _duck: float = 0.0               # 0 = normal, 1 = abaixado (tweenado)
 var _duck_target: float = 0.0
+var _temp_duck_db: float = 0.0       # duck_music(): abaixada temporária (tweenada)
+var _temp_duck_tween: Tween
+var _layer_db: Dictionary = {}       # faixa -> dB extra (set_music_layer_volume)
+var _music_pitch: float = 1.0
+var _pitch_tween: Tween
 var _duck_tween: Tween
 
 # --- memória pros ganchos por sinal ---
@@ -319,9 +326,11 @@ func _pick_variant(sfx_name: String, recent: bool):
 ## Troca a faixa com crossfade. Idempotente: pedir a faixa que já toca não faz
 ## nada. Se o arquivo não existir, a faixa ANTERIOR continua (nunca silêncio
 ## abrupto por falta de arquivo).
-func play_music(track_name: String, loop: bool = true) -> void:
+func play_music(track_name: String, loop: bool = true, pitch: float = 1.0) -> void:
 	current_track = track_name
 	if track_name == _playing_track and _music[_music_cur].playing:
+		if not is_equal_approx(pitch, _music_pitch):
+			set_music_pitch(pitch, 0.0)
 		return
 	var stream = _load(MUSIC_DIR + track_name)
 	if stream == null:
@@ -332,9 +341,53 @@ func play_music(track_name: String, loop: bool = true) -> void:
 	var new := _music[_music_cur]
 	new.stream = stream
 	new.volume_db = SILENT_DB
+	_music_pitch = maxf(pitch, 0.05)
+	new.pitch_scale = _music_pitch
 	new.play()
 	_playing_track = track_name
+	_apply_volumes()                  # camada (dB) da faixa nova
 	_crossfade(old, new)
+
+
+## Muda o tom/velocidade da música (1 = normal; 0,8 = mais grave e lenta).
+## `fade` em segundos (0 = na hora). Vale pra faixa atual e as seguintes até
+## alguém mudar de novo.
+func set_music_pitch(pitch: float, fade: float = 1.0) -> void:
+	_music_pitch = maxf(pitch, 0.05)
+	if _pitch_tween != null and _pitch_tween.is_valid():
+		_pitch_tween.kill()
+	if fade <= 0.0:
+		for m in _music:
+			m.pitch_scale = _music_pitch
+		return
+	_pitch_tween = create_tween().set_ignore_time_scale(true).set_parallel(true)
+	for m in _music:
+		_pitch_tween.tween_property(m, "pitch_scale", _music_pitch, fade)
+
+
+## Abaixa a música por `seconds` (em `db`) e volta sozinha com fade —
+## pra uma fala ou um golpe de cena. Soma com o ducking de diálogo.
+func duck_music(seconds: float, db: float = -12.0) -> void:
+	if _temp_duck_tween != null and _temp_duck_tween.is_valid():
+		_temp_duck_tween.kill()
+	_temp_duck_tween = create_tween().set_ignore_time_scale(true)
+	_temp_duck_tween.tween_method(_set_temp_duck, _temp_duck_db, db, DUCK_IN)
+	_temp_duck_tween.tween_interval(maxf(seconds, 0.0))
+	_temp_duck_tween.tween_method(_set_temp_duck, db, 0.0, DUCK_OUT)
+
+
+func _set_temp_duck(v: float) -> void:
+	_temp_duck_db = v
+	_apply_volumes()
+
+
+## Volume da "camada" da faixa ATUAL, 0..1 (0 = −18 dB, 1 = normal). Ex.: o
+## Centro sobe conforme os cacos voltam. Fica guardado por faixa (trocar de
+## faixa e voltar mantém o nível). `track` vazio = faixa que está tocando.
+func set_music_layer_volume(t: float, track: String = "") -> void:
+	var key := track if track != "" else current_track
+	_layer_db[key] = lerpf(-18.0, 0.0, clampf(t, 0.0, 1.0))
+	_apply_volumes()
 
 
 ## Silencia a música com fade (0 = corta na hora).
@@ -603,7 +656,8 @@ func set_volume(bus_name: String, linear: float) -> void:
 func _apply_volumes() -> void:
 	_set_bus("Master", master_vol, 0.0)
 	_set_bus("SFX", sfx_vol, 0.0)
-	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck)
+	var layer: float = float(_layer_db.get(_playing_track, 0.0))
+	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck + _temp_duck_db + layer)
 	_set_bus("Ambience", music_vol, DUCK_AMB_DB * _duck)
 
 
