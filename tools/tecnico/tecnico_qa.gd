@@ -42,6 +42,7 @@ func rodar() -> void:
 	_screen_rng()
 	_lista_conquistas()
 	_primeira_execucao()
+	_fps_e_vsync()
 	_desbloqueios()
 	await _morte_no_arconte()
 	await _morte_depois_do_desafio()
@@ -213,6 +214,35 @@ func _primeira_execucao() -> void:
 	SaveManager.load_game()
 	check("opcoes_novas_persistem", is_equal_approx(float(GameManager.settings["text_speed"]), 2.0) and not bool(GameManager.settings["damage_numbers"]) and (GameManager.settings["bindings"] as Dictionary).has("jump"),
 		str(GameManager.settings))
+	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
+	GameManager.apply_settings()
+	_limpar()
+
+
+# --- 2b. qps / VSync (1.2.0) -------------------------------------------------------
+
+func _fps_e_vsync() -> void:
+	check("vsync_padrao_desligado", GameManager.SETTINGS_DEFAULT["vsync"] == false and int(GameManager.SETTINGS_DEFAULT["settings_rev"]) == GameManager.SETTINGS_REV, "")
+	var casos := {144: 144, 60: 60, 165: 165, 360: 240, 0: 60, -1: 60}
+	var ruins: Array = []
+	for hz in casos:
+		if GameManager.fps_cap_for(hz) != casos[hz]:
+			ruins.append("%d→%d" % [hz, GameManager.fps_cap_for(hz)])
+	check("teto_de_qps_pela_taxa_do_monitor", ruins.is_empty(), "144→144 · 0/-1→60 · 360→240 %s" % str(ruins))
+	# Migração pura: antigo true → false (uma vez); rev 1 com true fica true.
+	var a: Dictionary = SaveManager.migrate_settings({"vsync": true, "shake": 0.3})
+	var b: Dictionary = SaveManager.migrate_settings({"vsync": true, "settings_rev": 1})
+	var c: Dictionary = SaveManager.migrate_settings(a)
+	check("migracao_vsync_uma_vez", a["vsync"] == false and int(a["settings_rev"]) == 1 and is_equal_approx(float(a["shake"]), 0.3)
+		and b["vsync"] == true and c["vsync"] == false, "antigo=%s · rev1=%s" % [str(a), str(b)])
+	# Boot com save antigo (como o do João): no load o vsync sai desligado.
+	_limpar()
+	var f := FileAccess.open(SaveManager.SAVE_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify({"save_version": 2, "best_screen": 22, "settings": {"vsync": true, "shake": 1.0}}))
+	f.close()
+	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
+	SaveManager.load_game()
+	check("save_antigo_sai_sem_vsync", GameManager.settings["vsync"] == false, "")
 	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate(true)
 	GameManager.apply_settings()
 	_limpar()

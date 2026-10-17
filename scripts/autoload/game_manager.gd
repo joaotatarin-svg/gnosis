@@ -44,13 +44,19 @@ var first_run: bool = false
 ##   damage_numbers (bool) → números de dano (Combate/HUD)
 ##   bindings (Dictionary ação → lista de eventos) → remapeamento; aplicado
 ##              por `scripts/ui/input_rebind.gd` (`apply_bindings`) se existir
+##   settings_rev (int) → revisão das opções gravadas (migração; ver
+##              `SaveManager.migrate_settings`). Não é opção do jogador.
 const SETTINGS_DEFAULT := {
 	"fullscreen": false,
 	"window_mode": 0,
 	"text_speed": 1.0,
 	"damage_numbers": true,
 	"bindings": {},
-	"vsync": true,
+	# VSync DESLIGADO por padrão (1.2.0): com VSync o OpenGL na RX 7600 / 144 Hz
+	# caía para ~21–28 qps; sem ele roda liso. O teto de qps vem de
+	# `_apply_fps_cap` (taxa do monitor). A opção continua no menu.
+	"vsync": false,
+	"settings_rev": 1,   # = SETTINGS_REV (save novo já nasce migrado)
 	"shake": 1.0,
 	"rumble": true,
 	"caption_size": 1,
@@ -59,6 +65,10 @@ const SETTINGS_DEFAULT := {
 	"reduce_flashes": false,
 }
 var settings: Dictionary = SETTINGS_DEFAULT.duplicate()
+
+## Revisão atual das opções. 1 = VSync passou a desligado por padrão (saves
+## anteriores com `vsync: true` são migrados UMA vez para false no load).
+const SETTINGS_REV := 1
 
 
 func _ready() -> void:
@@ -98,6 +108,24 @@ func apply_settings() -> void:
 	if DisplayServer.window_get_mode() != want:
 		DisplayServer.window_set_mode(want)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if bool(settings["vsync"]) else DisplayServer.VSYNC_DISABLED)
+	_apply_fps_cap()
+
+
+## Limita o qps à taxa do monitor (sem VSync o jogo não dispara a centenas de
+## qps nem esquenta a GPU à toa). Com VSync ligado o teto continua (o VSync já
+## segura na taxa do monitor). Chamado por `apply_settings` (boot, load do save
+## e ao mudar a opção).
+func _apply_fps_cap() -> void:
+	# roundi: alguns monitores informam 143,9 Hz.
+	Engine.max_fps = fps_cap_for(roundi(DisplayServer.screen_get_refresh_rate()))
+
+
+## Teto de qps para uma taxa de monitor: a própria taxa, 60 se o sistema não
+## informar (≤ 0) e no máximo 240. Função pura (a TecnicoQA testa).
+static func fps_cap_for(refresh_hz: int) -> int:
+	if refresh_hz <= 0:
+		return 60
+	return mini(refresh_hz, 240)
 
 
 # --- modo de janela -----------------------------------------------------------

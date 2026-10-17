@@ -137,7 +137,7 @@ func load_game() -> bool:
 	# REVISAO #5: cada opção só entra se o TIPO bater com o padrão (número
 	# int/float é intercambiável). `shake: [1]` ou `fullscreen: "sim"` ficam
 	# no padrão e não são regravados como lixo no próximo save.
-	var st := SaveCoerce.as_dict(d.get("settings", {}))
+	var st := migrate_settings(SaveCoerce.as_dict(d.get("settings", {})))
 	for k in GameManager.SETTINGS_DEFAULT:
 		if st.has(k):
 			var v = SaveCoerce.match_type(st[k], GameManager.SETTINGS_DEFAULT[k])
@@ -148,6 +148,23 @@ func load_game() -> bool:
 				GameManager.settings[k] = GameManager.SETTINGS_DEFAULT[k]
 	GameManager.apply_settings()
 	return true
+
+
+## Migração das OPÇÕES gravadas, pela revisão `settings_rev` (ausente = 0).
+## rev 0 → 1 (versão 1.2.0): o VSync passou a DESLIGADO por padrão — no OpenGL
+## da RX 7600 / 144 Hz ele derrubava o jogo a ~21 qps. Quem tinha `vsync: true`
+## gravado (o padrão antigo, não uma escolha) passa a false UMA vez; a revisão
+## sobe para 1 e vai ao disco no próximo save, então quem religar o VSync
+## depois é respeitado. Revisão futura (> atual) fica como está. Função pura.
+static func migrate_settings(st: Dictionary) -> Dictionary:
+	var out := st.duplicate(true)
+	var rev := SaveCoerce.as_int(out.get("settings_rev", 0), 0)
+	if rev < 1:
+		if typeof(out.get("vsync")) == TYPE_BOOL and out["vsync"] == true:
+			out["vsync"] = false
+			print("SaveManager: opções migradas (rev %d → 1): VSync desligado (novo padrão)." % rev)
+	out["settings_rev"] = maxi(rev, GameManager.SETTINGS_REV)
+	return out
 
 
 ## Migração (save sem `bosses_beaten`): chefes cuja tela fica ANTES da melhor
