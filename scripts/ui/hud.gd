@@ -601,7 +601,11 @@ func detach_ring(i: int, to: Vector2 = Vector2(320, 170)) -> float:
 	t.tween_callback(func():
 		gem.queue_free()
 		ring_detach_finished.emit(i))
-	Audio.play_sfx("ring_steal")
+	# Nota por gema: sobe 1 semitom a cada Anel arrancado (Audio.ring_note).
+	if Audio.has_method("ring_note"):
+		Audio.call("ring_note", i, false)
+	else:
+		Audio.play_sfx("ring_steal")
 	return dur
 
 
