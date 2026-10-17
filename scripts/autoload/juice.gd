@@ -35,8 +35,11 @@ const FLASH_BOSS_CAP := 2.0         # chefe: flash cheio 2,0 (não 3,0)
 const FLASH_REDUCED := 0.5          # "Reduzir flashes": flash de sprite × 0,5
 const FLASH_PRUNE_MS := 5000        # poda dos ids mortos do registro de flashes
 
-var _hitstop_until_ms: int = 0
-var _hitstop_start_ms: int = 0
+# Hitstop em tempo de PASSO (não relógio de parede): um SceneTreeTimer que
+# ignora o time_scale anda 1 passo por quadro (1/60 s com --fixed-fps 60) —
+# determinístico no bot/sondas e igual ao tempo real no jogo.
+var _hs_timer: SceneTreeTimer = null
+var _hs_total: float = 0.0
 var _hitstop_running := false
 var _base_scale := 1.0          # escala "de fundo" (speed_mult ou a do slow-mo ativo)
 var _slow_token := 0
@@ -66,33 +69,34 @@ func hitstop_active() -> bool:
 ## Fração restante do hitstop atual (1 = acabou de começar, 0 = acabou). R1:
 ## a vibração da vítima encolhe com isto.
 func hitstop_left() -> float:
-	if not _hitstop_running:
+	if not _hitstop_running or _hs_timer == null or _hs_total <= 0.0:
 		return 0.0
-	var total := maxi(1, _hitstop_until_ms - _hitstop_start_ms)
-	return clampf(float(_hitstop_until_ms - Time.get_ticks_msec()) / float(total), 0.0, 1.0)
+	return clampf(float(_hs_timer.time_left) / _hs_total, 0.0, 1.0)
 
 
-## R2: micro-congelamento no impacto, em tempo REAL. Sobreposição: vale o MAIOR
-## fim (estende), nunca descarta o pedido novo. Ao soltar, volta para a escala
-## de fundo (respeita um slow-mo em andamento).
+## R2: micro-congelamento no impacto, medido em PASSOS sem escala (timer que
+## ignora o time_scale): 0,1 s = 6 quadros a 60 fps, sempre o mesmo. Sobreposição:
+## vale o MAIOR fim (estende, até HS_MAX desde o início), nunca descarta o pedido
+## novo. Ao soltar, volta para a escala de fundo (respeita um slow-mo em andamento).
 func hit_stop(duration: float = HS_LIGHT) -> void:
 	duration = clampf(duration, 0.0, HS_MAX)
 	if duration <= 0.0:
 		return
-	var now := Time.get_ticks_msec()
-	var until := now + int(duration * 1000.0)
-	if _hitstop_running:
-		_hitstop_until_ms = maxi(_hitstop_until_ms, mini(until, _hitstop_start_ms + int(HS_MAX * 1000.0)))
+	if _hitstop_running and _hs_timer != null:
+		var elapsed: float = _hs_total - float(_hs_timer.time_left)
+		var total: float = maxf(_hs_total, minf(elapsed + duration, HS_MAX))
+		if total > _hs_total:
+			_hs_timer.time_left = float(_hs_timer.time_left) + (total - _hs_total)
+			_hs_total = total
 		return
-	_hitstop_start_ms = now
-	_hitstop_until_ms = until
 	_hitstop_running = true
+	_hs_total = duration
 	Engine.time_scale = HITSTOP_SCALE
 	hitstop_started.emit(duration)
-	while Time.get_ticks_msec() < _hitstop_until_ms:
-		var left := float(_hitstop_until_ms - Time.get_ticks_msec()) / 1000.0
-		# create_timer(tempo, process_always, process_in_physics, ignore_time_scale)
-		await get_tree().create_timer(maxf(left, 0.001), true, false, true).timeout
+	# create_timer(tempo, process_always, process_in_physics, ignore_time_scale)
+	_hs_timer = get_tree().create_timer(duration, true, false, true)
+	await _hs_timer.timeout
+	_hs_timer = null
 	_hitstop_running = false
 	Engine.time_scale = _base_scale
 	hitstop_ended.emit()
