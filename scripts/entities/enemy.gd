@@ -245,6 +245,7 @@ func _ready() -> void:
 		visual._process(0.0)
 
 	player = get_tree().get_first_node_in_group("player")
+	_boss_setup()   # chefes6: cérebro de chefe (scripts/entities/bosses/)
 	if is_boss_enemy or is_champion:
 		get_tree().call_group("hud", "show_boss", self)
 		_boss_intro_fx.call_deferred()
@@ -392,9 +393,13 @@ func _physics_process(delta: float) -> void:
 	_animate_orb(delta)
 
 
-## Efeitos contínuos das assinaturas de chefe.
+## Efeitos contínuos das assinaturas de chefe. Com cérebro (chefes6), a
+## assinatura mora no script do chefe; o `match` abaixo é o legado (sem cérebro).
 func _kit_passive(delta: float) -> void:
 	if player == null or not is_instance_valid(player) or estate == EState.DEAD:
+		return
+	if brain != null:
+		brain.passive(delta)
 		return
 	match kit:
 		"silencio":
@@ -460,6 +465,8 @@ func profile_is_beast() -> bool:
 
 
 func _process_chase(delta: float) -> void:
+	if brain != null and brain.chase(delta):   # chefes6: o chefe decide
+		return
 	if cooldown_timer > 0.0:
 		cooldown_timer -= delta
 
@@ -553,7 +560,7 @@ func _begin_windup() -> void:
 	attack_timer = wind_up
 	velocity.x = 0.0
 	# Silêncio, fase 2: pisca pra trás da Sophia antes de atacar.
-	if kit == "silencio" and phase == 2 and player != null and is_instance_valid(player):
+	if kit == "silencio" and phase == 2 and brain == null and player != null and is_instance_valid(player):
 		_blink_to(player.global_position.x - float(player.facing) * 44.0)
 	atk_dir = 1
 	if player != null and is_instance_valid(player):
@@ -626,6 +633,8 @@ func _begin_strike() -> void:
 	if visual:
 		visual.set_meta("impact_at", impact_at)
 	attack_impact.emit()
+	if brain != null and brain.strike():   # chefes6: golpe do chefe
+		return
 	if behavior == "exploder":
 		_explode()
 		return
@@ -755,7 +764,9 @@ func _explode() -> void:
 
 
 func _process_strike(delta: float) -> void:
-	if attack_style == "charge":
+	if brain != null:
+		brain.strike_tick(delta)   # chefes6
+	elif attack_style == "charge":
 		velocity.x = atk_dir * _charge_speed     # mantém a arrancada
 		if kit == "praga":
 			# Praga: a investida deixa poças de veneno pelo caminho.
@@ -816,36 +827,89 @@ func _prune_minions() -> void:
 	_minions = alive
 
 
-# --- fases de chefe --------------------------------------------------------
+# --- fases de chefe (chefes6) ----------------------------------------------
 
-## A 50% de vida: fúria (mais rápido) + a assinatura do kit sobe de nível.
+## Cérebro do chefe (scripts/entities/bosses/*): decide golpes, fases e arena.
+## null = inimigo comum (ou chefe sem script: cai no legado de 2 fases).
+var brain: BossBrain = null
+## Limiares de fase (fração da vida) — o HUD pode desenhar os marcadores.
+var phase_marks: Array = [0.5]
+
+
+## Monta o cérebro do chefe (se houver script para ele). A vida passa a vir de
+## BossTuning (golpes-alvo × golpe médio da Sophia na tela).
+func _boss_setup() -> void:
+	if not is_boss_enemy or type_id.begins_with("eco_"):
+		return
+	var path := BossBrain.script_for(type_id, kit)
+	if path == "":
+		return
+	var scr = load(path)
+	if scr == null:
+		return
+	var b = scr.new()
+	if not (b is BossBrain):
+		return
+	brain = b
+	add_child(brain)
+	brain.setup(self)
+	phase_marks = brain.marks.duplicate()
+
+
+## Confere se o dano levou o chefe à próxima fase. true = mudou de fase.
+func _boss_phase_check() -> bool:
+	if brain != null:
+		return brain.check_phase()
+	if phase == 1 and health.current_health <= health.max_health / 2:
+		_enter_phase2()
+		return true
+	return false
+
+
+## Legado (chefe sem cérebro): fase 2 a 50 %.
 func _enter_phase2() -> void:
-	phase = 2
-	move_speed *= 1.25
-	attack_cooldown *= 0.7
-	wind_up *= 0.85
+	_enter_phase(2)
+
+
+## Nova FASE: rugido (atordoado e intocável ~1,3 s), tremor, clarão, nova,
+## a barra do HUD pisca e a fala da fase entra como legenda (sem pausar).
+## Com cérebro, o resto (golpes novos, arena) é do script do chefe.
+func _enter_phase(n: int) -> void:
+	phase = n
 	estate = EState.STAGGER
-	attack_timer = 0.9
+	attack_timer = 0.9 if brain == null else BossBrain.PHASE_ROAR
 	attack_hitbox.deactivate()
+	attack_hitbox.scale = Vector2.ONE
 	_tint_base = Color(1, 1, 1, 1)
-	Juice.shake(0.7)
+	Juice.shake(0.7 + 0.15 * float(n - 2))
 	Juice.hit_stop(0.15)
 	Audio.play_sfx("boss_phase2")
-	AoeNova.spawn(get_parent(), global_position, 0, 140.0, eye_color)
+	Audio.duck_music(0.8, -8.0)
+	AoeNova.spawn(get_parent(), global_position, 0, 140.0 + 40.0 * float(n - 2), eye_color)
 	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
 	_flash(Color(3, 2.5, 2, 1))
-	match kit:
-		"coroa":
-			# A Coroa chama a corte: blindada enquanto os servos viverem.
-			_summon("servo", 2)
-			armored = true
-		"espelho":
-			# O Espelho devolve a Sophia contra ela mesma.
-			_summon("sombra_sophia", 1)
-	get_tree().call_group("hud", "boss_phase", 2)
-	# Gancho do Roteiro: legendas da fase 2 (sem pausar a luta).
-	if is_boss_enemy and RunManager.run_active and Gnosis.has_method("captions") and Narrative.has_method("archon_phase2"):
-		Gnosis.captions(Narrative.archon_phase2(type_id))
+	if brain == null:
+		move_speed *= 1.25
+		attack_cooldown *= 0.7
+		wind_up *= 0.85
+		match kit:
+			"coroa":
+				# A Coroa chama a corte: blindada enquanto os servos viverem.
+				_summon("servo", 2)
+				armored = true
+			"espelho":
+				# O Espelho devolve a Sophia contra ela mesma.
+				_summon("sombra_sophia", 1)
+	else:
+		move_speed *= 1.1
+	get_tree().call_group("hud", "boss_phase", n)
+	# Gancho do Roteiro: legendas da fase (sem pausar a luta). Fase 3 só se a
+	# Narrativa tiver as falas (pedido em docs/pedidos/onda6_chefes6.md).
+	if is_boss_enemy and RunManager.run_active and Gnosis.has_method("captions"):
+		if n == 2 and Narrative.has_method("archon_phase2"):
+			Gnosis.captions(Narrative.archon_phase2(type_id))
+		elif n == 3 and Narrative.has_method("archon_phase3"):
+			Gnosis.captions(Narrative.call("archon_phase3", type_id))
 
 
 # --- dano ------------------------------------------------------------------
@@ -922,6 +986,11 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 			damage = maxi(1, damage / 2)
 			_flash(Color(2.0, 1.9, 1.4, 1))
 
+	if brain != null:
+		damage = brain.filter_damage(damage, attacker)   # chefes6
+		if damage <= 0:
+			_flash(Color(1.6, 1.6, 2.0, 1))
+			return
 	# Coroa: enquanto os servos vivem, o Arconte é blindado.
 	if armored:
 		_prune_minions()
@@ -985,8 +1054,9 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 	velocity.x = kb_dir * knockback / maxf(1.0, _art_scale)
 	velocity.y = -120.0 / maxf(1.0, _art_scale)
 
-	if is_boss_enemy and phase == 1 and not health.is_dead() and health.current_health <= health.max_health / 2:
-		_enter_phase2()
+	if is_boss_enemy and not health.is_dead() and _boss_phase_check():   # chefes6
+		return
+	if brain != null and not brain.flinch(damage, launcher_hit):   # chefes6: postura
 		return
 	# Elite e chefe têm armadura durante o telegrafo (não são interrompidos).
 	if estate == EState.WINDUP and (is_elite or is_boss_enemy):
