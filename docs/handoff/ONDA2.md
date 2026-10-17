@@ -1,5 +1,23 @@
 # Fila da ONDA 2 (o chefe mantém)
 
+## ESTADO AO VIVO (chefe na nuvem, 17/10/2026 05:50 UTC)
+- `integracao/onda1` = Onda 1 inteira mergeada + `tools/validate.sh` (Linux) + `PauseStack` (scripts/autoload/pause_stack.gd).
+  Validação na nuvem (Godot 4.7.1 Linux headless): tudo verde menos AudioQA (ducking — agente Áudio consertando).
+- Agentes ATIVOS na nuvem (branch `dir2/<cargo>`, worktree `/home/user/wt/<cargo>`), donos destes arquivos:
+  | cargo | arquivos |
+  |---|---|
+  | tecnico | autoloads save/gnosis/run/game/scene/codex_session/progression/bestiary/game_content/fps, project.godot, export_presets.cfg, installer/, scripts/data/, assets/input/, tools/save_qa, codex_qa, validate |
+  | ui-hud | scripts/ui/hud.gd, caption_bar.gd, dialogue_box.gd |
+  | ui-menus | demais scripts/ui/*, stela.gd, codex_sanctum.gd, codex_trial.gd |
+  | encenacao | level.gd, final_battle.gd, sleeper/npc_encounter/chest/seal_puzzle/exit_portal, cinematic.gd, narrative.gd, scenes/levels |
+  | combate | player.gd, enemy.gd, juice.gd, camera_shake/spark_orb/projectile/impact_burst/aoe_nova/hazard_zone/damage_number/gib/vfx_library, scripts/combat, scripts/components |
+  | audio | audio_manager.gd, assets/audio, assets/LICENSES.md, tools/audio_synth |
+  | cenario | scenery.gd, scenery_library.gd, shaders scenery_*, assets/backgrounds, tools/scenery |
+  | loja | assets/store (novo), tools/store |
+- LIVRES para a sessão LOCAL (arte GPT, branch `dir2/arte-gpt`): artes/gpt, assets/painted, boss_puppet.gd, painted_library.gd, character_art.gd, docs/ANIMACAO_CHEFES.md.
+- Bastão para a sessão local agendado no servidor para 07:12 UTC. Batida de integração da nuvem a cada hora (min 47).
+
+
 ## Combate / câmera (dono: Game Design & Combate)
 - Câmera: look-ahead + smoothing deixam a Sophia fora do quadro ~16 quadros (virar+esquivar). (Técnico)
 - Interpolação de física (physics_interpolation) p/ monitores 144 Hz + `reset_physics_interpolation()` em teleportes. (Técnico)
