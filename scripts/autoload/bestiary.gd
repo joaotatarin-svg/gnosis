@@ -286,7 +286,9 @@ func _build() -> void:
 		_wt("glutao", "Glutão", 9, 70, 11, 60.0, 12,
 			_profile(B, 58, Color(0.65, 0.3, 0.25), Color(0.35, 0.14, 0.1), Color(1, 0.6, 0.3), ["maw"]), "melee", "", "leech"),
 		# Corrente: Carcereiro — corrente curta que PRENDE no lugar.
-		_wt("carcereiro", "Carcereiro", 9, 62, 12, 70.0, 12,
+		# Balance4: dano 12→10 — o tiro dele era 47 % do dano da Corrente (salto de ×2,5
+		# sobre a Fome); com 10: Corrente −9 %, 10 de 10 pares caíram, resto do run igual.
+		_wt("carcereiro", "Carcereiro", 9, 62, 10, 70.0, 12,
 			_profile(H, 52, Color(0.42, 0.4, 0.5), Color(0.26, 0.24, 0.32), Color(1, 0.8, 0.5), ["chains", "helmet", "blade"]), "ranged", "", "chainshot"),
 		# Silêncio: Bibliotecário Mudo — aura curta que CALA as magias.
 		_wt("mudo", "Bibliotecário Mudo", 9, 58, 12, 80.0, 13,
