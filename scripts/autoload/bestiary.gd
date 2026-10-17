@@ -301,6 +301,6 @@ func _build() -> void:
 	items = [
 		{"id": "pauldrons", "name": "Ombreiras do Éon", "feature": "pauldrons"},
 		{"id": "helmet", "name": "Elmo do Guardião", "feature": "helmet"},
-		{"id": "bracers", "name": "Braceletes de Éon", "feature": "bracers"},
-		{"id": "crown", "name": "Coroa da Mônada", "feature": "crown"},
+		{"id": "bracers", "name": "Braceletes do Éon", "feature": "bracers"},
+		{"id": "crown", "name": "Diadema da Fonte", "feature": "crown"},
 	]

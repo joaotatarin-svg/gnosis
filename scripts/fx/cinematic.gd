@@ -37,16 +37,17 @@ static func _spawn() -> Cinematic:
 	return c
 
 
-## O mito em 6 cards (Mônada → Éons → Sophia → o Cego → Kenoma → faíscas → "acorda").
+## O mito em 6 cards (Mônada → Éons → Sophia → o Cego → Kenoma → faíscas). O último
+## card NÃO diz "acorda": quem diz é a Voz, na primeira fala do jogo (Narrative.intro).
 static func prologue() -> Cinematic:
 	var c := _spawn()
 	c.cards = [
-		{"title": "", "text": "No princípio não havia princípio.\nHavia o Um — sem nome, sem forma, pleno.\nOs antigos o chamaram Mônada, Silêncio, Abismo.", "bg": 8, "time": 5.0},
-		{"title": "", "text": "Dele emanaram os Éons: pares de luz, idades da Plenitude.\nNo Pleroma nada dormia. Nada esquecia.", "bg": 3, "time": 4.6},
-		{"title": "", "text": "A mais jovem, Sophia — a Sabedoria — quis ver a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma.", "bg": 4, "time": 5.0},
-		{"title": "", "text": "Cego para a Luz de onde veio, ele acreditou ser o único deus.\nE fez um mundo à sua imagem: o Kenoma, o vazio.", "bg": 6, "time": 5.0},
-		{"title": "", "text": "Sete arcontes. Sete esferas. Sete correntes.\nE dentro do barro, escondida, a faísca que ele roubou da mãe.", "bg": 2, "time": 5.0},
-		{"title": "", "text": "As faíscas dormem.\nUma delas acaba de sentir dor.\n\nAcorda.", "bg": 0, "time": 4.4},
+		{"title": "", "text": "No princípio não havia princípio.\nHavia o Um — sem nome, sem medida, pleno.\nOs antigos o chamaram Mônada, Abismo, Silêncio.", "bg": 8, "time": 5.0},
+		{"title": "", "text": "Dele emanaram os Éons, aos pares, como luz que transborda.\nNo Pleroma nada dormia. Nada esquecia.", "bg": 3, "time": 4.6},
+		{"title": "", "text": "A mais jovem, Sophia — a Sabedoria —, quis alcançar a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma,\ne ela o escondeu numa nuvem.", "bg": 4, "time": 5.2},
+		{"title": "", "text": "Cego para a Luz de onde veio, ele se acreditou o único deus.\nE fez um mundo copiando o que nunca viu: o Kenoma, o vazio.", "bg": 6, "time": 5.0},
+		{"title": "", "text": "Sete Arcontes. Sete esferas. Sete correntes.\nE dentro do barro, escondida, a faísca que ele levou da mãe.", "bg": 2, "time": 5.0},
+		{"title": "", "text": "As faíscas dormem.\n\nUma delas acaba de sentir dor.", "bg": 0, "time": 4.4},
 	]
 	return c
 
@@ -70,9 +71,9 @@ static func epilogue(ending: String, chron_n: int, chron_total: int) -> Cinemati
 	for t in Narrative.epilogue_cards(ending):
 		c.cards.append({"title": "", "text": String(t), "bg": bg, "time": 5.4})
 	var chron_line := "Todas as pedras foram lidas. A faísca lembra por inteiro." if chron_n >= chron_total \
-		else "Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que encontraste." % (chron_total - chron_n)
+		else "Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas." % (chron_total - chron_n)
 	c.cards.append({"title": "CRÔNICAS  %d / %d" % [chron_n, chron_total], "text": chron_line, "bg": 7, "time": 5.0})
-	c.cards.append({"title": "GNOSIS", "text": "João Tatarin — direção, produção e escolhas\nArte ilustrada gerada por IA sob direção do autor\nCódigo escrito com Claude (Anthropic) e Codex (OpenAI)\nSons e efeitos CC0/CC-BY — ver assets/LICENSES.md\n\nBaseado nos textos de Nag Hammadi, na Pistis Sophia\ne nos relatos de Irineu, Hipólito e Clemente.", "bg": 8, "time": 7.0})
+	c.cards.append({"title": "GNOSIS", "text": "João Tatarin — direção, produção e escolhas\nArte ilustrada gerada por IA sob direção do autor\nCódigo escrito com Claude (Anthropic) e Codex (OpenAI)\nSons e efeitos CC0/CC-BY — ver assets/LICENSES.md\n\nInspirado nos textos de Nag Hammadi, na Pistis Sophia\ne nos relatos de Irineu, Hipólito e Clemente.", "bg": 8, "time": 7.0})
 	return c
 
 
