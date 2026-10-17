@@ -23,6 +23,7 @@ func _ready() -> void:
 	collision_layer = 8
 	collision_mask = 8
 	monitoring = true
+	z_index = 29                       # acima da névoa do Torpor (EonRule, z 28): tiro sempre se lê
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = 7.0

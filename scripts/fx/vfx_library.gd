@@ -658,7 +658,7 @@ static func prewarm(parent: Node) -> void:
 	tell_glint(holder, p, false)
 	tell_glint(holder, p, true)
 	ImpactBurst.spawn(holder, p, Color(1, 0.9, 0.7))
-	DamageNumber.spawn(holder, p, 1234567890, Color(1, 0.9, 0.6))   # glifos 0–9
+	DamageNumber.spawn(holder, p, 1234567890, Color(1, 0.9, 0.6), true)   # glifos 0–9
 	# desmembramento: peça vetorial, peça pintada (shader limpo) e gotas de luz
 	var poly := PackedVector2Array([Vector2(-4, -4), Vector2(4, -4), Vector2(4, 4), Vector2(-4, 4)])
 	var parts: Array = [{"pts": poly, "col": Color(0.5, 0.5, 0.5)}]

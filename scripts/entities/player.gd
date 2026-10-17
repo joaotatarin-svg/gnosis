@@ -127,6 +127,13 @@ func _ready() -> void:
 	# O herói fica mais "foda" conforme a arma/itens evoluem.
 	Progression.weapon_level_changed.connect(func(_lvl): _refresh_look())
 	Progression.stats_changed.connect(_refresh_look)
+	# Regra de travessia do Éon (#41): névoa do Torpor, correntes da Corrente.
+	_attach_eon_rule.call_deferred()
+
+
+## Liga a regra de travessia da tela (se houver) — depois que a fase montou.
+func _attach_eon_rule() -> void:
+	EonRule.attach(self)
 
 
 func _physics_process(delta: float) -> void:

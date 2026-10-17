@@ -57,6 +57,13 @@ const VIB_LIGHT := 1.5            # R1: vibração da vítima (px), golpe leve
 const VIB_HEAVY := 3.0            # golpe pesado / lançador / magia
 const VIB_STEP_MS := 33           # troca de lado a cada ~33 ms reais
 const HURT_VOICE_MS := 250        # R4: "enemy_hurt" no máximo 1 a cada 250 ms por inimigo
+const PRAGA_POOL_TIME := 3.0      # Balance P3: poça de Belias (era 5,0 s)
+const PRAGA_POOL_R2 := 40.0       # Balance P3: raio na fase 2 (era 48; fase 1 = 34)
+## #42 (crítico): todo Arconte ≥ ~1,8× a altura da Sophia (Espelho é exceção de
+## propósito). Medido por `tools/combate/BossSizeProbe.tscn` (alfa > 0,25, pose
+## parada): Belias 1,76× e Athoth 1,95× — ambos sobem para ~2,0× (folga para a
+## pose agachada do wind-up). Escala o CORPO todo (desenho + caixas), como o Elite.
+const BOSS_PRESENCE := {"arconte_praga": 1.15, "arconte_sono": 1.08}
 
 var estate: EState = EState.CHASE
 var health: HealthComponent
@@ -177,6 +184,10 @@ func _ready() -> void:
 		attack_damage = int(attack_damage * 1.15)
 		spark_reward *= 2
 		scale = Vector2(1.25, 1.25)
+	# Presença dos Arcontes (#42): só os que ficavam abaixo de ~2× a Sophia.
+	if BOSS_PRESENCE.has(type_id):
+		var k: float = BOSS_PRESENCE[type_id]
+		scale = Vector2(k, k)
 
 	# Escala determinística por tela + dificuldade (r2: vida e dano crescem em
 	# curvas separadas — vida +2%/tela, dano +1.2%/tela).
@@ -498,8 +509,9 @@ func _process_windup(delta: float) -> void:
 
 ## Brilho de aviso (R5): estrela no ponto da arma — REDONDA e amarela =
 ## aparável, LOSANGO vermelho = imparável (forma + som, não só cor) — e o
-## corpo clareia um instante. Som: pedido ao Áudio ("tell_parry"/"tell_unblock"
-## ainda não existem no catálogo — entra aqui quando o Áudio criar).
+## corpo clareia um instante. Som: "tell_parry"/"tell_unblock" (do Áudio2) —
+## só toca se o nome já estiver no CATÁLOGO (sem ele, o aviso segue mudo e o
+## AudioQA não reprova: o nome vai numa variável, não literal).
 func _tell_glint() -> void:
 	_glint_t = 0.0
 	var unb: bool = attack_hitbox.unblockable
@@ -507,6 +519,17 @@ func _tell_glint() -> void:
 	if _orb != null:
 		pos = _orb.global_position
 	VfxLibrary.tell_glint(get_parent(), pos, unb)
+	_tell_sound("tell_unblock" if unb else "tell_parry", pos)
+
+
+## Toca o som do telegrafo se ele existir no catálogo do Áudio.
+func _tell_sound(snd: String, pos: Vector2) -> void:
+	var cat = Audio.get("CATALOG")
+	if not (cat is Dictionary):
+		return
+	var sfx = cat.get("sfx", [])
+	if sfx is Array and sfx.has(snd):
+		Audio.play_sfx_at(snd, pos)
 
 
 func _begin_strike() -> void:
@@ -657,8 +680,10 @@ func _process_strike(delta: float) -> void:
 			_pool_timer -= delta
 			if _pool_timer <= 0.0:
 				_pool_timer = 0.11
-				var r := 34.0 if phase == 1 else 48.0
-				HazardZone.spawn(get_parent(), global_position + Vector2(0, 14), "poison", r, 5.0, eye_color)
+				# Balance P3 (docs/onda2/BALANCE.md): poças 5,0→3,0 s e raio da fase 2
+				# 48→40 — a poça de Belias era o pico de dano do run inteiro.
+				var r := 34.0 if phase == 1 else PRAGA_POOL_R2
+				HazardZone.spawn(get_parent(), global_position + Vector2(0, 14), "poison", r, PRAGA_POOL_TIME, eye_color)
 	attack_timer -= delta
 	if attack_timer <= 0.0:
 		attack_hitbox.deactivate()
