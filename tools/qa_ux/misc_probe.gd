@@ -29,6 +29,10 @@ class M extends Node:
 		await get_tree().create_timer(s, true, false, true).timeout
 
 	func shot(name: String) -> void:
+		# headless (Linux/nuvem): sem imagem, só registra.
+		if DisplayServer.get_name() == "headless":
+			print("MISC|SHOT|(headless) ", name)
+			return
 		await RenderingServer.frame_post_draw
 		var p := "%s/misc_%s.png" % [out_dir, name]
 		get_viewport().get_texture().get_image().save_png(p)

@@ -37,6 +37,11 @@ class Pilot extends Node:
 		await get_tree().create_timer(s, true, false, true).timeout
 
 	func shot(name: String) -> void:
+		# headless (Linux/nuvem): sem imagem, só registra.
+		if DisplayServer.get_name() == "headless":
+			_n += 1
+			log_ui("SHOT", "(headless) " + name)
+			return
 		await RenderingServer.frame_post_draw
 		_n += 1
 		var p := "%s/ui%02d_%s.png" % [out_dir, _n, name]

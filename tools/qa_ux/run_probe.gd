@@ -97,6 +97,10 @@ class Probe extends Node:
 			_save("bug_" + what)
 
 	func _save(name: String) -> void:
+		# headless (Linux/nuvem, sem janela): não há imagem; só registra o momento.
+		if DisplayServer.get_name() == "headless":
+			log_evt("SHOT", name, "(headless)")
+			return
 		var img := get_viewport().get_texture().get_image()
 		if img == null:
 			return
