@@ -169,3 +169,13 @@ Prova: `gifs/npcs_estados.png` (AnimQA `-- npc_board`).
 ## O Cego pequeno (cena D)
 
 Folha `artes/gpt/cego_pequeno_a.png` (2×3) → receita `tools/anim_bosses/recipes/cego_pequeno.json` (grupo `npcs`, linha de baixo × 0,92 para igualar a escala; sem pintura antiga, o `boss_frames.py` agora aceita isso) → `assets/painted/derived/npcs/cego_pequeno_frames.*`. Nó pronto: `scripts/fx/cego_pequeno.gd` (`class_name CegoPequeno`), origem no chão, ~22 px de mundo na escala 1 (33 px na escala 1,5 da cena), respiração, tremor em surtos, contorno pálido para ler no escuro e o halo quente do `glow`; sem atlas cai no desenho antigo. Ligação na cena: Pedido 7.
+
+## #30 Leitura dos inimigos escuros — contorno de luz do Éon
+
+`painted_boss.gdshader` ganhou um contorno interno (rim) aditivo: borda da silhueta (alfa do pixel −
+menor alfa num raio de 4 texels) × cor × intensidade. No `CharacterArt`, todo inimigo por quadros
+(chefes, família, criaturas; NPCs e Sophia não) usa a cor `glow` do Éon atual
+(`SceneryLibrary.look(RunManager.eon_index(tela))`, só leitura) com intensidade **0,32** e **0,64 na
+preparação** (soma ao contorno do telegrafo). `rim_enabled` desliga por personagem.
+Prancha (AnimQA `-- rim_board`): `gifs/contorno_inimigos_antes_depois.png` (Torpor, Silêncio, Centro;
+esquerda sem, direita com; parado e preparando) e o zoom `gifs/contorno_inimigos_zoom.png`.

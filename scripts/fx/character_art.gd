@@ -1615,6 +1615,13 @@ func _draw_painted(s: float) -> void:
 		mat.set_shader_parameter("hair_amp", 0.0)
 		mat.set_shader_parameter("cloth_amp", (ca * 1.5 if running else ca) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("hem_wave", float(_boss_db.meta.get("hem_wave", 0.0)) * (1.4 if running else 1.0))
+		# contorno de luz na cor do Éon (inimigos; NPCs não): mais forte na preparação
+		var rim: float = 0.0
+		if rim_enabled and String(_boss_db.meta.get("kind", "")) != "npc":
+			rim = RIM_BASE * (2.0 if anim_state.begins_with("windup") else 1.0)
+		mat.set_shader_parameter("rim_amt", rim)
+		mat.set_shader_parameter("rim_color", eon_light())
+		mat.set_shader_parameter("rim_px", 4.0)
 	else:
 		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
@@ -2008,6 +2015,22 @@ var _npc_wake_t: float = -1.0                     # s desde o despertar (-1 = n�
 ## chapado da preparação (Enemy.TELEGRAPH_*) vira este contorno pulsante.
 var telegraph_color := Color(0, 0, 0, 0)
 const _TELEGRAPH_TINTS := [Color(1.0, 0.85, 0.2, 1.0), Color(1.0, 0.25, 0.25, 1.0)]
+
+
+const RIM_BASE := 0.32              # contorno de luz dos inimigos (≈0,3; ×2 na preparação)
+static var rim_override: int = -1   # QA: força o Éon da cor do contorno (-1 = tela atual)
+var rim_enabled: bool = true        # QA/cenas: desliga o contorno deste personagem
+var weapon_level_override: int = -1 # QA: força o nível da arma da Sophia (-1 = Progression)
+
+
+## Cor de luz do Éon atual (SceneryLibrary.LOOK "glow", só leitura) para o
+## contorno dos inimigos — cada Éon separa os seus bichos do fundo na sua cor.
+static func eon_light() -> Color:
+	var eon: int = rim_override
+	if eon < 0:
+		eon = RunManager.eon_index(GameManager.current_screen)
+	var lk: Dictionary = SceneryLibrary.look(eon)
+	return Color(lk.get("glow", Color(0.8, 0.9, 1.0)))
 
 
 ## true quando este chefe toca quadros desenhados (senão, o boneco).

@@ -40,6 +40,8 @@ func _ready() -> void:
 		"shader_cmp": await _shader_cmp()
 		"npc_board": await _npc_board()
 		"cego_board": await _cego_board()
+		"rim_board": await _rim_board()
+		"weapon_board": await _weapon_board()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -345,6 +347,80 @@ func _npc_board() -> void:
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://npc_board.png")
+	get_tree().quit()
+
+
+## Contorno de luz dos inimigos (#30): sobre o fundo escuro de Torpor,
+## Silêncio e Centro, cada linha = um Éon; à esquerda SEM contorno, à direita
+## COM (parado e preparando).
+func _rim_board() -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	var rows := [[0, ["sonambulo", "larva"]], [3, ["mudo", "invocador"]], [7, ["servo", "canino"]]]
+	for r in rows.size():
+		var eon: int = rows[r][0]
+		var bg := Sprite2D.new()
+		bg.texture = SceneryLibrary.layer(eon, "far")
+		bg.centered = false
+		bg.region_enabled = true
+		var tex_h: float = float(bg.texture.get_height())
+		bg.region_rect = Rect2(0, tex_h * 0.35, bg.texture.get_width(), tex_h * 0.45)
+		bg.scale = Vector2.ONE * 1280.0 / float(bg.texture.get_width())
+		bg.position = Vector2(0, r * 240)
+		bg.modulate = Color(0.75, 0.75, 0.8)
+		add_child(bg)
+		CharacterArt.rim_override = eon
+		var col: int = 0
+		for rim_on in [false, true]:
+			for id in rows[r][1]:
+				for st in ["idle", "windup"]:
+					var art := CharacterArt.new()
+					add_child(art)
+					art.set_profile(Bestiary.get_type(id).profile)
+					art.rim_enabled = rim_on
+					var sc: float = 150.0 / (art.profile.height * 1.3)
+					art.scale = Vector2(-sc, sc)
+					art.position = Vector2(80 + col * 160, r * 240 + 215) - Vector2(0, CharacterArt.GROUND_Y * art.profile.height / 44.0 * sc)
+					art.set_process(false)
+					art.set_anim(st)
+					art.pose_progress = 0.8 if st == "windup" else -1.0
+					for f in 20:
+						art._process(1.0 / 60.0)
+					art.modulate = Color.WHITE
+					col += 1
+			_label(("COM contorno" if rim_on else "SEM contorno") + " · Éon %d" % eon, Vector2(10 + (0 if not rim_on else 640), r * 240 + 6))
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://rim_board.png")
+	CharacterArt.rim_override = -1
+	get_tree().quit()
+
+
+## Progressão da arma (#46): a Sophia do nível 1 ao 5, parada, golpeando e
+## lançando magia (ponta do cajado, rastro e bracelete).
+func _weapon_board() -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	RenderingServer.set_default_clear_color(Color("1b232b"))
+	var states := [["idle", 0.4], ["attack_heavy", 0.06], ["cast", 0.2]]
+	for lvl in range(1, 6):
+		for s in states.size():
+			var p: ArtProfile = Bestiary.player_profile(GameContent.characters[0], lvl, [])
+			var art := CharacterArt.new()
+			add_child(art)
+			art.set_profile(p)
+			art.weapon_level_override = lvl
+			var sc: float = 200.0 / (p.height * 1.19)
+			art.scale = Vector2.ONE * sc
+			art.position = Vector2(110 + (lvl - 1) * 250 + (s - 1) * 70, 160 + s * 200) - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0 * sc)
+			art.set_process(false)
+			art.set_anim(String(states[s][0]))
+			for f in int(float(states[s][1]) * 60.0):
+				art._process(1.0 / 60.0)
+		_label("ARMA nível %d" % lvl, Vector2(60 + (lvl - 1) * 250, 8))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://weapon_board.png")
 	get_tree().quit()
 
 
