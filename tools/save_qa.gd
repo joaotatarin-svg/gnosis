@@ -63,6 +63,7 @@ func _ready() -> void:
 	_wipe()
 	_cases_legacy()
 	_cases_atomic()
+	_cases_persist_run()
 	_wipe()
 	await _cases_types()
 	_wipe()
@@ -157,6 +158,36 @@ func _cases_atomic() -> void:
 	Gnosis.unlocked.clear()
 	SaveManager.persist_enabled = false
 	Gnosis.persist_enabled = false
+
+
+# --- Provação: opções gravam, progresso não (REVISAO #13) + volumes padrão ---
+
+func _cases_persist_run() -> void:
+	_wipe()
+	# 1ª execução (sem save): Master 0,7 e Música 0,6.
+	Audio.set_volume("Master", 1.0)
+	Audio.set_volume("Music", 1.0)
+	SaveManager.load_game()
+	check(is_equal_approx(Audio.master_vol, 0.7) and is_equal_approx(Audio.music_vol, 0.6), "1ª execução: Master 0,7 e Música 0,6")
+	_write(JSON.stringify({"save_version": 2, "best_screen": 30, "endings_seen": ["semente"], "run": {"screen": 20, "orbs": 77}}))
+	SaveManager.load_game()
+	SaveManager.persist_enabled = true
+	SaveManager.persist_run = false          # como a Provação deixa
+	RunManager.best_screen = 2
+	RunManager.saved_run = {}
+	RunManager.endings_seen = []
+	GameManager.settings["shake"] = 0.25
+	GameManager.settings["reduce_flashes"] = true
+	Audio.set_volume("Music", 0.15)
+	SaveManager.save_game()                  # o que o menu de opções chama
+	var disk = JSON.parse_string(_read(SaveManager.SAVE_PATH))
+	check(disk is Dictionary and is_equal_approx(float(disk.settings.shake), 0.25) and disk.settings.reduce_flashes == true
+		and is_equal_approx(float(disk.vol_music), 0.15), "Provação: opções e volume gravados")
+	check(disk is Dictionary and int(disk.run.screen) == 20 and int(disk.best_screen) == 30 and disk.endings_seen == ["semente"], "Provação: run/melhor tela/finais do disco intactos")
+	SaveManager.persist_run = true
+	SaveManager.persist_enabled = false
+	GameManager.settings = GameManager.SETTINGS_DEFAULT.duplicate()
+	GameManager.apply_settings()
 
 
 # --- JSON válido com tipos errados (REVISAO #5) -------------------------------

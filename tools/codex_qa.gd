@@ -46,6 +46,49 @@ class Worker extends Node:
 				return true
 		return false
 
+	## REVISAO #2/#4/#6/#7: o preset leva licenças e o banco de controles, deixa
+	## ferramentas/arte bruta de fora, e nada do jogo aponta para elas; patches
+	## só da versão do projeto.
+	func _check_build_and_patches() -> void:
+		var cfg := ConfigFile.new()
+		var ok := cfg.load("res://export_presets.cfg") == OK
+		var inc := String(cfg.get_value("preset.0", "include_filter", "")) if ok else ""
+		var exc := String(cfg.get_value("preset.0", "exclude_filter", "")) if ok else ""
+		var inc_ok := true
+		for want in ["assets/LICENSES.md", "assets/fonts/*/OFL.txt", "assets/input/*.txt"]:
+			inc_ok = inc_ok and want in inc
+		var exc_ok := true
+		for want in ["tools/*", "artes/*", "docs/*", "assets/_packs/*", "shots/*"]:
+			exc_ok = exc_ok and want in exc
+		check(ok and inc_ok, "export inclui LICENSES.md, OFL das fontes e assets/input/*.txt")
+		check(ok and exc_ok, "export exclui tools/artes/docs/_packs/shots")
+		var iss := FileAccess.get_file_as_string("res://installer/gnosis.iss")
+		check(FileAccess.file_exists("res://LICENSE_godot.txt") and FileAccess.get_file_as_string("res://LICENSE_godot.txt").contains("Permission is hereby granted")
+			and iss.contains("assets\\LICENSES.md") and iss.contains("LICENSE_godot.txt") and iss.contains("#define AppVersion \"1.1.0\""),
+			"instalador copia LICENSES.md e LICENSE_godot.txt (versão 1.1.0)")
+		var refs: Array[String] = []
+		for root in ["res://scripts", "res://scenes", "res://assets"]:
+			_scan_dev_refs(root, refs)
+		check(refs.is_empty(), "nada do jogo carrega res://tools, artes ou docs em runtime %s" % [refs])
+		var got := GameManager.patch_files_for(PackedStringArray(["patch_1.1.0_02.pck", "patch_01.pck", "patch_1.0.0_a.pck",
+			"patch_1.1.0_.pck", "patch_1.1.01_x.pck", "patch_1.1.0_01.pck", "outro.pck", "patch_1.1.0_03.txt"]), "1.1.0")
+		check(got == ["patch_1.1.0_01.pck", "patch_1.1.0_02.pck"], "patches: só patch_<versão>_*.pck, em ordem (%s)" % [got])
+		check(GameManager.patch_files_for(PackedStringArray(["patch_1.1.0_01.pck"]), "").is_empty(), "patches: sem versão no projeto, nenhum entra")
+
+	func _scan_dev_refs(path: String, out: Array[String]) -> void:
+		var d := DirAccess.open(path)
+		if d == null or path.begins_with("res://assets/_packs"):
+			return
+		for f in d.get_files():
+			if not (f.ends_with(".gd") or f.ends_with(".tscn") or f.ends_with(".tres")):
+				continue
+			var txt := FileAccess.get_file_as_string(path.path_join(f))
+			for bad in ["res://tools/", "res://artes/", "res://docs/", "res://shots/"]:
+				if txt.contains(bad):
+					out.append(path.path_join(f))
+		for sub in d.get_directories():
+			_scan_dev_refs(path.path_join(sub), out)
+
 	func _run() -> void:
 		SaveManager.persist_enabled = false
 		# Save isolado: o jogo usa a SUA pasta (GNOSIS-Codex) — ou, num worktree de
@@ -64,6 +107,9 @@ class Worker extends Node:
 		for dir in [[&"ui_up", JOY_BUTTON_DPAD_UP, JOY_AXIS_LEFT_Y, -1.0], [&"ui_down", JOY_BUTTON_DPAD_DOWN, JOY_AXIS_LEFT_Y, 1.0],
 				[&"ui_left", JOY_BUTTON_DPAD_LEFT, JOY_AXIS_LEFT_X, -1.0], [&"ui_right", JOY_BUTTON_DPAD_RIGHT, JOY_AXIS_LEFT_X, 1.0]]:
 			check(_has_pad(dir[0], dir[1]) and _has_axis(dir[0], dir[2], dir[3]), "controle: %s com D-pad e analógico" % dir[0])
+		_check_build_and_patches()
+		check(typeof(GameManager.SETTINGS_DEFAULT.get("reduce_flashes")) == TYPE_BOOL and GameManager.SETTINGS_DEFAULT.reduce_flashes == false, "opção reduce_flashes existe (bool, desligada)")
+		check(CodexSession.screen_for(0, 0) == 2 and CodexSession.screen_for(1, 1) == 11 and CodexSession.screen_for(1, 2) == 19 and CodexSession.screen_for(6, 2) == RunManager.LAST_ARCHON_SCREEN, "Provação: tela do encontro segue o mapa de 9 telas por Éon")
 		get_tree().change_scene_to_file("res://scenes/ui/CharacterAtelier.tscn")
 		await wait()
 		var atelier = get_tree().current_scene
@@ -89,10 +135,11 @@ class Worker extends Node:
 		RunManager.saved_run = {"screen": 22, "test": "preservar"}
 		CodexSession.start_demo()
 		await wait(1.0)
-		check(not SaveManager.persist_enabled, "desafio não escreve progresso")
+		check(not SaveManager.persist_run and not SaveManager.persist_enabled, "desafio não escreve progresso")
 		for stage in 3:
 			var level = get_tree().current_scene
 			check(level is Level and CodexSession.stage == stage, "entrada no encontro %d" % (stage + 1))
+			check(level is Level and RunManager.current_screen == CodexSession.screen_for(CodexSession.boss_index, stage) and RunManager.current_screen == level.screen, "encontro %d na tela do Éon certo (%d)" % [stage + 1, RunManager.current_screen])
 			if stage == 2:
 				await shot("boss")
 			var guard: int = 0
@@ -125,9 +172,24 @@ class Worker extends Node:
 				break
 		await wait(1.0)
 		check(not get_tree().paused and get_tree().get_first_node_in_group("player").health.current_health > 0, "tentar novamente restaura a jogabilidade")
+		# REVISAO #12: pedido no meio do fade não se perde. (a) véu descendo: o
+		# último pedido vira o destino; (b) véu abrindo: roda logo depois. A pilha
+		# de pausa é zerada na troca.
+		var holder := Node.new()
+		get_tree().current_scene.add_child(holder)
+		PauseStack.push(holder)
+		SceneManager.change_scene("res://scenes/ui/Chronicles.tscn")
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
 		await wait(1.0)
+		check(get_tree().current_scene.scene_file_path == "res://scenes/ui/MainMenu.tscn" and not SceneManager.is_busy(), "troca: pedido com o véu descendo vira o destino")
+		check(PauseStack.count() == 0 and not get_tree().paused, "troca de cena zera a pilha de pausa")
 		check(not CodexSession.active, "menu encerra sandbox")
+		SceneManager.change_scene("res://scenes/ui/Chronicles.tscn")
+		await wait(0.35)
+		var mid_swap: bool = get_tree().current_scene.scene_file_path == "res://scenes/ui/Chronicles.tscn" and SceneManager.is_busy()
+		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")
+		await wait(1.5)
+		check(mid_swap and get_tree().current_scene.scene_file_path == "res://scenes/ui/MainMenu.tscn" and not SceneManager.is_busy(), "troca: pedido com o véu abrindo roda em seguida")
 		check(RunManager.saved_run.get("test", "") == "preservar", "checkpoint anterior preservado")
 		check(not SaveManager.persist_enabled, "preferência anterior de persistência restaurada")
 		print("QA RESULT: ", errors, " falhas")
