@@ -129,6 +129,7 @@ func _build_painted() -> void:
 	_sky_fade(_far, d.sky)
 	if eon == 7:
 		_orbit_sparks(_far, s)
+	_far_motes(d.haze)
 	# Raios: foco no astro da pintura (coords da camada far).
 	_ray_pt = Vector2(lk.ray.x * _tile_w, FLOOR_Y - PAINT_H + lk.ray.y * PAINT_H)
 	_rays = _screen_rect("rays")
@@ -147,20 +148,33 @@ func _build_painted() -> void:
 
 
 ## Uma camada pintada espelhada: [ladrilho][ladrilho invertido], período 2×.
+## SEM EMENDA POR CONSTRUÇÃO (M5): é UM só quad (Sprite2D com região larga e
+## repetição em ESPELHO na amostragem), cobrindo PERIODS períodos a partir de
+## um período à esquerda — a câmera nunca chega numa junção entre quads. (Dois
+## sprites lado a lado em posição fracionária podiam deixar 1 px de fresta ou
+## de borda filtrada na junção.) O espelhamento da camada fica só de reserva.
+const PERIODS := 5
 func _painted_layer(kind: String, ms: Vector2, y_off: float, s: float, mod: Color) -> ParallaxLayer:
-	var l := _layer(ms, _tile_w * 2.0)
+	var l := _layer(ms, _tile_w * 2.0 * PERIODS)
 	l.motion_offset = _align(ms)
-	var tex := SceneryLibrary.layer(eon, kind)
-	for k in 2:
-		var sp := Sprite2D.new()
-		sp.texture = tex
-		sp.centered = false
-		sp.scale = Vector2(s, s)
-		sp.flip_h = k == 1
-		sp.position = Vector2(float(k) * _tile_w, FLOOR_Y - PAINT_H + y_off)
-		sp.modulate = mod
-		l.add_child(sp)
+	l.add_child(_mirror_strip(SceneryLibrary.layer(eon, kind), s, FLOOR_Y - PAINT_H + y_off, mod))
 	return l
+
+
+## Faixa pintada sem emenda: um quad com a textura repetida em espelho,
+## de x = -2·ladrilho até (PERIODS-1)·2·ladrilho (coords da camada).
+func _mirror_strip(tex: Texture2D, s: float, y: float, mod: Color) -> Sprite2D:
+	var sp := Sprite2D.new()
+	sp.texture = tex
+	sp.centered = false
+	sp.texture_repeat = CanvasItem.TEXTURE_REPEAT_MIRROR
+	sp.region_enabled = true
+	var tw := float(tex.get_width())
+	sp.region_rect = Rect2(-2.0 * tw, 0.0, 2.0 * tw * PERIODS, float(tex.get_height()))
+	sp.scale = Vector2(s, s)
+	sp.position = Vector2(-2.0 * tw * s, y)
+	sp.modulate = mod
+	return sp
 
 
 ## Céu fixo atrás de tudo (só aparece em pulos altos acima da pintura).
@@ -180,7 +194,9 @@ func _sky_fade(l: ParallaxLayer, sky: Color) -> void:
 	var p := Polygon2D.new()
 	var c0 := sky.darkened(0.35)
 	var c1 := Color(sky.r, sky.g, sky.b, 0.0)
-	p.polygon = PackedVector2Array([Vector2(0, top - 400), Vector2(_tile_w * 2, top - 400), Vector2(_tile_w * 2, top + 34), Vector2(0, top + 34)])
+	var x0 := -_tile_w * 2.0
+	var x1 := _tile_w * 2.0 * float(PERIODS - 1)
+	p.polygon = PackedVector2Array([Vector2(x0, top - 400), Vector2(x1, top - 400), Vector2(x1, top + 34), Vector2(x0, top + 34)])
 	p.vertex_colors = PackedColorArray([c0, c0, c1, c1])
 	l.add_child(p)
 
@@ -212,6 +228,39 @@ func _add_fog(ms: Vector2, y_top: float, y_peak: float, y_bot: float, col: Color
 	m.set_shader_parameter("speed", speed)
 	m.set_shader_parameter("seed", seed_v + float(eon))
 	_fogs.append({"rect": r, "ms": ms, "y": y_top})
+
+
+## PROFUNDIDADE (VFX.md falta 4): poeira LONGE — pontinhos pequenos e apagados
+## numa camada que anda 15% da câmera (as partículas do Éon, em VfxLibrary,
+## ficam paradas na tela; a poeira PERTO do chão fica no Foreground). Camada
+## espelhada a cada 720 px: a poeira cobre a travessia inteira.
+func _far_motes(hz: Color) -> void:
+	var l := _layer(Vector2(0.15, 0.9), 720.0)
+	var p := CPUParticles2D.new()
+	p.texture = VfxLibrary.tex("circle")
+	p.local_coords = true
+	p.position = Vector2(360.0, FLOOR_Y - 130.0)
+	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	p.emission_rect_extents = Vector2(360.0, 120.0)
+	p.amount = 22
+	p.lifetime = 10.0
+	p.preprocess = 10.0
+	p.direction = Vector2(1, -0.4)
+	p.spread = 50.0
+	p.gravity = Vector2.ZERO
+	p.initial_velocity_min = 1.5
+	p.initial_velocity_max = 4.0
+	p.scale_amount_min = 0.010
+	p.scale_amount_max = 0.022
+	var dark := bool(look().get("ray_dark", false))
+	var c := Color(0.08, 0.0, 0.05) if dark else hz.lightened(0.35)
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(c, 0.0))
+	ramp.set_color(1, Color(c, 0.0))
+	ramp.add_point(0.5, Color(c, 0.45 if dark else 0.35))
+	p.color_ramp = ramp
+	l.add_child(p)
+	p.emitting = true
 
 
 ## Centro: faíscas em órbita em volta da esfera da máquina (nas duas metades).
@@ -270,13 +319,21 @@ func _process(_delta: float) -> void:
 func _build_fallback() -> void:
 	var c: Color = FALLBACK[clampi(eon, 0, 8)]
 	_build_sky(c.darkened(0.5), c)
-	var l := _layer(Vector2(0.18, 1.0), 768.0)
-	var backdrop := Sprite2D.new()
-	backdrop.texture = PaintedLibrary.background(clampi(eon, 0, 8))
-	backdrop.centered = false
-	backdrop.scale = Vector2(768.0 / backdrop.texture.get_width(), 400.0 / backdrop.texture.get_height())
-	backdrop.modulate = Color(0.68, 0.73, 0.77)
-	l.add_child(backdrop)
+	# A v2 repetia a pintura SEM espelhar a cada 768 px: emenda dura (M5).
+	# Aqui: [pintura][pintura invertida] (a textura é recorte de atlas, então
+	# não dá para usar repetição em espelho na amostragem).
+	var tex := PaintedLibrary.background(clampi(eon, 0, 8))
+	var sc := Vector2(768.0 / tex.get_width(), 400.0 / tex.get_height())
+	var l := _layer(Vector2(0.18, 1.0), 768.0 * 2.0)
+	for k in 2:
+		var backdrop := Sprite2D.new()
+		backdrop.texture = tex
+		backdrop.centered = false
+		backdrop.scale = sc
+		backdrop.flip_h = k == 1
+		backdrop.position.x = 768.0 * float(k)
+		backdrop.modulate = Color(0.68, 0.73, 0.77)
+		l.add_child(backdrop)
 
 
 # --- props pintados (entre o horizonte e a faixa de luta) ---------------------------
@@ -418,6 +475,137 @@ func build_ground(parent: Node2D, ground_top_y: float) -> void:
 	dec.z_index = 20
 	parent.add_child(dec)
 	_integrate_platforms.call_deferred(parent)
+	# limites da arena legíveis (P2): véu nas paredes da zona + pilar nas fixas
+	var ab := ArenaBounds.new()
+	ab.eon = eon
+	ab.feet = ground_top_y
+	ab.glow = look().glow
+	ab.dark_veil = bool(look().get("ray_dark", false))
+	parent.add_child(ab)
+	_build_end_walls.call_deferred(parent, ground_top_y)
+
+
+## LIMITE FIXO DA ARENA (P2): nas paredes fixas (esquerda e direita da tela)
+## fica um pilar pintado no plano da luta, meio fora da câmera, com entulho
+## na base — a Sophia esbarra numa coisa que SE VÊ, não no ar. Roda no fim do
+## quadro (o Level já calculou `_end_x`).
+func _build_end_walls(level: Node, feet_y: float) -> void:
+	if level == null or not is_instance_valid(level) or not level.has_method("arena_bounds"):
+		return
+	var right = level.get("_end_x")
+	if right == null:
+		right = (level.call("arena_bounds") as Vector2).y
+	var walls := [Vector2(Level.WALL_LEFT, -1.0), Vector2(float(right), 1.0)]
+	var mat := SceneryLibrary.prop_material(eon, 0.04, 0.30, 0.9)
+	var node := Node2D.new()
+	node.name = "EndWalls"
+	node.z_index = -1                   # atrás dos lutadores, à frente do chão
+	level.add_child(node)
+	var dark := haze().darkened(0.88)
+	for wv in walls:
+		var wx: float = wv.x
+		var side: float = wv.y            # -1 = parede esquerda
+		# Além da parede o mundo se apaga: a antecipação da câmera (offset de
+		# 90 px) passa do limite, então esse trecho aparece — escuro, não chão.
+		var face: float = wx - side * 20.0
+		var x1: float = face + side * 26.0
+		var x2: float = face + side * 160.0
+		node.add_child(_hquad(face, x1, Color(dark, 0.0), Color(dark, 0.7)))
+		node.add_child(_hquad(x1, x2, Color(dark, 0.7), Color(dark, 0.96)))
+		var pil := PaintedLibrary.sprite(0, 262.0)
+		var pw: float = pil.texture.get_width() * pil.scale.x
+		# ~46 px do pilar ficam dentro da área jogável (a parede tem 20 px de meia-largura)
+		var px: float = wx - side * (46.0 + 20.0 - pw * 0.5)
+		_contact_shadow(node, Vector2(px, feet_y + 1.0), pw * 0.55, 0.65)
+		pil.material = mat
+		pil.position = Vector2(px, feet_y + 4.0)
+		if side > 0.0:
+			pil.scale.x = -pil.scale.x
+		node.add_child(pil)
+		# entulho na base, do lado de dentro
+		var rb := PaintedLibrary.sprite(3, 34.0)
+		rb.material = mat
+		rb.position = Vector2(wx - side * (20.0 + 46.0 + 4.0), feet_y + 6.0)
+		if side > 0.0:
+			rb.scale.x = -rb.scale.x
+		node.add_child(rb)
+
+
+## Quad vertical alto (y -420..520) com degradê horizontal de cor (xa → xb).
+func _hquad(xa: float, xb: float, ca: Color, cb: Color) -> Polygon2D:
+	var q := Polygon2D.new()
+	q.polygon = PackedVector2Array([Vector2(xa, -420), Vector2(xb, -420), Vector2(xb, 520), Vector2(xa, 520)])
+	q.vertex_colors = PackedColorArray([ca, cb, cb, ca])
+	return q
+
+
+class ArenaBounds extends Node2D:
+	## LIMITE DA ZONA LEGÍVEL (P2): quando o Level tranca uma zona, nasce um véu
+	## de luz na cor do Éon em cada parede móvel (com clarão de entrada); some
+	## devagar quando a zona é liberada. Só lê o Level (`zone_active`,
+	## `arena_bounds()`); não mexe na colisão.
+	var eon: int = 0
+	var feet: float = 310.0
+	var glow: Color = Color(0.8, 0.9, 1.0)
+	var dark_veil: bool = false        # Mente: o "brilho" do Éon é vazio — véu rosado apagado
+	var _level: Node = null
+	var _veils: Array = []
+	var _amt: float = 0.0
+	var _pulse: float = 0.0
+	var _was: bool = false
+	const HALF_WALL := 20.0             # meia-largura da parede de colisão do Level
+	const H := 300.0
+
+	func _ready() -> void:
+		_level = get_parent()
+		z_index = 4                        # à frente dos lutadores (fica na borda da tela)
+		var c := glow
+		if dark_veil:
+			c = Color(0.85, 0.45, 0.6)
+		for side in [-1.0, 1.0]:
+			var v := VeilStrip.new()
+			v.h = H
+			var m := SceneryLibrary.material("veil")
+			m.set_shader_parameter("col", c)
+			m.set_shader_parameter("side", side)
+			m.set_shader_parameter("height", H)
+			m.set_shader_parameter("amt", 0.0)
+			v.material = m
+			v.position = Vector2(0.0, feet)
+			v.visible = false
+			add_child(v)
+			_veils.append(v)
+
+	func _process(delta: float) -> void:
+		if _level == null or not is_instance_valid(_level) or not _level.has_method("arena_bounds"):
+			return
+		var active := bool(_level.get("zone_active"))
+		if active:
+			var b: Vector2 = _level.call("arena_bounds")
+			(_veils[0] as Node2D).position.x = b.x + HALF_WALL
+			(_veils[1] as Node2D).position.x = b.y - HALF_WALL
+			if not _was:
+				_pulse = 1.0                   # clarão ao trancar
+		_was = active
+		_amt = move_toward(_amt, 1.0 if active else 0.0, delta * (4.0 if active else 1.4))
+		_pulse = maxf(0.0, _pulse - delta * 1.8)
+		var a := _amt + _pulse * _pulse * 1.4
+		for v in _veils:
+			var n: Node2D = v
+			n.visible = a > 0.01
+			if n.visible:
+				(n.material as ShaderMaterial).set_shader_parameter("amt", a)
+
+
+class VeilStrip extends Node2D:
+	## Retângulo do véu (o shader desenha tudo); x = 0 na parede, y = 0 nos pés.
+	var h: float = 300.0
+
+	func _draw() -> void:
+		draw_rect(Rect2(-56.0, -h, 112.0, h + 16.0), Color.WHITE)
+
+	func _ready() -> void:
+		queue_redraw()
 
 
 class FloorDecor extends Node2D:
@@ -489,6 +677,7 @@ class FloorBand extends Node2D:
 		_mat.set_shader_parameter("band_h", 136.0)
 		_mat.set_shader_parameter("reflect_amt", lk.reflect)
 		_mat.set_shader_parameter("glow", lk.glow)
+		_mat.set_shader_parameter("crack_amt", float(lk.get("crack", 1.1)))
 		material = _mat
 
 	func _process(_delta: float) -> void:
@@ -542,7 +731,7 @@ class GroundFog extends Node2D:
 ## obeliscos nas bordas e braseiros acesos na cor do Éon, com luz no chão.
 func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
 	var c := Level.ZONE_FIRST_X
-	var set_node := Node2D.new()
+	var set_node := ArenaSet.new()
 	set_node.name = "ArenaSet"
 	set_node.z_index = -1
 	parent.add_child(set_node)
@@ -551,7 +740,10 @@ func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
 	var g: Color = look().glow
 	for side in [-1.0, 1.0]:
 		# obelisco (com o cristal) nas bordas
-		var ox: float = c + side * 292.0
+		# (na borda da arena, junto do véu da parede: emoldura a luta em vez de
+		# ficar atrás do chefe; com a câmera ainda fora do centro, só acende
+		# quando a zona tranca — ver ArenaSet)
+		var ox: float = c + side * 418.0
 		_contact_shadow(set_node, Vector2(ox, base_y), 30.0, 0.6)
 		var ob := PaintedLibrary.sprite(2, 168.0)
 		ob.material = mat
@@ -560,7 +752,7 @@ func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
 			ob.scale.x = -ob.scale.x
 		set_node.add_child(ob)
 		# braseiro aceso mais pra dentro
-		var bx: float = c + side * 222.0
+		var bx: float = c + side * 352.0
 		_contact_shadow(set_node, Vector2(bx, base_y + 1.0), 22.0, 0.6)
 		var br := PaintedLibrary.sprite(4, 46.0)
 		br.material = mat
@@ -575,6 +767,30 @@ func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
 		pool.scale = Vector2(1.6, 0.35)
 		pool.modulate = Color(g.r, g.g, g.b, 0.22)
 		set_node.add_child(pool)
+
+
+class ArenaSet extends Node2D:
+	## Cenografia da arena do chefe que ACENDE quando a zona tranca (sobe da
+	## névoa em ~0,9 s): no começo da tela a câmera ainda não está centrada na
+	## arena e o obelisco apareceria no meio do quadro. Sem zona (ou se ela
+	## demorar), aparece sozinha depois de FALLBACK s.
+	const FALLBACK := 6.0
+	var _t: float = 0.0
+	var _on: bool = false
+
+	func _ready() -> void:
+		modulate.a = 0.0
+
+	func _process(delta: float) -> void:
+		_t += delta
+		if not _on:
+			var lv := get_parent()
+			if (lv != null and bool(lv.get("zone_active"))) or _t >= FALLBACK:
+				_on = true
+		if _on:
+			modulate.a = move_toward(modulate.a, 1.0, delta / 0.9)
+			if modulate.a >= 1.0:
+				set_process(false)
 
 
 ## PLATAFORMAS integradas (chamado no fim do quadro, depois que o Level as
@@ -675,6 +891,7 @@ class Foreground extends Node2D:
 	var boss: bool = false
 	var anchors: Array = []
 	var _bokeh: CPUParticles2D
+	var _dust: CPUParticles2D
 	const SPEED := 1.35      # > 1 = passa mais rápido que o mundo (está à frente)
 	const SPAN := 6800.0     # até onde vai o entulho (cobre a travessia de 3 zonas)
 
@@ -686,6 +903,8 @@ class Foreground extends Node2D:
 		position.x = c.x * (1.0 - SPEED)
 		if _bokeh != null:
 			_bokeh.position = Vector2(c.x * SPEED, c.y)
+		if _dust != null:
+			_dust.position = Vector2(c.x * SPEED, c.y + 140.0)
 
 	func _ready() -> void:
 		if rng == null:
@@ -757,6 +976,38 @@ class Foreground extends Node2D:
 		_bokeh.color_ramp = ramp
 		add_child(_bokeh)
 		_bokeh.emitting = true
+		# poeira PERTO (faixa de baixo, P2/VFX 4): grãos maiores e lentos passando
+		# rente ao chão na frente da câmera — vida sem cruzar a faixa de luta.
+		_dust = CPUParticles2D.new()
+		_dust.texture = VfxLibrary.tex("light")
+		_dust.local_coords = true
+		_dust.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+		_dust.emission_rect_extents = Vector2(360, 26)
+		_dust.amount = 9
+		_dust.lifetime = 8.0
+		_dust.preprocess = 8.0
+		_dust.direction = Vector2(1, -0.1)
+		_dust.spread = 25.0
+		_dust.gravity = Vector2.ZERO
+		_dust.initial_velocity_min = 5.0
+		_dust.initial_velocity_max = 12.0
+		_dust.scale_amount_min = 0.03
+		_dust.scale_amount_max = 0.07
+		var dc: Color = Color(g).lerp(Color(0.8, 0.8, 0.85), 0.5)
+		var dr := Gradient.new()
+		dr.set_color(0, Color(dc, 0.0))
+		dr.set_color(1, Color(dc, 0.0))
+		dr.add_point(0.5, Color(dc, 0.16))
+		if lk.get("ray_dark", false):
+			dr = Gradient.new()
+			dr.set_color(0, Color(0.06, 0.0, 0.04, 0.0))
+			dr.set_color(1, Color(0.06, 0.0, 0.04, 0.0))
+			dr.add_point(0.5, Color(0.06, 0.0, 0.04, 0.3))
+		else:
+			_dust.material = VfxLibrary._additive()
+		_dust.color_ramp = dr
+		add_child(_dust)
+		_dust.emitting = true
 
 
 # --- vinheta (CanvasLayer abaixo do HUD) ------------------------------------------
