@@ -23,6 +23,8 @@ Uso:  python tools/scenery/build_backgrounds.py [--no-ai] [--only 0,3]
 import os, sys, subprocess, re
 import numpy as np, cv2
 from PIL import Image
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import near_cleanup
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 SHEET = os.path.join(ROOT, 'assets', 'painted', 'eons.png')
@@ -164,6 +166,9 @@ def build_eon(i, use_ai):
 	rows = np.where(near.max(1) > 0.01)[0]
 	ny = max(0, int(rows.min()) - 4) if rows.size else fl - 8
 	save_rgba(os.path.join(OUT, f'eon_{i}_near.png'), above[ny:], near[ny:])
+	# limpeza da near (névoa do fundo, fios e pedaços soltos) — near_cleanup.py
+	_np = os.path.join(OUT, f'eon_{i}_near.png')
+	Image.fromarray(near_cleanup.clean(np.asarray(Image.open(_np).convert('RGBA')), i)).save(_np, optimize=True)
 	# FLOOR: o chão pintado (abaixo da linha), inteiro.
 	save_rgb(os.path.join(OUT, f'eon_{i}_floor.png'), img[fl:])
 	# FGCOL: a asa esquerda, quase preta e desfocada (coluna em primeiro plano).
