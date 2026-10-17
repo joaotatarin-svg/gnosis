@@ -24,6 +24,9 @@ Chame com `has_method`/`has_signal` para compilar sem este branch.
    `_ready` do menu ou ligar em `SceneManager`); **sem nenhum ligado** o GameManager cai na
    `EndScreen.tscn` com `end_title = "Fim da demo"`. URL da loja: `ProjectSettings
    gnosis/store_url` (hoje `""` — o João define; esconda o botão se vazio).
+   O fallback (EndScreen) mostra hoje o cabeçalho "A faísca se apagou" e "Tentar de novo"
+   (`/home/user/caps/tecnico2/demo_fim_fallback.png`): com `GameManager.demo`, a EndScreen
+   deveria trocar o cabeçalho e o botão (é arquivo da UI).
 4. **Conquistas (#49)** — `Achievements.entries()` ([{id,title,desc,hidden,unlocked}]),
    `unlocked_count()/total()`, sinal `Achievements.unlocked(id)` (para um toast; o HUD tem
    `toast(msg)` no grupo `hud`). Tela de conquistas é opcional (a Steam mostra as dela).
