@@ -91,6 +91,10 @@ func _build_moves() -> Dictionary:
 	}
 
 
+func no_touch() -> bool:
+	return _misty or super.no_touch()
+
+
 func _filter(dmg: int, _attacker: Node) -> int:
 	if _misty:
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -20.0 * e._art_scale), MIST)

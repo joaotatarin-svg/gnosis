@@ -34,7 +34,7 @@ var keep_dist := Vector2(40.0, 70.0)
 var gap_by_phase: Array = [1.1, 0.85, 0.65]
 ## POSTURA: o chefe não recua a cada cutucada. Só depois de POISE_HITS golpes
 ## seguidos (sem 3 s de folga) ele quebra a guarda e fica atordoado.
-const POISE_HITS := 6.0
+const POISE_HITS := 12.0
 const POISE_REST := 3.0
 const BREAK_STAGGER := 1.5            # s atordoado ao quebrar a postura (punição)
 const PARRY_STAGGER := 1.1            # s atordoado depois de um APARO
@@ -45,7 +45,7 @@ const PHASE_ROAR := 1.3               # s da transição de fase (invulnerável)
 ## Multiplicador de dano por estado do chefe (as JANELAS de punição).
 var window_mult := {
 	Enemy.EState.WINDUP: 0.5, Enemy.EState.STRIKE: 0.5, Enemy.EState.CHASE: 0.85,
-	Enemy.EState.RECOVER: 1.2, Enemy.EState.STAGGER: 1.4, Enemy.EState.HURT: 1.0,
+	Enemy.EState.RECOVER: 1.1, Enemy.EState.STAGGER: 1.3, Enemy.EState.HURT: 1.0,
 }
 ## Escala do dano de TODOS os golpes deste chefe (balance por chefe).
 var dmg_scale: float = 1.0
@@ -138,6 +138,11 @@ func _strike_tick(_m: Dictionary, _delta: float) -> void:
 ## Assinatura contínua do chefe (a cada passo de física, vivo).
 func _signature(_delta: float) -> void:
 	pass
+
+## true = bater agora é ruim (guarda do espelho, névoa…) — a SONDA respeita.
+func no_touch() -> bool:
+	return _airborne
+
 
 ## Filtro de dano do chefe (reflexo, armadura…). Devolve o dano final.
 func _filter(dmg: int, _attacker: Node) -> int:

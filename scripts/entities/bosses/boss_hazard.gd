@@ -33,6 +33,8 @@ var silent: bool = false           # sem som de aviso (perigos contínuos)
 var hit_air: bool = true           # false = só fere quem está no chão (onda rasteira)
 var safe: bool = false             # true = é ABRIGO (zona muda), não fere
 var vel_x: float = 0.0             # px/s: a área ANDA enquanto ativa (onda de névoa)
+var grow: float = 0.0              # px/s: o raio CRESCE enquanto ativa (poça que se espalha)
+var max_w: float = INF
 var min_x: float = -INF            # para de andar nas paredes da arena
 var max_x: float = INF
 
@@ -76,6 +78,8 @@ func _physics_process(delta: float) -> void:
 	if _t >= delay + active:
 		queue_free()
 		return
+	if grow != 0.0:
+		half_w = minf(max_w, half_w + grow * delta)
 	if vel_x != 0.0:
 		global_position.x += vel_x * delta
 		if global_position.x < min_x or global_position.x > max_x:
