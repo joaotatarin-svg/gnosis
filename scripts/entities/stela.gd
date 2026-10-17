@@ -1,7 +1,7 @@
 extends Node2D
 class_name Stela
 ## Estela de lore: uma pedra escrita deixada nos descansos entre as zonas.
-## Chegue perto e aperte o golpe leve (J / X) ou Enter pra LER: abre um painel
+## Chegue perto e aperte o golpe leve (J / X) ou Enter para LER: abre um painel
 ## estilizado (CodexStyle) com o ensino gnóstico daquela pedra e desbloqueia a
 ## entrada correspondente nas Crônicas (persistem entre runs — `Gnosis`).
 ## Desenhada por código (obsidiana + inscrições em marfim + brilho de ouro
@@ -169,14 +169,14 @@ class StelaPanel extends CanvasLayer:
 		head.text = "ESTELA  ·  %s" % String(entry.get("eon", "Kenoma")).to_upper()
 		head.add_theme_font_size_override("font_size", 9)
 		head.add_theme_color_override("font_color", CodexStyle.MUTED)
-		head.add_theme_font_override("font", CodexStyle.serif())
+		head.add_theme_font_override("font", Cinematic.title_font())
 		vbox.add_child(head)
 
 		var title := Label.new()
 		title.text = String(entry.get("title", ""))
 		title.add_theme_font_size_override("font_size", 17)
 		title.add_theme_color_override("font_color", CodexStyle.GOLD)
-		title.add_theme_font_override("font", CodexStyle.serif())
+		title.add_theme_font_override("font", Cinematic.title_font())
 		vbox.add_child(title)
 
 		var rule := ColorRect.new()
@@ -205,8 +205,8 @@ class StelaPanel extends CanvasLayer:
 		var foot := Label.new()
 		var n: int = Gnosis.chronicles_count()
 		var total: int = Gnosis.chronicles_total()
-		foot.text = ("✦ nova Crônica  %d/%d" % [n, total]) if fresh else ("Crônica %d/%d" % [n, total])
-		foot.text += "      ▸ fechar"
+		foot.text = ("• nova Crônica  %d/%d" % [n, total]) if fresh else ("Crônica %d/%d" % [n, total])
+		foot.text += "      › fechar"
 		foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		foot.add_theme_font_size_override("font_size", 9)
 		foot.add_theme_color_override("font_color", CodexStyle.GOLD if fresh else CodexStyle.MUTED)

@@ -69,12 +69,19 @@ func _do_soter(player: Node) -> void:
 	AoeNova.spawn(get_parent(), global_position + Vector2(0, -10), 0, 60.0, Color(1.0, 0.95, 0.7))
 	var t := create_tween()
 	t.tween_property(self, "modulate:a", 0.0, 0.8)
+	# A Voz volta a falar só depois que ele some — ela não o viu (o Cego não o vê).
+	var n := meeting
+	t.tween_callback(func() -> void: Gnosis.captions(Narrative.after_soter(n)))
 	t.tween_callback(queue_free)
 
 
 func _do_velkar() -> void:
-	var d := DialogueBox.play(Narrative.velkar_meeting())
-	await d.finished
+	# Termina numa escolha sem efeito mecânico ("Vem comigo" / "Fica em paz").
+	var d := DialogueBox.play(Narrative.velkar_meeting(), Narrative.velkar_choices())
+	var choice: int = await d.choice_made
+	await DialogueBox.play(Narrative.velkar_farewell(choice)).finished
+	if not is_inside_tree():
+		return
 	Progression.add_orbs(150)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -20), Color(0.75, 0.6, 0.5))
 	# Velkar fica — mancando pro canto dele. Só escurece um pouco.
