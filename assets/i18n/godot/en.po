@@ -5,6 +5,976 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. gnosis.STELAS.f8a7d0  [eon_nome]
+#: scripts/autoload/gnosis.gd:29
+msgid "O Limiar"
+msgstr "The Threshold"
+
+#. gnosis.STELAS.f5b4db  [estela_titulo]
+#: scripts/autoload/gnosis.gd:29
+msgid "A Mônada, o Inefável"
+msgstr "The Monad, the Ineffable"
+
+#. gnosis.STELAS.e86ca6  [estela]
+#: scripts/autoload/gnosis.gd:31
+msgid "Antes dos mundos, antes de o tempo contar, havia o Um."
+msgstr "Before the worlds, before time began to count, there was the One."
+
+#. gnosis.STELAS.04ab5c  [estela]
+#: scripts/autoload/gnosis.gd:32
+msgid "Não tinha nome, porque ninguém existia antes dele para nomeá-lo; não tinha medida, porque nada o limitava."
+msgstr "It had no name, for no one existed before it to name it; it had no measure, for nothing bounded it."
+
+#. gnosis.STELAS.504a6a  [estela]
+#: scripts/autoload/gnosis.gd:33
+msgid "O Apócrifo de João o chama Mônada, Espírito Invisível, Pai do Todo. Os valentinianos o chamavam Abismo, e ao seu Pensamento, Silêncio."
+msgstr "The Apocryphon of John calls it the Monad, the Invisible Spirit, Father of the All. The Valentinians called it the Depth, and its Thought, Silence."
+
+#. gnosis.STELAS.7d0204  [estela]
+#: scripts/autoload/gnosis.gd:34
+msgid "Não era vazio: era uma plenitude tão inteira que nada lhe faltava."
+msgstr "It was not empty: it was a fullness so complete that it lacked nothing."
+
+#. gnosis.STELAS.bb0ae7  [estela]
+#: scripts/autoload/gnosis.gd:35
+msgid "Dele tudo veio — não por ordem, mas por transbordar, como luz que não cabe em si."
+msgstr "From it everything came — not by command, but by overflowing, like light that cannot contain itself."
+
+#. gnosis.STELAS.7e916d  [estela]
+#: scripts/autoload/gnosis.gd:36
+msgid "Quem acorda no Kenoma acorda longe dele. Mas não fora dele."
+msgstr "Whoever wakes in the Kenoma wakes far from it. But not outside it."
+
+#. gnosis.STELAS.466d1d  [estela_fonte]
+#: scripts/autoload/gnosis.gd:38
+msgid "Apócrifo de João (NHC II,1, 2–4); Irineu, Contra as Heresias I,1,1."
+msgstr "Apocryphon of John (NHC II,1, 2–4); Irenaeus, Against Heresies I,1,1."
+
+#. gnosis.STELAS.0b0775  [estela_dica]
+#: scripts/autoload/gnosis.gd:39
+msgid "O Limiar, perto das cinzas do despertar."
+msgstr "The Threshold, near the ashes of the awakening."
+
+#. gnosis.STELAS.a1f08c  [eon_nome]
+#: scripts/autoload/gnosis.gd:40
+msgid "Torpor"
+msgstr "Torpor"
+
+#. gnosis.STELAS.b2df1f  [estela_titulo]
+#: scripts/autoload/gnosis.gd:40
+msgid "O Pleroma e os Éons"
+msgstr "The Pleroma and the Aeons"
+
+#. gnosis.STELAS.ef6313  [estela]
+#: scripts/autoload/gnosis.gd:42
+msgid "Do Abismo e do seu Silêncio vieram Mente e Verdade; destes, Palavra e Vida; destes, Homem e Igreja."
+msgstr "From the Depth and its Silence came Mind and Truth; from these, Word and Life; from these, Human and Church."
+
+#. gnosis.STELAS.f5abd5  [estela]
+#: scripts/autoload/gnosis.gd:43
+msgid "Cada um era um Éon — não um lugar, mas uma idade da Luz, uma face do Inefável. E os Éons vinham em pares: as sizígias."
+msgstr "Each was an Aeon — not a place, but an age of the Light, a face of the Ineffable. And the Aeons came in pairs: the syzygies."
+
+#. gnosis.STELAS.30c9ea  [estela]
+#: scripts/autoload/gnosis.gd:44
+msgid "Trinta Éons, dizia a escola de Valentino, e juntos formavam o Pleroma, a Plenitude, onde nada dorme e nada esquece."
+msgstr "Thirty Aeons, said the school of Valentinus, and together they formed the Pleroma, the Fullness, where nothing sleeps and nothing forgets."
+
+#. gnosis.STELAS.8b6a21  [estela]
+#: scripts/autoload/gnosis.gd:45
+msgid "Não foram fabricados: emanaram, como o calor emana do fogo."
+msgstr "They were not made: they emanated, as heat emanates from fire."
+
+#. gnosis.STELAS.7c3faa  [estela]
+#: scripts/autoload/gnosis.gd:46
+msgid "Os sete andares que sobes também se chamam Éons. É uma paródia."
+msgstr "The seven tiers you climb are also called Aeons. It is a parody."
+
+#. gnosis.STELAS.4bf7cd  [estela]
+#: scripts/autoload/gnosis.gd:47
+msgid "O Torpor não é um Éon. É o que resta quando um Éon se esquece de si."
+msgstr "Torpor is not an Aeon. It is what remains when an Aeon forgets itself."
+
+#. gnosis.STELAS.502e74  [estela_fonte]
+#: scripts/autoload/gnosis.gd:49
+msgid "Irineu, Contra as Heresias I,1,1–3 (o sistema de Ptolomeu, discípulo de Valentino)."
+msgstr "Irenaeus, Against Heresies I,1,1–3 (the system of Ptolemy, disciple of Valentinus)."
+
+#. gnosis.STELAS.b0f4c6  [estela_dica]
+#: scripts/autoload/gnosis.gd:50
+msgid "Torpor · Travessia I, no descanso entre os combates."
+msgstr "Torpor · Crossing I, at the rest between battles."
+
+#. gnosis.STELAS.2cfddd  [estela_titulo]
+#: scripts/autoload/gnosis.gd:51
+msgid "Sophia, a Sabedoria"
+msgstr "Sophia, Wisdom"
+
+#. gnosis.STELAS.6c406a  [estela]
+#: scripts/autoload/gnosis.gd:53
+msgid "O último dos Éons, o mais jovem, chamava-se Sophia: Sabedoria."
+msgstr "The last of the Aeons, the youngest, was called Sophia: Wisdom."
+
+#. gnosis.STELAS.553b63  [estela]
+#: scripts/autoload/gnosis.gd:54
+msgid "Para os valentinianos, ela quis compreender o Pai sozinha. Para o Apócrifo de João, quis gerar sem o consentimento do Espírito e sem o seu par."
+msgstr "For the Valentinians, she wished to grasp the Father alone. For the Apocryphon of John, she wished to bring forth without the Spirit's consent and without her partner."
+
+#. gnosis.STELAS.1e5ec6  [estela]
+#: scripts/autoload/gnosis.gd:55
+msgid "Não foi só soberba. Foi amor sem medida: a vontade de ver a Fonte de frente."
+msgstr "It was not mere pride. It was love without measure: the longing to see the Source face to face."
+
+#. gnosis.STELAS.b08355  [estela]
+#: scripts/autoload/gnosis.gd:56
+msgid "Do desejo sem par nasceu algo que não devia nascer. Ela o afastou de si e o escondeu numa nuvem de luz, com um trono no meio, para que nenhum Éon o visse."
+msgstr "From that unpartnered desire came something that should not have been. She cast it out and hid it in a cloud of light, a throne at its center, so no Aeon would see it."
+
+#. gnosis.STELAS.431fb0  [estela]
+#: scripts/autoload/gnosis.gd:57
+msgid "Os valentinianos contavam que, caída, ela chorou: das lágrimas veio a água; do riso, a luz; da tristeza e do medo, a matéria."
+msgstr "The Valentinians told that, fallen, she wept: from her tears came water; from her laughter, light; from her grief and fear, matter."
+
+#. gnosis.STELAS.c29f9f  [estela]
+#: scripts/autoload/gnosis.gd:58
+msgid "Todo torpor começa assim: alguém amou tanto que esqueceu de si."
+msgstr "Every torpor begins like this: someone loved so much they forgot themselves."
+
+#. gnosis.STELAS.9180f6  [estela_fonte]
+#: scripts/autoload/gnosis.gd:60
+msgid "Apócrifo de João (NHC II,1, 9–10); Irineu I,2–4; Hipólito, Refutação VI,29–36."
+msgstr "Apocryphon of John (NHC II,1, 9–10); Irenaeus I,2–4; Hippolytus, Refutation VI,29–36."
+
+#. gnosis.STELAS.38dd9b  [estela_dica]
+#: scripts/autoload/gnosis.gd:61
+msgid "Torpor · Travessia V, antes da antessala de Athoth."
+msgstr "Torpor · Crossing V, before Athoth's antechamber."
+
+#. gnosis.STELAS.32af4c  [eon_nome]
+#: scripts/autoload/gnosis.gd:62
+msgid "Fome"
+msgstr "Hunger"
+
+#. gnosis.STELAS.04497e  [estela_titulo]
+#: scripts/autoload/gnosis.gd:62
+msgid "O Aborto Cego"
+msgstr "The Blind Abortion"
+
+#. gnosis.STELAS.89ecad  [estela]
+#: scripts/autoload/gnosis.gd:64
+msgid "O filho de Sophia nasceu disforme: aparência de serpente e de leão, olhos como relâmpagos de fogo."
+msgstr "Sophia's son was born misshapen: the look of a serpent and a lion, eyes like flashes of fire."
+
+#. gnosis.STELAS.827bb2  [estela]
+#: scripts/autoload/gnosis.gd:65
+msgid "Ela o chamou Yaldabaoth. Os textos o chamam também Saklas, o Tolo, e Samael, “o deus dos cegos”."
+msgstr "She named him Yaldabaoth. The texts also call him Saklas, the Fool, and Samael, “the god of the blind.”"
+
+#. gnosis.STELAS.ca1285  [estela]
+#: scripts/autoload/gnosis.gd:66
+msgid "Cego porque nunca viu o Pleroma de onde a mãe veio. Cego porque se acreditou o único."
+msgstr "Blind because he never saw the Pleroma his mother came from. Blind because he believed himself the only one."
+
+#. gnosis.STELAS.ed30e0  [estela]
+#: scripts/autoload/gnosis.gd:67
+msgid "“Eu sou deus, e não há outro além de mim”, proclamou. Os textos respondem: a frase é ignorância, não poder."
+msgstr "“I am god, and there is no other but me,” he proclaimed. The texts answer: the boast is ignorance, not power."
+
+#. gnosis.STELAS.d3aba1  [estela]
+#: scripts/autoload/gnosis.gd:68
+msgid "Levou consigo um poder da mãe, e com ele fez um mundo copiando, às cegas, o Pleroma que nunca viu."
+msgstr "He carried off a power of his mother's, and with it made a world by copying, blindly, the Pleroma he had never seen."
+
+#. gnosis.STELAS.6e6cec  [estela]
+#: scripts/autoload/gnosis.gd:69
+msgid "A Fome é o primeiro sinal de um deus cego: precisa de tudo, e nada o enche."
+msgstr "Hunger is the first sign of a blind god: he needs everything, and nothing fills him."
+
+#. gnosis.STELAS.f446c7  [estela_fonte]
+#: scripts/autoload/gnosis.gd:71
+msgid "Apócrifo de João (NHC II,1, 10–13); Hipóstase dos Arcontes (NHC II,4, 87 e 94–95)."
+msgstr "Apocryphon of John (NHC II,1, 10–13); Hypostasis of the Archons (NHC II,4, 87 and 94–95)."
+
+#. gnosis.STELAS.6d244b  [estela_dica]
+#: scripts/autoload/gnosis.gd:72
+msgid "Fome · Travessia I, logo depois dos mercados."
+msgstr "Hunger · Crossing I, just past the markets."
+
+#. gnosis.STELAS.c89e5b  [estela_titulo]
+#: scripts/autoload/gnosis.gd:73
+msgid "O Kenoma e a Hyle"
+msgstr "The Kenoma and the Hyle"
+
+#. gnosis.STELAS.54cd55  [estela]
+#: scripts/autoload/gnosis.gd:75
+msgid "Pleroma quer dizer plenitude. Kenoma quer dizer vazio: a deficiência, a falta."
+msgstr "Pleroma means fullness. Kenoma means emptiness: the deficiency, the lack."
+
+#. gnosis.STELAS.123030  [estela]
+#: scripts/autoload/gnosis.gd:76
+msgid "Não é o nada. É o cheio que nunca satisfaz: um mercado sem fim onde ninguém se alimenta."
+msgstr "It is not nothingness. It is a fullness that never satisfies: an endless market where no one is fed."
+
+#. gnosis.STELAS.cc880e  [estela]
+#: scripts/autoload/gnosis.gd:77
+msgid "A matéria — hyle — nasceu das paixões de Sophia: da tristeza, do medo, da perplexidade."
+msgstr "Matter — hyle — was born of Sophia's passions: of grief, of fear, of bewilderment."
+
+#. gnosis.STELAS.eceb0d  [estela]
+#: scripts/autoload/gnosis.gd:78
+msgid "“A deficiência veio a existir porque o Pai não era conhecido; quando o Pai é conhecido, a deficiência deixa de existir.”"
+msgstr "“The lack came to be because the Father was unknown; once the Father is known, the lack is no more.”"
+
+#. gnosis.STELAS.f6269c  [estela]
+#: scripts/autoload/gnosis.gd:79
+msgid "Há textos que desprezam a carne e outros que a tratam com piedade. Para os valentinianos, ela guarda o luto de uma mãe."
+msgstr "Some texts despise the flesh and others treat it with pity. For the Valentinians, it holds a mother's grief."
+
+#. gnosis.STELAS.0affb9  [estela]
+#: scripts/autoload/gnosis.gd:80
+msgid "Quem come no Kenoma come sombra de pão. Quem lembra já provou o pão de verdade."
+msgstr "Whoever eats in the Kenoma eats the shadow of bread. Whoever remembers has already tasted true bread."
+
+#. gnosis.STELAS.b0506b  [estela_fonte]
+#: scripts/autoload/gnosis.gd:82
+msgid "Irineu I,4–5; Evangelho da Verdade (NHC I,3, 24–25)."
+msgstr "Irenaeus I,4–5; Gospel of Truth (NHC I,3, 24–25)."
+
+#. gnosis.STELAS.ab29fc  [estela_dica]
+#: scripts/autoload/gnosis.gd:83
+msgid "Fome · O Desafio, no santuário do Campeão."
+msgstr "Hunger · The Challenge, at the Champion's shrine."
+
+#. gnosis.STELAS.694b72  [estela_titulo]
+#: scripts/autoload/gnosis.gd:84
+msgid "Os Sete Arcontes e as Esferas"
+msgstr "The Seven Archons and the Spheres"
+
+#. gnosis.STELAS.f5b706  [estela]
+#: scripts/autoload/gnosis.gd:86
+msgid "Yaldabaoth gerou governantes — arcontes — à sua semelhança, e pôs sete reis sobre os sete céus."
+msgstr "Yaldabaoth begot rulers — Archons — in his own likeness, and set seven kings over the seven heavens."
+
+#. gnosis.STELAS.349858  [estela]
+#: scripts/autoload/gnosis.gd:87
+msgid "Os antigos ligavam os sete céus aos sete astros errantes, da Lua a Saturno."
+msgstr "The ancients linked the seven heavens to the seven wandering stars, from the Moon to Saturn."
+
+#. gnosis.STELAS.5df59b  [estela]
+#: scripts/autoload/gnosis.gd:88
+msgid "Athoth, Harmas, Galila, Yabel, Belias e Armupiel vêm da lista de autoridades do Apócrifo de João; Astaphaios, da lista dos sete reis."
+msgstr "Athoth, Harmas, Galila, Yabel, Belias and Armupiel come from the Apocryphon of John's list of authorities; Astaphaios, from the list of the seven kings."
+
+#. gnosis.STELAS.c70696  [estela]
+#: scripts/autoload/gnosis.gd:89
+msgid "Nos textos, cada um recebe uma potência. Aqui, cada porta cobra uma paixão: sono, fome, lei, silêncio, reflexo, podridão, coroa."
+msgstr "In the texts, each receives a power. Here, each door exacts a passion: sleep, hunger, law, silence, reflection, rot, crown."
+
+#. gnosis.STELAS.720c29  [estela]
+#: scripts/autoload/gnosis.gd:90
+msgid "No Poimandres hermético, a alma que sobe devolve um vício a cada esfera, até chegar livre à oitava."
+msgstr "In the Hermetic Poimandres, the rising soul gives back one vice to each sphere, until it reaches the eighth, free."
+
+#. gnosis.STELAS.34cc06  [estela]
+#: scripts/autoload/gnosis.gd:91
+msgid "Não são demônios. São funcionários de um engano — e todo funcionário sonha com o cargo do chefe."
+msgstr "They are not demons. They are officials of a deception — and every official dreams of the boss's seat."
+
+#. gnosis.STELAS.32d79a  [estela_fonte]
+#: scripts/autoload/gnosis.gd:93
+msgid "Apócrifo de João (NHC II,1, 10–12; BG 8502,2); Orígenes, Contra Celso VI,31; Poimandres (Corpus Hermeticum I,25–26)."
+msgstr "Apocryphon of John (NHC II,1, 10–12; BG 8502,2); Origen, Against Celsus VI,31; Poimandres (Corpus Hermeticum I,25–26)."
+
+#. gnosis.STELAS.3a7559  [estela_dica]
+#: scripts/autoload/gnosis.gd:94
+msgid "Fome · Travessia V, depois do santuário."
+msgstr "Hunger · Crossing V, past the shrine."
+
+#. gnosis.STELAS.20daf0  [eon_nome]
+#: scripts/autoload/gnosis.gd:95
+msgid "Corrente"
+msgstr "Chain"
+
+#. gnosis.STELAS.fea5c0  [estela_titulo]
+#: scripts/autoload/gnosis.gd:95
+msgid "Heimarmene, o Destino em Corrente"
+msgstr "Heimarmene, Fate in Chains"
+
+#. gnosis.STELAS.a70efe  [estela]
+#: scripts/autoload/gnosis.gd:97
+msgid "Os arcontes geraram o Destino — Heimarmene — e o amarraram aos astros."
+msgstr "The Archons begot Fate — Heimarmene — and bound it to the stars."
+
+#. gnosis.STELAS.f3a2b1  [estela]
+#: scripts/autoload/gnosis.gd:98
+msgid "Cada nascimento sob um signo; cada vida numa órbita; cada morte no dia marcado."
+msgstr "Every birth under a sign; every life in an orbit; every death on the appointed day."
+
+#. gnosis.STELAS.e70165  [estela]
+#: scripts/autoload/gnosis.gd:99
+msgid "Diz o Apócrifo que é a mais dura das cadeias: por ela deuses, anjos, demônios e homens ficaram presos a medidas, estações e tempos."
+msgstr "The Apocryphon calls it the harshest of fetters: by it gods, angels, demons and humans were bound to measures, seasons and times."
+
+#. gnosis.STELAS.d54204  [estela]
+#: scripts/autoload/gnosis.gd:100
+msgid "“Até o batismo, o Destino é verdadeiro; depois dele, os astrólogos já não acertam”, ensinava Teódoto."
+msgstr "“Until baptism, Fate holds true; after it, the astrologers no longer get it right,” Theodotus taught."
+
+#. gnosis.STELAS.e8ad0d  [estela]
+#: scripts/autoload/gnosis.gd:101
+msgid "A gnose não nega os astros. Nega que eles tenham a última palavra."
+msgstr "Gnosis does not deny the stars. It denies that they have the last word."
+
+#. gnosis.STELAS.3dec09  [estela]
+#: scripts/autoload/gnosis.gd:102
+msgid "A lei deste Éon é essa corrente: bela, polida — e ainda corrente."
+msgstr "The law of this Aeon is that chain: beautiful, polished — and still a chain."
+
+#. gnosis.STELAS.2f55be  [estela_fonte]
+#: scripts/autoload/gnosis.gd:104
+msgid "Apócrifo de João (NHC II,1, 28); Clemente de Alexandria, Excertos de Teódoto 69–78."
+msgstr "Apocryphon of John (NHC II,1, 28); Clement of Alexandria, Excerpts from Theodotus 69–78."
+
+#. gnosis.STELAS.704f99  [estela_dica]
+#: scripts/autoload/gnosis.gd:105
+msgid "Corrente · Travessia I, depois dos primeiros selos."
+msgstr "Chain · Crossing I, past the first seals."
+
+#. gnosis.STELAS.8be9e1  [estela_titulo]
+#: scripts/autoload/gnosis.gd:106
+msgid "O Homem de Barro e a Faísca"
+msgstr "The Man of Clay and the Spark"
+
+#. gnosis.STELAS.931683  [estela]
+#: scripts/autoload/gnosis.gd:108
+msgid "A imagem do Homem perfeito brilhou nas águas de baixo, e os arcontes quiseram copiá-la: “Façamos um homem à imagem de Deus e à nossa semelhança”."
+msgstr "The image of the perfect Human shone on the waters below, and the Archons wished to copy it: “Let us make a man after the image of God and in our own likeness.”"
+
+#. gnosis.STELAS.ae8cf4  [estela]
+#: scripts/autoload/gnosis.gd:109
+msgid "Moldaram-no, mas ele não se erguia: ficava no chão, imóvel, sem alma. Outros relatos dizem que se arrastava como um verme."
+msgstr "They shaped him, but he would not rise: he lay on the ground, motionless, soulless. Other accounts say he crawled like a worm."
+
+#. gnosis.STELAS.1eaaa1  [estela]
+#: scripts/autoload/gnosis.gd:110
+msgid "Então a Luz agiu por astúcia: fez o Cego soprar no rosto do homem o poder que ele tinha levado da mãe."
+msgstr "Then the Light acted by cunning: it made the Blind One breathe into the man's face the power he had taken from his mother."
+
+#. gnosis.STELAS.4dc0ec  [estela]
+#: scripts/autoload/gnosis.gd:111
+msgid "E o homem se ergueu, mais luminoso que os seus criadores. Os arcontes tiveram inveja e o lançaram no fundo da matéria."
+msgstr "And the man rose, more luminous than his makers. The Archons grew envious and cast him down into the depths of matter."
+
+#. gnosis.STELAS.d43a1e  [estela]
+#: scripts/autoload/gnosis.gd:112
+msgid "Cada pessoa carrega essa faísca: um pedaço da Luz que o carcereiro não quis dar, e deu."
+msgstr "Every person carries that spark: a piece of the Light the jailer did not want to give, and gave."
+
+#. gnosis.STELAS.0943dd  [estela]
+#: scripts/autoload/gnosis.gd:113
+msgid "A corrente prende o barro. Nunca prendeu a faísca."
+msgstr "The chain binds the clay. It never bound the spark."
+
+#. gnosis.STELAS.14dc3a  [estela_fonte]
+#: scripts/autoload/gnosis.gd:115
+msgid "Apócrifo de João (NHC II,1, 14–21); Hipóstase dos Arcontes (NHC II,4, 87–88); Irineu I,24,1 (Saturnino)."
+msgstr "Apocryphon of John (NHC II,1, 14–21); Hypostasis of the Archons (NHC II,4, 87–88); Irenaeus I,24,1 (Saturninus)."
+
+#. gnosis.STELAS.1487a8  [estela_dica]
+#: scripts/autoload/gnosis.gd:116
+msgid "Corrente · Travessia IV, entre as duas zonas."
+msgstr "Chain · Crossing IV, between the two zones."
+
+#. gnosis.STELAS.628868  [eon_nome]
+#: scripts/autoload/gnosis.gd:117
+msgid "Silêncio"
+msgstr "Silence"
+
+#. gnosis.STELAS.c7503e  [estela_titulo]
+#: scripts/autoload/gnosis.gd:117
+msgid "A Gnose: saber é lembrar"
+msgstr "Gnosis: To Know Is to Remember"
+
+#. gnosis.STELAS.3de39d  [estela]
+#: scripts/autoload/gnosis.gd:119
+msgid "Gnose não é crença nem obra. É conhecimento — do tipo que se tem de um rosto amado, não de uma fórmula."
+msgstr "Gnosis is neither belief nor works. It is knowledge — the kind one has of a beloved face, not of a formula."
+
+#. gnosis.STELAS.17a813  [estela]
+#: scripts/autoload/gnosis.gd:120
+msgid "“Quem éramos, o que nos tornamos; onde estávamos, para onde fomos lançados; para onde nos apressamos, de que somos libertos.” (Teódoto)"
+msgstr "“Who we were, what we have become; where we were, where we have been thrown; where we are hurrying, what we are freed from.” (Theodotus)"
+
+#. gnosis.STELAS.41484f  [estela]
+#: scripts/autoload/gnosis.gd:121
+msgid "“Quem não conhece a si mesmo nada conhece; quem conhece a si mesmo já conhece a profundeza do Todo.” (Livro de Tomé, o Atleta)"
+msgstr "“Whoever does not know himself knows nothing; whoever knows himself already knows the depth of the All.” (Book of Thomas the Contender)"
+
+#. gnosis.STELAS.49ae77  [estela]
+#: scripts/autoload/gnosis.gd:122
+msgid "Por isso o Silêncio é o Éon mais perigoso: não se pode lembrar do que foi apagado."
+msgstr "That is why Silence is the most dangerous Aeon: one cannot remember what has been erased."
+
+#. gnosis.STELAS.b647a3  [estela]
+#: scripts/autoload/gnosis.gd:123
+msgid "Mas a faísca não esquece. Só espera que alguém lhe pergunte o nome."
+msgstr "But the spark does not forget. It only waits for someone to ask its name."
+
+#. gnosis.STELAS.660836  [estela_fonte]
+#: scripts/autoload/gnosis.gd:125
+msgid "Excertos de Teódoto 78,2; Livro de Tomé, o Atleta (NHC II,7, 138); Evangelho da Verdade (NHC I,3)."
+msgstr "Excerpts from Theodotus 78,2; Book of Thomas the Contender (NHC II,7, 138); Gospel of Truth (NHC I,3)."
+
+#. gnosis.STELAS.150c4b  [estela_dica]
+#: scripts/autoload/gnosis.gd:126
+msgid "Silêncio · Travessia I, entre as primeiras estantes vazias."
+msgstr "Silence · Crossing I, among the first empty shelves."
+
+#. gnosis.STELAS.86cf42  [estela_titulo]
+#: scripts/autoload/gnosis.gd:127
+msgid "Nag Hammadi, 1945"
+msgstr "Nag Hammadi, 1945"
+
+#. gnosis.STELAS.e091cb  [estela]
+#: scripts/autoload/gnosis.gd:129
+msgid "Por mais de mil e quinhentos anos, quase tudo o que se sabia dos gnósticos vinha dos seus adversários."
+msgstr "For more than fifteen hundred years, nearly everything known about the Gnostics came from their opponents."
+
+#. gnosis.STELAS.ebe180  [estela]
+#: scripts/autoload/gnosis.gd:130
+msgid "Em dezembro de 1945, perto de Nag Hammadi, no Egito, o camponês Muhammad Ali al-Samman cavava adubo ao pé de um penhasco e achou um jarro."
+msgstr "In December 1945, near Nag Hammadi, in Egypt, the farmer Muhammad Ali al-Samman was digging for fertilizer at the foot of a cliff and found a jar."
+
+#. gnosis.STELAS.cdb177  [estela]
+#: scripts/autoload/gnosis.gd:131
+msgid "Dentro: doze códices de papiro encadernados em couro, e folhas de um décimo terceiro, copiados em copta no século IV."
+msgstr "Inside: twelve papyrus codices bound in leather, and leaves of a thirteenth, copied in Coptic in the fourth century."
+
+#. gnosis.STELAS.592590  [estela]
+#: scripts/autoload/gnosis.gd:132
+msgid "Cinquenta e dois tratados. O Apócrifo de João. O Evangelho de Tomé. O Evangelho da Verdade. A Hipóstase dos Arcontes."
+msgstr "Fifty-two treatises. The Apocryphon of John. The Gospel of Thomas. The Gospel of Truth. The Hypostasis of the Archons."
+
+#. gnosis.STELAS.f39332  [estela]
+#: scripts/autoload/gnosis.gd:133
+msgid "Conta-se que algumas folhas acabaram no forno da casa antes que alguém soubesse o que eram."
+msgstr "It is said that some leaves ended up in the household oven before anyone knew what they were."
+
+#. gnosis.STELAS.031bea  [estela]
+#: scripts/autoload/gnosis.gd:134
+msgid "Uma biblioteca inteira ficou em silêncio no barro por dezesseis séculos. E ainda assim falou."
+msgstr "An entire library lay silent in the earth for sixteen centuries. And even so, it spoke."
+
+#. gnosis.STELAS.6115a0  [estela_fonte]
+#: scripts/autoload/gnosis.gd:136
+msgid "James M. Robinson (org.), The Nag Hammadi Library in English (1977), introdução."
+msgstr "James M. Robinson (ed.), The Nag Hammadi Library in English (1977), introduction."
+
+#. gnosis.STELAS.026ca7  [estela_dica]
+#: scripts/autoload/gnosis.gd:137
+msgid "Silêncio · O Desafio, no santuário do Campeão."
+msgstr "Silence · The Challenge, at the Champion's shrine."
+
+#. gnosis.STELAS.3374b8  [estela_titulo]
+#: scripts/autoload/gnosis.gd:138
+msgid "O Apócrifo de João"
+msgstr "The Apocryphon of John"
+
+#. gnosis.STELAS.157b44  [estela]
+#: scripts/autoload/gnosis.gd:140
+msgid "É o mito inteiro, do Um ao homem, contado como revelação a João, filho de Zebedeu."
+msgstr "It is the whole myth, from the One to humankind, told as a revelation to John, son of Zebedee."
+
+#. gnosis.STELAS.616223  [estela]
+#: scripts/autoload/gnosis.gd:141
+msgid "Sobreviveu em quatro cópias — três em Nag Hammadi, uma num códice de Berlim —, sinal de que era muito lido."
+msgstr "It survived in four copies — three at Nag Hammadi, one in a Berlin codex — a sign that it was widely read."
+
+#. gnosis.STELAS.38c641  [estela]
+#: scripts/autoload/gnosis.gd:142
+msgid "Nele o Salvador conta a origem de Yaldabaoth, os nomes dos arcontes, a criação de Adão e a corrente do Destino."
+msgstr "In it the Savior tells of Yaldabaoth's origin, the names of the Archons, the making of Adam and the chain of Fate."
+
+#. gnosis.STELAS.06436e  [estela]
+#: scripts/autoload/gnosis.gd:143
+msgid "Ensina que a alma que não conhece volta a nascer, de prisão em prisão, até despertar; e termina com um hino: “Levanta-te e lembra-te”."
+msgstr "It teaches that the soul that does not know is born again, from prison to prison, until it wakes; and it ends with a hymn: “Rise, and remember.”"
+
+#. gnosis.STELAS.73775d  [estela]
+#: scripts/autoload/gnosis.gd:144
+msgid "Algo muito próximo dele já circulava por volta de 180: Irineu resume o seu mito para combatê-lo. O combate ajudou a preservá-lo."
+msgstr "Something very close to it was already circulating around 180: Irenaeus summarizes its myth in order to refute it. The refutation helped preserve it."
+
+#. gnosis.STELAS.182a19  [estela]
+#: scripts/autoload/gnosis.gd:145
+msgid "As páginas em branco deste Éon são o que restaria sem o jarro. Lê enquanto podes."
+msgstr "The blank pages of this Aeon are what would remain without the jar. Read while you can."
+
+#. gnosis.STELAS.3cb886  [estela_fonte]
+#: scripts/autoload/gnosis.gd:147
+msgid "NHC II,1; III,1; IV,1; Códice de Berlim (BG 8502,2); Irineu, Contra as Heresias I,29."
+msgstr "NHC II,1; III,1; IV,1; Berlin Codex (BG 8502,2); Irenaeus, Against Heresies I,29."
+
+#. gnosis.STELAS.1b0a6e  [estela_dica]
+#: scripts/autoload/gnosis.gd:148
+msgid "Silêncio · Travessia V, antes da antessala de Yabel."
+msgstr "Silence · Crossing V, before Yabel's antechamber."
+
+#. gnosis.STELAS.d6bc71  [eon_nome]
+#: scripts/autoload/gnosis.gd:149
+msgid "Espelho"
+msgstr "Mirror"
+
+#. gnosis.STELAS.4d225b  [estela_titulo]
+#: scripts/autoload/gnosis.gd:149
+msgid "Pistis Sophia e os Arrependimentos"
+msgstr "Pistis Sophia and the Repentances"
+
+#. gnosis.STELAS.2b275d  [estela]
+#: scripts/autoload/gnosis.gd:151
+msgid "Há um livro em que Sophia, caída no caos, canta treze arrependimentos."
+msgstr "There is a book in which Sophia, fallen into chaos, sings thirteen repentances."
+
+#. gnosis.STELAS.2fb940  [estela]
+#: scripts/autoload/gnosis.gd:152
+msgid "Ela viu lá embaixo uma luz — a força com rosto de leão do Arrogante — e pensou que fosse a Luz de cima. Desceu atrás dela."
+msgstr "Below her she saw a light — the lion-faced power of the Arrogant One — and took it for the Light above. She went down after it."
+
+#. gnosis.STELAS.d0a769  [estela]
+#: scripts/autoload/gnosis.gd:153
+msgid "Os poderes do caos a cercaram. Ela cantou: “Ó Luz das luzes, em quem confiei desde o princípio, ouve o meu arrependimento”."
+msgstr "The powers of chaos closed around her. She sang: “O Light of lights, in whom I trusted from the beginning, hear my repentance.”"
+
+#. gnosis.STELAS.0a5743  [estela]
+#: scripts/autoload/gnosis.gd:154
+msgid "A cada canto, um discípulo — muitas vezes Maria Madalena — responde com um salmo que o interpreta."
+msgstr "After each song, a disciple — often Mary Magdalene — answers with a psalm that interprets it."
+
+#. gnosis.STELAS.259e03  [estela]
+#: scripts/autoload/gnosis.gd:155
+msgid "Sophia não é salva por força. É salva por lembrar a quem chamar."
+msgstr "Sophia is not saved by strength. She is saved by remembering whom to call."
+
+#. gnosis.STELAS.daa79c  [estela]
+#: scripts/autoload/gnosis.gd:156
+msgid "O Espelho deste Éon é aquela luz falsa vista de cima. O reflexo não é a Luz. Nunca foi."
+msgstr "This Aeon's Mirror is that false light seen from above. The reflection is not the Light. It never was."
+
+#. gnosis.STELAS.a40309  [estela_fonte]
+#: scripts/autoload/gnosis.gd:158
+msgid "Pistis Sophia (Códice Askew, séc. III–IV), livros I–II."
+msgstr "Pistis Sophia (Askew Codex, 3rd–4th c.), books I–II."
+
+#. gnosis.STELAS.0d942c  [estela_dica]
+#: scripts/autoload/gnosis.gd:159
+msgid "Espelho · Travessia I, depois das águas paradas."
+msgstr "Mirror · Crossing I, past the still waters."
+
+#. gnosis.STELAS.a58aea  [estela_titulo]
+#: scripts/autoload/gnosis.gd:160
+msgid "Valentino e Basílides"
+msgstr "Valentinus and Basilides"
+
+#. gnosis.STELAS.9f363a  [estela]
+#: scripts/autoload/gnosis.gd:162
+msgid "Nem todos os gnósticos foram anônimos. Dois mestres ensinaram em Alexandria e em Roma, no século II."
+msgstr "Not all Gnostics were anonymous. Two masters taught in Alexandria and in Rome, in the second century."
+
+#. gnosis.STELAS.0da731  [estela]
+#: scripts/autoload/gnosis.gd:163
+msgid "Segundo Hipólito, Basílides falava de um Deus que “não é”, tão além do ser que nem “existir” se diz dele. Segundo Irineu, os céus eram 365."
+msgstr "Hippolytus says Basilides spoke of a God who “is not,” so far beyond being that not even “exists” can be said of him. Irenaeus says the heavens numbered 365."
+
+#. gnosis.STELAS.9fa3e4  [estela]
+#: scripts/autoload/gnosis.gd:164
+msgid "Valentino, poeta e mestre, esperou ser bispo de Roma, conta Tertuliano. A escola dele levou o mito de Sophia pelo Mediterrâneo."
+msgstr "Valentinus, poet and teacher, hoped to become bishop of Rome, Tertullian reports. His school carried the myth of Sophia across the Mediterranean."
+
+#. gnosis.STELAS.ed8353  [estela]
+#: scripts/autoload/gnosis.gd:165
+msgid "Para os valentinianos havia três naturezas: a matéria, que se dissolve; a alma, que escolhe; o espírito, que retorna."
+msgstr "For the Valentinians there were three natures: matter, which dissolves; soul, which chooses; spirit, which returns."
+
+#. gnosis.STELAS.578c5e  [estela]
+#: scripts/autoload/gnosis.gd:166
+msgid "Escreveram comentários, salmos, cartas e homilias — quase tudo perdido."
+msgstr "They wrote commentaries, psalms, letters and homilies — almost all of it lost."
+
+#. gnosis.STELAS.9e6275  [estela]
+#: scripts/autoload/gnosis.gd:167
+msgid "O que sabemos deles é um reflexo nas palavras de quem os combateu. Mesmo assim, brilha."
+msgstr "What we know of them is a reflection in the words of those who fought them. Even so, it shines."
+
+#. gnosis.STELAS.15fc13  [estela_fonte]
+#: scripts/autoload/gnosis.gd:169
+msgid "Irineu I,1–8 e I,24; Hipólito, Refutação VII,20–27; Clemente, Stromata; Tertuliano, Contra os Valentinianos 4."
+msgstr "Irenaeus I,1–8 and I,24; Hippolytus, Refutation VII,20–27; Clement, Stromata; Tertullian, Against the Valentinians 4."
+
+#. gnosis.STELAS.d75374  [estela_dica]
+#: scripts/autoload/gnosis.gd:170
+msgid "Espelho · Travessia IV, depois do santuário."
+msgstr "Mirror · Crossing IV, past the shrine."
+
+#. gnosis.STELAS.4a9ba9  [eon_nome]
+#: scripts/autoload/gnosis.gd:171
+msgid "Praga"
+msgstr "Blight"
+
+#. gnosis.STELAS.797bd2  [estela_titulo]
+#: scripts/autoload/gnosis.gd:171
+msgid "O Evangelho de Tomé"
+msgstr "The Gospel of Thomas"
+
+#. gnosis.STELAS.4e4a57  [estela]
+#: scripts/autoload/gnosis.gd:173
+msgid "“Estas são as palavras secretas que Jesus, o vivo, disse, e que Dídimo Judas Tomé escreveu.”"
+msgstr "“These are the hidden words that Jesus, the living one, spoke, and that Didymus Judas Thomas set down.”"
+
+#. gnosis.STELAS.c2944f  [estela]
+#: scripts/autoload/gnosis.gd:174
+msgid "Cento e catorze ditos. Sem nascimento, sem milagres, sem paixão: só a voz, e o ouvido de quem entende. Se é gnóstico, os estudiosos discutem."
+msgstr "One hundred and fourteen sayings. No birth, no miracles, no passion: only the voice, and the ear of whoever understands. Whether it is Gnostic, scholars debate."
+
+#. gnosis.STELAS.110875  [estela]
+#: scripts/autoload/gnosis.gd:175
+msgid "“O Reino está dentro de vós e fora de vós. Quando vos conhecerdes, sereis conhecidos.”"
+msgstr "“The Kingdom is within you and around you. Know yourselves, and you will be known.”"
+
+#. gnosis.STELAS.9e882b  [estela]
+#: scripts/autoload/gnosis.gd:176
+msgid "“Se trouxerdes à luz o que está dentro de vós, isso vos salvará. Se não o tiverdes, isso vos matará.”"
+msgstr "“If you bring to light what is within you, it will save you. If you lack it, its lack will kill you.”"
+
+#. gnosis.STELAS.bf16bb  [estela]
+#: scripts/autoload/gnosis.gd:177
+msgid "“O Reino do Pai está espalhado sobre a terra, e os homens não o veem.”"
+msgstr "“The Father's Kingdom lies spread across the earth, and people do not see it.”"
+
+#. gnosis.STELAS.2c4956  [estela]
+#: scripts/autoload/gnosis.gd:178
+msgid "Na Praga tudo apodrece por fora. O dito de Tomé pergunta o que apodrece por dentro."
+msgstr "In the Blight, everything rots on the outside. Thomas's saying asks what rots on the inside."
+
+#. gnosis.STELAS.00a54d  [estela_fonte]
+#: scripts/autoload/gnosis.gd:180
+msgid "Evangelho de Tomé (NHC II,2), ditos 1, 3, 70 e 113."
+msgstr "Gospel of Thomas (NHC II,2), sayings 1, 3, 70 and 113."
+
+#. gnosis.STELAS.5e9a14  [estela_dica]
+#: scripts/autoload/gnosis.gd:181
+msgid "Praga · Travessia I, logo depois do pântano."
+msgstr "Blight · Crossing I, just past the swamp."
+
+#. gnosis.STELAS.5677e7  [estela_titulo]
+#: scripts/autoload/gnosis.gd:182
+msgid "O Hino da Pérola"
+msgstr "The Hymn of the Pearl"
+
+#. gnosis.STELAS.e4e493  [estela]
+#: scripts/autoload/gnosis.gd:184
+msgid "Um príncipe do Oriente é enviado ao Egito para buscar uma pérola guardada por uma serpente."
+msgstr "A prince of the East is sent down to Egypt to fetch a pearl guarded by a serpent."
+
+#. gnosis.STELAS.fe4cfd  [estela]
+#: scripts/autoload/gnosis.gd:185
+msgid "Os pais lhe tiram o manto de luz e prometem: “Quando voltares com a pérola, tu o vestirás de novo”."
+msgstr "His parents take from him his robe of light and promise: “When you return with the pearl, you will wear it again.”"
+
+#. gnosis.STELAS.bfcfd4  [estela]
+#: scripts/autoload/gnosis.gd:186
+msgid "No Egito ele come a comida deles, veste as roupas deles — e esquece. Esquece a pérola, esquece o rei, esquece quem é."
+msgstr "In Egypt he eats their food, wears their clothes — and forgets. He forgets the pearl, forgets the king, forgets who he is."
+
+#. gnosis.STELAS.aa5a17  [estela]
+#: scripts/autoload/gnosis.gd:187
+msgid "Então uma carta voa até ele como uma águia: “Desperta e levanta-te do teu sono. Lembra-te de que és filho de reis. Lembra-te da pérola”."
+msgstr "Then a letter flies to him like an eagle: “Wake, and rise from your sleep. Remember you are a child of kings. Remember the pearl.”"
+
+#. gnosis.STELAS.3a0a8d  [estela]
+#: scripts/autoload/gnosis.gd:188
+msgid "Ele acorda, encanta a serpente com o nome do pai, toma a pérola e sobe. O manto vem ao seu encontro, e ele se reconhece nele."
+msgstr "He wakes, charms the serpent with his father's name, takes the pearl and climbs. The robe comes to meet him, and he recognizes himself in it."
+
+#. gnosis.STELAS.9ad668  [estela]
+#: scripts/autoload/gnosis.gd:189
+msgid "O veneno deste pântano é a comida do Egito. A carta é qualquer coisa que te faça lembrar."
+msgstr "The poison of this swamp is the food of Egypt. The letter is anything that makes you remember."
+
+#. gnosis.STELAS.124142  [estela_fonte]
+#: scripts/autoload/gnosis.gd:191
+msgid "Atos de Tomé 108–113 (o “Hino da Pérola”, em siríaco, séc. II–III)."
+msgstr "Acts of Thomas 108–113 (the “Hymn of the Pearl,” in Syriac, 2nd–3rd c.)."
+
+#. gnosis.STELAS.062957  [estela_dica]
+#: scripts/autoload/gnosis.gd:192
+msgid "Praga · Travessia IV, depois do santuário."
+msgstr "Blight · Crossing IV, past the shrine."
+
+#. gnosis.STELAS.c61bf7  [eon_nome]
+#: scripts/autoload/gnosis.gd:193
+msgid "Coroa"
+msgstr "Crown"
+
+#. gnosis.STELAS.e7b458  [estela_titulo]
+#: scripts/autoload/gnosis.gd:193
+msgid "O Chamado e o Despertar"
+msgstr "The Call and the Awakening"
+
+#. gnosis.STELAS.6ca589  [estela]
+#: scripts/autoload/gnosis.gd:195
+msgid "Os textos concordam num ponto: a faísca não acorda sozinha. Algo a chama."
+msgstr "The texts agree on one point: the spark does not wake on its own. Something calls it."
+
+#. gnosis.STELAS.a68736  [estela]
+#: scripts/autoload/gnosis.gd:196
+msgid "“Levanta-te e lembra-te”, diz o hino do Apócrifo de João. “Desperta”, diz a carta da Pérola. O chamado ecoa também entre mandeus e maniqueus."
+msgstr "“Rise, and remember,” says the hymn of the Apocryphon of John. “Wake,” says the letter of the Pearl. The call echoes among Mandaeans and Manichaeans too."
+
+#. gnosis.STELAS.66638d  [estela]
+#: scripts/autoload/gnosis.gd:197
+msgid "“Quem tem a gnose, quando é chamado, ouve, responde e se volta para quem o chama”, diz o Evangelho da Verdade."
+msgstr "“Whoever has gnosis, when called, hears, answers, and turns toward the one who calls,” says the Gospel of Truth."
+
+#. gnosis.STELAS.c8e1b4  [estela]
+#: scripts/autoload/gnosis.gd:198
+msgid "O Chamado vem de fora do Kenoma: de um enviado disfarçado, de uma carta, de uma dor que rompe o feitiço."
+msgstr "The Call comes from outside the Kenoma: from an envoy in disguise, from a letter, from a pain that breaks the spell."
+
+#. gnosis.STELAS.ab3ff1  [estela]
+#: scripts/autoload/gnosis.gd:199
+msgid "Quem chama não pode subir por ti. O Chamado verdadeiro desperta, e deixa ir."
+msgstr "The one who calls cannot climb for you. The true Call awakens, and lets go."
+
+#. gnosis.STELAS.51ef8e  [estela]
+#: scripts/autoload/gnosis.gd:200
+msgid "A Coroa deste Éon espera um rei. O Despertar espera que ninguém se sente."
+msgstr "The Crown of this Aeon awaits a king. The Awakening waits for no one to sit."
+
+#. gnosis.STELAS.96c844  [estela_fonte]
+#: scripts/autoload/gnosis.gd:202
+msgid "Apócrifo de João (NHC II,1, 30–31, o hino da Providência); Evangelho da Verdade (NHC I,3, 21–22); Atos de Tomé 110."
+msgstr "Apocryphon of John (NHC II,1, 30–31, the hymn of Providence); Gospel of Truth (NHC I,3, 21–22); Acts of Thomas 110."
+
+#. gnosis.STELAS.58fcfd  [estela_dica]
+#: scripts/autoload/gnosis.gd:203
+msgid "Coroa · Travessia I, depois dos tronos vazios."
+msgstr "Crown · Crossing I, past the empty thrones."
+
+#. gnosis.STELAS.25b6d8  [estela_titulo]
+#: scripts/autoload/gnosis.gd:204
+msgid "Docetismo: o corpo aparente"
+msgstr "Docetism: The Apparent Body"
+
+#. gnosis.STELAS.7972fe  [estela]
+#: scripts/autoload/gnosis.gd:206
+msgid "Alguns grupos ensinavam que o Salvador viveu entre os homens só em aparência — dokein, em grego, “parecer”."
+msgstr "Some groups taught that the Savior lived among humans only in appearance — dokein, in Greek, “to seem.”"
+
+#. gnosis.STELAS.3182dd  [estela]
+#: scripts/autoload/gnosis.gd:207
+msgid "Basílides, segundo Irineu, dizia que outro foi crucificado em seu lugar; o Apocalipse de Pedro de Nag Hammadi o mostra rindo acima da cruz."
+msgstr "Basilides, according to Irenaeus, said another was crucified in his place; the Nag Hammadi Apocalypse of Peter shows him laughing above the cross."
+
+#. gnosis.STELAS.377a11  [estela]
+#: scripts/autoload/gnosis.gd:208
+msgid "Outros discordaram com força: se ele não sofreu de verdade, o que salvou de verdade? Nem todo gnóstico era docetista."
+msgstr "Others disagreed fiercely: if he did not truly suffer, what did he truly save? Not every Gnostic was a docetist."
+
+#. gnosis.STELAS.2c4fa1  [estela]
+#: scripts/autoload/gnosis.gd:209
+msgid "A disputa durou séculos, e não é preciso tomar partido para ouvi-la."
+msgstr "The dispute lasted centuries, and one need not take sides to hear it."
+
+#. gnosis.STELAS.efad31  [estela]
+#: scripts/autoload/gnosis.gd:210
+msgid "Ela pergunta o que este Éon pergunta: se o corpo é aparência, por que a dor é tão real?"
+msgstr "It asks what this Aeon asks: if the body is appearance, why is the pain so real?"
+
+#. gnosis.STELAS.dd31cc  [estela]
+#: scripts/autoload/gnosis.gd:211
+msgid "O corpo que lê esta pedra sangra. Talvez a resposta esteja no sangue."
+msgstr "The body reading this stone bleeds. Perhaps the answer lies in the blood."
+
+#. gnosis.STELAS.38f061  [estela_fonte]
+#: scripts/autoload/gnosis.gd:213
+msgid "Irineu I,24,4 (Basílides); Segundo Tratado do Grande Set (NHC VII,2, 56); Apocalipse de Pedro (NHC VII,3, 81–83)."
+msgstr "Irenaeus I,24,4 (Basilides); Second Treatise of the Great Seth (NHC VII,2, 56); Apocalypse of Peter (NHC VII,3, 81–83)."
+
+#. gnosis.STELAS.f20be6  [estela_dica]
+#: scripts/autoload/gnosis.gd:214
+msgid "Coroa · Travessia IV, entre as duas zonas."
+msgstr "Crown · Crossing IV, between the two zones."
+
+#. gnosis.STELAS.14e2d6  [eon_nome]
+#: scripts/autoload/gnosis.gd:215
+msgid "O Centro"
+msgstr "The Center"
+
+#. gnosis.STELAS.936b00  [estela_titulo]
+#: scripts/autoload/gnosis.gd:215
+msgid "A Salvação como Retorno"
+msgstr "Salvation as Return"
+
+#. gnosis.STELAS.86589d  [estela]
+#: scripts/autoload/gnosis.gd:217
+msgid "Para o gnóstico, a salvação não é perdão nem prêmio. É retorno — restauração — de cada faísca à Plenitude."
+msgstr "For the Gnostic, salvation is neither pardon nor prize. It is return — restoration — of every spark to the Fullness."
+
+#. gnosis.STELAS.26ba1a  [estela]
+#: scripts/autoload/gnosis.gd:218
+msgid "Sophia, ao lembrar, é recebida de volta. E o filho cego? Para os valentinianos, sobe ao lugar da mãe; Sobre a Origem do Mundo o lança ao abismo."
+msgstr "Sophia, remembering, is received back. And the blind son? For the Valentinians, he rises to his mother's place; On the Origin of the World casts him into the abyss."
+
+#. gnosis.STELAS.c6b2f1  [estela]
+#: scripts/autoload/gnosis.gd:219
+msgid "“Descobristes o princípio, para buscardes o fim? Onde está o princípio, ali estará o fim”, diz o Evangelho de Tomé."
+msgstr "“Have you found the beginning, that you now seek the end? Where the beginning is, the end will be,” says the Gospel of Thomas."
+
+#. gnosis.STELAS.c84a30  [estela]
+#: scripts/autoload/gnosis.gd:220
+msgid "Ninguém volta sozinho: o Chamado vai buscando os que ainda dormem, um a um, até que o Kenoma se esvazie."
+msgstr "No one returns alone: the Call goes out to those still sleeping, one by one, until the Kenoma is emptied."
+
+#. gnosis.STELAS.fa292c  [estela]
+#: scripts/autoload/gnosis.gd:221
+msgid "Aqui no Centro não há voz, nem trono, nem coroa. Só o caminho de volta."
+msgstr "Here in the Center there is no voice, no throne, no crown. Only the way back."
+
+#. gnosis.STELAS.de012a  [estela]
+#: scripts/autoload/gnosis.gd:222
+msgid "Escolher como voltar — subir, sentar ou plantar — nunca coube a deus nenhum."
+msgstr "Choosing how to return — to rise, to sit or to sow — was never any god's to decide."
+
+#. gnosis.STELAS.aa1c16  [estela_fonte]
+#: scripts/autoload/gnosis.gd:224
+msgid "Evangelho de Tomé 18; Irineu I,7,1; Sobre a Origem do Mundo (NHC II,5, 126–127); Tratado Tripartite (NHC I,5)."
+msgstr "Gospel of Thomas 18; Irenaeus I,7,1; On the Origin of the World (NHC II,5, 126–127); Tripartite Tractate (NHC I,5)."
+
+#. gnosis.STELAS.025455  [estela_dica]
+#: scripts/autoload/gnosis.gd:225
+msgid "O Centro II, na segunda câmara de ecos."
+msgstr "The Center II, in the second chamber of echoes."
+
+#. gnosis.BOSS_TITLES.d2c8a4  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:230
+msgid "O REI"
+msgstr "THE KING"
+
+#. gnosis.BOSS_TITLES.2012c9  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:230
+msgid "Guardião do Limiar"
+msgstr "Guardian of the Threshold"
+
+#. gnosis.BOSS_TITLES.b32681  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:231
+msgid "ATHOTH"
+msgstr "ATHOTH"
+
+#. gnosis.BOSS_TITLES.d28e50  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:231
+msgid "Arconte do Torpor  ·  Primeira Esfera"
+msgstr "Archon of Torpor  ·  First Sphere"
+
+#. gnosis.BOSS_TITLES.3d9412  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:232
+msgid "HARMAS"
+msgstr "HARMAS"
+
+#. gnosis.BOSS_TITLES.62bf40  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:232
+msgid "Arconte da Fome  ·  Segunda Esfera"
+msgstr "Archon of Hunger  ·  Second Sphere"
+
+#. gnosis.BOSS_TITLES.64e493  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:233
+msgid "GALILA"
+msgstr "GALILA"
+
+#. gnosis.BOSS_TITLES.8bfef3  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:233
+msgid "Arconte da Corrente  ·  Terceira Esfera"
+msgstr "Archon of the Chain  ·  Third Sphere"
+
+#. gnosis.BOSS_TITLES.8ff41d  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:234
+msgid "YABEL"
+msgstr "YABEL"
+
+#. gnosis.BOSS_TITLES.956725  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:234
+msgid "Arconte do Silêncio  ·  Quarta Esfera"
+msgstr "Archon of Silence  ·  Fourth Sphere"
+
+#. gnosis.BOSS_TITLES.3d4616  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:235
+msgid "ASTAPHAIOS"
+msgstr "ASTAPHAIOS"
+
+#. gnosis.BOSS_TITLES.f578a4  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:235
+msgid "Arconte do Espelho  ·  Quinta Esfera"
+msgstr "Archon of the Mirror  ·  Fifth Sphere"
+
+#. gnosis.BOSS_TITLES.0ce1b1  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:236
+msgid "BELIAS"
+msgstr "BELIAS"
+
+#. gnosis.BOSS_TITLES.214358  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:236
+msgid "Arconte da Praga  ·  Sexta Esfera"
+msgstr "Archon of Blight  ·  Sixth Sphere"
+
+#. gnosis.BOSS_TITLES.af7664  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:237
+msgid "ARMUPIEL"
+msgstr "ARMUPIEL"
+
+#. gnosis.BOSS_TITLES.82bd24  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:237
+msgid "Arconte da Coroa  ·  Sétima Esfera"
+msgstr "Archon of the Crown  ·  Seventh Sphere"
+
+#. gnosis.BOSS_TITLES.41880c  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:238
+msgid "O REI ENFRAQUECIDO"
+msgstr "THE WEAKENED KING"
+
+#. gnosis.BOSS_TITLES.bf60e1  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:238
+msgid "A Mentira  ·  Yaldabaoth"
+msgstr "The Lie  ·  Yaldabaoth"
+
+#. gnosis.BOSS_TITLES.fb6748  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:239
+msgid "O COLOSSO OCO"
+msgstr "HOLLOW COLOSSUS"
+
+#. gnosis.BOSS_TITLES.7a1f27  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:239
+msgid "A Verdade  ·  Yaldabaoth"
+msgstr "The Truth  ·  Yaldabaoth"
+
+#. gnosis.BOSS_TITLES.91c428  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:240
+msgid "YALDABAOTH"
+msgstr "YALDABAOTH"
+
+#. gnosis.BOSS_TITLES.b6df70  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:240
+msgid "O Rei enfraquecido e o Colosso Oco  ·  as duas faces"
+msgstr "Weakened King and Hollow Colossus  ·  two faces"
+
+#. gnosis.boss_card.86ab62  [card_chefe_nome]
+#: scripts/autoload/gnosis.gd:389
+msgid "O CAMPEÃO"
+msgstr "THE CHAMPION"
+
+#. gnosis.boss_card.ea8185  [card_chefe_titulo]
+#: scripts/autoload/gnosis.gd:389
+msgid "Guardião do santuário %s %s"
+msgstr "Guardian of the shrine %s %s"
+
 #. narrative.VOZ.1031fa  [falante]
 #: scripts/autoload/narrative.gd:17
 msgid "A Voz"
@@ -1783,7 +2753,7 @@ msgstr "Because there is none. There is a throne, and the throne is your enemy."
 #. narrative._arrival_pool.0e8f56  [legenda · A Voz]
 #: scripts/autoload/narrative.gd:811
 msgid "A antessala da Coroa. Depois dela, o sétimo. E depois... o ritual. Prometi mostrar-te."
-msgstr "The antechamber of the Crown. After it, the seventh. And then... the rite. I promised to show you."
+msgstr "The Crown's antechamber. After it, the seventh. And then... the rite. I promised to show you."
 
 #. narrative._arrival_pool.ca43fd  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:812
@@ -2008,7 +2978,7 @@ msgstr "Then do not ask it. Here, a question turns into blank ink."
 #. narrative._cleared_pool.581550  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:875
 msgid "Gnose não é fé nem obra, diz a pedra: é lembrar. E eu não lembro de nada antes das cinzas."
-msgstr "Gnosis isn't faith or works, says the stone: it's remembering. And I remember nothing before the ashes."
+msgstr "Gnosis isn't faith or works, the stone says: it's memory. I recall nothing before the ashes."
 
 #. narrative._cleared_pool.0432bf  [legenda · A Voz]
 #: scripts/autoload/narrative.gd:876
