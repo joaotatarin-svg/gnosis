@@ -249,6 +249,24 @@
     "fall",
     "lying"
    ]
+  },
+  "s13": {
+   "file": "assets/painted/src/sophia_s13_b.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": 0.97,
+   "cells": [
+    "toeoffD",
+    "kneeD",
+    "reachD",
+    "weightD",
+    "toeoffE",
+    "kneeE",
+    "reachE",
+    "weightE"
+   ]
   }
  },
  "frame_fix": {
@@ -562,23 +580,31 @@
   "rund": {
    "frames": [
     "s2.run_0",
+    "s13.toeoffE",
+    "s13.weightD",
     "s2.run_1",
     "s2.run_2",
-    "s11.passE_1",
+    "s13.kneeE",
     "s2.run_3",
+    "s13.reachE",
     "s2.run_4",
+    "s13.weightE",
+    "s13.toeoffD",
     "s2.run_5",
-    "s11.passD_1",
-    "s11.passE_0",
+    "s13.kneeD",
     "s2.run_6",
+    "s13.reachD",
     "s2.run_7"
    ],
    "anchor": "pelvis",
    "cycle_bodies": "auto",
    "steps": [
     0,
-    5
-   ]
+    7
+   ],
+   "support": {
+    "s13.reachD": "rear"
+   }
   }
  }
 }

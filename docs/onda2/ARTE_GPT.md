@@ -130,14 +130,7 @@ Prova: `gifs/npcs_estados.png` (AnimQA `-- npc_board`).
 
 ## Sophia — corrida desenhada (S11) e morte com transição (S12)
 
-- **Corrida**: estado novo `rund` = ciclo todo DESENHADO de 11 quadros (S2 run_0..7 + três passagens
-  da S11 encaixadas pela fase do pé de apoio), avanço por quadro calculado pelo recuo do pé →
-  **deriva do pé na troca 0,00 px** (`tools/anim/run_drift.py rund`); deslize dentro do quadro ≤ 13 px
-  de mundo. `USE_RUN_INBETWEENS := false` (o `run16` com meios do RIFE continua no atlas, desligado).
-  Honesto: a S11 trouxe só 4 poses (contato e passagem de cada perna, repetidas em 2 ciclos) que caem
-  nas MESMAS fases da S2; não há quadros novos entre contato→recuo nem impulso→contato, então um
-  ciclo de 16 todo desenhado não é possível com ela. Para 16 de verdade faltariam 8 poses "entre"
-  (ex.: pé saindo do chão, joelho subindo) — pedido possível ao produtor.
+- **Corrida** (atualizada com a S13 _b): estado `rund` = ciclo de **16 quadros todos desenhados** pela fase do pé de apoio — S2 run_0..7 + as 8 poses ENTRE da S13 (pé saindo do chão, joelho alto, pé estendido antes do contato, recebendo o peso, das duas pernas). A S11 saiu do ciclo (as poses dela caem nas mesmas fases da S2). Ordem: contato D, saída E, peso D, recuo, passagem, joelho E, impulso, alcance E | contato E, peso E, saída D, recuo, joelho D, passagem, alcance D (apoio ainda no pé de trás: `support: rear`), impulso. **Deriva do pé na troca 0,00 px**; deslizamento dentro do quadro **≤ 10,1 px** de mundo (antes 13,3 com 11 quadros; 16 no ciclo de 8). `build_frames.py`/`run_drift.py` ganharam `support` por quadro. `USE_RUN_INBETWEENS := false`; nenhum meio do RIFE na corrida. GIFs: `gifs/sophia_corrida_antes.gif` (run16 com RIFE) × `gifs/sophia_corrida_depois.gif` (16 desenhados); versão intermediária de 11 quadros em `gifs/sophia_corrida_v11_s2s11.gif`.
 - **Morte**: `dead` = S12 _b inteira (atingida → cambaleia → um joelho → mão no chão → tombando →
   deitada de bruços), 0,6 s, âncora no pé de trás (cai pra frente sem escorregar). Substitui S9 die_0..3.
 - HeroQA ganhou: corrida sem quadros do RIFE e ≥ 8 quadros; morte com ≥ 5 quadros e terminando deitada.

@@ -26,6 +26,7 @@ adv = st["advance"]
 steps = set(int(s) for s in st.get("steps", [])) | set(int(s) for s in st.get("support_change", []))
 n = len(fr)
 worst = 0.0
+sup = st.get("support", {})
 print("%s: %d quadros, ciclo %.1f px de mundo" % (name, n, sum(adv) * k))
 for i in range(n):
 	j = (i + 1) % n
@@ -33,7 +34,10 @@ for i in range(n):
 	if j in steps:
 		print("  %2d->%-2d  troca de apoio           desliza no quadro %.1f px" % (i, j, slide))
 		continue
-	d = ((fr[i]["low_x"] - ax[i]) - adv[i] - (fr[j]["low_x"] - ax[j])) * k
+	# pé de apoio de cada quadro (bota mais baixa ou o `support` da receita)
+	ki = {"rear": "rear_x", "front": "front_x"}.get(sup.get(st["frames"][i]["f"]), "low_x")
+	kj = {"rear": "rear_x", "front": "front_x"}.get(sup.get(st["frames"][j]["f"]), "low_x")
+	d = ((fr[i][ki] - ax[i]) - adv[i] - (fr[j][kj] - ax[j])) * k
 	worst = max(worst, abs(d))
 	print("  %2d->%-2d  deriva na troca %+5.2f px  desliza no quadro %.1f px" % (i, j, d, slide))
 print("PIOR deriva na troca: %.2f px de mundo (%.2f px de tela)" % (worst, worst * 2))
