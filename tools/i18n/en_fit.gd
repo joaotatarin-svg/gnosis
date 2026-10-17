@@ -288,10 +288,18 @@ class Worker extends Node:
 		await shot("en_dialogo")
 		d._finish()
 		await wait(0.3)
-		Gnosis._caption.say("Sophia", tr_en("Chamam este mundo de Kenoma, o vazio. Mas está cheio até a borda."))
-		await wait(3.0)
+		# A faixa de legenda só roda dentro de um Level: aqui ela é mostrada "na mão"
+		# (sem _process), só para a captura.
+		var cb: CaptionBar = Gnosis._caption
+		cb.set_process(false)
+		cb._show({"speaker": "Sophia", "text": tr_en("Chamam este mundo de Kenoma, o vazio. Mas está cheio até a borda.")})
+		cb._root.visible = true
+		cb._root.modulate.a = 1.0
+		cb._text.visible_characters = -1
+		await wait(0.6)
 		await shot("en_legenda")
-		Gnosis._caption.clear()
+		cb.set_process(true)
+		cb.clear()
 		var c := Cinematic.boss_card(tr_en("ARMUPIEL"), tr_en("Arconte da Coroa  ·  Sétima Esfera"))
 		await wait(0.9)
 		await shot("en_card_chefe")
