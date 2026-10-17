@@ -6,8 +6,12 @@ extends CanvasLayer
 ##   · os 7 ANÉIS como gemas na cor de cada Arconte: vazio (encaixe apagado),
 ##     equipado (gema acesa + halo), roubado (encaixe rachado, cinza)
 ##   · progresso do Éon (canto direito): 9 marcos ligados por um fio
-##   · barra do CHEFE na base: nome em versalete, marcador de fase em 50 %
-## Fala com o jogo pelo grupo "hud": show_boss(e), boss_phase(n), toast(msg).
+##   · barra do CHEFE na base: nome em versalete, marcador de fase em 50 %,
+##     medalhão I/II à esquerda; até DUAS barras lado a lado (batalha final:
+##     Rei e Colosso, cada uma com a vida e a FASE do seu chefe; quem cai e vai
+##     se refazer mostra "refazendo-se" com a barra cinza enchendo)
+## Fala com o jogo pelo grupo "hud": show_boss(e), boss_phase(n[, chefe]),
+## toast(msg), boss_area_top() (a legenda usa para ficar acima da barra).
 ## API da encenação (Onda 2): ring_dot_global_pos(i), ring_dot_world_pos(i),
 ## detach_ring(i, alvo) — a gema salta do encaixe e voa (sinal ring_detach_finished).
 
@@ -55,14 +59,9 @@ var ring_skills: Array = []         # SkillData na ordem dos Arcontes
 var _ring_pop: Array[float] = []    # animação de ganho por anel
 var _detached: Dictionary = {}      # índice -> true enquanto a gema está fora
 
-# chefe
-var boss: Node = null
-var boss_ratio: float = 1.0
-var boss_ghost: float = 1.0
-var _boss_hold: float = 0.0
-var boss_phase_n: int = 1
-var _boss_show: float = 0.0         # 0..1 (entrada)
-var _boss_phase_flash: float = 0.0
+# chefes (até 2 barras; ver _BossBar)
+var bosses: Array = []               # [_BossBar] na ordem em que nasceram
+var boss: Node = null                # o 1º chefe vivo (compatibilidade)
 
 var _t: float = 0.0
 var _portrait: Texture2D
@@ -129,16 +128,7 @@ func _process(delta: float) -> void:
 	_weapon_flash = maxf(0.0, _weapon_flash - delta * 1.5)
 	for i in _ring_pop.size():
 		_ring_pop[i] = maxf(0.0, _ring_pop[i] - delta * 1.8)
-	# Chefe
-	if boss != null:
-		_boss_show = minf(1.0, _boss_show + delta * 3.0)
-		if _boss_hold > 0.0:
-			_boss_hold -= delta
-		elif boss_ghost > boss_ratio:
-			boss_ghost = move_toward(boss_ghost, boss_ratio, delta * (0.15 + (boss_ghost - boss_ratio) * 1.4))
-	else:
-		_boss_show = maxf(0.0, _boss_show - delta * 2.0)
-	_boss_phase_flash = maxf(0.0, _boss_phase_flash - delta * 1.2)
+	_process_bosses(delta)
 	_canvas.queue_redraw()
 
 
@@ -218,36 +208,181 @@ func toast(msg: String) -> void:
 	t.chain().tween_property(_toast, "modulate:a", 0.0, 0.5)
 
 
-## Chamado (via grupo "hud") pelo chefe ao nascer.
+## Chamado (via grupo "hud") pelo chefe ao nascer — e de novo quando uma forma
+## da batalha final se refaz (aí a barra dela volta a encher, fase I).
 func show_boss(e: Node) -> void:
-	boss = e
-	boss_phase_n = int(e.get("phase")) if e.get("phase") != null else 1
-	boss_ratio = float(e.health.current_health) / maxf(1.0, float(e.health.max_health))
-	boss_ghost = boss_ratio
-	_boss_show = 0.0
-	if not e.health.health_changed.is_connected(_on_boss_hp):
-		e.health.health_changed.connect(_on_boss_hp)
-	if not e.health.died.is_connected(_on_boss_died):
-		e.health.died.connect(_on_boss_died)
-
-
-func _on_boss_hp(c: int, m: int) -> void:
-	var r := float(c) / maxf(1.0, float(m))
-	if r < boss_ratio:
-		_boss_hold = 0.5
-	boss_ratio = clampf(r, 0.0, 1.0)
-
-
-func _on_boss_died() -> void:
-	boss = null
-
-
-## Chamado pelo chefe ao entrar na fase 2.
-func boss_phase(n: int) -> void:
-	if boss == null:
+	if e == null or not is_instance_valid(e) or not ("health" in e) or e.get("health") == null:
 		return
-	boss_phase_n = n
-	_boss_phase_flash = 1.0
+	var bb := _bar_of(e)
+	if bb == null:
+		bb = _BossBar.new()
+		bb.node = e
+		bosses.append(bb)
+		var hc := _on_boss_hp.bind(e)
+		if not e.health.health_changed.is_connected(hc):
+			e.health.health_changed.connect(hc)
+		var dc := _on_boss_died.bind(e)
+		if not e.health.died.is_connected(dc):
+			e.health.died.connect(dc)
+	bb.phase = int(e.get("phase")) if e.get("phase") != null else 1
+	bb.ratio = float(e.health.current_health) / maxf(1.0, float(e.health.max_health))
+	bb.ghost = bb.ratio
+	bb.down = false
+	bb.leaving = false
+	bb.revive_k = 0.0
+	_refresh_main_boss()
+
+
+func _on_boss_hp(c: int, m: int, e: Node) -> void:
+	var bb := _bar_of(e)
+	if bb == null:
+		return
+	var r := clampf(float(c) / maxf(1.0, float(m)), 0.0, 1.0)
+	if r < bb.ratio:
+		bb.hold = 0.5
+	bb.ratio = r
+	if r > 0.0 and bb.down:
+		bb.down = false
+		bb.ghost = r
+
+
+func _on_boss_died(e: Node) -> void:
+	var bb := _bar_of(e)
+	if bb == null:
+		return
+	bb.ratio = 0.0
+	# Batalha final: a forma que cai vai se refazer enquanto a outra viver.
+	var other_alive := false
+	for o in bosses:
+		var ob: _BossBar = o
+		if ob != bb and not ob.down and not ob.leaving and is_instance_valid(ob.node):
+			other_alive = true
+	if bool(e.get("revivable")) and other_alive:
+		bb.down = true
+		bb.revive_k = 0.0
+	else:
+		bb.leaving = true
+		# Caiu a última: as que esperavam refazer-se também saem.
+		for o in bosses:
+			var ob: _BossBar = o
+			if ob.down:
+				ob.leaving = true
+	_refresh_main_boss()
+
+
+## Chamado pelo chefe ao entrar na fase 2. `who` diz QUAL chefe; sem ele
+## (contrato antigo do enemy.gd: boss_phase(2)), vale o chefe cuja propriedade
+## `phase` já chegou a `n` — com dois chefes, a fase vai para o certo.
+func boss_phase(n: int, who: Node = null) -> void:
+	var hit := false
+	for o in bosses:
+		var bb: _BossBar = o
+		if not is_instance_valid(bb.node) or bb.leaving:
+			continue
+		var matches := false
+		if who != null:
+			matches = bb.node == who
+		else:
+			var p = bb.node.get("phase")
+			matches = p != null and int(p) >= n and bb.phase < n
+		if matches:
+			bb.phase = n
+			bb.flash = 1.0
+			hit = true
+	if not hit and who == null:
+		# Sem `phase` legível: com um só chefe, é dele.
+		var live := _live_bars()
+		if live.size() == 1:
+			(live[0] as _BossBar).phase = n
+			(live[0] as _BossBar).flash = 1.0
+
+
+## Topo da área da(s) barra(s) de chefe na base (360 = nenhuma). A legenda
+## (CaptionBar) termina acima disto.
+func boss_area_top() -> float:
+	for o in bosses:
+		if (o as _BossBar).show > 0.05:
+			return BOSS_BAR_Y - 18.0
+	return 360.0
+
+
+func _bar_of(e: Node) -> _BossBar:
+	for o in bosses:
+		if (o as _BossBar).node == e:
+			return o
+	return null
+
+
+func _live_bars() -> Array:
+	return bosses.filter(func(o): return not (o as _BossBar).leaving and is_instance_valid((o as _BossBar).node))
+
+
+func _refresh_main_boss() -> void:
+	boss = null
+	for o in bosses:
+		var bb: _BossBar = o
+		if not bb.leaving and not bb.down and is_instance_valid(bb.node):
+			boss = bb.node
+			return
+
+
+func _process_bosses(delta: float) -> void:
+	var revive_src: Node = null
+	for i in range(bosses.size() - 1, -1, -1):
+		var bb: _BossBar = bosses[i]
+		if not is_instance_valid(bb.node):
+			bb.leaving = true
+		if bb.leaving:
+			bb.show = maxf(0.0, bb.show - delta * 2.0)
+			if bb.show <= 0.0:
+				_disconnect_boss(bb)
+				bosses.remove_at(i)
+			continue
+		bb.show = minf(1.0, bb.show + delta * 3.0)
+		if bb.hold > 0.0:
+			bb.hold -= delta
+		elif bb.ghost > bb.ratio:
+			bb.ghost = move_toward(bb.ghost, bb.ratio, delta * (0.15 + (bb.ghost - bb.ratio) * 1.4))
+		if bb.ghost < bb.ratio:
+			bb.ghost = bb.ratio
+		bb.flash = maxf(0.0, bb.flash - delta * 1.2)
+		if bb.down:
+			# Quanto falta para refazer-se: lido do FinalBattle (se existir).
+			if revive_src == null:
+				revive_src = _find_revive_source(bb.node)
+			var k := bb.revive_k + delta / 14.0
+			if revive_src != null:
+				var ds = revive_src.get("down_since")
+				var lim = revive_src.get("REVIVE_AFTER")
+				if ds is Dictionary and ds.has(bb.node):
+					k = float(ds[bb.node]) / maxf(0.1, float(lim) if lim != null else 14.0)
+			bb.revive_k = clampf(k, 0.0, 1.0)
+
+
+func _disconnect_boss(bb: _BossBar) -> void:
+	if not is_instance_valid(bb.node) or bb.node.get("health") == null:
+		return
+	var h = bb.node.health
+	var hc := _on_boss_hp.bind(bb.node)
+	if h.health_changed.is_connected(hc):
+		h.health_changed.disconnect(hc)
+	var dc := _on_boss_died.bind(bb.node)
+	if h.died.is_connected(dc):
+		h.died.disconnect(dc)
+
+
+## O nó que conta o tempo de "refazer" (FinalBattle.down_since), sem depender da classe.
+func _find_revive_source(e: Node) -> Node:
+	var scope: Array = []
+	if is_instance_valid(e) and e.get_parent() != null:
+		scope.append(e.get_parent())
+	if get_tree().current_scene != null:
+		scope.append(get_tree().current_scene)
+	for sc in scope:
+		for c in (sc as Node).get_children():
+			if "down_since" in c:
+				return c
+	return null
 
 
 ## Centro da gema do Anel `i` em coordenadas de TELA (viewport base 640×360).
@@ -366,7 +501,8 @@ class _HudCanvas extends Control:
 		var outer := rect.grow(1.5)
 		draw_colored_polygon(_wedge(outer, s + 1.5), Color(0.01, 0.03, 0.04, 0.8))
 		draw_colored_polygon(_wedge(rect, s), Color("1a1418") if c_lo.r > c_lo.b else Color("0f1a24"))
-		if ghost > frac:
+		# (fantasma estreita demais vira polígono degenerado: só a partir de 2 chanfros)
+		if ghost > frac and rect.size.x * ghost >= s * 2.0 + 0.5:
 			var g := Rect2(rect.position, Vector2(rect.size.x * ghost, rect.size.y))
 			draw_colored_polygon(_wedge(g, s), Color(CodexStyle.SPARK, 0.75))
 		if frac > 0.0:
@@ -528,41 +664,76 @@ class _HudCanvas extends Control:
 				draw_circle(c, r, col)
 				draw_arc(c, r, 0.0, TAU, 12, Color(CodexStyle.GOLD, 0.8 if i <= cur else 0.45), 0.6, true)
 
-	# --- chefe ----------------------------------------------------------------------------
+	# --- chefe(s) --------------------------------------------------------------------------
 	func _draw_boss() -> void:
-		var show: float = hud._boss_show
-		if show <= 0.0:
+		var vis: Array = []
+		for o in hud.bosses:
+			if o.show > 0.0:
+				vis.append(o)
+		if vis.is_empty():
 			return
-		var a := show
-		var w: float = BOSS_W
-		var x0 := 320.0 - w * 0.5
+		vis = vis.slice(0, 2)
+		if vis.size() == 1:
+			_draw_one_boss(vis[0], 320.0, BOSS_W, true)
+		else:
+			_draw_one_boss(vis[0], 186.0, 216.0, false)
+			_draw_one_boss(vis[1], 454.0, 216.0, false)
+
+	func _draw_one_boss(bb, cx: float, w: float, solo: bool) -> void:
+		var a: float = bb.show
+		var x0 := cx - w * 0.5
 		var y: float = BOSS_BAR_Y + (1.0 - a) * 8.0
 		var rect := Rect2(x0, y, w, 7)
-		var name_full: String = String(hud.boss.display_name) if hud.boss != null else ""
+		var name_full: String = String(bb.node.get("display_name")) if is_instance_valid(bb.node) else bb.last_name
+		bb.last_name = name_full
 		var parts := name_full.split(",", false, 1)
 		var main_name := parts[0].strip_edges() if parts.size() > 0 else name_full
 		var sub := parts[1].strip_edges() if parts.size() > 1 else ""
-		var phase2: bool = hud.boss_phase_n >= 2
-		var pf: float = hud._boss_phase_flash
-		# placa escura atrás do nome
-		_txt(Vector2(x0, y - 5.0), main_name, CodexStyle.display_bold(), 12, Color(CodexStyle.GOLD_HI.lerp(Color.WHITE, pf * 0.6), a), HORIZONTAL_ALIGNMENT_CENTER, w, 5)
-		if sub != "":
-			_txt(Vector2(x0, y + 18.0), sub, CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.75 * a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
-		var lo := CodexStyle.EMBER.darkened(0.3) if phase2 else Color("9a7a3c")
-		var hi := Color("ffb070") if phase2 else Color("f2d690")
-		_bar(rect, hud.boss_ratio, hud.boss_ghost, lo, hi, pf * 0.5)
-		# terminal esquerdo (simetria)
-		CodexStyle.draw_diamond(self, Vector2(rect.position.x - 7.0, rect.position.y + 3.5), 2.2, CodexStyle.GOLD, Color(0, 0, 0, 0.6))
-		# marcador de fase em 50 %
-		var mx := rect.position.x + w * 0.5
-		var mcol := CodexStyle.EMBER.lerp(Color.WHITE, pf) if phase2 else CodexStyle.GOLD_HI
-		draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), Color(0.01, 0.03, 0.04, 0.9), 1.4)
-		draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), mcol, 0.6)
-		CodexStyle.draw_diamond(self, Vector2(mx, rect.position.y - 4.0), 2.4 + pf * 1.5, mcol, Color(0, 0, 0, 0.7))
-		if phase2:
-			_txt(Vector2(rect.end.x - 40, y - 5.0), "II", CodexStyle.display_bold(), 10, Color(CodexStyle.EMBER.lerp(Color.WHITE, pf), a), HORIZONTAL_ALIGNMENT_RIGHT, 40, 4)
+		var phase2: bool = bb.phase >= 2
+		var pf: float = bb.flash
+		var down: bool = bb.down
+		# placa escura atrás de nome + barra (contraste sobre qualquer cenário)
+		var plate := Rect2(x0 - 26.0, y - 17.0, w + 44.0, 41.0)
+		var steps := 12
+		for i in steps:
+			var t0 := float(i) / steps
+			var t1 := float(i + 1) / steps
+			var k0 := sin(t0 * PI)
+			var k1 := sin(t1 * PI)
+			var px0 := plate.position.x + plate.size.x * t0
+			var px1 := plate.position.x + plate.size.x * t1
+			draw_polygon(PackedVector2Array([Vector2(px0, plate.position.y), Vector2(px1, plate.position.y), Vector2(px1, plate.end.y), Vector2(px0, plate.end.y)]),
+				PackedColorArray([Color(0.01, 0.025, 0.035, 0.62 * k0 * a), Color(0.01, 0.025, 0.035, 0.62 * k1 * a), Color(0.01, 0.025, 0.035, 0.62 * k1 * a), Color(0.01, 0.025, 0.035, 0.62 * k0 * a)]))
+		var name_col := Color(0.62, 0.6, 0.68, a) if down else Color(CodexStyle.GOLD_HI.lerp(Color.WHITE, pf * 0.6), a)
+		_txt(Vector2(x0, y - 5.0), main_name, CodexStyle.display_bold(), 12 if solo else 10, name_col, HORIZONTAL_ALIGNMENT_CENTER, w, 5)
+		if down:
+			# caída: barra cinza-violeta enchendo até se refazer
+			_bar(rect, bb.revive_k, bb.revive_k, Color(0.3, 0.28, 0.38), Color(0.62, 0.58, 0.74), 0.0)
+			var pl := 0.6 + 0.4 * sin(hud._t * 4.0)
+			_txt(Vector2(x0, y + 18.0), "refazendo-se", CodexStyle.italic(), 9, Color(0.82, 0.78, 0.92, a * pl), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
 		else:
-			_txt(Vector2(rect.end.x - 40, y - 5.0), "I", CodexStyle.display_bold(), 10, Color(CodexStyle.GOLD, 0.8 * a), HORIZONTAL_ALIGNMENT_RIGHT, 40, 4)
+			var lo := CodexStyle.EMBER.darkened(0.3) if phase2 else Color("9a7a3c")
+			var hi := Color("ffb070") if phase2 else Color("f2d690")
+			_bar(rect, bb.ratio, bb.ghost, lo, hi, pf * 0.5)
+			# marcador de fase em 50 %
+			var mx := rect.position.x + w * 0.5
+			var mcol := CodexStyle.EMBER.lerp(Color.WHITE, pf) if phase2 else CodexStyle.GOLD_HI
+			draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), Color(0.01, 0.03, 0.04, 0.9), 1.4)
+			draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), mcol, 0.6)
+			CodexStyle.draw_diamond(self, Vector2(mx, rect.position.y - 4.0), 2.4 + pf * 1.5, mcol, Color(0, 0, 0, 0.7))
+			# linha de baixo: subtítulo (só com um chefe) e "FASE II" do lado de dentro
+			if solo and sub != "":
+				_txt(Vector2(x0, y + 18.0), sub, CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.75 * a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
+			if phase2:
+				var fx := (x0 + w - 74.0) if solo else (x0 + w * 0.5 - 37.0)
+				var fy := y + (28.0 if solo and sub != "" else 18.0)
+				_txt(Vector2(fx, fy), "FASE II", CodexStyle.display_bold(), 8, Color(Color("ffb070").lerp(Color.WHITE, pf), a), HORIZONTAL_ALIGNMENT_RIGHT if solo else HORIZONTAL_ALIGNMENT_CENTER, 74.0, 3)
+		# medalhão da fase à ESQUERDA da barra (longe da borda e do terminal)
+		var mc := Vector2(rect.position.x - 15.0, rect.position.y + 3.5)
+		draw_circle(mc, 7.0, Color(0.01, 0.03, 0.04, 0.92 * a))
+		var ring_col := Color(0.6, 0.58, 0.7, a) if down else (Color(CodexStyle.EMBER.lerp(Color.WHITE, pf), a) if phase2 else Color(CodexStyle.GOLD, a))
+		draw_arc(mc, 7.0, 0.0, TAU, 20, ring_col, 1.0, true)
+		_txt(mc + Vector2(-10.0, 3.2), "II" if phase2 and not down else "I", CodexStyle.display_bold(), 8, ring_col, HORIZONTAL_ALIGNMENT_CENTER, 20.0, 2)
 
 	func _draw_combo_tag() -> void:
 		if hud._combo_label.text == "":
@@ -588,3 +759,18 @@ class _FlyingGem extends Node2D:
 		draw_colored_polygon(PackedVector2Array([Vector2(0, -s), Vector2(w, 0), Vector2.ZERO]), color.lightened(0.5))
 		pts.append(pts[0])
 		draw_polyline(pts, Color("ecd498"), 0.7, true)
+
+
+## Estado de UMA barra de chefe.
+class _BossBar extends RefCounted:
+	var node: Node
+	var last_name: String = ""
+	var ratio: float = 1.0
+	var ghost: float = 1.0
+	var hold: float = 0.0
+	var phase: int = 1
+	var flash: float = 0.0
+	var show: float = 0.0           # 0..1 (entrada/saída)
+	var down: bool = false          # caiu e vai se refazer (batalha final)
+	var revive_k: float = 0.0       # 0..1 até refazer-se
+	var leaving: bool = false

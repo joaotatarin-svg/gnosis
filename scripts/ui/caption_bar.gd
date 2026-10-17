@@ -9,11 +9,20 @@ class_name CaptionBar
 ## em versalete, retrato pequeno quando houver; o texto entra em máquina de
 ## escrever com o "blip" de voz do falante (mesmos sons do DialogueBox).
 ## O tamanho do texto segue as Opções (Legendas P/M/G).
+## Lugar (QA-UX M1): na BASE da tela, abaixo da linha do chão (pés em y≈242 e
+## telegrafos de chão até ≈265 na base 640×360) — faixa termina em y 354; com a
+## barra do chefe no ar a faixa sobe e termina logo acima dela (hud.boss_area_top()).
+## Some (QA-UX A2/L4/M4): árvore pausada ou PauseStack segurando (pausa, loja,
+## opções, golpes, diálogo, card de chefe), Sophia morta (a fila é descartada) e
+## fora de uma tela do run.
 
 const SPEAKER_COLOR := Color("ecd498")
 const MIN_TIME := 3.0
 const MAX_TIME := 5.2
 const CPS := 55.0
+const BOTTOM_Y := 354.0           # base da faixa sem chefe (base 640×360)
+const BOSS_GAP := 4.0             # folga acima do nome do chefe
+const MIN_TOP_Y := 250.0          # nunca sobe além disto (pés em ≈242)
 
 var _queue: Array = []            # [{speaker, text}]
 var _time_left: float = 0.0       # tempo da fala atual
@@ -28,6 +37,8 @@ var _shown: float = 0.0
 var _typing: bool = false
 var _blip: String = "blip_npc"
 var _blips: int = 0
+var _bottom: float = BOTTOM_Y     # base atual da faixa (desliza quando o chefe entra)
+var _height: float = 56.0
 
 
 func _ready() -> void:
@@ -35,13 +46,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS   # só pra se ESCONDER na pausa
 	_root = Control.new()
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# Faixa na base da tela, acima da barra do chefe (y 318–352 na base 640×360).
-	_root.anchor_left = 0.12
-	_root.anchor_right = 0.88
-	_root.anchor_top = 1.0
-	_root.anchor_bottom = 1.0
-	_root.offset_top = -104.0
-	_root.offset_bottom = -50.0
+	# Faixa na base da tela, abaixo dos pés (ver _layout).
+	_root.position = Vector2(640.0 * 0.12, BOTTOM_Y - _height)
+	_root.size = Vector2(640.0 * 0.76, _height)
 	_root.modulate.a = 0.0
 	add_child(_root)
 
@@ -103,8 +110,8 @@ func clear() -> void:
 
 
 func _process(delta: float) -> void:
-	# Pausa / diálogo: some e congela (a fala não "queima" escondida).
-	var paused := get_tree().paused
+	# Pausa / diálogo / loja / card: some e congela (a fala não "queima" escondida).
+	var paused := get_tree().paused or PauseStack.is_held()
 	_root.visible = not paused
 	if paused:
 		return
@@ -113,6 +120,14 @@ func _process(delta: float) -> void:
 		if _showing or not _queue.is_empty():
 			clear()
 		return
+	# Sophia caída: ninguém "fala" com ela morta (L4); a fila não volta depois.
+	if _player_dead():
+		if _showing or not _queue.is_empty():
+			clear()
+			_kill_tween()
+			_root.modulate.a = 0.0     # sem fade: a morte vem com câmera lenta
+		return
+	_layout(delta)
 	if _showing:
 		_type(delta)
 		_time_left -= delta
@@ -156,7 +171,8 @@ func _show(l: Dictionary) -> void:
 	_text.add_theme_font_size_override("font_size", GameManager.caption_font_size() + 1)
 	# Legenda grande precisa de mais altura (2 linhas cabem sempre).
 	var fs := GameManager.caption_font_size() + 1
-	_root.offset_top = -50.0 - (24.0 + fs * 2.6)
+	_height = 20.0 + ceilf(float(fs) * 1.15) * 2.0
+	_layout(-1.0)
 	_text.text = text
 	_text.visible_characters = 0
 	_shown = 0.0
@@ -168,6 +184,28 @@ func _show(l: Dictionary) -> void:
 	_kill_tween()
 	_tween = create_tween()
 	_tween.tween_property(_root, "modulate:a", 1.0, 0.25)
+
+
+## Posição da faixa: base em BOTTOM_Y, ou logo acima da barra do chefe.
+## `delta < 0` = sem animação (encaixa na hora).
+func _layout(delta: float) -> void:
+	var target := BOTTOM_Y
+	var hud := get_tree().get_first_node_in_group("hud")
+	if hud != null and hud.has_method("boss_area_top"):
+		var top: float = hud.call("boss_area_top")
+		if top < BOTTOM_Y:
+			target = top - BOSS_GAP
+	target = maxf(target, MIN_TOP_Y + _height)
+	_bottom = target if delta < 0.0 else move_toward(_bottom, target, delta * 160.0)
+	_root.position = Vector2(640.0 * 0.12, _bottom - _height)
+	_root.size = Vector2(640.0 * 0.76, _height)
+
+
+func _player_dead() -> bool:
+	var pl := get_tree().get_first_node_in_group("player")
+	if pl == null or not ("health" in pl) or pl.get("health") == null:
+		return false
+	return int(pl.health.current_health) <= 0
 
 
 func _hide() -> void:
