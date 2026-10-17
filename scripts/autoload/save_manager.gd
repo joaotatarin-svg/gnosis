@@ -67,8 +67,7 @@ func load_game() -> bool:
 		notice = "O save principal estava danificado; o progresso foi recuperado da cópia de segurança."
 	var d: Dictionary = got.data
 	RunManager.best_screen = clampi(_int(d.get("best_screen", 1), 1), 1, RunManager.MAX_SCREEN)
-	var endings = d.get("endings_seen", [])
-	RunManager.endings_seen = endings if typeof(endings) == TYPE_ARRAY else []
+	RunManager.endings_seen = SaveCoerce.as_str_array(d.get("endings_seen", []))
 	# --- run em andamento: só se a versão e o mapa baterem ---
 	var version := _int(d.get("save_version", 0), 0)
 	var run = d.get("run", {})
@@ -87,11 +86,18 @@ func load_game() -> bool:
 	Audio.set_volume("SFX", clampf(_float(d.get("vol_sfx", 0.9), 0.9), 0.0, 1.0))
 	Audio.set_volume("Music", clampf(_float(d.get("vol_music", 0.7), 0.7), 0.0, 1.0))
 	# --- opções (só chaves conhecidas; o resto fica no padrão) ---
-	var st = d.get("settings", {})
-	if typeof(st) == TYPE_DICTIONARY:
-		for k in GameManager.SETTINGS_DEFAULT:
-			if st.has(k):
-				GameManager.settings[k] = st[k]
+	# REVISAO #5: cada opção só entra se o TIPO bater com o padrão (número
+	# int/float é intercambiável). `shake: [1]` ou `fullscreen: "sim"` ficam
+	# no padrão e não são regravados como lixo no próximo save.
+	var st := SaveCoerce.as_dict(d.get("settings", {}))
+	for k in GameManager.SETTINGS_DEFAULT:
+		if st.has(k):
+			var v = SaveCoerce.match_type(st[k], GameManager.SETTINGS_DEFAULT[k])
+			if typeof(v) != TYPE_NIL:
+				GameManager.settings[k] = v
+			else:
+				push_warning("SaveManager: opção '%s' com tipo inválido no save — usando o padrão." % k)
+				GameManager.settings[k] = GameManager.SETTINGS_DEFAULT[k]
 	GameManager.apply_settings()
 	return true
 
@@ -174,16 +180,10 @@ func take_notice() -> String:
 
 
 ## Conversões tolerantes: JSON velho pode trazer string/float/null onde
-## esperamos número — nunca derrubar o jogo por isso.
+## esperamos número — nunca derrubar o jogo por isso (ver SaveCoerce).
 func _int(v, fallback: int) -> int:
-	match typeof(v):
-		TYPE_INT, TYPE_FLOAT, TYPE_BOOL: return int(v)
-		TYPE_STRING: return int(v) if (v as String).is_valid_int() else fallback
-	return fallback
+	return SaveCoerce.as_int(v, fallback)
 
 
 func _float(v, fallback: float) -> float:
-	match typeof(v):
-		TYPE_INT, TYPE_FLOAT: return float(v)
-		TYPE_STRING: return float(v) if (v as String).is_valid_float() else fallback
-	return fallback
+	return SaveCoerce.as_float(v, fallback)

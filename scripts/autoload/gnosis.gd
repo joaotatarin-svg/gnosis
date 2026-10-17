@@ -302,9 +302,15 @@ func _load() -> void:
 	if got.data is Dictionary:
 		if got.from != "main":
 			push_warning("Gnosis: chronicles.json danificado — Crônicas recuperadas de %s." % got.path)
-		for id in got.data.get("unlocked", []):
-			if entry(String(id)).size() > 0 and not unlocked.has(String(id)):
-				unlocked.append(String(id))
+		var ids = got.data.get("unlocked", [])
+		if typeof(ids) != TYPE_ARRAY:
+			ids = []
+		# REVISAO #5: str(id) — um número ou lixo na lista descarta SÓ aquele
+		# item (String(3) dava erro e apagava todas as Crônicas lidas).
+		for id in ids:
+			var sid := str(id)
+			if entry(sid).size() > 0 and not unlocked.has(sid):
+				unlocked.append(sid)
 
 
 func _save() -> void:

@@ -40,9 +40,10 @@ func _ready() -> void:
 
 ## Aplica as opções de vídeo (o resto é lido por quem usa). Seguro em headless.
 func apply_settings() -> void:
+	# Chave ausente ou com tipo errado (save editado, menu com bug) → padrão.
 	for k in SETTINGS_DEFAULT:
-		if not settings.has(k):
-			settings[k] = SETTINGS_DEFAULT[k]
+		var v = SaveCoerce.match_type(settings.get(k), SETTINGS_DEFAULT[k]) if settings.has(k) else null
+		settings[k] = SETTINGS_DEFAULT[k] if typeof(v) == TYPE_NIL else v
 	settings["shake"] = clampf(float(settings["shake"]), 0.0, 1.0)
 	settings["caption_size"] = clampi(int(settings["caption_size"]), 0, 2)
 	# Espelha tremor/vibração no Juice (campos da branch principal), se ele já
@@ -64,17 +65,17 @@ func apply_settings() -> void:
 
 ## Multiplicador do tremor de câmera (0..1) — pra quem gera o tremor.
 func shake_multiplier() -> float:
-	return clampf(float(settings.get("shake", 1.0)), 0.0, 1.0)
+	return clampf(SaveCoerce.as_float(settings.get("shake", 1.0), 1.0), 0.0, 1.0)
 
 
 ## Vibração do controle ligada?
 func rumble_enabled() -> bool:
-	return bool(settings.get("rumble", true))
+	return SaveCoerce.as_bool(settings.get("rumble", true), true)
 
 
 ## Tamanho de fonte das legendas conforme a opção (P/M/G).
 func caption_font_size() -> int:
-	return [11, 13, 16][clampi(int(settings.get("caption_size", 1)), 0, 2)]
+	return [11, 13, 16][clampi(SaveCoerce.as_int(settings.get("caption_size", 1), 1), 0, 2)]
 
 
 ## Nome LEGÍVEL da tela pelo papel no arco (HUD, pausa, menu "Continuar"):

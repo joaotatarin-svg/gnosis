@@ -64,6 +64,8 @@ func _ready() -> void:
 	_cases_legacy()
 	_cases_atomic()
 	_wipe()
+	await _cases_types()
+	_wipe()
 	# O save real continua byte a byte igual (nada foi gravado nele).
 	check(_read(real_paths[0]) == _real_save and _read(real_paths[1]) == _real_chron, "save real intocado (QA grava só em user://qa/)")
 	print("QA RESULT: ", errors, " falhas")
@@ -155,3 +157,56 @@ func _cases_atomic() -> void:
 	Gnosis.unlocked.clear()
 	SaveManager.persist_enabled = false
 	Gnosis.persist_enabled = false
+
+
+# --- JSON válido com tipos errados (REVISAO #5) -------------------------------
+
+func _cases_types() -> void:
+	# "Continuar" troca de cena: um nó vazio vira a cena atual para esta QA
+	# sobreviver à troca (ela fica como irmã, filha da raiz). Espera um quadro:
+	# dentro do _ready a raiz ainda está montando os filhos e recusa add_child.
+	await get_tree().process_frame
+	var holder := Node.new()
+	get_tree().root.add_child(holder)
+	get_tree().current_scene = holder
+	var valid_id: String = String(Gnosis.entries()[2].id)
+	_write(JSON.stringify({"save_version": 2, "best_screen": 30,
+		"run": {"screen": 20, "difficulty": 1, "weapon_level": 3, "rings": ["arconte_sono", 7],
+			"skill_levels": [1, 2], "rings_stolen": "sim", "seen": [1, 2, "intro_ok"], "orbs": [5],
+			"items": "nada", "bonus_hp": 40, "selected_ring": "x", "deaths": null},
+		"settings": {"shake": [1], "fullscreen": "sim", "vsync": 0.0, "caption_size": 2.0, "rumble": "não"}}))
+	_write(JSON.stringify({"version": 1, "unlocked": [3, "x", valid_id, null, [1]]}), Gnosis.SAVE_PATH)
+	SaveManager.notice = ""
+	check(SaveManager.load_game() and RunManager.has_saved_run(), "tipos errados: save carrega e o 'Continuar' existe")
+	var st := GameManager.settings
+	check(is_equal_approx(float(st.shake), 1.0) and typeof(st.shake) == TYPE_FLOAT, "settings.shake=[1] → padrão 1.0")
+	check(typeof(st.fullscreen) == TYPE_BOOL and st.fullscreen == false, "settings.fullscreen=\"sim\" → padrão false")
+	check(typeof(st.rumble) == TYPE_BOOL and st.rumble == true, "settings.rumble=\"não\" → padrão true")
+	check(typeof(st.caption_size) == TYPE_INT and st.caption_size == 2, "settings.caption_size=2.0 (float do JSON) aceito como 2")
+	# Opção-lixo não pode ser regravada: grava e relê o disco.
+	SaveManager.persist_enabled = true
+	SaveManager.save_game()
+	SaveManager.persist_enabled = false
+	var disk = JSON.parse_string(_read(SaveManager.SAVE_PATH))
+	check(disk is Dictionary and typeof(disk.settings.shake) == TYPE_FLOAT and typeof(disk.settings.fullscreen) == TYPE_BOOL, "lixo das opções não volta ao disco")
+	Gnosis._load()
+	check(Gnosis.unlocked == [valid_id], "Crônicas unlocked:[3,\"x\",…] → só o id válido fica (%s)" % [Gnosis.unlocked])
+	Gnosis.unlocked.clear()
+	# Continuar: só os campos ruins voltam ao padrão; o resto vale e a cena troca.
+	await get_tree().create_timer(0.8).timeout   # nenhum fade em andamento
+	RunManager.continue_run()
+	check(RunManager.run_active and RunManager.current_screen == 20, "continue_run chega ao fim (tela 20)")
+	check(Progression.skill_levels.is_empty(), "skill_levels:[1,2] → vazio")
+	check(Progression.rings_stolen == false, "rings_stolen:\"sim\" → false")
+	check(not Narrative.seen.has("1") and Narrative.seen.has("intro_ok"), "seen:[1,2,…] → descarta só os números")
+	check(Progression.orbs == 0, "orbs:[5] → 0")
+	check(Progression.items.is_empty() and Progression.selected_ring == 0 and RunManager.deaths_this_run == 0, "items/selected_ring/deaths inválidos → padrão")
+	check(Progression.weapon_level == 3 and Progression.bonus_max_health == 40 and Progression.rings == ["arconte_sono"] and GameManager.difficulty == 1, "campos bons preservados (arma 3, +40 HP, anel, dificuldade)")
+	await get_tree().create_timer(1.2).timeout
+	var cur := get_tree().current_scene
+	check(cur != null and cur.scene_file_path == "res://scenes/levels/Level01.tscn", "'Continuar' troca para a fase")
+	RunManager.end_run()
+	# has_saved_run com screen de tipo errado não pode dar SCRIPT ERROR.
+	RunManager.saved_run = {"screen": [1]}
+	check(not RunManager.has_saved_run(), "run.screen=[1] → sem 'Continuar', sem erro")
+	RunManager.saved_run = {}
