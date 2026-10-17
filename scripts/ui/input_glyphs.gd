@@ -306,6 +306,24 @@ static func hint(pairs: Array, dev: int = -1, sep: String = "  ·  ") -> String:
 	return sep.join(parts)
 
 
+## Rodapé pronto dos CARDS da Cinemática (prólogo/epílogo/Crônicas — QA2 #13):
+## "[Enter] avança  ·  [Esc] pula" no teclado, "[A] avança  ·  [≡] pula" no
+## controle; troca sozinho com o dispositivo. Alinhado à direita, corpo 9 px.
+## Uso (cinematic.gd, no lugar do Label "qualquer tecla avança · Esc pula"):
+##   var h := InputGlyphs.card_hint()
+##   h.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+##   h.offset_left = -240.0; h.offset_top = -24.0; h.offset_right = -14.0; h.offset_bottom = -8.0
+##   add_child(h)
+static func card_hint(color: Color = CodexStyle.MUTED) -> Hint:
+	var h := Hint.new()
+	h.pairs = [["ui_accept", "avança"], ["pause", "pula"]]
+	h.font_size = 9
+	h.icon_h = 11.0
+	h.align = 2
+	h.color = color
+	return h
+
+
 # --- ícones (desenhados por código) ----------------------------------------------
 
 ## Largura do ícone de `action` na altura `h` (para alinhar antes de desenhar).

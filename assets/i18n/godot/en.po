@@ -351,117 +351,117 @@ msgid "A coroa do Arconte se parte em luz: dano enorme em área."
 msgstr "The Archon's crown shatters into light: huge area damage."
 
 #. game_manager.finish_demo.c408cf  [ui]
-#: scripts/autoload/game_manager.gd:244
+#: scripts/autoload/game_manager.gd:249
 msgid "Fim da demo"
 msgstr "End of the demo"
 
 #. game_manager.finish_demo.02a6f8  [ui]
-#: scripts/autoload/game_manager.gd:245
+#: scripts/autoload/game_manager.gd:250
 msgid "Obrigado por jogar. O resto da subida continua no jogo completo."
 msgstr "Thank you for playing. The rest of the climb continues in the full game."
 
 #. game_manager.screen_title.f0f1c5  [ui]
-#: scripts/autoload/game_manager.gd:282
+#: scripts/autoload/game_manager.gd:287
 msgid "Limiar — O Rei"
 msgstr "Threshold — The King"
 
 #. game_manager.screen_title.a0294c  [ui]
-#: scripts/autoload/game_manager.gd:283
+#: scripts/autoload/game_manager.gd:288
 msgid "A Mente"
 msgstr "The Mind"
 
 #. game_manager.screen_title.e9ad2c  [ui]
-#: scripts/autoload/game_manager.gd:284
+#: scripts/autoload/game_manager.gd:289
 msgid "O Centro %s"
 msgstr "The Center %s"
 
 #. game_manager.screen_title.a13df8  [ui]
-#: scripts/autoload/game_manager.gd:285
+#: scripts/autoload/game_manager.gd:290
 msgid "%s · Chegada"
 msgstr "%s · Arrival"
 
 #. game_manager.screen_title.76f65a  [ui]
-#: scripts/autoload/game_manager.gd:286
+#: scripts/autoload/game_manager.gd:291
 msgid "%s · O Desafio"
 msgstr "%s · The Challenge"
 
 #. game_manager.screen_title.bcc8a0  [ui]
-#: scripts/autoload/game_manager.gd:287
+#: scripts/autoload/game_manager.gd:292
 msgid "%s · Antessala"
 msgstr "%s · Antechamber"
 
 #. game_manager.screen_title.4907e4  [ui]
-#: scripts/autoload/game_manager.gd:288
+#: scripts/autoload/game_manager.gd:293
 msgid "%s · O Arconte"
 msgstr "%s · The Archon"
 
 #. game_manager.screen_title.8bca3a  [ui]
-#: scripts/autoload/game_manager.gd:292
+#: scripts/autoload/game_manager.gd:297
 msgid "%s · Travessia %s"
 msgstr "%s · Crossing %s"
 
 #. game_manager._roman.ca73ab  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "I"
 msgstr "I"
 
 #. game_manager._roman.e95267  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "II"
 msgstr "II"
 
 #. game_manager._roman.a6178c  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "III"
 msgstr "III"
 
 #. game_manager._roman.932eaa  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "IV"
 msgstr "IV"
 
 #. game_manager._roman.c9ee56  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "V"
 msgstr "V"
 
 #. game_manager._roman.85ebe3  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "VI"
 msgstr "VI"
 
 #. game_manager._roman.0ea48f  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "VII"
 msgstr "VII"
 
 #. game_manager._roman.8985af  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "VIII"
 msgstr "VIII"
 
 #. game_manager._roman.b04dce  [ui]
-#: scripts/autoload/game_manager.gd:296
+#: scripts/autoload/game_manager.gd:301
 msgid "IX"
 msgstr "IX"
 
 #. game_manager.difficulty_name.45e118  [ui]
-#: scripts/autoload/game_manager.gd:353
+#: scripts/autoload/game_manager.gd:358
 msgid "Normal"
 msgstr "Normal"
 
 #. game_manager.difficulty_name.36dc8f  [ui]
-#: scripts/autoload/game_manager.gd:354
+#: scripts/autoload/game_manager.gd:359
 msgid "Difícil"
 msgstr "Hard"
 
 #. game_manager.difficulty_name.3e6659  [ui]
-#: scripts/autoload/game_manager.gd:355
+#: scripts/autoload/game_manager.gd:360
 msgid "Muito Difícil"
 msgstr "Very Hard"
 
 #. game_manager.difficulty_name.83caa2  [ui]
-#: scripts/autoload/game_manager.gd:356
+#: scripts/autoload/game_manager.gd:361
 msgid "Campeão"
 msgstr "Champion"
 
@@ -4646,34 +4646,29 @@ msgid "Crônica desbloqueada: %s  (%d/%d)"
 msgstr "Chronicle unlocked: %s  (%d/%d)"
 
 #. stela._ready.f08366  [ui_estela]
-#: scripts/entities/stela.gd:244
+#: scripts/entities/stela.gd:254
 msgid "ESTELA  ·  %s"
 msgstr "STELE  ·  %s"
 
 #. stela._ready.0b4c7d  [ui_estela]
-#: scripts/entities/stela.gd:244
+#: scripts/entities/stela.gd:254
 msgid "Kenoma"
 msgstr "Kenoma"
 
 #. stela._ready.7be33a  [ui_estela]
-#: scripts/entities/stela.gd:273
+#: scripts/entities/stela.gd:284
 msgid "Fonte: %s"
 msgstr "Source: %s"
 
 #. stela._ready.4deab3  [ui_estela]
-#: scripts/entities/stela.gd:283
+#: scripts/entities/stela.gd:301
 msgid "• nova Crônica  %d/%d"
 msgstr "• new Chronicle  %d/%d"
 
 #. stela._ready.9f1fce  [ui_estela]
-#: scripts/entities/stela.gd:283
+#: scripts/entities/stela.gd:301
 msgid "Crônica %d/%d"
 msgstr "Chronicle %d/%d"
-
-#. stela._ready.1fd862  [ui_estela]
-#: scripts/entities/stela.gd:284
-msgid "      %s fechar"
-msgstr "      %s close"
 
 #. cinematic.prologue.56bd6b  [card_cinema]
 #: scripts/fx/cinematic.gd:151
@@ -5205,10 +5200,10 @@ msgstr "%d of %d Stelae read — the teaching of the ancients, stone by stone"
 msgid "%02d   %s"
 msgstr "%02d   %s"
 
-#. chronicles._refresh.74ade2  [ui]
-#: scripts/ui/chronicles.gd:195
-msgid "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler."
-msgstr "Stele not yet read.\nWhere: %s\nGet close and press light strike (J / X) to read."
+#. chronicles._refresh.9e8a61  [ui]
+#: scripts/ui/chronicles.gd:197
+msgid "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte %s para ler."
+msgstr "Stele not yet read.\nWhere: %s\nGet close and press %s to read."
 
 #. codex_menu._build_legacy_backdrop.457f61  [ui]
 #: scripts/ui/codex_menu.gd:121
@@ -5546,202 +5541,202 @@ msgid "AINDA NÃO ENCONTRADO"
 msgstr "NOT YET FOUND"
 
 #. hud._on_weapon.3b2ee9  [ui]
-#: scripts/ui/hud.gd:266
+#: scripts/ui/hud.gd:273
 msgid "lança o inimigo para o alto"
 msgstr "launches the enemy into the air"
 
 #. hud._on_weapon.d40c9a  [ui]
-#: scripts/ui/hud.gd:268
+#: scripts/ui/hud.gd:275
 msgid "golpe no ar"
 msgstr "air strike"
 
 #. hud._on_achievement.87fa2b  [toast]
-#: scripts/ui/hud.gd:351
+#: scripts/ui/hud.gd:412
 msgid "Conquista  ·  %s"
 msgstr "Achievement  ·  %s"
 
 #. hud._queue_screen_hints.97ec4f  [ui]
-#: scripts/ui/hud.gd:770
+#: scripts/ui/hud.gd:839
 msgid "golpe leve"
 msgstr "light strike"
 
 #. hud._queue_screen_hints.df3f2e  [ui]
-#: scripts/ui/hud.gd:770
+#: scripts/ui/hud.gd:839
 msgid "golpe forte"
 msgstr "heavy strike"
 
 #. hud._queue_screen_hints.3c90a7  [ui]
-#: scripts/ui/hud.gd:771
+#: scripts/ui/hud.gd:840
 msgid "bloquear · no tempo, apara"
 msgstr "block · on time, parries"
 
 #. hud._queue_screen_hints.6b344d  [ui]
-#: scripts/ui/hud.gd:773
+#: scripts/ui/hud.gd:842
 msgid "sequência do cajado"
 msgstr "staff combo"
 
 #. hud._queue_screen_hints.61dfe8  [ui]
-#: scripts/ui/hud.gd:774
+#: scripts/ui/hud.gd:843
 msgid "Esfera Solar (gasta Éter)"
 msgstr "Sun Orb (costs Aether)"
 
 #. hud._queue_screen_hints.f4f473  [ui]
-#: scripts/ui/hud.gd:776
+#: scripts/ui/hud.gd:845
 msgid "telegrafo amarelo:"
 msgstr "yellow tell:"
 
 #. hud._queue_screen_hints.e9b353  [ui]
-#: scripts/ui/hud.gd:776
+#: scripts/ui/hud.gd:845
 msgid "vermelho:"
 msgstr "red:"
 
 #. hud._queue_screen_hints.bd84ff  [ui]
-#: scripts/ui/hud.gd:777
+#: scripts/ui/hud.gd:846
 msgid "pausa · Golpes & Controles"
 msgstr "pause · Moves & Controls"
 
 #. hud._check_ring_hints.385e09  [ui]
-#: scripts/ui/hud.gd:789
+#: scripts/ui/hud.gd:858
 msgid "usar o Anel equipado (gasta Éter)"
 msgstr "use the equipped Ring (costs Aether)"
 
 #. hud._check_ring_hints.beab08  [ui]
-#: scripts/ui/hud.gd:791
+#: scripts/ui/hud.gd:860
 msgid "trocar de Anel"
 msgstr "switch Ring"
 
 #. hud.key_label.84c4c5  [ui]
-#: scripts/ui/hud.gd:861
+#: scripts/ui/hud.gd:965
 msgid "Analógico"
 msgstr "Stick"
 
 #. hud.key_label.f999e2  [ui]
-#: scripts/ui/hud.gd:861
+#: scripts/ui/hud.gd:965
 msgid "%s  %s"
 msgstr "%s  %s"
 
 #. hud._key_name.f61d6e  [ui]
-#: scripts/ui/hud.gd:906
+#: scripts/ui/hud.gd:1010
 msgid "Espaço"
 msgstr "Space"
 
 #. hud._key_name.1f7a4f  [ui]
-#: scripts/ui/hud.gd:907
+#: scripts/ui/hud.gd:1011
 msgid "Esc"
 msgstr "Esc"
 
 #. hud._key_name.469d5b  [ui]
-#: scripts/ui/hud.gd:908
+#: scripts/ui/hud.gd:1012
 msgid "Shift"
 msgstr "Shift"
 
 #. hud._key_name.2b9ece  [ui]
-#: scripts/ui/hud.gd:909
+#: scripts/ui/hud.gd:1013
 msgid "Enter"
 msgstr "Enter"
 
 #. hud._key_name.71815f  [ui]
-#: scripts/ui/hud.gd:910
+#: scripts/ui/hud.gd:1014
 msgid "Esq."
 msgstr "Left"
 
 #. hud._key_name.72acb3  [ui]
-#: scripts/ui/hud.gd:911
+#: scripts/ui/hud.gd:1015
 msgid "Dir."
 msgstr "Right"
 
 #. hud._key_name.4effab  [ui]
-#: scripts/ui/hud.gd:912
+#: scripts/ui/hud.gd:1016
 msgid "Cima"
 msgstr "Up"
 
 #. hud._key_name.74fd00  [ui]
-#: scripts/ui/hud.gd:913
+#: scripts/ui/hud.gd:1017
 msgid "Baixo"
 msgstr "Down"
 
 #. hud._pad_button_name.6dcd4c  [ui]
-#: scripts/ui/hud.gd:919
+#: scripts/ui/hud.gd:1023
 msgid "A"
 msgstr "A"
 
 #. hud._pad_button_name.ae4f28  [ui]
-#: scripts/ui/hud.gd:920
+#: scripts/ui/hud.gd:1024
 msgid "B"
 msgstr "B"
 
 #. hud._pad_button_name.c032ad  [ui]
-#: scripts/ui/hud.gd:921
+#: scripts/ui/hud.gd:1025
 msgid "X"
 msgstr "X"
 
 #. hud._pad_button_name.23eb4d  [ui]
-#: scripts/ui/hud.gd:922
+#: scripts/ui/hud.gd:1026
 msgid "Y"
 msgstr "Y"
 
 #. hud._pad_button_name.2d1958  [ui]
-#: scripts/ui/hud.gd:923
+#: scripts/ui/hud.gd:1027
 msgid "LB"
 msgstr "LB"
 
 #. hud._pad_button_name.38026d  [ui]
-#: scripts/ui/hud.gd:924
+#: scripts/ui/hud.gd:1028
 msgid "RB"
 msgstr "RB"
 
 #. hud._pad_button_name.952f37  [ui]
-#: scripts/ui/hud.gd:926
+#: scripts/ui/hud.gd:1030
 msgid "Start"
 msgstr "Start"
 
 #. hud._pad_button_name.53157e  [ui]
-#: scripts/ui/hud.gd:927
+#: scripts/ui/hud.gd:1031
 msgid "D-pad Esq."
 msgstr "D-pad Left"
 
 #. hud._pad_button_name.b7d05d  [ui]
-#: scripts/ui/hud.gd:928
+#: scripts/ui/hud.gd:1032
 msgid "D-pad Dir."
 msgstr "D-pad Right"
 
 #. hud._pad_button_name.442f4a  [ui]
-#: scripts/ui/hud.gd:929
+#: scripts/ui/hud.gd:1033
 msgid "D-pad Cima"
 msgstr "D-pad Up"
 
 #. hud._pad_button_name.237b1b  [ui]
-#: scripts/ui/hud.gd:930
+#: scripts/ui/hud.gd:1034
 msgid "D-pad Baixo"
 msgstr "D-pad Down"
 
 #. hud._pad_button_name.67c850  [ui]
-#: scripts/ui/hud.gd:931
+#: scripts/ui/hud.gd:1035
 msgid "Botão %d"
 msgstr "Button %d"
 
 #. hud._pad_axis_name.6c62fb  [ui]
-#: scripts/ui/hud.gd:936
+#: scripts/ui/hud.gd:1040
 msgid "LT"
 msgstr "LT"
 
 #. hud._pad_axis_name.bc410c  [ui]
-#: scripts/ui/hud.gd:937
+#: scripts/ui/hud.gd:1041
 msgid "RT"
 msgstr "RT"
 
 #. hud._pad_axis_name.e39ae1  [ui]
-#: scripts/ui/hud.gd:939
+#: scripts/ui/hud.gd:1043
 msgid "Eixo %d"
 msgstr "Axis %d"
 
 #. hud._draw_counters.a602bb  [ui]
-#: scripts/ui/hud.gd:1104
+#: scripts/ui/hud.gd:1208
 msgid "Arma Nv. %d"
 msgstr "Weapon Lv. %d"
 
 #. hud._draw_one_boss.794201  [ui]
-#: scripts/ui/hud.gd:1285
+#: scripts/ui/hud.gd:1393
 msgid "FASE II"
 msgstr "PHASE II"
 
@@ -5989,6 +5984,11 @@ msgstr "Square"
 #: scripts/ui/input_glyphs.gd:290
 msgid "Triângulo"
 msgstr "Triangle"
+
+#. input_glyphs.card_hint.9f320c  [ui]
+#: scripts/ui/input_glyphs.gd:319
+msgid "avança"
+msgstr "continue"
 
 #. input_rebind.ACTIONS.2e5178  [ui]
 #: scripts/ui/input_rebind.gd:21
@@ -6793,3 +6793,11 @@ msgstr "WEAPON %d / 5   ·   PALETTE %d / 3"
 #. composto (montado pelo código)
 msgid "ARCONTE   ·   PALETA %d / 3"
 msgstr "ARCHON   ·   PALETTE %d / 3"
+
+#. composto (montado pelo código)
+msgid "fechar"
+msgstr "close"
+
+#. composto (montado pelo código)
+msgid "pula"
+msgstr "skip"

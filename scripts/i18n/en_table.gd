@@ -3,7 +3,6 @@ extends RefCounted
 ## Chave = texto em português exato; valor = inglês. Lido por GnosisTranslation.
 
 const EXACT := {
-	"      %s fechar": "      %s close",
 	"   ·   PALETA %d / 3": "   ·   PALETTE %d / 3",
 	"%02d   %s": "%02d   %s",
 	"%02d  %s": "%02d  %s",
@@ -517,7 +516,7 @@ const EXACT := {
 	"Esquive do vermelho. Apare o dourado.": "Dodge the red. Parry the gold.",
 	"Esse não! Esse reflexo não é para ti!": "Not that one! That reflection is not for you!",
 	"Este Anel pesa, não pesa? ...Eu também não sei bem o que sou.": "This Ring is heavy, is it not? ...I do not quite know what I am either.",
-	"Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler.": "Stele not yet read.\nWhere: %s\nGet close and press light strike (J / X) to read.",
+	"Estela ainda não lida.\nOnde: %s\nChegue perto e aperte %s para ler.": "Stele not yet read.\nWhere: %s\nGet close and press %s to read.",
 	"Estou cansada. Pela primeira vez eu digo em voz alta: cansada.": "I'm tired. For the first time, I say it out loud: tired.",
 	"Estou me remontando de dentro para fora. Falta pouco.": "I'm putting myself back together from the inside out. Almost there.",
 	"Está frio aqui fora. Sempre esteve?": "It's cold out here. Was it always?",
@@ -1175,6 +1174,7 @@ const EXACT := {
 	"apare no tempo": "parry on time",
 	"articulações": "joints",
 	"asas": "wings",
+	"avança": "continue",
 	"bloquear · no tempo, apara": "block · on time, parries",
 	"boca": "maw",
 	"boca costurada": "sewn mouth",
@@ -1202,6 +1202,7 @@ const EXACT := {
 	"esquive": "dodge",
 	"faísca": "spark",
 	"fecha": "close",
+	"fechar": "close",
 	"garras": "claws",
 	"gavinhas": "tendrils",
 	"golpe forte": "heavy strike",
@@ -1228,6 +1229,7 @@ const EXACT := {
 	"pausa": "pause",
 	"pausa · Golpes & Controles": "pause · Moves & Controls",
 	"primeiro": "first",
+	"pula": "skip",
 	"pular": "jump",
 	"pálpebra": "eyelid",
 	"qualquer tecla avança  ·  Esc pula": "any key continues  ·  Esc skips",

@@ -938,7 +938,6 @@ Kenoma,Kenoma
 Fonte: %s,Source: %s
 • nova Crônica  %d/%d,• new Chronicle  %d/%d
 Crônica %d/%d,Chronicle %d/%d
-      %s fechar,      %s close
 "No princípio havia o Um. Dele emanaram os Éons, aos pares,
 como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
 like overflowing light. There nothing slept. Nothing forgot."
@@ -1103,9 +1102,9 @@ Crônicas,Chronicles
 %02d   %s,%02d   %s
 "Estela ainda não lida.
 Onde: %s
-Chegue perto e aperte o golpe leve (J / X) para ler.","Stele not yet read.
+Chegue perto e aperte %s para ler.","Stele not yet read.
 Where: %s
-Get close and press light strike (J / X) to read."
+Get close and press %s to read."
 SOPHIA,SOPHIA
 a faísca que não se curva,the spark that does not bow
 O DESPERTAR   ·   v%s,THE AWAKENING   ·   v%s
@@ -1266,6 +1265,7 @@ Cruz,Cross
 Círculo,Circle
 Quadrado,Square
 Triângulo,Triangle
+avança,continue
 Saltar,Jump
 Aparar / bloquear,Parry / block
 Anel (magia),Ring (spell)

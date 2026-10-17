@@ -179,7 +179,8 @@ func _refresh() -> void:
 	_thumb.texture = Stela.art_for(String(cur.id)) if open_cur else null
 	if open_cur:
 		_title.text = String(cur.title)
-		_body.text = "\n".join(PackedStringArray(cur.lines))
+		_body.text = Stela.body_text(cur.lines)          # i18n: linha a linha
+		_body.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 		_body.visible = true
 		_hint_locked.text = ""
 		_hint_locked.visible = false
@@ -192,7 +193,8 @@ func _refresh() -> void:
 		_body.visible = false          # a dica sobe pra logo abaixo do título
 		_panel.size = PANEL_SIZE
 		_hint_locked.visible = true
-		_hint_locked.text = "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler." % String(cur.hint)
+		# Tecla do dispositivo em uso (QA2 #13: era "J / X" fixo).
+		_hint_locked.text = "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte %s para ler." % [String(cur.hint), InputGlyphs.label("attack_light")]
 		_source.text = ""
 
 
