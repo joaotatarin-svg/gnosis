@@ -139,7 +139,11 @@ func _run() -> void:
 	var mi := AudioServer.get_bus_index("Master")
 	for i in AudioServer.get_bus_effect_count(mi):
 		lim = lim or AudioServer.get_bus_effect(mi, i) is AudioEffectHardLimiter
-	check(buses_ok and lim, "buses Music/Ambience/SFX/UI/Voice + limitador no Master")
+	var ceiling := 0.0
+	for i in AudioServer.get_bus_effect_count(mi):
+		if AudioServer.get_bus_effect(mi, i) is AudioEffectHardLimiter:
+			ceiling = (AudioServer.get_bus_effect(mi, i) as AudioEffectHardLimiter).ceiling_db
+	check(buses_ok and lim and ceiling <= -1.0, "buses Music/Ambience/SFX/UI/Voice + limitador no Master (teto %.1f dB)" % ceiling)
 	check(AudioServer.get_bus_send(AudioServer.get_bus_index("UI")) == "SFX" and AudioServer.get_bus_send(AudioServer.get_bus_index("Voice")) == "SFX", "UI e Voz seguem o slider de SFX")
 
 	# (b5) vozes por falante.
@@ -151,31 +155,43 @@ func _run() -> void:
 	check(true, "rajada de 30 blips não trava")
 
 	# (b6) ducking manual e automático (DialogueBox/Cinematic).
+	#     As esperas são por RELÓGIO REAL atravessando quadros (_wait_real): um
+	#     create_timer criado no 1º quadro (o da carga) dispara no MESMO quadro,
+	#     com o delta inteiro da carga — 0,4 s viravam 0 ms e o teste media nada.
+	await get_tree().process_frame
 	var music_bus := AudioServer.get_bus_index("Music")
 	var base_db := AudioServer.get_bus_volume_db(music_bus)
 	Audio.duck(true)
-	await get_tree().create_timer(0.4, true, false, true).timeout
+	await _wait_real(0.4)
 	var ducked_db := AudioServer.get_bus_volume_db(music_bus)
 	Audio.duck(false)
-	await get_tree().create_timer(1.0, true, false, true).timeout
+	await _wait_real(1.0)
 	var back_db := AudioServer.get_bus_volume_db(music_bus)
 	check(ducked_db < base_db - 6.0 and absf(back_db - base_db) < 0.5, "duck(): música %.1f → %.1f → %.1f dB" % [base_db, ducked_db, back_db])
+	# duck(true)+duck(false) no MESMO quadro não pode deixar o estado preso.
+	Audio.duck(true)
+	Audio.duck(false)
+	await _wait_real(0.3)
+	check(absf(AudioServer.get_bus_volume_db(music_bus) - base_db) < 0.5 and not Audio.is_ducked(), "duck(true)+duck(false) no mesmo quadro não prende a música")
 	var dbox := DialogueBox.play([{"speaker": "Sophia", "text": "teste"}])
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var auto_ducked := Audio.is_ducked()
+	await _wait_real(0.4)
+	var box_db := AudioServer.get_bus_volume_db(music_bus)
 	dbox.queue_free()
 	get_tree().paused = false
 	await get_tree().process_frame
-	check(auto_ducked and not Audio.is_ducked(), "DialogueBox abaixa a música sozinho e devolve ao sair")
+	check(auto_ducked and not Audio.is_ducked() and box_db < base_db - 6.0,
+		"DialogueBox abaixa a música sozinho (%.1f → %.1f dB) e devolve ao sair" % [base_db, box_db])
 
 	# (b7) API da Narrativa: duck_music temporário, camada por faixa, tom.
-	await get_tree().create_timer(1.0, true, false, true).timeout
+	await _wait_real(1.0)
 	var b0 := AudioServer.get_bus_volume_db(music_bus)
 	Audio.duck_music(0.3, -12.0)
-	await get_tree().create_timer(0.35, true, false, true).timeout
+	await _wait_real(0.35)
 	var b1 := AudioServer.get_bus_volume_db(music_bus)
-	await get_tree().create_timer(1.2, true, false, true).timeout
+	await _wait_real(1.2)
 	var b2 := AudioServer.get_bus_volume_db(music_bus)
 	check(b1 < b0 - 8.0 and absf(b2 - b0) < 0.5, "duck_music(0,3 s, -12): %.1f → %.1f → %.1f dB" % [b0, b1, b2])
 	Audio.set_music_layer_volume(0.0, "centro")
@@ -184,6 +200,141 @@ func _run() -> void:
 	Audio.set_music_pitch(1.0, 0.2)
 	Audio.play_music("theme", true, 0.9)
 	check(true, "set_music_layer_volume / set_music_pitch / play_music com tom não travam")
+
+	# (b8) Provação (REVISAO #8): CodexSession.active é testado ANTES de
+	#      run_active (start_demo liga os dois); faixa pelo Arconte escolhido.
+	var keep_active: bool = CodexSession.active
+	var keep_stage: int = CodexSession.stage
+	var keep_boss: int = CodexSession.boss_index
+	var keep_run: bool = RunManager.run_active
+	var keep_screen: int = RunManager.current_screen
+	CodexSession.active = true
+	RunManager.run_active = true
+	var wrong_trial: Array[String] = []
+	for b in 7:
+		CodexSession.boss_index = b
+		for st in 3:
+			CodexSession.stage = st
+			Audio._on_state_changed(GameManager.State.PLAYING)
+			var want: String = "boss" if st >= 2 else "eon_" + Audio.EON_TRACKS[b]
+			if Audio.current_track != want:
+				wrong_trial.append("arconte %d enc. %d → %s (queria %s)" % [b, st + 1, Audio.current_track, want])
+	Audio._on_screen_changed(1)
+	check(wrong_trial.is_empty() and Audio.current_track == "boss",
+		"Provação: Éon certo nos encontros 1–2, boss no 3º, mesmo com run_active; screen_changed não atropela (%s)" % str(wrong_trial))
+	CodexSession.active = keep_active
+	CodexSession.stage = keep_stage
+	CodexSession.boss_index = keep_boss
+
+	# (b9) Centro (ROTEIRO cena C): sem música até o 1º caco; depois sobe por caco.
+	var keep_restored: Array[String] = Progression.restored_rings.duplicate()
+	RunManager.current_screen = RunManager.CENTER_FIRST
+	Progression.restored_rings.clear()
+	Audio._play_run_context(RunManager.CENTER_FIRST)
+	var c0: String = Audio._playing_track
+	Progression.restored_rings.assign(["a", "b"])
+	Audio._update_center_music()
+	var c2: String = Audio._playing_track
+	var l2: float = float(Audio._layer_db.get("centro", 99.0))
+	Progression.restored_rings.assign(["a", "b", "c", "d", "e", "f"])
+	Audio._update_center_music()
+	var l6: float = float(Audio._layer_db.get("centro", 99.0))
+	check(c0 == "" and c2 == "centro" and is_equal_approx(l2, -12.0) and is_equal_approx(l6, 0.0),
+		"Centro: mudo sem cacos ('%s'), 'centro' entra no 1º caco e sobe por caco (2 → %.1f dB, 6 → %.1f dB)" % [c0, l2, l6])
+	Progression.restored_rings.assign(keep_restored)
+	RunManager.run_active = keep_run
+	RunManager.current_screen = keep_screen
+
+	# (b10) Menu desfaz o que as cenas deixaram (tom, camadas).
+	Audio.set_music_layer_volume(0.2, "theme")
+	Audio.set_music_pitch(0.75, 0.0)
+	Audio._on_state_changed(GameManager.State.MENU)
+	check(Audio._layer_db.is_empty() and is_equal_approx(Audio._music_pitch, 1.0) and Audio.current_track == "theme",
+		"menu zera tom e camadas e volta ao tema")
+
+	# (b11) Corte seco: fade 0 para a anterior na hora e a nova entra cheia.
+	Audio.play_music("rei", true, 1.0, 0.0)
+	await get_tree().process_frame
+	var n_playing := 0
+	for m in Audio._music:
+		if m.playing:
+			n_playing += 1
+	check(Audio._playing_track == "rei" and n_playing == 1 and absf(Audio._music[Audio._music_cur].volume_db) < 0.01,
+		"play_music(faixa, loop, tom, fade=0) corta seco (%d player tocando, %.1f dB)" % [n_playing, Audio._music[Audio._music_cur].volume_db])
+
+	# (b12) SFX: tom exato, anti-spam, arpejo da faísca, limite de vozes (R6/R11).
+	var pitched := Audio.play_sfx_pitched("ring_steal", pow(2.0, 3.0 / 12.0), -2.0)
+	var exact := false
+	for i in Audio._players.size():
+		if Audio._pl_name[i] == "ring_steal":
+			exact = is_equal_approx(Audio._players[i].pitch_scale, pow(2.0, 3.0 / 12.0)) and is_equal_approx(Audio._players[i].volume_db, -2.0)
+	check(pitched and exact, "play_sfx_pitched toca no tom e volume EXATOS")
+	var h1 := Audio.play_sfx("hit")
+	var h2 := Audio.play_sfx("hit")
+	check(h1 and not h2, "anti-spam: o mesmo golpe 2× no mesmo instante toca 1×")
+	var arp := 0
+	for i in 6:
+		if Audio.play_sfx("spark"):
+			arp += 1
+		await _wait_real(0.042)
+	check(arp == 6 and Audio.spam_ms_for("spark") < 40, "faísca: 6 chegadas a ~42 ms soam todas (arpejo não é engolido)")
+	for i in 6:
+		Audio.play_sfx("hit_heavy")
+		await _wait_real(0.045)
+	var hv := Audio.voices_playing("hit_heavy")
+	check(hv <= Audio.MAX_SAME, "no máximo %d vozes do mesmo som (hit_heavy: %d tocando)" % [Audio.MAX_SAME, hv])
+
+	# (b13) Estéreo discreto pela posição na tela (R14).
+	var vw := get_viewport().get_visible_rect().size.x
+	var pl := Audio.pan_for(get_viewport().get_canvas_transform().affine_inverse() * Vector2(0, 0))
+	var pc := Audio.pan_for(get_viewport().get_canvas_transform().affine_inverse() * Vector2(vw * 0.5, 0))
+	var pr := Audio.pan_for(get_viewport().get_canvas_transform().affine_inverse() * Vector2(vw * 3.0, 0))
+	var right_pos := get_viewport().get_canvas_transform().affine_inverse() * Vector2(vw, 0)
+	Audio.play_sfx("enemy_hurt", -1.0, 0.0, right_pos)
+	var right_bus := ""
+	for i in Audio._players.size():
+		if Audio._pl_name[i] == "enemy_hurt":
+			right_bus = Audio._players[i].bus
+	Audio.play_sfx("proj_hit")
+	var mid_bus := ""
+	for i in Audio._players.size():
+		if Audio._pl_name[i] == "proj_hit":
+			mid_bus = Audio._players[i].bus
+	var r2 := AudioServer.get_bus_index("SFX_R2")
+	var pan_fx = AudioServer.get_bus_effect(r2, 0) if r2 >= 0 and AudioServer.get_bus_effect_count(r2) > 0 else null
+	check(is_equal_approx(pl, -0.5) and absf(pc) < 0.01 and is_equal_approx(pr, 0.5) and right_bus == "SFX_R2" and mid_bus == "SFX"
+		and pan_fx is AudioEffectPanner and is_equal_approx(pan_fx.pan, 0.5) and AudioServer.get_bus_send(r2) == "SFX",
+		"pan pela tela: esquerda %.2f, meio %.2f, fora à direita %.2f (teto 0,5); com posição → %s, sem → %s" % [pl, pc, pr, right_bus, mid_bus])
+
+	# (b14) Slow-mo (R8): passa-baixas 20 kHz → 1,5 kHz em 60 ms, música −4 dB,
+	#       volta em 250 ms; esquiva perfeita (0,3) abafa só até 2,5 kHz.
+	if Juice.has_signal("slowmo_changed"):
+		check(Juice.is_connected("slowmo_changed", Callable(Audio, "_on_slowmo_changed")), "Audio escuta Juice.slowmo_changed")
+	await _wait_real(0.6)
+	var sfx_i := AudioServer.get_bus_index("SFX")
+	var lp_slot := -1
+	for i in AudioServer.get_bus_effect_count(sfx_i):
+		if AudioServer.get_bus_effect(sfx_i, i) is AudioEffectLowPassFilter:
+			lp_slot = i
+	var m0 := AudioServer.get_bus_volume_db(music_bus)
+	var lp_off0 := lp_slot >= 0 and not AudioServer.is_bus_effect_enabled(sfx_i, lp_slot)
+	Audio._on_slowmo_changed(true, 0.22)
+	await _wait_real(0.12)
+	var hz_cut := Audio.lowpass_cutoff_hz()
+	var lp_on := lp_slot >= 0 and AudioServer.is_bus_effect_enabled(sfx_i, lp_slot)
+	var m1 := AudioServer.get_bus_volume_db(music_bus)
+	Audio._on_slowmo_changed(false, 1.0)
+	await _wait_real(0.4)
+	var lp_off1 := lp_slot >= 0 and not AudioServer.is_bus_effect_enabled(sfx_i, lp_slot)
+	var m2 := AudioServer.get_bus_volume_db(music_bus)
+	Audio._on_slowmo_changed(true, 0.3)
+	await _wait_real(0.12)
+	var hz_dodge := Audio.lowpass_cutoff_hz()
+	Audio._on_slowmo_changed(false, 1.0)
+	await _wait_real(0.4)
+	check(lp_off0 and lp_on and lp_off1 and absf(hz_cut - 1500.0) < 30.0 and absf(hz_dodge - 2500.0) < 50.0
+		and absf((m1 - m0) + 4.0) < 0.3 and absf(m2 - m0) < 0.3,
+		"slow-mo: corte %.0f Hz (esquiva %.0f Hz), música %.1f → %.1f → %.1f dB, filtro desliga ao sair" % [hz_cut, hz_dodge, m0, m1, m2])
 
 	# (c) tocar SFX inexistente não gera erro (cache negativa) — e o pool aguenta rajada.
 	Audio.play_sfx("__nao_existe__")
@@ -252,8 +403,29 @@ func _run() -> void:
 			never.append(n)
 	print("Nomes do catálogo ainda sem chamada no código (esperados até a integração): ", never)
 
+	# (g) Encerramento (REVISAO #15): para e solta todos os players.
+	Audio.play_music("boss")
+	Audio.play_ambience("torpor")
+	Audio.play_sfx("nova")
+	await get_tree().process_frame
+	Audio.shutdown()
+	var still := 0
+	for p in Audio.get_children():
+		if p is AudioStreamPlayer and ((p as AudioStreamPlayer).playing or (p as AudioStreamPlayer).stream != null):
+			still += 1
+	check(still == 0 and not Audio.play_sfx("hit"), "shutdown() para e solta todos os players (%d sobrando) e não toca mais nada" % still)
+
 	print("AUDIO QA: %d falhas" % fails)
 	get_tree().quit(0 if fails == 0 else 1)
+
+
+## Espera `sec` segundos de relógio REAL, atravessando quadros (não um timer
+## que pode disparar no mesmo quadro em que nasceu).
+func _wait_real(sec: float) -> void:
+	var t0 := Time.get_ticks_msec()
+	await get_tree().process_frame
+	while Time.get_ticks_msec() - t0 < int(sec * 1000.0):
+		await get_tree().process_frame
 
 
 func _collect_gd(path: String, out: Array[String]) -> void:
