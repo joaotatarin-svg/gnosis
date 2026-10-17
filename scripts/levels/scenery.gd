@@ -875,6 +875,8 @@ func build_foreground(parent: Node2D) -> void:
 	f.rng = _rng(6)
 	f.tint = haze().darkened(0.9)
 	f.boss = is_boss()
+	f.screen = seed_screen
+	f.name = "Foreground"
 	if "rest_points" in parent:
 		f.anchors = parent.rest_points.duplicate()
 	f.z_index = 30
@@ -883,19 +885,45 @@ func build_foreground(parent: Node2D) -> void:
 
 class Foreground extends Node2D:
 	## Silhuetas escuras e desfocadas passando NA FRENTE da câmera (parallax 1,35):
-	## entulho embaixo, colunas da própria pintura nos descansos (ou flanqueando
-	## a arena do chefe) e bokeh de partículas — a profundidade de primeiro plano.
+	## entulho embaixo, colunas finas da própria pintura perto dos descansos e
+	## bokeh de partículas — a profundidade de primeiro plano.
+	##
+	## REGRA DO PRIMEIRO PLANO (Onda 5, QA2 #3): uma coluna NUNCA tapa um NPC,
+	## Estela, Selo, baú, Adormecido ou a fenda. Como ela anda só 0,35× mais rápido
+	## que o mundo, uma coluna "ancorada" perto de um NPC fica em cima dele por
+	## ~600 px de câmera — era o Soter da tela 17. Por isso:
+	##  1) a coluna é FINA (COL_W px na tela) e o entulho de baixo é baixo: o
+	##     primeiro plano cobre ≤ 10% do quadro em qualquer câmera
+	##     (medido por `tools/scenery/FgAudit.tscn`, que usa `audit_at`);
+	##  2) a posição é escolhida DEPOIS que o Level pôs os extras (fim do quadro):
+	##     longe o bastante de todo ponto protegido para nunca cruzá-lo enquanto
+	##     ele estiver no quadro (conta em `_min_gap`), e fora do quadro enquanto
+	##     uma zona está trancada (a luta não fica atrás de pilar). Sem lugar
+	##     seguro, o descanso fica sem coluna;
+	##  3) rede de segurança: se mesmo assim uma coluna passar sobre um ponto
+	##     protegido, ela some; sobre a Sophia, fica translúcida.
 	var eon: int = 0
+	var screen: int = 1
 	var rng: RandomNumberGenerator
 	var tint: Color = Color(0.02, 0.02, 0.03)
 	var boss: bool = false
 	var anchors: Array = []
 	var _bokeh: CPUParticles2D
 	var _dust: CPUParticles2D
+	var _cols: Array = []            # [{node: Sprite2D, x: float (âncora de mundo)}]
+	var _guards: Array = []          # nós protegidos vivos (NPC, Estela, Selos...)
+	var _guard_scan: float = 0.0
+	var _col_rng_seed: int = 0
 	const SPEED := 1.35      # > 1 = passa mais rápido que o mundo (está à frente)
 	const SPAN := 6800.0     # até onde vai o entulho (cobre a travessia de 3 zonas)
+	const COL_W := 52.0      # largura da fatia da coluna na tela (px) — ~6% do quadro coberto
+	const COL_H := 460.0     # altura da coluna (passa do quadro em cima e embaixo)
+	const COL_ALPHA := 0.97
+	const GUARD := 80.0      # faixa livre ao redor de um ponto protegido (px de mundo)
+	const VIEW_HALF := 320.0
+	const RUBBLE_H := Vector2(64.0, 92.0)   # altura do entulho de baixo (era 90–140)
 
-	func _process(_delta: float) -> void:
+	func _process(delta: float) -> void:
 		var cam := get_viewport().get_camera_2d()
 		if cam == null:
 			return
@@ -905,6 +933,309 @@ class Foreground extends Node2D:
 			_bokeh.position = Vector2(c.x * SPEED, c.y)
 		if _dust != null:
 			_dust.position = Vector2(c.x * SPEED, c.y + 140.0)
+		if not _cols.is_empty():
+			_fade_columns(c.x, delta)
+
+	## Centro (x de mundo, na tela) de uma coluna ancorada em `ax` com a câmera em `cx`.
+	static func col_world_x(ax: float, cx: float) -> float:
+		return cx + SPEED * (ax - cx)
+
+	## Distância mínima (px de mundo) entre a âncora de uma coluna e um ponto
+	## protegido de meia-largura `hw` para que ela nunca o cubra enquanto ele
+	## estiver no quadro. Distância na tela entre coluna e ponto =
+	## SPEED·D + (SPEED−1)·s, com s = posição do ponto na tela (|s| ≤ VIEW_HALF+hw).
+	static func _min_gap(hw: float) -> float:
+		return (COL_W * 0.5 + hw + (SPEED - 1.0) * (VIEW_HALF + hw)) / SPEED
+
+	## Pontos protegidos [x, meia-largura] lidos do Level (sem mexer nele): os
+	## nós de NPC/Estela/Selos/baú/Adormecido/fenda que já existem, a Estela que o
+	## Gnosis vai pôr depois das falas de chegada e o lugar da fenda.
+	##
+	## CONTRATO COM O LEVEL DESIGN (level6 e quem vier): além das classes acima,
+	##  · qualquer Node2D no grupo `fg_guard` é protegido (meia-largura em
+	##    `get_meta("fg_half")`, padrão GUARD = 80 px) — p.ex. segredo, alavanca,
+	##    plataforma alta com item, perigo que precisa ser lido;
+	##  · a variável `fg_forbidden: Array` no Level (se existir), com Vector2(x0, x1)
+	##    em x de mundo = faixas inteiras onde coluna de primeiro plano não pode
+	##    cobrir nada (p.ex. um trecho vertical de plataformas).
+	## Os dois são lidos no fim do quadro em que o Level termina o `_ready` síncrono
+	## (o layout tem de estar montado até lá) e de novo a cada 0,5 s pela rede de
+	## segurança (o que nascer depois só faz a coluna sumir, não a move).
+	func _protected_points() -> Array:
+		var pts: Array = []
+		var lv := get_parent()
+		if lv == null:
+			return pts
+		for g in _guard_nodes(lv):
+			pts.append(Vector2((g[0] as Node2D).global_position.x, float(g[1])))
+		var bands = lv.get("fg_forbidden")
+		if bands is Array:
+			for b in bands:
+				if b is Vector2:
+					var bv: Vector2 = b
+					pts.append(Vector2((bv.x + bv.y) * 0.5, absf(bv.y - bv.x) * 0.5))
+		if RunManager.run_active and not anchors.is_empty() and Gnosis.has_method("stela_for_screen") \
+				and Gnosis.has_method("_stela_pos") and not (Gnosis.stela_for_screen(screen) as Dictionary).is_empty():
+			var sp: Vector2 = Gnosis.call("_stela_pos", screen, anchors)
+			pts.append(Vector2(sp.x, GUARD))
+		var ex = lv.get("_end_x")
+		if ex != null:
+			pts.append(Vector2(float(ex) - 200.0, GUARD + 20.0))   # a fenda de saída
+		return pts
+
+	## Meia-largura protegida de um nó do Level (0 = não protegido).
+	static func _guard_half(n: Node) -> float:
+		if not (n is Node2D):
+			return 0.0
+		if n.is_in_group("fg_guard"):
+			return float(n.get_meta("fg_half", GUARD))
+		if n is SealPuzzle:
+			return GUARD + 105.0          # três pilares em −90/0/+90
+		if n is NpcEncounter or n is Stela or n is Chest or n is Sleeper or n is ExitPortal:
+			return GUARD
+		return 0.0
+
+	## [nó, meia-largura] de tudo que é protegido: filhos diretos do Level das
+	## classes conhecidas + qualquer nó do grupo `fg_guard` (em qualquer lugar).
+	func _guard_nodes(lv: Node) -> Array:
+		var out: Array = []
+		var seen: Dictionary = {}
+		for n in lv.get_children():
+			var hw := _guard_half(n)
+			if hw > 0.0:
+				out.append([n, hw])
+				seen[n] = true
+		if is_inside_tree():
+			for n in get_tree().get_nodes_in_group("fg_guard"):
+				if not seen.has(n) and _guard_half(n) > 0.0:
+					out.append([n, _guard_half(n)])
+		return out
+
+	## Escolhe as âncoras das colunas (no fim do quadro: o Level já pôs os extras).
+	func _place_columns() -> void:
+		var colt := SceneryLibrary.layer(eon, "fgcol")
+		if colt == null or boss or not is_inside_tree():
+			return
+		var crng := RandomNumberGenerator.new()
+		crng.seed = _col_rng_seed
+		var pts := _protected_points()
+		# Zonas de luta: com a zona trancada a câmera anda em c ± (ZONE_HALF − VIEW_HALF);
+		# a coluna precisa ficar fora do quadro nesse trecho todo.
+		var lock_free: float = (Level.ZONE_HALF - VIEW_HALF + 10.0) + (VIEW_HALF + COL_W * 0.5) / SPEED
+		var zone_c: Array = []
+		for z in anchors.size():
+			zone_c.append(Level.ZONE_FIRST_X + float(z) * Level.ZONE_STEP)
+		for i in range(1, anchors.size()):
+			var r: float = Vector2(anchors[i]).x
+			var pref: float = r + crng.randf_range(-60.0, 60.0)
+			var best: float = INF
+			var best_score: float = -INF
+			var x: float = r - 420.0
+			while x <= r + 420.0:
+				var ok := true
+				for c in zone_c:
+					if absf(x - float(c)) < lock_free:
+						ok = false
+						break
+				var clear: float = INF
+				if ok:
+					for p in pts:
+						var gap: float = absf(x - p.x) - _min_gap(p.y)
+						clear = minf(clear, gap)
+						if gap < 0.0:
+							ok = false
+							break
+				if ok:
+					# perto do descanso (o desenho original) e com folga dos pontos
+					var score: float = minf(clear, 120.0) - absf(x - pref) * 0.25
+					if score > best_score:
+						best_score = score
+						best = x
+				x += 4.0
+			if best != INF:
+				_add_column(colt, best, crng.randf() < 0.5)
+
+	## Só para a auditoria medir o ANTES: a colunona inteira em cada descanso
+	## (como era até a Onda 4). O jogo nunca liga isto.
+	static var legacy: bool = false
+
+	func _legacy_columns() -> void:
+		var colt := SceneryLibrary.layer(eon, "fgcol")
+		if colt == null or boss:
+			return
+		var crng := RandomNumberGenerator.new()
+		crng.seed = _col_rng_seed
+		for i in range(1, anchors.size()):
+			var ax: float = Vector2(anchors[i]).x + crng.randf_range(-60.0, 60.0)
+			var cs := Sprite2D.new()
+			cs.texture = colt
+			cs.centered = false
+			var sc := COL_H / colt.get_height()
+			cs.scale = Vector2(sc, sc)
+			cs.position = Vector2(ax * SPEED - colt.get_width() * sc * 0.5, -60.0)
+			cs.modulate = Color(1, 1, 1, COL_ALPHA)
+			cs.set_meta("col", true)
+			add_child(cs)
+
+	func _add_column(colt: Texture2D, ax: float, flip: bool) -> void:
+		var cs := Sprite2D.new()
+		cs.texture = colt
+		cs.centered = false
+		var sc := COL_H / colt.get_height()
+		cs.scale = Vector2(sc, sc)
+		# uma fatia de COL_W px da asa: a mais perto da borda de dentro (o perfil
+		# recortado) que ainda seja ≥ 72% opaca — senão vira só a "baía" vazia
+		var cw: float = minf(COL_W / sc, colt.get_width())
+		cs.region_enabled = true
+		cs.region_rect = Rect2(_crop_x(colt, cw), 0.0, cw, colt.get_height())
+		cs.flip_h = flip
+		cs.position = Vector2(ax * SPEED - cw * sc * 0.5, -60.0)
+		cs.modulate = Color(1, 1, 1, COL_ALPHA)
+		cs.name = "FgColumn%d" % _cols.size()
+		cs.set_meta("col", true)
+		add_child(cs)
+		_cols.append({"node": cs, "x": ax})
+
+	static var _crops: Dictionary = {}
+
+	## x do recorte (px da textura) para uma fatia de largura `cw`: da borda de
+	## dentro para fora, a primeira com ≥ 72% dos pixels opacos (amostra 1:4).
+	static func _crop_x(t: Texture2D, cw: float) -> float:
+		var key := "%s:%d" % [t.resource_path, int(cw)]
+		if _crops.has(key):
+			return _crops[key]
+		var w := t.get_width()
+		var x0: float = float(w) - cw
+		var img := _alpha_image(t)
+		if img != null:
+			var h := img.get_height()
+			var icw := int(cw)
+			var x := w - icw
+			while x >= 0:
+				var tot := 0
+				var op := 0
+				for yy in range(0, h, 4):
+					for xx in range(x, x + icw, 4):
+						tot += 1
+						if img.get_pixel(xx, yy).a > 0.5:
+							op += 1
+				if tot > 0 and float(op) / float(tot) >= 0.72:
+					x0 = float(x)
+					break
+				x -= 4
+		_crops[key] = x0
+		return x0
+
+	## Rede de segurança: coluna sobre ponto protegido some; sobre a Sophia, translúcida.
+	func _fade_columns(cx: float, delta: float) -> void:
+		_guard_scan -= delta
+		if _guard_scan <= 0.0:
+			_guard_scan = 0.5
+			_guards.clear()
+			var lv := get_parent()
+			if lv != null:
+				_guards = _guard_nodes(lv)
+		var lv2 := get_parent()
+		var pl: Node2D = lv2.get("player") if lv2 != null and "player" in lv2 else null
+		for cd in _cols:
+			var gx := col_world_x(float(cd.x), cx)
+			var want := COL_ALPHA
+			if pl != null and is_instance_valid(pl) and absf(pl.global_position.x - gx) < COL_W * 0.5 + 26.0:
+				want = 0.45
+			for g in _guards:
+				# corpo do ponto (a meia-largura sem a folga GUARD) + 34 px
+				var body: float = maxf(34.0, float(g[1]) - GUARD + 34.0)
+				if is_instance_valid(g[0]) and absf((g[0] as Node2D).global_position.x - gx) < COL_W * 0.5 + body:
+					want = 0.0
+			var n: Sprite2D = cd.node
+			n.modulate.a = move_toward(n.modulate.a, want, delta * 3.0)
+
+	## AUDITORIA (ferramenta): põe o primeiro plano como estaria com a câmera em
+	## (cx, cy) e mede no quadro 640×360 (grade de 4 px) a fração coberta por
+	## silhueta (alfa ≥ 0,5, sem o fade de segurança) e a fração de cada faixa
+	## protegida coberta por coluna. Retorna {cover, hits: [[x, frac]]}.
+	func audit_at(cx: float, cy: float, prot: Array) -> Dictionary:
+		position.x = cx * (1.0 - SPEED)
+		var gw := 160
+		var gh := 90
+		var mask := PackedByteArray()
+		mask.resize(gw * gh)
+		var colmask := PackedByteArray()
+		colmask.resize(gw * gh)
+		var x0 := cx - VIEW_HALF
+		var y0 := cy - 180.0
+		for ch in get_children():
+			if not (ch is Sprite2D):
+				continue
+			var s: Sprite2D = ch
+			var img := _alpha_image(s.texture)
+			if img == null:
+				continue
+			var is_col := s.has_meta("col")
+			var reg := s.region_rect if s.region_enabled else Rect2(Vector2.ZERO, Vector2(img.get_size()))
+			var xf := s.get_global_transform()
+			var inv := xf.affine_inverse()
+			for gy in gh:
+				for gx in gw:
+					var wp := Vector2(x0 + gx * 4.0 + 2.0, y0 + gy * 4.0 + 2.0)
+					var lp := inv * wp
+					# local → pixel da textura (centered/offset/flip)
+					var pxl := lp - s.offset
+					if s.centered:
+						pxl += reg.size * 0.5
+					if pxl.x < 0.0 or pxl.y < 0.0 or pxl.x >= reg.size.x or pxl.y >= reg.size.y:
+						continue
+					if s.flip_h:
+						pxl.x = reg.size.x - 1.0 - pxl.x
+					var tp := reg.position + pxl
+					var a := img.get_pixel(int(tp.x), int(tp.y)).a * (COL_ALPHA if is_col else s.modulate.a)
+					if a >= 0.5:
+						mask[gy * gw + gx] = 1
+						if is_col:
+							colmask[gy * gw + gx] = 1
+		var covered := 0
+		for v in mask:
+			covered += v
+		var hits: Array = []
+		for p in prot:
+			# faixa do ponto: x ± meia-largura (sem a folga), dos pés até 90 px acima
+			var hw: float = maxf(20.0, float(p.y) - GUARD + 30.0)
+			var fx0 := int(floor((p.x - hw - x0) / 4.0))
+			var fx1 := int(ceil((p.x + hw - x0) / 4.0))
+			var fy0 := int(floor((Level.GROUND_Y - 90.0 - y0) / 4.0))
+			var fy1 := int(ceil((Level.GROUND_Y - y0) / 4.0))
+			var tot := 0
+			var hit := 0
+			for gy in range(maxi(0, fy0), mini(gh, fy1)):
+				for gx in range(maxi(0, fx0), mini(gw, fx1)):
+					tot += 1
+					hit += colmask[gy * gw + gx]
+			if tot > 0 and hit > 0:
+				hits.append([p.x, float(hit) / float(tot)])
+		var colcov := 0
+		for v in colmask:
+			colcov += v
+		return {"cover": float(covered) / float(gw * gh), "col": float(colcov) / float(gw * gh), "hits": hits}
+
+	static var _imgs: Dictionary = {}
+
+	static func _alpha_image(t: Texture2D) -> Image:
+		if t == null:
+			return null
+		var key := t.resource_path
+		if _imgs.has(key):
+			return _imgs[key]
+		var img: Image = null
+		# no projeto o PNG está no disco (rápido e funciona headless); exportado só
+		# existe o .ctex importado → lê da própria textura
+		if key != "" and FileAccess.file_exists(key):
+			img = Image.load_from_file(ProjectSettings.globalize_path(key))
+		if img == null:
+			img = t.get_image()
+		if img != null and img.is_compressed():
+			img.decompress()
+		_imgs[key] = img
+		return img
 
 	func _ready() -> void:
 		if rng == null:
@@ -917,7 +1248,7 @@ class Foreground extends Node2D:
 			while x < SPAN * SPEED:
 				var sp := Sprite2D.new()
 				sp.texture = rubble
-				var hgt := rng.randf_range(90.0, 140.0)
+				var hgt := rng.randf_range(90.0, 140.0) if legacy else rng.randf_range(RUBBLE_H.x, RUBBLE_H.y)
 				sp.scale = Vector2.ONE * hgt / rubble.get_height()
 				sp.offset.y = -rubble.get_height() * 0.5
 				sp.position = Vector2(x, 452.0 + rng.randf_range(0.0, 18.0))
@@ -925,24 +1256,13 @@ class Foreground extends Node2D:
 				sp.flip_h = rng.randf() < 0.5
 				add_child(sp)
 				x += rng.randf_range(560.0, 980.0)
-		# colunas da pintura (asa escurecida) — nos descansos ou flanqueando a arena
-		var colt := SceneryLibrary.layer(eon, "fgcol")
-		if colt != null:
-			var xs: Array = []
-			# (arena de chefe fica sem coluna: passaria por cima da luta)
-			if not boss:
-				for i in range(1, anchors.size()):
-					xs.append(Vector2(anchors[i]).x + rng.randf_range(-60.0, 60.0))
-			for k in xs.size():
-				var cs := Sprite2D.new()
-				cs.texture = colt
-				cs.centered = false
-				var sc := 460.0 / colt.get_height()
-				cs.scale = Vector2(sc, sc)
-				var px: float = float(xs[k]) * SPEED
-				cs.position = Vector2(px - colt.get_width() * sc * 0.5, -60.0)
-				cs.modulate = Color(1, 1, 1, 0.97)
-				add_child(cs)
+		# colunas da pintura (asa escurecida): escolhidas no fim do quadro, quando
+		# o Level já pôs NPC/baú/Selos (ver REGRA DO PRIMEIRO PLANO acima)
+		_col_rng_seed = rng.randi()
+		if legacy:
+			_legacy_columns()
+		else:
+			_place_columns.call_deferred()
 		# bokeh: poucos pontos grandes e desfocados flutuando na frente da câmera
 		var lk := SceneryLibrary.look(eon)
 		var g: Color = lk.glow
