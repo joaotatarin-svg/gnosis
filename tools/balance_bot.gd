@@ -21,6 +21,8 @@ extends Node
 ##   ia=2 = bot "v2" (Onda 2): além do clássico, SAI de poça hostil (veneno de
 ##          Belias) e ESQUIVA de projétil que vem na direção dele. Ainda não
 ##          bloqueia nem faz parry. Padrão ia=1 = clássico (r1–r8).
+##   sim=poca = SIMULA a proposta P3: poças hostis não somam — no máximo 1 tique
+##          de "zona" a cada 0,7 s (o bot devolve a vida do tique extra e não conta).
 ##   tempo=legado = reproduz o tempo das r1–r8 (bot no _process, botão solto
 ##          em tempo real, física com passo de vel/60 s). NÃO use para medir:
 ##          em vel 8 a física roda a 7,5 Hz e o dano sai ~2,4x maior (r8, 17/10).
@@ -39,6 +41,8 @@ func _ready() -> void:
 			w.base_seed = int(a.substr(5))
 		elif a.begins_with("loja="):
 			w.shop_mode = a.substr(5)
+		elif a == "sim=poca":
+			w.sim_pool = true
 		elif a == "tempo=legado":
 			w.legacy_timing = true
 		elif a.begins_with("ia="):
@@ -64,6 +68,9 @@ class BalanceWorker extends Node:
 	var out_base: String = "user://balance"
 	var ai_level: int = 1                # 1 = clássico (r1–r8); 2 = sai de poça e esquiva tiro
 	var legacy_timing: bool = false      # tempo=legado: física grossa das r1–r8 (vel 8 = passo de 0,13 s)
+	var sim_pool: bool = false           # sim=poca (proposta P3)
+	var _zone_tick_t: float = -9.0
+	var _run_t: float = 0.0              # tempo de jogo total (s)       # último tique de poça contado (sim=poca)
 	var _blocked: bool = false           # diálogo/loja abertos neste quadro
 	var shop_mode: String = "classica"   # "classica" (r1–r8) ou "gasta" (+vida máx.)
 
@@ -201,6 +208,7 @@ class BalanceWorker extends Node:
 			_zone_cur = -2
 			_zone_t = 0.0
 		_t += delta
+		_run_t += delta
 		var lv0 := get_tree().current_scene
 		if lv0 is Level:
 			_zones = maxi(1, lv0.zones.size())
@@ -372,6 +380,17 @@ class BalanceWorker extends Node:
 
 	## Fecha o quadro: o dano visto vai para quem acertou (ou "zona").
 	func _attribute() -> void:
+		if _pend > 0 and sim_pool and _hit_label == "":
+			# P3 simulada: tique de poça a menos de 0,7 s do anterior não fere.
+			if _run_t - _zone_tick_t < 0.65:
+				var pl := get_tree().get_first_node_in_group("player")
+				if pl != null and pl.health != null:
+					pl.health.heal(_pend)
+					_last_hp = pl.health.current_health
+					_hp_seen = _last_hp
+				_pend = 0                  # nunca entrou no _dmg (medido depois)
+			else:
+				_zone_tick_t = _run_t
 		if _pend > 0:
 			var k: String = _hit_label if _hit_label != "" else "zona"
 			_src[k] = int(_src.get(k, 0)) + _pend
