@@ -17,6 +17,10 @@ func _ready() -> void:
 		get_tree().quit(3)
 		return
 	var scr = load(path)
+	if scr == null or not (scr is GDScript) or not scr.can_instantiate():
+		print("REG|%s|BROKEN|script não compila: %s" % [tid, path])
+		get_tree().quit(3)
+		return
 	var t: Node = scr.new()
 	t.set("id", tid)
 	if args.size() >= 2 and args[1] == "autoteste":
