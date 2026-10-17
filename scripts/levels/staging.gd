@@ -21,6 +21,9 @@ const GOLD := Color(1.0, 0.86, 0.5)
 const FOG_TINT := Color(0.78, 0.8, 0.86)
 const BLIND_TINT := Color(0.62, 0.68, 0.8)    # o Rei "esfria" quando a máscara cai
 const HEAD := Vector2(0.0, -150.0)            # rosto do Rei (px, local aos pés)
+# A descida do Centro (cena C): o roteiro pede 200 px, mas a pintura de fundo
+# acaba ~120 px acima do enquadramento normal (aparecia a borda) — 120.
+const DESCENT := 120.0
 const HAND := Vector2(-66.0, -84.0)           # mão estendida do Rei (olhando à esquerda)
 
 var level: Node2D
@@ -478,7 +481,7 @@ func _b_sink() -> void:
 
 # --- cena C: a descida ao Centro (tela 65) -----------------------------------
 
-## Antes da caixa: preto 1 s → a câmera desce 200 px até a altura de jogo e a
+## Antes da caixa: preto 1 s → a câmera desce DESCENT px até a altura de jogo e a
 ## paleta vai do dourado da Coroa ao cinza-violeta do Centro → a Sophia cai de
 ## joelhos e se ergue. Sem música (só vento): a `centro` entra no 1º caco.
 func descend() -> void:
@@ -487,7 +490,7 @@ func descend() -> void:
 	_black.color.a = 1.0
 	_cam_take()
 	if _cam != null:
-		_cam.base_offset = Vector2(_cam_saved.base_offset) + Vector2(0, -200)
+		_cam.base_offset = Vector2(_cam_saved.base_offset) + Vector2(0, -DESCENT)
 		_cam.offset = _cam.base_offset
 	var cm := CanvasModulate.new()
 	cm.color = Color(1.25, 1.0, 0.6)
