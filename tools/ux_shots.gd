@@ -107,7 +107,7 @@ class Worker extends Node:
 		# 1. Menu sem save
 		RunManager.saved_run = {}
 		get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
-		await wait(1.4)
+		await wait(2.6)                      # 1ª tela: deixa a entrada escalonada terminar
 		await shot("menu_sem_save")
 		await nav_check("menu")
 		# 2. Menu com save + aviso de save antigo descartado

@@ -165,5 +165,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_rows[wrapi(_sel + 1, 0, _rows.size())].grab_focus()
 
 
+## Anda `dir` entradas (usado por ferramentas de QA; o jogador usa o foco).
+func _move(dir: int) -> void:
+	_rows[wrapi(_sel + dir, 0, _rows.size())].grab_focus()
+
+
 func _leave() -> void:
 	SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")

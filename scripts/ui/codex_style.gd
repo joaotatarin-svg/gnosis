@@ -261,6 +261,9 @@ static func release(tree: SceneTree) -> void:
 	if tree != null and tree.root != null:
 		tree.root.theme = null
 	ThemeDB.fallback_font = null
+	# O tema padrão do motor guarda as nossas molduras/fontes (merge_with):
+	# limpa ao sair pra elas não ficarem "em uso" no encerramento.
+	ThemeDB.get_default_theme().clear()
 	_theme = null
 	_fonts.clear()
 
