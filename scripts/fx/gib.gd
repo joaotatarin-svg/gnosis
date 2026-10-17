@@ -6,6 +6,19 @@ class_name Gib
 ## manual barata (dezenas por tela sem custo).
 
 const GRAV := 950.0
+## Limpeza (backlog #23 do crítico): destroços somem em 3–4 s, no máximo
+## MAX_PIECES peças vivas (as mais velhas apagam rápido para dar lugar), nunca
+## saem da arena (quicam na parede da zona) e nunca passam de uma tela para a
+## outra (são filhos da fase; `clear_all` existe para quem trocar de tela sem
+## trocar de cena).
+const MAX_PIECES := 30
+const MAX_DROPS := 30
+const LIFE_MIN := 3.0             # vida em tempo de jogo (s)…
+const LIFE_MAX := 3.6
+const FADE := 0.7                 # …os últimos 0,7 s são o apagar
+const HARD_MS := 4000             # teto em tempo REAL: câmera lenta não segura destroço
+const EXPIRE := 0.25              # apagar rápido de quem foi despejado pelo teto
+const MAX_VX := 360.0             # nada atravessa a tela num pulo só
 
 var painted_texture: Texture2D
 var painted_size: Vector2
@@ -25,12 +38,74 @@ var _t: float = 0.0
 var _radius: float = 4.0
 var _rest: bool = false
 var _bounced: bool = false       # só o primeiro quique soa
+var _born_ms: int = 0
+var _fade_len: float = FADE      # duração do apagar (encurta quando despejado)
+var _x_lo: float = -INF          # paredes da arena no nascimento
+var _x_hi: float = INF
 static var _last_bounce_ms: int = 0   # rate-limit global (dezenas de peças por morte)
+static var _pieces: Array = []        # peças vivas, da mais velha para a mais nova
+static var _drops: Array = []
+
+
+## Quantas peças (sem as gotas) estão vivas agora — para sondas/QA.
+static func live_pieces() -> int:
+	_prune()
+	return _pieces.size()
+
+
+static func live_drops() -> int:
+	_prune()
+	return _drops.size()
+
+
+## Apaga todos os destroços já (troca de tela sem troca de cena, cutscene…).
+static func clear_all() -> void:
+	for g in _pieces + _drops:
+		if is_instance_valid(g):
+			g.queue_free()
+	_pieces.clear()
+	_drops.clear()
+
+
+static func _prune() -> void:
+	_pieces = _pieces.filter(func(g): return is_instance_valid(g) and not g.is_queued_for_deletion())
+	_drops = _drops.filter(func(g): return is_instance_valid(g) and not g.is_queued_for_deletion())
+
+
+## Registra uma peça nova; se passou do teto, a mais velha apaga em 0,25 s.
+static func _register(g: Gib) -> void:
+	var list: Array = _drops if g.is_drop else _pieces
+	var cap: int = MAX_DROPS if g.is_drop else MAX_PIECES
+	list.append(g)
+	var i := 0
+	while list.size() > cap and i < list.size():
+		var old: Gib = list[0]
+		list.remove_at(0)
+		if is_instance_valid(old):
+			old._expire()
+		i += 1
+
+
+## Some em EXPIRE s (apagando), sem esperar a vida toda.
+func _expire() -> void:
+	if life - _t > FADE:              # já apagando? deixa terminar (≤ 0,7 s)
+		_fade_len = EXPIRE
+		life = _t + EXPIRE
 
 
 ## Espalha as peças de `parts` (de CharacterArt.gib_parts) a partir de `origin`.
 ## `facing` = sinal do scale.x do visual · `kick` = impulso do golpe (px/s).
 static func burst(parent: Node, origin: Vector2, parts: Array, facing: float, ground: float, kick: Vector2, eye: Color, ink_col: Color) -> void:
+	if parent == null or not is_instance_valid(parent):
+		return
+	_prune()
+	# Paredes: a zona trancada (ou a arena inteira) da fase, se ela disser.
+	var lo := -INF
+	var hi := INF
+	if parent.has_method("arena_bounds"):
+		var b: Vector2 = parent.arena_bounds()
+		lo = b.x + 6.0
+		hi = b.y - 6.0
 	for part in parts:
 		var src: PackedVector2Array = part.pts
 		if src.size() < 3:
@@ -61,10 +136,14 @@ static func burst(parent: Node, origin: Vector2, parts: Array, facing: float, gr
 		g.z_index = 6
 		var away := Vector2(c.x * facing, c.y - 4.0).normalized()
 		g.vel = kick * randf_range(0.55, 1.15) + away * randf_range(50.0, 150.0) + Vector2(0, -randf_range(140.0, 300.0))
+		g.vel.x = clampf(g.vel.x, -MAX_VX, MAX_VX)
 		g.ang_vel = randf_range(-10.0, 10.0)
-		g.life = randf_range(2.0, 2.8)
+		g.life = randf_range(LIFE_MIN, LIFE_MAX)
+		g._x_lo = lo
+		g._x_hi = hi
 		parent.add_child(g)
 		g.global_position = origin + Vector2(c.x * facing, c.y)
+		_register(g)
 	# gotas de luz
 	for i in 7:
 		var d := Gib.new()
@@ -75,14 +154,26 @@ static func burst(parent: Node, origin: Vector2, parts: Array, facing: float, gr
 		d.ground_y = ground
 		d.z_index = 6
 		d.vel = kick * randf_range(0.3, 0.9) + Vector2(randf_range(-120.0, 120.0), -randf_range(120.0, 320.0))
+		d.vel.x = clampf(d.vel.x, -MAX_VX, MAX_VX)
 		d.life = randf_range(1.0, 1.8)
 		d._radius = d.drop_r
+		d._x_lo = lo
+		d._x_hi = hi
 		parent.add_child(d)
 		d.global_position = origin + Vector2(randf_range(-8.0, 8.0), randf_range(-24.0, -4.0))
+		_register(d)
+
+
+func _ready() -> void:
+	add_to_group("gib")
+	_born_ms = Time.get_ticks_msec()
 
 
 func _process(delta: float) -> void:
 	_t += delta
+	# Teto em tempo real: em câmera lenta longa o destroço apaga mesmo assim.
+	if Time.get_ticks_msec() - _born_ms > HARD_MS - int(FADE * 1000.0) and life - _t > FADE:
+		life = _t + FADE
 	if _t >= life:
 		queue_free()
 		return
@@ -90,6 +181,13 @@ func _process(delta: float) -> void:
 		vel.y += GRAV * delta
 		global_position += vel * delta
 		rotation += ang_vel * delta
+		# Parede da arena: quica de volta (nunca sai da zona nem da tela).
+		if global_position.x < _x_lo + _radius and vel.x < 0.0:
+			global_position.x = _x_lo + _radius
+			vel.x *= -0.4
+		elif global_position.x > _x_hi - _radius and vel.x > 0.0:
+			global_position.x = _x_hi - _radius
+			vel.x *= -0.4
 		if global_position.y + _radius > ground_y:
 			global_position.y = ground_y - _radius
 			if absf(vel.y) < 40.0:
@@ -112,9 +210,10 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var fade := 1.0
-	var tail := life - 0.6
+	var span := minf(_fade_len, life)
+	var tail := life - span
 	if _t > tail:
-		fade = clampf(1.0 - (_t - tail) / 0.6, 0.0, 1.0)
+		fade = clampf(1.0 - (_t - tail) / span, 0.0, 1.0)
 	if is_drop:
 		draw_circle(Vector2.ZERO, drop_r * 1.8, Color(glow.r, glow.g, glow.b, 0.25 * fade))
 		draw_circle(Vector2.ZERO, drop_r, Color(glow.r, glow.g, glow.b, fade))

@@ -57,6 +57,20 @@ const VIB_LIGHT := 1.5            # R1: vibração da vítima (px), golpe leve
 const VIB_HEAVY := 3.0            # golpe pesado / lançador / magia
 const VIB_STEP_MS := 33           # troca de lado a cada ~33 ms reais
 const HURT_VOICE_MS := 250        # R4: "enemy_hurt" no máximo 1 a cada 250 ms por inimigo
+const PRAGA_POOL_TIME := 3.0      # Balance P3: poça de Belias (era 5,0 s)
+const PRAGA_POOL_R2 := 40.0       # Balance P3: raio na fase 2 (era 48; fase 1 = 34)
+## #42 (crítico): todo Arconte ≥ ~1,8× a altura da Sophia (Espelho é exceção de
+## propósito). Medido por `tools/combate/BossSizeProbe.tscn` (alfa > 0,25, pose
+## parada): Belias 1,76× e Athoth 1,95× — ambos sobem para ~2,0× (folga para a
+## pose agachada do wind-up). Escala o CORPO todo (desenho + caixas), como o Elite.
+## Onda 3: Belias (arconte_praga) SAIU — com 1,15× o bot piorou a tela 55
+## (1062 → 1319 de dano): o corpo maior cobre mais chão junto com as poças.
+const BOSS_PRESENCE := {"arconte_sono": 1.08}
+# R18 — leitura (contorno + sombra de contato); ver _setup_readability().
+const RIM_ENABLED := true
+const RIM_ALPHA := 0.5
+const SHADOW_ALPHA := 0.45        # era 0,3
+const SHADOW_WIDEN := 1.25
 
 var estate: EState = EState.CHASE
 var health: HealthComponent
@@ -99,6 +113,10 @@ var _last_hurt_voice_ms: int = -100000
 var impact_at: float = 0.0
 var hurt_power: float = 0.0
 var _art_id: String = ""             # id do PNG ilustrado (def "art")
+var _rim_mat: ShaderMaterial = null  # contorno de leitura (R18)
+var _floor_y: float = NAN            # último y no chão (sombra de contato)
+var _shadow_base: Vector2 = Vector2(0, 22)
+var _shadow_scale: Vector2 = Vector2.ONE
 
 # Arte ilustrada (opcional) + orbe-olho flutuante (chefes com PNG).
 const ORB_HOME := Vector2(78.0, -168.0)   # repouso do orbe (px, local ao chefe)
@@ -177,6 +195,10 @@ func _ready() -> void:
 		attack_damage = int(attack_damage * 1.15)
 		spark_reward *= 2
 		scale = Vector2(1.25, 1.25)
+	# Presença dos Arcontes (#42): só os que ficavam abaixo de ~2× a Sophia.
+	if BOSS_PRESENCE.has(type_id):
+		var k: float = BOSS_PRESENCE[type_id]
+		scale = Vector2(k, k)
 
 	# Escala determinística por tela + dificuldade (r2: vida e dano crescem em
 	# curvas separadas — vida +2%/tela, dano +1.2%/tela).
@@ -212,6 +234,13 @@ func _ready() -> void:
 	# Arte ilustrada opcional por id: se existir o PNG, usa no lugar do procedural
 	# (senão mantém o desenho procedural — fallback, sem erro).
 	_apply_illustrated_art()
+	_setup_readability()
+	# Pedido da Encenação: o chefe que nasce junto com o CARD DE CHEFE (mundo
+	# pausado no mesmo quadro) não aparecia, porque o CharacterArt só monta a
+	# pose no _process. Monta UMA pose agora (desenho não depende de pausa).
+	if visual != null and visual.profile != null:
+		visual.set_anim("idle")
+		visual._process(0.0)
 
 	player = get_tree().get_first_node_in_group("player")
 	if is_boss_enemy or is_champion:
@@ -247,6 +276,59 @@ func _fit_body(s: float) -> void:
 		shp.position.y = -(hs - 1.0) * 22.0
 	if has_node("Shadow"):
 		$Shadow.scale = Vector2(hs, hs)
+
+
+## LEITURA (#30 do crítico / NEURO R18): inimigo escuro some no fundo escuro.
+## Sem tocar no CharacterArt: (1) o desenho passa a morar num CanvasGroup
+## ("Rim") cujo shader põe um contorno externo de ~1 px na cor do Éon (α 0,5);
+## (2) a sombra de contato fica mais densa, um pouco mais larga e PRESA AO
+## CHÃO (no ar ela fica no piso e encolhe — mostra onde o inimigo vai cair).
+func _setup_readability() -> void:
+	if visual == null:
+		return
+	if RIM_ENABLED:
+		var g := CanvasGroup.new()
+		g.name = "Rim"
+		g.fit_margin = 6.0
+		g.clear_margin = 6.0
+		var m := ShaderMaterial.new()
+		m.shader = VfxLibrary.rim_shader()
+		var eon := RunManager.eon_index(GameManager.current_screen)
+		var rc: Color = VfxLibrary.eon_rim_color(eon)
+		m.set_shader_parameter("rim_color", Color(rc.r, rc.g, rc.b, RIM_ALPHA))
+		m.set_shader_parameter("rim_px", 1.0)
+		g.material = m
+		_rim_mat = m
+		var idx := visual.get_index()
+		add_child(g)
+		move_child(g, idx)
+		visual.reparent(g, false)
+	if has_node("Shadow"):
+		var sh: Polygon2D = $Shadow
+		sh.color = Color(0, 0, 0, SHADOW_ALPHA)
+		sh.scale = sh.scale * Vector2(SHADOW_WIDEN, 1.0)
+		_shadow_base = sh.position
+		_shadow_scale = sh.scale
+
+
+## Sombra de contato presa ao chão: no ar, fica no piso e encolhe com a altura.
+func _pin_shadow() -> void:
+	if not has_node("Shadow"):
+		return
+	var sh: Polygon2D = $Shadow
+	if is_on_floor() or estate == EState.DEAD:
+		_floor_y = global_position.y
+		sh.position = _shadow_base
+		sh.scale = _shadow_scale
+		sh.modulate.a = 1.0
+		return
+	if is_nan(_floor_y):
+		return
+	var up: float = maxf(0.0, _floor_y - global_position.y)
+	var k: float = clampf(1.0 - up / 220.0, 0.45, 1.0)
+	sh.global_position = Vector2(global_position.x, _floor_y + _shadow_base.y * scale.y)
+	sh.scale = _shadow_scale * k
+	sh.modulate.a = k
 
 
 ## Arte ilustrada por id (rota híbrida — chefes). Se existir
@@ -303,6 +385,7 @@ func _physics_process(delta: float) -> void:
 
 	_kit_passive(delta)
 	move_and_slide()
+	_pin_shadow()
 	_sync_anim()
 	_animate_orb(delta)
 
@@ -498,8 +581,9 @@ func _process_windup(delta: float) -> void:
 
 ## Brilho de aviso (R5): estrela no ponto da arma — REDONDA e amarela =
 ## aparável, LOSANGO vermelho = imparável (forma + som, não só cor) — e o
-## corpo clareia um instante. Som: pedido ao Áudio ("tell_parry"/"tell_unblock"
-## ainda não existem no catálogo — entra aqui quando o Áudio criar).
+## corpo clareia um instante. Som: "tell_parry"/"tell_unblock" (do Áudio2) —
+## só toca se o nome já estiver no CATÁLOGO (sem ele, o aviso segue mudo e o
+## AudioQA não reprova: o nome vai numa variável, não literal).
 func _tell_glint() -> void:
 	_glint_t = 0.0
 	var unb: bool = attack_hitbox.unblockable
@@ -507,6 +591,17 @@ func _tell_glint() -> void:
 	if _orb != null:
 		pos = _orb.global_position
 	VfxLibrary.tell_glint(get_parent(), pos, unb)
+	_tell_sound("tell_unblock" if unb else "tell_parry", pos)
+
+
+## Toca o som do telegrafo se ele existir no catálogo do Áudio.
+func _tell_sound(snd: String, pos: Vector2) -> void:
+	var cat = Audio.get("CATALOG")
+	if not (cat is Dictionary):
+		return
+	var sfx = cat.get("sfx", [])
+	if sfx is Array and sfx.has(snd):
+		Audio.play_sfx_at(snd, pos)
 
 
 func _begin_strike() -> void:
@@ -657,8 +752,10 @@ func _process_strike(delta: float) -> void:
 			_pool_timer -= delta
 			if _pool_timer <= 0.0:
 				_pool_timer = 0.11
-				var r := 34.0 if phase == 1 else 48.0
-				HazardZone.spawn(get_parent(), global_position + Vector2(0, 14), "poison", r, 5.0, eye_color)
+				# Balance P3 (docs/onda2/BALANCE.md): poças 5,0→3,0 s e raio da fase 2
+				# 48→40 — a poça de Belias era o pico de dano do run inteiro.
+				var r := 34.0 if phase == 1 else PRAGA_POOL_R2
+				HazardZone.spawn(get_parent(), global_position + Vector2(0, 14), "poison", r, PRAGA_POOL_TIME, eye_color)
 	attack_timer -= delta
 	if attack_timer <= 0.0:
 		attack_hitbox.deactivate()
@@ -784,6 +881,7 @@ func revive(ratio: float) -> void:
 		visual.damage_ratio = 1.0 - ratio
 	if _orb != null:
 		_orb.visible = true
+	_set_rim(1.0)
 	Audio.play_sfx("form_revive")
 	AoeNova.spawn(get_parent(), global_position, 0, 150.0, eye_color)
 	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
@@ -946,6 +1044,7 @@ func _on_died() -> void:
 		return
 	estate = EState.DEAD
 	_tint_base = Color(1, 1, 1, 1)
+	_set_rim(0.0)
 	contact_hitbox.monitoring = false
 	attack_hitbox.monitoring = false
 	# som e explosão de morte por porte
@@ -1015,6 +1114,12 @@ func _on_died() -> void:
 		t.tween_interval(0.95)
 		t.tween_property(visual, "modulate:a", 0.0, 0.12)
 		t.tween_callback(queue_free)
+
+
+## Liga/desliga o contorno de leitura (0..1).
+func _set_rim(v: float) -> void:
+	if _rim_mat != null:
+		_rim_mat.set_shader_parameter("rim_strength", v)
 
 
 ## R1/R10: flash INSTANTÂNEO (no mesmo quadro), mantido enquanto durar o
