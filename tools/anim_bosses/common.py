@@ -28,6 +28,15 @@ def smoothstep(e0, e1, x):
 def load_crop(identity):
 	"""Devolve (rgb float32 0..1, alfa float32 0..1) do recorte, já sem o magenta."""
 	sheet, (x, y, w, h) = PUPPETS[identity]
+	# Se o diretor de animação da Sophia já gerou a folha RGBA (alfa real, MESMAS
+	# coordenadas) em assets/painted/derived/<folha>.png, usa o alfa dela.
+	derived = os.path.join(PAINTED, "derived", sheet + ".png")
+	if os.path.exists(derived):
+		rgba = cv2.imread(derived, cv2.IMREAD_UNCHANGED)
+		if rgba is not None and rgba.ndim == 3 and rgba.shape[2] == 4:
+			rgba = cv2.cvtColor(rgba, cv2.COLOR_BGRA2RGBA).astype(np.float32) / 255.0
+			crop = rgba[y:y+h, x:x+w]
+			return crop[..., :3].copy(), crop[..., 3].copy()
 	img = cv2.imread(os.path.join(PAINTED, sheet + ".png"), cv2.IMREAD_COLOR)
 	img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
 	crop = img[y:y+h, x:x+w].copy()

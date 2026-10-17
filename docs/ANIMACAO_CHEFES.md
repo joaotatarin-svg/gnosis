@@ -1,53 +1,138 @@
-# Chefes articulados — 17/09/2026
+# Animação dos chefes — malha contínua (17/10/2026)
 
-Atualização somente em Gnosis-Codex. João cancelou a alteração dos nomes e
-confirmou que o lançador funciona. Nenhum dos dois foi alterado.
+Substitui o método de 17/09/2026 (recortes retos presos aos ossos). Vale para
+os 7 Arcontes, o Colosso, o Rei/Yaldabaoth e as criaturas que herdam a família
+visual deles (`PaintedLibrary.character()`: glutão, carcereiro, cornudo,
+reflexo, pretoriano, sonâmbulo, fantasma, mudo, alado, esporos).
 
-## Ver e jogar
+## O problema antigo
 
-Abra o Ateliê, escolha um Arconte e avance a pose até **Ciclo de combate**.
-O ciclo alterna caminhada, preparação, golpe forte e recuperação.
-**Ver articulações** mostra os ossos; **Pausar / animar** permite examinar a
-pose congelada. **Testar em combate** abre o desafio com o chefe escolhido.
+Harmas, Galila, Astaphaios, Armupiel e Colosso eram montados com quadriláteros
+retos recortados da MESMA pintura. O peito carregava os pixels do braço e o
+quad do braço carregava pedaços do tronco: braço duplicado, borda reta e
+buraco ao girar. A lâmina aparecia duas vezes (pintada no corpo + peça). Todas
+as peças giravam com o mesmo lerp exponencial, sem pausa nem estalo.
 
-## Movimento
+## Método novo
 
-- Harmas, Galila, Astaphaios, Armupiel e Colosso usam partes rígidas presas aos
-  ossos. Ombros, cotovelos, punhos, quadris, joelhos e cabeça giram separados.
-- Athoth, Yabel e Yaldabaoth usam pele com pesos, movimento de tecido e corpo.
-  As asas de Yabel têm ossos independentes; o orbe do Rei continua separado.
-- Belias tem quatro patas, joelhos, mandíbula e cauda, com ciclo de passada.
-- Preparação, ataque, recuperação e reação ao dano usam os estados do Enemy.
-  O progresso vem do temporizador real; a passada acompanha a velocidade e
-  acelera na segunda fase. Dano, alcance e duração das janelas não mudaram.
-- Transições suavizam a troca de pose. Espadas são peças rígidas; não recebem
-  a deformação de tecido. Os inimigos que usam a mesma família visual também
-  herdam as articulações na sua escala.
+### 1. Camadas derivadas (offline, `tools/anim_bosses/`)
 
-## Implementação
+`build_puppets.py` recorta cada pintura NAS MESMAS coordenadas do
+`PaintedLibrary` (sem mudar Rect2) e grava em `assets/painted/derived/puppets/`:
 
-`scripts/fx/boss_puppet.gd` contém pivôs por pintura, ossos e recortes UV.
-Armaduras usam Polygon2D subordinado a Bone2D; tecidos e fera usam uma malha de
-48 × 64 células com até quatro influências normalizadas por vértice.
-As imagens originais não foram regravadas. São recortes feitos pelo renderizador.
-`PaintedLibrary` seleciona o boneco; `CharacterArt` controla tempo, escala,
-cor e pausa; `Enemy._sync_anim` fornece o estado e o progresso reais.
+- `<nome>_body.png` — corpo RGBA com alfa real (mesma chave do
+  `painted_key.gdshader`, sem franja magenta). Onde havia arma, cristais ou
+  antebraço em camada, o que ficava por trás é reconstruído com
+  `cv2.xphoto.inpaint` (SHIFTMAP, copia textura do próprio corpo). Só ganha
+  alfa onde há corpo dos dois lados da peça (ou colado a ela, no caso dos
+  membros) — a ponta da espada sobre o fundo continua vazia.
+- `<nome>_parts.png` — só as peças rígidas: lâmina de Galila e Armupiel,
+  cajado e 7 cristais de Astaphaios.
+- `<nome>_arm_l/_arm_r.png` — antebraço+punho em camada própria (Harmas os
+  dois, Colosso o esquerdo da pintura), para o punho passar por cima do
+  joelho/manto sem esticar a pintura.
+- `mesh_cache.res` — malhas e pesos pré-calculados (`bake_meshes.gd`).
 
-Referência de API: [Bone2D](https://docs.godotengine.org/en/stable/classes/class_bone2d.html)
-e [Polygon2D](https://docs.godotengine.org/en/stable/classes/class_polygon2d.html).
+Se a folha RGBA do diretor da Sophia (`assets/painted/derived/<folha>.png`)
+existir, o script usa o alfa dela. Rodar de novo:
+
+```
+python tools/anim_bosses/build_puppets.py           # ~45 s, todas as camadas
+godot --headless --audio-driver Dummy --path . --script res://tools/anim_bosses/bake_meshes.gd
+```
+
+Ferramentas de conferência: `overlay_bones.py` (pivôs sobre a pintura),
+`compare_boards.py` (antes × depois), `make_gifs.py` (GIF por boneco).
+
+### 2. Malha contínua com pesos suaves (`scripts/fx/boss_puppet.gd`)
+
+- TODOS os bonecos usam uma malha única (Polygon2D + Skeleton2D). Grade de
+  48 linhas nos chefes (52 no Rei) e 24×32 em escala de criatura
+  (`scale < 0.9`). Células sem nenhum pixel visível são descartadas.
+- Bípedes: peso por distância ao osso com portões por região (braço não puxa
+  o tronco, perna não puxa a cintura nem o punho), membros quase rígidos
+  (queda forte de peso) e 2 passadas de suavização pela malha — espalha o
+  peso entre ossos vizinhos só por onde há corpo conectado. Até 4 ossos por
+  vértice, normalizados.
+- Espectros (Athoth, Yabel), Rei e Belias mantêm o campo de pesos que já era
+  aprovado; ganharam o corte de alfa 0, a textura com alfa real e as molas.
+- Pivôs dos bípedes conferidos sobre cada pintura (Astaphaios estava com o
+  braço do cajado no lugar errado; Galila sem as gaiolas).
+- Rígidos só a arma (osso `weapon`, filho da mão) e os cristais (flutuam).
+- Galila: as gaiolas viraram pêndulos presos ao peito.
+- Capa/pano por boneco (`CLOTH`): ossos `cloth_*`/`hem_*`.
+
+### 3. Movimento (mola, hold, estalo)
+
+- Cada osso é uma mola amortecida (frequência e amortecimento por grupo e por
+  estado). Peito mais rápido que braço, braço mais rápido que pano → atraso
+  escalonado peito → braço → pano sem código extra.
+- Preparação: chega à pose em 35% do tempo e SEGURA (tensão +10% e tremor
+  fino no fim). Golpe: o peito dispara em ~2 quadros, o braço logo depois,
+  com velocidade injetada na entrada do estado → sobressalto e assentamento.
+  Recuperação volta devagar. Dano: tranco no peito e na cabeça, quadril cai.
+- Amplitudes ~55% das antigas (braço 0,32→0,17 rad; perna 0,24→0,13).
+- Respiração no idle (peito enche 1%), pano arrastado pela inércia do corpo,
+  limitado para não rasgar a pintura.
+- Espadachins (Galila, Armupiel): o punho arma a lâmina na preparação e corta
+  no golpe.
+- Usa só o que `Enemy._sync_anim` já entrega: estado, progresso real do
+  temporizador, velocidade (passada) e fase (fúria). `enemy.gd` intocado.
+
+### 4. Textura por estado (para os quadros pintados que virão)
+
+`BossPuppet.set_state_texture(estado, textura)` troca a pintura da malha
+quando o estado bate (null remove). Requisito: a imagem nova tem o MESMO
+tamanho e enquadramento de `<nome>_body.png` (arma fora, mesmos pivôs). A
+malha, os pesos e as molas continuam valendo por cima — servem de movimento
+secundário sobre os quadros. Quadro com silhueta muito diferente pede malha
+própria (rodar o bake com a nova textura).
+
+## Custo (PuppetQA, `check` e `perf`)
+
+| boneco | grade | vértices | triângulos | camadas/peças |
+|---|---|---|---|---|
+| Athoth | 36×48 | 1116 | 1780 | – |
+| Harmas | 39×48 | 1554 | 2700 | 2 braços |
+| Galila | 35×48 | 1047 | 1838 | lâmina |
+| Yabel | 35×48 | 1157 | 1910 | – |
+| Astaphaios | 35×48 | 772 | 1250 | cajado + 7 cristais |
+| Belias | 43×48 | 1236 | 2066 | – |
+| Armupiel | 34×48 | 1251 | 2290 | lâmina |
+| Colosso | 34×48 | 1314 | 2290 | 1 braço |
+| Rei | 53×52 | 1610 | 2942 | – |
+| glutão (criatura) | 24×32 | 724 | 1204 | 2 braços |
+| pretoriano (criatura) | 24×32 | 626 | 1116 | lâmina |
+
+Montagem com bake: 15–45 ms por boneco (sem bake: 100–340 ms). Animação:
+0,8 ms/quadro de GDScript para 1 chefe + 8 criaturas; quadro total 7 ms
+nesta máquina (RX 7600).
 
 ## Validação
 
-- Editor headless: sem SCRIPT ERROR.
-- PuppetQA: nove chefes × três poses; pesos normalizados, vínculos de peças
-  válidos, articulações móveis; zero falhas. Pranchas inspecionadas em shots/.
-- CodexQA: dez modos do ateliê, troca de perfil, pausa, encontros, morte,
-  reinício e checkpoint preservado; zero falhas.
-- CodexPlaytest: três encontros vencidos usando inputs reais, 27,8 s,
-  combo 13, dano recebido e fase 2 observados.
-- Capturas do ateliê, articulações e combate inspecionadas no renderer real.
+```
+godot --headless --audio-driver Dummy --path . res://tools/PuppetQA.tscn            # check
+godot --audio-driver Dummy --path . --resolution 1800x500 res://tools/PuppetQA.tscn -- boards <pasta>
+godot --audio-driver Dummy --path . --resolution 1600x900 res://tools/PuppetQA.tscn -- seq <pasta>
+python tools/anim_bosses/make_gifs.py <pasta_quadros> <pasta_gifs>
+```
 
-É animação de bonecos 2D. Partes anteriormente ocultas pelas armas são
-reconstruídas com forro; recortes, junções e sobreposições ainda podem melhorar
-com pinturas específicas de cada peça. O teste automatizado verifica o fluxo;
-a sensação dos golpes ainda depende do playtest humano.
+O `check` falha se: pesos não somam 1, vínculo de osso faltando, peça solta,
+junta parada, ou malha fora do bake (layout mudou sem rodar o bake). A
+prancha mostra parado, preparação (hold), pico do golpe, dano e os pesos
+pintados por osso.
+
+## Limitações (honestas)
+
+- Continua sendo UMA pintura deformada. Golpes grandes ainda esticam a
+  pintura nas juntas (ombro, cotovelo); por isso as amplitudes ficaram
+  menores. Mudança de silhueta de verdade (braço erguido acima da cabeça,
+  virar de costas) só com quadros pintados novos.
+- O fundo reconstruído por inpaint é plausível, não é arte: aparece quando a
+  lâmina/antebraço sai do lugar, e de perto se nota a textura repetida.
+- Os polígonos de arma/camada foram traçados à mão sobre a pintura; restos
+  de 1–2 px de borda podem aparecer em zoom. Ajuste em `build_puppets.py`
+  (PARTS/LAYERS) e no GDScript (PARTS/LAYERS), depois rode o pipeline + bake.
+- Braços de Galila e Armupiel não ganharam camada própria (o braço da espada
+  quase não cruza o tronco); Yabel e Athoth seguem com o campo antigo.
+- Sensação/tempo do golpe ainda precisa de playtest humano.
