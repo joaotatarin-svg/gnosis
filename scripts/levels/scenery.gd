@@ -1175,8 +1175,16 @@ class Foreground extends Node2D:
 			var reg := s.region_rect if s.region_enabled else Rect2(Vector2.ZERO, Vector2(img.get_size()))
 			var xf := s.get_global_transform()
 			var inv := xf.affine_inverse()
-			for gy in gh:
-				for gx in gw:
+			# só as células da grade dentro da caixa do sprite (rápido: quase todo
+			# entulho está fora do quadro)
+			var lr := Rect2(s.offset - (reg.size * 0.5 if s.centered else Vector2.ZERO), reg.size)
+			var wr := xf * lr
+			var gx0 := maxi(0, int(floor((wr.position.x - x0) / 4.0)))
+			var gx1 := mini(gw, int(ceil((wr.end.x - x0) / 4.0)))
+			var gy0 := maxi(0, int(floor((wr.position.y - y0) / 4.0)))
+			var gy1 := mini(gh, int(ceil((wr.end.y - y0) / 4.0)))
+			for gy in range(gy0, gy1):
+				for gx in range(gx0, gx1):
 					var wp := Vector2(x0 + gx * 4.0 + 2.0, y0 + gy * 4.0 + 2.0)
 					var lp := inv * wp
 					# local → pixel da textura (centered/offset/flip)

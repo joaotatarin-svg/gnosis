@@ -50,7 +50,18 @@ Abre cada tela, espera o Level ficar pronto (pula diálogos) e varre a câmera d
 `cover` (quadro coberto por silhueta), `hits` (posições de câmera com coluna sobre um ponto protegido
 visível), `fight` (coluna no quadro com zona trancada). `legacy` mede o ANTES.
 
-RESULTADOS_AUDITORIA
+| | colunas (68 telas) | telas com cobertura > 10% | pior cobertura | hits (coluna sobre NPC/Estela/Selos/baú) | coluna na luta trancada |
+|---|---|---|---|---|---|
+| ANTES (legacy) | 59 | 42 | 29,0% (tela 30) | 1210 posições de câmera em 23 telas | 0 |
+| DEPOIS | 57 (em 40 telas) | **0** | **7,7%** (tela 11) | **0** | 0 |
+
+Piores do ANTES: 17 (Soter, 101 posições), 52 (baú, 114), 35/53 (Soter), 61 (Velkar+baú), 3/38/59 (Selos),
+4/7/13/16/22/25/31/34/40/43/49/58 (baú), 8/30/48 (Estela). A auditoria inteira roda em ~3 min.
+
+## Validação (	ools/validate.ps1)
+Scripts, ScriptCheck, CodexQA 53, GnoseQA 18, SaveQA 49, PuppetQA, HeroQA, WaveQA, TecnicoQA 43: VERDE.
+AudioQA falhou 1x na rodada cheia (slow-mo: corte 5885 Hz… música -4.4 → -6.3 dB, timing de áudio com a máquina
+cheia — o João jogando + outros diretores) e passou sozinho logo depois (54 PASS). Nada de áudio mudou aqui.
 
 ## Capturas (fora do git, `C:\gnosis-wt\_caps\cenario5\`)
 - `prancha_antes_depois.png` — telas 17 (Soter), 61 (Velkar + baú), 4 (baú), 30 (Estela), 3 (Selos),
@@ -62,8 +73,8 @@ RESULTADOS_AUDITORIA
 - `audit_antes.csv` / `audit_depois.csv` (+ `.txt`).
 
 ## O que NÃO ficou bom / não deu tempo
-- **Menos colunas:** de 59 para as que couberam (ver tabela). Onde o descanso tem NPC/Estela/Selos
-  juntos não sobra lugar seguro — a profundidade de primeiro plano fica só no entulho de baixo e no bokeh.
+- **Menos colunas:** 59 → 57, e mais finas. Onde o descanso tem NPC/Estela/Selos juntos (ex.: 17)
+  não sobra lugar seguro — a profundidade de primeiro plano fica só no entulho de baixo e no bokeh.
 - **Tela 17 continua amontoada** (Estela + Selos + Soter no mesmo descanso): é posição do Level/Gnosis,
   não do cenário — pedido em `docs/pedidos/cenario5.md`.
 - **Near com bordas retas (Silêncio/Centro):** tentei "roer" os cortes retos da faixa near
