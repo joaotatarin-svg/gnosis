@@ -1,35 +1,41 @@
 extends ParallaxBackground
 class_name Scenery
-## CENÁRIO PROCEDURAL POR ÉON (v2). Monta em runtime as camadas de parallax:
-##   Sky (fixo: gradiente + astro do Éon + estrelas) · Far (skyline) · Mid (props
-##   grandes) · Near (props pequenos/entulho) · Fog (névoa animada) — e ainda
-##   oferece `build_ground(parent)` (relevo do chão em coords de mundo),
-##   `build_foreground(parent)` (silhuetas à frente, parallax > 1 por código) e
-##   `build_vignette(parent)` (vinheta em CanvasLayer).
-## Se existir `assets/backgrounds/eon_<i>.png`, usa a arte do usuário no lugar.
+## CENÁRIO POR ÉON (v3 — Diretor de Cenário). Monta em runtime, a partir das
+## camadas PINTADAS geradas offline (`tools/scenery/build_backgrounds.py` →
+## `assets/backgrounds/eon_<i>_{far,mid,near,floor,fgcol}.png`, catálogo em
+## `SceneryLibrary`), um palco 2.5D em profundidade:
+##   céu (gradiente) · FAR (distância, quase parada) · raios de luz · névoa
+##   longe · MID (as asas: pilares/estantes) · névoa perto · NEAR (entulho do
+##   horizonte) · props pintados (pilares/obeliscos/braseiros integrados à luz)
+## e, em coords de mundo (filhos do Level, pelos ganchos que o Level já chama):
+##   `build_ground`    → chão 2.5D (shader: perspectiva, reflexo, luz, sombra),
+##                       névoa rasteira, arena simétrica de chefe e integração
+##                       das plataformas (sombra, borda acesa, poeira, luz);
+##   `build_foreground`→ silhuetas desfocadas à frente (parallax > 1) e bokeh;
+##   `build_vignette`  → vinheta.
 ## Tudo determinístico: a mesma tela sempre gera o mesmo cenário.
+## Se existir `assets/backgrounds/eon_<i>.png` (arte única do usuário), ela
+## manda e o resto é ignorado (comportamento antigo).
 
-const W := 1800.0          # largura do padrão repetido (mirroring)
-const GROUND := 316.0      # linha do chão nas camadas (bate com o Level)
+const W := 1800.0          # período dos props pintados (mirroring)
+const FLOOR_Y := 292.0     # horizonte do chão: onde a pintura encontra o chão
+const FEET_Y := 310.0      # linha dos pés (topo da colisão do Level)
+const PAINT_H := 280.0     # altura lógica da pintura acima do chão
+const CAM_TOP := 44.0      # topo da câmera com a Sophia em pé (enquadramento)
+const CAM_LEFT0 := -110.0  # borda esquerda da câmera no início da tela
+const VIEW := Vector2(640.0, 360.0)
 
-## Paleta por Éon: 0..6 = Torpor..Coroa · 7 = Centro · 8 = Mente (final).
-const PAL := [
-	{"sky_top": Color("08131d"), "sky_bot": Color("27464e"), "far": Color("152e3a"), "mid": Color("102631"), "near": Color("0a1c25"), "fog": Color("6babad"), "ground": Color("233b40"), "ground_dark": Color("08151c"), "glow": Color("98cece")},
-	{"sky_top": Color(0.12, 0.04, 0.05), "sky_bot": Color(0.45, 0.16, 0.12), "far": Color(0.22, 0.09, 0.09), "mid": Color(0.16, 0.07, 0.07), "near": Color(0.10, 0.04, 0.05), "fog": Color(0.7, 0.35, 0.25), "ground": Color(0.28, 0.16, 0.14), "ground_dark": Color(0.10, 0.05, 0.05), "glow": Color(1.0, 0.55, 0.3)},
-	{"sky_top": Color(0.05, 0.07, 0.12), "sky_bot": Color(0.28, 0.32, 0.42), "far": Color(0.13, 0.15, 0.22), "mid": Color(0.10, 0.12, 0.18), "near": Color(0.06, 0.07, 0.11), "fog": Color(0.5, 0.55, 0.65), "ground": Color(0.20, 0.22, 0.28), "ground_dark": Color(0.07, 0.08, 0.11), "glow": Color(0.85, 0.85, 0.95)},
-	{"sky_top": Color(0.03, 0.02, 0.07), "sky_bot": Color(0.14, 0.10, 0.26), "far": Color(0.09, 0.07, 0.17), "mid": Color(0.07, 0.05, 0.13), "near": Color(0.04, 0.03, 0.08), "fog": Color(0.45, 0.4, 0.65), "ground": Color(0.16, 0.13, 0.24), "ground_dark": Color(0.05, 0.04, 0.09), "glow": Color(0.7, 0.75, 1.0)},
-	{"sky_top": Color(0.16, 0.17, 0.24), "sky_bot": Color(0.55, 0.58, 0.72), "far": Color(0.32, 0.34, 0.46), "mid": Color(0.24, 0.26, 0.38), "near": Color(0.14, 0.15, 0.24), "fog": Color(0.8, 0.85, 1.0), "ground": Color(0.36, 0.38, 0.5), "ground_dark": Color(0.12, 0.13, 0.2), "glow": Color(0.95, 0.97, 1.0)},
-	{"sky_top": Color(0.05, 0.09, 0.06), "sky_bot": Color(0.22, 0.34, 0.20), "far": Color(0.11, 0.18, 0.11), "mid": Color(0.08, 0.13, 0.08), "near": Color(0.04, 0.08, 0.05), "fog": Color(0.45, 0.65, 0.35), "ground": Color(0.17, 0.24, 0.15), "ground_dark": Color(0.05, 0.08, 0.05), "glow": Color(0.7, 1.0, 0.5)},
-	{"sky_top": Color(0.08, 0.05, 0.03), "sky_bot": Color(0.42, 0.28, 0.10), "far": Color(0.24, 0.16, 0.06), "mid": Color(0.17, 0.11, 0.04), "near": Color(0.10, 0.07, 0.03), "fog": Color(0.85, 0.65, 0.3), "ground": Color(0.30, 0.22, 0.10), "ground_dark": Color(0.10, 0.07, 0.03), "glow": Color(1.0, 0.85, 0.4)},
-	{"sky_top": Color(0.02, 0.02, 0.04), "sky_bot": Color(0.12, 0.10, 0.16), "far": Color(0.10, 0.08, 0.14), "mid": Color(0.08, 0.06, 0.11), "near": Color(0.05, 0.04, 0.07), "fog": Color(0.5, 0.45, 0.6), "ground": Color(0.15, 0.13, 0.19), "ground_dark": Color(0.04, 0.03, 0.06), "glow": Color(1.0, 0.8, 0.45)},
-	{"sky_top": Color(0.02, 0.01, 0.03), "sky_bot": Color(0.20, 0.06, 0.14), "far": Color(0.12, 0.05, 0.10), "mid": Color(0.09, 0.04, 0.08), "near": Color(0.05, 0.02, 0.05), "fog": Color(0.7, 0.3, 0.5), "ground": Color(0.18, 0.08, 0.14), "ground_dark": Color(0.05, 0.02, 0.04), "glow": Color(1.0, 0.6, 0.7)},
-]
+## Cor de base por Éon (fallback sem as camadas geradas).
+const FALLBACK := [Color("27464e"), Color(0.45, 0.16, 0.12), Color(0.28, 0.32, 0.42), Color(0.14, 0.10, 0.26), Color(0.55, 0.58, 0.72), Color(0.22, 0.34, 0.20), Color(0.42, 0.28, 0.10), Color(0.12, 0.10, 0.16), Color(0.20, 0.06, 0.14)]
 
 var eon: int = 0
 var seed_screen: int = 1
 var _built: bool = false
-var _fog_nodes: Array = []
-var _t: float = 0.0
+var _tile_w: float = 560.0                 # largura lógica de um ladrilho pintado
+var _far: ParallaxLayer = null
+var _rays: ColorRect = null
+var _ray_pt: Vector2 = Vector2.ZERO        # foco dos raios no ladrilho (coords da camada)
+var _fogs: Array = []                      # [{rect, ms, y}]
 
 
 func _ready() -> void:
@@ -42,18 +48,31 @@ func _ready() -> void:
 		build(e, sc)
 
 
-func pal() -> Dictionary:
-	return PAL[clampi(eon, 0, PAL.size() - 1)]
+func look() -> Dictionary:
+	return SceneryLibrary.look(eon)
 
 
-## Monta (ou remonta) o cenário do Éon. Retorna true se usou PNG do usuário.
+func haze() -> Color:
+	return SceneryLibrary.data(eon).get("haze", FALLBACK[clampi(eon, 0, 8)])
+
+
+func is_boss() -> bool:
+	return RunManager.run_active and RunManager.is_boss_screen(seed_screen)
+
+
+## Monta (ou remonta) o cenário do Éon. Retorna true se usou o PNG único do
+## usuário (aí o Level não pede chão/primeiro plano).
 func build(p_eon: int, screen: int = 1) -> bool:
+	if _built and p_eon == eon and screen == seed_screen and get_child_count() > 0:
+		return false                      # o Level pede de novo o que o _ready já montou
 	eon = p_eon
 	seed_screen = screen
 	_built = true
 	for c in get_children():
 		c.queue_free()
-	_fog_nodes.clear()
+	_fogs.clear()
+	_far = null
+	_rays = null
 	var png := "res://assets/backgrounds/eon_%d.png" % eon
 	if ResourceLoader.exists(png):
 		var tex = load(png)
@@ -65,60 +84,14 @@ func build(p_eon: int, screen: int = 1) -> bool:
 		layer.add_child(spr)
 		VfxLibrary.ambient(self, eon)
 		return true
-	_build_sky()
-	var painted_layer := _layer(Vector2(0.18,1.0),768.0)
-	for i in 1:
-		var backdrop := Sprite2D.new()
-		backdrop.texture = PaintedLibrary.background(clampi(eon,0,8))
-		backdrop.centered = false
-		backdrop.position = Vector2(i*768,0)
-		backdrop.scale = Vector2(768.0/backdrop.texture.get_width(),400.0/backdrop.texture.get_height())
-		backdrop.modulate = Color(0.68,0.73,0.77)
-		painted_layer.add_child(backdrop)
-	_build_architecture()
-	_build_fog()
+	if SceneryLibrary.has_layers(eon):
+		_build_painted()
+	else:
+		_build_fallback()
+	if not is_boss():
+		_build_architecture()
 	VfxLibrary.ambient(self, eon)     # partículas do Éon (motes, brasas, cacos…)
 	return false
-
-
-## Arquitetura pintada (pilares, obeliscos, entulho, braseiros) em duas camadas
-## de parallax. Determinística por tela: escolha, posição, altura, espelho e
-## tinta saem do rng da tela — duas telas do mesmo Éon nunca ficam iguais.
-## Telas de chefe ficam mais vazias (arena limpa pra leitura do combate).
-func _build_architecture() -> void:
-	var p := pal()
-	var boss: bool = RunManager.run_active and RunManager.is_boss_screen(seed_screen)
-	var tint_mid: Color = Color(0.40, 0.48, 0.52).lerp(p.fog, 0.30)
-	var tint_near: Color = Color(0.30, 0.36, 0.40).lerp(p.fog, 0.22)
-	# Camada do meio: pilares (0) e obeliscos (2) grandes.
-	var mid := _layer(Vector2(0.64, 1.0), W)
-	var r := _rng(3)
-	var x := r.randf_range(20.0, 160.0)
-	while x < W - 80.0:
-		var kind: int = 0 if r.randf() < 0.62 else 2
-		var h: float = r.randf_range(190.0, 265.0) if kind == 0 else r.randf_range(150.0, 215.0)
-		var s := PaintedLibrary.sprite(kind, h)
-		s.position = Vector2(x, GROUND + r.randf_range(0.0, 4.0))
-		s.modulate = tint_mid.darkened(r.randf_range(0.0, 0.18))
-		if r.randf() < 0.5:
-			s.scale.x = -s.scale.x
-		mid.add_child(s)
-		x += r.randf_range(520.0, 760.0) if boss else r.randf_range(330.0, 560.0)
-	# Camada próxima: entulho (3) e braseiros (4) pequenos.
-	var near := _layer(Vector2(0.78, 1.0), W)
-	var r2 := _rng(4)
-	x = r2.randf_range(60.0, 240.0)
-	while x < W - 40.0:
-		var brazier: bool = r2.randf() < 0.42
-		var h2: float = r2.randf_range(38.0, 50.0) if brazier else r2.randf_range(48.0, 88.0)
-		var s2 := PaintedLibrary.sprite(4 if brazier else 3, h2)
-		s2.position = Vector2(x, GROUND + 2.0)
-		if not brazier:
-			s2.modulate = tint_near.darkened(r2.randf_range(0.0, 0.2))
-			if r2.randf() < 0.5:
-				s2.scale.x = -s2.scale.x
-		near.add_child(s2)
-		x += r2.randf_range(260.0, 520.0)
 
 
 func _layer(scale: Vector2, mirror_w: float) -> ParallaxLayer:
@@ -136,427 +109,493 @@ func _rng(salt: int) -> RandomNumberGenerator:
 	return r
 
 
-func _poly(points: PackedVector2Array, color: Color) -> Polygon2D:
-	var p := Polygon2D.new()
-	p.polygon = points
-	p.color = color
-	return p
+## Deslocamento que alinha uma camada (motion `ms`) no início da tela: o miolo
+## do ladrilho no centro da tela e o chão da pintura em FLOOR_Y.
+func _align(ms: Vector2) -> Vector2:
+	return Vector2(VIEW.x * 0.5 - _tile_w * 0.5 + CAM_LEFT0 * ms.x, CAM_TOP * (ms.y - 1.0))
 
 
-# --- céu ---------------------------------------------------------------------
+# --- camadas pintadas -------------------------------------------------------------
 
-func _build_sky() -> void:
-	var p := pal()
+func _build_painted() -> void:
+	var d := SceneryLibrary.data(eon)
+	var size: Vector2 = d.size
+	var s: float = PAINT_H / size.y
+	_tile_w = size.x * s
+	var lk := look()
+	_build_sky(d.sky, d.haze)
+	# FAR: distância quase parada (anda 3% da câmera).
+	_far = _painted_layer("far", Vector2(0.03, 0.9), 0.0, s, Color(1, 1, 1))
+	_sky_fade(_far, d.sky)
+	if eon == 7:
+		_orbit_sparks(_far, s)
+	# Raios: foco no astro da pintura (coords da camada far).
+	_ray_pt = Vector2(lk.ray.x * _tile_w, FLOOR_Y - PAINT_H + lk.ray.y * PAINT_H)
+	_rays = _screen_rect("rays")
+	_rays.material.set_shader_parameter("col", lk.ray_col)
+	_rays.material.set_shader_parameter("amt", lk.ray_amt)
+	_rays.material.set_shader_parameter("spread", lk.ray_spread)
+	_rays.material.set_shader_parameter("dark", lk.get("ray_dark", false))
+	# Névoa longe (entre o far e as asas).
+	_add_fog(Vector2(0.08, 0.92), FLOOR_Y - 150.0, FLOOR_Y - 40.0, FLOOR_Y + 4.0, d.haze, 0.30 * lk.mist, 0.004, 4.0, 1.0)
+	# MID: as asas (pilares das bordas), um pouco mais escuras que o fundo.
+	_painted_layer("mid", Vector2(0.14, 0.95), 0.0, s, Color(0.80, 0.80, 0.84))
+	# Névoa perto do horizonte.
+	_add_fog(Vector2(0.22, 0.97), FLOOR_Y - 80.0, FLOOR_Y - 14.0, FLOOR_Y + 6.0, Color(d.haze).lightened(0.1), 0.38 * lk.mist, 0.007, 7.0, 2.0)
+	# NEAR: a faixa de entulho/velas do horizonte.
+	_painted_layer("near", Vector2(0.32, 1.0), float(d.get("near_y", 0)) * s, s, Color(0.70, 0.70, 0.76))
+
+
+## Uma camada pintada espelhada: [ladrilho][ladrilho invertido], período 2×.
+func _painted_layer(kind: String, ms: Vector2, y_off: float, s: float, mod: Color) -> ParallaxLayer:
+	var l := _layer(ms, _tile_w * 2.0)
+	l.motion_offset = _align(ms)
+	var tex := SceneryLibrary.layer(eon, kind)
+	for k in 2:
+		var sp := Sprite2D.new()
+		sp.texture = tex
+		sp.centered = false
+		sp.scale = Vector2(s, s)
+		sp.flip_h = k == 1
+		sp.position = Vector2(float(k) * _tile_w, FLOOR_Y - PAINT_H + y_off)
+		sp.modulate = mod
+		l.add_child(sp)
+	return l
+
+
+## Céu fixo atrás de tudo (só aparece em pulos altos acima da pintura).
+func _build_sky(sky: Color, hz: Color) -> void:
 	var l := _layer(Vector2.ZERO, 0.0)
-	var sky := Polygon2D.new()
-	sky.polygon = PackedVector2Array([Vector2(-400, -400), Vector2(1400, -400), Vector2(1400, 900), Vector2(-400, 900)])
-	sky.vertex_colors = PackedColorArray([p.sky_top, p.sky_top, p.sky_bot, p.sky_bot])
-	l.add_child(sky)
-	# faixa de horizonte (luz difusa perto do chão)
-	var hz := Polygon2D.new()
-	hz.polygon = PackedVector2Array([Vector2(-400, 150), Vector2(1400, 150), Vector2(1400, 330), Vector2(-400, 330)])
-	var g: Color = p.glow
-	hz.vertex_colors = PackedColorArray([Color(g.r, g.g, g.b, 0.0), Color(g.r, g.g, g.b, 0.0), Color(g.r, g.g, g.b, 0.10), Color(g.r, g.g, g.b, 0.10)])
-	l.add_child(hz)
-	# estrelas (Éons escuros)
-	if eon in [0, 2, 3, 6, 7, 8]:
-		var r := _rng(1)
-		for i in 70:
-			var s := Polygon2D.new()
-			var x := r.randf_range(-100.0, 950.0)
-			var y := r.randf_range(-40.0, 200.0)
-			var sz := r.randf_range(0.8, 2.2)
-			s.polygon = PackedVector2Array([Vector2(x, y - sz), Vector2(x + sz, y), Vector2(x, y + sz), Vector2(x - sz, y)])
-			s.color = Color(1, 1, 1, r.randf_range(0.25, 0.7))
-			l.add_child(s)
-	var body := CelestialBody.new()
-	body.eon = eon
-	body.glow = p.glow
-	body.position = Vector2(640, 80)
-	l.add_child(body)
+	var p := Polygon2D.new()
+	p.polygon = PackedVector2Array([Vector2(-100, -200), Vector2(740, -200), Vector2(740, 460), Vector2(-100, 460)])
+	var top := sky.darkened(0.35)
+	var bot := sky.lerp(hz, 0.35)
+	p.vertex_colors = PackedColorArray([top, top, bot, bot])
+	l.add_child(p)
 
 
-## O astro de cada Éon (desenhado por código).
-class CelestialBody extends Node2D:
-	var eon: int = 0
-	var glow: Color = Color(1, 1, 1)
-	var _t: float = 0.0
-
-	func _process(delta: float) -> void:
-		_t += delta
-		queue_redraw()
-
-	func _draw() -> void:
-		var g := glow
-		match eon:
-			0:  # Torpor: lua pálida enorme, meio coberta (pálpebra)
-				draw_circle(Vector2.ZERO, 70.0, Color(g.r, g.g, g.b, 0.08))
-				draw_circle(Vector2.ZERO, 46.0, Color(0.82, 0.84, 0.92, 0.9))
-				draw_circle(Vector2(-8, -6), 40.0, Color(0.72, 0.75, 0.85, 0.5))
-				draw_colored_polygon(_arc_cap(46.0, -0.35), Color(0.12, 0.12, 0.2, 0.95))
-			1:  # Fome: sol vermelho inchado, pulsando
-				var pulse := 1.0 + sin(_t * 1.2) * 0.03
-				draw_circle(Vector2.ZERO, 80.0 * pulse, Color(1.0, 0.3, 0.15, 0.10))
-				draw_circle(Vector2.ZERO, 58.0 * pulse, Color(0.85, 0.22, 0.12, 0.95))
-				draw_circle(Vector2(0, 10), 40.0 * pulse, Color(1.0, 0.45, 0.2, 0.55))
-			2:  # Corrente: sol atrás de grades
-				draw_circle(Vector2.ZERO, 62.0, Color(g.r, g.g, g.b, 0.10))
-				draw_circle(Vector2.ZERO, 44.0, Color(0.85, 0.82, 0.7, 0.9))
-				for k in 5:
-					var x := -36.0 + float(k) * 18.0
-					draw_line(Vector2(x, -60), Vector2(x, 60), Color(0.08, 0.08, 0.12, 0.95), 6.0)
-				draw_line(Vector2(-60, -8), Vector2(60, -8), Color(0.08, 0.08, 0.12, 0.95), 5.0)
-			3:  # Silêncio: buraco no céu (vazio) com anel fraco
-				draw_circle(Vector2.ZERO, 50.0, Color(0.01, 0.01, 0.03, 1.0))
-				draw_arc(Vector2.ZERO, 54.0, 0, TAU, 48, Color(g.r, g.g, g.b, 0.35), 2.0)
-				draw_arc(Vector2.ZERO, 70.0, 0, TAU, 48, Color(g.r, g.g, g.b, 0.12), 1.5)
-			4:  # Espelho: duas luas gêmeas, uma invertida
-				for sx in [-1.0, 1.0]:
-					var c := Vector2(70.0 * sx, 0)
-					draw_circle(c, 44.0, Color(g.r, g.g, g.b, 0.08))
-					draw_circle(c, 30.0, Color(0.92, 0.94, 1.0, 0.9))
-					draw_circle(c + Vector2(6 * sx, -5), 24.0, Color(0.78, 0.82, 0.95, 0.6))
-				draw_line(Vector2(0, -80), Vector2(0, 80), Color(1, 1, 1, 0.12), 1.5)
-			5:  # Praga: sol doente atrás de bruma verde
-				draw_circle(Vector2.ZERO, 90.0, Color(0.5, 0.8, 0.3, 0.06))
-				draw_circle(Vector2.ZERO, 50.0, Color(0.62, 0.72, 0.35, 0.7))
-				draw_circle(Vector2(-6, 4), 36.0, Color(0.45, 0.55, 0.22, 0.6))
-			6:  # Coroa: sol negro com coroa de raios
-				for k in 16:
-					var a := TAU * float(k) / 16.0 + _t * 0.05
-					var len := 110.0 if k % 2 == 0 else 80.0
-					draw_line(Vector2.ZERO, Vector2(cos(a), sin(a)) * len, Color(g.r, g.g, g.b, 0.22), 3.0)
-				draw_circle(Vector2.ZERO, 66.0, Color(g.r, g.g, g.b, 0.55))
-				draw_circle(Vector2.ZERO, 52.0, Color(0.03, 0.02, 0.02, 1.0))
-			7:  # Centro: anéis concêntricos girando (a máquina)
-				for k in 4:
-					var rr := 30.0 + float(k) * 22.0
-					draw_arc(Vector2.ZERO, rr, _t * (0.3 + 0.1 * k), _t * (0.3 + 0.1 * k) + 4.8, 40, Color(g.r, g.g, g.b, 0.35 - 0.06 * k), 3.0)
-				draw_circle(Vector2.ZERO, 14.0, Color(0.02, 0.02, 0.03))
-			_:  # Mente: olho cego enorme
-				draw_circle(Vector2.ZERO, 120.0, Color(g.r, g.g, g.b, 0.06))
-				draw_colored_polygon(_eye_shape(150.0, 60.0), Color(0.9, 0.85, 0.9, 0.35))
-				draw_circle(Vector2.ZERO, 46.0, Color(0.05, 0.02, 0.05, 1.0))
-				draw_circle(Vector2.ZERO, 30.0, Color(g.r, g.g, g.b, 0.25))
-
-	func _arc_cap(r: float, cut: float) -> PackedVector2Array:
-		var pts := PackedVector2Array()
-		for i in 25:
-			var a := PI + PI * float(i) / 24.0
-			pts.append(Vector2(cos(a) * r, sin(a) * r * 1.02 + cut * r))
-		return pts
-
-	func _eye_shape(w: float, h: float) -> PackedVector2Array:
-		var pts := PackedVector2Array()
-		for i in 24:
-			var t := float(i) / 24.0
-			var x := -w + 2.0 * w * t
-			pts.append(Vector2(x, -sin(t * PI) * h))
-		for i in 24:
-			var t := float(i) / 24.0
-			var x := w - 2.0 * w * t
-			pts.append(Vector2(x, sin(t * PI) * h))
-		return pts
+## Funde o topo da pintura no céu (sem borda dura quando a Sophia pula alto).
+func _sky_fade(l: ParallaxLayer, sky: Color) -> void:
+	var top := FLOOR_Y - PAINT_H
+	var p := Polygon2D.new()
+	var c0 := sky.darkened(0.35)
+	var c1 := Color(sky.r, sky.g, sky.b, 0.0)
+	p.polygon = PackedVector2Array([Vector2(0, top - 400), Vector2(_tile_w * 2, top - 400), Vector2(_tile_w * 2, top + 34), Vector2(0, top + 34)])
+	p.vertex_colors = PackedColorArray([c0, c0, c1, c1])
+	l.add_child(p)
 
 
-# --- skyline longe ---------------------------------------------------------------
-
-func _build_far() -> void:
-	var p := pal()
-	var l := _layer(Vector2(0.15, 1.0), W)
-	var r := _rng(2)
-	var col: Color = p.far
-	var base := GROUND + 30.0
-	var x := 0.0
-	while x < W:
-		var w := r.randf_range(70.0, 160.0)
-		var h := r.randf_range(90.0, 230.0)
-		var pts := PackedVector2Array()
-		match eon:
-			0:  # cúpulas e agulhas de catacumba
-				pts = PackedVector2Array([Vector2(x, base), Vector2(x, base - h * 0.6), Vector2(x + w * 0.5, base - h), Vector2(x + w, base - h * 0.6), Vector2(x + w, base)])
-			1:  # torres de mercado com toldos
-				pts = PackedVector2Array([Vector2(x, base), Vector2(x, base - h), Vector2(x + w * 0.3, base - h - 20), Vector2(x + w, base - h), Vector2(x + w, base)])
-			2:  # muralhas e ameias
-				pts = PackedVector2Array([Vector2(x, base), Vector2(x, base - h)])
-				var k := 0.0
-				while k < w:
-					pts.append(Vector2(x + k, base - h - (12.0 if int(k / 14.0) % 2 == 0 else 0.0)))
-					k += 14.0
-				pts.append(Vector2(x + w, base - h))
-				pts.append(Vector2(x + w, base))
-			3:  # estantes gigantes
-				pts = PackedVector2Array([Vector2(x, base), Vector2(x, base - h * 1.3), Vector2(x + w, base - h * 1.3), Vector2(x + w, base)])
-			4:  # molduras espelhadas em pé
-				pts = PackedVector2Array([Vector2(x, base), Vector2(x + w * 0.1, base - h), Vector2(x + w * 0.5, base - h - 30), Vector2(x + w * 0.9, base - h), Vector2(x + w, base)])
-			5:  # árvores mortas ao longe
-				pts = PackedVector2Array([Vector2(x + w * 0.4, base), Vector2(x + w * 0.45, base - h), Vector2(x + w * 0.2, base - h - 30), Vector2(x + w * 0.5, base - h + 10), Vector2(x + w * 0.8, base - h - 40), Vector2(x + w * 0.55, base - h), Vector2(x + w * 0.6, base)])
-			6:  # palácio: colunas e cúpulas douradas
-				pts = PackedVector2Array([Vector2(x, base), Vector2(x, base - h), Vector2(x + w * 0.5, base - h - 50), Vector2(x + w, base - h), Vector2(x + w, base)])
-			_:  # centro/mente: engrenagens e fatias
-				pts = PackedVector2Array([Vector2(x, base), Vector2(x + w * 0.2, base - h), Vector2(x + w * 0.8, base - h * 0.7), Vector2(x + w, base)])
-		l.add_child(_poly(pts, col))
-		# janelas acesas (poucas) — a cidade que dorme
-		if eon in [0, 1, 3, 6] and r.randf() < 0.6:
-			for k in r.randi_range(1, 4):
-				var win := _poly(PackedVector2Array([Vector2(0, 0), Vector2(5, 0), Vector2(5, 8), Vector2(0, 8)]), Color(p.glow.r, p.glow.g, p.glow.b, r.randf_range(0.15, 0.45)))
-				win.position = Vector2(x + r.randf_range(8.0, w - 12.0), base - r.randf_range(20.0, h * 0.5))
-				l.add_child(win)
-		x += w + r.randf_range(-10.0, 40.0)
+## Retângulo fixo na tela com shader do cenário (raios/névoa).
+func _screen_rect(shader_name: String) -> ColorRect:
+	var l := _layer(Vector2.ZERO, 0.0)
+	var r := ColorRect.new()
+	r.position = Vector2(-40, -40)
+	r.size = VIEW + Vector2(80, 80)
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	r.material = SceneryLibrary.material(shader_name)
+	l.add_child(r)
+	return r
 
 
-# --- props do meio ---------------------------------------------------------------
+## Faixa de névoa: retângulo fixo na tela que acompanha o y da câmera no ritmo
+## `ms` e escorre em x pelo offset (profundidade = ritmo).
+func _add_fog(ms: Vector2, y_top: float, y_peak: float, y_bot: float, col: Color, dens: float, sc: float, speed: float, seed_v: float) -> void:
+	var r := _screen_rect("fog")
+	r.size = Vector2(VIEW.x + 80.0, y_bot - y_top + 20.0)
+	var m: ShaderMaterial = r.material
+	m.set_shader_parameter("col", col)
+	m.set_shader_parameter("density", dens)
+	m.set_shader_parameter("y_top", 0.0)
+	m.set_shader_parameter("y_peak", y_peak - y_top)
+	m.set_shader_parameter("y_bot", y_bot - y_top)
+	m.set_shader_parameter("scale", sc)
+	m.set_shader_parameter("speed", speed)
+	m.set_shader_parameter("seed", seed_v + float(eon))
+	_fogs.append({"rect": r, "ms": ms, "y": y_top})
 
-func _build_mid() -> void:
-	var p := pal()
-	var l := _layer(Vector2(0.42, 1.0), W)
+
+## Centro: faíscas em órbita em volta da esfera da máquina (nas duas metades).
+func _orbit_sparks(l: ParallaxLayer, s: float) -> void:
+	var lk := look()
+	for k in 2:
+		var p := CPUParticles2D.new()
+		var x: float = lk.ray.x * _tile_w
+		if k == 1:
+			x = _tile_w * 2.0 - x
+		p.position = Vector2(x, FLOOR_Y - PAINT_H + lk.ray.y * PAINT_H)
+		p.texture = VfxLibrary.tex("spark")
+		p.material = VfxLibrary._additive()
+		p.amount = 28
+		p.lifetime = 5.0
+		p.preprocess = 5.0
+		p.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE_SURFACE
+		p.emission_sphere_radius = 34.0 * s * 3.0
+		p.gravity = Vector2.ZERO
+		p.initial_velocity_min = 0.0
+		p.initial_velocity_max = 2.0
+		p.orbit_velocity_min = 0.05
+		p.orbit_velocity_max = 0.12
+		p.scale_amount_min = 0.02
+		p.scale_amount_max = 0.05
+		p.color = Color(1.0, 0.82, 0.5, 0.85)
+		p.local_coords = true
+		l.add_child(p)
+		p.emitting = true
+
+
+func _process(_delta: float) -> void:
+	if _rays == null and _fogs.is_empty():
+		return
+	var ct := get_viewport().get_canvas_transform()
+	var cam := -ct.origin                     # canto superior esquerdo da câmera (mundo)
+	if _rays != null and _far != null:
+		var period := _tile_w * 2.0
+		var fy := _ray_pt.y + _far.position.y
+		var ax := _ray_pt.x + _far.position.x
+		var bx := (period - _ray_pt.x) + _far.position.x
+		var a := Vector2(wrapf(ax - VIEW.x * 0.5, -period * 0.5, period * 0.5) + VIEW.x * 0.5, fy)
+		var b := Vector2(wrapf(bx - VIEW.x * 0.5, -period * 0.5, period * 0.5) + VIEW.x * 0.5, fy)
+		var m: ShaderMaterial = _rays.material
+		m.set_shader_parameter("src_a", a + Vector2(40, 40))
+		m.set_shader_parameter("src_b", b + Vector2(40, 40))
+	for f in _fogs:
+		var r: ColorRect = f.rect
+		var ms: Vector2 = f.ms
+		r.position.y = float(f.y) - cam.y * ms.y + CAM_TOP * (ms.y - 1.0)
+		r.material.set_shader_parameter("offset", cam.x * ms.x)
+
+
+# --- fallback (sem camadas geradas) -----------------------------------------------
+
+func _build_fallback() -> void:
+	var c: Color = FALLBACK[clampi(eon, 0, 8)]
+	_build_sky(c.darkened(0.5), c)
+	var l := _layer(Vector2(0.18, 1.0), 768.0)
+	var backdrop := Sprite2D.new()
+	backdrop.texture = PaintedLibrary.background(clampi(eon, 0, 8))
+	backdrop.centered = false
+	backdrop.scale = Vector2(768.0 / backdrop.texture.get_width(), 400.0 / backdrop.texture.get_height())
+	backdrop.modulate = Color(0.68, 0.73, 0.77)
+	l.add_child(backdrop)
+
+
+# --- props pintados (entre o horizonte e a faixa de luta) ---------------------------
+
+## Arquitetura pintada (pilares, obeliscos, entulho, braseiros) em duas camadas
+## de parallax, integrada à luz do Éon (shader prop: névoa por distância, borda
+## acesa, chama na cor do Éon) e com sombra de contato. Determinística por tela.
+func _build_architecture() -> void:
+	var mid := _layer(Vector2(0.55, 1.0), W)
 	var r := _rng(3)
-	var x := r.randf_range(40.0, 120.0)
-	while x < W - 60.0:
-		var n := _make_prop(eon, r, p.mid, p.mid.lightened(0.18), p.glow)
-		n.position = Vector2(x, GROUND + 6.0)
-		l.add_child(n)
-		x += r.randf_range(260.0, 420.0)
+	var mat_mid := SceneryLibrary.prop_material(eon, 0.30, 0.30, 0.45)
+	var x := r.randf_range(20.0, 160.0)
+	while x < W - 80.0:
+		var kind: int = 0 if r.randf() < 0.62 else 2
+		var h: float = r.randf_range(170.0, 240.0) if kind == 0 else r.randf_range(140.0, 200.0)
+		_contact_shadow(mid, Vector2(x, FLOOR_Y + 1.0), h * 0.42)
+		var s := PaintedLibrary.sprite(kind, h)
+		s.material = mat_mid
+		s.position = Vector2(x, FLOOR_Y + 3.0)
+		s.modulate = Color(1, 1, 1).darkened(r.randf_range(0.0, 0.15))
+		if r.randf() < 0.5:
+			s.scale.x = -s.scale.x
+		mid.add_child(s)
+		x += r.randf_range(380.0, 620.0)
+	var near := _layer(Vector2(0.75, 1.0), W)
+	var r2 := _rng(4)
+	var mat_near := SceneryLibrary.prop_material(eon, 0.14, 0.18, 0.6)
+	x = r2.randf_range(60.0, 240.0)
+	while x < W - 40.0:
+		var brazier: bool = r2.randf() < 0.42
+		var h2: float = r2.randf_range(34.0, 44.0) if brazier else r2.randf_range(44.0, 80.0)
+		_contact_shadow(near, Vector2(x, FLOOR_Y + 2.0), h2 * 0.8)
+		var s2 := PaintedLibrary.sprite(4 if brazier else 3, h2)
+		s2.material = mat_near
+		s2.position = Vector2(x, FLOOR_Y + 4.0)
+		if brazier:
+			near.add_child(s2)
+			_flame_light(near, Vector2(x, FLOOR_Y + 4.0 - h2 * 0.95), 0.6)
+		else:
+			if r2.randf() < 0.5:
+				s2.scale.x = -s2.scale.x
+			near.add_child(s2)
+		x += r2.randf_range(260.0, 520.0)
 
 
-## Um prop grande do Éon (raiz no chão, y=0 = chão). Variedade por rng.
-func _make_prop(e: int, r: RandomNumberGenerator, c: Color, c2: Color, glow: Color) -> Node2D:
-	var n := Node2D.new()
-	var v := r.randi_range(0, 2)
-	match e:
-		0:  # Torpor: arcos de catacumba / lápides / urnas
-			if v == 0:
-				n.add_child(_poly(PackedVector2Array([Vector2(-34, 0), Vector2(-34, -150), Vector2(-20, -185), Vector2(0, -196), Vector2(20, -185), Vector2(34, -150), Vector2(34, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-20, 0), Vector2(-20, -140), Vector2(0, -160), Vector2(20, -140), Vector2(20, 0)]), c.darkened(0.35)))
-			elif v == 1:
-				n.add_child(_poly(PackedVector2Array([Vector2(-22, 0), Vector2(-22, -70), Vector2(-14, -90), Vector2(14, -90), Vector2(22, -70), Vector2(22, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-6, -40), Vector2(6, -40), Vector2(6, -60), Vector2(-6, -60)]), c2))
-			else:
-				n.add_child(_poly(PackedVector2Array([Vector2(-16, 0), Vector2(-24, -60), Vector2(-14, -110), Vector2(14, -110), Vector2(24, -60), Vector2(16, 0)]), c))
-		1:  # Fome: barracas com toldo / lampiões / mesas com pratos
-			if v == 0:
-				n.add_child(_poly(PackedVector2Array([Vector2(-40, 0), Vector2(-40, -110), Vector2(40, -110), Vector2(40, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-56, -110), Vector2(0, -160), Vector2(56, -110)]), c2))
-				for k in 3:
-					n.add_child(_poly(PackedVector2Array([Vector2(-48 + k * 32, -110), Vector2(-40 + k * 32, -110), Vector2(-44 + k * 32, -96)]), c.darkened(0.2)))
-			elif v == 1:
-				n.add_child(_poly(PackedVector2Array([Vector2(-4, 0), Vector2(-4, -170), Vector2(4, -170), Vector2(4, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(4, -170), Vector2(40, -170), Vector2(40, -164), Vector2(4, -164)]), c))
-				var lamp := _poly(PackedVector2Array([Vector2(-8, -164), Vector2(8, -164), Vector2(6, -140), Vector2(-6, -140)]), Color(glow.r, glow.g, glow.b, 0.5))
-				lamp.position = Vector2(36, 0)
-				n.add_child(lamp)
-			else:
-				n.add_child(_poly(PackedVector2Array([Vector2(-50, -50), Vector2(50, -50), Vector2(50, -40), Vector2(-50, -40)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-40, -40), Vector2(-32, -40), Vector2(-32, 0), Vector2(-40, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(32, -40), Vector2(40, -40), Vector2(40, 0), Vector2(32, 0)]), c))
-		2:  # Corrente: grades / pilar com correntes / cadafalso
-			if v == 0:
-				for bx in [-24, -12, 0, 12, 24]:
-					n.add_child(_poly(PackedVector2Array([Vector2(bx - 2, 0), Vector2(bx - 2, -150), Vector2(bx + 2, -150), Vector2(bx + 2, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-30, -150), Vector2(30, -150), Vector2(30, -140), Vector2(-30, -140)]), c2))
-				n.add_child(_poly(PackedVector2Array([Vector2(-30, -80), Vector2(30, -80), Vector2(30, -74), Vector2(-30, -74)]), c2))
-			elif v == 1:
-				n.add_child(_poly(PackedVector2Array([Vector2(-16, 0), Vector2(-14, -180), Vector2(14, -180), Vector2(16, 0)]), c))
-				for k in 8:
-					var link := Polygon2D.new()
-					link.polygon = _ring(5.0, 3.0)
-					link.color = c2
-					link.position = Vector2(20 + (k % 2) * 3, -170 + k * 11)
-					n.add_child(link)
-			else:
-				n.add_child(_poly(PackedVector2Array([Vector2(-40, 0), Vector2(-40, -30), Vector2(40, -30), Vector2(40, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-34, -30), Vector2(-34, -160), Vector2(-26, -160), Vector2(-26, -30)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-34, -160), Vector2(30, -160), Vector2(30, -152), Vector2(-34, -152)]), c))
-		3:  # Silêncio: estantes altíssimas / pilha de livros / atril
-			if v == 0 or v == 1:
-				n.add_child(_poly(PackedVector2Array([Vector2(-34, 0), Vector2(-34, -230), Vector2(34, -230), Vector2(34, 0)]), c))
-				for k in 7:
-					var sy := -20 - k * 30
-					n.add_child(_poly(PackedVector2Array([Vector2(-30, sy), Vector2(30, sy), Vector2(30, sy + 4), Vector2(-30, sy + 4)]), c2))
-					var bx := -28
-					while bx < 26:
-						var bw := r.randi_range(4, 9)
-						var bh := r.randi_range(14, 24)
-						n.add_child(_poly(PackedVector2Array([Vector2(bx, sy), Vector2(bx + bw, sy), Vector2(bx + bw, sy - bh), Vector2(bx, sy - bh)]), c2.lerp(c, r.randf_range(0.2, 0.7))))
-						bx += bw + 1
-			else:
-				for k in 6:
-					var bw := 30 - k * 2
-					n.add_child(_poly(PackedVector2Array([Vector2(-bw / 2 + k, -k * 9), Vector2(bw / 2 + k, -k * 9), Vector2(bw / 2 + k, -k * 9 - 8), Vector2(-bw / 2 + k, -k * 9 - 8)]), c2.lerp(c, float(k) / 6.0)))
-		4:  # Espelho: molduras com reflexo / cacos em pé
-			if v == 0 or v == 1:
-				n.add_child(_poly(PackedVector2Array([Vector2(-30, 0), Vector2(-30, -170), Vector2(-16, -195), Vector2(16, -195), Vector2(30, -170), Vector2(30, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-20, -8), Vector2(-20, -166), Vector2(0, -180), Vector2(20, -166), Vector2(20, -8)]), Color(glow.r, glow.g, glow.b, 0.22)))
-				n.add_child(_poly(PackedVector2Array([Vector2(-16, -20), Vector2(-8, -150), Vector2(-2, -150), Vector2(-10, -20)]), Color(1, 1, 1, 0.14)))
-			else:
-				n.add_child(_poly(PackedVector2Array([Vector2(-20, 0), Vector2(-6, -120), Vector2(10, -80), Vector2(22, 0)]), Color(glow.r, glow.g, glow.b, 0.35)))
-				n.add_child(_poly(PackedVector2Array([Vector2(26, 0), Vector2(34, -70), Vector2(48, 0)]), Color(glow.r, glow.g, glow.b, 0.25)))
-		5:  # Praga: árvore morta com musgo / cogumelos / ossada
-			if v == 0 or v == 1:
-				n.add_child(_poly(PackedVector2Array([Vector2(-10, 0), Vector2(-8, -140), Vector2(8, -140), Vector2(10, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-6, -100), Vector2(-50, -150), Vector2(-42, -156), Vector2(-4, -110)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(6, -120), Vector2(46, -170), Vector2(38, -176), Vector2(4, -128)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(2, -140), Vector2(10, -200), Vector2(4, -200), Vector2(-4, -140)]), c))
-				for k in 3:
-					var moss := _poly(PackedVector2Array([Vector2(0, 0), Vector2(6, 0), Vector2(4, 30 + k * 8), Vector2(1, 30 + k * 8)]), c2.darkened(0.2))
-					moss.position = Vector2(-40 + k * 14, -150 + k * 4)
-					n.add_child(moss)
-			else:
-				for k in 3:
-					var cap := _poly(PackedVector2Array([Vector2(-14, -20), Vector2(14, -20), Vector2(8, -34), Vector2(-8, -34)]), Color(0.45, 0.25, 0.4))
-					cap.position = Vector2(-20 + k * 20, -k * 6)
-					n.add_child(cap)
-					var stem := _poly(PackedVector2Array([Vector2(-3, 0), Vector2(3, 0), Vector2(3, -20), Vector2(-3, -20)]), c2)
-					stem.position = Vector2(-20 + k * 20, -k * 6)
-					n.add_child(stem)
-		6:  # Coroa: coluna com capitel / estandarte / trono vazio
-			if v == 0:
-				n.add_child(_poly(PackedVector2Array([Vector2(-18, 0), Vector2(-14, -200), Vector2(14, -200), Vector2(18, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-26, -200), Vector2(26, -200), Vector2(22, -214), Vector2(-22, -214)]), c2))
-				n.add_child(_poly(PackedVector2Array([Vector2(-26, 0), Vector2(26, 0), Vector2(22, -12), Vector2(-22, -12)]), c2))
-			elif v == 1:
-				n.add_child(_poly(PackedVector2Array([Vector2(-3, 0), Vector2(-3, -190), Vector2(3, -190), Vector2(3, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(3, -186), Vector2(40, -186), Vector2(40, -100), Vector2(22, -116), Vector2(3, -100)]), Color(glow.r, glow.g, glow.b, 0.35)))
-			else:
-				n.add_child(_poly(PackedVector2Array([Vector2(-30, 0), Vector2(-30, -60), Vector2(30, -60), Vector2(30, 0)]), c))
-				n.add_child(_poly(PackedVector2Array([Vector2(-30, -60), Vector2(-30, -150), Vector2(-10, -160), Vector2(0, -175), Vector2(10, -160), Vector2(30, -150), Vector2(30, -60)]), c2))
-		7:  # Centro: engrenagens / pistões
-			n.add_child(_poly(_ring(60.0, 44.0), c2))
-			n.add_child(_poly(PackedVector2Array([Vector2(-8, 0), Vector2(-8, -120), Vector2(8, -120), Vector2(8, 0)]), c))
-		_:  # Mente: colunas de vidro quebrado / olhos
-			n.add_child(_poly(PackedVector2Array([Vector2(-14, 0), Vector2(-20, -160), Vector2(0, -200), Vector2(20, -160), Vector2(14, 0)]), Color(glow.r, glow.g, glow.b, 0.2)))
-	return n
+## Sombra de contato (elipse escura e macia) na base de um prop.
+func _contact_shadow(parent: Node, pos: Vector2, half_w: float, alpha: float = 0.55) -> Sprite2D:
+	var sh := Sprite2D.new()
+	sh.texture = _blob_texture()
+	sh.position = pos
+	sh.scale = Vector2(half_w * 2.0 / 64.0, half_w * 0.36 / 64.0)
+	sh.modulate = Color(0, 0, 0, alpha)
+	parent.add_child(sh)
+	return sh
 
 
-func _ring(ro: float, ri: float) -> PackedVector2Array:
-	var pts := PackedVector2Array()
-	for i in 17:
-		var a := TAU * float(i) / 16.0
-		pts.append(Vector2(cos(a), sin(a)) * ro)
-	for i in 17:
-		var a := -TAU * float(i) / 16.0
-		pts.append(Vector2(cos(a), sin(a)) * ri)
-	return pts
+static var _blob: GradientTexture2D = null
+
+## Disco radial macio (branco → transparente; tingido por modulate), 64 px.
+static func _blob_texture() -> GradientTexture2D:
+	if _blob == null:
+		var g := Gradient.new()
+		g.set_color(0, Color(1, 1, 1, 1))
+		g.set_color(1, Color(1, 1, 1, 0))
+		g.add_point(0.45, Color(1, 1, 1, 0.6))
+		_blob = GradientTexture2D.new()
+		_blob.gradient = g
+		_blob.fill = GradientTexture2D.FILL_RADIAL
+		_blob.fill_from = Vector2(0.5, 0.5)
+		_blob.fill_to = Vector2(1.0, 0.5)
+		_blob.width = 64
+		_blob.height = 64
+	return _blob
 
 
-# --- props perto (pequenos, escuros) ---------------------------------------------
-
-func _build_near() -> void:
-	var p := pal()
-	var l := _layer(Vector2(0.72, 1.0), W)
-	var r := _rng(4)
-	var x := r.randf_range(0.0, 200.0)
-	var c: Color = p.near
-	while x < W:
-		var n := Node2D.new()
-		var v := r.randi_range(0, 2)
-		match eon:
-			0: n.add_child(_poly(PackedVector2Array([Vector2(-10, 0), Vector2(-10, -30), Vector2(-5, -40), Vector2(5, -40), Vector2(10, -30), Vector2(10, 0)]), c))
-			1: n.add_child(_poly(PackedVector2Array([Vector2(-18, 0), Vector2(-14, -22), Vector2(14, -22), Vector2(18, 0)]), c))
-			2:
-				for k in 4:
-					var link := _poly(_ring(4.0, 2.0), c.lightened(0.3))
-					link.position = Vector2(k * 7, -k * 5)
-					n.add_child(link)
-			3: n.add_child(_poly(PackedVector2Array([Vector2(-12, 0), Vector2(-12, -6), Vector2(12, -8), Vector2(12, 0)]), c))
-			4: n.add_child(_poly(PackedVector2Array([Vector2(-8, 0), Vector2(0, -38), Vector2(10, 0)]), Color(p.glow.r, p.glow.g, p.glow.b, 0.2)))
-			5: n.add_child(_poly(PackedVector2Array([Vector2(-26, 0), Vector2(-14, -8), Vector2(14, -8), Vector2(26, 0)]), c.lightened(0.1)))
-			6: n.add_child(_poly(PackedVector2Array([Vector2(-14, 0), Vector2(-12, -18), Vector2(12, -18), Vector2(14, 0)]), c))
-			_: n.add_child(_poly(PackedVector2Array([Vector2(-8, 0), Vector2(-4, -26), Vector2(4, -26), Vector2(8, 0)]), c))
-		if v == 2:
-			n.scale = Vector2(1.6, 1.6)
-		n.position = Vector2(x, GROUND + 4.0)
-		l.add_child(n)
-		x += r.randf_range(120.0, 300.0)
-
-
-# --- névoa -----------------------------------------------------------------------
-
-func _build_fog() -> void:
-	var p := pal()
-	var l := _layer(Vector2(0.9, 1.0), W)
-	var r := _rng(5)
-	var strength := 1.0
-	if eon in [0, 3, 5, 7, 8]:
-		strength = 1.5
-	for i in 9:
-		var f := FogPuff.new()
-		f.color = p.fog
-		f.radius = r.randf_range(90.0, 180.0)
-		f.alpha = r.randf_range(0.05, 0.11) * strength
-		f.speed = r.randf_range(4.0, 12.0)
-		f.position = Vector2(r.randf_range(0.0, W), GROUND - r.randf_range(-10.0, 40.0))
-		f.width = W
-		l.add_child(f)
-		_fog_nodes.append(f)
+## Luz de chama: halo aditivo na cor do Éon que tremula, + brasas subindo.
+func _flame_light(parent: Node, pos: Vector2, size: float) -> void:
+	var lk := look()
+	var g: Color = lk.glow
+	var fl := Flicker.new()
+	fl.texture = VfxLibrary.tex("light")
+	fl.material = VfxLibrary._additive()
+	fl.position = pos
+	fl.base_scale = 0.32 * size
+	fl.modulate = Color(g.r, g.g, g.b, 0.55)
+	fl.phase = pos.x * 0.37
+	parent.add_child(fl)
+	var e := CPUParticles2D.new()
+	e.position = pos
+	e.texture = VfxLibrary.tex("spark2")
+	e.material = VfxLibrary._additive()
+	e.amount = 6
+	e.lifetime = 1.6
+	e.preprocess = 2.0
+	e.direction = Vector2(0, -1)
+	e.spread = 20.0
+	e.initial_velocity_min = 12.0
+	e.initial_velocity_max = 26.0
+	e.gravity = Vector2(0, -8)
+	e.scale_amount_min = 0.015 * size
+	e.scale_amount_max = 0.035 * size
+	e.color = Color(g.r, g.g, g.b, 0.8)
+	e.local_coords = false
+	parent.add_child(e)
+	e.emitting = true
 
 
-class FogPuff extends Node2D:
-	var color: Color = Color(0.6, 0.6, 0.7)
-	var radius: float = 120.0
-	var alpha: float = 0.08
-	var speed: float = 8.0
-	var width: float = 1800.0
+## Halo que respira (chama/brasa): a escala oscila devagar.
+class Flicker extends Sprite2D:
+	var base_scale: float = 0.3
+	var phase: float = 0.0
 	var _t: float = 0.0
 
 	func _process(delta: float) -> void:
 		_t += delta
-		position.x = fmod(position.x + speed * delta + width, width)
-		queue_redraw()
-
-	func _draw() -> void:
-		var breathe := 1.0 + sin(_t * 0.7) * 0.08
-		# várias elipses achatadas, cada uma bem fraca: borda macia (sem "disco")
-		for k in 6:
-			var rr := radius * (1.0 - 0.14 * float(k)) * breathe
-			draw_colored_polygon(_ellipse(rr, rr * 0.16), Color(color.r, color.g, color.b, alpha * 0.45))
-
-	func _ellipse(rx: float, ry: float) -> PackedVector2Array:
-		var pts := PackedVector2Array()
-		for i in 24:
-			var a := TAU * float(i) / 24.0
-			pts.append(Vector2(cos(a) * rx, sin(a) * ry))
-		return pts
+		var f := 1.0 + sin(_t * 7.3 + phase) * 0.06 + sin(_t * 13.1 + phase * 2.0) * 0.04
+		scale = Vector2.ONE * base_scale * f
 
 
 # --- chão (coords de mundo, filho do Level) --------------------------------------
 
-## Relevo do chão: superfície com lajes/rachaduras e borda de luz. y=0 = topo do chão.
+## Chão 2.5D + névoa rasteira + arena de chefe + plataformas integradas.
+## `ground_top_y` = topo da colisão do chão (linha dos pés).
 func build_ground(parent: Node2D, ground_top_y: float) -> void:
-	var g := GroundDetail.new()
-	g.eon = eon
-	g.pal = pal()
-	g.position = Vector2(0, ground_top_y)
-	g.z_index = -1
-	parent.add_child(g)
+	var fb := FloorBand.new()
+	fb.setup(eon, ground_top_y)
+	fb.z_index = -2
+	parent.add_child(fb)
+	# névoa rasteira: passa por cima dos pés (z acima dos lutadores, bem fraca)
+	var gf := GroundFog.new()
+	gf.setup(haze().lightened(0.15), 0.22 * float(look().mist), ground_top_y)
+	gf.z_index = 6
+	parent.add_child(gf)
+	if is_boss():
+		_build_boss_arena(parent, ground_top_y)
+	_integrate_platforms.call_deferred(parent)
 
 
-class GroundDetail extends Node2D:
-	var eon: int = 0
-	var pal: Dictionary = {}
-	# Faixa do chão: cobre a travessia inteira (até 3 zonas: parede em x≈3620)
-	# com folga — a câmera nunca vê o chão acabar.
-	const LEFT := -2400.0
-	const RIGHT := 6800.0
+class FloorBand extends Node2D:
+	## Faixa do chão que segue a câmera em x; o shader faz o resto (sem atraso).
+	var _mat: ShaderMaterial
+
+	func setup(e: int, feet_y: float) -> void:
+		var d := SceneryLibrary.data(e)
+		var lk := SceneryLibrary.look(e)
+		_mat = SceneryLibrary.material("floor")
+		var tex := SceneryLibrary.layer(e, "floor")
+		if tex != null and not d.is_empty():
+			var sz: Vector2 = d.size
+			_mat.set_shader_parameter("floor_tex", tex)
+			_mat.set_shader_parameter("tile_w", sz.x * Scenery.PAINT_H / sz.y)
+			_mat.set_shader_parameter("haze", d.haze)
+		else:
+			_mat.set_shader_parameter("has_tex", 0.0)
+		_mat.set_shader_parameter("floor_y", Scenery.FLOOR_Y)
+		_mat.set_shader_parameter("feet_y", feet_y)
+		_mat.set_shader_parameter("band_h", 136.0)
+		_mat.set_shader_parameter("reflect_amt", lk.reflect)
+		_mat.set_shader_parameter("glow", lk.glow)
+		material = _mat
+
+	func _process(_delta: float) -> void:
+		var cam := get_viewport().get_camera_2d()
+		if cam == null:
+			return
+		position.x = roundf(cam.get_screen_center_position().x)
+		_mat.set_shader_parameter("node_x", position.x)
 
 	func _draw() -> void:
-		var top: Color = pal.ground
-		var dark: Color = pal.ground_dark
-		var glow: Color = pal.glow
-		# chão inteiro (gradiente)
-		draw_polygon(PackedVector2Array([Vector2(LEFT, 0), Vector2(RIGHT, 0), Vector2(RIGHT, 420), Vector2(LEFT, 420)]),
-			PackedColorArray([top, top, dark, dark]))
-		var floor_tex: Texture2D = PaintedLibrary.background(eon)
-		for tile in range(-5,14):
-			draw_texture_rect_region(floor_tex,Rect2(tile*512,0,512,160),Rect2(0,floor_tex.get_height()*0.82,512,floor_tex.get_height()*0.18),Color(0.75,0.79,0.83))
-		draw_line(Vector2(LEFT,1),Vector2(RIGHT,1),Color(glow,0.18),1.0,true)
+		# um retângulo largo (folga p/ tremida e atraso da câmera)
+		draw_rect(Rect2(-520.0, Scenery.FLOOR_Y - 4.0, 1040.0, 340.0), Color.WHITE)
 
-	func _ell(c: Vector2, rx: float, ry: float) -> PackedVector2Array:
-		var pts := PackedVector2Array()
-		for i in 20:
-			var a := TAU * float(i) / 20.0
-			pts.append(c + Vector2(cos(a) * rx, sin(a) * ry))
-		return pts
+	func _ready() -> void:
+		queue_redraw()
+
+
+class GroundFog extends Node2D:
+	## Névoa rasteira: faixa fina sobre a linha dos pés, que segue a câmera.
+	var _mat: ShaderMaterial
+	var _feet: float = 310.0
+
+	func setup(col: Color, dens: float, feet_y: float) -> void:
+		_feet = feet_y
+		_mat = SceneryLibrary.material("fog")
+		_mat.set_shader_parameter("col", col)
+		_mat.set_shader_parameter("density", dens)
+		_mat.set_shader_parameter("y_top", feet_y - 26.0)
+		_mat.set_shader_parameter("y_peak", feet_y - 4.0)
+		_mat.set_shader_parameter("y_bot", feet_y + 16.0)
+		_mat.set_shader_parameter("scale", 0.012)
+		_mat.set_shader_parameter("speed", 10.0)
+		_mat.set_shader_parameter("seed", 5.0)
+		material = _mat
+
+	func _process(_delta: float) -> void:
+		var cam := get_viewport().get_camera_2d()
+		if cam == null:
+			return
+		position.x = roundf(cam.get_screen_center_position().x)
+		_mat.set_shader_parameter("offset", position.x)
+
+	func _draw() -> void:
+		draw_rect(Rect2(-520.0, _feet - 26.0, 1040.0, 42.0), Color.WHITE)
+
+	func _ready() -> void:
+		queue_redraw()
+
+
+## ARENA DE CHEFE: cenografia simétrica em volta do centro da arena —
+## obeliscos nas bordas e braseiros acesos na cor do Éon, com luz no chão.
+func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
+	var c := Level.ZONE_FIRST_X
+	var set_node := Node2D.new()
+	set_node.name = "ArenaSet"
+	set_node.z_index = -1
+	parent.add_child(set_node)
+	var mat := SceneryLibrary.prop_material(eon, 0.06, 0.12, 0.7)
+	var base_y := feet_y - 7.0
+	var g: Color = look().glow
+	for side in [-1.0, 1.0]:
+		# obelisco (com o cristal) nas bordas
+		var ox: float = c + side * 292.0
+		_contact_shadow(set_node, Vector2(ox, base_y), 30.0, 0.6)
+		var ob := PaintedLibrary.sprite(2, 168.0)
+		ob.material = mat
+		ob.position = Vector2(ox, base_y + 2.0)
+		if side > 0.0:
+			ob.scale.x = -ob.scale.x
+		set_node.add_child(ob)
+		# braseiro aceso mais pra dentro
+		var bx: float = c + side * 222.0
+		_contact_shadow(set_node, Vector2(bx, base_y + 1.0), 22.0, 0.6)
+		var br := PaintedLibrary.sprite(4, 46.0)
+		br.material = mat
+		br.position = Vector2(bx, base_y + 2.0)
+		set_node.add_child(br)
+		_flame_light(set_node, Vector2(bx, base_y - 40.0), 1.0)
+		# poça de luz no chão debaixo do braseiro
+		var pool := Sprite2D.new()
+		pool.texture = _blob_texture()
+		pool.material = VfxLibrary._additive()
+		pool.position = Vector2(bx, base_y + 6.0)
+		pool.scale = Vector2(1.6, 0.35)
+		pool.modulate = Color(g.r, g.g, g.b, 0.22)
+		set_node.add_child(pool)
+
+
+## PLATAFORMAS integradas (chamado no fim do quadro, depois que o Level as
+## criou): sombra projetada atrás, sombra no chão, borda de cima acesa na cor
+## do Éon, coluna de luz fraca embaixo e poeira caindo. Só visual.
+func _integrate_platforms(level: Node) -> void:
+	if level == null or not is_instance_valid(level):
+		return
+	var plat_tex := PaintedLibrary.prop(5)
+	var g: Color = look().glow
+	var mat := SceneryLibrary.prop_material(eon, 0.0, 0.08, 1.1)
+	var shadow_mat := SceneryLibrary.prop_material(eon, 0.0)
+	shadow_mat.set_shader_parameter("silhouette", true)
+	for body in level.get_children():
+		if not body is StaticBody2D:
+			continue
+		var spr: Sprite2D = null
+		for ch in body.get_children():
+			if ch is Sprite2D and ch.texture == plat_tex:
+				spr = ch
+		if spr == null:
+			continue
+		var w: float = spr.texture.get_width() * absf(spr.scale.x)
+		var h_above: float = FEET_Y - body.position.y
+		spr.material = mat
+		# sombra projetada no fundo (atrás e abaixo)
+		var ds := Sprite2D.new()
+		ds.texture = spr.texture
+		ds.material = shadow_mat
+		ds.scale = spr.scale * Vector2(1.04, 1.25)
+		ds.position = spr.position + Vector2(5.0, 9.0)
+		ds.modulate = Color(1, 1, 1, 0.42)
+		ds.z_index = -1
+		body.add_child(ds)
+		body.move_child(ds, 0)
+		# sombra no chão (mais alta = mais larga e mais fraca)
+		var fsh := _contact_shadow(body, Vector2(0.0, h_above + 1.0), w * 0.42 * (1.0 + h_above / 260.0), clampf(0.5 - h_above / 300.0, 0.18, 0.45))
+		fsh.z_index = -1
+		# coluna de luz fraca saindo de baixo (a pedra flutua sustentada por luz)
+		var beam := Polygon2D.new()
+		var hw := w * 0.36
+		var bh := minf(h_above, 90.0)
+		beam.polygon = PackedVector2Array([Vector2(-hw, 10), Vector2(hw, 10), Vector2(hw * 0.8, bh), Vector2(-hw * 0.8, bh)])
+		beam.vertex_colors = PackedColorArray([Color(g.r, g.g, g.b, 0.16), Color(g.r, g.g, g.b, 0.16), Color(g.r, g.g, g.b, 0.0), Color(g.r, g.g, g.b, 0.0)])
+		beam.material = VfxLibrary._additive()
+		beam.z_index = -1
+		body.add_child(beam)
+		# halo da borda de cima
+		var rim := Polygon2D.new()
+		rim.polygon = PackedVector2Array([Vector2(-w * 0.48, -7), Vector2(w * 0.48, -7), Vector2(w * 0.48, -1), Vector2(-w * 0.48, -1)])
+		rim.vertex_colors = PackedColorArray([Color(g.r, g.g, g.b, 0.0), Color(g.r, g.g, g.b, 0.0), Color(g.r, g.g, g.b, 0.22), Color(g.r, g.g, g.b, 0.22)])
+		rim.material = VfxLibrary._additive()
+		body.add_child(rim)
+		# poeira caindo da pedra
+		var dust := CPUParticles2D.new()
+		dust.position = Vector2(0, 14)
+		dust.texture = VfxLibrary.tex("circle")
+		dust.amount = 5
+		dust.lifetime = 2.6
+		dust.preprocess = 3.0
+		dust.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+		dust.emission_rect_extents = Vector2(w * 0.38, 2)
+		dust.direction = Vector2(0, 1)
+		dust.spread = 10.0
+		dust.initial_velocity_min = 4.0
+		dust.initial_velocity_max = 10.0
+		dust.gravity = Vector2(0, 14)
+		dust.scale_amount_min = 0.006
+		dust.scale_amount_max = 0.014
+		var dc := haze().lightened(0.2)
+		dust.color = Color(dc.r, dc.g, dc.b, 0.5)
+		dust.z_index = -1
+		body.add_child(dust)
+		dust.emitting = true
 
 
 # --- primeiro plano (parallax > 1, por código; filho do Level) -------------------
@@ -564,40 +603,107 @@ class GroundDetail extends Node2D:
 func build_foreground(parent: Node2D) -> void:
 	var f := Foreground.new()
 	f.eon = eon
-	f.pal = pal()
 	f.rng = _rng(6)
+	f.tint = haze().darkened(0.9)
+	f.boss = is_boss()
+	if "rest_points" in parent:
+		f.anchors = parent.rest_points.duplicate()
 	f.z_index = 30
 	parent.add_child(f)
 
 
 class Foreground extends Node2D:
+	## Silhuetas escuras e desfocadas passando NA FRENTE da câmera (parallax 1,35):
+	## entulho embaixo, colunas da própria pintura nos descansos (ou flanqueando
+	## a arena do chefe) e bokeh de partículas — a profundidade de primeiro plano.
 	var eon: int = 0
-	var pal: Dictionary = {}
 	var rng: RandomNumberGenerator
-	const SPEED := 1.3       # > 1 = passa mais rápido que o mundo (está à frente)
+	var tint: Color = Color(0.02, 0.02, 0.03)
+	var boss: bool = false
+	var anchors: Array = []
+	var _bokeh: CPUParticles2D
+	const SPEED := 1.35      # > 1 = passa mais rápido que o mundo (está à frente)
 	const SPAN := 6800.0     # até onde vai o entulho (cobre a travessia de 3 zonas)
 
 	func _process(_delta: float) -> void:
 		var cam := get_viewport().get_camera_2d()
 		if cam == null:
 			return
-		var cx := cam.get_screen_center_position().x
-		position.x = cx * (1.0 - SPEED)
-		queue_redraw()
+		var c := cam.get_screen_center_position()
+		position.x = c.x * (1.0 - SPEED)
+		if _bokeh != null:
+			_bokeh.position = Vector2(c.x * SPEED, c.y)
 
-	## Entulho à frente da câmera: posição, tamanho e espelho por tela.
 	func _ready() -> void:
 		if rng == null:
 			rng = RandomNumberGenerator.new()
-		var x: float = -300.0 + rng.randf_range(0.0, 400.0)
-		while x < SPAN:
-			var rubble := PaintedLibrary.sprite(3, rng.randf_range(56.0, 88.0))
-			rubble.position = Vector2(x, 428)
-			rubble.modulate = Color(0.20, 0.26, 0.30, 0.85)
-			if rng.randf() < 0.5:
-				rubble.scale.x = -rubble.scale.x
-			add_child(rubble)
-			x += rng.randf_range(620.0, 1050.0)
+		var rubble := SceneryLibrary.texture("fg_rubble")
+		var col := Color(tint.r, tint.g, tint.b, 0.96)
+		# entulho desfocado na base da tela
+		if rubble != null:
+			var x: float = -300.0 + rng.randf_range(0.0, 400.0)
+			while x < SPAN * SPEED:
+				var sp := Sprite2D.new()
+				sp.texture = rubble
+				var hgt := rng.randf_range(90.0, 140.0)
+				sp.scale = Vector2.ONE * hgt / rubble.get_height()
+				sp.offset.y = -rubble.get_height() * 0.5
+				sp.position = Vector2(x, 452.0 + rng.randf_range(0.0, 18.0))
+				sp.modulate = col
+				sp.flip_h = rng.randf() < 0.5
+				add_child(sp)
+				x += rng.randf_range(560.0, 980.0)
+		# colunas da pintura (asa escurecida) — nos descansos ou flanqueando a arena
+		var colt := SceneryLibrary.layer(eon, "fgcol")
+		if colt != null:
+			var xs: Array = []
+			# (arena de chefe fica sem coluna: passaria por cima da luta)
+			if not boss:
+				for i in range(1, anchors.size()):
+					xs.append(Vector2(anchors[i]).x + rng.randf_range(-60.0, 60.0))
+			for k in xs.size():
+				var cs := Sprite2D.new()
+				cs.texture = colt
+				cs.centered = false
+				var sc := 460.0 / colt.get_height()
+				cs.scale = Vector2(sc, sc)
+				var px: float = float(xs[k]) * SPEED
+				cs.position = Vector2(px - colt.get_width() * sc * 0.5, -60.0)
+				cs.modulate = Color(1, 1, 1, 0.97)
+				add_child(cs)
+		# bokeh: poucos pontos grandes e desfocados flutuando na frente da câmera
+		var lk := SceneryLibrary.look(eon)
+		var g: Color = lk.glow
+		_bokeh = CPUParticles2D.new()
+		_bokeh.texture = VfxLibrary.tex("light")
+		_bokeh.material = VfxLibrary._additive()
+		_bokeh.amount = 7
+		_bokeh.lifetime = 9.0
+		_bokeh.preprocess = 9.0
+		_bokeh.local_coords = true
+		_bokeh.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+		_bokeh.emission_rect_extents = Vector2(340, 190)
+		_bokeh.direction = Vector2(1, -0.3)
+		_bokeh.spread = 60.0
+		_bokeh.initial_velocity_min = 3.0
+		_bokeh.initial_velocity_max = 9.0
+		_bokeh.gravity = Vector2.ZERO
+		_bokeh.scale_amount_min = 0.12
+		_bokeh.scale_amount_max = 0.30
+		var ramp := Gradient.new()
+		ramp.set_color(0, Color(g.r, g.g, g.b, 0.0))
+		ramp.set_color(1, Color(g.r, g.g, g.b, 0.0))
+		ramp.add_point(0.5, Color(g.r, g.g, g.b, 0.10))
+		if lk.get("ray_dark", false):
+			# na Mente o "bokeh" é sombra (vazio), não luz
+			_bokeh.material = null
+			ramp = Gradient.new()
+			ramp.set_color(0, Color(0.05, 0.0, 0.03, 0.0))
+			ramp.set_color(1, Color(0.05, 0.0, 0.03, 0.0))
+			ramp.add_point(0.5, Color(0.05, 0.0, 0.03, 0.35))
+		_bokeh.color_ramp = ramp
+		add_child(_bokeh)
+		_bokeh.emitting = true
 
 
 # --- vinheta (CanvasLayer abaixo do HUD) ------------------------------------------
