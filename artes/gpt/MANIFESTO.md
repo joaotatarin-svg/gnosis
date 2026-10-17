@@ -223,3 +223,30 @@ Numeração = posição na criaturas_folha.png (3×3, esq→dir, cima→baixo). 
 - NPCs aprovados: npc_soter_a (fundo transparente), npc_velkar_a, npc_adormecido_a.
 - Rejeitadas/alternativas mantidas no disco: boss_1_athoth_a/b, boss_3_galila_a, boss_8_colosso_a, cri_3_bruto_a, npc_soter_b.
 - Pedidos de geração nesta rodada: 22 (5 foram correções) + 1 resposta sem imagem (anexo não chegou). Nenhum aviso de limite.
+
+# EXTRAS
+
+## Retratos da Sophia (diálogo)
+- Arquivo: `portrait_sophia_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32d03-5f20-83e8-9370-a4c17676c38c
+- Células: 0 neutral · 1 determined · 2 sad · 3 anger (contida) · 4 fear · 5 tender · 6 shock ("...Não.") · 7 serene.
+- Nota: 8.5/10. Busto 3/4 virado p/ direita, enquadramento idêntico nas 8 células (mesma posição da cabeça, h≈440), rosto/trança/
+  colete fiéis; expressões distintas e legíveis (choque com boca entreaberta, serena de olhos fechados). Base do busto cortada reta.
+
+## Retratos de NPCs (Rei/Voz, Soter, Velkar)
+- Arquivo APROVADO: `portrait_npcs_a.png` — 2×4. Alternativa: `portrait_npcs_b.png` (A/B do ChatGPT).
+  Chat: https://chatgpt.com/c/6ad32dc7-6964-83e9-9759-8c36bf891f24 (1 pedido, 2 imagens)
+- Células: 0 rei_regal · 1 rei_ironic (mão na máscara) · 2 rei_revealed (máscara rachada, olho dourado) · 3 rei_broken ·
+  4 soter_serene · 5 soter_sad · 6 velkar_helm · 7 velkar_repentant (cabeça baixa, mão no peito).
+- Nota: 7.5/10. Fiel às refs (Rei com capuz-máscara branco SEM coroa dourada, como na ref). Defeitos: os bustos vêm recortados em
+  "cartões" de cantos arredondados que ocupam a célula inteira (encostam nas bordas da célula); o Rei está mais FRONTAL que 3/4.
+- A alternativa b tem silhuetas limpas e 3/4 p/ esquerda melhor, mas pôs uma COROA dourada no Rei (não existe na ref); nota 7.
+  Se o jogo preferir silhueta recortada, usar b. Ambas viradas p/ ESQUERDA (falam com a Sophia).
+
+## Key art Steam (sem texto)
+- Chat: https://chatgpt.com/c/6ad32ebc-f810-83e9-826e-765ea8ed5729 (refs: 1_sophia_folha, 9_rei_yaldabaoth, assets/painted/eons.png). 2 gerações.
+- `keyart_wide_a.png` — 1536x1024. Nota 8.5/10. Sophia no primeiro plano (perfil/3-4, cristal ciano aceso) numa ponte quebrada, Rei
+  colossal mascarado segurando o orbe-olho dourado, 7 anéis luminosos no céu, ruínas góticas de Kenoma, luz fria + faíscas douradas.
+  Céu escuro VAZIO no terço superior-esquerdo para o título. Sem texto.
+- `keyart_vertical_a.png` — 1024x1536 (2:3). Nota 8/10. Mesma cena recomposta; faixa de céu escuro no TOPO para o título (um pouco
+  estreita — o título talvez precise sobrepor nuvens). Sem texto.
+- Observações: resolução nativa do ChatGPT; para a cápsula Steam (ex.: 3840x1240 / 600x900) precisa de upscale/recorte.
