@@ -6,7 +6,8 @@ class_name DialogueBox
 ## o nome do falante e retrato pintado quando houver (assets/ui/portraits/).
 ##
 ## API (para Level, Encenação e ferramentas):
-##   var d := DialogueBox.play([{speaker, text, cue?}, ...], ["Op A", {text, enabled, hint}])
+##   var d := DialogueBox.play([{speaker, text, cue?, mood?}, ...], ["Op A", {text, enabled, hint}])
+## Campo `mood` (Onda 3): emoção do retrato — ver MOODS / portrait_for().
 ##   await d.finished                      (ou: var i = await d.choice_made)
 ##   d.line_shown(index, line)             sinal emitido NO INÍCIO de cada fala (antes da
 ##                                         1ª letra). A Encenação dispara o efeito pelo `cue`.
@@ -60,6 +61,26 @@ const ADVANCE_ACTION := "jump"    # botão mostrado no rodapé (pular/A também 
 const GLYPHS_PATH := "res://scripts/ui/input_glyphs.gd"
 ## Cues que NÃO pedem a cena visível (som/tempo): a rubrica de abertura pode ser escura.
 const DARK_OK_CUES := ["", "heartbeat", "wait_2s"]
+## RETRATOS POR EMOÇÃO (Onda 3) — campo opcional `mood` da fala:
+##   {"speaker": "Sophia", "text": "...Não.", "mood": "choque"}
+## Falantes com emoções (o resto ignora o campo e usa o retrato único):
+const MOODS := {
+	"sophia": ["neutra", "determinada", "triste", "raiva", "medo", "ternura", "choque", "serena"],
+	"rei": ["regio", "ironico", "revelado", "quebrado"],
+	"soter": ["sereno", "triste"],
+	"velkar": ["elmo", "arrependido"],
+}
+## Sem `mood` (ou desconhecido): o neutro de cada um.
+const MOOD_DEFAULT := {"sophia": "neutra", "rei": "regio", "soter": "sereno", "velkar": "elmo"}
+## Sinônimos aceitos (inglês do manifesto do GPT e variações comuns).
+const MOOD_ALIAS := {
+	"neutral": "neutra", "determined": "determinada", "decidida": "determinada", "sad": "triste",
+	"tristeza": "triste", "anger": "raiva", "angry": "raiva", "brava": "raiva", "raivosa": "raiva",
+	"fear": "medo", "afraid": "medo", "assustada": "medo", "tender": "ternura", "terna": "ternura",
+	"shock": "choque", "shocked": "choque", "chocada": "choque", "serene": "serena", "paz": "serena",
+	"regal": "regio", "ironic": "ironico", "ironia": "ironico", "revealed": "revelado",
+	"broken": "quebrado", "helm": "elmo", "repentant": "arrependido",
+}
 
 var lines: Array = []
 var choices: Array = []      # String ou {text: String, enabled: bool}
@@ -112,19 +133,59 @@ static func play(p_lines: Array, p_choices: Array = []) -> DialogueBox:
 
 
 ## Retrato pintado do falante (null = sem retrato: A Voz, Estelas, desconhecidos).
-static func portrait_for(speaker: String) -> Texture2D:
-	var s := speaker.to_lower()
-	var id := ""
-	for k in ["sophia", "athoth", "harmas", "galila", "yabel", "astaphaios", "belias", "armupiel", "soter", "velkar"]:
-		if s.contains(k):
-			id = k
-			break
-	if id == "" and (s.contains("rei") or s.contains("yaldabaoth")):
-		id = "rei"
+## `mood` (campo opcional da fala) escolhe a EMOÇÃO quando o falante tem
+## retratos por emoção (assets/ui/portraits/<id>_<emoção>.png — ver MOODS);
+## vazio/desconhecido = o neutro dele. Sem os arquivos, o retrato antigo <id>.png.
+static func portrait_for(speaker: String, mood: String = "") -> Texture2D:
+	var id := speaker_id(speaker)
 	if id == "":
 		return null
+	if MOODS.has(id):
+		var m := mood_for(id, mood)
+		var mp := "res://assets/ui/portraits/%s_%s.png" % [id, m]
+		if ResourceLoader.exists(mp):
+			return load(mp)
 	var path := "res://assets/ui/portraits/%s.png" % id
 	return load(path) if ResourceLoader.exists(path) else null
+
+
+## Id do retrato pelo nome do falante ("" = sem retrato).
+static func speaker_id(speaker: String) -> String:
+	var s := speaker.to_lower()
+	for k in ["sophia", "athoth", "harmas", "galila", "yabel", "astaphaios", "belias", "armupiel", "soter", "velkar"]:
+		if s.contains(k):
+			return k
+	if s.contains("rei") or s.contains("yaldabaoth"):
+		return "rei"
+	return ""
+
+
+## Emoção normalizada para o falante `id`: aceita sem acento, o outro gênero
+## ("sereno"/"serena") e os nomes em inglês do manifesto ("shock", "regal"...).
+## Desconhecida ou vazia = MOOD_DEFAULT[id].
+static func mood_for(id: String, mood: String) -> String:
+	var list: Array = MOODS.get(id, [])
+	var def := String(MOOD_DEFAULT.get(id, ""))
+	var m := _plain(mood.strip_edges().to_lower())
+	if m == "":
+		return def
+	m = String(MOOD_ALIAS.get(m, m))
+	if list.has(m):
+		return m
+	# o outro gênero (sereno ↔ serena, neutro ↔ neutra, determinado ↔ determinada)
+	if m.ends_with("a") and list.has(m.left(m.length() - 1) + "o"):
+		return m.left(m.length() - 1) + "o"
+	if m.ends_with("o") and list.has(m.left(m.length() - 1) + "a"):
+		return m.left(m.length() - 1) + "a"
+	return def
+
+
+static func _plain(t: String) -> String:
+	var from := "áàâãéêíóôõúüç"
+	var to := "aaaaeeiooouuc"
+	for i in from.length():
+		t = t.replace(from[i], to[i])
+	return t
 
 
 ## Som de "voz" (blip) por falante.
@@ -282,7 +343,7 @@ func _show_line() -> void:
 	var l: Dictionary = lines[idx]
 	var who := String(l.get("speaker", ""))
 	_speaker_name = who
-	_portrait = portrait_for(who)
+	_portrait = portrait_for(who, String(l.get("mood", "")))
 	_blip = blip_for(who)
 	_speaker.text = who
 	_plate.visible = who != ""
