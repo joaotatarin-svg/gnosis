@@ -70,7 +70,7 @@ const VOICE_THEME := "theme"
 const VOICE_SANCTUARY_DB := -3.0  # + o ducking normal do diálogo (−9) = −12 dB
 const VOICE_STOLEN_PITCH := 0.75  # roubo: tema 5 semitons abaixo e mais lento…
 const VOICE_STOLEN_SECS := 3.0    # …por 3 s → corte seco → `roubo`
-const VOICE_ALONE_PITCH := 0.9    # anagnórise: o tema volta sozinho, mais lento
+const VOICE_ALONE_PITCH := 0.85   # anagnórise: o tema volta sozinho, mais lento (= Staging)
 const VOICE_ALONE_FADE := 4.0
 const SCENE_FADE := 2.0           # entrada/saída do tema no santuário
 const SCENE_DUCK_SCALE := 0.35    # roubo/anagnórise: a música É a cena — diálogo abaixa só ~3 dB
@@ -955,7 +955,9 @@ func _play_run_context(screen: int) -> void:
 
 
 ## Centro (ROTEIRO §2, cena C): sem música até o 1º caco; depois `centro` entra
-## a −15 dB e sobe 3 dB por caco até o volume cheio no 6º.
+## e sobe um degrau por caco até o volume cheio no 6º. Curva = a do Level
+## (`_restore_echo`: 0,35 + 0,65·k/6), para os dois nunca brigarem pela camada:
+## 1 caco ≈ −9,8 dB, 3 ≈ −6 dB, 6 = 0 dB.
 func _update_center_music() -> void:
 	var k: int = Progression.restored_rings.size()
 	if k <= 0:
@@ -963,7 +965,7 @@ func _update_center_music() -> void:
 			stop_music(MUSIC_FADE * 2.0)
 		current_track = "centro"
 		return
-	set_music_layer_volume(clampf(float(k) / float(CENTER_SHARDS), 0.0, 1.0), "centro")
+	set_music_layer_volume(clampf(0.35 + 0.65 * float(k) / float(CENTER_SHARDS), 0.0, 1.0), "centro")
 	play_music("centro")
 
 
@@ -1022,7 +1024,7 @@ func menu_track() -> String:
 ##   "santuario" — `theme` entra em 2 s, 3 dB abaixo (+ o ducking do diálogo);
 ##   "roubo"     — corte seco para `theme` a 0,75 de tom (distorcido) por 3 s
 ##                 de relógio real, depois corte seco para `roubo` (sem loop);
-##   "sozinha"   — `theme` volta sozinho, lento (0,9), entrando em 4 s;
+##   "sozinha"   — `theme` volta sozinho, lento (0,85), entrando em 4 s;
 ##   ""          — fim: volta à música da tela (Éon/Arconte/Provação).
 ## Em "roubo"/"sozinha" o diálogo abaixa a música só ~3 dB (a música É a cena).
 func voice_theme(mode: String) -> void:
@@ -1102,12 +1104,12 @@ func cue(cue_name: String) -> bool:
 				_release_temp_duck(SCENE_FADE)
 		"mask_lights":               # cena A: a máscara acende
 			play_sfx("mask_light")
-		"mask_cracks":               # queda do Rei: o mesmo sino, um trítono abaixo (rachado)
-			play_sfx_pitched("mask_light", pow(2.0, -6.0 / 12.0), -3.0)
+		"mask_cracks":               # queda do Rei: estalo seco (= Staging)
+			play_sfx("block", -1.0, -4.0)
 		"king_sinks":                # o Rei afunda na névoa
 			play_sfx_pitched("fog_swell", 0.8, -2.0)
-		"chime":                     # o nome de Ina
-			play_sfx_pitched("mask_light", 1.0, -6.0)
+		"chime":                     # o nome de Ina (= Staging)
+			play_sfx("stele_unlock", -1.0, -6.0)
 		"music_stop":                # santuário da Coroa: a música da Voz para
 			stop_music(1.5)
 		"voice_merge":               # cena B: Voz e Rei em uníssono
@@ -1118,8 +1120,9 @@ func cue(cue_name: String) -> bool:
 			voice_theme("roubo")
 		"sink":                      # cena B: vira motor e afunda; a música para
 			play_sfx("dive")
-			play_sfx_pitched("fog_swell", 0.6, 0.0)
-			stop_music(1.5)
+			play_sfx("boss_step", -1.0, -2.0)
+			play_sfx_pitched("fog_swell", 0.6, -4.0)
+			stop_music(2.0)
 		"rings_return":              # cena D: corte de música; os Anéis voltam (ring_note)
 			stop_music(0.0)
 		"flash":                     # cena D: clarão + acorde
@@ -1130,7 +1133,7 @@ func cue(cue_name: String) -> bool:
 		"theme_alone":               # cena D: o tema da Voz, agora dela
 			voice_theme("sozinha")
 		"reclaim":                   # cena D: o pequeno vira luz
-			play_sfx("revive", -1.0, -6.0)
+			play_sfx("revive", -1.0, -4.0)
 		"wait_2s":
 			pass
 		_:

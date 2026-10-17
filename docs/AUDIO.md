@@ -109,24 +109,29 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
 | `heartbeat` | `heartbeat` (2 batidas abafadas) |
 | `fog_thickens` | `fog_swell` + música −8 dB ("desce a 40 %") até `king_emerges` ou a troca de tela |
 | `king_emerges` | `king_step`; na tela do Rei também `boss_appear` −8 dB e a música volta em 2 s |
-| `mask_lights` / `mask_cracks` | `mask_light` / o mesmo um trítono abaixo, −3 dB |
+| `mask_lights` / `mask_cracks` | `mask_light` / `block` −4 dB (estalo seco) |
 | `king_sinks` | `fog_swell` a 0,8 de tom |
-| `chime` | `mask_light` −6 dB |
+| `chime` | `stele_unlock` −6 dB |
 | `music_stop` | para a música em 1,5 s |
 | `voice_merge` | `voice_merge` |
 | `rings_fly` | nada (o som é por gema: `ring_note`) |
 | `mask_falls` | `voice_theme("roubo")`: corte seco para `theme` a 0,75 por 3 s REAIS → corte seco para `roubo` (sem loop) |
-| `sink` | `dive` + `fog_swell` a 0,6 + música para em 1,5 s |
+| `sink` | `dive` + `boss_step` −2 dB + `fog_swell` a 0,6 −4 dB + música para em 2 s |
 | `rings_return` | corte seco da música |
 | `flash` | `nova` + `ring_gain` −3 dB |
 | `colossus_shrinks` | `child_breath` |
-| `theme_alone` | `voice_theme("sozinha")`: `theme` a 0,9, entra em 4 s |
-| `reclaim` | `revive` −6 dB |
+| `theme_alone` | `voice_theme("sozinha")`: `theme` a 0,85, entra em 4 s |
+| `reclaim` | `revive` −4 dB |
 | `wait_2s` | nada (é da UI) |
 
 Em `roubo`/`sozinha` o ducking de diálogo vale só 35 % (~−3 dB): ali a música É a cena. Trocar de tela,
 voltar ao menu ou abrir a Provação desfaz tudo (cancela o corte agendado, solta abaixadas de cena).
-O AudioQA confere que todo `cue` usado em `narrative.gd` é tratado.
+O AudioQA confere que todo `cue` usado em `narrative.gd` é tratado. Os sons batem com os que a Staging
+(`scripts/levels/staging.gd`, Encenação) já escolheu — quem encena pode chamar `Audio.cue` OU tocar direto,
+nunca os dois (dobra o som).
+
+**Centro:** `centro` só entra no 1º caco; camada = 0,35 + 0,65·cacos/6 (1 caco ≈ −9,8 dB … 6 = 0 dB) — a
+mesma curva do `level.gd` (`_restore_echo`), para os dois não brigarem.
 
 **Tema do menu:** o menu toca `menu` se `music/menu.ogg` existir (faixa opcional, `OPTIONAL_MUSIC`), senão
 `theme`. As opções sintetizadas estão em `tools/audio_synth/menu_theme.py` (ver ESTADO).

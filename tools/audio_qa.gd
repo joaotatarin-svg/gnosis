@@ -239,7 +239,7 @@ func _run() -> void:
 	Progression.restored_rings.assign(["a", "b", "c", "d", "e", "f"])
 	Audio._update_center_music()
 	var l6: float = float(Audio._layer_db.get("centro", 99.0))
-	check(c0 == "" and c2 == "centro" and is_equal_approx(l2, -12.0) and is_equal_approx(l6, 0.0),
+	check(c0 == "" and c2 == "centro" and absf(l2 - lerpf(-18.0, 0.0, 0.35 + 0.65 * 2.0 / 6.0)) < 0.01 and is_equal_approx(l6, 0.0),
 		"Centro: mudo sem cacos ('%s'), 'centro' entra no 1º caco e sobe por caco (2 → %.1f dB, 6 → %.1f dB)" % [c0, l2, l6])
 	Progression.restored_rings.assign(keep_restored)
 	RunManager.run_active = keep_run
