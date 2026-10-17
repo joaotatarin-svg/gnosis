@@ -294,3 +294,31 @@ Finais — chat: https://chatgpt.com/c/6ad33557-42c8-83e8-ab1d-2167215ba4aa (ref
 - Nota: 7.5/10. Mesma escala da s11 (h≈401–421) e mesmo estilo; pernas legíveis. Como em perfil as pernas D/E são quase simétricas,
   a linha de baixo é parecida com a de cima (diferença está em qual perna fica à frente/sombreada). Encaixar entre os quadros da s11:
   contact_R → R_down → R_pushoff(L)… — conferir no motor qual perna é qual.
+
+# FILA 4
+
+## S14 — Aparo e contra-ataque
+- Arquivo: `s14_parry_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32fd5-1254-83e9-993b-a2f7e95cfa44 (chat da Sophia S11–S14)
+- Células: 0 guard · 1 parry_hit (faísca pequena) · 2 deflect (cajado girando p/ cima, arco fino) · 3 opening · 4 counter_1 (estocada) ·
+  5 counter_2 (giro, arco fino) · 6 follow_through · 7 back_to_guard.
+- Nota: 8/10. Mesmo estilo; escala ~igual à s11 (figuras h≈330–430 conforme a base). Cajado horizontal na guarda.
+- Observações: a ponta do cajado encosta nas bordas da imagem em counter_1 (x=0) e back_to_guard (x=1536) — pode faltar 1–3 px da ponta.
+  Arcos de movimento finos em deflect e counter_2 (componentes soltos; dá p/ apagar ou manter).
+
+## Estelas (3 folhas 3×2, estilo gravura/afresco em pedra iluminada, sem texto)
+Chat: https://chatgpt.com/c/6ad33822-6c1c-83e9-9539-4ac389a72382 (refs: painted/eons.png + 1_sophia_folha). Ordem = STELAS em gnosis.gd.
+- `stelae_1_a.png` — células: monada · pleroma · sophia · cego · kenoma · arcontes. Nota 8.5. Painéis de pedra com moldura dourada, margens escuras entre eles, sem inscrições.
+- `stelae_2_a.png` — células: heimarmene · barro · gnose · nag_hammadi · apocrifo · pistis. Nota 8.5.
+- `stelae_3_a.png` — células: mestres (Valentino e Basílides) · tome · perola · chamado · docetismo · retorno. Nota 8.5.
+  Alternativa `stelae_3_b.png` (A/B; nota 8 — docetismo com figura de luz nua/translúcida, menos sóbria). Sem texto em nenhuma das folhas
+  (o rolo do q1 tem só traços, sem letras legíveis).
+
+## Fundo do menu
+- Arquivo: `menu_bg_a.png` — 1536x1024, 1 geração. Chat: https://chatgpt.com/c/6ad339bd-3e54-83ea-860d-8fed19858d48
+- Nota: 8.5/10. Sophia de costas à DIREITA numa ponte/balcão em ruínas góticas, cajado com cristal ciano, olhando cidade gótica e céu
+  com anéis dourados; metade ESQUERDA escura e calma (luminância média 33 vs 69 na direita) p/ os botões. Sem texto.
+- Observação: os anéis saíram CONCÊNTRICOS em volta da lua (não 7 anéis separados em arco); dá para contar ~5–7. Se precisar
+  dos 7 bem separados, pedir correção no mesmo chat.
+
+## Resumo Fila 4
+- Aprovadas: s14_parry_a, stelae_1_a, stelae_2_a, stelae_3_a (alt. b), menu_bg_a. 6 pedidos (7 imagens). Nenhum aviso de limite.
