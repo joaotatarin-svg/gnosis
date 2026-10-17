@@ -55,6 +55,8 @@ func _ready() -> void:
 	GameManager.set_state(GameManager.State.PLAYING)
 	if player:
 		player.died.connect(_on_player_died)
+	# Pré-aquece VFX/shaders/gibs no load da fase (evita o engasgo do 1º golpe).
+	VfxLibrary.prewarm(self)
 
 	if RunManager.run_active:
 		zones = RunManager.zone_plan(screen)
