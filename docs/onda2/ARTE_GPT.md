@@ -43,7 +43,7 @@ Ver Pedidos.
 
 | Chefe | Folha | Estado | Capturas (C:\gnosis-wt\_caps\arte-gpt\) |
 |---|---|---|---|
-| Athoth | `artes/gpt/boss_1_athoth_a.png` (3/4; refação em perfil a caminho) | **integrado** (14 quadros, 6 meios RIFE) | `gifs/athoth_antes_jogo_leve.gif`, `gifs/athoth_depois_jogo_leve.gif`, `gifs/athoth_prancha_antes_depois.png`, `athoth_contact.png` |
+| Athoth | `artes/gpt/boss_1_athoth_c.png` (perfil; a versão a, 3/4 com névoa roxa, ficou guardada) | **integrado** (14 quadros, 6 meios RIFE) — `gifs/athoth_c_jogo.png`, `gifs/prancha_arconte_sono.png` | `gifs/athoth_antes_jogo_leve.gif`, `gifs/athoth_depois_jogo_leve.gif`, `gifs/athoth_prancha_antes_depois.png`, `athoth_contact.png` |
 | Harmas | `boss_2_harmas_a.png` (RGBA, alfa já vem pronto) | **integrado** (11 quadros, 3 meios) | `gifs/prancha_arconte_fome.png`, `gifs/harmas_depois_jogo_leve.gif` |
 | Galila | `boss_3_galila_b.png` (_a rejeitada pelo produtor) | **integrado** (11/3) | `gifs/prancha_arconte_corrente.png`, `gifs/galila_depois_jogo_leve.gif` |
 | Yabel | `boss_4_yabel_a.png` | **integrado** (14/6, espectro: andar em vaivém) | `gifs/prancha_arconte_silencio.png`, `gifs/yabel_depois_jogo_leve.gif` |

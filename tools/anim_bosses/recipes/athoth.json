@@ -1,6 +1,6 @@
 {
- "_doc": "Receita dos quadros do Athoth (tools/anim_bosses/boss_frames.py). Folha do GPT 2x4 (idle_0, idle_1, walk_0, walk_1, windup, strike, hurt, death), olhando p/ direita.",
- "sheet": "artes/gpt/boss_1_athoth_a.png",
+ "_doc": "Receita dos quadros do Athoth (tools/anim_bosses/boss_frames.py). Folha do GPT (versão c, perfil verdadeiro; a versão a era 3/4) 2x4 (idle_0, idle_1, walk_0, walk_1, windup, strike, hurt, death), olhando p/ direita.",
+ "sheet": "artes/gpt/boss_1_athoth_c.png",
  "grid": [
   4,
   2

@@ -87,6 +87,7 @@ Quadros por célula (padrão): 0 idle_0 · 1 idle_1 · 2 walk_0 · 3 walk_1 · 4
 Downloads voltaram a funcionar no Chrome (Browser 2) com <a download>.
 
 ## Chefe 1 — Athoth (Torpor)
+- REFEITO (ver abaixo: APROVADO `boss_1_athoth_c.png`). Versão antiga:
 - Arquivo: `boss_1_athoth_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad306c4-77ac-83e9-8a1e-bd5c7f47dfa5
 - Nota: 7/10. Fiel à ref (capuz, rosto pálido, halo com argolas, trapos navy). Vista 3/4 voltada p/ direita (não perfil puro).
 - Observações: a névoa/orbes roxos do windup/strike se misturam com o magenta (franja rosada maior: ~9,8 mil px quase-magenta) —
@@ -149,3 +150,36 @@ Downloads voltaram a funcionar no Chrome (Browser 2) com <a download>.
 - Nota: 8/10. Perfil p/ direita; manto marfim com faixa dourada, máscara branca com fendas, capuz-coroa fiéis. windup (braço erguido
   com o orbe-olho dourado), strike (gesto régio à frente com o orbe), hurt (mangas p/ cima), death (afundando de joelhos, manto no chão).
   8 quadros separados; mantos encostam nas bordas laterais (x≈4 e x≈1534).
+
+## Chefe 1 — Athoth REFEITO (perfil verdadeiro, névoa mínima)
+- Arquivo APROVADO: `boss_1_athoth_c.png` — 2×4. Intermediária: `boss_1_athoth_b.png` (névoa mínima ok, mas rosto ainda 3/4; nota 7.5).
+  Chat: https://chatgpt.com/c/6ad32699-2dc0-83e9-a69b-44ce03def36a (2 gerações)
+- Nota: 8/10. PERFIL estrito p/ direita (capuz e rosto apontando p/ direita, halo de lado), trapos navy (sem roxo), só 2–3 orbes
+  pequenos no windup/strike. Fundo magenta limpo (270 px quase-magenta, vs 9,8 mil na versão a).
+- Observações: os trapos da linha de cima descem até y≈526 (passam um pouco da metade da imagem, 512) — separar linhas pelos
+  componentes, não por corte fixo em y=512.
+
+# CRIATURAS (um chat por tipo; ref = recorte da criaturas_folha.png; grade 2×4)
+Quadros por célula (padrão): 0 idle_0 · 1 walk_0 · 2 walk_1 · 3 walk_2 · 4 windup · 5 strike · 6 hurt · 7 death.
+Numeração = posição na criaturas_folha.png (3×3, esq→dir, cima→baixo). Recortes enviados: scratchpad\refs\cri_<n>.png.
+
+## Criatura 1 — Larva espectral (grub com mortalha verde)
+- Arquivo: `cri_1_larva_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad327b1-911c-83e9-af53-7b82906538bb
+- Nota: 8/10. Perfil p/ direita, olho âmbar, mortalha verde fiel; walk = ondulação flutuando; windup enrolada, strike bote esticado,
+  hurt, death (murcha no chão). Fundo limpo; idle_0 encosta na borda esquerda (x≈4).
+
+## Criatura 2 — Espadachim oco (soldado de ferro, olho laranja)
+- Arquivo: `cri_2_espadachim_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32831-7748-83e8-acf5-b3988606ab48
+- Nota: 8/10. Perfil p/ direita, armadura, capa rasgada e espada fiéis; walk de 3 quadros legível; windup espada sobre o ombro,
+  strike corte diagonal baixo, hurt, death (caído de joelhos, espada solta no chão — componente separado).
+
+## Criatura 3 — Bruto de ferro (armadura vermelha enferrujada)
+- Arquivo APROVADO: `cri_3_bruto_b.png` — 2×4. Rejeitada: `cri_3_bruto_a.png` (windup e strike se tocavam; soco invadia a célula seguinte).
+  Chat: https://chatgpt.com/c/6ad328b1-9c00-83e8-bbb0-5dc9e7f9f848 (2 gerações)
+- Nota: 8/10. Perfil p/ direita, fiel à ref; walk de 3 quadros; windup punho atrás, strike soco estendido, hurt, death (de joelhos/caído).
+  Figuras um pouco menores (h≈385) — todas dentro das células.
+
+## Criatura 4 — Cão-esqueleto (pelo negro, costelas expostas, crânio com chifres)
+- Arquivo: `cri_4_cao_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad329a1-d56c-83e9-bd0b-449eb52a9e02
+- Nota: 8/10. Quadrúpede em perfil p/ direita, fiel; walk de 3 quadros; windup agachado, strike bote com mandíbula, hurt empinando,
+  death caído de lado (ossinhos soltos = pixels pequenos). Quadros dentro das células.
