@@ -124,7 +124,7 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
 |---|---|---|
 | `tell_parry` | Combate, no brilho AMARELO (golpe aparável), `play_sfx("tell_parry", -1, 0, pos)` | "tim" redondo e agudo, ~0,15 s (Lá6 + parcial de barra 2,76× + Lá7), pico no 1º ms = a janela de parry abriu |
 | `tell_unblock` | Combate, no losango VERMELHO (imparável), idem | "vuum" áspero e grave, ~0,3 s: serra 75→140 Hz saturada, AM 33 Hz, sopro 200–900 Hz; cresce até o golpe |
-| `heartbeat` | HUD: `Audio.low_health_pulse()` a cada pulso da vinheta | UMA batida lub-dub (~0,7 s), a −6 dB do arquivo; no máximo 1 a cada 0,6 s |
+| `heartbeat` | HUD: `Audio.low_health_pulse()` a cada pulso da vinheta | UMA batida lub-dub (~0,7 s), a −3 dB do arquivo, e a música abre −3 dB por ~0,6 s (sem atropelar névoa/morte do chefe); no máximo 1 a cada 0,6 s |
 
 Os avisos tocam com tom FIXO (sem variação aleatória: o ouvido aprende o ritmo) e passam ao lado do
 passa-baixas da câmera lenta (bus `Tell`), para o aviso nunca sumir durante uma esquiva perfeita.

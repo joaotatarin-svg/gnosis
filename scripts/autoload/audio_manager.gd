@@ -84,7 +84,9 @@ const FOG_DUCK_DB := -8.0
 const RING_NOTE_HOLD_MS := 1500   # após um ring_note, o sinal de Anel não toca som próprio
 # Coração (R22 / intro): `heartbeat` é UMA batida lub-dub; a intro toca duas.
 const HEART_GAP := 1.1            # s entre as 2 batidas da intro (~55 bpm: acordando)
-const HEART_PULSE_DB := -6.0      # vinheta de vida baixa: bem por baixo (o arquivo já está a −18 LUFS)
+const HEART_PULSE_DB := -3.0      # vinheta de vida baixa: por baixo (o arquivo já está a −18 LUFS)…
+const HEART_DIP_DB := -3.0        # …e a música abre espaço (−3 dB por ~0,6 s): sem isso a batida some
+                                  # sob a música de chefe (medido: tools/audio/tell_check.py)
 const HEART_PULSE_MIN_MS := 600   # nunca mais que ~1,6 batida/s, mesmo se o HUD chamar mais
 ## Faixas opcionais: tocam se o arquivo existir, sem ele o jogo usa a reserva.
 ## `menu` = tema do menu (opções por síntese aguardando o João; sem arquivo = `theme`).
@@ -1302,6 +1304,8 @@ func low_health_pulse() -> bool:
 	if now - _pulse_ms < HEART_PULSE_MIN_MS:
 		return false
 	_pulse_ms = now
+	if not _td_active:                 # nunca atropela uma abaixada maior (névoa, morte do chefe)
+		_start_temp_duck(HEART_DIP_DB, 0.06, 0.3, 0.3)
 	return play_sfx("heartbeat", 0.0, HEART_PULSE_DB)
 
 

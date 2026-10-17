@@ -565,8 +565,10 @@ func _run() -> void:
 	while not Audio._later.is_empty() and Time.get_ticks_msec() - q_t0 < 3000:
 		await get_tree().process_frame
 	await _wait_real(0.7)
+	var td_was: bool = Audio._td_active
 	var p1 := Audio.low_health_pulse()
 	var p2 := Audio.low_health_pulse()
+	var dip_ok: bool = not td_was and Audio._td_active and is_equal_approx(Audio._td_db, Audio.HEART_DIP_DB)
 	var hb_db := 99.0
 	var hb_newest := -1
 	for i in Audio._players.size():
@@ -575,8 +577,8 @@ func _run() -> void:
 	if hb_newest >= 0:
 		hb_db = Audio._players[hb_newest].volume_db
 	var hb_len: float = Audio.variants_of("heartbeat")[0].get_length()
-	check(p1 and not p2 and is_equal_approx(hb_db, Audio.HEART_PULSE_DB) and hb_len < 1.0,
-		"low_health_pulse: 1 batida (%.2f s) a %.0f dB; 2ª chamada no mesmo instante barrada" % [hb_len, hb_db])
+	check(p1 and not p2 and dip_ok and is_equal_approx(hb_db, Audio.HEART_PULSE_DB) and hb_len < 1.0,
+		"low_health_pulse: 1 batida (%.2f s) a %.0f dB, música abre %.0f dB; 2ª chamada no mesmo instante barrada" % [hb_len, hb_db, Audio.HEART_DIP_DB])
 	# Intro: o cue `heartbeat` toca 2 batidas, a 2ª agendada por relógio real
 	# (mede o INÍCIO de cada disparo: a batida dura 0,75 s, menos que o intervalo).
 	await _wait_real(0.1)              # sai da janela do anti-spam do pulso acima
