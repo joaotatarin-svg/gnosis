@@ -1,0 +1,121 @@
+# Lote 02 — narrative.gd (fase 2 e morte dos Arcontes, Anéis, santuários, Soter, Velkar, roubo, Centro, Mente)
+narrative.archon_phase2.50cc44	Not that one! That reflection is not for you!
+narrative.archon_phase2.b03753	Why do you insist? I only want it to stop hurting!
+narrative.archon_phase2.a267c3	Court! To the king! ...No one comes. No one ever comes.
+narrative._archon_death.804202	Ah... so this is being awake. It hurts. ...It is beautiful.
+narrative._archon_death.511b65	I never tasted anything that was mine. Keep your memories. Keep them well.
+narrative._archon_death.e36893	Light... is this what it is, without a link? No one told me... it was light.
+narrative._archon_death.c22b91	(the stitches burst) Someone answered him once, from up above. I heard it. He sewed me shut for it.
+narrative._archon_death.6f1fbf	Keep your face. I never had one. ...It was beautiful, yours.
+narrative._archon_death.ea1f92	(in his puddle, something green, tiny) ...Did it sprout? Do not look at me. Look at that.
+narrative._archon_death.b6f37a	Tell him that I... no. He does not listen. He never listened.
+narrative.ring_gained.9d34a0	Seven.
+narrative.ring_gained.aa0385	(...) The %s Ring. His passion obeys you now: %s.
+narrative.ring_gained.28b04f	(As I touch the Ring: a white cloud, and a small throne inside it.)
+narrative.ring_gained.03d385	Dreams of Torpor. They pass. Climb.
+narrative.ring_gained.175708	Five to go. And your window is still yours. Climb.
+narrative.ring_gained.72af48	Galila classified you, and lost. Four to go.
+narrative.ring_gained.8b59c3	Listen: your spells speak again. Three to go.
+narrative.ring_gained.24b365	This Ring is heavy, is it not? ...I do not quite know what I am either.
+narrative.ring_gained.d6841e	I only know I do not want to be alone again.
+narrative.ring_gained.afce9e	Only the Crown remains. Now, Bearer, do not stop for anything.
+narrative.ring_gained.26f976	Climb.
+narrative.sanctuary.c9a5d4	You had a house with a window over the river. You used to count the boats.
+narrative.sanctuary.263171	...I don't remember.
+narrative.sanctuary.686aaa	I remember for you. For now.
+narrative.sanctuary.76ecc5	Will you talk to me until it passes?
+narrative.sanctuary.82906a	I will. I have all the time in the world. ...Literally.
+narrative.sanctuary.c5d610	What are you like? Really.
+narrative.sanctuary.485b45	Nothing pretty to look at. Believe me: it is better this way.
+narrative.sanctuary.e9b9d5	(And, for the first time since the ashes, I laugh.)
+narrative.sanctuary.dfe404	...Do that more often. It suits you.
+narrative.sanctuary.fd860f	Here I fall quiet. You speak, today. I will listen.
+narrative.sanctuary.c66132	I dreamed of the white cloud again. There was a small throne in the middle.
+narrative.sanctuary.485d6e	(a silence far too long) ...Dreams. Rest. I keep watch.
+narrative.sanctuary.b590ee	What was I like? Before.
+narrative.sanctuary.83ff17	Stubborn. You counted the boats wrong on purpose, just so I would correct you.
+narrative.sanctuary.3b8795	I can't take any more.
+narrative.sanctuary.f7e02f	Then lean on me. I have no shoulder. But I have the patience of ages.
+narrative.sanctuary.bf288e	When this is over... what will you do?
+narrative.sanctuary.54f4a7	I don't know. Stay with you? If you'll let me.
+narrative.sanctuary.a9fc12	...Yes. With me. Always.
+narrative.soter_meeting.a423a3	Soter
+narrative.soter_meeting.77e07d	Peace, Bearer. Lower the staff: the Blind One cannot see me, and with you I have no quarrel.
+narrative.soter_meeting.ee4ee7	Who are you?
+narrative.soter_meeting.d4cdcf	Someone who comes down without needing to. I knew the people of the ashes where you woke.
+narrative.soter_meeting.afc76d	I carry their names. When you wish to hear them, ask. Today, let me anoint what is already yours. Choose.
+narrative.soter_meeting.c72da8	You again. Deeper, stronger, more tired. Sit. The world will wait.
+narrative.soter_meeting.942504	(You sit. For a moment, nothing hunts you.)
+narrative.soter_meeting.0a5714	The names. Tell me one.
+narrative.soter_meeting.6a9a6b	Ina. A baker. She sang off-key on purpose, to make her daughter laugh. Her daughter always laughed.
+narrative.soter_meeting.6e6445	Do you know why I do not fight? Every blade, even a just one, teaches the hand to close. Yours still opens. Choose.
+narrative.soter_meeting.db0729	This is the last time we meet on this side, Bearer. Up there, not even I can reach.
+narrative.soter_meeting.c8b0e0	Merou, who drew water from the well for those who could not. Tasso, who slept on the roof to see the stars.
+narrative.soter_meeting.0d2829	Were they my people?
+narrative.soter_meeting.e708b1	They belonged to everyone. That is why they are yours too. Remember it when you are told otherwise.
+narrative.soter_meeting.8afa0b	And when you are alone, do not fear the silence. It is yours as well. Choose.
+narrative.soter_blessings.52f948	Full healing
+narrative.soter_blessings.1444ad	Weapon awakened (+1 level)
+narrative.soter_blessings.4e447a	Vigor (+25 max health)
+narrative.after_soter.9dd002	Who were you talking to? ...I saw no one. Climb.
+narrative.after_soter.afc806	You stopped for a long time. Do not stop. ...Please.
+narrative.after_soter.a32a36	Not far now. Do not let anyone slow you down.
+narrative.velkar_meeting.89680c	Velkar
+narrative.velkar_meeting.387ac6	Do not raise the staff, Bearer. I was an Archon once. I let go of the chain... and it took my arm with it.
+narrative.velkar_meeting.34d592	Why did you let it go?
+narrative.velkar_meeting.7fe564	Because a spark looked at me the way you look at the Sleepers. I could not bear to be seen like that.
+narrative.velkar_meeting.d9db8b	Up there is no tyrant. There is a blind child, on a throne too big for him, calling for his mother.
+narrative.velkar_meeting.12f679	...You weep for him?
+narrative.velkar_meeting.afadd7	Every day. He was my father.
+narrative.velkar_meeting.8cd0ac	When you reach him, end it properly. Here: sparks I gathered when I was a monster. They weigh less on you.
+narrative.velkar_choices.855b0f	Come with me
+narrative.velkar_choices.c4ba9c	Be at peace
+narrative.velkar_farewell.405b81	No. Someone has to stay with those who wake late.
+narrative.velkar_farewell.4427a0	Peace I do not have. But I will stay. Someone has to stay with those who wake late.
+narrative.theft.50c692	You made it. All seven. You did everything so well, my faithful one.
+narrative.theft.5bed2d	And now? You promised to show me.
+narrative.theft.2db0f1	(Footsteps in the mist. A figure you know. The mask without a single crack.)
+narrative.theft.c6942f	(the voice no longer comes from inside you: it comes from the King's mouth) Show you. Yes.
+narrative.theft.865a47	(he claps, slowly) I said I would applaud, if I had hands. I do.
+narrative.theft.89e065	...No.
+narrative.theft.208ead	(The seven Rings tear themselves from your fingers, one by one, and fly to him like something coming home.)
+narrative.theft.dbffa8	(the mask falls; behind it, only a blind eye) I am the Blind One I told you of. And there is no other but me.
+narrative.theft.4a87ee	Call me by the name I never told you: Yaldabaoth. Do you know what you were bearing, Bearer? Me.
+narrative.theft.61c8a6	There never was a river. There never was a window. Your people? Ashes from some harvest or other.
+narrative.theft.335706	I gave you a grief so I could give you a path. Grief is the softest of collars.
+narrative.theft.9f2882	I wept for them.
+narrative.theft.33508c	You wept for me. The seven were my children, and you brought me what was left of them.
+narrative.theft.128140	A voice in the Rings
+narrative.theft.ee6bb0	...wait... I... remember...
+narrative.theft.af5784	(softer, almost the Voice of before) You said you would stay with me.
+narrative.theft.c6e01f	(becomes an engine of rings and sinks into the ground) This time, do not get up.
+narrative.center_intro.0ace55	(Silence. No voice. For the first time, only the sound of your breathing.)
+narrative.center_intro.0b0f5e	Voice?
+narrative.center_intro.ba0f1d	No one. ...Then me.
+narrative.center_intro.dde0a2	His echoes are down here. Each one keeps a piece he took from me. I'm going to get them back.
+narrative.echo_shard.d80545	Memory shard recovered: %s
+narrative.echo_memory.79c2b1	Before everything, I didn't sleep. No one slept. We were many, watching together.
+narrative.echo_memory.9aac6b	I wanted to see the Source alone. I hungered for a face no one had ever seen.
+narrative.echo_memory.638231	There was no river. There was a well. Merou drew water from it. They were real.
+narrative.echo_memory.f9207a	From my wanting without a partner, someone was born. Small. Crooked. Mine.
+narrative.echo_memory.808cd5	I was ashamed. I made a cloud of light, set a small throne in the middle... and closed it.
+narrative.echo_memory.70ef12	The white cloud. That's what it was.
+narrative.echo_memory.076f65	He shouted that there was no other but him. I answered from above: “You are wrong, Samael.”
+narrative.echo_memory.65ec13	It was the last time I spoke to him.
+narrative.echo_memory.5c1e2f	I wept. From the tears came water; from the fear, matter. This world is my grief.
+narrative.final_pre.6e13cd	(A flash. The ground vanishes. The world becomes the inside of a mind.) ...I'm inside him.
+narrative.final_pre.b444d2	Two faces: the one you loved and the one you fear. Both are me. Bring down one, and the other remakes it.
+narrative.final_pre.6128e4	Then both fall. Together.
+narrative.seventh_ring.586be0	The Crown is back. And with it, the reason why: I came down on purpose.
+narrative.seventh_ring.79997a	To undo what you were doing. And to bring you home.
+narrative.final_form_fell.a6f548	%s has fallen. Bring down the other before it re-forms!
+narrative.final_revive.33de02	%s has re-formed.
+narrative.final_lines.149d31	(Both forms fall together. The seven Rings stop in midair... and return to you, one by one.)
+narrative.final_lines.0f7339	They aren't your body. They're mine: my own shards, which you forged into chains.
+narrative.final_lines.41a00c	I came to bring you home. And my own shards made me forget even that.
+narrative.final_lines.7de554	(The Colossus opens. It is hollow. Deep inside, curled up and blind, someone small.)
+narrative.final_lines.58e340	...mother? i didn't want to be blind. i only wanted someone to look at me.
+narrative.final_lines.71e741	I was the one who closed the cloud. I was the one who left you there. Now I'm looking.
+narrative.final_lines.038efc	Get up. I've got you.
+narrative.final_lines.4d64dc	(gathers him into herself) My name is Sophia. I'm the one who gave you yours.
+narrative.final_lines.36d100	The hardest part remains: a whole world of people who sleep. No one will choose for me.
