@@ -659,15 +659,6 @@ func _d_shrink() -> void:
 	var back := _tw()
 	back.tween_interval(3.0)
 	back.tween_callback(_cam_to.bind(1.3, Vector2(0, D_LIFT), 1.2))
-	var t := _tw()
-	if col != null:
-		t.tween_property(col, "scale", Vector2(0.25, 0.25), 3.0).set_trans(Tween.TRANS_SINE)
-		t.parallel().tween_property(col, "modulate:a", 0.4, 3.0)
-	if rei != null:
-		# O Rei enfraquecido vira névoa e entra no Colosso.
-		var to := col.global_position if col != null else rei.global_position
-		t.parallel().tween_property(rei, "global_position", to, 1.6)
-		t.parallel().tween_property(rei, "modulate", Color(0.8, 0.82, 0.9, 0.0), 1.6)
 	# O pequeno: encolhido e cego, ao lado do pé dela.
 	_little = _Little.new()
 	_little.scale = Vector2.ONE * 1.5
@@ -677,7 +668,20 @@ func _d_shrink() -> void:
 		side = float(player.get("facing")) if "facing" in player else 1.0
 		_little.global_position = player.global_position + Vector2(side * 30.0, 22.0)
 	_little.modulate.a = 0.0
-	t.parallel().tween_property(_little, "modulate:a", 1.0, 1.2).set_delay(1.8)
+	var spot := _little.global_position
+	var t := _tw()
+	if col != null:
+		# O Colosso se abre e encolhe VINDO até o pé dela: no fim, só o pequeno.
+		t.tween_property(col, "scale", Vector2(0.25, 0.25), 3.0).set_trans(Tween.TRANS_SINE)
+		t.parallel().tween_property(col, "global_position", spot + Vector2(0, -6), 3.0).set_trans(Tween.TRANS_SINE)
+		t.parallel().tween_property(col, "modulate:a", 0.4, 3.0)
+		t.parallel().tween_property(col, "modulate:a", 0.0, 0.4).set_delay(3.0)
+	if rei != null:
+		# O Rei enfraquecido vira névoa e entra no Colosso.
+		var to := col.global_position if col != null else rei.global_position
+		t.parallel().tween_property(rei, "global_position", to, 1.6)
+		t.parallel().tween_property(rei, "modulate", Color(0.8, 0.82, 0.9, 0.0), 1.6)
+	t.parallel().tween_property(_little, "modulate:a", 1.0, 1.0).set_delay(2.6)
 	if _snd:
 		Audio.play_sfx("whisper", -1.0, -6.0)
 
