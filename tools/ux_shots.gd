@@ -316,7 +316,8 @@ class Worker extends Node:
 		await shot("hud_arconte_fase2")
 		# 23. Provação: resultado final (vitória no 3º encontro)
 		CodexSession.start_demo()
-		await wait(1.2)
+		await wait(2.5)
+		await shot("hud_provacao")
 		CodexSession.stage = 2
 		var trial = get_tree().current_scene
 		trial.completed = true
