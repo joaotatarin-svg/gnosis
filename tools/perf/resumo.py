@@ -45,19 +45,17 @@ def perfil(out):
     print("## Perfil por tela\n")
     print("CPU = headless (sem render; tempo de CPU do jogo nesta máquina compartilhada). "
           "GL = janela 320×180 no llvmpipe: só as CONTAGENS valem (draw calls/objetos/nós).\n")
-    print("| Tela | Papel | CPU n=0 ms mediana / p99 / máx | CPU n=extra ms mediana / p99 / máx | vivos | process ms | física ms | GL draw calls | GL objetos | nós |")
-    print("|---:|---|---|---|---:|---:|---:|---:|---:|---:|")
+    print("| Tela | Papel | CPU n=0 ms mediana / p99 / máx | CPU n=extra ms mediana / p99 / máx | vivos || GL draw calls | GL objetos | nós |")
+    print("|---:|---|---|---|---:|---:|---:|---:|")
     for t in sorted(rows):
         r = rows[t]
         c0 = next((v for (n, k), v in r.items() if k == "cpu" and n == 0), None)
         cn = next((v for (n, k), v in r.items() if k == "cpu" and n > 0), None)
         g = next((v for (n, k), v in r.items() if k == "gl"), None)
         f = lambda d: "%.2f / %.2f / %.1f" % (d["ms_mediana"], d["ms_p99"], d["ms_max"]) if d else "-"
-        print("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
+        print("| %d | %s | %s | %s | %s | %s | %s | %s |" % (
             t, papel(t), f(c0), f(cn),
             cn["inimigos_vivos_medio"] if cn else "-",
-            cn.get("process_ms_medio", "-") if cn else "-",
-            cn.get("fisica_ms_medio", "-") if cn else "-",
             g["draw_calls_medio"] if g else "-", g["objetos_medio"] if g else "-",
             (g or cn or {}).get("nos", "-")))
     print()

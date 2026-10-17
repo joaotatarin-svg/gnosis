@@ -7,7 +7,7 @@ extends Node
 ##   godot --path . --audio-driver Dummy --resolution 1280x720 --position 4000,4000 res://tools/PerfProbe.tscn -- \
 ##         [tela=19] [n=12] [seg=10] [vsync=0|1] [ataque=1|0] [out=C:/x/perf.json]
 ## Imprime "PERF ..." (qps médio, mínimo, p1%, tempo de frame médio/mediana/p99/máx,
-## tempo de process/física, draw calls, nós, memória) e grava o JSON em `out`
+## draw calls, nós, memória) e grava o JSON em `out`
 ## (se dado). NÃO use --fixed-fps aqui (ele falsifica o tempo real).
 ## Na nuvem (sem GPU): rode `--headless` para o custo de CPU (draw calls = 0) e
 ## com janela pequena (`--resolution 320x180`, llvmpipe) só para contar draw
@@ -47,14 +47,17 @@ class PerfWorker extends Node:
 	var _objs: int = 0
 	var _alive_sum: int = 0
 	var _types: Array = []
-	var _proc: float = 0.0          # soma do TIME_PROCESS (ms)
-	var _phys: float = 0.0          # soma do TIME_PHYSICS_PROCESS (ms)
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
 		SaveManager.persist_enabled = false
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
 		Engine.max_fps = 0
+		# Headless: o Godot DORME ~6,9 ms por quadro quando não há janela que
+		# desenhe (low_processor_usage_mode_sleep_usec). Zera para o tempo do
+		# quadro ser só o trabalho de CPU do jogo.
+		if DisplayServer.get_name() == "headless":
+			OS.low_processor_usage_mode_sleep_usec = 0
 		GameManager.selected_character = GameContent.characters[0]
 		Progression.reset_run()
 		RunManager.begin()
@@ -104,8 +107,6 @@ class PerfWorker extends Node:
 		_draws += int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 		_objs += int(Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME))
 		_alive_sum += _count_alive()
-		_proc += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
-		_phys += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 		if float(now - _t0) / 1000000.0 >= seconds:
 			_report()
 
@@ -166,8 +167,6 @@ class PerfWorker extends Node:
 			"fps_min": snappedf(1000.0 / max_ms, 0.1),
 			"ms_medio": snappedf(avg_ms, 0.01), "ms_p99": snappedf(p99_ms, 0.01), "ms_max": snappedf(max_ms, 0.01),
 			"ms_mediana": snappedf(sorted[n / 2], 0.01),
-			"process_ms_medio": snappedf(_proc / float(n), 0.01),
-			"fisica_ms_medio": snappedf(_phys / float(n), 0.01),
 			"headless": DisplayServer.get_name() == "headless",
 			"inimigos_vivos_medio": snappedf(float(_alive_sum) / float(n), 0.1),
 			"draw_calls_medio": _draws / n, "objetos_medio": _objs / n,
