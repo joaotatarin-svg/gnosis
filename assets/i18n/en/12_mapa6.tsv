@@ -1,0 +1,36 @@
+# Lote 12 — Onda 6 (mapa6): tela de mapa dos Éons, tipos de caminho e recompensas.
+# Registro: UI no imperativo; glossário (spark, Stele, shrine, antechamber, Champion).
+eon_map.KINDS.d144c4	Arrival
+eon_map.KINDS.5ddace	The gate of the Aeon. Checkpoint.
+eon_map.KINDS.c51361	Crossing
+eon_map.KINDS.313d02	Packed combat zones. More sparks.
+eon_map.KINDS.cf1f77	Perilous passage
+eon_map.KINDS.5623f7	Fewer enemies, treacherous ground. Strengthens life.
+eon_map.KINDS.e2fcea	Ascent
+eon_map.KINDS.a1019c	Platforms and heights. Strengthens the Aether.
+eon_map.KINDS.d50f02	Shrine
+eon_map.KINDS.4e6061	A light fight and a place of rest. Full healing.
+eon_map.KINDS.1a4ba8	Arena
+eon_map.KINDS.d67188	Optional and hard: heavy waves. Great reward.
+eon_map.KINDS.026944	Secret room
+eon_map.KINDS.7ce718	Only the double jump reaches it. A hidden treasure.
+eon_map.KINDS.4eba1b	The Challenge
+eon_map.KINDS.c139d6	The Champion guards the shrine of the Aeon. Checkpoint.
+eon_map.KINDS.7c4ddf	Antechamber
+eon_map.KINDS.6976d8	The last trial before the throne. Checkpoint.
+eon_map.KINDS.cd8ae5	The Archon
+eon_map.KINDS.72079d	The lord of this Aeon.
+eon_map.reward_text.b23cae	+%d sparks
+eon_map.reward_text.dcf4ab	+%d max life
+eon_map.reward_text.2d5b9d	+%d max Aether
+eon_map.reward_text.cf629f	full healing
+eon_map.slot.ad28c6	e%d.L%d
+world_map._build_ui.1d8158	choose the path
+world_map._subtitle.4d3e17	Map preview — the path of the Aeon
+world_map._subtitle.b71987	The path splits. Choose your way up.
+world_map._refresh_info.acebcb	Reward: %s
+world_map._refresh_info.592a8f	Sealed: needs the double jump. The one who gives wings does not fight.
+world_map._refresh_info.f50600	The double jump opens this passage.
+world_map._refresh_info.30330f	There is a Stele on this layer, on any path.
+world_map._draw_legend.35b777	Stele
+=segue	continue

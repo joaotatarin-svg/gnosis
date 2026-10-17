@@ -636,7 +636,7 @@ func _toast_reward_later() -> void:
 	if last_reward.is_empty() or not is_inside_tree():
 		return
 	var kind := String(EonMap.find(last_node).get("kind", ""))
-	var text := "%s — %s" % [I18n.t(EonMap.kind_name(kind)), EonMap.reward_text(last_reward)]
+	var text := I18n.t(EonMap.kind_name(kind)) + " — " + EonMap.reward_text(last_reward)
 	get_tree().create_timer(1.8, false).timeout.connect(func():
 		get_tree().call_group("hud", "toast", text))
 

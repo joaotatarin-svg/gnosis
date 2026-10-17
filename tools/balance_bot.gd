@@ -28,6 +28,10 @@ extends Node
 ##   tempo=legado = reproduz o tempo das r1–r8 (bot no _process, botão solto
 ##          em tempo real, física com passo de vel/60 s). NÃO use para medir:
 ##          em vel 8 a física roda a 7,5 Hz e o dano sai ~2,4x maior (r8, 17/10).
+##   rota=N = MAPA (Onda 6): como o bot escolhe o caminho em cada Éon. Padrão =
+##          a própria seed (escolha sorteada, determinística por seed e nó);
+##          rota=0 = sempre a trilha do meio (combate) — o run de antes do mapa,
+##          comparável com as rodadas r1–r8. O tipo do nó vai no relatório/CSV.
 ##   out  = base dos arquivos de saída (gera <base>.txt e <base>.csv); padrão
 ##          user://balance. O .csv tem uma linha por tela e o dano por FONTE.
 ## DETERMINISMO (Onda 2): rode SEMPRE com --fixed-fps 60 — sem isso o delta
@@ -53,6 +57,8 @@ func _ready() -> void:
 			w.ai_level = int(a.substr(3))
 		elif a.begins_with("out="):
 			w.out_base = a.substr(4)
+		elif a.begins_with("rota="):
+			w.route_seed = int(a.substr(5))
 		else:
 			pos.append(a)
 	if pos.size() >= 1:
@@ -70,6 +76,8 @@ class BalanceWorker extends Node:
 	var speed: float = 3.0
 	var base_seed: int = 1
 	var out_base: String = "user://balance"
+	var route_seed: int = -1             # rota do mapa (-1 = usa a seed)
+	var _kind: String = ""               # tipo do nó da tela atual (mapa)
 	var ai_level: int = 1                # 1 = clássico (r1–r8); 2 = sai de poça e esquiva tiro
 	var legacy_timing: bool = false      # tempo=legado: física grossa das r1–r8 (vel 8 = passo de 0,13 s)
 	var sim_pool3: bool = false          # sim=poca3 (proposta P3, números)
@@ -136,6 +144,8 @@ class BalanceWorker extends Node:
 		GameManager.selected_character = GameContent.characters[0]
 		Progression.reset_run()
 		RunManager.begin()
+		# MAPA (Onda 6): o bot nunca para na tela de mapa — escolhe pela rota.
+		RunManager.map_route_seed = route_seed if route_seed >= 0 else base_seed
 		Narrative.once("prologue")      # ferramenta pula o prólogo em cards
 		Gnosis.persist_enabled = false   # e não grava Crônicas no disco
 		RunManager.current_screen = first_screen
@@ -209,6 +219,7 @@ class BalanceWorker extends Node:
 		if RunManager.current_screen != _cur:
 			_flush_row()
 			_cur = RunManager.current_screen
+			_kind = RunManager.node_kind(_cur)
 			_mhp = pl.health.max_health
 			_last_hp = pl.health.current_health
 			_zone_cur = -2
@@ -502,7 +513,7 @@ class BalanceWorker extends Node:
 
 	func _flush_row() -> void:
 		if _cur > 0:
-			_rows.append({"screen": _cur, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": 2 if _softlock else (1 if _timeout else 0), "zones": _zones,
+			_rows.append({"screen": _cur, "node": _kind, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": 2 if _softlock else (1 if _timeout else 0), "zones": _zones,
 				"src": _src.duplicate(), "boss": _boss, "hits": _hits, "maxhit": _maxhit,
 				"earned": _earned, "orbs": Progression.orbs, "maxhp": _mhp})
 		_earned = 0
@@ -521,7 +532,7 @@ class BalanceWorker extends Node:
 		_flush_row()
 		var lines: Array[String] = []
 		lines.append("BALANCE — %s | arma final nv.%d | faíscas sobrando %d" % [reason, Progression.weapon_level, Progression.orbs])
-		lines.append("tela | zonas | tempo(s) | dano | mortes | avisos")
+		lines.append("tela | tipo        | zonas | tempo(s) | dano | mortes | avisos")
 		var tot_t := 0.0
 		var tot_d := 0
 		var tot_m := 0
@@ -532,7 +543,7 @@ class BalanceWorker extends Node:
 			if r.dmg >= 70: warn += " HOT"
 			elif r.dmg <= 3 and r.screen > 3: warn += " COLD"
 			if r.time > 45.0 + 60.0 * float(r.zones) and not r.timeout: warn += " SLOW"
-			lines.append("%4d | %5d | %8.1f | %4d | %6d |%s" % [r.screen, r.zones, r.time, r.dmg, r.deaths, warn])
+			lines.append("%4d | %-11s | %5d | %8.1f | %4d | %6d |%s" % [r.screen, String(r.get("node", "")), r.zones, r.time, r.dmg, r.deaths, warn])
 			tot_t += r.time
 			tot_d += int(r.dmg)
 			tot_m += int(r.deaths)
@@ -544,7 +555,8 @@ class BalanceWorker extends Node:
 		for k in keys:
 			parts.append("%s=%d" % [k, int(_src_total[k])])
 		lines.append("FONTES: " + ", ".join(parts))
-		lines.append("seed=%d vel=%.1f telas %d-%d loja=%s ia=%d tempo=%s" % [base_seed, speed, first_screen, last_screen, shop_mode, ai_level, "legado" if legacy_timing else "fisica"])
+		lines.append("seed=%d rota=%d vel=%.1f telas %d-%d loja=%s ia=%d tempo=%s" % [base_seed, RunManager.map_route_seed, speed, first_screen, last_screen, shop_mode, ai_level, "legado" if legacy_timing else "fisica"])
+		lines.append("ROTA: " + " ".join(RunManager.path))
 		var f := FileAccess.open(out_base + ".txt", FileAccess.WRITE)
 		for l in lines:
 			print("BAL ", l)
@@ -561,7 +573,7 @@ class BalanceWorker extends Node:
 		if f == null:
 			print("BAL (sem CSV: não abriu %s.csv)" % out_base)
 			return
-		f.store_line("screen,zones,time,dmg,deaths,timeout,hits,maxhit,boss,earned,orbs,maxhp,sources")
+		f.store_line("screen,zones,time,dmg,deaths,timeout,hits,maxhit,boss,earned,orbs,maxhp,sources,node")
 		for r in _rows:
 			var src: Dictionary = r.src
 			var ks: Array = src.keys()
@@ -569,6 +581,6 @@ class BalanceWorker extends Node:
 			var parts: Array[String] = []
 			for k in ks:
 				parts.append("%s:%d" % [k, int(src[k])])
-			f.store_line("%d,%d,%.1f,%d,%d,%d,%d,%d,%s,%d,%d,%d,%s" % [r.screen, r.zones, r.time, r.dmg, r.deaths,
-				r.timeout, r.hits, r.maxhit, r.boss, r.earned, r.orbs, r.maxhp, ";".join(parts)])
+			f.store_line("%d,%d,%.1f,%d,%d,%d,%d,%d,%s,%d,%d,%d,%s,%s" % [r.screen, r.zones, r.time, r.dmg, r.deaths,
+				r.timeout, r.hits, r.maxhit, r.boss, r.earned, r.orbs, r.maxhp, ";".join(parts), String(r.get("node", ""))])
 		f.close()

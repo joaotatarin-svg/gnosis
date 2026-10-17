@@ -106,7 +106,7 @@ func _build_ui() -> void:
 	_won.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if not _reward.is_empty():
 		var kind := String(EonMap.find(_from).get("kind", ""))
-		_won.text = "%s — %s" % [I18n.t(EonMap.kind_name(kind)), EonMap.reward_text(_reward)]
+		_won.text = I18n.t(EonMap.kind_name(kind)) + " — " + EonMap.reward_text(_reward)
 
 	_canvas = Control.new()
 	_canvas.set_anchors_preset(Control.PRESET_FULL_RECT)
