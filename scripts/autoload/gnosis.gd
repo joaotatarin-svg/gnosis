@@ -21,7 +21,8 @@ extends Node
 ## (que é o Demiurgo — segredo até a tela 64) conta a mesma cosmologia com o
 ## viés dela nas legendas. O jogador aprende pela contradição.
 
-const SAVE_PATH := "user://chronicles.json"
+## `var` só para as QAs gravarem em user://qa/ (REVISAO #9); o jogo não muda.
+var SAVE_PATH: String = "user://chronicles.json"
 
 ## As 18 Estelas: id · tela · Éon · título · linhas · fonte histórica · dica
 ## (onde fica, mostrada trancada nas Crônicas).
@@ -293,29 +294,29 @@ func stela_for_screen(screen: int) -> Dictionary:
 	return _by_screen.get(screen, {})
 
 
+## Lê as Crônicas com recuperação (principal → .tmp → .bak; REVISAO #3) — o
+## mesmo esquema atômico do SaveManager.
 func _load() -> void:
 	unlocked.clear()
-	if not FileAccess.file_exists(SAVE_PATH):
-		return
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if f == null:
-		return
-	var data = JSON.parse_string(f.get_as_text())
-	f.close()
-	if data is Dictionary:
-		for id in data.get("unlocked", []):
-			if entry(String(id)).size() > 0 and not unlocked.has(String(id)):
-				unlocked.append(String(id))
+	var got: Dictionary = SaveManager.read_json_safe(SAVE_PATH)
+	if got.data is Dictionary:
+		if got.from != "main":
+			push_warning("Gnosis: chronicles.json danificado — Crônicas recuperadas de %s." % got.path)
+		var ids = got.data.get("unlocked", [])
+		if typeof(ids) != TYPE_ARRAY:
+			ids = []
+		# REVISAO #5: str(id) — um número ou lixo na lista descarta SÓ aquele
+		# item (String(3) dava erro e apagava todas as Crônicas lidas).
+		for id in ids:
+			var sid := str(id)
+			if entry(sid).size() > 0 and not unlocked.has(sid):
+				unlocked.append(sid)
 
 
 func _save() -> void:
 	if not persist_enabled:
 		return
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if f == null:
-		return
-	f.store_string(JSON.stringify({"version": 1, "unlocked": unlocked}))
-	f.close()
+	SaveManager.write_json_atomic(SAVE_PATH, {"version": 1, "unlocked": unlocked})
 
 
 # --- contrato com o Level -----------------------------------------------------

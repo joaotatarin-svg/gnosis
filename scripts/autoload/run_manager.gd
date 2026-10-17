@@ -99,36 +99,39 @@ func run_snapshot() -> Dictionary:
 
 
 func has_saved_run() -> bool:
-	return int(saved_run.get("screen", 0)) >= 1
+	return SaveCoerce.as_int(saved_run.get("screen", 0), 0) >= 1
 
 
 ## Menu "Continuar": restaura a progressão salva e retoma do checkpoint.
+## Tudo lido pelos conversores TOLERANTES (REVISAO #5): um campo com tipo
+## errado (ex.: `skill_levels: [1,2]`, `rings_stolen: "sim"`, `orbs: [5]`)
+## volta ao padrão SÓ ele — o resto do run continua e a cena troca.
 func continue_run() -> void:
 	var d := saved_run
 	GameManager.selected_character = GameContent.characters[0]
-	GameManager.difficulty = clampi(int(d.get("difficulty", 0)), 0, 3) as GameManager.Difficulty
+	GameManager.difficulty = clampi(SaveCoerce.as_int(d.get("difficulty", 0), 0), 0, 3) as GameManager.Difficulty
 	Progression.reset_run()
-	Progression.orbs = int(d.get("orbs", 0))
-	Progression.weapon_level = clampi(int(d.get("weapon_level", 1)), 1, Progression.MAX_WEAPON_LEVEL)
-	Progression.bonus_max_health = int(d.get("bonus_hp", 0))
-	Progression.bonus_max_mana = int(d.get("bonus_mp", 0))
-	Progression.sleepers_freed = int(d.get("sleepers", 0))
-	Progression.rings_stolen = bool(d.get("rings_stolen", false))
-	Progression.selected_ring = int(d.get("selected_ring", 0))
-	Progression.items.assign(d.get("items", []))
-	Progression.unlocked_skills.assign(d.get("unlocked", ["m_s1"]))
-	Progression.rings.assign(d.get("rings", []))
-	Progression.restored_rings.assign(d.get("restored", []))
+	Progression.orbs = maxi(0, SaveCoerce.as_int(d.get("orbs", 0), 0))
+	Progression.weapon_level = clampi(SaveCoerce.as_int(d.get("weapon_level", 1), 1), 1, Progression.MAX_WEAPON_LEVEL)
+	Progression.bonus_max_health = maxi(0, SaveCoerce.as_int(d.get("bonus_hp", 0), 0))
+	Progression.bonus_max_mana = maxi(0, SaveCoerce.as_int(d.get("bonus_mp", 0), 0))
+	Progression.sleepers_freed = maxi(0, SaveCoerce.as_int(d.get("sleepers", 0), 0))
+	Progression.rings_stolen = SaveCoerce.as_bool(d.get("rings_stolen", false), false)
+	Progression.selected_ring = clampi(SaveCoerce.as_int(d.get("selected_ring", 0), 0), 0, 6)
+	Progression.items.assign(SaveCoerce.as_str_array(d.get("items", [])))
+	Progression.unlocked_skills.assign(SaveCoerce.as_str_array(d.get("unlocked", ["m_s1"]), ["m_s1"]))
+	Progression.rings.assign(SaveCoerce.as_str_array(d.get("rings", [])))
+	Progression.restored_rings.assign(SaveCoerce.as_str_array(d.get("restored", [])))
 	Progression.skill_levels.clear()
-	var sl: Dictionary = d.get("skill_levels", {})
+	var sl := SaveCoerce.as_dict(d.get("skill_levels", {}))
 	for k in sl:
-		Progression.skill_levels[String(k)] = int(sl[k])
+		Progression.skill_levels[str(k)] = maxi(0, SaveCoerce.as_int(sl[k], 0))
 	Narrative.reset()
-	for s in d.get("seen", []):
-		Narrative.seen[String(s)] = true
+	for s in SaveCoerce.as_str_array(d.get("seen", [])):
+		Narrative.seen[s] = true
 	run_active = true
-	deaths_this_run = int(d.get("deaths", 0))
-	current_screen = clampi(int(d.get("screen", 1)), 1, MAX_SCREEN)
+	deaths_this_run = maxi(0, SaveCoerce.as_int(d.get("deaths", 0), 0))
+	current_screen = clampi(SaveCoerce.as_int(d.get("screen", 1), 1), 1, MAX_SCREEN)
 	carry_health = -1
 	pending_advance = false
 	GameManager.current_screen = current_screen

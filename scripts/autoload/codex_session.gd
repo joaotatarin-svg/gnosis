@@ -12,7 +12,7 @@ var previous_difficulty: int = 0
 
 func start_demo(boss: int = 0) -> void:
 	if not active:
-		previous_persist = SaveManager.persist_enabled
+		previous_persist = SaveManager.persist_run
 		previous_save = RunManager.saved_run.duplicate(true)
 		previous_difficulty = GameManager.difficulty
 	active = true
@@ -20,7 +20,8 @@ func start_demo(boss: int = 0) -> void:
 	boss_index = clampi(boss, 0, 6)
 	elapsed = 0.0
 	best_combo = 0
-	SaveManager.persist_enabled = false
+	# Só o run fica fora do disco; opções mudadas aqui gravam (REVISAO #13).
+	SaveManager.persist_run = false
 	GameManager.selected_character = GameContent.characters[0]
 	GameManager.difficulty = GameManager.Difficulty.NORMAL
 	Progression.reset_run()
@@ -32,8 +33,19 @@ func start_demo(boss: int = 0) -> void:
 	RunManager.begin()
 	_load_stage()
 
+## Tela "de mentira" do encontro (REVISAO #8): a mesma fórmula do
+## `codex_trial.gd` — 1ª tela do Éon do Arconte escolhido nos encontros 1–2 e a
+## tela do Arconte (última do Éon) no 3º. Era `2 + boss*7` (mapa antigo de 7
+## telas), e a música/cenário saíam do Éon errado.
+static func screen_for(boss: int, stage_index: int) -> int:
+	var s: int = RunManager.FIRST_EON_SCREEN + clampi(boss, 0, 6) * RunManager.EON_LEN
+	if stage_index >= 2:
+		s += RunManager.EON_LEN - 1
+	return s
+
+
 func _load_stage() -> void:
-	RunManager.current_screen = 2 + boss_index * 7
+	RunManager.current_screen = screen_for(boss_index, stage)
 	GameManager.current_screen = RunManager.current_screen
 	RunManager.carry_health = -1
 	SceneManager.change_scene("res://scenes/levels/CodexTrial.tscn")
@@ -48,5 +60,5 @@ func leave_demo() -> void:
 	active = false
 	RunManager.end_run()
 	RunManager.saved_run = previous_save.duplicate(true)
-	SaveManager.persist_enabled = previous_persist
+	SaveManager.persist_run = previous_persist
 	GameManager.difficulty = previous_difficulty
