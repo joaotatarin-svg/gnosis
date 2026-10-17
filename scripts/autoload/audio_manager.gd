@@ -4,27 +4,37 @@ extends Node
 ## Lista completa e mixagem: docs/AUDIO.md. Pipeline: tools/audio_synth/.
 ##
 ## O que este autoload faz sozinho (sem ninguém chamar):
-##   · música por CONTEXTO (menu / Rei / Éon / Arconte / Centro / Mente) ouvindo
-##     RunManager.screen_changed e GameManager.state_changed, com crossfade;
+##   · música por CONTEXTO (menu / Rei / Éon / Arconte / Centro / Mente / Provação)
+##     ouvindo RunManager.screen_changed e GameManager.state_changed, com crossfade;
 ##   · AMBIÊNCIA por Éon num player próprio (crossfade de 2,5 s), por baixo da música;
 ##   · DUCKING: abaixa música/ambiência enquanto houver DialogueBox ou Cinematic
 ##     (cards, card de chefe) na árvore — detectado por `node_added`, sem
 ##     ninguém precisar chamar nada. Quem quiser forçar: `Audio.duck(true/false)`;
-##   · faísca, arma, Anel ganho, roubo e caco ouvindo os sinais de Progression.
+##   · CENTRO: a faixa `centro` só entra no 1º caco de memória devolvido e sobe
+##     um degrau por caco (ROTEIRO §2, cena C: "memória = música");
+##   · SLOW-MO: se o Juice tiver o sinal `slowmo_changed(active, scale)`, abafa
+##     SFX/música/ambiência (passa-baixas) e abaixa a música 4 dB (R8);
+##   · arma, Anel ganho, roubo e caco ouvindo os sinais de Progression. (A faísca
+##     NÃO toca mais no crédito: toca na CHEGADA de cada orbe, quem chama é o orbe.)
 ## O resto do jogo só chama `Audio.play_sfx(nome)` / `Audio.play_music(faixa)`.
 ##
 ## VARIAÇÕES: se existirem `nome_2.ogg`, `nome_3.ogg`... ao lado de `nome.ogg`,
-## `play_sfx(<nome>)` sorteia uma delas sem repetir a anterior. Nada muda pra
-## quem chama. `spark` sobe a escala pentatônica quando coletada em sequência.
+## `play_sfx(<nome>)` sorteia uma delas sem repetir a anterior (round-robin).
+## `spark` sobe a escala pentatônica quando coletada em sequência.
+## VOZES: no máximo MAX_SAME instâncias do mesmo som ao mesmo tempo (rouba a mais
+## velha); o pool usa primeiro um player livre e só então rouba o mais antigo.
+## ESTÉREO: `play_sfx(nome, -1, 0, posição_no_mundo)` ou `play_sfx_at` dão um pan
+## discreto pelo x NA TELA (no máximo 50 % para um lado). Sem posição = centro.
 ##
-## BUSES: Master (limitador) ← Music, Ambience, SFX ← (UI, Voice).
+## BUSES: Master (limitador) ← Music, Ambience, SFX ← (UI, Voice, SFX_L2/L1/R1/R2).
 ## UI = ui_*/shop_*/subtitle_tick; Voice = blip_* (vozes "gromelô", monofônico:
-## a sílaba nova corta a anterior, como uma boca).
+## a sílaba nova corta a anterior, como uma boca). SFX_Lx/Rx = pan fixo.
 
 const SFX_DIR := "res://assets/audio/sfx/"
 const MUSIC_DIR := "res://assets/audio/music/"
 const AMB_DIR := "res://assets/audio/amb/"
 const POOL := 24                  # vozes simultâneas de SFX
+const MAX_SAME := 3               # instâncias simultâneas do MESMO som (R11)
 const MUSIC_FADE := 1.2           # segundos de crossfade entre faixas
 const AMB_FADE := 2.5             # crossfade entre ambiências
 const SPAM_MS := 40               # mesmo som não repete em menos que isto
@@ -36,7 +46,44 @@ const DUCK_AMB_DB := -5.0
 const DUCK_IN := 0.25
 const DUCK_OUT := 0.8
 const AMB_ARCHON_DB := -5.0       # ambiência do Éon mais baixa na luta de Arconte
+const LIMITER_CEILING_DB := -1.0  # teto do Master (R11: ≤ −1 dBTP)
+const EON_MUSIC_DB := -3.0        # música de Éon ~3 LU abaixo da de chefe (R13)
+const CENTER_SHARDS := 6          # cacos de memória no Centro (6 ecos; o 7º Anel volta na Mente)
+const LAYER_RATE_DB := 6.0        # dB/s com que a "camada" de uma faixa muda (sem degrau)
+# Slow-mo (R8): passa-baixas 20 kHz → 1,5 kHz em 60 ms, volta em 250 ms; música −4 dB.
+const SLOW_OPEN_HZ := 20000.0
+const SLOW_CUT_HZ := 1500.0
+const SLOW_DODGE_HZ := 2500.0     # esquiva perfeita (scale ≈ 0,3): abafa menos
+const SLOW_IN := 0.06
+const SLOW_OUT := 0.25
+const SLOW_MUSIC_DB := -4.0
+const SLOW_BUSES := ["SFX", "Music", "Ambience"]
+# Estéreo discreto (R14): pan = clamp((x_tela − meio) / meia_largura, −1, 1) × 0,5,
+# quantizado em 5 posições (buses com AudioEffectPanner fixo).
+const PAN_MAX := 0.5
+const PAN_BUSES := {-2: "SFX_L2", -1: "SFX_L1", 1: "SFX_R1", 2: "SFX_R2"}
+const NO_POS := Vector2(INF, INF)
 const EON_TRACKS := ["torpor", "fome", "corrente", "silencio", "espelho", "praga", "coroa"]
+# Tema da Voz (ROTEIRO §5 #8): `theme` é a música DELA. Santuário = baixo, por
+# baixo da conversa; roubo = distorcido 3 s e corta; anagnórise = volta sozinho.
+const VOICE_THEME := "theme"
+const VOICE_SANCTUARY_DB := -3.0  # + o ducking normal do diálogo (−9) = −12 dB
+const VOICE_STOLEN_PITCH := 0.75  # roubo: tema 5 semitons abaixo e mais lento…
+const VOICE_STOLEN_SECS := 3.0    # …por 3 s → corte seco → `roubo`
+const VOICE_ALONE_PITCH := 0.85   # anagnórise: o tema volta sozinho, mais lento (= Staging)
+const VOICE_ALONE_FADE := 4.0
+const SCENE_FADE := 2.0           # entrada/saída do tema no santuário
+const SCENE_DUCK_SCALE := 0.35    # roubo/anagnórise: a música É a cena — diálogo abaixa só ~3 dB
+const FOG_DUCK_DB := -8.0
+const RING_NOTE_HOLD_MS := 1500   # após um ring_note, o sinal de Anel não toca som próprio         # cena A: "a música do Limiar desce a 40 %"
+## Faixas opcionais: tocam se o arquivo existir, sem ele o jogo usa a reserva.
+## `menu` = tema do menu (opções por síntese aguardando o João; sem arquivo = `theme`).
+const OPTIONAL_MUSIC := ["menu"]
+## Todos os `cue` das falas (ROTEIRO §5) que `cue()` conhece. `wait_2s` é da UI
+## (só é reconhecido, sem som). Ver `cue()`.
+const CUES := ["heartbeat", "fog_thickens", "king_emerges", "mask_lights", "mask_cracks", "king_sinks",
+	"wait_2s", "chime", "music_stop", "voice_merge", "rings_fly", "mask_falls", "sink",
+	"rings_return", "flash", "colossus_shrinks", "theme_alone", "reclaim"]
 
 ## CATÁLOGO: todo nome de som que o jogo pode pedir. O AudioQA confere que cada
 ## um está documentado em docs/AUDIO.md e que não há arquivo órfão na pasta.
@@ -74,6 +121,8 @@ const CATALOG := {
 		"blip_voz", "blip_rei", "blip_sophia", "blip_estela", "blip_npc",
 		# --- roteiro: "o Rei sai da névoa" (tela 1) ---
 		"fog_swell", "king_step", "mask_light", "voice_merge", "whisper",
+		# --- roteiro: intro, roubo e anagnórise (ROTEIRO §2, sons ★) ---
+		"heartbeat", "clap", "child_breath",
 	],
 	"music": [
 		"theme", "rei",
@@ -95,15 +144,28 @@ const ALIASES := {
 }
 
 ## Variação de tom por família de som (verificadas em ordem; resto ±4 %).
+## Com 3 variações por som, impacto não precisa de ±8 %: ±4 % (≈ ±0,7 semitom);
+## passos/corpo ±6 % (R11).
 const PITCH_FAMILIES := {
-	0.08: ["swing_", "hit", "step", "gib_", "enemy_hurt", "enemy_die", "proj_", "dodge", "land", "jump", "cloth"],
+	0.04: ["swing_", "hit", "enemy_hurt", "enemy_die", "proj_", "block"],
+	0.06: ["step", "land", "jump", "cloth", "dodge", "gib_"],
 	0.05: ["boss_step", "king_step"],
 	0.03: ["blip_"],
 	0.0: ["ui_", "shop_", "subtitle_", "stele_", "ring_", "shard", "spark", "weapon_", "boss_", "zone_", "level_", "portal_", "cast_"],
 }
 
+## Sons frequentes que ganham ±1,5 dB de volume aleatório (R11: "não enjoa").
+const VOLUME_JITTER_DB := 1.5
+const JITTER_FAMILIES := ["swing_", "hit", "step", "enemy_hurt", "land", "block", "cloth", "boss_step", "king_step"]
+
 ## Sons tocados em sequência (sobem as variações em ordem em vez de sortear).
 const SEQUENTIAL := ["spark"]
+
+## Anti-spam próprio (ms): o arpejo das faíscas chega com 40–70 ms entre orbes.
+const SPAM_OVERRIDE := {"spark": 20}
+
+## Vozes simultâneas próprias: o arpejo precisa deixar as caudas soarem.
+const MAX_SAME_OVERRIDE := {"spark": 6}
 
 ## Falante do diálogo → voz "gromelô".
 const SPEAKER_BLIPS := {
@@ -121,6 +183,8 @@ var sfx_vol: float = 0.9
 var music_vol: float = 0.6
 
 var _players: Array[AudioStreamPlayer] = []
+var _pl_name: Array[String] = []     # som que cada player do pool tocou por último
+var _pl_start: Array[int] = []       # quando (ms) — pra roubar a voz mais velha
 var _next: int = 0
 var _voice: AudioStreamPlayer        # blips: monofônico
 var _cache: Dictionary = {}          # caminho base -> AudioStream ou null (cache negativa)
@@ -142,20 +206,42 @@ var _amb_tween: Tween
 var current_ambience: String = ""    # última ambiência PEDIDA
 var _amb_db: float = 0.0             # volume-alvo da ambiência atual
 
-# --- ducking ---
+# --- envelopes por tempo REAL (ducking, slow-mo, camada) — ver _process ---
 var _duck_holders: Dictionary = {}   # instance_id -> true (diálogos/cards vivos)
 var _manual_duck: int = 0
-var _duck: float = 0.0               # 0 = normal, 1 = abaixado (tweenado)
+var _duck: float = 0.0               # 0 = normal, 1 = abaixado
 var _duck_target: float = 0.0
-var _temp_duck_db: float = 0.0       # duck_music(): abaixada temporária (tweenada)
-var _temp_duck_tween: Tween
-var _layer_db: Dictionary = {}       # faixa -> dB extra (set_music_layer_volume)
+var _duck_env := Vector3.ZERO        # (valor de partida, duração s, —) do fade atual
+var _duck_t0: int = 0                # µs em que o fade atual foi PEDIDO
+var _slow: float = 0.0               # 0 = aberto, 1 = abafado
+var _slow_target: float = 0.0
+var _slow_env := Vector3.ZERO
+var _slow_t0: int = 0
+var _slow_hz: float = SLOW_CUT_HZ
+var _lp_filters: Array[AudioEffectLowPassFilter] = []
+var _lp_slots: Array[Vector2i] = []  # (bus, índice do efeito) de cada filtro
+var _layer_db: Dictionary = {}       # faixa -> dB extra pedido (set_music_layer_volume)
+var _layer_now: float = 0.0          # dB extra aplicado agora (anda até o pedido)
+var _env_us: int = 0                 # relógio da camada (µs)
+var _temp_duck_db: float = 0.0       # duck_music(): abaixada temporária (relógio real)
+var _td_active: bool = false         # envelope da abaixada: desce em _td_in, segura _td_hold,
+var _td_t0: int = 0                  # volta em _td_out (µs do PEDIDO em _td_t0)
+var _td_from: float = 0.0
+var _td_db: float = 0.0
+var _td_in: float = 0.0
+var _td_hold: float = 0.0
+var _td_out: float = 0.0
 var _music_pitch: float = 1.0
 var _pitch_tween: Tween
-var _duck_tween: Tween
+var _shut_down: bool = false
+
+# --- tema da Voz / cenas ---
+var voice_theme_mode: String = ""    # "", "santuario", "roubo", "sozinha"
+var _roubo_due_us: int = 0           # µs do corte agendado tema → `roubo` (0 = nenhum)
+var _duck_scale: float = 1.0         # 1 = ducking de diálogo cheio; menor nas cenas musicais
+var _ring_note_ms: int = -100000     # último ring_note (a cena já tocou a gema: o sinal não repete)
 
 # --- memória pros ganchos por sinal ---
-var _last_orbs: int = 0
 var _last_weapon: int = 1
 var _last_rings: int = 0
 var _last_restored: int = 0
@@ -169,12 +255,18 @@ func _ready() -> void:
 	_ensure_bus("SFX", "Master")
 	_ensure_bus("UI", "SFX")
 	_ensure_bus("Voice", "SFX")
+	for k in PAN_BUSES:
+		_ensure_bus(PAN_BUSES[k], "SFX")
+		_ensure_panner(PAN_BUSES[k], PAN_MAX * float(k) / 2.0)
 	_ensure_limiter()
+	_ensure_lowpass()
 	for i in POOL:
 		var p := AudioStreamPlayer.new()
 		p.bus = "SFX"
 		add_child(p)
 		_players.append(p)
+		_pl_name.append("")
+		_pl_start.append(0)
 	_voice = AudioStreamPlayer.new()
 	_voice.bus = "Voice"
 	add_child(_voice)
@@ -190,6 +282,7 @@ func _ready() -> void:
 		add_child(a)
 		_amb.append(a)
 	_apply_volumes()
+	set_process(false)
 	get_tree().node_added.connect(_on_node_added)
 	# Os outros autoloads ainda não existem neste _ready (ordem do project.godot).
 	_connect_context.call_deferred()
@@ -204,56 +297,178 @@ func _ensure_bus(bus_name: String, send: String) -> void:
 	AudioServer.set_bus_send(idx, send)
 
 
-## Limitador no Master: nada passa de -0,5 dBFS quando muitos sons somam.
+## Limitador no Master: nada passa de −1 dBFS quando muitos sons somam.
 func _ensure_limiter() -> void:
 	var master := AudioServer.get_bus_index("Master")
 	for i in AudioServer.get_bus_effect_count(master):
-		if AudioServer.get_bus_effect(master, i) is AudioEffectHardLimiter:
+		var e := AudioServer.get_bus_effect(master, i)
+		if e is AudioEffectHardLimiter:
+			(e as AudioEffectHardLimiter).ceiling_db = LIMITER_CEILING_DB
 			return
 	var lim := AudioEffectHardLimiter.new()
-	lim.ceiling_db = -0.5
+	lim.ceiling_db = LIMITER_CEILING_DB
 	lim.pre_gain_db = 0.0
 	lim.release = 0.12
 	AudioServer.add_bus_effect(master, lim)
 
 
+## Pan fixo de um bus de estéreo (R14).
+func _ensure_panner(bus_name: String, pan: float) -> void:
+	var idx := AudioServer.get_bus_index(bus_name)
+	for i in AudioServer.get_bus_effect_count(idx):
+		var e := AudioServer.get_bus_effect(idx, i)
+		if e is AudioEffectPanner:
+			(e as AudioEffectPanner).pan = pan
+			return
+	var p := AudioEffectPanner.new()
+	p.pan = pan
+	AudioServer.add_bus_effect(idx, p)
+
+
+## Passa-baixas do slow-mo (R8): um por bus, desligado (sem custo) até precisar.
+func _ensure_lowpass() -> void:
+	_lp_filters.clear()
+	_lp_slots.clear()
+	for bus_name in SLOW_BUSES:
+		var idx := AudioServer.get_bus_index(bus_name)
+		var found: AudioEffectLowPassFilter = null
+		var slot := -1
+		for i in AudioServer.get_bus_effect_count(idx):
+			if AudioServer.get_bus_effect(idx, i) is AudioEffectLowPassFilter:
+				found = AudioServer.get_bus_effect(idx, i) as AudioEffectLowPassFilter
+				slot = i
+				break
+		if found == null:
+			found = AudioEffectLowPassFilter.new()
+			AudioServer.add_bus_effect(idx, found)
+			slot = AudioServer.get_bus_effect_count(idx) - 1
+		found.cutoff_hz = SLOW_OPEN_HZ
+		found.resonance = 0.5
+		AudioServer.set_bus_effect_enabled(idx, slot, false)
+		_lp_filters.append(found)
+		_lp_slots.append(Vector2i(idx, slot))
+
+
 # --- SFX ---------------------------------------------------------------
 
 ## Toca um efeito. `pitch_var` < 0 = variação automática pela família do som.
-func play_sfx(sfx_name: String, pitch_var: float = -1.0, volume_db: float = 0.0) -> void:
+## `world_pos` (opcional) = posição no MUNDO: dá um pan discreto pelo x na tela
+## (use para inimigos, projéteis, telegrafos — não para a Sophia nem a UI).
+## Devolve true se tocou (false: sem arquivo ou barrado pelo anti-spam).
+func play_sfx(sfx_name: String, pitch_var: float = -1.0, volume_db: float = 0.0, world_pos: Vector2 = NO_POS) -> bool:
 	var real_name: String = ALIASES.get(sfx_name, sfx_name)
-	if variants_of(real_name).is_empty():
-		return
-	var now := Time.get_ticks_msec()
-	var last_ms := int(_last_play_ms.get(real_name, -SEQ_WINDOW_MS))
-	if now - last_ms < SPAM_MS:
-		return
-	var stream = _pick_variant(real_name, now - last_ms < SEQ_WINDOW_MS)
-	_last_play_ms[real_name] = now
 	if pitch_var < 0.0:
 		pitch_var = _pitch_for(real_name)
-	var p: AudioStreamPlayer
-	if real_name.begins_with("blip_"):
-		p = _voice                    # voz: a sílaba nova corta a anterior
-	else:
-		p = _players[_next]
-		_next = (_next + 1) % _players.size()
-		p.bus = _bus_for(real_name)
-	p.stream = stream
-	p.pitch_scale = 1.0 + randf_range(-pitch_var, pitch_var)
-	p.volume_db = volume_db
-	p.play()
+	return _play(real_name, 1.0 + randf_range(-pitch_var, pitch_var), volume_db, world_pos, false)
+
+
+## Toca um efeito com tom EXATO (sem aleatório nem volume sorteado): arpejos,
+## escalas (faísca por orbe, Anéis voando um semitom acima a cada um).
+## pitch 1 = original; `pow(2, semitons / 12.0)` para subir em semitons.
+## Sons em sequência (spark) usam sempre a 1ª variação: quem chama manda no tom.
+func play_sfx_pitched(sfx_name: String, pitch: float, volume_db: float = 0.0, world_pos: Vector2 = NO_POS) -> bool:
+	var real_name: String = ALIASES.get(sfx_name, sfx_name)
+	return _play(real_name, clampf(pitch, 0.05, 8.0), volume_db, world_pos, true)
 
 
 ## Toca um efeito posicionado: atenua pela distância horizontal até a câmera
-## (até -18 dB); sem câmera, toca normal.
-func play_sfx_at(sfx_name: String, pos: Vector2, pitch_var: float = -1.0) -> void:
+## (até −18 dB) e dá o pan discreto pela posição na tela; sem câmera, só o pan.
+func play_sfx_at(sfx_name: String, pos: Vector2, pitch_var: float = -1.0) -> bool:
 	var att := 0.0
 	var cam := get_viewport().get_camera_2d() if get_viewport() != null else null
 	if cam != null:
 		var d := absf(pos.x - cam.get_screen_center_position().x)
 		att = -clampf((d - 380.0) / 40.0, 0.0, 18.0)
-	play_sfx(sfx_name, pitch_var, att)
+	return play_sfx(sfx_name, pitch_var, att, pos)
+
+
+func _play(real_name: String, pitch: float, volume_db: float, world_pos: Vector2, exact: bool) -> bool:
+	if _shut_down or variants_of(real_name).is_empty():
+		return false
+	var now := Time.get_ticks_msec()
+	var last_ms := int(_last_play_ms.get(real_name, -SEQ_WINDOW_MS))
+	if now - last_ms < spam_ms_for(real_name):
+		return false
+	var stream
+	if exact and SEQUENTIAL.has(real_name):
+		stream = variants_of(real_name)[0]
+	else:
+		stream = _pick_variant(real_name, now - last_ms < SEQ_WINDOW_MS)
+	_last_play_ms[real_name] = now
+	if not exact and _jitters(real_name):
+		volume_db += randf_range(-VOLUME_JITTER_DB, VOLUME_JITTER_DB)
+	var p: AudioStreamPlayer
+	if real_name.begins_with("blip_"):
+		p = _voice                    # voz: a sílaba nova corta a anterior
+	else:
+		var i := _grab_player(real_name, now)
+		p = _players[i]
+		_pl_name[i] = real_name
+		_pl_start[i] = now
+		var bus := _bus_for(real_name)
+		if bus == "SFX" and world_pos.is_finite():
+			bus = PAN_BUSES.get(_pan_step(pan_for(world_pos)), "SFX")
+		p.bus = bus
+	p.stream = stream
+	p.pitch_scale = pitch
+	p.volume_db = volume_db
+	p.play()
+	return true
+
+
+## Anti-spam (ms) do som: mesmo nome não repete em menos que isto.
+func spam_ms_for(sfx_name: String) -> int:
+	return int(SPAM_OVERRIDE.get(sfx_name, SPAM_MS))
+
+
+## Quantas instâncias deste som estão tocando agora (pool de SFX).
+func voices_playing(sfx_name: String) -> int:
+	var n := 0
+	for i in _players.size():
+		if _pl_name[i] == sfx_name and _players[i].playing:
+			n += 1
+	return n
+
+
+## Escolhe o player: se o som já tem MAX_SAME vozes, rouba a mais velha DELE;
+## senão um player livre; senão o mais velho do pool.
+func _grab_player(sfx_name: String, now: int) -> int:
+	var limit := int(MAX_SAME_OVERRIDE.get(sfx_name, MAX_SAME))
+	var same := 0
+	var oldest_same := -1
+	var oldest_any := -1
+	for i in _players.size():
+		if not _players[i].playing:
+			continue
+		if oldest_any < 0 or _pl_start[i] < _pl_start[oldest_any]:
+			oldest_any = i
+		if _pl_name[i] == sfx_name:
+			same += 1
+			if oldest_same < 0 or _pl_start[i] < _pl_start[oldest_same]:
+				oldest_same = i
+	if same >= limit and oldest_same >= 0:
+		return oldest_same
+	for k in _players.size():
+		var i := (_next + k) % _players.size()
+		if not _players[i].playing:
+			_next = (i + 1) % _players.size()
+			return i
+	return oldest_any if oldest_any >= 0 else 0
+
+
+## Pan (−PAN_MAX..PAN_MAX) de uma posição do mundo pelo x NA TELA.
+func pan_for(world_pos: Vector2) -> float:
+	var vp := get_viewport()
+	if vp == null or not world_pos.is_finite():
+		return 0.0
+	var screen := vp.get_canvas_transform() * world_pos
+	var half := maxf(vp.get_visible_rect().size.x * 0.5, 1.0)
+	return clampf((screen.x - half) / half, -1.0, 1.0) * PAN_MAX
+
+
+## Pan → degrau de bus (−2..2; 0 = centro).
+func _pan_step(pan: float) -> int:
+	return clampi(roundi(pan / PAN_MAX * 2.0), -2, 2)
 
 
 ## Voz "gromelô" do falante (a UI chama a cada caractere/sílaba).
@@ -277,6 +492,13 @@ func _pitch_for(sfx_name: String) -> float:
 			if sfx_name.begins_with(prefix):
 				return float(amount)
 	return 0.04
+
+
+func _jitters(sfx_name: String) -> bool:
+	for prefix in JITTER_FAMILIES:
+		if sfx_name.begins_with(prefix):
+			return true
+	return false
 
 
 ## Lista de streams do som: [nome, nome_2, nome_3 ...] (só os que existem).
@@ -324,34 +546,54 @@ func _pick_variant(sfx_name: String, recent: bool):
 # --- Música ------------------------------------------------------------
 
 ## Troca a faixa com crossfade. Idempotente: pedir a faixa que já toca não faz
-## nada. Se o arquivo não existir, a faixa ANTERIOR continua (nunca silêncio
-## abrupto por falta de arquivo).
-func play_music(track_name: String, loop: bool = true, pitch: float = 1.0) -> void:
+## nada (só ajusta o tom). Se o arquivo não existir, a faixa ANTERIOR continua
+## (nunca silêncio abrupto por falta de arquivo).
+## `fade` em segundos: < 0 = padrão (1,2 s); 0 = CORTE SECO (a anterior para na
+## hora e a nova entra cheia) — ex.: o tema distorcido "corta" e o roubo entra.
+func play_music(track_name: String, loop: bool = true, pitch: float = 1.0, fade: float = -1.0) -> void:
 	current_track = track_name
 	if track_name == _playing_track and _music[_music_cur].playing:
 		if not is_equal_approx(pitch, _music_pitch):
 			set_music_pitch(pitch, 0.0)
 		return
 	var stream = _load(MUSIC_DIR + track_name)
-	if stream == null:
+	if stream == null or _shut_down:
 		return
 	_set_loop(stream, loop)
 	var old := _music[_music_cur]
 	_music_cur = (_music_cur + 1) % 2
 	var new := _music[_music_cur]
 	new.stream = stream
-	new.volume_db = SILENT_DB
 	_music_pitch = maxf(pitch, 0.05)
 	new.pitch_scale = _music_pitch
-	new.play()
 	_playing_track = track_name
-	_apply_volumes()                  # camada (dB) da faixa nova
-	_crossfade(old, new)
+	_layer_now = float(_layer_db.get(track_name, 0.0))   # faixa nova entra já na sua camada
+	_apply_volumes()
+	var gain := track_gain_db(track_name)
+	_kill_tween()
+	if fade == 0.0:
+		old.stop()
+		new.volume_db = gain
+		new.play()
+		return
+	new.volume_db = SILENT_DB
+	new.play()
+	var secs := MUSIC_FADE if fade < 0.0 else fade
+	_music_tween = create_tween().set_ignore_time_scale(true).set_parallel(true)
+	_music_tween.tween_property(new, "volume_db", gain, secs).from(SILENT_DB)
+	if old.playing:
+		_music_tween.tween_property(old, "volume_db", SILENT_DB, secs)
+		_music_tween.chain().tween_callback(old.stop)
+
+
+## Ganho fixo da faixa (dB) aplicado no player: Éon ~3 LU abaixo do chefe (R13).
+func track_gain_db(track_name: String) -> float:
+	return EON_MUSIC_DB if track_name.begins_with("eon_") else 0.0
 
 
 ## Muda o tom/velocidade da música (1 = normal; 0,8 = mais grave e lenta).
 ## `fade` em segundos (0 = na hora). Vale pra faixa atual e as seguintes até
-## alguém mudar de novo.
+## alguém mudar de novo (o menu volta a 1).
 func set_music_pitch(pitch: float, fade: float = 1.0) -> void:
 	_music_pitch = maxf(pitch, 0.05)
 	if _pitch_tween != null and _pitch_tween.is_valid():
@@ -367,13 +609,36 @@ func set_music_pitch(pitch: float, fade: float = 1.0) -> void:
 
 ## Abaixa a música por `seconds` (em `db`) e volta sozinha com fade —
 ## pra uma fala ou um golpe de cena. Soma com o ducking de diálogo.
+## Abaixada longa: `duck_music(999, -14)` e depois `duck_music(0, 0)` solta.
 func duck_music(seconds: float, db: float = -12.0) -> void:
-	if _temp_duck_tween != null and _temp_duck_tween.is_valid():
-		_temp_duck_tween.kill()
-	_temp_duck_tween = create_tween().set_ignore_time_scale(true)
-	_temp_duck_tween.tween_method(_set_temp_duck, _temp_duck_db, db, DUCK_IN)
-	_temp_duck_tween.tween_interval(maxf(seconds, 0.0))
-	_temp_duck_tween.tween_method(_set_temp_duck, db, 0.0, DUCK_OUT)
+	_start_temp_duck(db, DUCK_IN, maxf(seconds, 0.0), DUCK_OUT)
+
+
+## Envelope da abaixada por relógio real (como o ducking): um quadro longo não
+## pula nem engole o fade — antes era Tween e atrasava sob carga.
+func _start_temp_duck(db: float, secs_in: float, hold: float, secs_out: float) -> void:
+	_td_from = _temp_duck_db
+	_td_db = db
+	_td_in = maxf(secs_in, 0.0001)
+	_td_hold = hold
+	_td_out = maxf(secs_out, 0.0001)
+	_td_t0 = Time.get_ticks_usec()
+	_td_active = true
+	_wake()
+
+
+func _temp_duck_value(now: int) -> float:
+	var t := float(now - _td_t0) / 1000000.0
+	if t < _td_in:
+		return lerpf(_td_from, _td_db, t / _td_in)
+	t -= _td_in
+	if t < _td_hold:
+		return _td_db
+	t -= _td_hold
+	if t < _td_out:
+		return lerpf(_td_db, 0.0, t / _td_out)
+	_td_active = false
+	return 0.0
 
 
 func _set_temp_duck(v: float) -> void:
@@ -381,13 +646,14 @@ func _set_temp_duck(v: float) -> void:
 	_apply_volumes()
 
 
-## Volume da "camada" da faixa ATUAL, 0..1 (0 = −18 dB, 1 = normal). Ex.: o
+## Volume da "camada" de uma faixa, 0..1 (0 = −18 dB, 1 = normal). Ex.: o
 ## Centro sobe conforme os cacos voltam. Fica guardado por faixa (trocar de
-## faixa e voltar mantém o nível). `track` vazio = faixa que está tocando.
+## faixa e voltar mantém o nível; o menu zera tudo). Muda sem degrau (6 dB/s).
+## `track` vazio = faixa pedida por último.
 func set_music_layer_volume(t: float, track: String = "") -> void:
 	var key := track if track != "" else current_track
 	_layer_db[key] = lerpf(-18.0, 0.0, clampf(t, 0.0, 1.0))
-	_apply_volumes()
+	_wake()
 
 
 ## Silencia a música com fade (0 = corta na hora).
@@ -395,24 +661,19 @@ func stop_music(fade: float = MUSIC_FADE) -> void:
 	current_track = ""
 	_playing_track = ""
 	_kill_tween()
+	# UM tween só (paralelo) para os dois players: antes cada player ganhava o
+	# seu e só o último ficava guardado — o outro, órfão, seguia baixando e
+	# depois PARAVA o player mesmo que ele já tocasse a faixa seguinte.
 	for m in _music:
 		if not m.playing:
 			continue
 		if fade <= 0.0:
 			m.stop()
 		else:
-			_music_tween = create_tween().set_ignore_time_scale(true)
+			if _music_tween == null:
+				_music_tween = create_tween().set_ignore_time_scale(true).set_parallel(true)
 			_music_tween.tween_property(m, "volume_db", SILENT_DB, fade)
-			_music_tween.tween_callback(m.stop)
-
-
-func _crossfade(old: AudioStreamPlayer, new: AudioStreamPlayer) -> void:
-	_kill_tween()
-	_music_tween = create_tween().set_ignore_time_scale(true).set_parallel(true)
-	_music_tween.tween_property(new, "volume_db", 0.0, MUSIC_FADE).from(SILENT_DB)
-	if old.playing:
-		_music_tween.tween_property(old, "volume_db", SILENT_DB, MUSIC_FADE)
-		_music_tween.chain().tween_callback(old.stop)
+			_music_tween.tween_callback(m.stop).set_delay(fade)
 
 
 func _kill_tween() -> void:
@@ -451,7 +712,7 @@ func play_ambience(amb_name: String, volume_db: float = 0.0) -> void:
 	current_ambience = amb_name
 	_amb_db = volume_db
 	var stream = _load(AMB_DIR + amb_name)
-	if stream == null:
+	if stream == null or _shut_down:
 		return
 	_set_loop(stream, true)
 	var old := cur
@@ -472,15 +733,16 @@ func play_ambience(amb_name: String, volume_db: float = 0.0) -> void:
 func stop_ambience(fade: float = AMB_FADE) -> void:
 	current_ambience = ""
 	_kill_amb_tween()
-	for a in _amb:
+	for a in _amb:                    # um tween só (ver stop_music)
 		if not a.playing:
 			continue
 		if fade <= 0.0:
 			a.stop()
 		else:
-			_amb_tween = create_tween().set_ignore_time_scale(true)
+			if _amb_tween == null:
+				_amb_tween = create_tween().set_ignore_time_scale(true).set_parallel(true)
 			_amb_tween.tween_property(a, "volume_db", SILENT_DB, fade)
-			_amb_tween.tween_callback(a.stop)
+			_amb_tween.tween_callback(a.stop).set_delay(fade)
 
 
 func _kill_amb_tween() -> void:
@@ -503,6 +765,63 @@ func ambience_for_screen(screen: int) -> String:
 func _update_ambience(screen: int) -> void:
 	var vol := AMB_ARCHON_DB if RunManager.is_archon_screen(screen) else 0.0
 	play_ambience(ambience_for_screen(screen), vol)
+
+
+# --- Envelopes (ducking / slow-mo / camada / duck_music) por tempo REAL ---
+#
+# Antes o ducking era um Tween criado no quadro do pedido. Tween (e timer) novo
+# recebe no 1º passo o delta INTEIRO do quadro em que nasceu — inclusive o tempo
+# ANTES do pedido: num quadro longo (carga de cena, 1º quadro do jogo) o fade
+# pulava direto pro fim. Agora cada fade guarda o instante (Time, em µs) em que
+# foi PEDIDO e o valor de partida; _process só interpola pelo relógio real
+# desde então (ignora time_scale e pausa). Duração proporcional à distância:
+# um fade revertido no meio volta no mesmo ritmo.
+
+func _wake() -> void:
+	if not is_processing():
+		_env_us = Time.get_ticks_usec()
+		set_process(true)
+
+
+## Começa um fade de `cur` até `target`; devolve (partida, duração).
+func _env_start(cur: float, target: float, secs_in: float, secs_out: float) -> Vector3:
+	var secs := secs_in if target > cur else secs_out
+	return Vector3(cur, maxf(secs * absf(target - cur), 0.0001), 0.0)
+
+
+func _env_value(env: Vector3, t0: int, target: float, now: int) -> float:
+	var k := clampf(float(now - t0) / 1000000.0 / env.y, 0.0, 1.0)
+	return lerpf(env.x, target, k)
+
+
+func _process(_delta: float) -> void:
+	var now := Time.get_ticks_usec()
+	var dt := float(now - _env_us) / 1000000.0
+	_env_us = now
+	var busy := false
+	if _duck != _duck_target:
+		_duck = _env_value(_duck_env, _duck_t0, _duck_target, now)
+		busy = true
+	if _slow != _slow_target:
+		_slow = _env_value(_slow_env, _slow_t0, _slow_target, now)
+		_apply_lowpass()
+		busy = true
+	if _td_active:
+		_temp_duck_db = _temp_duck_value(now)
+		busy = true
+	if _roubo_due_us > 0:
+		busy = true
+		if now >= _roubo_due_us:
+			_roubo_due_us = 0
+			if not _shut_down:
+				play_music("roubo", false, 1.0, 0.0)
+	var layer_goal := float(_layer_db.get(_playing_track, 0.0))
+	if _layer_now != layer_goal:
+		_layer_now = move_toward(_layer_now, layer_goal, clampf(dt, 0.0, 0.1) * LAYER_RATE_DB)
+		busy = true
+	_apply_volumes()
+	if not busy:
+		set_process(false)
 
 
 # --- Ducking (diálogo / cards) -------------------------------------------
@@ -533,18 +852,42 @@ func _on_duck_holder_gone(id: int) -> void:
 
 func _update_duck() -> void:
 	var target := 1.0 if is_ducked() else 0.0
-	if is_equal_approx(target, _duck_target):
+	if target == _duck_target:
 		return
 	_duck_target = target
-	if _duck_tween != null and _duck_tween.is_valid():
-		_duck_tween.kill()
-	_duck_tween = create_tween().set_ignore_time_scale(true)
-	_duck_tween.tween_method(_set_duck, _duck, target, DUCK_IN if target > 0.5 else DUCK_OUT)
+	_duck_env = _env_start(_duck, target, DUCK_IN, DUCK_OUT)
+	_duck_t0 = Time.get_ticks_usec()
+	_wake()
 
 
-func _set_duck(v: float) -> void:
-	_duck = v
-	_apply_volumes()
+# --- Slow-mo (R8) ----------------------------------------------------------
+
+## Sinal do Juice: `active` liga/desliga; `scale` ≈ 0,3 = esquiva perfeita
+## (abafa menos, 2,5 kHz); finalização/chefe (0,15–0,22) = 1,5 kHz.
+func _on_slowmo_changed(active: bool, scale: float = 0.25) -> void:
+	var target := 1.0 if active else 0.0
+	if active:
+		_slow_hz = SLOW_DODGE_HZ if absf(scale - 0.3) <= 0.05 else SLOW_CUT_HZ
+		_apply_lowpass()
+	if target == _slow_target:
+		return
+	_slow_target = target
+	_slow_env = _env_start(_slow, target, SLOW_IN, SLOW_OUT)
+	_slow_t0 = Time.get_ticks_usec()
+	_wake()
+
+
+## Corte atual do passa-baixas (Hz), interpolado em escala logarítmica.
+func lowpass_cutoff_hz() -> float:
+	return exp(lerpf(log(SLOW_OPEN_HZ), log(_slow_hz), _slow))
+
+
+func _apply_lowpass() -> void:
+	var hz := lowpass_cutoff_hz()
+	var on := _slow > 0.001
+	for i in _lp_filters.size():
+		_lp_filters[i].cutoff_hz = hz
+		AudioServer.set_bus_effect_enabled(_lp_slots[i].x, _lp_slots[i].y, on)
 
 
 # --- Música por contexto ----------------------------------------------
@@ -558,15 +901,19 @@ func _connect_context() -> void:
 		gm.state_changed.connect(_on_state_changed)
 		_on_state_changed(gm.state)
 	var pr := get_node_or_null("/root/Progression")
-	if pr != null and not pr.orbs_changed.is_connected(_on_orbs):
-		_last_orbs = pr.orbs
+	if pr != null and not pr.weapon_level_changed.is_connected(_on_weapon):
 		_last_weapon = pr.weapon_level
 		_last_rings = pr.rings.size()
 		_last_restored = pr.restored_rings.size()
 		_last_stolen = pr.rings_stolen
-		pr.orbs_changed.connect(_on_orbs)
 		pr.weapon_level_changed.connect(_on_weapon)
 		pr.rings_changed.connect(_on_rings)
+	# Slow-mo (sinal novo do Combate): liga só se existir — compila sem ele.
+	var juice := get_node_or_null("/root/Juice")
+	if juice != null and juice.has_signal("slowmo_changed"):
+		var cb := Callable(self, "_on_slowmo_changed")
+		if not juice.is_connected("slowmo_changed", cb):
+			juice.connect("slowmo_changed", cb)
 
 
 ## Faixa certa pra uma tela do run (só pela ESTRUTURA — nunca número fixo).
@@ -582,25 +929,226 @@ func track_for_screen(screen: int) -> String:
 	return "eon_" + EON_TRACKS[clampi(RunManager.eon_index(screen), 0, EON_TRACKS.size() - 1)]
 
 
-func _on_screen_changed(screen: int) -> void:
-	if RunManager.run_active:
+## Faixa e ambiência da Provação: dois encontros no clima do Éon do Arconte
+## escolhido, o terceiro é o chefe. Usa `boss_index` (não a tela), então não
+## depende da fórmula de tela da CodexSession.
+func trial_track() -> String:
+	if CodexSession.stage >= 2:
+		return "boss"
+	return "eon_" + EON_TRACKS[clampi(CodexSession.boss_index, 0, EON_TRACKS.size() - 1)]
+
+
+func _play_trial_context() -> void:
+	_end_scene_music()
+	play_music(trial_track())
+	var eon: String = EON_TRACKS[clampi(CodexSession.boss_index, 0, EON_TRACKS.size() - 1)]
+	play_ambience("amb_" + eon, AMB_ARCHON_DB if CodexSession.stage >= 2 else 0.0)
+
+
+func _play_run_context(screen: int) -> void:
+	_end_scene_music()
+	if RunManager.is_center(screen):
+		_update_center_music()
+	else:
 		play_music(track_for_screen(screen))
-		_update_ambience(screen)
+	_update_ambience(screen)
+
+
+## Centro (ROTEIRO §2, cena C): sem música até o 1º caco; depois `centro` entra
+## e sobe um degrau por caco até o volume cheio no 6º. Curva = a do Level
+## (`_restore_echo`: 0,35 + 0,65·k/6), para os dois nunca brigarem pela camada:
+## 1 caco ≈ −9,8 dB, 3 ≈ −6 dB, 6 = 0 dB.
+func _update_center_music() -> void:
+	var k: int = Progression.restored_rings.size()
+	if k <= 0:
+		if _playing_track != "":
+			stop_music(MUSIC_FADE * 2.0)
+		current_track = "centro"
+		return
+	set_music_layer_volume(clampf(0.35 + 0.65 * float(k) / float(CENTER_SHARDS), 0.0, 1.0), "centro")
+	play_music("centro")
+
+
+func _on_screen_changed(screen: int) -> void:
+	if CodexSession.active:
+		return                        # a Provação escolhe pelo estado (abaixo)
+	if RunManager.run_active:
+		_play_run_context(screen)
 
 
 func _on_state_changed(new_state: int) -> void:
 	match new_state:
 		GameManager.State.MENU:
-			play_music("theme")
+			_reset_music_mods()
+			play_music(menu_track())
 			stop_ambience()
 		GameManager.State.PLAYING:
-			if RunManager.run_active:
-				play_music(track_for_screen(RunManager.current_screen))
-				_update_ambience(RunManager.current_screen)
-			elif CodexSession.active:
-				# Provação: dois encontros no clima do Éon, o terceiro é chefe.
-				play_music("boss" if CodexSession.stage >= 2 else "eon_torpor")
-				play_ambience("amb_torpor", AMB_ARCHON_DB if CodexSession.stage >= 2 else 0.0)
+			# Provação ANTES do run: CodexSession.start_demo() também liga
+			# RunManager.run_active (REVISAO #8).
+			if CodexSession.active:
+				_play_trial_context()
+			elif RunManager.run_active:
+				_play_run_context(RunManager.current_screen)
+
+
+## Menu: desfaz o que as cenas deixaram na música (tom, camadas, abaixada).
+func _reset_music_mods() -> void:
+	_end_scene_music()
+	_layer_db.clear()
+	_td_active = false
+	_temp_duck_db = 0.0
+	if not is_equal_approx(_music_pitch, 1.0):
+		set_music_pitch(1.0, 0.0)
+	_wake()
+
+
+## Faixa do menu: `menu` se o arquivo existir (tema próprio, escolha do João),
+## senão `theme` (que é o tema da Voz — ver `voice_theme`).
+func menu_track() -> String:
+	for t in OPTIONAL_MUSIC:
+		if t == "menu" and has_music(t):
+			return t
+	return VOICE_THEME
+
+
+# --- Tema da Voz e API das cenas (ROTEIRO §2 e §5 #8) ----------------------
+#
+# Quem encena (Level/Cinematic) chama no momento da fala:
+#   Audio.voice_theme("santuario")  antes da conversa do santuário;
+#   Audio.voice_theme("")           depois dela (volta à música da tela);
+#   Audio.cue(line.get("cue", ""))  a cada fala mostrada (DialogueBox.line_shown);
+#   Audio.ring_note(i, devolvendo)  a cada gema que voa (roubo) ou volta (anagnórise).
+# Trocar de tela (ou voltar ao menu) desfaz tudo o que a cena deixou.
+
+## O tema da Voz em cada momento da história:
+##   "santuario" — `theme` entra em 2 s, 3 dB abaixo (+ o ducking do diálogo);
+##   "roubo"     — corte seco para `theme` a 0,75 de tom (distorcido) por 3 s
+##                 de relógio real, depois corte seco para `roubo` (sem loop);
+##   "sozinha"   — `theme` volta sozinho, lento (0,85), entrando em 4 s;
+##   ""          — fim: volta à música da tela (Éon/Arconte/Provação).
+## Em "roubo"/"sozinha" o diálogo abaixa a música só ~3 dB (a música É a cena).
+func voice_theme(mode: String) -> void:
+	_roubo_due_us = 0
+	voice_theme_mode = mode
+	match mode:
+		"santuario":
+			_duck_scale = 1.0
+			_layer_db[VOICE_THEME] = VOICE_SANCTUARY_DB
+			play_music(VOICE_THEME, true, 1.0, SCENE_FADE)
+			_wake()
+		"roubo":
+			_duck_scale = SCENE_DUCK_SCALE
+			_layer_db.erase(VOICE_THEME)
+			_release_temp_duck(0.0)
+			stop_music(0.0)               # recomeça do início mesmo se o tema já tocava
+			play_music(VOICE_THEME, false, VOICE_STOLEN_PITCH, 0.0)
+			_apply_volumes()
+			# 3 s de relógio REAL desde o pedido (ver _process). Um timer novo
+			# disparava cedo sob carga: recebe no 1º passo o quadro inteiro.
+			_roubo_due_us = Time.get_ticks_usec() + int(VOICE_STOLEN_SECS * 1000000.0)
+			_wake()
+		"sozinha":
+			_duck_scale = SCENE_DUCK_SCALE
+			_layer_db.erase(VOICE_THEME)
+			_release_temp_duck(0.0)
+			play_music(VOICE_THEME, true, VOICE_ALONE_PITCH, VOICE_ALONE_FADE)
+			_apply_volumes()
+		_:
+			voice_theme_mode = ""
+			_layer_db.erase(VOICE_THEME)
+			if CodexSession.active:
+				_play_trial_context()
+			elif RunManager.run_active:
+				_play_run_context(RunManager.current_screen)
+			else:
+				_end_scene_music()
+
+
+## Desfaz o estado de cena (troca de tela, menu, Provação): cancela o corte
+## agendado do roubo e devolve o ducking de diálogo ao normal.
+func _end_scene_music() -> void:
+	_roubo_due_us = 0
+	voice_theme_mode = ""
+	if _temp_duck_db < -0.01:          # abaixada de cena (ex.: névoa) não atravessa a tela
+		_release_temp_duck(DUCK_OUT)
+	if _duck_scale != 1.0:
+		_duck_scale = 1.0
+		_apply_volumes()
+
+
+## Solta a abaixada de `duck_music` em `secs` (0 = na hora).
+func _release_temp_duck(secs: float) -> void:
+	if secs <= 0.0:
+		_td_active = false
+		_set_temp_duck(0.0)
+		return
+	_start_temp_duck(0.0, secs, 0.0, 0.0)
+
+
+## Som de um `cue` de fala (ROTEIRO §5). Devolve true se o cue é conhecido
+## (mesmo os que não têm som, como `wait_2s`); false = cue desconhecido.
+## A imagem (névoa, máscara, gemas) é de quem encena; aqui só o som.
+func cue(cue_name: String) -> bool:
+	if _shut_down:
+		return CUES.has(cue_name)
+	match cue_name:
+		"heartbeat":                 # intro: coração no escuro
+			play_sfx("heartbeat")
+		"fog_thickens":              # cena A: névoa adensa; a música do Limiar desce a 40 %
+			play_sfx("fog_swell")
+			duck_music(9999.0, FOG_DUCK_DB)
+		"king_emerges":              # cenas A e B: o Rei sai da névoa
+			play_sfx("king_step")
+			if RunManager.run_active and RunManager.is_king_screen(RunManager.current_screen):
+				play_sfx("boss_appear", -1.0, -8.0)
+				_release_temp_duck(SCENE_FADE)
+		"mask_lights":               # cena A: a máscara acende
+			play_sfx("mask_light")
+		"mask_cracks":               # queda do Rei: estalo seco (= Staging)
+			play_sfx("block", -1.0, -4.0)
+		"king_sinks":                # o Rei afunda na névoa
+			play_sfx_pitched("fog_swell", 0.8, -2.0)
+		"chime":                     # o nome de Ina (= Staging)
+			play_sfx("stele_unlock", -1.0, -6.0)
+		"music_stop":                # santuário da Coroa: a música da Voz para
+			stop_music(1.5)
+		"voice_merge":               # cena B: Voz e Rei em uníssono
+			play_sfx("voice_merge")
+		"rings_fly":                 # cena B: as gemas voam — o som é por gema (ring_note)
+			pass
+		"mask_falls":                # cena B: a máscara cai — tema distorcido → roubo
+			voice_theme("roubo")
+		"sink":                      # cena B: vira motor e afunda; a música para
+			play_sfx("dive")
+			play_sfx("boss_step", -1.0, -2.0)
+			play_sfx_pitched("fog_swell", 0.6, -4.0)
+			stop_music(2.0)
+		"rings_return":              # cena D: corte de música; os Anéis voltam (ring_note)
+			stop_music(0.0)
+		"flash":                     # cena D: clarão + acorde
+			play_sfx("nova")
+			play_sfx_pitched("ring_gain", 1.0, -3.0)
+		"colossus_shrinks":          # cena D: o Colosso oco; respiração pequena
+			play_sfx("child_breath")
+		"theme_alone":               # cena D: o tema da Voz, agora dela
+			voice_theme("sozinha")
+		"reclaim":                   # cena D: o pequeno vira luz
+			play_sfx("revive", -1.0, -4.0)
+		"wait_2s":
+			pass
+		_:
+			return false
+	return true
+
+
+## Uma gema do roubo/anagnórise (0..6). Roubo: `ring_steal` um semitom ACIMA a
+## cada gema; devolução (`returning`): `ring_gain` um semitom ABAIXO a cada uma.
+func ring_note(index: int, returning: bool = false) -> bool:
+	var i := clampi(index, 0, 6)
+	_ring_note_ms = Time.get_ticks_msec()
+	if returning:
+		return play_sfx_pitched("ring_gain", pow(2.0, -float(i) / 12.0), -4.0)
+	return play_sfx_pitched("ring_steal", pow(2.0, float(i) / 12.0), -2.0)
 
 
 # --- Ganchos por sinal (Progression) ------------------------------------
@@ -608,13 +1156,6 @@ func _on_state_changed(new_state: int) -> void:
 func _in_game() -> bool:
 	# Fora do jogo (menu, restauração do save) os sinais disparam sem evento real.
 	return GameManager.state == GameManager.State.PLAYING or GameManager.state == GameManager.State.UPGRADE
-
-
-func _on_orbs(total: int) -> void:
-	var delta := total - _last_orbs
-	_last_orbs = total
-	if _in_game() and delta > 0 and delta <= 40:
-		play_sfx("spark")
 
 
 func _on_weapon(level: int) -> void:
@@ -628,13 +1169,18 @@ func _on_rings() -> void:
 	var rings: int = Progression.rings.size()
 	var restored: int = Progression.restored_rings.size()
 	var stolen: bool = Progression.rings_stolen
-	if _in_game():
+	# Se a cena acabou de tocar as gemas (ring_note), o sinal não toca de novo.
+	var scene_played := Time.get_ticks_msec() - _ring_note_ms < RING_NOTE_HOLD_MS
+	if _in_game() and not scene_played:
 		if stolen and not _last_stolen:
 			play_sfx("ring_steal")
 		elif restored > _last_restored:
 			play_sfx("shard")
 		elif rings > _last_rings:
 			play_sfx("ring_gain")
+	if restored != _last_restored and not CodexSession.active and RunManager.run_active \
+			and RunManager.is_center(RunManager.current_screen):
+		_update_center_music()
 	_last_rings = rings
 	_last_restored = restored
 	_last_stolen = stolen
@@ -656,8 +1202,7 @@ func set_volume(bus_name: String, linear: float) -> void:
 func _apply_volumes() -> void:
 	_set_bus("Master", master_vol, 0.0)
 	_set_bus("SFX", sfx_vol, 0.0)
-	var layer: float = float(_layer_db.get(_playing_track, 0.0))
-	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck + _temp_duck_db + layer)
+	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck * _duck_scale + _temp_duck_db + _layer_now + SLOW_MUSIC_DB * _slow)
 	_set_bus("Ambience", music_vol, DUCK_AMB_DB * _duck)
 
 
@@ -666,6 +1211,48 @@ func _set_bus(bus_name: String, linear: float, extra_db: float) -> void:
 	if idx >= 0:
 		AudioServer.set_bus_volume_db(idx, linear_to_db(maxf(linear, 0.0001)) + extra_db)
 		AudioServer.set_bus_mute(idx, linear <= 0.001)
+
+
+# --- Encerramento (REVISAO #15) ------------------------------------------
+
+## Ao fechar o jogo: para todos os players e solta os streams, pra nenhuma
+## reprodução Ogg ficar "still in use at exit".
+## Janela fechada (X / Alt+F4): ainda há quadros depois, o mixer solta tudo.
+## `get_tree().quit()` (botão Sair) não manda WM_CLOSE_REQUEST: o autoload só
+## fica sabendo ao sair da árvore, já no encerramento — então para tudo e dá
+## ~40 ms para a thread de áudio misturar uma vez e apagar as reproduções.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		shutdown(false)
+	elif what == NOTIFICATION_EXIT_TREE or what == NOTIFICATION_PREDELETE:
+		shutdown(true)
+
+
+func shutdown(settle: bool = false) -> void:
+	if _shut_down:
+		return
+	_shut_down = true
+	set_process(false)
+	_td_active = false
+	for t in [_music_tween, _amb_tween, _pitch_tween]:
+		if t != null and (t as Tween).is_valid():
+			(t as Tween).kill()
+	var all: Array[AudioStreamPlayer] = []
+	all.append_array(_players)
+	all.append_array(_music)
+	all.append_array(_amb)
+	if _voice != null:
+		all.append(_voice)
+	var any_playing := false
+	for p in all:
+		if is_instance_valid(p):
+			any_playing = any_playing or p.playing
+			p.stop()
+			p.stream = null
+	_variants.clear()
+	_cache.clear()
+	if settle and any_playing:
+		OS.delay_msec(40)
 
 
 # --- Carga com cache negativa ------------------------------------------

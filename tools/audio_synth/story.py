@@ -10,6 +10,14 @@ SFX de roteiro (pedido do Roteiro, 17/10/2026) — cena "o Rei sai da névoa"
               uníssono (~2 s, sem palavras)
   whisper     sussurro ininteligível: ruído em formantes, sílabas sem sentido
               (~1,5 s) — nenhuma voz real
+
+Onda 2 (sons ★ do ROTEIRO §2, 100 % síntese):
+  heartbeat     intro "coração batendo no escuro": 2 batidas lub-dub abafadas
+                (~2,2 s), como ouvidas de DENTRO (sem agudo nenhum)
+  clap          cena B #4: duas palmas secas e lentas do Rei numa sala de pedra
+                (~1,6 s)
+  child_breath  cena D #3: respiração pequena (inspira–expira, trato vocal
+                curto = formantes ~35 % acima do adulto), quase um soluço
 """
 import os, sys
 import numpy as np
@@ -115,10 +123,87 @@ def whisper():
 	return C.reverb(o, rt60=0.9, wet=0.3, seed=580, lp_hz=9000, tail=False)
 
 
+def _thump(f0, dur, seed):
+	"""Uma batida: tom grave com queda de altura + corpo de ruído grave."""
+	n = M.n_(dur)
+	t = C.tvec(n)
+	body = M.tone(f0, dur, 0.008, 0.075, harm=((1, 1.0), (2, 0.55), (3, 0.3), (4, 0.12)), glide=-0.3)
+	# "toque" de 120–350 Hz: sem ele a batida some em caixinha de notebook/TV
+	thud = C.bp(C.noise(n, seed), 110, 350) * C.env_ad(n, 0.003, 0.03) * 1.4
+	return C.lp(body + thud, 450) * np.clip(t / 0.006, 0, 1)
+
+
+def heartbeat():
+	d = 2.3
+	o = M.buf(d)
+	for k, at in enumerate([0.02, 1.12]):          # ~55 bpm, devagar: acordando
+		M.put(o, _thump(66, 0.32, 600 + k), at, 0)      # "lub"
+		M.put(o, _thump(80, 0.24, 610 + k), at + 0.26, -5)  # "dub", mais curto
+	# pressão/sangue: ruído grave pulsando junto, quase subsônico
+	n = len(o)
+	t = C.tvec(n)
+	puls = sum(np.exp(-((t - a - 0.12) / 0.12) ** 2) for a in [0.02, 1.12])
+	M.put(o, C.lp(C.noise(n, 620), 90) * puls * 0.35, 0, -6)
+	return C.reverb(C.lp(o, 700), rt60=0.5, wet=0.12, seed=621, lp_hz=800, tail=False)
+
+
+def _clap_hit(seed):
+	"""Palma: 3 microestalos (os dedos) + estouro de ruído 900–2,5 kHz."""
+	n = M.n_(0.12)
+	r = C.rng(seed)
+	x = np.zeros(n)
+	for k in range(3):
+		at = int((k * 0.007 + r.uniform(0, 0.002)) * C.SR)
+		m = M.n_(0.03)
+		burst = C.noise(m, seed + k) * C.env_ad(m, 0.0005, 0.006)
+		x[at:at + m] += burst[:n - at] * (0.7 + 0.3 * k)
+	m = n - int(0.018 * C.SR)
+	tail = C.noise(m, seed + 7) * C.env_ad(m, 0.001, 0.028)
+	x[int(0.018 * C.SR):] += tail
+	return C.bp(x, 850, 2600) + C.bp(x, 300, 600) * 0.25
+
+
+def clap():
+	d = 1.0
+	o = M.buf(d)
+	M.put(o, _clap_hit(640), 0.0, 0, -0.08)
+	M.put(o, _clap_hit(650), 0.78, -1, 0.08)      # a 2ª um pouco depois: lenta, irônica
+	# sala de pedra (o Limiar): reverb curto e escuro, cauda longa e baixa
+	return C.reverb(o, rt60=1.6, wet=0.28, seed=660, lp_hz=5000, tail=True)
+
+
+def child_breath():
+	d = 2.3
+	n = M.n_(d)
+	t = C.tvec(n)
+	o = np.zeros((n, 2))
+	shift = 1.35                                   # trato vocal pequeno
+	w = C.noise(n, 670)
+	def breath_part(vowel, lo, hi, a, rel):
+		x = np.zeros(n)
+		for (F, gdb, B) in C.VOWELS[vowel]:
+			# banda 4× mais larga que a da vogal cantada: sopro, não apito
+			x += C.resonator(w, min(F * shift, C.SR * 0.4), max(1.5, F * shift / (4.0 * B))) * db(gdb)
+		e = np.clip((t - lo) / a, 0, 1) * np.clip((hi - t) / rel, 0, 1)
+		return C.hp(x, 300) * e ** 1.5
+	inhale = breath_part("i", 0.05, 0.85, 0.45, 0.12)            # inspira curto, agudo
+	exhale = breath_part("a", 1.0, 2.2, 0.08, 0.9)               # expira longo, cansado
+	# um fio de voz no fim da expiração (quase um "mm" de criança) — bem baixo
+	f0 = 330 * (1 - 0.06 * np.clip((t - 1.05) / 0.9, 0, 1))
+	hum = C.voice(f0, n, "u", shift=shift, breath=0.3, seed=671, nh=20, vib=(5.5, 0.01))
+	he = np.clip((t - 1.05) / 0.25, 0, 1) * np.clip((1.75 - t) / 0.5, 0, 1)
+	o += C.pan(inhale * 0.9, -0.05)
+	o += C.pan(exhale + hum * he * 0.05, 0.05)
+	return C.reverb(o, rt60=1.2, wet=0.2, seed=672, lp_hz=7000, tail=False)
+
+
 SOUNDS = {
 	"fog_swell": ("story_soft", [fog_swell]),
 	"king_step": ("story", [lambda v=v: king_step(v) for v in range(3)]),
 	"mask_light": ("story_soft", [mask_light]),
 	"voice_merge": ("story", [voice_merge]),
 	"whisper": ("story_whisper", [whisper]),
+	"heartbeat": ("story_heart", [heartbeat]),
+	"clap": ("story", [clap]),
+	"child_breath": ("story_whisper", [child_breath]),
 }
