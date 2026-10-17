@@ -3,11 +3,11 @@
 Branch `dir2/balance`. Só ferramentas e documentos: nenhum número do jogo foi editado.
 Rodadas brutas (txt/csv/log): `/home/user/caps/balance/runs/` (as de tempo antigo em `runs/legado/`).
 
-## 1. Commits
-`8046be8` semente por tela + dano por fonte + .txt/.csv · `WIP run.sh/compare.py` · `91e988e` ia=2 ·
-`c68e52a` loja=teto · `e47f535` **bot no passo de física** · run.sh vel 1 · `cacffba` docs/BALANCE.md ·
-compare --papeis · sim=poca · `8495102` detecção de TRAVA + repro · sim=poca3 · pedidos (`fc5362e`) ·
-este relatório. (`git log --oneline integracao/onda1..dir2/balance`.)
+## 1. Commits (16 + este)
+`8046be8` semente/fontes/csv · `8b08a98` run.sh, compare.py, loja=gasta · `91e988e` ia=2 · `c68e52a` loja=teto ·
+**`e47f535` bot no passo de física** · `4a17681` run.sh vel 1 · `cacffba` aviso r1–r7 · `aa7fe42` --papeis ·
+`79317f5` sim=poca · `8495102` TRAVA + repro · `5ef134a` sim=poca3 · `73cae96`/`fc5362e` pedidos ·
+`c24e6c3`/`1c20411` este relatório · `99fdaf9` docs/BALANCE.md r8.
 
 ## 2. O que mudou (arquivos)
 - `tools/balance_bot.gd` — o bot:
@@ -109,6 +109,14 @@ Esporos deixa ao morrer (`enemy.gd:869`, a P3 não mexe nela) e, a partir da tel
 em cascata (vida carregada entre telas); a queda de −32% na Coroa é efeito dessa cascata, não da P3.
 Se quiser Belias no nível do Armupiel, um passo a mais seria o tique da poça hostil 0,7 → 1,0 s
 (`hazard_zone.gd:64`) — não simulado.
+
+## 5b. Validação (`TIMEOUT=900 tools/validate.sh`, completo menos CodexPlaytest)
+```
+Scripts OK · ScriptCheck OK · GnoseQA OK (18) · SaveQA OK (13) · PuppetQA OK · HeroQA OK · WaveQA OK
+CodexQA FALHOU (32 pass) — "diretório de save independente" (falso conhecido do override.cfg)
+AudioQA FALHOU (23 pass) — duck() (bug conhecido do Áudio)
+```
+Mesmo estado da base: nada piorou (só mexi em ferramentas/documentos).
 
 ## 6. Como comparar r8 × r9 depois do Combate (item 4 do brief)
 ```
