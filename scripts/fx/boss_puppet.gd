@@ -37,7 +37,7 @@ const CLOTH := {
 }
 # Zonas presas a um osso só (gaiolas penduradas de Galila balançam como pêndulo).
 const ZONES := {
-	2: [["cage_l",Rect2(.07,.23,.15,.64)],["cage_r",Rect2(.745,.19,.115,.70)]],
+	2: [["cage_l",Rect2(.07,.23,.14,.64)],["cage_r",Rect2(.755,.19,.10,.33)]],
 }
 
 static var _mesh_cache: Dictionary = {}
@@ -319,19 +319,23 @@ func _weights_biped(uv: Vector2) -> Dictionary:
 	for id in bones:
 		if id == "weapon" or String(id).begins_with("cage_"): continue
 		var d: float = _distance_to_segment(p,points[id],ends[id])
-		var w: float = 1.0/pow(1.0+d*0.22,4)
+		# Membros quase rígidos (armadura não estica); junta curta entre eles.
+		var limb: bool = _group(id) in ["arm","leg"]
+		var w: float = 1.0/pow(1.0+d*(0.30 if limb else 0.22),6 if limb else 4)
 		if id in ["arm_l","fore_l","hand_l"]:
 			w *= 1.0-smoothstep(lx_in+0.0,lx_in+0.06,uv.x)
-			w *= 1.0-smoothstep(l_bottom+0.01,l_bottom+0.07,uv.y)
+			w *= 1.0-smoothstep(l_bottom+0.04,l_bottom+0.12,uv.y)
 			w *= smoothstep(j.arm_l[0].y-0.10,j.arm_l[0].y-0.03,uv.y)
 		elif id in ["arm_r","fore_r","hand_r"]:
 			w *= smoothstep(rx_in-0.06,rx_in-0.0,uv.x)
-			w *= 1.0-smoothstep(r_bottom+0.01,r_bottom+0.07,uv.y)
+			w *= 1.0-smoothstep(r_bottom+0.04,r_bottom+0.12,uv.y)
 			w *= smoothstep(j.arm_r[0].y-0.10,j.arm_r[0].y-0.03,uv.y)
 		elif id in ["thigh_l","shin_l"]:
 			w *= smoothstep(waist-0.01,waist+0.08,uv.y)*(1.0-smoothstep(j.hip[0].x-0.01,j.hip[0].x+0.05,uv.x))
+			w *= smoothstep(minf(j.shin_l[0].x,j.shin_l[1].x)-0.16,minf(j.shin_l[0].x,j.shin_l[1].x)-0.08,uv.x)
 		elif id in ["thigh_r","shin_r"]:
 			w *= smoothstep(waist-0.01,waist+0.08,uv.y)*smoothstep(j.hip[0].x-0.05,j.hip[0].x+0.01,uv.x)
+			w *= 1.0-smoothstep(maxf(j.shin_r[0].x,j.shin_r[1].x)+0.08,maxf(j.shin_r[0].x,j.shin_r[1].x)+0.16,uv.x)
 		elif id == "head":
 			w *= 1.0-smoothstep(j.head[0].y-0.01,j.head[0].y+0.06,uv.y)
 		elif id == "chest":
@@ -454,7 +458,7 @@ func _make_mesh(tex: Texture2D, uv_rect: Rect2, keyed: bool, cols: int, rows: in
 		for v in count: f[v] = per_vertex[v].get(id,0.0)
 		field.append(f)
 	if kind == "biped":
-		for it in 3:
+		for it in 2:
 			for k in ids.size():
 				var src: PackedFloat32Array = field[k]
 				var dst := src.duplicate()
@@ -672,20 +676,25 @@ func drive(state: String, time: float, delta: float, progress: float = -1.0, str
 		_aim("fore_l",elbow_l)
 		_aim("fore_r",elbow_r)
 		_aim("hand_l",-elbow_l*0.25)
-		_aim("hand_r",-elbow_r*0.25)
+		# Espadachins: punho arma a lâmina na preparação e corta no golpe.
+		var wrist: float = 0.0
+		if identity in [2,6]:
+			wrist = 0.30*anticipation-0.24*hit_arm
+			if state == "recover": wrist = -0.10*(1.0-smoothstep(0.0,1.0,ph))
+		_aim("hand_r",-elbow_r*0.25+wrist)
 		_aim("thigh_l",step*0.13)
 		_aim("thigh_r",-step*0.13)
 		_aim("shin_l",maxf(0,-step)*0.17)
 		_aim("shin_r",maxf(0,step)*0.17)
 		# Pano: atrasado e arrastado pelo corpo (inércia do peito e do quadril).
-		var drag: float = -vel.get("chest",0.0)*0.05-hip_v*0.004
+		var drag: float = clampf(-vel.get("chest",0.0)*0.025-hip_v*0.002,-0.06,0.06)
 		var i: int = 0
 		for id in tgt.keys():
 			if String(id).begins_with("cloth_"):
 				var flutter: float = sin(clock*2.6+i*1.8)*(0.035+gait*0.03)
 				var spirit_k: float = 1.0 if kind in ["spirit","king"] else 0.6
-				_aim(id,(flutter+drag)*spirit_k+gait*0.03)
-				_aim("hem_"+String(id).trim_prefix("cloth_"),-flutter*1.3-drag*0.6)
+				_aim(id,clampf((flutter+drag)*spirit_k+gait*0.03,-0.09,0.09))
+				_aim("hem_"+String(id).trim_prefix("cloth_"),clampf(-flutter*1.3-drag*0.6,-0.10,0.10))
 				i += 1
 		for side in ["l","r"]:
 			_aim("cage_"+side,-ang.get("chest",0.0)*0.9+sin(cycle*0.5+(0.0 if side == "l" else 1.3))*0.05*gait-hip_v*0.002)

@@ -155,7 +155,7 @@ func _boards(out: String) -> void:
 				art.boss_puppet.debug_bones = true
 				art.boss_puppet.debug_layer.visible = true
 				art.boss_puppet.debug_layer.queue_redraw()
-				art.modulate = Color(1,1,1,0.55)
+				_tint_weights(art.boss_puppet)
 			_label(names[i],Vector2(i*360+12,8),stage)
 		_label(entry.name,Vector2(12,474),stage,12)
 		await RenderingServer.frame_post_draw
@@ -188,3 +188,18 @@ func _sequence(out: String) -> void:
 		get_viewport().get_texture().get_image().save_png(out.path_join("f_%04d.png" % frame))
 		frame += 1
 	print("quadros: ",frame)
+
+
+## Pinta cada vértice com a cor dos ossos que o puxam (mistura pelos pesos).
+func _tint_weights(puppet: BossPuppet) -> void:
+	var skin: Polygon2D = puppet.skin
+	var colors := PackedColorArray()
+	colors.resize(skin.polygon.size())
+	colors.fill(Color.BLACK)
+	for b in skin.get_bone_count():
+		var hue: float = fmod(b*0.618034,1.0)
+		var c := Color.from_hsv(hue,0.85,1.0)
+		var w: PackedFloat32Array = skin.get_bone_weights(b)
+		for v in colors.size(): colors[v] += c*w[v]
+	for v in colors.size(): colors[v].a = 1.0
+	skin.vertex_colors = colors
