@@ -59,6 +59,11 @@ class HitchWorker extends Node:
 	var _enemy: Node = null
 	var _prewarm_ms: float = -1.0
 	var _release: Array = []       # [quadro, ação] para soltar botão
+	var _cache_before: Dictionary = {}
+	var _cache_at_start: int = -1
+	var _tex_before: float = 0.0
+	var _pl_start: Vector2 = Vector2.ZERO
+	var _res_before: int = 0
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
@@ -123,11 +128,15 @@ class HitchWorker extends Node:
 				pw.prewarm(lv)
 				_prewarm_ms = float(Time.get_ticks_usec() - t0) / 1000.0
 			_build_events(lv as Level, pl)
+			# Sem gatilho de zona: as waves da tela NÃO nascem (só os eventos da sonda).
+			lv.set_process(false)
+			_pl_start = pl.global_position
 			return
 		match _phase:
 			"warm":
 				if _frame - _level_frame >= WARM:
-					_start_quiet()
+					_cache_at_start = _cache_files().size()
+					_start_quiet(pl)
 			"quiet":
 				_pf += 1
 				_base_dt.append(dt)
@@ -144,9 +153,12 @@ class HitchWorker extends Node:
 			"rest":
 				_pf += 1
 				if _pf >= REST:
-					_next()
+					_next(pl)
 
-	func _start_quiet() -> void:
+	func _start_quiet(pl: Player) -> void:
+		# Sophia volta ao ponto de partida (a esquiva a desloca)
+		pl.global_position = _pl_start
+		pl.velocity = Vector2.ZERO
 		_phase = "quiet"
 		_pf = 0
 		_base_dt.clear()
@@ -159,6 +171,9 @@ class HitchWorker extends Node:
 		_watch_rd.clear()
 		_watch_pr.clear()
 		var ev: Array = _events[_ev]
+		_cache_before = _cache_files()
+		_tex_before = Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED)
+		_res_before = int(Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT))
 		var t0 := Time.get_ticks_usec()
 		(ev[1] as Callable).call()
 		_call_ms = float(Time.get_ticks_usec() - t0) / 1000.0
@@ -172,6 +187,16 @@ class HitchWorker extends Node:
 		var mdt := _max(_watch_dt)
 		var mrd := _max(_watch_rd)
 		var mpr := _max(_watch_pr)
+		# Shaders compilados AGORA = arquivos novos no cache de shaders do Godot
+		# (user://shader_cache: o GLES3 grava cada variante compilada). Contagem
+		# exata, imune ao ruído de tempo da máquina compartilhada.
+		var novos: Array = []
+		var agora := _cache_files()
+		for f in agora:
+			if not _cache_before.has(f) or int(_cache_before[f]) != int(agora[f]):
+				novos.append(String(f).get_slice("/", 0) + "/" + String(f).get_slice("/", 1).left(8))
+		var tex_mb := (Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) - _tex_before) / 1048576.0
+		var res_n := int(Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)) - _res_before
 		_results.append({
 			"evento": ev[0], "rodada": _round + 1,
 			"chamada_ms": snappedf(_call_ms, 0.01),
@@ -180,12 +205,14 @@ class HitchWorker extends Node:
 			"render_base_ms": snappedf(brd, 0.01), "render_pico_ms": snappedf(mrd, 0.01),
 			"process_pico_ms": snappedf(mpr, 0.01),
 			"nos_criados": _added.duplicate(),
+			"shaders_novos": novos.size(), "shaders_novos_lista": novos,
+			"textura_mb_nova": snappedf(tex_mb, 0.01), "recursos_novos": res_n,
 		})
-		print("HITCH r%d %-28s chamada=%6.2f  pico=%7.2f (base %5.2f)  render=%7.2f (base %5.2f)" % [_round + 1, ev[0], _call_ms, mdt, bdt, mrd, brd])
+		print("HITCH r%d %-28s chamada=%6.2f  pico=%7.2f (base %5.2f)  render=%7.2f (base %5.2f)  shaders=%d" % [_round + 1, ev[0], _call_ms, mdt, bdt, mrd, brd, novos.size()])
 		_phase = "rest"
 		_pf = 0
 
-	func _next() -> void:
+	func _next(pl: Player) -> void:
 		_ev += 1
 		if _ev >= _events.size():
 			_ev = 0
@@ -193,7 +220,25 @@ class HitchWorker extends Node:
 			if _round >= 2:
 				_report()
 				return
-		_start_quiet()
+		_start_quiet(pl)
+
+	## Arquivos do cache de shaders do GLES3 ("Classe/hash_fonte/variante.cache").
+	func _cache_files() -> Dictionary:
+		var outd: Dictionary = {}
+		_scan_cache("user://shader_cache", "", outd)
+		return outd
+
+	## Valor = tamanho do arquivo: o GLES3 REESCREVE o arquivo da versão quando
+	## compila mais uma variante dela (arquivo cresce) — conta como compilação.
+	func _scan_cache(dir: String, rel: String, outd: Dictionary) -> void:
+		var d := DirAccess.open(dir)
+		if d == null:
+			return
+		for sub in d.get_directories():
+			_scan_cache(dir.path_join(sub), rel.path_join(sub) if rel != "" else sub, outd)
+		for f in d.get_files():
+			var fa := FileAccess.open(dir.path_join(f), FileAccess.READ)
+			outd[rel.path_join(f)] = fa.get_length() if fa != null else 0
 
 	func _median(a: PackedFloat64Array) -> float:
 		if a.is_empty():
@@ -241,6 +286,8 @@ class HitchWorker extends Node:
 			["vfx_boss_appear", func(): VfxLibrary.boss_appear(lv, at.call(), col)],
 			["vfx_boss_phase2", func(): VfxLibrary.boss_phase2(lv, at.call(), col)],
 			["vfx_boss_death", func(): VfxLibrary.boss_death(lv, at.call(), col)],
+			["inimigo_eon_nasce", func(): _spawn_enemy(lv, pl, true)],
+			["inimigo_eon_morre", func(): _hurt_enemy(pl, 99999)],
 		]
 
 	func _press(action: String) -> void:
@@ -248,10 +295,11 @@ class HitchWorker extends Node:
 		_release.append([_frame + 3, action])
 
 	## Inimigo comum do Éon desta tela, parado (sem IA) ao lado da Sophia.
-	func _spawn_enemy(lv: Level, pl: Player) -> void:
+	## `eon` = a variante do Éon (família do Arconte: boneco articulado/Skeleton2D).
+	func _spawn_enemy(lv: Level, pl: Player, eon: bool = false) -> void:
 		var types: Array = Bestiary.types_for_screen(screen)
 		var e := lv.enemy_scene.instantiate()
-		e.type_id = types[0] if not types.is_empty() else "servo"
+		e.type_id = (types.back() if eon else types[0]) if not types.is_empty() else "servo"
 		lv.add_child(e)
 		e.global_position = pl.global_position + Vector2(70.0, 0.0)
 		e.set_physics_process(false)     # sem IA: não ataca nem anda (só leva golpe)
@@ -294,17 +342,22 @@ class HitchWorker extends Node:
 				"chamada1_ms": r1.chamada_ms, "chamada2_ms": r2.chamada_ms,
 				"primeira_vez_ms": snappedf(maxf(0.0, float(r1.quadro_pico_ms) - float(r2.quadro_pico_ms)), 0.01),
 				"nos": r1.nos_criados,
+				"shaders1": r1.shaders_novos, "shaders2": r2.shaders_novos,
+				"shaders1_lista": r1.shaders_novos_lista,
+				"textura_mb1": r1.textura_mb_nova, "recursos1": r1.recursos_novos, "recursos2": r2.recursos_novos,
 			})
 		var res := {
 			"tela": screen, "prewarm": prewarm, "prewarm_ms": snappedf(_prewarm_ms, 0.01),
 			"headless": DisplayServer.get_name() == "headless",
 			"gpu": RenderingServer.get_video_adapter_name(),
 			"resolucao": str(get_viewport().get_visible_rect().size),
+			"shaders_no_cache_ao_abrir": _cache_at_start,
+			"shaders_no_cache_ao_fim": _cache_files().size(),
 			"resumo": rows, "bruto": _results,
 		}
 		print("HITCHSUM ", JSON.stringify({"tela": screen, "prewarm": prewarm, "prewarm_ms": res.prewarm_ms}))
 		for row in rows:
-			print("HITCHROW %-28s 1a=%7.2f  2a=%7.2f  1a_vez=%7.2f  render 1a/2a=%7.2f/%7.2f" % [row.evento, row.pico1_ms, row.pico2_ms, row.primeira_vez_ms, row.render1_ms, row.render2_ms])
+			print("HITCHROW %-28s 1a=%7.2f  2a=%7.2f  1a_vez=%7.2f  render 1a/2a=%7.2f/%7.2f  shaders 1a/2a=%d/%d  tex+%.1fMB  rec 1a/2a=%d/%d" % [row.evento, row.pico1_ms, row.pico2_ms, row.primeira_vez_ms, row.render1_ms, row.render2_ms, row.shaders1, row.shaders2, row.textura_mb1, row.recursos1, row.recursos2])
 		if out != "":
 			var f := FileAccess.open(out, FileAccess.WRITE)
 			if f != null:
