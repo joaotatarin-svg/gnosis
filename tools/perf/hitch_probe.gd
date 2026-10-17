@@ -8,7 +8,7 @@ extends Node
 ## que o pré-aquecimento (VfxLibrary.prewarm) deve eliminar.
 ## Uso (ver tools/perf/run.sh):
 ##   godot --path . --audio-driver Dummy [--headless] --resolution 640x360 res://tools/perf/HitchProbe.tscn -- \
-##         [tela=3] [prewarm=0|1] [out=/caminho/engasgos.json]
+##         [tela=3] [prewarm=0|1] [out=/caminho/engasgos.json] [eventos=a,b,c]
 ## `prewarm=1` chama tools/perf/prewarm_proposta.gd (a correção proposta) no
 ## load da fase, ANTES de medir — prova de que a correção funciona sem editar o jogo.
 ## Para medir de verdade a 1ª vez, apague antes o cache de shaders do Godot
@@ -25,6 +25,7 @@ func _ready() -> void:
 			"tela": w.screen = int(kv[1])
 			"prewarm": w.prewarm = kv[1] == "1"
 			"out": w.out = kv[1]
+			"eventos": w.only = kv[1].split(",", false)
 	get_tree().root.add_child.call_deferred(w)
 
 
@@ -37,6 +38,7 @@ class HitchWorker extends Node:
 	var screen: int = 3
 	var prewarm: bool = false
 	var out: String = ""
+	var only: PackedStringArray = PackedStringArray()   # só estes eventos (diagnóstico)
 
 	var _frame: int = 0
 	var _level_frame: int = -1
@@ -63,6 +65,8 @@ class HitchWorker extends Node:
 	var _cache_at_start: int = -1
 	var _tex_before: float = 0.0
 	var _pl_start: Vector2 = Vector2.ZERO
+	var _cache_open: Dictionary = {}
+	var _cache_load_diff: Array = []
 	var _res_before: int = 0
 
 	func _ready() -> void:
@@ -122,6 +126,7 @@ class HitchWorker extends Node:
 				_release.erase(r)
 		if _level_frame < 0:
 			_level_frame = _frame
+			_cache_open = _cache_files()
 			if prewarm:
 				var t0 := Time.get_ticks_usec()
 				var pw = load("res://tools/perf/prewarm_proposta.gd")
@@ -132,10 +137,20 @@ class HitchWorker extends Node:
 			lv.set_process(false)
 			_pl_start = pl.global_position
 			return
+		if OS.has_environment("PERF_DIAG") and _frame - _level_frame in [1, 2, 3, 5, 10, 30]:
+			var st := lv.get_node_or_null("PrewarmStage")
+			if st != null and st is Node2D:
+				var cam := lv.get_viewport().get_camera_2d()
+				print("DIAG stage pos=%s vis=%s mod=%s cam=%s camcenter=%s pl=%s" % [st.global_position, st.is_visible_in_tree(), st.modulate, cam, cam.get_screen_center_position() if cam else Vector2.ZERO, pl.global_position])
+				lv.get_viewport().get_texture().get_image().save_png("/home/user/caps/perf/diag_f%d.png" % (_frame - _level_frame))
+			print("DIAG f+%d stage=%s filhos=%d ghost_mat=%s cache_diff=%s" % [_frame - _level_frame, st != null, st.get_child(0).get_child_count() if st != null and st.get_child_count() > 0 else -1, CharacterArt.AfterimageLayer.ghost_material != null, _cache_diff(_cache_open, _cache_files())])
 		match _phase:
 			"warm":
 				if _frame - _level_frame >= WARM:
-					_cache_at_start = _cache_files().size()
+					var c_now := _cache_files()
+					_cache_at_start = c_now.size()
+					_cache_load_diff = _cache_diff(_cache_open, c_now)
+					print("HITCH abertura: compilado entre a fase abrir e a 1ª medida (inclui o prewarm): ", _cache_load_diff)
 					_start_quiet(pl)
 			"quiet":
 				_pf += 1
@@ -194,7 +209,7 @@ class HitchWorker extends Node:
 		var agora := _cache_files()
 		for f in agora:
 			if not _cache_before.has(f) or int(_cache_before[f]) != int(agora[f]):
-				novos.append(String(f).get_slice("/", 0) + "/" + String(f).get_slice("/", 1).left(8))
+				novos.append(_cache_label(String(f)))
 		var tex_mb := (Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) - _tex_before) / 1048576.0
 		var res_n := int(Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)) - _res_before
 		_results.append({
@@ -227,6 +242,19 @@ class HitchWorker extends Node:
 		var outd: Dictionary = {}
 		_scan_cache("user://shader_cache", "", outd)
 		return outd
+
+	## "Classe/versão" curto (ex.: CanvasShaderGLES3/7f418b5f): a versão é o
+	## shader (o de base ou um .gdshader do jogo); o arquivo cresce por variante.
+	func _cache_label(f: String) -> String:
+		return f.get_slice("/", 0) + "/" + f.get_file().left(8)
+
+	## Diferença entre dois retratos do cache (novos ou crescidos).
+	func _cache_diff(a: Dictionary, b: Dictionary) -> Array:
+		var r: Array = []
+		for f in b:
+			if not a.has(f) or int(a[f]) != int(b[f]):
+				r.append(_cache_label(String(f)))
+		return r
 
 	## Valor = tamanho do arquivo: o GLES3 REESCREVE o arquivo da versão quando
 	## compila mais uma variante dela (arquivo cresce) — conta como compilação.
@@ -289,6 +317,8 @@ class HitchWorker extends Node:
 			["inimigo_eon_nasce", func(): _spawn_enemy(lv, pl, true)],
 			["inimigo_eon_morre", func(): _hurt_enemy(pl, 99999)],
 		]
+		if not only.is_empty():
+			_events = _events.filter(func(ev): return String(ev[0]) in only)
 
 	func _press(action: String) -> void:
 		Input.action_press(action)
@@ -352,6 +382,7 @@ class HitchWorker extends Node:
 			"gpu": RenderingServer.get_video_adapter_name(),
 			"resolucao": str(get_viewport().get_visible_rect().size),
 			"shaders_no_cache_ao_abrir": _cache_at_start,
+			"compilado_na_abertura": _cache_load_diff,
 			"shaders_no_cache_ao_fim": _cache_files().size(),
 			"resumo": rows, "bruto": _results,
 		}
