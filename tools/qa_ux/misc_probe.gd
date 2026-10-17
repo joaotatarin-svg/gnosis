@@ -214,18 +214,32 @@ class M extends Node:
 			if en is Enemy and en.is_boss_enemy:
 				bosses.append(en)
 		var hud = get_tree().get_first_node_in_group("hud")
-		print("MISC|final_chefes|", ", ".join(bosses.map(func(b): return "%s(%s) hp=%d/%d" % [b.display_name, b.type_id, b.health.current_health, b.health.max_health])), " | barra='", hud._boss_name.text, "' visivel=", hud._boss_box.visible)
+		print("MISC|final_chefes|", ", ".join(bosses.map(func(b): return "%s(%s) hp=%d/%d" % [b.display_name, b.type_id, b.health.current_health, b.health.max_health])), " | ", _barra(hud))
 		# bate SÓ no primeiro (o Rei?) 60% da vida
 		if bosses.size() >= 2:
 			var b0: Enemy = bosses[0]
 			b0._on_hit_received(int(b0.health.max_health * 0.6), lv.player.global_position, 10.0, false, null)
 			await wait(0.4)
-			print("MISC|final_apos_bater_em_%s|barra='%s' largura=%.0f (=%.0f%%)" % [b0.display_name, hud._boss_name.text, hud._boss_fill.size.x, hud._boss_fill.size.x / 3.0])
+			print("MISC|final_apos_bater_em_%s|%s" % [b0.display_name, _barra(hud)])
 			await shot("final_barra")
 			# mata o primeiro: a barra some mesmo com o outro vivo?
 			b0._on_hit_received(b0.health.max_health + 999, lv.player.global_position, 10.0, false, null)
 			await wait(0.6)
-			print("MISC|final_um_caiu|barra_visivel=%s outro_vivo=%s" % [str(hud._boss_box.visible), str(bosses[1].estate != Enemy.EState.DEAD)])
+			print("MISC|final_um_caiu|%s outro_vivo=%s" % [_barra(hud), str(bosses[1].estate != Enemy.EState.DEAD)])
 			await shot("final_um_caiu")
 		print("MISC|FIM")
 		get_tree().quit()
+
+	## Barra(s) de chefe do HUD em texto (HUD da onda 1: uma barra em `boss`; antigo: _boss_box).
+	func _barra(hud) -> String:
+		if hud == null:
+			return "sem HUD"
+		if hud.has_method("boss_bars"):
+			return "barras=%s" % str(hud.call("boss_bars"))
+		if "_boss_box" in hud:
+			return "barra='%s' visivel=%s" % [hud._boss_name.text, str(hud._boss_box.visible)]
+		var b = hud.get("boss")
+		if b == null or not is_instance_valid(b):
+			return "barra_visivel=false"
+		var fase := " — FASE II" if int(hud.get("boss_phase_n")) >= 2 else ""
+		return "barra='%s%s' visivel=true largura=%.0f%%" % [b.display_name, fase, float(hud.get("boss_ratio")) * 100.0]
