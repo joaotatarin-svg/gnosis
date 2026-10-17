@@ -1444,6 +1444,9 @@ func _hero_seq(states: Dictionary) -> String:
 		"windup_heavy": ["windup"], "windup_cast": ["cast"], "fall": ["jump"], "dead": ["hurt"],
 		"recover": ["idle"], "attack_heavy": ["attack"],
 	}
+	# ação avulsa por cima do estado (aparo, contra-ataque): play_action()
+	if _action != "" and states.has(_action):
+		return _action
 	if _rise_t > 0.0 and st in ["idle", "walk"] and states.has("rise"):
 		return "rise"
 	if _land_t > 0.0 and st in ["idle", "walk"] and states.has("land"):
@@ -1489,7 +1492,7 @@ func _seq_index(seq: Dictionary, seq_name: String) -> int:
 		return int(fposmod(motion_distance / maxf(cycle, 1.0), 1.0) * n) % n
 	if seq.get("loop", false) and float(seq.get("fps", 0.0)) > 0.0:
 		return int(anim_time * float(seq.fps)) % n
-	var t: float = anim_time
+	var t: float = _action_t if seq_name != "" and seq_name == _action else anim_time
 	var durs: Array = seq.get("dur", [])
 	for i in n - 1:
 		var d: float = float(durs[i]) if i < durs.size() else (float(durs.back()) if not durs.is_empty() else 0.1)
@@ -1740,6 +1743,7 @@ func _tick_visual(delta: float) -> void:
 		_tick_boss(delta)
 	if _npc_wake_t >= 0.0:
 		_npc_wake_t += delta
+	_tick_action(delta)
 	_land_t = maxf(0.0, _land_t - delta)
 	if _rise_t > 0.0:
 		_rise_t = maxf(0.0, _rise_t - delta)
@@ -1772,6 +1776,43 @@ func _tick_visual(delta: float) -> void:
 		elif anim_state == "attack_heavy" and anim_time < 0.09 and _ghost_timer <= 0.0:
 			spawn_afterimage(Color(1.0, 0.92, 0.6, 0.6), 0.08)
 			_ghost_timer = 0.03
+
+
+## AÇÃO AVULSA da Sophia por cima do estado do player (quadros S14):
+## "parry" (aparo + desvio + abertura) e "riposte" (estocada, giro, follow,
+## volta à guarda). O player.gd ainda não chama isto (Pedido ao combate); o
+## aparo é reconhecido pelo flash próprio do _parry (modulate azul > 3,5)
+## enquanto o estado é "block".
+var _action: String = ""
+var _action_t: float = 0.0
+
+
+func play_action(action_name: String) -> void:
+	if not painted.get("hero", false):
+		return
+	var db: Dictionary = frame_db("sophia")
+	if db.is_empty() or not db.meta.states.has(action_name):
+		return
+	_action = action_name
+	_action_t = 0.0
+	anim_time = 0.0
+
+
+func _tick_action(delta: float) -> void:
+	if not painted.get("hero", false):
+		return
+	if _action == "" and anim_state == "block" and modulate.b > 3.5:
+		play_action("parry")
+	if _action == "":
+		return
+	_action_t += delta
+	var seq: Dictionary = frame_db("sophia").meta.states.get(_action, {})
+	var total: float = 0.0
+	for d in seq.get("dur", []):
+		total += float(d)
+	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
+	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):
+		_action = ""
 
 
 ## Cópia translúcida do corpo neste instante, parada no mundo, que some em

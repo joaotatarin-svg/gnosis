@@ -267,6 +267,24 @@
     "reachE",
     "weightE"
    ]
+  },
+  "s14": {
+   "file": "assets/painted/src/sophia_s14_a.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": 0.97,
+   "cells": [
+    "guard",
+    "parry",
+    "deflect",
+    "open",
+    "thrust",
+    "spin",
+    "follow",
+    "back"
+   ]
   }
  },
  "frame_fix": {
@@ -388,8 +406,11 @@
   },
   "block": {
    "frames": [
-    "s1a.block"
+    "s14.guard",
+    "s14.back"
    ],
+   "loop": true,
+   "fps": 2.0,
    "anchor": "front"
   },
   "windup": {
@@ -537,36 +558,6 @@
    ],
    "anchor": "front"
   },
-  "run16": {
-   "frames": [
-    "s2.run_0",
-    "rinb.run_m0",
-    "s2.run_1",
-    "rinb.run_m1",
-    "s2.run_2",
-    "rinb.run_m2",
-    "s2.run_3",
-    "rinb.run_m3",
-    "s2.run_4",
-    "rinb.run_m4",
-    "s2.run_5",
-    "rinb.run_m5",
-    "s2.run_6",
-    "rinb.run_m6",
-    "s2.run_7",
-    "rinb.run_m7"
-   ],
-   "anchor": "pelvis",
-   "steps": [
-    0,
-    8
-   ],
-   "advance_split_of": "run",
-   "support_change": [
-    7,
-    15
-   ]
-  },
   "rise": {
    "frames": [
     "s9.rise_0",
@@ -605,6 +596,38 @@
    "support": {
     "s13.reachD": "rear"
    }
+  },
+  "parry": {
+   "frames": [
+    "s14.parry",
+    "s14.deflect",
+    "s14.open",
+    "s14.guard"
+   ],
+   "dur": [
+    0.08,
+    0.12,
+    0.1
+   ],
+   "anchor": "front"
+  },
+  "riposte": {
+   "frames": [
+    "s14.thrust",
+    "s14.spin",
+    "s14.follow",
+    "s14.back"
+   ],
+   "dur": [
+    0.1,
+    0.1,
+    0.12
+   ],
+   "anchor": "front",
+   "smear_at": [
+    1,
+    2
+   ]
   }
  }
 }

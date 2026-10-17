@@ -95,6 +95,9 @@ mostra o nome do Colosso desde o início. Não é arte → Pedido 4.
    diálogo, `"bless"` na escolha do Soter (antes do AoeNova), `"fade"` no tween de saída do Soter;
    Velkar: `"kneel"` durante a fala, `"farewell"` na despedida, `"walk"` ao mancar pro canto. Sem isso
    eles ficam no `idle` (vaivém), que já anima.
+6. **player.gd (combate)**: chamar `visual.play_action("parry")` dentro de `_parry()` (hoje o aparo é
+   reconhecido pelo flash — se a Fase B mudar a cor do flash, para de funcionar) e, se houver
+   contra-ataque após o aparo, `visual.play_action("riposte")` no início dele (quadros prontos no atlas).
 ## Criaturas (bloco extra, mesmo pipeline)
 
 Folhas `cri_<n>_<nome>` do produtor (2×4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt,
@@ -137,3 +140,19 @@ Prova: `gifs/npcs_estados.png` (AnimQA `-- npc_board`).
 - GIFs: `gifs/sophia_corrida_antes.gif` × `gifs/sophia_corrida_depois.gif`, `gifs/sophia_morte_antes.gif` ×
   `gifs/sophia_morte_depois.gif`, prancha `gifs/sophia_corrida_morte_antes_depois.png` (AnimQA film_sophia).
 - Shader da Sophia NÃO mudado (decisão do João).
+
+## Sophia — guarda, aparo e contra-ataque (S14)
+
+- `player.gd` só envia `block` (State.BLOCK); o aparo acontece DENTRO da guarda (`_parry`, sem estado
+  próprio) e não existe estado de contra-ataque. Então:
+  - `block` = guarda da S14 (guard ↔ volta à guarda, laço lento) — substitui a pose S1 antiga;
+  - `parry` = aparo c/ faísca → desvio → abertura → guarda (0,3 s), tocado como AÇÃO AVULSA por cima
+    da guarda. Sem tocar no player.gd, o CharacterArt reconhece o aparo pelo flash do `_parry`
+    (`modulate.b > 3,5` enquanto em `block`; o bloqueio comum pisca 3,0 e não dispara);
+  - `riposte` = estocada → giro (smear) → follow-through → volta à guarda (0,32 s), pronto no atlas,
+    tocado por `visual.play_action("riposte")`.
+- O `run16` (meios do RIFE) saiu do atlas para caber tudo em 2048×2048 (70 quadros). Para voltar:
+  recolocar o estado na receita e `USE_RUN_INBETWEENS := true`.
+- HeroQA: estados block/parry/riposte no atlas; flash do aparo na guarda toca `parry`; `riposte` toca e termina.
+- Capturas: `gifs/sophia_aparo_quadros.png` (quadros alinhados), `gifs/sophia_guarda_antes.gif` (pose S1) ×
+  `gifs/sophia_aparo_depois.gif` (guarda → aparo → contra-ataque, AnimQA film_sophia).

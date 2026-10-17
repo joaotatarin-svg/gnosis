@@ -126,7 +126,7 @@ func _film_sophia() -> void:
 		["windup", 0.04, 0.0], ["attack", 0.30, 30.0], ["windup", 0.04, 0.0], ["attack", 0.32, 30.0],
 		["idle", 0.25, 0.0], ["windup_heavy", 0.17, 0.0], ["attack_heavy", 0.45, 40.0], ["idle", 0.3, 0.0],
 		["dodge", 0.30, 330.0], ["idle", 0.2, 0.0], ["dodge", 0.30, -330.0, true], ["idle", 0.25, 0.0],
-		["block", 0.5, 0.0], ["cast", 0.55, 0.0], ["idle", 0.2, 0.0], ["jump", 0.35, 0.0, false, -1.0], ["fall", 0.35, 0.0, false, 1.0],
+		["block", 0.5, 0.0], ["block_parry", 0.45, 0.0], ["riposte", 0.45, 20.0], ["cast", 0.55, 0.0], ["idle", 0.2, 0.0], ["jump", 0.35, 0.0, false, -1.0], ["fall", 0.35, 0.0, false, 1.0],
 		["idle", 0.3, 0.0], ["hurt", 0.45, -40.0], ["dead", 1.6, 0.0], ["dead", 0.01, 0.0]]
 	actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
 	_label("SOPHIA — filme de animação (AnimQA)", Vector2(6, 6))
@@ -159,7 +159,16 @@ func _process(delta: float) -> void:
 				continue
 			var step: Array = a.tl[a.i]
 			art.dodge_back = step.size() > 3 and bool(step[3])
-			art.set_anim(String(step[0]))
+			# ações avulsas (S14): "block_parry" = guarda + aparo; "riposte" = contra-ataque
+			match String(step[0]):
+				"block_parry":
+					art.set_anim("block")
+					art.play_action("parry")
+				"riposte":
+					art.set_anim("idle")
+					art.play_action("riposte")
+				_:
+					art.set_anim(String(step[0]))
 		if a.i >= a.tl.size():
 			continue
 		alive = true

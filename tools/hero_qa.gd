@@ -99,6 +99,26 @@ func _ready() -> void:
 		label.add_theme_font_size_override("font_size", 9)
 		label.text = "%s\nt=%.2f" % [state, time]
 		add_child(label)
+	# APARO e CONTRA-ATAQUE (S14): estados no atlas; o flash do _parry na guarda
+	# dispara o "parry"; play_action("riposte") toca o contra-ataque e termina.
+	if not db.is_empty():
+		for s in ["block", "parry", "riposte"]:
+			check(db.meta.states.has(s), "Atlas sem o estado: " + s)
+		var pa := CharacterArt.new()
+		add_child(pa)
+		pa.set_profile(p)
+		pa.set_process(false)
+		pa.set_anim("block")
+		pa.modulate = Color(3, 3, 4, 1)          # flash do Player._parry
+		pa._tick_visual(1.0 / 60.0)
+		check(pa._hero_seq(db.meta.states) == "parry", "Aparo na guarda não toca o quadro de aparo")
+		pa.modulate = Color.WHITE
+		pa.play_action("riposte")
+		check(pa._hero_seq(db.meta.states) == "riposte", "Contra-ataque não toca")
+		for f in 60:
+			pa._tick_visual(1.0 / 60.0)
+		check(pa._hero_seq(db.meta.states) != "riposte", "Contra-ataque não termina")
+		pa.visible = false
 	await get_tree().process_frame
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
