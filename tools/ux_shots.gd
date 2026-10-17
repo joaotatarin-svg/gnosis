@@ -107,7 +107,7 @@ class Worker extends Node:
 		# 1. Menu sem save
 		RunManager.saved_run = {}
 		get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
-		await wait(1.4)
+		await wait(2.6)                      # 1ª tela: deixa a entrada escalonada terminar
 		await shot("menu_sem_save")
 		await nav_check("menu")
 		# 2. Menu com save + aviso de save antigo descartado
@@ -158,6 +158,11 @@ class Worker extends Node:
 			get_tree().change_scene_to_file("res://scenes/ui/Credits.tscn")
 			await wait(1.2)
 			await shot("creditos")
+			var cr = get_tree().current_scene
+			cr._y = -420.0
+			cr._hold = 30.0
+			await wait(0.3)
+			await shot("creditos_atribuicao")
 		# 11. Fim de jogo — vitória
 		GameManager.end_title = "ASCENSÃO"
 		GameManager.end_subtitle = "Sophia atravessa o véu. O Kenoma fica pra trás — e a luz que ela carregava volta pra Fonte, inteira."
@@ -311,7 +316,8 @@ class Worker extends Node:
 		await shot("hud_arconte_fase2")
 		# 23. Provação: resultado final (vitória no 3º encontro)
 		CodexSession.start_demo()
-		await wait(1.2)
+		await wait(2.5)
+		await shot("hud_provacao")
 		CodexSession.stage = 2
 		var trial = get_tree().current_scene
 		trial.completed = true

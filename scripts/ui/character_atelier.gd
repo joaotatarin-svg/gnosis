@@ -8,7 +8,7 @@ const NOTES := [
 	"O guardião que ensina a dormir.\nPálpebra selada, corpo espectral\ne névoa que rouba movimento.",
 	"A fome que nunca se reconhece.\nBoca no torso, massa colossal\ne sucção antes do impacto.",
 	"Toda lei deseja uma corrente.\nElos pendentes, ombros de ferro\ne investida que aprisiona.",
-	"Palavras enterradas no vazio.\nAsas rasgadas, boca costurada\ne uma aura que silencia anéis.",
+	"Palavras enterradas no vazio.\nAsas rasgadas, boca costurada\ne uma aura que silencia os Anéis.",
 	"O reflexo deseja o seu lugar.\nPrata, cacos em órbita\ne uma sombra na segunda fase.",
 	"A vida que se esqueceu de morrer.\nQuatro patas, gavinhas\ne rastros de veneno.",
 	"Um trono feito de obediência.\nCoroa alta, massa e hierarquia.\nServos sustentam sua armadura."
@@ -37,9 +37,10 @@ func _ready() -> void:
 	bg.menu = true
 	bg.modulate = Color(0.8, 0.8, 0.8)
 	add_child(bg)
-	CodexStyle.label(self, "GNOSIS / ATELIÊ", Vector2(22, 13), 12, CodexStyle.GOLD)
-	CodexStyle.label(self, "ILUSTRAÇÃO · POSES · PERFIL · COMBATE", Vector2(22, 35), 8, CodexStyle.MUTED)
-	CodexStyle.button(self, "Voltar", Vector2(543, 15), 75, func(): SceneManager.change_scene("res://scenes/ui/MainMenu.tscn"))
+	add_child(CodexStyle.Motes.new())
+	CodexStyle.label(self, "Ateliê", Vector2(22, 9), 18, CodexStyle.GOLD_HI, 200, true)
+	CodexStyle.label(self, "ILUSTRAÇÃO · POSES · PERFIL · COMBATE", Vector2(22, 35), 7, CodexStyle.MUTED, 300, true)
+	CodexStyle.button(self, "Voltar", Vector2(543, 15), 75, func(): SceneManager.change_scene("res://scenes/ui/MainMenu.tscn"), false, "ui_back")
 	CodexStyle.button(self, "Bestiário", Vector2(446, 15), 88, func(): SceneManager.change_scene("res://scenes/ui/Gallery.tscn"))
 	for i in 8:
 		var title: String = "Sophia" if i == 0 else String(Bestiary.bosses[i - 1].name).split(",")[0]
@@ -48,11 +49,13 @@ func _ready() -> void:
 		roster.append(b)
 	art = CharacterArt.new()
 	add_child(art)
-	name_label = CodexStyle.label(self, "", Vector2(390, 79), 27, CodexStyle.PAPER, 230, true)
-	type_label = CodexStyle.label(self, "", Vector2(391, 116), 9, CodexStyle.GOLD, 230)
-	description = CodexStyle.label(self, "", Vector2(391, 145), 10, CodexStyle.MUTED, 230)
-	CodexStyle.label(self, "RECEITA VISUAL", Vector2(391, 204), 8, CodexStyle.GOLD)
-	recipe = CodexStyle.label(self, "", Vector2(391, 222), 9, CodexStyle.MUTED, 218)
+	name_label = CodexStyle.label(self, "", Vector2(390, 76), 26, CodexStyle.PAPER, 230, true)
+	type_label = CodexStyle.label(self, "", Vector2(391, 114), 8, CodexStyle.GOLD, 230, true)
+	CodexStyle.rule(self, Vector2(391, 132), 200, Color(CodexStyle.GOLD, 0.6))
+	description = CodexStyle.label(self, "", Vector2(391, 140), 10, CodexStyle.MUTED, 230)
+	description.add_theme_font_override("font", CodexStyle.italic())
+	CodexStyle.label(self, "RECEITA VISUAL", Vector2(391, 212), 7, CodexStyle.GOLD, 200, true)
+	recipe = CodexStyle.label(self, "", Vector2(391, 225), 10, CodexStyle.MUTED, 218)
 	recipe.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	joints_button = CodexStyle.button(self, "Ver articulações", Vector2(391, 249), 220, func():
 		show_joints = not show_joints
@@ -63,7 +66,7 @@ func _ready() -> void:
 			art.boss_puppet.debug_layer.queue_redraw())
 	CodexStyle.button(self, "Testar em combate →", Vector2(391, 280), 220, func(): CodexSession.start_demo(maxi(0, selected - 1)), true)
 	CodexStyle.button(self, "‹", Vector2(169, 277), 28, func(): _set_pose(-1))
-	pose_label = CodexStyle.label(self, "Repouso", Vector2(201, 283), 10, CodexStyle.PAPER, 136)
+	pose_label = CodexStyle.label(self, "Repouso", Vector2(201, 281), 9, CodexStyle.PAPER, 136, true)
 	pose_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	CodexStyle.button(self, "›", Vector2(343, 277), 28, func(): _set_pose(1))
 	CodexStyle.button(self, "Pausar / animar", Vector2(169, 313), 109, func():
@@ -72,13 +75,14 @@ func _ready() -> void:
 	CodexStyle.button(self, "Paleta", Vector2(286, 313), 85, func():
 		palette = (palette + 1) % 3
 		_refresh())
-	gear_label = CodexStyle.label(self, "", Vector2(180, 53), 8, CodexStyle.GOLD, 185)
+	gear_label = CodexStyle.label(self, "", Vector2(180, 53), 7, CodexStyle.GOLD, 185, true)
 	gear_button = CodexStyle.button(self, "Arma +", Vector2(391, 313), 105, func():
 		gear = gear % 5 + 1
 		_refresh())
 	CodexStyle.button(self, "Espelhar", Vector2(504, 313), 107, func(): art.scale.x *= -1)
 	_select(0)
 	roster[0].grab_focus()
+	CodexStyle.stagger_in(roster, -10.0, 0.03, 0.05)
 	if "--boss-motion" in OS.get_cmdline_user_args():
 		_select(2)
 		roster[2].grab_focus()
@@ -147,5 +151,7 @@ func _process(delta: float) -> void:
 		art.anim_time = 0.0
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause"):
+	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		Audio.play_sfx("ui_back")
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")

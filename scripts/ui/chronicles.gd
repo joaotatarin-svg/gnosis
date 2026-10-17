@@ -1,21 +1,24 @@
 extends Control
 ## CRÔNICAS — o caderno das Estelas lidas. Lista as 18 entradas (trancadas
 ## mostram "???" e a dica de onde ficam); persistem entre runs (Gnosis).
-## W/S, setas ou gamepad navegam; Esc / Voltar → menu principal.
+## Cada entrada é um botão-linha FOCÁVEL: setas, W/S, D-pad e analógico andam
+## (o foco do Godot faz o trabalho); Esc / B / Voltar → menu principal.
 
 const LIST_X := 22.0
-const LIST_Y := 64.0
+const LIST_Y := 66.0
 const ROW_H := 15.0
+const LIST_W := 214.0
 
 var _entries: Array = []
 var _sel: int = 0
-var _rows: Array = []               # Labels da lista
+var _rows: Array[Button] = []
 var _head: Label
 var _title: Label
+var _eon: Label
 var _body: Label
 var _source: Label
 var _hint_locked: Label
-var _repeat: float = 0.0
+var _back: Button
 
 
 func _ready() -> void:
@@ -24,51 +27,91 @@ func _ready() -> void:
 	var hud := CanvasLayer.new()
 	add_child(hud)
 
-	CodexStyle.label(hud, "CRÔNICAS", Vector2(LIST_X, 12), 22, CodexStyle.PAPER, 300, true)
-	_head = CodexStyle.label(hud, "", Vector2(LIST_X, 40), 10, CodexStyle.MUTED, 320)
-	CodexStyle.button(hud, "Voltar", Vector2(541, 11), 80, _back)
-	CodexStyle.label(hud, "W/S · setas · gamepad navegam   ·   Esc volta", Vector2(LIST_X, 342), 9, CodexStyle.MUTED, 400)
+	CodexStyle.label(hud, "Crônicas", Vector2(LIST_X, 10), 22, CodexStyle.GOLD_HI, 300, true)
+	_head = CodexStyle.label(hud, "", Vector2(LIST_X, 40), 11, CodexStyle.MUTED, 360)
+	_head.add_theme_font_override("font", CodexStyle.italic())
+	_back = CodexStyle.button(hud, "Voltar", Vector2(536, 12), 84, _leave, false, "ui_back")
+	CodexStyle.label(hud, "W/S · setas · D-pad escolhem   ·   Esc / B volta", Vector2(LIST_X, 340), 10, Color(CodexStyle.MUTED, 0.85), 400)
 
-	# Lista (esquerda)
+	# Lista (esquerda): linhas focáveis com estilo de "marcador de página".
 	for i in _entries.size():
-		var l := CodexStyle.label(hud, "", Vector2(LIST_X, LIST_Y + float(i) * ROW_H), 10, CodexStyle.PAPER, 215)
-		l.clip_text = true
-		_rows.append(l)
+		var b := Button.new()
+		b.position = Vector2(LIST_X - 6, LIST_Y + float(i) * ROW_H)
+		b.size = Vector2(LIST_W, ROW_H)
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.clip_text = true
+		b.add_theme_font_override("font", CodexStyle.body())
+		b.add_theme_font_size_override("font_size", 11)
+		var empty := StyleBoxEmpty.new()
+		empty.content_margin_left = 14
+		for st in ["normal", "hover", "pressed", "disabled"]:
+			b.add_theme_stylebox_override(st, empty)
+		var f := CodexFrame.new()
+		f.fill_top = Color(CodexStyle.GOLD, 0.16)
+		f.fill_bottom = Color(CodexStyle.GOLD, 0.04)
+		f.border = Color(CodexStyle.GOLD_HI, 0.7)
+		f.border_width = 0.6
+		f.chamfer = 3.0
+		f.content_margin_left = 14
+		b.add_theme_stylebox_override("focus", f)
+		var idx := i
+		b.focus_entered.connect(func():
+			_sel = idx
+			_refresh())
+		b.mouse_entered.connect(func(): b.grab_focus())
+		hud.add_child(b)
+		_rows.append(b)
+	for i in _rows.size():
+		var b := _rows[i]
+		b.focus_neighbor_top = b.get_path_to(_rows[i - 1] if i > 0 else _back)
+		b.focus_neighbor_bottom = b.get_path_to(_rows[i + 1] if i < _rows.size() - 1 else _rows[0])
+		b.focus_neighbor_right = b.get_path_to(_back)
+		b.focus_neighbor_left = b.get_path_to(b)
+	_back.focus_neighbor_bottom = _back.get_path_to(_rows[0])
+	_back.focus_neighbor_left = _back.get_path_to(_rows[0])
+	_back.focus_neighbor_top = _back.get_path_to(_rows[_rows.size() - 1])
 
 	# Painel de leitura (direita)
 	var panel := PanelContainer.new()
 	panel.theme = CodexStyle.theme()
-	panel.position = Vector2(248, LIST_Y - 6)
-	panel.size = Vector2(372, 272)
+	panel.position = Vector2(250, LIST_Y - 8)
+	panel.size = Vector2(372, 274)
 	hud.add_child(panel)
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 5)
+	vbox.add_theme_constant_override("separation", 4)
 	panel.add_child(vbox)
+	_eon = Label.new()
+	_eon.add_theme_font_override("font", CodexStyle.display())
+	_eon.add_theme_font_size_override("font_size", 8)
+	_eon.add_theme_color_override("font_color", CodexStyle.MUTED)
+	vbox.add_child(_eon)
 	_title = Label.new()
 	_title.add_theme_font_size_override("font_size", 15)
-	_title.add_theme_color_override("font_color", CodexStyle.GOLD)
-	_title.add_theme_font_override("font", CodexStyle.serif())
+	_title.add_theme_color_override("font_color", CodexStyle.GOLD_HI)
+	_title.add_theme_font_override("font", CodexStyle.display())
 	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(_title)
-	var rule := ColorRect.new()
-	rule.color = Color(CodexStyle.GOLD, 0.5)
-	rule.custom_minimum_size = Vector2(0, 1)
+	var rule := CodexStyle.Rule.new()
+	rule.custom_minimum_size = Vector2(0, 7)
+	rule.color = Color(CodexStyle.GOLD, 0.7)
 	vbox.add_child(rule)
 	_body = Label.new()
-	_body.add_theme_font_size_override("font_size", 10)
+	_body.add_theme_font_size_override("font_size", 12)
 	_body.add_theme_color_override("font_color", CodexStyle.PAPER)
-	_body.add_theme_constant_override("line_spacing", 1)
+	_body.add_theme_constant_override("line_spacing", 0)
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_body.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	vbox.add_child(_body)
 	_hint_locked = Label.new()
-	_hint_locked.add_theme_font_size_override("font_size", 10)
+	_hint_locked.add_theme_font_override("font", CodexStyle.italic())
+	_hint_locked.add_theme_font_size_override("font_size", 12)
 	_hint_locked.add_theme_color_override("font_color", CodexStyle.MUTED)
 	_hint_locked.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(_hint_locked)
 	_source = Label.new()
-	_source.add_theme_font_size_override("font_size", 8)
+	_source.add_theme_font_override("font", CodexStyle.italic())
+	_source.add_theme_font_size_override("font_size", 10)
 	_source.add_theme_color_override("font_color", CodexStyle.MUTED)
 	_source.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(_source)
@@ -79,6 +122,9 @@ func _ready() -> void:
 			_sel = i
 			break
 	_refresh()
+	_rows[_sel].grab_focus()
+	CodexStyle.stagger_in(_rows, -8.0, 0.015, 0.05)
+	CodexStyle.pop_in(panel, "")
 
 
 func _refresh() -> void:
@@ -86,55 +132,43 @@ func _refresh() -> void:
 	for i in _entries.size():
 		var e: Dictionary = _entries[i]
 		var open := Gnosis.is_unlocked(String(e.id))
-		var l: Label = _rows[i]
-		var mark := "▸ " if i == _sel else "  "
-		l.text = "%s%02d  %s" % [mark, i + 1, String(e.title) if open else "???"]
-		l.add_theme_color_override("font_color",
-			CodexStyle.GOLD if i == _sel else (CodexStyle.PAPER if open else CodexStyle.MUTED))
+		var b: Button = _rows[i]
+		b.text = "%02d   %s" % [i + 1, String(e.title) if open else "???"]
+		var col := CodexStyle.GOLD_HI if i == _sel else (CodexStyle.PAPER if open else Color(CodexStyle.MUTED, 0.75))
+		for k in ["font_color", "font_hover_color", "font_focus_color", "font_pressed_color"]:
+			b.add_theme_color_override(k, col)
 	var cur: Dictionary = _entries[_sel]
+	_eon.text = String(cur.eon).to_upper()
 	if Gnosis.is_unlocked(String(cur.id)):
-		_title.text = "%s  ·  %s" % [String(cur.title), String(cur.eon)]
+		_title.text = String(cur.title)
 		_body.text = "\n".join(PackedStringArray(cur.lines))
 		_body.visible = true
 		_hint_locked.text = ""
 		_source.text = "Fonte: %s" % String(cur.source)
 	else:
-		_title.text = "???  ·  %s" % String(cur.eon)
+		_title.text = "???"
 		_body.text = ""
 		_body.visible = false          # a dica sobe pra logo abaixo do título
 		_hint_locked.text = "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler." % String(cur.hint)
 		_source.text = ""
 
 
-func _move(dir: int) -> void:
-	_sel = wrapi(_sel + dir, 0, _entries.size())
-	Audio.play_sfx("ui_move")
-	_refresh()
-
-
-func _process(delta: float) -> void:
-	_repeat = maxf(0.0, _repeat - delta)
-	var dir := 0
-	if Input.is_action_just_pressed("ui_up") or Input.is_action_just_pressed("move_up"):
-		dir = -1
-	elif Input.is_action_just_pressed("ui_down") or Input.is_action_just_pressed("move_down"):
-		dir = 1
-	elif _repeat <= 0.0:
-		# Segurar o eixo do gamepad / a tecla rola devagar.
-		var axis := Input.get_axis("move_up", "move_down")
-		if absf(axis) > 0.6:
-			dir = 1 if axis > 0.0 else -1
-			_repeat = 0.18
-	if dir != 0:
-		if _repeat <= 0.0:
-			_repeat = 0.18
-		_move(dir)
-
-
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
-		_back()
+		get_viewport().set_input_as_handled()
+		Audio.play_sfx("ui_back")
+		_leave()
+	# W/S (fora do ui_up/ui_down) também andam pela lista.
+	elif event.is_action_pressed("move_up") and not event.is_action("ui_up"):
+		_rows[wrapi(_sel - 1, 0, _rows.size())].grab_focus()
+	elif event.is_action_pressed("move_down") and not event.is_action("ui_down"):
+		_rows[wrapi(_sel + 1, 0, _rows.size())].grab_focus()
 
 
-func _back() -> void:
+## Anda `dir` entradas (usado por ferramentas de QA; o jogador usa o foco).
+func _move(dir: int) -> void:
+	_rows[wrapi(_sel + dir, 0, _rows.size())].grab_focus()
+
+
+func _leave() -> void:
 	SceneManager.change_scene("res://scenes/ui/MainMenu.tscn")

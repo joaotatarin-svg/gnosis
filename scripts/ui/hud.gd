@@ -479,6 +479,9 @@ class _HudCanvas extends Control:
 
 	# --- progresso do Éon (canto superior direito) -----------------------------------------
 	func _draw_eon() -> void:
+		# A Provação tem placar próprio no mesmo canto (codex_trial): não duplica.
+		if CodexSession.active:
+			return
 		var title: String = hud.screen_title()
 		var right: float = EON_RIGHT
 		_txt(Vector2(right - 300, 15), title, CodexStyle.display(), 10, CodexStyle.PAPER, HORIZONTAL_ALIGNMENT_RIGHT, 300)
