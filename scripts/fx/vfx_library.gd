@@ -19,6 +19,7 @@ const Z := 32                   # acima dos personagens (gibs ficam em 6, HUD em
 static var _tex: Dictionary = {}          # nome -> Texture2D (cache)
 static var _add_mat: CanvasItemMaterial   # material aditivo (luz)
 static var _rim_shader: Shader            # contorno de leitura (R18), compilado 1×
+static var _flash_shader: Shader          # F1: flash aditivo da Sophia, compilado 1×
 
 ## R18 (NEURO_SATISFACAO): cor do contorno de leitura por Éon — a mesma luz
 ## das partículas de ambiente (0 Torpor … 6 Coroa, 7 Centro, 8 Mente).
@@ -73,6 +74,33 @@ void fragment() {
 }
 """
 	return _rim_shader
+
+
+## F1 (QA visual): flash ADITIVO por cima da pintura (Player.FlashLayer). Soma
+## `flash.rgb × flash.a` só onde o corpo tem alfa — a pintura clareia sem virar
+## silhueta chapada. O vertex repete a curvatura do painted_flex (bend/body_h)
+## para a camada casar com o corpo dobrado.
+static func flash_add_shader() -> Shader:
+	if _flash_shader == null:
+		_flash_shader = Shader.new()
+		_flash_shader.code = """
+shader_type canvas_item;
+render_mode blend_add, unshaded;
+uniform float body_h = 256.0;
+uniform float bend = 0.0;
+uniform vec4 flash = vec4(1.0, 1.0, 1.0, 0.0);
+
+void vertex() {
+	float h = clamp(-VERTEX.y / body_h, 0.0, 1.6);
+	VERTEX.x += bend * h * h;
+}
+
+void fragment() {
+	float a = texture(TEXTURE, UV).a;
+	COLOR = vec4(flash.rgb, a * flash.a);
+}
+"""
+	return _flash_shader
 
 
 static func tex(name: String) -> Texture2D:
@@ -792,6 +820,15 @@ static func prewarm(level: Node) -> void:
 	rim_spr.texture = tex("glow")
 	rim_spr.scale = Vector2.ONE * 0.1
 	rim.add_child(rim_spr)
+	# 2b'') flash aditivo da Sophia (F1): a variante compila agora, não no 1º dano
+	var fl := Sprite2D.new()
+	fl.texture = tex("glow")
+	fl.scale = Vector2.ONE * 0.1
+	var fl_m := ShaderMaterial.new()
+	fl_m.shader = flash_add_shader()
+	fl_m.set_shader_parameter("flash", Color(1, 1, 1, 0.5))
+	fl.material = fl_m
+	stage.add_child(fl)
 	# 2c) afterimage da esquiva (painted_ghost em malha de triângulos, sobre o
 	#     atlas da Sophia). A camada é top_level (coordenadas de MUNDO): o alfa
 	#     vai na cor da cópia.
