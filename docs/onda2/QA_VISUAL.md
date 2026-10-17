@@ -83,6 +83,11 @@ Obs.: a 1ª importação headless de um worktree novo deu **segfault** ao import
 - GIFs Sophia (andar/combo/pesado/esquiva/magia/pulo) e chefes 10/37/64: `C:\gnosis-wt\_caps\qa-visual\extra\*_follow.gif`, tiras `anim_sophia.png`/`anim_chefes.png` (`r0/08_sophia_quadros.jpg`, `r0/10_sophia_combo.gif`, `r0/11_athoth_windup.gif`).
 - Varredura automática: **0 pixels magenta** em 967 capturas (`tools/qa_visual/magenta.py`); emendas verticais no chão **7/68 → 0/68** (`tools/qa_visual/seams.py`; antes/depois `C:\gnosis-wt\_caps\qa-visual\crop_emenda_antes_depois.png`).
 
+### 2-r1 (base b04f413)
+- **68/68 telas avançam** (RunProbe com janela real, modo fight), **0 `BUG?`, 0 `ERROR`** (`C:\gnosis-wt\_caps\qa-visual\r1\runw\RESUMO.txt`). Pranchas: `C:\gnosis-wt\_caps\qa-visual\r1\pranchas\prancha_*.png`.
+- **0 magenta** em 369 capturas; **0 emendas** no chão em 68/68; **0** `Invalid polygon` (H1 não reapareceu, inclusive na morte da MiscProbe).
+- MiscProbe (qa, atualizada para a HUD nova) roda inteira: morte no ar cai e faz `dead`; card do Athoth com Sophia em x=50/640; câmera mostra 53 px além da parede (era 90).
+
 ## 3. Re-teste dos 24 itens de `docs/QA_UX_BUGS.md`
 r0 = base 589a751. **r1 = base b04f413 (estado atual).** Caminhos relativos a `C:\gnosis-wt\_caps\qa-visual\` (r0) e `C:\gnosis-wt\_caps\qa-visual\r1\` (r1).
 
@@ -127,7 +132,7 @@ r0 = base 589a751. **r1 = base b04f413 (estado atual).** Caminhos relativos a `C
 | H1 | Baixa | r0 | `hud.gd:371` `_bar`: com vida quase 0 o "fantasma" da barra vira polígono degenerado → `ERROR: Invalid polygon data, triangulation failed` (13–23 por morte, spam no console) | log `C:\gnosis-wt\_caps\qa-visual\extra\hud_die.log` | `hud.gd` (`_wedge` com largura < 2×chanfro) → **ui-hud** (reverificar em r1) |
 | H2 | Baixa | r0 | Contador de faíscas do HUD congela com a árvore pausada: atrás da loja mostra o valor velho (HUD 0 × loja 147, tela 19) | `run\s19_shop.png` | `hud.gd` `_process` → **ui-hud** |
 | H3 | Baixa | r0 | Card do Campeão desenhado POR CIMA da loja do santuário quando o Campeão morre durante o card (só com morte muito rápida) | `r0/09_loja_card_e_rei_amarelo.jpg` | `cinematic.gd` → **encenacao** |
-| T2 | Baixa (ferramenta) | r1 | `PadProbe` acusa "tentação: caixa ainda aberta" porque aperta A dentro da guarda `CHOICE_GUARD` (0,25 s) do DialogueBox — falso positivo; o jogo escolhe certo com A depois da guarda | `C:\gnosis-wt\_caps\qa-visual1\padprobe\log.txt` × `r1is\logAG.txt` | `tools/qa_ux/pad_probe.gd` (esperar 0,3 s) → **qa** |
+| T2 | Baixa (ferramenta) | r1 | `PadProbe` acusa "tentação: caixa ainda aberta" porque aperta A dentro da guarda `CHOICE_GUARD` (0,25 s) do DialogueBox — falso positivo; o jogo escolhe certo com A depois da guarda | `C:\gnosis-wt\_caps\qa-visual\r1\padprobe\log.txt` × `r1\vis\logAG.txt` | `tools/qa_ux/pad_probe.gd` (esperar 0,3 s) → **qa** |
 | T1 | Baixa (ferramenta) | r0 (corrigido em r1) | `MiscProbe` (qa) quebra no caso da batalha final: `hud._boss_name` não existe mais (HUD nova) → SCRIPT ERROR e o processo não fecha | `miscprobe\log.txt` linha 55 | `tools/qa_ux/misc_probe.gd` → **qa** |
 | V1 | **CRÍTICA** (a confirmar pelo João) | r1 | vsync ligado (o PADRÃO) = ~21 qps (46,8 ms/quadro) com janela VISÍVEL nesta máquina; vsync off = 146–182 qps | §0 P3 | `game_manager.gd` (padrão vsync) / driver → **tecnico** + perf |
 
