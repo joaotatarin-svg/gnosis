@@ -293,39 +293,41 @@ class P extends Node:
 		print("HUDP|pad|dialogos_abertos=", dialogs().size(), " (A ligado a ui_accept? ", InputMap.action_get_events("ui_accept").any(func(ev): return ev is InputEventJoypadButton), ")")
 
 	func _dialog_api() -> void:
+		# Roda bem em --headless (rápido): mede pelo estado, não por relógio de parede.
 		await level_at(2)
 		var lines := [
 			{"speaker": "A Voz", "text": "Primeira fala."},
 			{"speaker": "Narrador", "text": "(Silêncio.)", "cue": "wait_2s"},
-			{"speaker": "Sophia", "text": "Voz?"},
+			{"speaker": "Sophia", "text": "Voz? Você ainda está aí, no escuro?"},
 		]
 		var d := DialogueBox.play(lines)
 		var log: Array = []
 		var t0 := Time.get_ticks_msec()
-		d.line_shown.connect(func(i, l): log.append("%d@%d:%s" % [i, Time.get_ticks_msec() - t0, String(l.get("cue", ""))]))
-		await wait(0.4)
-		await key(KEY_J)     # completa
-		await key(KEY_J)     # avança para a fala com wait_2s
-		await wait(0.3)
-		await key(KEY_J)
-		await key(KEY_J)     # deve ser ignorado (wait_2s)
-		if not is_instance_valid(d):
-			print("HUDP|api|caixa_fechou_cedo (wait_2s ignorado) log=", log)
-			return
-		print("HUDP|api|idx_apos_apertos_no_wait=", d.idx)
-		await wait(2.2)
-		await key(KEY_J)
-		print("HUDP|api|idx_apos_2s=", d.idx)
-		if d.has_method("lock_advance"):
-			d.call("lock_advance", true)
+		var fin := [false]
+		d.finished.connect(func(): fin[0] = true)
+		d.line_shown.connect(func(i, l): log.append("%d@%d:%s:vis=%d" % [i, Time.get_ticks_msec() - t0, String(l.get("cue", "")), d._text.visible_characters]))
+		await wait(0.2)
+		print("HUDP|api|pausa_aberta held=", PauseStack.count(), " paused=", get_tree().paused)
+		while d.idx == 0:
 			await key(KEY_J)
-			await key(KEY_J)
-			print("HUDP|api|idx_com_trava=", d.idx)
-			d.call("lock_advance", false)
+		var t_wait := Time.get_ticks_msec()
+		var ignored := 0
+		while d._waiting():
+			var before: int = d.idx
+			await key(KEY_J, 0.02)
+			if d._waiting() and d.idx == before:
+				ignored += 1
+		print("HUDP|api|wait_2s: apertos_ignorados=%d idx=%d durou_ms=%d" % [ignored, d.idx, Time.get_ticks_msec() - t_wait])
 		await key(KEY_J)
+		print("HUDP|api|apos_wait idx=", d.idx)
+		d.lock_advance(true)
+		for i in 4:
+			await key(KEY_J)
+		print("HUDP|api|com_trava idx=%d typing=%s" % [d.idx, str(d.is_typing())])
+		d.lock_advance(false)
 		await key(KEY_J)
 		await wait(0.2)
-		print("HUDP|api|line_shown=", log, " pause_held=", PauseStack.count(), " paused=", get_tree().paused)
+		print("HUDP|api|fechou=%s line_shown=%s held=%d paused=%s" % [str(fin[0]), str(log), PauseStack.count(), str(get_tree().paused)])
 
 	func _feet() -> void:
 		for sc in [1, 2, 10, 30, 64, 68]:
