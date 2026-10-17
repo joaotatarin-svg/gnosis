@@ -32,7 +32,12 @@
 - Espectrogramas: `/home/user/caps/audio/novos_sfx.png` e `/home/user/caps/audio/menu_opcoes.png`.
 
 ## 4. Validação
-AudioQA: 45/45 (`tools/validate.sh --only "Scripts ScriptCheck AudioQA"` = TUDO VERDE). Resumo completo do `validate.sh` na resposta final.
+`tools/validate.sh` completo (load ~60):
+```
+Scripts OK · ScriptCheck OK · CodexQA FALHOU pass=32 (só "diretório de save independente" — o falso
+conhecido do override.cfg) · AudioQA OK pass=45 · GnoseQA OK 18 · SaveQA OK 13 · PuppetQA OK · HeroQA OK · WaveQA OK
+```
+AudioQA rodado 4× seguidas depois dos consertos de relógio real: 0 falhas em todas.
 
 ## 5. O que NÃO ficou bom / não deu tempo
 - **Ninguém ouviu nada.** Os temas do menu são síntese aditiva e podem soar "de computador". Nenhum foi instalado: o menu continua com `theme`.
