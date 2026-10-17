@@ -11,7 +11,8 @@ extends CanvasLayer
 ##     Rei e Colosso, cada uma com a vida e a FASE do seu chefe; quem cai e vai
 ##     se refazer mostra "refazendo-se" com a barra cinza enchendo)
 ## Fala com o jogo pelo grupo "hud": show_boss(e), boss_phase(n[, chefe]),
-## toast(msg), boss_area_top() (a legenda usa para ficar acima da barra).
+## toast(msg), boss_area_top() (a legenda usa para ficar acima da barra),
+## boss_bars() -> [{node, ratio, phase, down, name}] (contrato de QA).
 ## API da encenação (Onda 2): ring_dot_global_pos(i), ring_dot_world_pos(i),
 ## detach_ring(i, alvo) — a gema salta do encaixe e voa (sinal ring_detach_finished);
 ## restore_ring(i, origem) — o inverso: a gema volta voando e o encaixe reacende
@@ -141,6 +142,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_update_recede(delta)
 	if get_tree().paused:
+		# Estado congelado, mas o desenho segue (no roubo a caixa pausa o mundo e
+		# o encaixe da gema precisa apagar/acender na hora).
+		_canvas.queue_redraw()
 		return
 	_t += delta
 	# Vida: a barra viva sobe suave (cura) e desce na hora (dano); a fantasma
@@ -376,6 +380,19 @@ func boss_phase(n: int, who: Node = null) -> void:
 			(live[0] as _BossBar).flash = 1.0
 
 
+## Contrato para QA (regressão A3): uma entrada por barra viva, na ordem em
+## que os chefes nasceram: {node, ratio (0..1), phase (1/2), down (refazendo-se), name}.
+func boss_bars() -> Array:
+	var out: Array = []
+	for o in bosses:
+		var bb: _BossBar = o
+		if bb.leaving or not is_instance_valid(bb.node):
+			continue
+		out.append({"node": bb.node, "ratio": bb.ratio, "phase": bb.phase, "down": bb.down,
+			"name": String(bb.node.get("display_name"))})
+	return out
+
+
 ## Topo da área da(s) barra(s) de chefe na base (360 = nenhuma). A legenda
 ## (CaptionBar) termina acima disto.
 func boss_area_top() -> float:
@@ -534,7 +551,12 @@ func restore_ring(i: int, from: Vector2 = Vector2(320, 190)) -> float:
 		if i < _ring_pop.size():
 			_ring_pop[i] = 1.0
 		ring_restore_finished.emit(i))
-	Audio.play_sfx("ring_gain")
+	# O som da gema que VOLTA é do HUD (decisão do chefe): nota descendente por
+	# Anel quando o Áudio tiver ring_note; senão o ring_gain simples.
+	if Audio.has_method("ring_note"):
+		Audio.call("ring_note", i, true)
+	else:
+		Audio.play_sfx("ring_gain")
 	return dur
 
 

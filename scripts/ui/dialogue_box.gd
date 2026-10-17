@@ -14,8 +14,9 @@ class_name DialogueBox
 ##                                         a fala). Ex.: enquanto as 7 gemas voam (cena B).
 ##   d.is_advance_locked() -> bool
 ##   d.reveal_all() · d.is_typing()
-## Campo `cue` da fala: a caixa só entende `"wait_2s"` = durante 2 s (tempo real)
+## Campo `cue` da fala: a caixa só entende `"wait_2s"` = durante 2 s
 ## nenhum aperto é aceito (nem completar, nem avançar); o resto é da Encenação.
+## Tempos (wait_2s, guarda da escolha) contam pelo `delta` do _process.
 ## Escolha: caixa e botões sempre dentro de 640×360 (a caixa cresce para cima e
 ## os botões encolhem a fonte se precisar); opção bloqueada mostra o MOTIVO
 ## (campo `hint`) escrito na própria caixa, não só em dica de mouse. Foco no 1º
@@ -58,9 +59,10 @@ var _in_choices: bool = false
 var _rect: Rect2 = PANEL          # painel atual (anima entre PANEL e PANEL_TALL)
 var _tall: bool = false
 var _rect_tween: Tween
-var _wait_until: int = 0          # ms (tempo real) até aceitar input de novo (cue wait_2s)
+var _clock: float = 0.0           # s acumulados no _process (delta; respeita --fixed-fps)
+var _wait_until: float = 0.0      # _clock até aceitar input de novo (cue wait_2s)
 var _locked: bool = false         # lock_advance(true)
-var _choices_at: int = 0          # ms em que os botões apareceram
+var _choices_at: float = -100.0   # _clock em que os botões apareceram
 var _speaker_name: String = ""
 var _paused_world: bool = false
 var _typing: bool = false
@@ -231,7 +233,7 @@ func _show_line() -> void:
 	_place()
 	_deco.queue_redraw()
 	if String(l.get("cue", "")) == WAIT_CUE:
-		_wait_until = Time.get_ticks_msec() + int(WAIT_SECONDS * 1000.0)
+		_wait_until = _clock + WAIT_SECONDS
 	# No INÍCIO da fala (antes da 1ª letra): a Encenação reage ao `cue` já aqui.
 	line_shown.emit(idx, l)
 
@@ -291,7 +293,7 @@ func is_advance_locked() -> bool:
 
 ## `cue == "wait_2s"` ainda segurando?
 func _waiting() -> bool:
-	return Time.get_ticks_msec() < _wait_until
+	return _clock < _wait_until
 
 
 ## Mostra a fala inteira (1º aperto durante a digitação).
@@ -305,6 +307,8 @@ func is_typing() -> bool:
 
 
 func _process(delta: float) -> void:
+	# Relógio da caixa: delta (sem câmera lenta), não o relógio de parede.
+	_clock += delta / maxf(0.01, Engine.time_scale)
 	_t += delta
 	_deco.queue_redraw()
 	if not _typing:
@@ -354,7 +358,7 @@ func _show_choices() -> void:
 	_text.visible_characters = -1
 	_set_tall(true)
 	_choice_box.visible = true
-	_choices_at = Time.get_ticks_msec()
+	_choices_at = _clock
 	var first_btn: Button = null
 	var btns: Array = []
 	var reasons: Array = []
@@ -453,7 +457,7 @@ func _exit_tree() -> void:
 
 func _input(event: InputEvent) -> void:
 	# Guarda: quem vinha apertando para pular falas não escolhe sem querer.
-	if _in_choices and event.is_action_pressed("ui_accept") and Time.get_ticks_msec() - _choices_at < int(CHOICE_GUARD * 1000.0):
+	if _in_choices and event.is_action_pressed("ui_accept") and _clock - _choices_at < CHOICE_GUARD:
 		get_viewport().set_input_as_handled()
 
 
@@ -462,7 +466,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Botão A do controle escolhe mesmo se o InputMap ainda não ligou A em
 		# ui_accept (quando ligar, o botão já recebeu o aperto e isto nem chega aqui).
 		if event is InputEventJoypadButton and event.pressed and (event as InputEventJoypadButton).button_index == JOY_BUTTON_A:
-			if Time.get_ticks_msec() - _choices_at < int(CHOICE_GUARD * 1000.0):
+			if _clock - _choices_at < CHOICE_GUARD:
 				return
 			var f := get_viewport().gui_get_focus_owner()
 			if f is Button and _choice_box.is_ancestor_of(f) and not (f as Button).disabled:

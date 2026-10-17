@@ -226,9 +226,11 @@ class P extends Node:
 			rei._on_hit_received(int(rei.health.max_health * 0.6), pl.global_position, 10.0, false, null)
 			await wait(1.4)
 			await shot("t68_boss_1_rei_fase2")
+			print("HUDP|t68boss|barras_fase2=", hud().boss_bars().map(func(d): return "%s r=%.2f f=%d down=%s" % [d.name, d.ratio, d.phase, str(d.down)]))
 			rei._on_hit_received(rei.health.max_health * 2, pl.global_position, 10.0, false, null)
 			await wait(1.5)
 			await shot("t68_boss_2_rei_caiu")
+			print("HUDP|t68boss|barras_rei_caiu=", hud().boss_bars().map(func(d): return "%s r=%.2f f=%d down=%s" % [d.name, d.ratio, d.phase, str(d.down)]))
 		if col != null:
 			col._on_hit_received(int(col.health.max_health * 0.3), pl.global_position, 10.0, false, null)
 			await wait(0.8)
