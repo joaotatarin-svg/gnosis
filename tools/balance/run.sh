@@ -20,7 +20,7 @@ GODOT="${GODOT:-godot}"
 TIMEOUT="${TIMEOUT:-3600}"
 mkdir -p "$OUT"
 CMD=(timeout --kill-after=10 "$TIMEOUT" "$GODOT" --headless --audio-driver Dummy --fixed-fps 60
-	--path "$PROJ" res://tools/BalanceBot.tscn -- "$INI" "$FIM" "$VEL" "seed=$SEED" "out=$OUT/$LABEL" "${EXTRA[@]}")
+	--path "$PROJ" "${SCENE:-res://tools/BalanceBot.tscn}" -- "$INI" "$FIM" "$VEL" "seed=$SEED" "out=$OUT/$LABEL" "${EXTRA[@]}")
 echo "balance: $LABEL (telas $INI-$FIM, vel $VEL, seed $SEED ${EXTRA[*]}) -> $OUT/$LABEL.{txt,csv,log}"
 if [ "${BG:-0}" = "1" ]; then
 	nohup "${CMD[@]}" >"$OUT/$LABEL.log" 2>&1 &
