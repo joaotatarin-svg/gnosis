@@ -35,6 +35,7 @@ func _ready() -> void:
 	GameManager.set_state(GameManager.State.MENU)
 	var bg = load("res://scripts/fx/codex_sanctum.gd").new()
 	bg.menu = true
+	bg.medallion = 0.25                       # o medalhão passava por cima da ficha (P1)
 	bg.modulate = Color(0.8, 0.8, 0.8)
 	add_child(bg)
 	add_child(CodexStyle.Motes.new())

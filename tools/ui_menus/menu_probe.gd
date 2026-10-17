@@ -7,6 +7,8 @@ extends Node
 ## Uso (com janela, para as capturas):
 ##   xvfb-run -a -s "-screen 0 1280x720x24" godot --audio-driver Dummy --rendering-driver opengl3 \
 ##     --path . --resolution 1280x720 res://tools/ui_menus/MenuProbe.tscn -- <pasta_saida> [seção ...]
+## Sem capturas (testes de tempo confiáveis — a janela no llvmpipe roda a poucos fps):
+##   godot --headless --audio-driver Dummy --path . res://tools/ui_menus/MenuProbe.tscn -- <pasta> [seção ...]
 ## Seções: loja pausa pilha voltar cronicas opcoes estela provacao creditos bestiario (padrão: todas)
 ## Imprime "UIM OK: ..." / "UIM FALHA: ..." e no fim "UIM RESULT: N ok, M falha(s)".
 ## O B do controle em `ui_cancel` (e o A em `ui_accept`) é mapeado AQUI se o
@@ -68,6 +70,8 @@ class Worker extends Node:
 		await get_tree().create_timer(seconds, true, false, true).timeout
 
 	func shot(name: String) -> void:
+		if DisplayServer.get_name() == "headless":
+			return                  # sem janela: só os testes (rápido; o llvmpipe deixa a janela a ~5 fps)
 		await RenderingServer.frame_post_draw
 		await RenderingServer.frame_post_draw
 		var img := get_viewport().get_texture().get_image()
@@ -356,21 +360,26 @@ class Worker extends Node:
 		await shot("pregame")
 
 	## L3: segurar ↓ nas Crônicas — atraso inicial ~0,35 s, depois ~0,08 s.
+	## (Medido em tempo real: com a máquina carregada um quadro longo come parte
+	## do segurar, então a janela de aceitação é larga; o que importa é: 0,25 s
+	## = 1 passo só (há atraso) e 1,0 s = vários passos (há repetição).)
 	func _chronicles() -> void:
 		await go("res://scenes/ui/Chronicles.tscn", 1.0)
 		var ch := get_tree().current_scene
 		var s0: int = ch._sel
+		var t0 := Time.get_ticks_msec()
 		action("ui_down", true)
 		await wait(0.25)
 		var s1: int = ch._sel
-		await wait(0.35)               # total 0,6 s segurando
+		await wait(0.75)               # total 1,0 s segurando
 		var s2: int = ch._sel
+		var held := (Time.get_ticks_msec() - t0) / 1000.0
 		action("ui_down", false)
 		await wait(0.2)
 		var s3: int = ch._sel
-		print("UIM crônicas: inicio=%d 0.25s=%d 0.6s=%d solto=%d" % [s0, s1, s2, s3])
+		print("UIM crônicas: inicio=%d 0.25s=%d 1.0s=%d solto=%d (segurou %.2f s)" % [s0, s1, s2, s3, held])
 		check(s1 - s0 == 1, "crônicas: 0,25 s segurando = 1 passo (%d)" % (s1 - s0))
-		check(s2 - s0 >= 3 and s2 - s0 <= 6, "crônicas: 0,6 s segurando = 3–6 passos (%d)" % (s2 - s0))
+		check(s2 - s0 >= 4 and s2 - s0 <= 11, "crônicas: 1,0 s segurando = 4–11 passos (%d; ideal ≈ 10)" % (s2 - s0))
 		check(s3 == s2, "crônicas: soltou, parou")
 		# toque único pelo controle = 1 passo
 		var a: int = ch._sel

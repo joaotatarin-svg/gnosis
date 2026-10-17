@@ -3,11 +3,16 @@ extends Control
 ## mostram "???" e a dica de onde ficam); persistem entre runs (Gnosis).
 ## Cada entrada é um botão-linha FOCÁVEL: setas, W/S, D-pad e analógico andam
 ## (o foco do Godot faz o trabalho); Esc / B / Voltar → menu principal.
+## Segurar ↑/↓ repete com atraso (QA L3): 1 passo no aperto, ~0,35 s parado,
+## depois um passo a cada ~0,08 s. O "eco" do teclado do sistema é ignorado
+## para a velocidade ser a mesma em todo PC e no controle.
 
 const LIST_X := 22.0
 const LIST_Y := 66.0
 const ROW_H := 15.0
 const LIST_W := 214.0
+const REPEAT_DELAY := 0.35        # s segurando antes de começar a repetir
+const REPEAT_RATE := 0.08         # s entre passos repetidos
 
 var _entries: Array = []
 var _sel: int = 0
@@ -19,6 +24,9 @@ var _body: Label
 var _source: Label
 var _hint_locked: Label
 var _back: Button
+var _hold_dir: int = 0            # direção segurada (-1 sobe, 1 desce, 0 nada)
+var _hold_t: float = 0.0
+var _next_rep: float = REPEAT_DELAY
 
 
 func _ready() -> void:
@@ -151,6 +159,33 @@ func _refresh() -> void:
 		_body.visible = false          # a dica sobe pra logo abaixo do título
 		_hint_locked.text = "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler." % String(cur.hint)
 		_source.text = ""
+
+
+## Repetição própria ao segurar (ver cabeçalho). O 1º passo vem do aperto.
+func _process(delta: float) -> void:
+	var dir := 0
+	if Input.is_action_pressed("ui_down") or (InputMap.has_action("move_down") and Input.is_action_pressed("move_down")):
+		dir = 1
+	elif Input.is_action_pressed("ui_up") or (InputMap.has_action("move_up") and Input.is_action_pressed("move_up")):
+		dir = -1
+	# Só repete com o foco na lista (no "Voltar" o aperto já basta).
+	var on_list := _rows.has(get_viewport().gui_get_focus_owner())
+	if dir == 0 or dir != _hold_dir or not on_list:
+		_hold_dir = dir
+		_hold_t = 0.0
+		_next_rep = REPEAT_DELAY
+		return
+	_hold_t += delta
+	while _hold_t >= _next_rep:
+		_move(dir)
+		_next_rep += REPEAT_RATE
+
+
+## O eco do teclado (repetição do sistema) não anda na lista: quem repete é o _process.
+func _input(event: InputEvent) -> void:
+	if event.is_echo() and (event.is_action("ui_up") or event.is_action("ui_down") \
+			or event.is_action("move_up") or event.is_action("move_down")):
+		get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:

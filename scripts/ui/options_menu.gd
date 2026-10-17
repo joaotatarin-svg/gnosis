@@ -1,12 +1,14 @@
 extends Control
 ## Opções (tela cheia ou overlay da pausa). Duas colunas:
 ##   VÍDEO & JOGO — tela cheia · VSync · tremor de câmera (0–100%) · vibração ·
-##                  tamanho da legenda (P/M/G)
+##                  reduzir flashes · tamanho da legenda (P/M/G)
 ##   ÁUDIO        — volumes Geral / Efeitos / Música
-## Tudo vai pra `GameManager.settings` (ou Audio) e é salvo na hora pelo
+## Tudo vai para `GameManager.settings` (ou Audio) e é salvo na hora pelo
 ## SaveManager; `GameManager.apply_settings()` reaplica vídeo no boot.
-## Tremor e vibração também são gravados direto em `Juice.shake_mult` /
-## `Juice.rumble_enabled` quando esses campos existirem (branch principal).
+## Tremor, vibração e "Reduzir flashes" (padrão desligada) também são gravados
+## direto em `Juice.shake_mult` / `rumble_enabled` / `reduce_flashes` quando
+## esses campos existirem. Dentro da Provação (save desligado) as OPÇÕES ainda
+## são gravadas — só elas (REVISAO #13).
 ## Navegável por teclado/controle: botões alternam com Enter/A, sliders com ←/→.
 ## Cada linha mostra o NOME à esquerda e o VALOR em ouro à direita.
 
@@ -53,6 +55,7 @@ func _ready() -> void:
 		GameManager.settings["shake"] = v
 		_push_juice(), func(v: float): return "%d%%" % int(round(v * 100.0)))
 	_rumble = _toggle(_left, "Vibração do controle", "rumble")
+	_toggle(_left, "Reduzir flashes", "reduce_flashes")
 	_caption = _row_button(_left, "Legendas")
 	_caption.pressed.connect(_cycle_caption)
 	_refresh_caption()
@@ -180,18 +183,51 @@ func _slider(parent: Node, label_text: String, lo: float, hi: float, value: floa
 	parent.add_child(row)
 
 
-## Espelha tremor/vibração no Juice quando ele tiver os campos (branch principal).
+## Espelha tremor/vibração/flashes no Juice quando ele tiver os campos.
 func _push_juice() -> void:
 	if "shake_mult" in Juice:
 		Juice.set("shake_mult", GameManager.shake_multiplier())
 	if "rumble_enabled" in Juice:
 		Juice.set("rumble_enabled", GameManager.rumble_enabled())
+	if "reduce_flashes" in Juice:
+		Juice.set("reduce_flashes", bool(GameManager.settings.get("reduce_flashes", false)))
 
 
 func _apply_and_save() -> void:
 	Audio.play_sfx("ui_confirm")
 	GameManager.apply_settings()
-	SaveManager.save_game()
+	_push_juice()                      # apply_settings pode não conhecer as chaves novas
+	if SaveManager.persist_enabled:
+		SaveManager.save_game()
+	elif SaveManager.has_method("save_settings"):
+		SaveManager.call("save_settings")
+	elif CodexSession.active and CodexSession.previous_persist:
+		_save_settings_only()
+
+
+## Provação: o save do run está desligado (não grava progresso), mas as opções
+## do jogador têm de sobreviver. Regrava SÓ volumes e opções no save existente.
+## (Ferramentas de QA que já tinham o save desligado não gravam nada.)
+func _save_settings_only() -> void:
+	var path: String = SaveManager.SAVE_PATH
+	var data: Dictionary = {}
+	if FileAccess.file_exists(path):
+		var rf := FileAccess.open(path, FileAccess.READ)
+		if rf == null:
+			return
+		var parsed = JSON.parse_string(rf.get_as_text())
+		rf.close()
+		if typeof(parsed) != TYPE_DICTIONARY:
+			return                         # ilegível: não piora o que está lá
+		data = parsed
+	data["vol_master"] = Audio.master_vol
+	data["vol_sfx"] = Audio.sfx_vol
+	data["vol_music"] = Audio.music_vol
+	data["settings"] = GameManager.settings
+	var wf := FileAccess.open(path, FileAccess.WRITE)
+	if wf:
+		wf.store_string(JSON.stringify(data))
+		wf.close()
 
 
 func _back() -> void:

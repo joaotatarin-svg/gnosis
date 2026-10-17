@@ -9,6 +9,7 @@ const CH := 116.0        # altura da célula (arte + nome, sem sobrepor)
 const X0 := 70.0
 const Y0 := 95.0
 const VIEW_H := 360.0    # altura visível (res base)
+const NAME_W := 92.0     # largura útil do nome dentro da célula
 
 var _cam: Camera2D
 var _max_scroll: float = 0.0
@@ -19,9 +20,9 @@ func _ready() -> void:
 
 	var entries: Array = []
 	var hero := GameContent.get_character("sophia")
-	entries.append({"n": "Sophia Nv.1", "p": Bestiary.player_profile(hero, 1, [])})
-	entries.append({"n": "Sophia Nv.3", "p": Bestiary.player_profile(hero, 3, [])})
-	entries.append({"n": "Sophia Nv.5", "p": Bestiary.player_profile(hero, 5, [])})
+	entries.append({"n": "Sophia Nv. 1", "p": Bestiary.player_profile(hero, 1, [])})
+	entries.append({"n": "Sophia Nv. 3", "p": Bestiary.player_profile(hero, 3, [])})
+	entries.append({"n": "Sophia Nv. 5", "p": Bestiary.player_profile(hero, 5, [])})
 	for t in Bestiary.wave_types:
 		entries.append({"n": t.name, "p": t.profile})
 	for b in Bestiary.bosses:
@@ -85,12 +86,9 @@ func _ready() -> void:
 		add_child(art)
 
 		# Só o nome próprio (antes da vírgula) — o resto sobrepunha as células.
+		# Quebra em 2 linhas só se NÃO couber na célula (medido na fonte real, QA L2).
 		var short_name := String(entries[i].n).split(",")[0]
-		if short_name.length() > 17:
-			var split_at: int = short_name.rfind(" ",17)
-			if split_at > 0:
-				short_name = short_name.substr(0,split_at) + "\n" + short_name.substr(split_at+1)
-		_label(short_name, Vector2(cx - 48, cy + 34), 9, HORIZONTAL_ALIGNMENT_CENTER, 96)
+		_label(_fit_name(short_name, NAME_W), Vector2(cx - 48, cy + 34), 9, HORIZONTAL_ALIGNMENT_CENTER, 96)
 
 	# câmera pra rolar (o viewport base é 640x360)
 	_cam = Camera2D.new()
@@ -109,6 +107,25 @@ func _process(delta: float) -> void:
 		dir = 1.0
 	if dir != 0.0 and _cam != null:
 		_cam.position.y = clampf(_cam.position.y + dir * 260.0 * delta, 180.0, 180.0 + _max_scroll)
+
+
+## Nome que cabe em `width` px (fonte do tema, 9 px): uma linha se couber; senão
+## quebra no espaço que deixa as duas linhas mais parelhas.
+func _fit_name(text: String, width: float) -> String:
+	var font: Font = CodexStyle.body()
+	if font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x <= width:
+		return text
+	var best := text
+	var best_w := INF
+	var words := text.split(" ")
+	for k in range(1, words.size()):
+		var a := " ".join(words.slice(0, k))
+		var b := " ".join(words.slice(k))
+		var w := maxf(font.get_string_size(a, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x, font.get_string_size(b, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x)
+		if w < best_w:
+			best_w = w
+			best = a + "\n" + b
+	return best
 
 
 func _label(text: String, pos: Vector2, size: int, align: int, width: float) -> void:
