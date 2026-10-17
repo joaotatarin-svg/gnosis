@@ -18,6 +18,61 @@ const Z := 32                   # acima dos personagens (gibs ficam em 6, HUD em
 
 static var _tex: Dictionary = {}          # nome -> Texture2D (cache)
 static var _add_mat: CanvasItemMaterial   # material aditivo (luz)
+static var _rim_shader: Shader            # contorno de leitura (R18), compilado 1×
+
+## R18 (NEURO_SATISFACAO): cor do contorno de leitura por Éon — a mesma luz
+## das partículas de ambiente (0 Torpor … 6 Coroa, 7 Centro, 8 Mente).
+const EON_RIM := [Color(0.55, 0.8, 1.0), Color(1.0, 0.6, 0.3), Color(0.85, 0.88, 1.0),
+	Color(0.78, 0.72, 1.0), Color(0.95, 0.97, 1.0), Color(0.62, 1.0, 0.5), Color(1.0, 0.85, 0.42),
+	Color(1.0, 0.8, 0.5), Color(0.95, 0.5, 0.7)]
+
+
+static func eon_rim_color(eon_index: int) -> Color:
+	return EON_RIM[clampi(eon_index, 0, EON_RIM.size() - 1)]
+
+
+## Shader do CanvasGroup que desenha o personagem com um contorno externo de
+## ~1 px da base 640×360 (cor do Éon, α ≈ 0,5) — separa a silhueta pintada de
+## fundos escuros sem mexer na pintura (o CharacterArt fica intocado).
+## `rim_strength` 0 = desliga (morte/dissolução).
+static func rim_shader() -> Shader:
+	if _rim_shader == null:
+		_rim_shader = Shader.new()
+		_rim_shader.code = """
+shader_type canvas_item;
+render_mode unshaded;
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear;
+uniform vec4 rim_color : source_color = vec4(0.55, 0.8, 1.0, 0.5);
+uniform float rim_strength = 1.0;
+uniform float rim_px = 1.0;   // largura em px da base 640x360
+
+void fragment() {
+	vec4 c = textureLod(screen_texture, SCREEN_UV, 0.0);
+	if (c.a > 0.0001) {
+		c.rgb /= c.a;
+	}
+	// px da tela por px da base (360 de altura): o contorno não afina em 1080p
+	float k = max(1.0, (1.0 / SCREEN_PIXEL_SIZE.y) / 360.0) * rim_px;
+	vec2 d = SCREEN_PIXEL_SIZE * k;
+	float n = 0.0;
+	n = max(n, textureLod(screen_texture, SCREEN_UV + vec2(d.x, 0.0), 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV - vec2(d.x, 0.0), 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV + vec2(0.0, d.y), 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV - vec2(0.0, d.y), 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV + d * 0.7, 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV - d * 0.7, 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV + vec2(d.x, -d.y) * 0.7, 0.0).a);
+	n = max(n, textureLod(screen_texture, SCREEN_UV + vec2(-d.x, d.y) * 0.7, 0.0).a);
+	// só FORA da silhueta (onde o próprio pixel é transparente)
+	float edge = clamp(n - c.a, 0.0, 1.0) * rim_color.a * rim_strength;
+	vec4 body = COLOR * c;
+	vec4 rim = vec4(rim_color.rgb, edge * COLOR.a);
+	float oa = body.a + rim.a * (1.0 - body.a);
+	vec3 orgb = oa > 0.0001 ? (body.rgb * body.a + rim.rgb * rim.a * (1.0 - body.a)) / oa : vec3(0.0);
+	COLOR = vec4(orgb, oa);
+}
+"""
+	return _rim_shader
 
 
 static func tex(name: String) -> Texture2D:
