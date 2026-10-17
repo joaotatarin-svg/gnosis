@@ -773,6 +773,7 @@ const EXACT := {
 	"O COLOSSO OCO": "HOLLOW COLOSSUS",
 	"O Campeão de Athoth guarda o santuário. Acorda-o a golpes.": "Athoth's Champion guards the shrine. Wake him with blows.",
 	"O Carcereiro do santuário prende primeiro e pergunta depois. Esquiva-te, e a corrente se parte.": "The shrine's Jailer binds first and asks later. Dodge, and the chain snaps.",
+	"O Cego": "The Blind One",
 	"O Cego nunca olhou para mim. Talvez olhe para ti. Toma a minha coroa. Sê o que eu quase fui.": "The Blind One never once looked at me. Perhaps he will look at you. Take my crown. Be what I almost was.",
 	"O Cego, lá no alto. Ninguém mais. Sobe.": "The Blind One, high above. No one else. Climb.",
 	"O Centro": "The Center",

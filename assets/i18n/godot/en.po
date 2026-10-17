@@ -1440,6 +1440,11 @@ msgstr "Guardian of the shrine %s %s"
 msgid "A Voz"
 msgstr "The Voice"
 
+#. narrative.CEGO.ad0549  [falante]
+#: scripts/autoload/narrative.gd:22
+msgid "O Cego"
+msgstr "The Blind One"
+
 #. narrative.ORDINAIS.26d0c6  [ordinal]
 #: scripts/autoload/narrative.gd:37
 msgid "primeiro"

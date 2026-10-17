@@ -286,6 +286,7 @@ gnosis.BOSS_TITLES.b6df70,O Rei enfraquecido e o Colosso Oco  ·  as duas faces,
 gnosis.boss_card.86ab62,O CAMPEÃO,THE CHAMPION,card_chefe_nome,,18,scripts/autoload/gnosis.gd:396,
 gnosis.boss_card.ea8185,Guardião do santuário %s %s,Guardian of the shrine %s %s,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:396,format string: manter os %
 narrative.VOZ.1031fa,A Voz,The Voice,falante,,24,scripts/autoload/narrative.gd:17,
+narrative.CEGO.ad0549,O Cego,The Blind One,falante,,24,scripts/autoload/narrative.gd:22,
 narrative.ORDINAIS.26d0c6,primeiro,first,ordinal,,,scripts/autoload/narrative.gd:37,
 narrative.ORDINAIS.d899f3,segundo,second,ordinal,,,scripts/autoload/narrative.gd:37,
 narrative.ORDINAIS.9e4dab,terceiro,third,ordinal,,,scripts/autoload/narrative.gd:37,
