@@ -1,7 +1,8 @@
 extends Node2D
 ## Prancha das criaturas comuns (sem boneco): 6 bases × 5 estados, renderizada
 ## pelo próprio jogo. Verifica que o movimento procedural muda o corpo em cada
-## estado e salva shots/waves.png pra inspeção visual.
+## estado SEM girar o cartão (curvatura no shader, squash ≤ 7%) e salva
+## shots/waves.png pra inspeção visual.
 var failures: int = 0
 
 func check(ok: bool, message: String) -> void:
@@ -33,9 +34,14 @@ func _ready() -> void:
 			art.anim_time = 0.09 if states[col] == "hurt" else 0.4
 			art.pose_progress = 0.85 if states[col] == "windup" else (0.35 if states[col] == "attack" else -1.0)
 			art.motion_stride = 1.0
+			art.motion_distance = p.height * 0.15     # meio do passo
 			var m: Array = art._painted_motion()
+			# corpo inteiro se mexe (empurrão, squash, quique ou curvatura no
+			# shader), mas SEM girar o cartão e com squash ≤ 7%
+			check(absf(m[1]) < 0.001, "Cartão girando: " + ids[row] + "/" + states[col])
+			check(absf(m[2] - 1.0) <= 0.0701 and absf(m[3] - 1.0) <= 0.0701, "Squash acima de 7%: " + ids[row] + "/" + states[col])
 			if states[col] != "idle":
-				check(absf(m[0]) > 0.01 or absf(m[1]) > 0.01 or absf(m[2] - 1.0) > 0.01, "Sem movimento: " + ids[row] + "/" + states[col])
+				check(absf(m[0]) > 0.01 or absf(m[2] - 1.0) > 0.01 or absf(m[3] - 1.0) > 0.01 or absf(m[4]) > 0.01 or absf(m[5]) > 0.01, "Sem movimento: " + ids[row] + "/" + states[col])
 			if states[col] == "windup":
 				check(m[0] < 0.0, "Preparar não recua: " + ids[row])
 			if states[col] == "attack":

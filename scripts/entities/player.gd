@@ -149,6 +149,8 @@ func _sync_anim() -> void:
 		return
 	match state:
 		State.ATTACK:
+			# golpe leve 1/2/3 do combo escolhe os quadros desenhados
+			visual.combo_step = clampi(current_move.sequence.size(), 1, 3) if current_move != null and not current_move.is_heavy() else 0
 			if current_move == null:
 				visual.set_anim("attack")
 			elif current_move.air:

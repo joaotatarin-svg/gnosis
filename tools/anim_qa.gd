@@ -18,6 +18,8 @@ var out: String = ""
 var actors: Array = []        # [{art, timeline, i, t, vx}]
 var clock: float = 0.0
 var ended: bool = false
+var camera: Camera2D
+var follow: Node2D
 
 
 func _ready() -> void:
@@ -41,9 +43,17 @@ func _floor() -> void:
 	var l := Line2D.new()
 	l.width = 1.0
 	l.default_color = Color(0.45, 0.55, 0.6, 0.6)
-	l.add_point(Vector2(0, GROUND))
-	l.add_point(Vector2(640, GROUND))
+	l.add_point(Vector2(-2000, GROUND))
+	l.add_point(Vector2(4000, GROUND))
 	add_child(l)
+	# marcas no chão a cada 40 px: referência pra ver pé patinando
+	for i in 150:
+		var m := Line2D.new()
+		m.width = 1.0
+		m.default_color = Color(0.45, 0.55, 0.6, 0.45)
+		m.add_point(Vector2(-2000 + i * 40, GROUND))
+		m.add_point(Vector2(-2000 + i * 40, GROUND + 6))
+		add_child(m)
 
 
 func _sophia(pos: Vector2, sc: float) -> CharacterArt:
@@ -51,7 +61,7 @@ func _sophia(pos: Vector2, sc: float) -> CharacterArt:
 	var art := CharacterArt.new()
 	add_child(art)
 	art.set_profile(p)
-	art.position = pos
+	art.position = pos - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0 * sc)   # pés no chão
 	art.scale = Vector2.ONE * sc
 	return art
 
@@ -59,8 +69,9 @@ func _sophia(pos: Vector2, sc: float) -> CharacterArt:
 func _creature(id: String, pos: Vector2, sc: float) -> CharacterArt:
 	var art := CharacterArt.new()
 	add_child(art)
-	art.set_profile(Bestiary.get_type(id).profile)
-	art.position = pos
+	var p: ArtProfile = Bestiary.get_type(id).profile
+	art.set_profile(p)
+	art.position = pos - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0 * sc)
 	art.scale = Vector2(-sc, sc)     # olham pra esquerda (pra Sophia)
 	return art
 
@@ -100,32 +111,31 @@ func _board() -> void:
 # ------------------------------------------------------------------ filmes
 ## timeline: [estado, duração, vx (px/s de tela), dodge_back]
 func _film_sophia() -> void:
-	var art := _sophia(Vector2(90, GROUND), 1.7)
+	var art := _sophia(Vector2(160, GROUND), 2.6)
+	var cam := Camera2D.new()
+	cam.position = Vector2(320, 180)
+	add_child(cam)
+	cam.make_current()
+	camera = cam
+	follow = art
 	var tl := [["idle", 0.8, 0.0], ["walk", 1.25, 250.0], ["idle", 0.35, 0.0],
 		["windup", 0.04, 0.0], ["attack", 0.30, 30.0], ["windup", 0.04, 0.0], ["attack", 0.32, 30.0],
 		["idle", 0.25, 0.0], ["windup_heavy", 0.17, 0.0], ["attack_heavy", 0.45, 40.0], ["idle", 0.3, 0.0],
 		["dodge", 0.30, 330.0], ["idle", 0.2, 0.0], ["dodge", 0.30, -330.0, true], ["idle", 0.25, 0.0],
 		["block", 0.5, 0.0], ["cast", 0.55, 0.0], ["idle", 0.2, 0.0], ["jump", 0.35, 0.0, false, -1.0], ["fall", 0.35, 0.0, false, 1.0],
 		["idle", 0.3, 0.0], ["hurt", 0.45, -40.0], ["dead", 1.6, 0.0], ["dead", 0.01, 0.0]]
-	actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": GROUND})
+	actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
 	_label("SOPHIA — filme de animação (AnimQA)", Vector2(6, 6))
 
 
 func _film_creatures() -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))   # fundo claro: bichos são escuros
 	var ids := ["servo", "canino", "larva"]
 	for k in ids.size():
-		var art := _creature(ids[k], Vector2(600, GROUND - k * 0.0), 1.1)
-		art.position = Vector2(560 - k * 10, GROUND)
-		art.visible = true
-		var tl := [["idle", 0.3 + k * 0.5, 0.0], ["walk", 1.6, -150.0], ["windup", 0.5, 0.0], ["attack", 0.3, 0.0], ["recover", 0.3, 0.0],
-			["walk", 0.6, -120.0], ["hurt", 0.3, 40.0], ["idle", 0.3, 0.0], ["dead", 1.3, 0.0], ["dead", 2.0 - k * 0.5, 0.0]]
-		actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": GROUND, "lane": k})
-		art.position.y = GROUND - 0.0
-		art.z_index = 3 - k
-	# três faixas de profundidade (2.5D) pra não sobrepor
-	for a in actors:
-		a.art.position.y = GROUND - 70.0 * a.lane
-		a.y0 = a.art.position.y
+		var art := _creature(ids[k], Vector2(190 + k * 190, GROUND), 1.9)
+		var tl := [["idle", 0.3 + k * 0.25, 0.0], ["walk", 1.4, -55.0], ["windup", 0.5, 0.0], ["attack", 0.3, 0.0], ["recover", 0.3, 0.0],
+			["walk", 0.6, 45.0], ["hurt", 0.3, 30.0], ["idle", 0.3, 0.0], ["dead", 1.2, 0.0], ["dead", 1.0 - k * 0.25, 0.0]]
+		actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
 	_label("CRIATURAS — passo, preparo, golpe, dano, dissolução", Vector2(6, 6))
 
 
@@ -136,6 +146,8 @@ func _process(delta: float) -> void:
 	var alive := false
 	for a in actors:
 		var art: CharacterArt = a.art
+		if a.i >= a.tl.size():
+			continue
 		if a.i < 0 or a.t >= float(a.tl[a.i][1]):
 			a.i += 1
 			a.t = 0.0
@@ -158,6 +170,9 @@ func _process(delta: float) -> void:
 			art.position.y = a.y0 - (sin((u * 0.5) * PI) * 70.0 if float(st[4]) < 0.0 else cos((u * 0.5) * PI) * 70.0)
 		else:
 			art.position.y = a.y0
+	if camera != null and follow != null:
+		# câmera acompanha devagar (o chão marcado mostra o deslocamento)
+		camera.position.x = lerpf(camera.position.x, follow.position.x + 60.0, 1.0 - exp(-delta * 2.5))
 	if not alive:
 		ended = true
 		get_tree().quit()

@@ -58,8 +58,8 @@ def boots_of(mask: np.ndarray, k: int):
 	boots = []
 	for i in range(1, n + 1):
 		yy, xx = np.nonzero(lab == i)
-		if yy.size < 4 * k * k:
-			continue
+		if yy.size < 4 * k * k or xx.max() - xx.min() < 4 * k:
+			continue      # pequeno ou fino demais (ponta do cajado no chão) não é bota
 		b = int(yy.max())
 		low = yy >= b - max(2, k // 2)
 		boots.append({"x0": int(xx.min()), "x1": int(xx.max()), "contact_x": float(xx[low].mean()), "bottom": b})
@@ -102,6 +102,8 @@ def measure(rgba: np.ndarray) -> dict:
 		"front_x": bts[-1]["contact_x"] if bts else pelvis_x,
 		"rear_x": bts[0]["contact_x"] if bts else pelvis_x,
 		"boots": len(bts), "tip": tip,
+		# bota mais baixa = a que está apoiada (corrida: mede a passada)
+		"low_x": max(bts, key=lambda q: q["bottom"])["contact_x"] if bts else pelvis_x,
 	}
 
 
@@ -109,7 +111,7 @@ def scale_meas(m: dict, s: float, ox: float = 0.0, oy: float = 0.0) -> dict:
 	out = dict(m)
 	for key in ["foot_y", "bottom", "top", "hip_y"]:
 		out[key] = m[key] * s + oy
-	for key in ["pelvis_x", "center_x", "front_x", "rear_x"]:
+	for key in ["pelvis_x", "center_x", "front_x", "rear_x", "low_x"]:
 		out[key] = m[key] * s + ox
 	if m["tip"] is not None:
 		out["tip"] = [m["tip"][0] * s + ox, m["tip"][1] * s + oy]
@@ -144,12 +146,24 @@ def slice_sheet(path: str, grid, names):
 	for c, name in enumerate(names):
 		if name == "-" or c not in cell_of:
 			continue
-		m = np.isin(lab, cell_of[c])
+		# pedaços soltos só entram se forem grandes (cajado caído) ou estiverem
+		# perto do corpo principal (faísca de outro quadro fica de fora)
+		ids = cell_of[c]
+		areas = {i: int((lab[objs[i - 1]] == i).sum()) for i in ids}
+		main = max(ids, key=lambda i: areas[i])
+		ms = objs[main - 1]
+		keep = []
+		for i in ids:
+			sl = objs[i - 1]
+			near = sl[0].start < ms[0].stop + 40 and sl[0].stop > ms[0].start - 40 and sl[1].start < ms[1].stop + 40 and sl[1].stop > ms[1].start - 40
+			if i == main or areas[i] > 1500 or near:
+				keep.append(i)
+		m = np.isin(lab, keep)
 		yy, xx = np.nonzero(m)
 		y0, y1, x0, x1 = yy.min(), yy.max() + 1, xx.min(), xx.max() + 1
 		alpha = a[y0:y1, x0:x1] * m[y0:y1, x0:x1]
 		rgba = np.dstack([F[y0:y1, x0:x1], alpha * 255.0])
-		frames[name] = rgba
+		frames[name] = (rgba, (int(x0), int(y0)))
 	return frames
 
 
@@ -218,15 +232,43 @@ def main() -> None:
 	body_px = float(R["body_px"])
 	# 1) fatia todas as folhas e mede em escala de origem
 	raw = {}
+	fixed_anchor = {}
 	for sid, src in R["sources"].items():
 		path = os.path.join(ROOT, src["file"])
 		if not os.path.exists(path):
 			print("  (folha ausente, pulada)", src["file"])
 			continue
-		for name, rgba in slice_sheet(path, src["grid"], src["cells"]).items():
-			raw[sid + "." + name] = (rgba, float(src.get("scale", 1.0)))
+		side = {}
+		side_path = path.replace(".png", ".json")
+		if os.path.exists(side_path):
+			side = json.load(open(side_path, encoding="utf-8")).get("anchors", {})
+		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"]).items():
+			raw[sid + "." + name] = [rgba, src.get("scale", 1.0)]
+			if name in side:
+				# âncora fixa (px da folha) → px locais do recorte
+				fixed_anchor[sid + "." + name] = (side[name][0] - origin[0], side[name][1] - origin[1])
 	ref = R["ref_frame"]
 	ref_m = measure(raw[ref][0])
+	ref_body = ref_m["foot_y"] - ref_m["top"]
+	# escala por folha: número fixo ou "auto:<célula em pé>" (iguala a altura
+	# pé→topo da cabeça dessa célula à do quadro de referência)
+	auto_scale = {}
+	base_pre = float(R["body_px"]) / max(1.0, ref_body)
+	for sid, src in R["sources"].items():
+		sc = src.get("scale", 1.0)
+		if isinstance(sc, str) and sc.startswith("auto:"):
+			cell = sid + "." + sc[5:]
+			if cell in raw:
+				mm = measure(raw[cell][0])
+				auto_scale[sid] = ref_body / max(1.0, mm["foot_y"] - mm["top"])
+				print("  escala auto %s = %.3f (por %s)" % (sid, auto_scale[sid], cell))
+	for n in raw:
+		sid = n.split(".")[0]
+		v = raw[n][1]
+		if v == "atlas":
+			raw[n][1] = 1.0 / base_pre        # folha já na escala do atlas (intercalados do RIFE)
+		else:
+			raw[n][1] = auto_scale.get(sid, 1.0) if isinstance(v, str) else float(v)
 	base = body_px / (ref_m["foot_y"] - ref_m["top"])   # px de origem → px do atlas
 	# 2) normaliza e mede
 	used = []
@@ -246,6 +288,8 @@ def main() -> None:
 		canvas = np.zeros((h + 2 * PAD, w + 2 * PAD, 4), np.float32)
 		canvas[PAD:PAD + h, PAD:PAD + w] = small
 		frames[n] = {"img": canvas, "m": scale_meas(m_src, s, PAD, PAD), "scale": s}
+		if n in fixed_anchor:
+			frames[n]["fixed"] = [fixed_anchor[n][0] * s + PAD, fixed_anchor[n][1] * s + PAD]
 	refm = frames[ref]["m"] if ref in frames else scale_meas(ref_m, base, PAD, PAD)
 	d_front = refm["front_x"] - refm["pelvis_x"]
 	d_rear = refm["rear_x"] - refm["pelvis_x"]
@@ -267,12 +311,16 @@ def main() -> None:
 			"rect": [x, y, w, h],
 			"foot_y": round(m["foot_y"], 2), "bottom": round(m["bottom"], 2), "top": round(m["top"], 2),
 			"hip_y": round(m["hip_y"], 2), "pelvis_x": round(m["pelvis_x"], 2), "center_x": round(m["center_x"], 2),
-			"front_x": round(m["front_x"], 2), "rear_x": round(m["rear_x"], 2), "boots": m["boots"],
+			"front_x": round(m["front_x"], 2), "rear_x": round(m["rear_x"], 2), "low_x": round(m["low_x"], 2), "boots": m["boots"],
 			"tip": [round(m["tip"][0], 2), round(m["tip"][1], 2)] if m["tip"] else None,
 			"scale": round(frames[n]["scale"], 5),
 		}
+		if "fixed" in frames[n]:
+			out_frames[n]["fixed_anchor"] = [round(v, 2) for v in frames[n]["fixed"]]
 	# 4) estados → sequências com âncora por quadro
 	def anchor(fr: dict, mode: str):
+		if "fixed_anchor" in fr:
+			return list(fr["fixed_anchor"])
 		if mode == "front":
 			return [fr["front_x"] - d_front, fr["foot_y"]]
 		if mode == "rear":
@@ -294,8 +342,35 @@ def main() -> None:
 		if not seq:
 			continue
 		entry = {"frames": seq, "dur": st.get("dur", []), "loop": bool(st.get("loop", False))}
-		for key in ["cycle_bodies", "steps", "smear_at", "fps"]:
-			if key in st:
+		if "advance_split_of" in st and st["advance_split_of"] in out_states and "advance" in out_states[st["advance_split_of"]]:
+			# intercalados: cada quadro original divide o seu avanço com o meio
+			base_adv = out_states[st["advance_split_of"]]["advance"]
+			adv = []
+			for v in base_adv:
+				adv += [round(v / 2.0, 2), round(v / 2.0, 2)]
+			entry["advance"] = adv
+			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
+		elif st.get("cycle_bodies") == "auto":
+			# CORRIDA: quanto o corpo avança em cada quadro = quanto o pé
+			# apoiado recua em relação à pélvis até o quadro seguinte. Trocando
+			# de quadro a cada `advance[i]` de distância, o pé apoiado volta ao
+			# MESMO ponto do mundo em toda troca (deriva 0 no apoio).
+			low = [out_frames[e["f"]]["low_x"] - out_frames[e["f"]]["pelvis_x"] for e in seq]
+			steps = set(st.get("steps", []))
+			n = len(seq)
+			adv = [None] * n
+			for i in range(n):
+				j = (i + 1) % n
+				if j not in steps and low[i] - low[j] > 0:
+					adv[i] = low[i] - low[j]
+			known = [v for v in adv if v is not None]
+			mean = sum(known) / max(1, len(known))
+			adv = [round(v if v is not None else mean, 2) for v in adv]
+			entry["advance"] = adv
+			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
+			print("  %s: avanço por quadro %s -> ciclo %.2f alturas" % (sname, adv, sum(adv) / body_px))
+		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change"]:
+			if key in st and key not in entry:
 				entry[key] = st[key]
 		out_states[sname] = entry
 	# 5) grava
@@ -313,39 +388,43 @@ def main() -> None:
 		contact(meta, atlas)
 
 
-def contact(meta: dict, atlas: np.ndarray) -> None:
-	"""Prancha: cada estado numa linha, quadros alinhados pela ÂNCORA sobre a
-	linha do chão (vermelha) e a altura da cabeça do quadro de referência (amarela)."""
-	S = 0.5
-	cellw, cellh = 190, 190
-	sts = meta["states"]
-	maxn = max(len(s["frames"]) for s in sts.values())
-	W, H = 90 + cellw * maxn, cellh * len(sts)
-	img = Image.new("RGB", (W, H), (34, 42, 50))
-	d = ImageDraw.Draw(img)
+def contact(meta: dict, atlas: np.ndarray, per_page: int = 9) -> None:
+	"""Pranchas: cada estado numa linha, quadros alinhados pela ÂNCORA sobre a
+	linha do chão (vermelha) e a altura da cabeça do quadro de referência
+	(amarela); círculo ciano = ponta do cajado. Páginas de `per_page` estados."""
+	S = 0.42
+	cellw, cellh = 150, 150
 	at = Image.fromarray(atlas.round().clip(0, 255).astype(np.uint8), "RGBA")
 	head = meta["body_px"] * S
-	for row, (sname, st) in enumerate(sts.items()):
-		gy = row * cellh + cellh - 22
-		d.line([(0, gy), (W, gy)], fill=(160, 60, 60))
-		d.line([(0, gy - head), (W, gy - head)], fill=(150, 140, 50))
-		d.text((4, row * cellh + 4), sname, fill=(230, 230, 230))
-		for i, e in enumerate(st["frames"]):
-			fr = meta["frames"][e["f"]]
-			x, y, w, h = fr["rect"]
-			crop = at.crop((x, y, x + w, y + h)).resize((max(1, int(w * S)), max(1, int(h * S))), Image.LANCZOS)
-			ox = 90 + i * cellw + cellw // 2
-			img.paste(crop, (int(ox - e["anchor"][0] * S), int(gy - e["anchor"][1] * S)), crop)
-			d.line([(ox - 4, gy), (ox + 4, gy)], fill=(80, 220, 120))
-			d.line([(ox, gy - 4), (ox, gy + 4)], fill=(80, 220, 120))
-			if fr["tip"]:
-				tx = ox + (fr["tip"][0] - e["anchor"][0]) * S
-				ty = gy + (fr["tip"][1] - e["anchor"][1]) * S
-				d.ellipse([tx - 3, ty - 3, tx + 3, ty + 3], outline=(0, 255, 255))
-			d.text((ox - cellw // 2 + 4, gy + 6), e["f"], fill=(180, 180, 180))
+	items = list(meta["states"].items())
+	maxn = max(len(s["frames"]) for _, s in items)
+	W = 80 + cellw * maxn
 	os.makedirs(CAPS, exist_ok=True)
-	img.save(os.path.join(CAPS, "frames_contact.png"))
-	print("prancha:", os.path.join(CAPS, "frames_contact.png"), img.size)
+	for page in range(0, len(items), per_page):
+		chunk = items[page: page + per_page]
+		img = Image.new("RGB", (W, cellh * len(chunk)), (34, 42, 50))
+		d = ImageDraw.Draw(img)
+		for row, (sname, st) in enumerate(chunk):
+			gy = row * cellh + cellh - 18
+			d.line([(0, gy), (W, gy)], fill=(160, 60, 60))
+			d.line([(0, gy - head), (W, gy - head)], fill=(150, 140, 50))
+			d.text((4, row * cellh + 4), sname, fill=(230, 230, 230))
+			for i, e in enumerate(st["frames"]):
+				fr = meta["frames"][e["f"]]
+				x, y, w, h = fr["rect"]
+				crop = at.crop((x, y, x + w, y + h)).resize((max(1, int(w * S)), max(1, int(h * S))), Image.LANCZOS)
+				ox = 80 + i * cellw + cellw // 2
+				img.paste(crop, (int(ox - e["anchor"][0] * S), int(gy - e["anchor"][1] * S)), crop)
+				d.line([(ox - 4, gy), (ox + 4, gy)], fill=(80, 220, 120))
+				d.line([(ox, gy - 4), (ox, gy + 4)], fill=(80, 220, 120))
+				if fr["tip"]:
+					tx = ox + (fr["tip"][0] - e["anchor"][0]) * S
+					ty = gy + (fr["tip"][1] - e["anchor"][1]) * S
+					d.ellipse([tx - 3, ty - 3, tx + 3, ty + 3], outline=(0, 255, 255))
+				d.text((ox - cellw // 2 + 2, gy + 4), e["f"].split(".")[-1], fill=(170, 170, 170))
+		out = os.path.join(CAPS, "frames_contact_%d.png" % (page // per_page + 1))
+		img.save(out)
+		print("prancha:", out, img.size)
 
 
 if __name__ == "__main__":
