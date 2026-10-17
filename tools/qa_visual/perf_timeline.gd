@@ -5,13 +5,19 @@ extends "res://tools/perf_probe.gd"
 ##   SPIKE|t=<s desde o início>|frame=<n>|ms=<duração>|fase=<carga|aquece|mede>
 ## No fim: SPIKES|total=<n>|>50ms=<n>|>100ms=<n>|pior=<ms>@<s>
 ## Uso: igual à PerfProbe, trocando a cena por res://tools/qa_visual/PerfTimeline.tscn
+## Extra: modo=adaptive|mailbox|enabled|disabled troca o modo de vsync depois que a PerfProbe ajustou o dela.
 
 const LIMIAR_MS := 33.4   # acima de 2 quadros a 60 qps
 
 
 func _ready() -> void:
 	super()
-	get_tree().root.add_child.call_deferred(Spy.new())
+	var spy := Spy.new()
+	for a in OS.get_cmdline_user_args():
+		var kv: PackedStringArray = String(a).split("=", true, 1)
+		if kv.size() == 2 and kv[0] == "modo":
+			spy.vsync_mode = kv[1]
+	get_tree().root.add_child.call_deferred(spy)
 
 
 class Spy extends Node:
@@ -23,11 +29,16 @@ class Spy extends Node:
 	var _c100: int = 0
 	var _worst: float = 0.0
 	var _worst_t: float = 0.0
+	var vsync_mode: String = ""   # modo=adaptive|mailbox|enabled|disabled: troca o vsync DEPOIS da PerfProbe
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
 		_t0 = Time.get_ticks_usec()
 		_last = _t0
+		var modes := {"adaptive": DisplayServer.VSYNC_ADAPTIVE, "mailbox": DisplayServer.VSYNC_MAILBOX, "enabled": DisplayServer.VSYNC_ENABLED, "disabled": DisplayServer.VSYNC_DISABLED}
+		if modes.has(vsync_mode):
+			DisplayServer.window_set_vsync_mode.call_deferred(modes[vsync_mode])
+			print("SPY|vsync_mode=", vsync_mode, " driver=", RenderingServer.get_current_rendering_driver_name())
 
 	func _fase() -> String:
 		for c in get_tree().root.get_children():
