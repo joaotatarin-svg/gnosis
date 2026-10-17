@@ -11,7 +11,7 @@ Fontes usadas (somente leitura):
   assets/backgrounds/eon_8_far.png      a Mente (céu com o olho)
   assets/backgrounds/eon_0_far.png      o Limiar (janela da lua)
   assets/fonts/cinzel_decorative/CinzelDecorative-Bold.ttf (OFL)
-  assets/store/src/shot_*.png           capturas 1920x1080 (tools/store/capture.sh)
+  /home/user/caps/loja/raw/sN_NNN.png   quadros 1920x1080 do jogo (tools/store/capture.sh; fora do git)
 
 Saída: assets/store/ (tem .gdignore — não entra no jogo).
 Uso:  python3 tools/store/build_store.py            (tudo)
@@ -26,7 +26,6 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(ROOT, "assets", "store")
-SRC_SHOTS = os.path.join(OUT, "src")
 
 
 def P(*a):
@@ -762,19 +761,38 @@ def make_icon_spark(S):
 # --------------------------------------------------------------------------
 
 
-def make_screens():
+# Capturas escolhidas (quadros REAIS do jogo, tools/store/capture.sh). Os
+# quadros brutos (1920x1080, ~2,7 MB cada) ficam FORA do git, em --raw
+# (padrão /home/user/caps/loja/raw); sem eles, as capturas já geradas em
+# assets/store/ são mantidas. Saem em JPG q=93 (a Steam aceita JPG/PNG; poupa
+# ~2 MB por imagem no repositório).
+# (nome final, quadro bruto, o que mostra)
+SHOTS = [
+    ("01_rei_limiar", "s1_016", "Tela 1: Sophia contra o Rei no Limiar (catedral da lua)"),
+    ("02_athoth_magia", "s10_014", "Tela 10: magia de luz contra Athoth, Arconte do Torpor"),
+    ("03_galila_corrente", "s28_016", "Tela 28: Galila, Arconte da Corrente, entre gaiolas suspensas"),
+    ("04_astaphaios_espelho", "s46_016", "Tela 46: Astaphaios no salão de espelhos"),
+    ("05_armupiel_coroa", "s64_010", "Tela 64: golpe contra Armupiel, Arconte da Coroa"),
+    ("06_centro_horda", "s65_002", "Tela 65: o Centro, Sophia cercada por criaturas"),
+]
+
+
+def make_screens(raw_dir):
     out = []
-    if not os.path.isdir(SRC_SHOTS):
-        return out
-    for f in sorted(os.listdir(SRC_SHOTS)):
-        if not (f.startswith("shot_") and f.endswith(".png")):
+    for name, frame, _desc in SHOTS:
+        src = os.path.join(raw_dir, frame + ".png")
+        dst = os.path.join(OUT, "screenshot_%s.jpg" % name)
+        if not os.path.exists(src):
+            if os.path.exists(dst):
+                print("mantida (sem bruto):", os.path.basename(dst))
+            else:
+                print("FALTA bruto:", src)
             continue
-        im = Image.open(os.path.join(SRC_SHOTS, f)).convert("RGB")
+        im = Image.open(src).convert("RGB")
         if im.size != (1920, 1080):
             im = fit_cover(im.convert("RGBA"), 1920, 1080).convert("RGB")
-        name = "screenshot_" + f[len("shot_"):]
-        im.save(os.path.join(OUT, name), optimize=True)
-        out.append(name)
+        im.save(dst, quality=93, subsampling=0, optimize=True)
+        out.append(os.path.basename(dst))
     return out
 
 
@@ -802,7 +820,7 @@ def board(items):
                         dd.rectangle((x, y, x + ck - 1, y + ck - 1), fill=(56, 56, 66, 255))
             bg.alpha_composite(im)
             im = bg
-        maxw = 616 if not name.startswith(("hero", "screenshot")) else 960
+        maxw = 616 if not name.startswith(("hero", "screenshot")) else 940
         if name.startswith("icon_") and im.width <= 512:
             maxw = 256
         if im.width > maxw:
@@ -819,20 +837,25 @@ def board(items):
     if cur:
         rows.append(cur)
     W = 1960 + pad
-    H = sum(max(c[1].height for c in r) + lab_h + pad for r in rows) + pad
+    top = 70
+    H = sum(max(c[1].height for c in r) + lab_h + pad for r in rows) + pad + top
     sheet = Image.new("RGB", (W, H), (18, 18, 22))
     d = ImageDraw.Draw(sheet)
     try:
         lf = ImageFont.truetype(P("assets", "fonts", "alegreya", "Alegreya-VF.ttf"), 16)
+        tf = ImageFont.truetype(P("assets", "fonts", "alegreya", "Alegreya-VF.ttf"), 26)
     except OSError:
-        lf = ImageFont.load_default()
-    y = pad
+        lf = tf = ImageFont.load_default()
+    d.text((pad, 18), "GNOSIS — prancha da loja. Cada peça tem duas versões: sem sufixo = A (a Mente, carmim);"
+           " _b = B (o Limiar, azul). Escolha A ou B por peça, e um dos dois ícones.", fill=(236, 212, 152), font=tf)
+    y = pad + top
     for r in rows:
         x = pad
         rh = max(c[1].height for c in r)
         for name, im in r:
             src = Image.open(os.path.join(OUT, name))
-            d.text((x, y), "%s  (%dx%d)" % (name, src.width, src.height), fill=(220, 210, 190), font=lf)
+            tag = "B" if "_b." in name else ("A" if name.startswith(("capsule", "library_capsule", "hero")) else "")
+            d.text((x, y), "%s%s  (%dx%d)" % ("[%s] " % tag if tag else "", name, src.width, src.height), fill=(220, 210, 190), font=lf)
             sheet.paste(im.convert("RGB"), (x, y + lab_h))
             x += im.width + pad
         y += rh + lab_h + pad
@@ -882,6 +905,7 @@ def render_scaled(maker, size, v):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", default="", help="lista: header,small,main,vertical,library,hero,logo,icon,screens,board")
+    ap.add_argument("--raw", default="/home/user/caps/loja/raw", help="pasta dos quadros brutos (capture.sh)")
     args = ap.parse_args()
     only = set(filter(None, args.only.split(",")))
     want = lambda k: not only or k in only
@@ -928,14 +952,17 @@ def main():
             strip.save(os.path.join(OUT, "icon_%s_sizes.png" % tag))
             print("ok icon", tag)
     if want("screens"):
-        for n in make_screens():
+        for n in make_screens(args.raw):
             print("ok", n)
 
     if want("board"):
-        allp = sorted(f for f in os.listdir(OUT) if f.endswith(".png") and not f.startswith(("board", "half")) and not f.endswith("_sizes.png"))
-        order = ["capsule_main_616x353.png", "capsule_header_460x215.png", "capsule_small_231x87.png",
-                 "capsule_vertical_374x448.png", "library_capsule_600x900.png", "icon_eye_512.png",
-                 "icon_spark_512.png", "logo_1600.png", "hero_3840x1240.png"]
+        allp = sorted(f for f in os.listdir(OUT) if f.endswith((".png", ".jpg")) and not f.startswith(("board", "half")) and not f.endswith("_sizes.png"))
+        order = []
+        for base in ("capsule_main_616x353", "capsule_header_460x215", "capsule_small_231x87",
+                     "capsule_vertical_374x448", "library_capsule_600x900"):
+            order += [base + ".png", base + "_b.png"]
+        order += ["icon_eye_512.png", "icon_spark_512.png", "logo_1600.png",
+                  "hero_3840x1240.png", "hero_3840x1240_b.png"]
         items = [o for o in order if o in allp] + [f for f in allp if f.startswith("screenshot_")]
         board(items).save(os.path.join(OUT, "board.png"), optimize=True)
         half = [n for n in ["capsule_main_616x353.png", "capsule_header_460x215.png", "capsule_small_231x87.png", "capsule_vertical_374x448.png"] if n in allp]
