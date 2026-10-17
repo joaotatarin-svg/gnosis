@@ -248,6 +248,7 @@ func _refresh_info() -> void:
 	_sel_desc.text = EonMap.kind_desc(kind)
 	var rw: Dictionary = n.get("reward", {})
 	_sel_reward.text = (I18n.t("Recompensa: %s") % EonMap.reward_text(rw)) if not rw.is_empty() else ""
+	_sel_req.add_theme_color_override("font_color", SECRET_COL if String(n.requires) != "" else CodexStyle.MUTED)
 	if not _available(id):
 		_sel_req.text = "Selado: exige o pulo duplo. Quem dá asas não luta."
 	elif String(n.requires) == "double_jump":
