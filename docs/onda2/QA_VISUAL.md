@@ -194,3 +194,7 @@ Logs com cada engasgo: `C:\gnosis-wt\_caps\qa-visual\perf\*.log` e `...\r1\perf\
 - vsync ligado não medível com a janela invisível (V1).
 - Tremor: posição da Sophia reconstruída (o Godot não expõe a interpolada em 2D).
 - As cenas foram filmadas com a CenaShot avançando as falas a cada 2 s (120 quadros) — o ritmo de leitura real é do jogador.
+
+## Vigília (17/10, 05:15–07:15)
+`git fetch` a cada 5 min por 2 h: `origin/integracao/onda1` ficou em `fc6d0e3` (só os briefs da Onda 2b, já mergeados aqui). Nada novo para re-testar → encerrei pela regra "2 h sem mudança".
+Para a próxima rodada (quando a Onda 2b integrar): rodar `RENDER=window bash tools/qa_ux/run_all.sh <pasta> 5 fight`, `VisualProbe.tscn -- <pasta> ABCDEFG`, `CenaSeq.tscn` nas telas 1/64/65/68, `CombatSeq.tscn` 3/10/68 e `perf.sh` (vsync 0) — e re-checar C1, C2, F1, F2, M1, P3 e V1.
