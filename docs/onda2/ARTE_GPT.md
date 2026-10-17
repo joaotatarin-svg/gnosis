@@ -127,3 +127,20 @@ o quadro `fade` veio rosado (o GPT pintou o fantasma já misturado ao magenta) �
   Funciona SEM tocar no `sleeper.gd`: o CharacterArt dorme enquanto o olho do perfil está apagado
   e, quando o `sleeper.gd` troca o perfil (olho aceso), toca o `wake` no relógio próprio.
 Prova: `gifs/npcs_estados.png` (AnimQA `-- npc_board`).
+
+## Sophia — corrida desenhada (S11) e morte com transição (S12)
+
+- **Corrida**: estado novo `rund` = ciclo todo DESENHADO de 11 quadros (S2 run_0..7 + três passagens
+  da S11 encaixadas pela fase do pé de apoio), avanço por quadro calculado pelo recuo do pé →
+  **deriva do pé na troca 0,00 px** (`tools/anim/run_drift.py rund`); deslize dentro do quadro ≤ 13 px
+  de mundo. `USE_RUN_INBETWEENS := false` (o `run16` com meios do RIFE continua no atlas, desligado).
+  Honesto: a S11 trouxe só 4 poses (contato e passagem de cada perna, repetidas em 2 ciclos) que caem
+  nas MESMAS fases da S2; não há quadros novos entre contato→recuo nem impulso→contato, então um
+  ciclo de 16 todo desenhado não é possível com ela. Para 16 de verdade faltariam 8 poses "entre"
+  (ex.: pé saindo do chão, joelho subindo) — pedido possível ao produtor.
+- **Morte**: `dead` = S12 _b inteira (atingida → cambaleia → um joelho → mão no chão → tombando →
+  deitada de bruços), 0,6 s, âncora no pé de trás (cai pra frente sem escorregar). Substitui S9 die_0..3.
+- HeroQA ganhou: corrida sem quadros do RIFE e ≥ 8 quadros; morte com ≥ 5 quadros e terminando deitada.
+- GIFs: `gifs/sophia_corrida_antes.gif` × `gifs/sophia_corrida_depois.gif`, `gifs/sophia_morte_antes.gif` ×
+  `gifs/sophia_morte_depois.gif`, prancha `gifs/sophia_corrida_morte_antes_depois.png` (AnimQA film_sophia).
+- Shader da Sophia NÃO mudado (decisão do João).

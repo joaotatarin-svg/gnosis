@@ -1344,7 +1344,9 @@ var combo_step: int = 0             # golpe leve 1/2/3 do combo (o player liga; 
 var _combat_clock: float = 99.0     # s desde o último estado de combate (parada → prontidão)
 var _land_t: float = 0.0            # segura o quadro de pouso (s)
 var _rise_t: float = 0.0            # tempo restante do levantar (s)
-const USE_RUN_INBETWEENS := true    # corrida com os meios do RIFE (run16) quando houver
+## Corrida com os meios do RIFE (run16, borram as pernas). Desligado na Onda 2:
+## a corrida padrão é o ciclo desenhado "rund" (S2 + passagens da S11).
+const USE_RUN_INBETWEENS := false
 var dissolve_max: float = 1.0       # forma que pode se refazer dissolve só até aqui
 var _last_x: float = INF
 var _wind_time: float = 0.0
@@ -1448,6 +1450,8 @@ func _hero_seq(states: Dictionary) -> String:
 		return "land"
 	if st in ["walk", "charge"] and USE_RUN_INBETWEENS and states.has("run16"):
 		return "run16"
+	if st in ["walk", "charge"] and states.has("rund"):
+		return "rund"          # ciclo todo DESENHADO (s2 + s11), sem meios do RIFE
 	if st in ["windup", "attack"] and combo_step > 0 and states.has(st + str(combo_step)):
 		return st + str(combo_step)
 	if st == "idle" and _combat_clock < 1.8 and states.has("ready"):

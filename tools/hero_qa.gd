@@ -67,6 +67,15 @@ func _ready() -> void:
 			if state == "dead":
 				# deitada = último quadro da sequência e mais largo que alto
 				check(idx == seq.frames.size() - 1 and float(r[2]) > float(r[3]) * 1.3, "Morte não termina deitada: " + e.f)
+				# transição desenhada (S12): atingida → cambaleia → joelho → mão → tomba → deitada
+				check(seq.frames.size() >= 5, "Morte sem a transição antes do deitado (%d quadros)" % seq.frames.size())
+			if state == "walk":
+				# corrida = ciclo todo DESENHADO (sem os meios borrados do RIFE)
+				var drawn: bool = true
+				for fe in seq.frames:
+					if String(fe.f).begins_with("rinb."):
+						drawn = false
+				check(drawn and seq.frames.size() >= 8, "Corrida com quadros do RIFE ou ciclo curto: " + seq_name)
 			if state == "dodge_back":
 				check(seq_name == "dodge_back", "Esquiva pra trás sem quadro próprio")
 		if state == "dodge":

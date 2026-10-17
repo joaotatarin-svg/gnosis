@@ -215,6 +215,40 @@
     "jump_4",
     "jump_5"
    ]
+  },
+  "s11": {
+   "file": "assets/painted/src/sophia_s11_a.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": 0.97,
+   "cells": [
+    "contD_0",
+    "passD_0",
+    "contE_0",
+    "passE_0",
+    "contD_1",
+    "passD_1",
+    "contE_1",
+    "passE_1"
+   ]
+  },
+  "s12": {
+   "file": "assets/painted/src/sophia_s12_b.png",
+   "grid": [
+    3,
+    2
+   ],
+   "scale": 1.0,
+   "cells": [
+    "hit",
+    "stagger",
+    "knee",
+    "hand",
+    "fall",
+    "lying"
+   ]
   }
  },
  "frame_fix": {
@@ -318,17 +352,21 @@
   },
   "dead": {
    "frames": [
-    "s9.die_0@rear",
-    "s9.die_1@pelvis",
-    "s9.die_2",
-    "s9.die_3"
+    "s12.hit",
+    "s12.stagger",
+    "s12.knee",
+    "s12.hand",
+    "s12.fall",
+    "s12.lying"
    ],
    "dur": [
+    0.1,
     0.14,
-    0.16,
-    0.12
+    0.14,
+    0.12,
+    0.1
    ],
-   "anchor": "lying"
+   "anchor": "rear"
   },
   "block": {
    "frames": [
@@ -520,6 +558,27 @@
     0.22
    ],
    "anchor": "pelvis"
+  },
+  "rund": {
+   "frames": [
+    "s2.run_0",
+    "s2.run_1",
+    "s2.run_2",
+    "s11.passE_1",
+    "s2.run_3",
+    "s2.run_4",
+    "s2.run_5",
+    "s11.passD_1",
+    "s11.passE_0",
+    "s2.run_6",
+    "s2.run_7"
+   ],
+   "anchor": "pelvis",
+   "cycle_bodies": "auto",
+   "steps": [
+    0,
+    5
+   ]
   }
  }
 }
