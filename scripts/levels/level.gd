@@ -531,13 +531,11 @@ func _restore_echo(boss_id: String) -> void:
 		if skill.ring == boss_id:
 			get_tree().call_group("hud", "toast", Narrative.echo_shard(boss_id, skill.display_name))
 			break
-	# A LEMBRANÇA verdadeira que volta com o caco (legendas, sem pausar) e a
-	# música = memória: `centro` só entra no 1º caco e sobe um degrau por caco.
+	# A LEMBRANÇA verdadeira que volta com o caco (legendas, sem pausar). A
+	# música = memória (`centro` entra no 1º caco e sobe por caco) é do Áudio,
+	# pelo sinal de caco devolvido.
 	Juice.slow_mo(0.3, 0.6)          # M8: o caco quebra devagar
 	Gnosis.captions(Narrative.echo_memory(boss_id))
-	if RunManager.run_active and RunManager.is_center(screen):
-		Audio.play_music("centro")
-		Audio.set_music_layer_volume(clampf(0.35 + 0.65 * float(Progression.restored_rings.size()) / 6.0, 0.0, 1.0), "centro")
 
 
 ## A encenação da tela (cenas A–D, ROTEIRO §2): um nó só, criado na 1ª vez.

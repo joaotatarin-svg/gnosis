@@ -16,6 +16,12 @@ class_name Staging
 ## Sophia (camera_shake.gd): durante a cena ela roda sempre e a cena mexe no
 ## `base_offset`/`zoom`; ao fim tudo volta como estava.
 ## APIs de outros donos são chamadas com has_method (compila sem elas).
+## SOM: o estado da música é do Áudio. Cada cue vai primeiro a `Audio.cue()`;
+## se o Áudio conhece o cue, o som é dele (`_snd = false`) e aqui só a imagem.
+## Sem essa API, a Staging toca um som mínimo (play_sfx/play_music/duck).
+## A câmera mexe em `zoom` (RELATIVO ao zoom de jogo salvo) e `base_offset`
+## (entra no ALVO da câmera; o deslocamento lateral é limitado pela margem
+## segura da câmera nova — o quadro anda o que ela deixar).
 
 const GOLD := Color(1.0, 0.86, 0.5)
 const FOG_TINT := Color(0.78, 0.8, 0.86)
@@ -50,6 +56,8 @@ var _little: _Little
 var _aura: Sprite2D
 var _locked: bool = false
 var _music_stopped: bool = false
+var _snd: bool = true                          # a Staging toca o som deste cue?
+var _ducked: bool = false                      # abaixou a música (soter) — soltar no fim
 
 var _fx_layer: CanvasLayer                     # abaixo da caixa (90): flash e preto
 var _white: ColorRect
@@ -129,14 +137,12 @@ func _scene_open() -> void:
 			Audio.stop_music(0.0)
 			_music_stopped = true
 			_black.color.a = 1.0
-			_beat()
 			var t := _tw()
 			t.tween_interval(1.5)
 			t.tween_property(_black, "color:a", 0.0, 1.4)
 		"rei":
 			# Cena A: a música do Limiar desce; a câmera trava e desliza.
 			_cam_take()
-			_layer(0.4, "rei")
 		"roubo":
 			# "Sete." e a música do chefe CORTA SECA (sem crossfade).
 			Audio.stop_music(0.0)
@@ -148,11 +154,14 @@ func _scene_open() -> void:
 			_cam_take()
 		"santuario":
 			# O tema da Voz, baixo (plantio — o roubo colhe).
-			Audio.play_music("theme")
-			_layer(0.45, "theme")
+			if Audio.has_method("voice_theme"):
+				Audio.call("voice_theme", "santuario")
+			else:
+				Audio.play_music("theme")
 		"soter":
 			# M3: a música do Éon cai a −14 dB ao abrir o encontro ("Senta.").
-			_layer(0.22, Audio.current_track)
+			Audio.duck_music(600.0, -14.0)
+			_ducked = true
 
 
 func _on_line(index: int, line: Dictionary) -> void:
@@ -160,12 +169,20 @@ func _on_line(index: int, line: Dictionary) -> void:
 	var cue := String(line.get("cue", ""))
 	var who := String(line.get("speaker", ""))
 	var text := String(line.get("text", ""))
+	_snd = true
+	if cue != "" and Audio.has_method("cue"):
+		_snd = not bool(Audio.call("cue", cue))
 	match cue:
-		"heartbeat": _beat()
+		"heartbeat":
+			if _snd:
+				_beat()
 		"music_stop":
-			Audio.stop_music(0.0)
+			if _snd:
+				Audio.stop_music(0.0)
 			_music_stopped = true
-		"chime": Audio.play_sfx("stele_unlock", -1.0, -6.0)
+		"chime":
+			if _snd:
+				Audio.play_sfx("stele_unlock", -1.0, -6.0)
 		"fog_thickens": _a_fog()
 		"king_emerges":
 			if _scene == "roubo":
@@ -190,7 +207,6 @@ func _on_line(index: int, line: Dictionary) -> void:
 			if index == 1:
 				# Só depois da 1ª fala da Voz entra a faixa do Limiar, baixa.
 				Audio.play_music("rei")
-				_layer(0.45, "rei")
 				_music_stopped = false
 		"roubo":
 			if text.contains("aplaude"):
@@ -216,8 +232,9 @@ func _on_finished(box: DialogueBox) -> void:
 	if box != _box:
 		return
 	_flush()
-	if _scene != "santuario":
-		_layers_reset()
+	if _ducked:
+		Audio.duck_music(0.0, 0.0)
+		_ducked = false
 	match _scene:
 		"rei":
 			_cam_release(0.5)
@@ -238,8 +255,9 @@ func _on_finished(box: DialogueBox) -> void:
 				await get_tree().create_timer(1.0, true, false, true).timeout
 			if not is_inside_tree():
 				return
-			_layers_reset()
-			if RunManager.run_active:
+			if Audio.has_method("voice_theme"):
+				Audio.call("voice_theme", "")
+			elif RunManager.run_active:
 				Audio.play_music(Audio.track_for_screen(RunManager.current_screen))
 			_music_stopped = false
 	_scene = ""
@@ -250,7 +268,9 @@ func _on_finished(box: DialogueBox) -> void:
 func _a_fog() -> void:
 	var c := _view_center()
 	_cam_to(1.08, Vector2(60, 0), 2.0)
-	Audio.play_sfx("fog_swell")
+	if _snd:
+		Audio.play_sfx("fog_swell")
+		Audio.duck_music(9.0, -8.0)
 	_spawn_fog(Vector2(c.x + 190.0, _ground_y()), 0.7, 1.6)
 	_king = _make_king(Vector2(c.x + 220.0, _ground_y()))
 	_king.silhouette(0.0)
@@ -274,7 +294,8 @@ func _a_emerges() -> void:
 	var t := _tw()
 	t.tween_method(_king.silhouette, 0.0, 1.0, 0.8)
 	_cam_to(1.15, Vector2(70, 0), 1.0)
-	Audio.play_sfx("boss_appear", -1.0, -8.0)
+	if _snd:
+		Audio.play_sfx("boss_appear", -1.0, -8.0)
 
 
 func _a_mask_lights() -> void:
@@ -285,7 +306,8 @@ func _a_mask_lights() -> void:
 	VfxLibrary._flash_sprite(self, p, "halo", Color(GOLD, 0.9), 0.25, 1.4, 0.45)
 	VfxLibrary._flash_sprite(self, p, "flare", Color(1, 0.95, 0.7, 1.0), 0.15, 0.7, 0.15)
 	Juice.shake(0.15)
-	Audio.play_sfx("mask_light")
+	if _snd:
+		Audio.play_sfx("mask_light")
 
 
 ## Onde o Rei espera o duelo (o 1º ponto de spawn da zona 0 do Level).
@@ -310,7 +332,8 @@ func _fall_cracks() -> void:
 	if _king == null:
 		return
 	_king.crack_open(0.3, _tw())
-	Audio.play_sfx("block", -1.0, -4.0)
+	if _snd:
+		Audio.play_sfx("block", -1.0, -4.0)
 	Juice.shake(0.12)
 
 
@@ -357,7 +380,8 @@ func _b_voice_merge() -> void:
 	if _king == null:
 		_b_king_enters()
 		_flush()
-	Audio.play_sfx("voice_merge")
+	if _snd:
+		Audio.play_sfx("voice_merge")
 	# A cor do nome "A Voz" pisca uma vez: a voz saiu da boca dele.
 	var plate = _box.get("_plate") if _box != null else null
 	if plate is CanvasItem:
@@ -374,7 +398,10 @@ func _b_applause() -> void:
 	for k in 2:
 		t.tween_interval(0.45)
 		t.tween_callback(func() -> void:
-			Audio.play_sfx("parry", 0.02, -10.0)
+			if Audio.has_sfx("clap"):
+				Audio.play_sfx("clap")
+			else:
+				Audio.play_sfx("parry", 0.02, -10.0)
 			if _king != null:
 				VfxLibrary._flash_sprite(self, _king.hand(), "spark", Color(1, 0.95, 0.8), 0.08, 0.3, 0.12))
 
@@ -404,14 +431,17 @@ func _steal_gem(i: int) -> void:
 		if dur <= 0.0:
 			dur = 0.7
 	else:
-		Audio.play_sfx("ring_steal")
+		if Audio.has_method("ring_note"):
+			Audio.call("ring_note", i, false)
+		else:
+			Audio.play_sfx("ring_steal")
 	_gem_born[i] = true
 	# A gema "do mundo" nasce quando a do HUD chega na mão dele.
 	var t := create_tween().set_ignore_time_scale(true)
 	t.tween_interval(dur)
 	t.tween_callback(_gem_arrives.bind(i))
 	if _cam != null:
-		_tw().tween_property(_cam, "zoom", _cam.zoom + Vector2(0.01, 0.01), 0.2)
+		_tw().tween_property(_cam, "zoom", _cam.zoom + Vector2(0.01, 0.01) * _base_zoom(), 0.2)
 	if i == 6:
 		Juice.shake(0.8)
 
@@ -446,9 +476,12 @@ func _b_mask_falls() -> void:
 	t.tween_method(_king.cool, 0.0, 1.0, 0.6)
 	_flash_white(0.08)
 	Juice.shake(0.5)
-	# O tema da Voz, grave e lento (pitch 0,75) por 3 s → corta → `roubo`.
-	Audio.play_music("theme", false, 0.75)
+	# O tema da Voz, grave e lento (pitch 0,75) por 3 s → corta → `roubo`
+	# (com o Áudio novo, o cue `mask_falls` já fez isso).
 	_music_stopped = false
+	if not _snd:
+		return
+	Audio.play_music("theme", false, 0.75)
 	var m := create_tween().set_ignore_time_scale(true)
 	m.tween_interval(3.0)
 	m.tween_callback(func() -> void:
@@ -471,9 +504,10 @@ func _b_sink() -> void:
 	t.tween_property(_king, "global_position:y", _king.global_position.y + 120.0, 1.6).set_ease(Tween.EASE_IN)
 	t.tween_property(_black, "color:a", 1.0, 0.8)
 	_crack_ground(_king.global_position)
-	Audio.play_sfx("dive")
-	Audio.play_sfx("boss_step", -1.0, -2.0)
-	Audio.stop_music(2.0)
+	if _snd:
+		Audio.play_sfx("dive")
+		Audio.play_sfx("boss_step", -1.0, -2.0)
+		Audio.stop_music(2.0)
 	Juice.shake(0.35)
 	_cam_to(1.12, Vector2(_side() * 60.0, 40.0), 1.8)
 
@@ -490,7 +524,10 @@ func descend() -> void:
 	_cam_take()
 	if _cam != null:
 		_cam.base_offset = Vector2(_cam_saved.base_offset) + Vector2(0, -DESCENT)
-		_cam.offset = _cam.base_offset
+		if _cam.has_method("snap"):
+			_cam.call("snap")              # câmera nova: pula para o alvo alto
+		else:
+			_cam.offset = _cam.base_offset
 	var cm := CanvasModulate.new()
 	cm.color = Color(1.25, 1.0, 0.6)
 	add_child(cm)
@@ -531,7 +568,8 @@ func _kneel() -> void:
 # --- cena D: a anagnórise (tela 68) ------------------------------------------
 
 func _d_rings_return() -> void:
-	Audio.stop_music(0.0)
+	if _snd:
+		Audio.stop_music(0.0)
 	_music_stopped = true
 	# Recua para enquadrar os três (ela e as duas formas caídas).
 	_cam_to(0.8, Vector2(_frame_forms_dx(), D_LIFT), 0.8)
@@ -586,7 +624,7 @@ func _return_gem(i: int, from: Vector2) -> void:
 		if is_instance_valid(g):
 			VfxLibrary._flash_sprite(self, chest, "glow", Color(g.color, 0.9), 0.15, 0.7, 0.3)
 			g.queue_free()
-		Audio.play_sfx("shard", 0.0, -2.0)
+		# O som da gema que volta é do HUD (restore_ring).
 		if _hud != null and _hud.has_method("restore_ring"):
 			_hud.call("restore_ring", i))
 
@@ -594,7 +632,8 @@ func _return_gem(i: int, from: Vector2) -> void:
 func _d_flash() -> void:
 	_flash_white(0.12, 0.3)
 	Juice.shake(0.35)
-	Audio.play_sfx("nova")
+	if _snd:
+		Audio.play_sfx("nova")
 	if player != null and _aura == null:
 		_aura = Sprite2D.new()
 		_aura.texture = VfxLibrary.tex("glow")
@@ -638,13 +677,14 @@ func _d_shrink() -> void:
 		_little.global_position = player.global_position + Vector2(side * 30.0, 22.0)
 	_little.modulate.a = 0.0
 	t.parallel().tween_property(_little, "modulate:a", 1.0, 1.2).set_delay(1.8)
-	Audio.play_sfx("whisper", -1.0, -6.0)
+	if _snd:
+		Audio.play_sfx("whisper", -1.0, -6.0)
 
 
 func _d_theme() -> void:
-	# O tema da Voz volta sozinho, lento — agora é dela.
-	_layer(0.7, "theme")
-	Audio.play_music("theme", true, 0.85)
+	# O tema da Voz volta sozinho, lento — agora é dela (cue `theme_alone`).
+	if _snd:
+		Audio.play_music("theme", true, 0.85)
 	_music_stopped = false
 
 
@@ -658,7 +698,8 @@ func _d_reclaim() -> void:
 	t.parallel().tween_property(_little, "scale", Vector2(0.3, 0.3), 0.7)
 	t.tween_callback(func() -> void:
 		VfxLibrary._flash_sprite(self, hand, "light", Color(1, 0.95, 0.75, 1), 0.2, 1.1, 0.5)
-		Audio.play_sfx("revive", -1.0, -4.0))
+		if _snd:
+			Audio.play_sfx("revive", -1.0, -4.0))
 	t.tween_property(_little, "modulate:a", 0.0, 0.3)
 
 
@@ -737,13 +778,20 @@ func _cam_take() -> void:
 	_cam.process_mode = Node.PROCESS_MODE_ALWAYS
 
 
+## Zoom de jogo (o salvo ao tomar a câmera): os zooms da cena são relativos a ele.
+func _base_zoom() -> Vector2:
+	if not _cam_saved.is_empty():
+		return Vector2(_cam_saved.zoom)
+	return _cam.zoom if _cam != null else Vector2.ONE
+
+
 ## Zoom e deslocamento RELATIVOS ao enquadramento normal.
 func _cam_to(zoom: float, shift: Vector2, dur: float) -> void:
 	if _cam == null:
 		return
 	_cam_take()
 	var t := _tw()
-	t.tween_property(_cam, "zoom", Vector2(zoom, zoom), dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(_cam, "zoom", Vector2(zoom, zoom) * _base_zoom(), dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	if "base_offset" in _cam:
 		t.parallel().tween_property(_cam, "base_offset", Vector2(_cam_saved.base_offset) + shift, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
@@ -807,23 +855,6 @@ func _beat() -> void:
 	t.tween_callback(func() -> void: Audio.play_sfx(s, 0.0, -9.0))
 
 
-## Volume de camada de uma faixa durante a cena (anotado para voltar a 1 no fim:
-## o nível fica guardado por faixa no Audio — o menu herdaria o tema baixo).
-var _layers: Dictionary = {}
-
-func _layer(t: float, track: String) -> void:
-	if track == "":
-		return
-	_layers[track] = true
-	Audio.set_music_layer_volume(t, track)
-
-
-func _layers_reset() -> void:
-	for track in _layers.keys():
-		Audio.set_music_layer_volume(1.0, String(track))
-	_layers.clear()
-
-
 func _tw() -> Tween:
 	var t := create_tween().set_ignore_time_scale(true)
 	_tweens.append(t)
@@ -875,7 +906,8 @@ func _process(delta: float) -> void:
 
 func _exit_tree() -> void:
 	PauseStack.pop(self)
-	_layers_reset()
+	if _ducked:
+		Audio.duck_music(0.0, 0.0)
 	_hud_release()
 	if _cam != null and is_instance_valid(_cam) and not _cam_saved.is_empty():
 		_cam.zoom = _cam_saved.zoom
