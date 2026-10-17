@@ -302,7 +302,7 @@ class Worker extends Node:
 					boss = e
 			if boss != null:
 				break
-		await wait(0.8)
+		await wait(4.5)                      # deixa a apresentação do Arconte terminar
 		await shot("hud_arconte")
 		var plb := get_tree().get_first_node_in_group("player")
 		if boss != null and plb != null:
