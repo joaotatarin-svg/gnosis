@@ -20,7 +20,7 @@ class_name Staging
 const GOLD := Color(1.0, 0.86, 0.5)
 const FOG_TINT := Color(0.78, 0.8, 0.86)
 const BLIND_TINT := Color(0.62, 0.68, 0.8)    # o Rei "esfria" quando a máscara cai
-const HEAD := Vector2(0.0, -150.0)            # rosto do Rei (px, local aos pés)
+const HEAD := Vector2(0.0, -188.0)            # rosto (máscara) do Rei (px, local aos pés; medido na captura)
 # A descida do Centro (cena C): o roteiro pede 200 px, mas a pintura de fundo
 # acaba ~120 px acima do enquadramento normal (aparecia a borda) — 120.
 const DESCENT := 120.0
@@ -140,6 +140,7 @@ func _scene_open() -> void:
 			# "Sete." e a música do chefe CORTA SECA (sem crossfade).
 			Audio.stop_music(0.0)
 			_music_stopped = true
+			_hide_boss_bodies()            # o corpo do Arconte não fica congelado no palco
 			_cam_take()
 			_hud_take()
 		"anagnorise":
@@ -298,10 +299,7 @@ func _duel_x() -> float:
 ## O Rei de verdade se desfez no golpe final; o figurante volta onde ele caiu
 ## (ajoelhado) para a máscara rachar e ele afundar na névoa.
 func fall_at(pos: Vector2) -> void:
-	# O corpo de verdade some (o figurante assume o lugar dele).
-	for e in get_tree().get_nodes_in_group("enemy"):
-		if e is Enemy and e.is_boss_enemy:
-			e.visible = false
+	_hide_boss_bodies()
 	_king = _make_king(Vector2(pos.x, _ground_y()))
 	_king.modulate.a = 0.0
 	_tw().tween_property(_king, "modulate:a", 1.0, 0.35)
@@ -666,6 +664,13 @@ func _spawn_fog(at: Vector2, alpha: float, dur: float) -> void:
 		t.parallel().tween_property(f, "scale", Vector2.ONE * 1.4 * 1.4, dur)
 
 
+## O corpo do chefe caído (congelado no meio da morte pela caixa) sai de cena.
+func _hide_boss_bodies() -> void:
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if e is Enemy and e.is_boss_enemy:
+			e.visible = false
+
+
 func _clear_fog(dur: float) -> void:
 	for f in _fogs:
 		if is_instance_valid(f):
@@ -838,7 +843,7 @@ func _process(delta: float) -> void:
 			var ring := gem.index % 3
 			var r := 16.0 + 14.0 * float(ring)
 			var a := _orbit_t * (3.0 - float(ring)) * (1.0 if ring % 2 == 0 else -1.0) + TAU * k / 7.0
-			target = _king.global_position + Vector2(0, -60) + Vector2(cos(a) * r, sin(a) * r * 0.45)
+			target = _king.global_position + Vector2(0, -36) + Vector2(cos(a) * r, sin(a) * r * 0.45)
 		else:
 			var a2 := _orbit_t * PI + TAU * k / 7.0          # 1 volta / 2 s
 			target = head + Vector2(cos(a2) * 50.0, sin(a2) * 16.0)
@@ -995,7 +1000,7 @@ class _King extends Node2D:
 			over.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		# O motor: um núcleo negro no meio dos anéis.
 		if _collapse > 0.0:
-			over.draw_circle(Vector2(0, -60), 10.0 * _collapse, Color(0.01, 0.01, 0.02, _collapse))
+			over.draw_circle(Vector2(0, -36), 10.0 * _collapse, Color(0.01, 0.01, 0.02, _collapse))
 
 
 ## Uma gema de Anel no mundo (o roubo e a devolução).
