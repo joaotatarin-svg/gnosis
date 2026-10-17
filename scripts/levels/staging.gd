@@ -756,7 +756,8 @@ func _b_sink() -> void:
 		quake.tween_callback(VfxLibrary.dust.bind(self, feet + Vector2((float(k) - 2.5) * 30.0, -2.0)))
 		quake.tween_callback(VfxLibrary._flash_sprite.bind(self, feet + Vector2(0, -10), "halo", Color(1.0, 0.72, 0.3, 0.75), 0.6, 2.2 + 0.3 * float(k), 0.5))
 		quake.tween_interval(0.45)
-	_cam_to(1.0, Vector2(_side() * 60.0, 40.0), 1.8)
+	# O quadro abre e SOBE o chão bem acima da caixa: o abismo fica à vista.
+	_cam_to(0.9, Vector2(_side() * 60.0, 100.0), 1.0)
 
 
 # --- cena C: a descida ao Centro (tela 65) -----------------------------------
@@ -1078,7 +1079,11 @@ func _clear_fog(dur: float) -> void:
 ## toca no lugar do desenho. A cena anima `open` 0→1.
 func _crack_ground(at: Vector2) -> Node2D:
 	var c := _FloorCrack.new()
-	c.z_index = -1                             # abaixo do Rei (irmãos na Staging)
+	# No chão: atrás dos lutadores e à frente do piso (como os props, z -1
+	# absoluto) — o decalque não cobre os pés da Sophia; o Rei (na Staging) fica
+	# por cima.
+	c.z_as_relative = false
+	c.z_index = -1
 	c.seed_value = 64
 	add_child(c)
 	c.global_position = at
@@ -1536,10 +1541,15 @@ class _Clip extends Node2D:
 ## achatados na perspectiva do piso, com largura variável (afina na ponta),
 ## borda escura suave e um núcleo de luz âmbar com brilho aditivo. `open` 0→1
 ## cresce o comprimento e a largura; faíscas sobem das pontas enquanto abre.
-## Sequência pintada (pedida à Produção: `fx_floor_crack_a.png`, quadros lado a
-## lado, quadrados, fundo transparente): se existir, toca como decalque no lugar.
+## DECALQUE PINTADO (Produção, `artes/gpt/fx/fx_floor_crack_a.png` →
+## tools/encenacao/fx_floor_crack.py → tira de DECAL_FRAMES quadros: fissura →
+## ramifica → luz âmbar → placas caindo → abismo → poeira): é o efeito PRINCIPAL,
+## grande, sob o Rei; os fachos de luz, o poço e as faíscas ficam de apoio por
+## cima. Sem o arquivo, as fendas desenhadas fazem o papel.
 class _FloorCrack extends Node2D:
 	const DECALS := ["res://assets/cinematic/fx_floor_crack_a.png", "res://assets/painted/fx/fx_floor_crack_a.png"]
+	const DECAL_FRAMES := 6
+	const DECAL_W := 330.0                     # largura do decalque (px de mundo)
 	const CORE := Color(1.0, 0.78, 0.38)
 	const EDGE := Color(0.05, 0.03, 0.04)
 	var open: float = 0.0:
@@ -1550,6 +1560,7 @@ class _FloorCrack extends Node2D:
 				_glow.queue_redraw()
 			if _decal != null:
 				_decal.frame = clampi(int(v * float(_decal.hframes)), 0, _decal.hframes - 1)
+				_decal.modulate.a = clampf(v * 8.0, 0.0, 1.0)
 	var seed_value: int = 64
 	var _branches: Array = []                  # [{pts: PackedVector2Array, w: float}]
 	var _glow: Node2D
@@ -1563,10 +1574,15 @@ class _FloorCrack extends Node2D:
 				var tex: Texture2D = load(path)
 				_decal = Sprite2D.new()
 				_decal.texture = tex
-				_decal.hframes = maxi(1, int(round(float(tex.get_width()) / float(tex.get_height()))))
-				_decal.scale = Vector2(1.0, 0.35) * 260.0 / float(tex.get_height())
+				_decal.hframes = DECAL_FRAMES
+				var fw := float(tex.get_width()) / float(DECAL_FRAMES)
+				# o tampo do bloco achatado um pouco para caber na faixa do chão; o
+				# centro fica logo abaixo dos pés (ele está no meio do tampo)
+				_decal.scale = Vector2(1.0, 0.8) * DECAL_W / fw
+				_decal.position = Vector2(0.0, 8.0)
+				_decal.modulate.a = 0.0
 				add_child(_decal)
-				return
+				break
 		var rng := RandomNumberGenerator.new()
 		rng.seed = seed_value
 		var dirs := [PI + 0.1, -0.1, PI * 0.7, PI * 0.3, PI * 1.25, PI * 1.82]
@@ -1590,7 +1606,7 @@ class _FloorCrack extends Node2D:
 		if _glow != null and open > 0.0:
 			_glow.queue_redraw()               # os fachos tremulam
 		# Faíscas sobem das pontas enquanto a fenda abre (uma ponta por vez).
-		if _decal != null or open <= 0.0 or open >= 1.0 or _branches.is_empty():
+		if open <= 0.0 or open >= 1.0 or _branches.is_empty():
 			return
 		_spark_t += delta
 		if _spark_t < 0.1:
@@ -1671,9 +1687,10 @@ class _FloorCrack extends Node2D:
 
 	func _draw_glow() -> void:
 		var a := clampf(open * 2.0, 0.0, 1.0)
-		for b in _branches:
-			_poly(_glow, _strip(b, 1.8), Color(CORE.r, CORE.g * 0.9, CORE.b * 0.7, 0.28 * a))
-			_poly(_glow, _strip(b, 0.35), Color(1.0, 0.95, 0.8, 0.7 * a))
+		if _decal == null:                     # com o decalque, as fendas são as dele
+			for b in _branches:
+				_poly(_glow, _strip(b, 1.8), Color(CORE.r, CORE.g * 0.9, CORE.b * 0.7, 0.28 * a))
+				_poly(_glow, _strip(b, 0.35), Color(1.0, 0.95, 0.8, 0.7 * a))
 		# Luz SUBINDO das fendas: fachos aditivos que nascem nos ramos e somem
 		# para cima (degradê por vértice), tremulando.
 		var tt := float(Time.get_ticks_msec()) * 0.001
