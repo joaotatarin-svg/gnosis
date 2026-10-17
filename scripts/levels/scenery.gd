@@ -441,6 +441,137 @@ func build_ground(parent: Node2D, ground_top_y: float) -> void:
 	dec.z_index = 20
 	parent.add_child(dec)
 	_integrate_platforms.call_deferred(parent)
+	# limites da arena legíveis (P2): véu nas paredes da zona + pilar nas fixas
+	var ab := ArenaBounds.new()
+	ab.eon = eon
+	ab.feet = ground_top_y
+	ab.glow = look().glow
+	ab.dark_veil = bool(look().get("ray_dark", false))
+	parent.add_child(ab)
+	_build_end_walls.call_deferred(parent, ground_top_y)
+
+
+## LIMITE FIXO DA ARENA (P2): nas paredes fixas (esquerda e direita da tela)
+## fica um pilar pintado no plano da luta, meio fora da câmera, com entulho
+## na base — a Sophia esbarra numa coisa que SE VÊ, não no ar. Roda no fim do
+## quadro (o Level já calculou `_end_x`).
+func _build_end_walls(level: Node, feet_y: float) -> void:
+	if level == null or not is_instance_valid(level) or not level.has_method("arena_bounds"):
+		return
+	var right = level.get("_end_x")
+	if right == null:
+		right = (level.call("arena_bounds") as Vector2).y
+	var walls := [Vector2(Level.WALL_LEFT, -1.0), Vector2(float(right), 1.0)]
+	var mat := SceneryLibrary.prop_material(eon, 0.04, 0.30, 0.9)
+	var node := Node2D.new()
+	node.name = "EndWalls"
+	node.z_index = -1                   # atrás dos lutadores, à frente do chão
+	level.add_child(node)
+	var dark := haze().darkened(0.88)
+	for wv in walls:
+		var wx: float = wv.x
+		var side: float = wv.y            # -1 = parede esquerda
+		# Além da parede o mundo se apaga: a antecipação da câmera (offset de
+		# 90 px) passa do limite, então esse trecho aparece — escuro, não chão.
+		var face: float = wx - side * 20.0
+		var x1: float = face + side * 26.0
+		var x2: float = face + side * 160.0
+		node.add_child(_hquad(face, x1, Color(dark, 0.0), Color(dark, 0.7)))
+		node.add_child(_hquad(x1, x2, Color(dark, 0.7), Color(dark, 0.96)))
+		var pil := PaintedLibrary.sprite(0, 262.0)
+		var pw: float = pil.texture.get_width() * pil.scale.x
+		# ~46 px do pilar ficam dentro da área jogável (a parede tem 20 px de meia-largura)
+		var px: float = wx - side * (46.0 + 20.0 - pw * 0.5)
+		_contact_shadow(node, Vector2(px, feet_y + 1.0), pw * 0.55, 0.65)
+		pil.material = mat
+		pil.position = Vector2(px, feet_y + 4.0)
+		if side > 0.0:
+			pil.scale.x = -pil.scale.x
+		node.add_child(pil)
+		# entulho na base, do lado de dentro
+		var rb := PaintedLibrary.sprite(3, 34.0)
+		rb.material = mat
+		rb.position = Vector2(wx - side * (20.0 + 46.0 + 4.0), feet_y + 6.0)
+		if side > 0.0:
+			rb.scale.x = -rb.scale.x
+		node.add_child(rb)
+
+
+## Quad vertical alto (y -420..520) com degradê horizontal de cor (xa → xb).
+func _hquad(xa: float, xb: float, ca: Color, cb: Color) -> Polygon2D:
+	var q := Polygon2D.new()
+	q.polygon = PackedVector2Array([Vector2(xa, -420), Vector2(xb, -420), Vector2(xb, 520), Vector2(xa, 520)])
+	q.vertex_colors = PackedColorArray([ca, cb, cb, ca])
+	return q
+
+
+class ArenaBounds extends Node2D:
+	## LIMITE DA ZONA LEGÍVEL (P2): quando o Level tranca uma zona, nasce um véu
+	## de luz na cor do Éon em cada parede móvel (com clarão de entrada); some
+	## devagar quando a zona é liberada. Só lê o Level (`zone_active`,
+	## `arena_bounds()`); não mexe na colisão.
+	var eon: int = 0
+	var feet: float = 310.0
+	var glow: Color = Color(0.8, 0.9, 1.0)
+	var dark_veil: bool = false        # Mente: o "brilho" do Éon é vazio — véu rosado apagado
+	var _level: Node = null
+	var _veils: Array = []
+	var _amt: float = 0.0
+	var _pulse: float = 0.0
+	var _was: bool = false
+	const HALF_WALL := 20.0             # meia-largura da parede de colisão do Level
+	const H := 300.0
+
+	func _ready() -> void:
+		_level = get_parent()
+		z_index = 4                        # à frente dos lutadores (fica na borda da tela)
+		var c := glow
+		if dark_veil:
+			c = Color(0.85, 0.45, 0.6)
+		for side in [-1.0, 1.0]:
+			var v := VeilStrip.new()
+			v.h = H
+			var m := SceneryLibrary.material("veil")
+			m.set_shader_parameter("col", c)
+			m.set_shader_parameter("side", side)
+			m.set_shader_parameter("height", H)
+			m.set_shader_parameter("amt", 0.0)
+			v.material = m
+			v.position = Vector2(0.0, feet)
+			v.visible = false
+			add_child(v)
+			_veils.append(v)
+
+	func _process(delta: float) -> void:
+		if _level == null or not is_instance_valid(_level) or not _level.has_method("arena_bounds"):
+			return
+		var active := bool(_level.get("zone_active"))
+		if active:
+			var b: Vector2 = _level.call("arena_bounds")
+			(_veils[0] as Node2D).position.x = b.x + HALF_WALL
+			(_veils[1] as Node2D).position.x = b.y - HALF_WALL
+			if not _was:
+				_pulse = 1.0                   # clarão ao trancar
+		_was = active
+		_amt = move_toward(_amt, 1.0 if active else 0.0, delta * (4.0 if active else 1.4))
+		_pulse = maxf(0.0, _pulse - delta * 1.8)
+		var a := _amt + _pulse * _pulse * 1.4
+		for v in _veils:
+			var n: Node2D = v
+			n.visible = a > 0.01
+			if n.visible:
+				(n.material as ShaderMaterial).set_shader_parameter("amt", a)
+
+
+class VeilStrip extends Node2D:
+	## Retângulo do véu (o shader desenha tudo); x = 0 na parede, y = 0 nos pés.
+	var h: float = 300.0
+
+	func _draw() -> void:
+		draw_rect(Rect2(-56.0, -h, 112.0, h + 16.0), Color.WHITE)
+
+	func _ready() -> void:
+		queue_redraw()
 
 
 class FloorDecor extends Node2D:
