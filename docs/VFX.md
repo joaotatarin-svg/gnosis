@@ -109,6 +109,25 @@ Constantes de enquadramento: FLOOR_Y 292 (horizonte), FEET_Y 310, PAINT_H 280, C
 - `tools/scenery/bench.sh [telas]` — tempo de quadro. ATENÇÃO: nesta máquina trava em
   144 fps (6,94 ms) antes E depois; só prova "≥144 fps", não mede o custo real.
 
+## Onda 2 (Cenário, nuvem — 17/10/2026)
+- **M5 (emendas de 1 px):** causa = a v2 desenhava o chão em ladrilhos de 512 px recortados da
+  pintura SEM espelhar e o fundo repetia a pintura a cada 768 px (borda esquerda colada na
+  direita = linha dura). A v3 já espelhava; agora cada camada pintada é UM quad
+  (`_mirror_strip`: região larga + `TEXTURE_REPEAT_MIRROR`, PERIODS=5) — não existe junção
+  na tela; o fallback também espelha. Medido nas capturas (`tools/scenery/seams.py`): 0 emendas no chão.
+- **P2 (limite legível):** `ArenaBounds` (véu de luz do Éon, shader `scenery_veil`, nas paredes
+  da zona trancada, com clarão ao trancar) e `_build_end_walls` (pilar pintado + escuro além
+  das paredes fixas). Achado: a antecipação da câmera (offset ±90 px, `camera_shake.gd`)
+  passa do limite — pedido em `docs/pedidos/onda2_cenario.md`.
+- **P2 (faixa de baixo):** shader do chão com manchas de luz lentas e o brilho do Éon
+  escorrendo pelas rachaduras, só abaixo da faixa de luta (`life`, `crack_amt`).
+- **Falta 2:** `tools/scenery/near_cleanup.py` tira da near a névoa do fundo, fios e pedaços
+  soltos (o pipeline chama sozinho). **Falta 3:** `ArenaSet` acende quando a zona tranca;
+  obeliscos em c±418 e braseiros em c±352 (borda da arena). **Falta 4:** poeira longe (camada
+  0,15) e perto (rente ao chão). **Falta 6:** README dos fundos.
+- Ferramentas: `CleanShot` ganhou `x=`, `zone=`, `face=` (e agora sobrevive à troca de cena);
+  `caps.sh`/`bench.sh` rodam no Linux (xvfb); `sheet.py` (pranchas), `seams.py` (emendas).
+
 ## ESTADO PARA A PRÓXIMA SESSÃO
 Feito (validado: editor headless 0 SCRIPT ERROR; capturas):
 - Entregáveis 1 (pipeline + camadas), 2 (chão/primeiro plano), 3 (plataformas),
@@ -118,15 +137,14 @@ Feito (validado: editor headless 0 SCRIPT ERROR; capturas):
   CelestialBody e FogPuff removidos).
 - Capturas: antes `C:\gnosis-wt\_caps\cenario\antes_<tela>.png` (+`antes_grid.png`);
   depois `c3_<tela>.png` (`c3_grid0/1.png`, sem legenda) e `c4_22.png` (com FloorDecor).
-Falta:
-1. Entregável 6 (marketing `assets/store/`: ícone 512, cápsulas 460×215 e 616×353,
-   hero 1920×620) — NÃO feito.
-2. Faixa `near` tem bordas retas/blocadas em Silêncio e Centro (GrabCut); melhorar
-   a máscara (ex.: trimap mais justo por Éon) ou suavizar o topo.
-3. Na arena de chefe, o obelisco esquerdo aparece no meio da tela no início (câmera
-   ainda não centrada na arena); considerar pôr a cenografia numa ParallaxLayer.
-4. Partículas novas por profundidade (motes longe/perto por Éon) além do bokeh.
-5. Medir custo real de GPU (bench precisa vsync de fato desligado ou contador de GPU).
-6. Atualizar `assets/backgrounds/README.txt` (ainda descreve só o PNG único).
+Falta (atualizado na Onda 2):
+1. Entregável 6 (marketing `assets/store/`) — passou para o agente de LOJA.
+2. ~~near blocada~~ feito (near_cleanup.py). Sobra: pequenos pedaços escuros no Torpor.
+3. ~~obelisco no meio da tela~~ feito (ArenaSet acende ao trancar).
+4. ~~poeira por profundidade~~ feito (longe/perto). Partículas por Éon seguem em VfxLibrary.
+5. Custo real de GPU: AINDA não medido (a nuvem só tem OpenGL por software; o bench
+   compara antes/depois na mesma máquina — ver docs/onda2/CENARIO.md).
+6. ~~README~~ feito.
+7. Câmera passa do limite com a antecipação (pedido ao Combate).
 Próximos passos exatos: rodar `python tools/scenery/build_backgrounds.py` só se mudar
 `eons.png`; depois `tools/scenery/caps.sh depois` (todas as 8 telas) e comparar com `antes_*`.

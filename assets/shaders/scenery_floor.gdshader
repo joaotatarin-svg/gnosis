@@ -61,19 +61,11 @@ void fragment() {
 	float s = max(0.55, 1.0 + (y - feet_y) / band_h * persp);
 	float wx = cam_x + sx / s;
 	vec3 c = base_col.rgb * (1.0 - vt * 0.5);
-	float crack = 0.0;
+	vec2 fuv = vec2(mirror1(wx / tile_w), vt);
+	float l0 = 0.0;
 	if (has_tex > 0.5) {
-		vec2 fuv = vec2(mirror1(wx / tile_w), vt);
 		c = texture(floor_tex, fuv).rgb;
-		if (life > 0.0 && vt > 0.18) {
-			// rachadura = mais escura que a vizinhança (4 amostras em cruz)
-			vec2 px = 2.5 / vec2(textureSize(floor_tex, 0));
-			vec3 nb = texture(floor_tex, vec2(mirror1(fuv.x + px.x), fuv.y)).rgb + texture(floor_tex, vec2(mirror1(fuv.x - px.x), fuv.y)).rgb
-				+ texture(floor_tex, fuv + vec2(0.0, px.y)).rgb + texture(floor_tex, fuv - vec2(0.0, px.y)).rgb;
-			float l0 = dot(c, vec3(0.3, 0.59, 0.11));
-			float ln = dot(nb * 0.25, vec3(0.3, 0.59, 0.11));
-			crack = smoothstep(0.02, 0.07, ln - l0);
-		}
+		l0 = dot(c, vec3(0.3, 0.59, 0.11));
 	}
 	// reflexo: a tela espelhada no horizonte, com ondulação leve
 	float floor_sv = SCREEN_UV.y - dy / view_h;
@@ -94,14 +86,23 @@ void fragment() {
 		// 1) manchas de luz que passam devagar (nuvem/vitral lá em cima), presas
 		//    ao chão em perspectiva;
 		float below = smoothstep(0.22, 0.55, vt);
-		float warp = fnoise(vec2(wx * 0.004, vt * 3.0));
-		float pool = 0.5 + 0.5 * sin(wx * 0.009 + vt * 5.0 + TIME * 0.25 + warp * 7.0);
-		c *= 1.0 + below * life * 0.22 * smoothstep(0.55, 1.0, pool);
-		// 2) a faísca presa na matéria: o brilho do Éon escorre pelas fendas em
-		//    ondas lentas que viajam pelo chão.
-		float wave = 0.5 + 0.5 * sin(wx * 0.014 - TIME * 0.7 + warp * 9.0 + vt * 3.0);
-		float seep = smoothstep(0.6, 1.0, wave) * (0.7 + 0.3 * sin(TIME * 1.3 + wx * 0.02));
-		c += glow.rgb * crack * seep * below * crack_amt * life;
+		if (below > 0.0) {
+			float warp = fnoise(vec2(wx * 0.004, vt * 3.0));
+			float pool = 0.5 + 0.5 * sin(wx * 0.009 + vt * 5.0 + TIME * 0.25 + warp * 7.0);
+			c *= 1.0 + below * life * 0.22 * smoothstep(0.55, 1.0, pool);
+			// 2) a faísca presa na matéria: o brilho do Éon escorre pelas fendas em
+			//    ondas lentas que viajam pelo chão. As 4 amostras extras (rachadura =
+			//    mais escura que a vizinhança, em cruz) só onde a onda está passando.
+			float wave = 0.5 + 0.5 * sin(wx * 0.014 - TIME * 0.7 + warp * 9.0 + vt * 3.0);
+			float seep = smoothstep(0.6, 1.0, wave) * (0.7 + 0.3 * sin(TIME * 1.3 + wx * 0.02)) * below;
+			if (seep > 0.01 && has_tex > 0.5) {
+				vec2 px = 2.5 / vec2(textureSize(floor_tex, 0));
+				vec3 nb = texture(floor_tex, vec2(mirror1(fuv.x + px.x), fuv.y)).rgb + texture(floor_tex, vec2(mirror1(fuv.x - px.x), fuv.y)).rgb
+					+ texture(floor_tex, fuv + vec2(0.0, px.y)).rgb + texture(floor_tex, fuv - vec2(0.0, px.y)).rgb;
+				float crack = smoothstep(0.02, 0.07, dot(nb * 0.25, vec3(0.3, 0.59, 0.11)) - l0);
+				c += glow.rgb * crack * seep * crack_amt * life;
+			}
+		}
 	}
 	// borda iluminada no horizonte
 	c += glow.rgb * exp(-max(dy, 0.0) / 1.8) * 0.14;
