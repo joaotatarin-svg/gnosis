@@ -644,29 +644,54 @@ class Worker extends Node:
 		Credits.licenses_path = "res://assets/LICENSES.md"
 
 	## L2: nomes do Bestiário cabem nas células.
+	## #35/#26: Bestiário com ficha (lore + dica), nomes cabem, trancados "???".
 	func _bestiary() -> void:
 		await go("res://scenes/ui/Gallery.tscn", 1.2)
 		var g := get_tree().current_scene
 		var bad: Array = []
-		for l in g.find_children("*", "Label", true, false):
-			if l.get_parent() != g:
-				continue
-			var lab: Label = l
+		var cards: Array = g.get("cards")
+		for b in cards:
+			var lab: Label = b.get_meta("name_label")
 			var font: Font = lab.get_theme_font("font")
 			var fs: int = lab.get_theme_font_size("font_size")
 			for line in String(lab.text).split("\n"):
 				var w := font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 				if w > lab.size.x - 2.0:
 					bad.append("%s (%d > %d)" % [line, int(w), int(lab.size.x)])
-			if lab.get_line_count() > lab.max_lines_visible and lab.max_lines_visible > 0:
+			if lab.get_line_count() > 2:
 				bad.append("%s (linhas %d)" % [lab.text, lab.get_line_count()])
 		check(bad.is_empty(), "bestiário: nomes cabem %s" % str(bad))
+		var missing: Array = []
+		for e in g.get("entries"):
+			var id := String(e.id)
+			if not BestiaryLore.has_entry(id) or BestiaryLore.lore(id).size() != 2 or BestiaryLore.tip(id) == "":
+				missing.append(id)
+		check(missing.is_empty(), "bestiário: toda entrada tem 2 linhas de lore + dica %s" % str(missing))
+		var seen: Array = g.get("_seen")
+		var locked := seen.count(false)
+		check(locked > 0 or BestiaryLore.all_unlocked(), "bestiário: save novo tem entradas trancadas (%d de %d)" % [locked, seen.size()])
+		check(focus() != null and cards.has(focus()), "bestiário: foco na grade ao abrir [%s]" % txt(focus()))
 		await shot("bestiario_topo")
-		var cam: Camera2D = g.get("_cam")
-		if cam != null:
-			cam.position.y = 180.0 + g.get("_max_scroll") * 0.5
-			await wait(0.2)
-			await shot("bestiario_meio")
-			cam.position.y = 180.0 + g.get("_max_scroll")
-			await wait(0.2)
-			await shot("bestiario_fim")
+		await key(KEY_RIGHT)
+		await key(KEY_DOWN)
+		var sel: int = g.get("_selected")
+		check(sel == 5, "bestiário: → ↓ andam na grade (ficha %d)" % sel)
+		var lore_l: Label = g.get("_lore")
+		var tip_l: Label = g.get("_tip")
+		if seen[sel]:
+			check(lore_l.text != "" and tip_l.text != "", "bestiário: ficha mostra lore e dica")
+		else:
+			check(String(g.get("_name").text) == "???" and tip_l.text == "", "bestiário: ficha trancada não revela nome nem dica")
+		await shot("bestiario_ficha")
+		# Ficha longa: medir lore e dica no painel (≤ 4 + 3 linhas).
+		var over: Array = []
+		for e in g.get("entries"):
+			var id := String(e.id)
+			lore_l.text = "\n".join(BestiaryLore.lore(id))
+			tip_l.text = BestiaryLore.tip(id)
+			if lore_l.get_line_count() > 4 or tip_l.get_line_count() > 3:
+				over.append("%s (%d/%d)" % [id, lore_l.get_line_count(), tip_l.get_line_count()])
+		check(over.is_empty(), "bestiário: lore ≤ 4 linhas e dica ≤ 3 no painel %s" % str(over))
+		for i in 30:
+			await key(KEY_DOWN)
+		await shot("bestiario_fim")
