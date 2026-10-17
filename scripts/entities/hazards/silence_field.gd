@@ -13,7 +13,7 @@ var _glyphs: Array = []
 
 
 func _ready() -> void:
-	hazard_kind = "silêncio"
+	hazard_kind = "silence"
 	z_index = 3
 	var r := RandomNumberGenerator.new()
 	r.seed = hash("silence/%d/%d" % [GameManager.current_screen, int(global_position.x)])

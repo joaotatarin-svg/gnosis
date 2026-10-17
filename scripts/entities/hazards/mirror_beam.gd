@@ -16,7 +16,7 @@ var _warned: bool = false
 
 
 func _ready() -> void:
-	hazard_kind = "feixe"
+	hazard_kind = "beam"
 	z_index = 4
 
 

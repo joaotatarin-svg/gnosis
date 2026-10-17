@@ -19,7 +19,7 @@ var _timer: float = 0.0
 
 
 func _ready() -> void:
-	hazard_kind = "pedra do sono"
+	hazard_kind = "sinking"
 	_body = StaticBody2D.new()
 	_body.collision_layer = 1
 	_body.collision_mask = 0

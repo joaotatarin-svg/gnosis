@@ -7,7 +7,7 @@ class_name SecretVault
 
 var room_w: float = 260.0
 var room_y: float = -170.0         # topo da câmara em relação ao chão (local)
-var hazard_kind: String = "sala secreta"
+var hazard_kind: String = "vault"
 var _t: float = 0.0
 
 

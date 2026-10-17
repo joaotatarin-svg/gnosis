@@ -924,11 +924,16 @@ Arconte  ·  ,Archon  ·
 Guardião  ·  ,Guardian  ·  
 Arconte  ·  Espelho,Archon  ·  Mirror
 Criatura do Kenoma,Creature of the Kenoma
+Segredo encontrado,Secret found
 Arconte,Archon
 %s (Elite),%s (Elite)
 Campeão %s,Champion %s
 da ,of 
 do ,of 
+O altar te acalma.,The altar soothes you.
+Totem quebrado: os reforços cessam.,Totem shattered: no more reinforcements.
+A luz resistiu: o Adormecido te devolve forças.,The light held: the Sleeper restores your strength.
+A luz se apagou.,The light went out.
 OS TRÊS SELOS,THE THREE SEALS
 selos abertos,seals opened
 %s · ler a Estela,%s · read the Stele
@@ -998,7 +1003,10 @@ apare no tempo,parry on time
 Brilho amarelo: bloqueie no tempo e apare.,Yellow glow: block on time to parry.
 Recusar,Refuse
 Ceder,Yield
+Um totem chama reforços: quebre-o.,A totem calls reinforcements: break it.
+Proteja a luz do Adormecido: lute longe dela.,Protect the Sleeper's light: fight away from it.
 Siga em frente  →,Keep going  →
+A fenda abriu no alto: suba.,The rift opened up high: climb.
 Você caiu no Kenoma,You fell in the Kenoma
 Chegou até a Tela %d.,Reached Screen %d.
 Chegada,Arrival

@@ -19,7 +19,7 @@ var _last_side: float = 0.0
 
 
 func _ready() -> void:
-	hazard_kind = "badalo" if style == "bell" else "pêndulo"
+	hazard_kind = "bell" if style == "bell" else "pendulum"
 	z_index = 4
 
 

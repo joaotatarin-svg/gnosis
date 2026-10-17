@@ -18,7 +18,7 @@ var _warned: bool = false
 
 
 func _ready() -> void:
-	hazard_kind = "guilhotina"
+	hazard_kind = "guillotine"
 	z_index = 4
 
 

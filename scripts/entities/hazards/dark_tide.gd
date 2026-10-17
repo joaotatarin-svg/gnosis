@@ -22,7 +22,7 @@ var _fade: float = 1.0
 
 
 func _ready() -> void:
-	hazard_kind = "maré escura"
+	hazard_kind = "tide"
 	z_index = 26                   # na frente dos lutadores (é uma parede)
 	z_as_relative = false
 	_front = start_x

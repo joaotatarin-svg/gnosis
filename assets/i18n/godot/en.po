@@ -4600,6 +4600,11 @@ msgstr "Archon  ·  Mirror"
 msgid "Criatura do Kenoma"
 msgstr "Creature of the Kenoma"
 
+#. chest._give_reward.0b11f5  [toast]
+#: scripts/entities/chest.gd:107
+msgid "Segredo encontrado"
+msgstr "Secret found"
+
 #. enemy.display_name.cef7da  [ui]
 #: scripts/entities/enemy.gd:29
 msgid "Arconte"
@@ -4624,6 +4629,26 @@ msgstr "of "
 #: scripts/entities/enemy.gd:266
 msgid "do "
 msgstr "of "
+
+#. sanctuary_altar._physics_process.4adce9  [toast]
+#: scripts/entities/hazards/sanctuary_altar.gd:39
+msgid "O altar te acalma."
+msgstr "The altar soothes you."
+
+#. summon_totem._crumble.e73a89  [toast]
+#: scripts/entities/hazards/summon_totem.gd:89
+msgid "Totem quebrado: os reforços cessam."
+msgstr "Totem shattered: no more reinforcements."
+
+#. ward_light.finish.72dceb  [toast]
+#: scripts/entities/hazards/ward_light.gd:43
+msgid "A luz resistiu: o Adormecido te devolve forças."
+msgstr "The light held: the Sleeper restores your strength."
+
+#. ward_light.finish.0498ad  [toast]
+#: scripts/entities/hazards/ward_light.gd:45
+msgid "A luz se apagou."
+msgstr "The light went out."
 
 #. seal_puzzle._build_hint.4778ec  [ui]
 #: scripts/entities/seal_puzzle.gd:34
@@ -4816,52 +4841,67 @@ msgid "As duas formas precisam cair juntas."
 msgstr "Both forms must fall together."
 
 #. level._tutor_watch.8b7973  [ui]
-#: scripts/levels/level.gd:200
+#: scripts/levels/level.gd:210
 msgid "brilho vermelho não se apara:"
 msgstr "a red glow can't be parried:"
 
 #. level._tutor_watch.b8d004  [ui]
-#: scripts/levels/level.gd:201
+#: scripts/levels/level.gd:211
 msgid "Vermelho não se apara: esquive."
 msgstr "Red can't be parried: dodge."
 
 #. level._tutor_watch.bcb21e  [ui]
-#: scripts/levels/level.gd:206
+#: scripts/levels/level.gd:216
 msgid "brilho amarelo:"
 msgstr "yellow glow:"
 
 #. level._tutor_watch.99b506  [ui]
-#: scripts/levels/level.gd:206
+#: scripts/levels/level.gd:216
 msgid "apare no tempo"
 msgstr "parry on time"
 
 #. level._tutor_watch.9ce9ae  [ui]
-#: scripts/levels/level.gd:207
+#: scripts/levels/level.gd:217
 msgid "Brilho amarelo: bloqueie no tempo e apare."
 msgstr "Yellow glow: block on time to parry."
 
 #. level._play_narrative_beats.34d9f2  [ui]
-#: scripts/levels/level.gd:313
+#: scripts/levels/level.gd:349
 msgid "Recusar"
 msgstr "Refuse"
 
 #. level._play_narrative_beats.8eb3bb  [ui]
-#: scripts/levels/level.gd:313
+#: scripts/levels/level.gd:349
 msgid "Ceder"
 msgstr "Yield"
 
+#. level._arm_objective.42e14a  [ui]
+#: scripts/levels/level.gd:587
+msgid "Um totem chama reforços: quebre-o."
+msgstr "A totem calls reinforcements: break it."
+
+#. level._arm_objective.84d7c0  [ui]
+#: scripts/levels/level.gd:588
+msgid "Proteja a luz do Adormecido: lute longe dela."
+msgstr "Protect the Sleeper's light: fight away from it."
+
 #. level._on_zone_cleared.5e6b69  [toast]
-#: scripts/levels/level.gd:548
+#: scripts/levels/level.gd:669
 msgid "Siga em frente  →"
 msgstr "Keep going  →"
 
+#. level._open_exit.141467  [toast]
+#: scripts/levels/level.gd:855
+msgid "A fenda abriu no alto: suba."
+msgstr "The rift opened up high: climb."
+
 #. level._on_player_died.f920d1  [ui]
-#: scripts/levels/level.gd:827
+#: scripts/levels/level.gd:955
 msgid "Você caiu no Kenoma"
 msgstr "You fell in the Kenoma"
 
 #. level._on_player_died.ba60d8  [ui]
-#: scripts/levels/level.gd:828
+#: scripts/levels/level.gd:956
 msgid "Chegou até a Tela %d."
 msgstr "Reached Screen %d."
 

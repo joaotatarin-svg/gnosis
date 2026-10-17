@@ -17,7 +17,7 @@ var _warned: bool = false
 
 
 func _ready() -> void:
-	hazard_kind = "boca"
+	hazard_kind = "maw"
 	z_index = -1             # é chão: atrás dos lutadores
 
 

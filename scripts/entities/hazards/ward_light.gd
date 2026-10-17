@@ -9,7 +9,7 @@ class_name WardLight
 const DRAIN := 7.0            # luz/s por inimigo perto
 const NEAR := 70.0
 
-var hazard_kind: String = "proteger"
+var hazard_kind: String = "ward"
 var screen: int = 1
 var light: float = 100.0
 var _armed: bool = false

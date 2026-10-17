@@ -1,5 +1,5 @@
-strings: 1350   traduzidas: 1350   faltando: 0
-caracteres pt: 56166   en: 58760
+strings: 1358   traduzidas: 1358   faltando: 0
+caracteres pt: 56407   en: 59022
 alertas: 0   problemas nos lotes: 0
 
 ## problemas nos lotes

@@ -17,7 +17,7 @@ var _drops: Array = []        # {x, t} — t conta de 0 até WARN+FALL
 
 
 func _ready() -> void:
-	hazard_kind = "cacos"
+	hazard_kind = "shards"
 	z_index = 5
 	_rng.seed = hash("shards/%d/%d" % [GameManager.current_screen, int(global_position.x)])
 

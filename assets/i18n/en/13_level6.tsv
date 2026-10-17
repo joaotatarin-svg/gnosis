@@ -1,0 +1,10 @@
+# Lote 13 — Onda 6 (level6): objetivos de zona (totem, luz do Adormecido), segredos, altar, fenda no alto.
+# Registro: avisos curtos no imperativo; glossário (Sleeper, rift).
+chest._give_reward.0b11f5	Secret found
+sanctuary_altar._physics_process.4adce9	The altar soothes you.
+summon_totem._crumble.e73a89	Totem shattered: no more reinforcements.
+ward_light.finish.72dceb	The light held: the Sleeper restores your strength.
+ward_light.finish.0498ad	The light went out.
+level._arm_objective.42e14a	A totem calls reinforcements: break it.
+level._arm_objective.84d7c0	Protect the Sleeper's light: fight away from it.
+level._open_exit.141467	The rift opened up high: climb.

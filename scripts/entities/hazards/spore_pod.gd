@@ -23,7 +23,7 @@ var _hurt: Hurtbox
 
 
 func _ready() -> void:
-	hazard_kind = "esporos"
+	hazard_kind = "spores"
 	z_index = 2
 	_hurt = Hurtbox.new()
 	_hurt.team = "enemy"           # o golpe da Sophia acerta

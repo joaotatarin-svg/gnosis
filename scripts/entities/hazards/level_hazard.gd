@@ -12,7 +12,7 @@ class_name LevelHazard
 ## Muitos perigos também ferem os INIMIGOS: atrair o bicho para a lâmina é jogada.
 
 ## Rótulo do perigo (prancha de layout, relatório, bot).
-var hazard_kind: String = "perigo"
+var hazard_kind: String = "hazard"
 ## Fase do ritmo em segundos (deslocamento do relógio), sorteada pelo layout.
 var phase: float = 0.0
 ## Multiplicador do dano (a tabela do layout ajusta por tipo de tela).

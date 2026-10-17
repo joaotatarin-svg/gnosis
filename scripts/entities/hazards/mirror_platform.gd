@@ -17,7 +17,7 @@ var _solid: bool = true
 
 
 func _ready() -> void:
-	hazard_kind = "reflexo"
+	hazard_kind = "mirror"
 	phase = 0.0                   # sincronia: todas usam o mesmo relógio
 	_body = StaticBody2D.new()
 	_body.collision_layer = 1

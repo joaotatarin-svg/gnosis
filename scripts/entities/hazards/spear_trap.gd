@@ -20,7 +20,7 @@ var _warned: bool = false
 
 
 func _ready() -> void:
-	hazard_kind = "correntes do chão" if style == "shackles" else "lanças"
+	hazard_kind = style
 	z_index = 3
 
 

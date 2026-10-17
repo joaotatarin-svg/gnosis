@@ -13,7 +13,7 @@ var _blobs: Array = []      # [dx, dy, raio, velocidade]
 
 
 func _ready() -> void:
-	hazard_kind = "névoa"
+	hazard_kind = "mist"
 	z_index = 7             # por cima dos pés (como a névoa rasteira)
 	var r := RandomNumberGenerator.new()
 	r.seed = hash("mist/%d/%d" % [GameManager.current_screen, int(global_position.x)])
