@@ -191,3 +191,14 @@ Limitações: o **bracelete não brilha** — não há posição do braço medid
 flutuando fora do corpo); na **magia** a "ponta" medida é o orbe da mão livre (maior mancha ciano), então o
 halo engrossa o feitiço, não o cristal. Prancha: `gifs/arma_niveis_1a5.png` (AnimQA `-- weapon_board`:
 parada, golpe forte, magia × níveis 1→5).
+
+## #7 Bots de Éon (deixam de ser miniaturas dos Arcontes)
+
+- **Arte própria** (folhas `bot_<n>_<id>` do produtor → receitas `tools/anim_bosses/recipes/bot_<id>.json`, grupo
+  `creatures`, tamanho = o da família antiga): sonâmbulo, glutão, carcereiro, mudo. `PaintedLibrary` passa a
+  usar `creatures/bot_<id>` quando o atlas existe (sem boneco; `reserve_puppet` guarda o índice só pro PuppetQA).
+- **Interino** para quem ainda não tem folha (reflexo, esporos, pretoriano e os parentes alado/fantasma/cornudo):
+  quadros do Arconte com saturação × 0,45 + tinta da cor da criatura. Honesto: a silhueta continua a do
+  Arconte (auréola/coroa) — só a arte própria resolve; ficam pequenos (escala da criatura).
+- Prancha `gifs/bots_antes_depois.png` (AnimQA `-- bot_board`: Arconte a 55% · antes · depois parado · depois preparando).
+- Quando as folhas 5–7 chegarem: `python <mk_bots>` (o mesmo gerador) + `boss_frames.py bot_<id>`; nada no código.

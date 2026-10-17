@@ -57,6 +57,17 @@ func _make(entry: Dictionary, parent: Node) -> CharacterArt:
 	parent.add_child(art)
 	art.set_profile(entry.profile)
 	art.set_process(false)
+	if art.boss_puppet == null and art.painted.has("reserve_puppet"):
+		# bot de Éon com arte própria: o jogo não monta mais o boneco do Arconte,
+		# mas o QA continua testando o boneco na escala de criatura (reserva)
+		var d: Dictionary = art.painted.duplicate()
+		d["puppet"] = int(d.reserve_puppet)
+		var bp := BossPuppet.new()
+		art.add_child(bp)
+		bp.configure(d)
+		bp.scale = Vector2(-1 if d.flip else 1, 1) * art.profile.height * 1.3 / 100.0
+		bp.position.y = CharacterArt.GROUND_Y * art.profile.height / 44.0
+		art.boss_puppet = bp
 	return art
 
 

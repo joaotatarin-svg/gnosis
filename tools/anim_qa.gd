@@ -42,6 +42,7 @@ func _ready() -> void:
 		"cego_board": await _cego_board()
 		"rim_board": await _rim_board()
 		"weapon_board": await _weapon_board()
+		"bot_board": await _bot_board()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -393,6 +394,47 @@ func _rim_board() -> void:
 		await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://rim_board.png")
 	CharacterArt.rim_override = -1
+	get_tree().quit()
+
+
+## Bots de Éon (#7): para cada um, o Arconte (referência), o bot ANTES
+## (miniatura dos quadros do Arconte) e DEPOIS (arte própria, ou o interino
+## dessaturado/tingido enquanto a folha não chega), parado e preparando.
+func _bot_board() -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	RenderingServer.set_default_clear_color(Color("3a4450"))
+	var bots := [["sonambulo", "arconte_sono"], ["glutao", "arconte_fome"], ["carcereiro", "arconte_corrente"], ["mudo", "arconte_silencio"],
+		["reflexo", "arconte_espelho"], ["esporos", "arconte_praga"], ["pretoriano", "arconte_coroa"]]
+	for b in bots.size():
+		var cx: float = 92.0 + b * 182.0
+		var boss_p: ArtProfile = Bestiary.get_type(String(bots[b][1])).profile
+		var bot_p: ArtProfile = Bestiary.get_type(String(bots[b][0])).profile
+		var cells := [["ARCONTE", boss_p, "idle", false], ["antes", bot_p, "idle", true], ["depois", bot_p, "idle", false], ["depois", bot_p, "windup", false]]
+		for i in cells.size():
+			var art := CharacterArt.new()
+			add_child(art)
+			art.set_profile(cells[i][1])
+			if cells[i][3]:
+				# antes: os quadros do Arconte em escala de criatura, sem paleta própria
+				art._boss_db = CharacterArt.frame_db("bosses/" + BossPuppet.NAMES[["arconte_sono", "arconte_fome", "arconte_corrente", "arconte_silencio", "arconte_espelho", "arconte_praga", "arconte_coroa"].find(String(bots[b][1]))])
+				art.painted["family"] = false
+			var sc: float = (0.55 if i == 0 else 1.0) * 1.6
+			art.scale = Vector2(sc, sc)
+			var gy: float = [160.0, 330.0, 500.0, 680.0][i]
+			art.position = Vector2(cx, gy) - Vector2(0, CharacterArt.GROUND_Y * art.profile.height / 44.0 * sc)
+			art.set_process(false)
+			art.set_anim(String(cells[i][2]))
+			art.pose_progress = 0.8 if cells[i][2] == "windup" else -1.0
+			for f in 20:
+				art._process(1.0 / 60.0)
+			art.modulate = Color.WHITE
+			if b == 0:
+				_label(String(cells[i][0]), Vector2(4, gy - 150))
+		_label(String(bots[b][0]), Vector2(cx - 40, 4))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://bot_board.png")
 	get_tree().quit()
 
 

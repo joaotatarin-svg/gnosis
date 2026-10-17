@@ -69,6 +69,15 @@ static func character(p: ArtProfile) -> Dictionary:
 		# Sem atlas, o CharacterArt cai no boneco (fallback).
 		d["frames"] = BossPuppet.NAMES[boss]
 		d["family"] = own != id
+		# Bots de Éon com ARTE PRÓPRIA (folhas bot_<n>_<id> → creatures/bot_<id>):
+		# deixam de ser miniatura do Arconte. Os que ainda não têm folha seguem
+		# nos quadros do Arconte, mas com paleta própria (ver CharacterArt).
+		if own != id and ResourceLoader.exists(DERIVED_DIR + "creatures/bot_" + own + "_frames.png"):
+			d.erase("puppet")
+			d["reserve_puppet"] = boss       # PuppetQA ainda testa o boneco nessa escala
+			d["frames"] = "creatures/bot_" + own
+			d["family"] = false
+			d["bot"] = true
 		return d
 	if id in ["rei", "rei_final", "demiurgo"]:
 		return {"sheet":"yaldabaoth", "rect":Rect2(15,0,1046,1024), "flip":false, "puppet":8, "frames":"rei"}

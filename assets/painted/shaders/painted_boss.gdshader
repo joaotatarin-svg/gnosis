@@ -23,6 +23,9 @@ uniform vec4 glow_color : source_color = vec4(1.0, 0.9, 0.6, 1.0);
 uniform vec4 rim_color : source_color = vec4(0.8, 0.9, 1.0, 1.0);
 uniform float rim_amt = 0.0;
 uniform float rim_px = 2.5;
+// saturação (1 = original): criaturas da família ainda sem arte própria saem
+// dessaturadas + tinta da criatura, para não serem miniaturas do Arconte
+uniform float sat_mul = 1.0;
 
 varying vec2 body_pos;                 // posição no corpo (0..1 de altura), pra o ruído
 varying vec4 vert_col;                 // cor do vértice, sem a textura
@@ -60,6 +63,10 @@ void fragment() {
 		}
 	}
 	vec4 c = texture(TEXTURE, uv);
+	if (sat_mul != 1.0) {
+		float l = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+		c.rgb = mix(vec3(l), c.rgb, sat_mul);
+	}
 	if (rim_amt > 0.0 && c.a > 0.05) {
 		// quanto o pixel está na BORDA: alfa dele menos o menor alfa ao redor
 		float mn = 1.0;

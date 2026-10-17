@@ -1622,6 +1622,11 @@ func _draw_painted(s: float) -> void:
 		mat.set_shader_parameter("rim_amt", rim)
 		mat.set_shader_parameter("rim_color", eon_light())
 		mat.set_shader_parameter("rim_px", 4.0)
+		# família do Arconte SEM arte própria (interino #7): dessatura + tinta da criatura
+		var family: bool = painted.get("family", false)
+		mat.set_shader_parameter("sat_mul", 0.45 if family else 1.0)
+		if family:
+			tint = Color.WHITE.lerp(profile.primary.lightened(0.35), 0.5)
 	else:
 		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
