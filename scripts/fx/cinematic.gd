@@ -49,17 +49,17 @@ static func _spawn() -> Cinematic:
 	return c
 
 
-## O mito em 6 cards (Mônada → Éons → Sophia → o Cego → Kenoma → faíscas). O último
-## card NÃO diz "acorda": quem diz é a Voz, na primeira fala do jogo (Narrative.intro).
+## O mito em 3 cards (backlog #6: o prólogo inteiro em ≤ 20 s; o jogador decide
+## nos primeiros 60 s): o Um e os Éons → Sophia, o filho cego e a nuvem → o
+## Kenoma e as faíscas. O último card NÃO diz "acorda": quem diz é
+## a Voz, na primeira fala do jogo (Narrative.intro). Entrada/saída mais curtas
+## que no epílogo (0,45 + 0,3 s); 3 × 0,75 + 17,6 s de leitura ≈ 19,9 s sem apertar nada.
 static func prologue() -> Cinematic:
 	var c := _spawn()
 	c.cards = [
-		{"title": "", "text": "No princípio não havia princípio.\nHavia o Um — sem nome, sem medida, pleno.\nOs antigos o chamaram Mônada, Abismo, Silêncio.", "bg": 8, "time": 5.0},
-		{"title": "", "text": "Dele emanaram os Éons, aos pares, como luz que transborda.\nNo Pleroma nada dormia. Nada esquecia.", "bg": 3, "time": 4.6},
-		{"title": "", "text": "A mais jovem, Sophia — a Sabedoria —, quis alcançar a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma,\ne ela o escondeu numa nuvem.", "bg": 4, "time": 5.2},
-		{"title": "", "text": "Cego para a Luz de onde veio, ele se acreditou o único deus.\nE fez um mundo copiando o que nunca viu: o Kenoma, o vazio.", "bg": 6, "time": 5.0},
-		{"title": "", "text": "Sete Arcontes. Sete esferas. Sete correntes.\nE dentro do barro, escondida, a faísca que ele levou da mãe.", "bg": 2, "time": 5.0},
-		{"title": "", "text": "As faíscas dormem.\n\nUma delas acaba de sentir dor.", "bg": 0, "time": 4.4},
+		{"title": "", "text": "No princípio havia o Um. Dele emanaram os Éons, aos pares,\ncomo luz que transborda. Ali nada dormia. Nada esquecia.", "bg": 8, "time": 5.4, "fade_in": 0.45, "fade_out": 0.3},
+		{"title": "", "text": "A mais jovem, Sophia, quis alcançar a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma,\ne ela o escondeu numa nuvem.", "bg": 4, "time": 5.8, "fade_in": 0.45, "fade_out": 0.3},
+		{"title": "", "text": "Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.\nNo barro dormem as faíscas que ele levou da mãe.\n\nUma delas acaba de sentir dor.", "bg": 0, "time": 6.4, "fade_in": 0.45, "fade_out": 0.3},
 	]
 	return c
 
@@ -201,9 +201,9 @@ func _run_cards() -> void:
 		var bg_i: int = int(card.get("bg", -1))
 		_bg.texture = PaintedLibrary.background(bg_i) if bg_i >= 0 else null
 		_advance = false
-		await _fade(1.0, 0.55)
+		await _fade(1.0, float(card.get("fade_in", 0.55)))
 		await _hold(float(card.get("time", 5.0)))
-		await _fade(0.0, 0.35)
+		await _fade(0.0, float(card.get("fade_out", 0.35)))
 	_finish()
 
 

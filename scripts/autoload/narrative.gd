@@ -57,9 +57,10 @@ func _c(speaker: String, text: String, cue: String) -> Dictionary:
 	return {"speaker": speaker, "text": text, "cue": cue}
 
 
-## "uma faísca escorre" / "37 faíscas escorrem" — a fala nunca diz "0 faíscas".
+## "Uma faísca escorre" / "37 faíscas escorrem" — a fala nunca diz "0 faíscas".
+## Começa frase (vem depois de um ponto): maiúscula.
 func _faiscas(n: int) -> String:
-	return "uma faísca escorre" if n == 1 else "%d faíscas escorrem" % n
+	return "Uma faísca escorre" if n == 1 else "%d faíscas escorrem" % n
 
 
 # --- A MORTE NÃO PEGA (checkpoint) -------------------------------------------
@@ -125,7 +126,7 @@ func death_revive(screen: int, deaths: int, lost: int) -> Array:
 			tier = [
 				[_l(VOZ, "Não. Não, não, não. LEVANTA."),
 				 _l(VOZ, "Agarra a minha voz e sobe por ela. Não te perco numa vala do Kenoma.")],
-				[_l(VOZ, "Shh. Já passou. Eu te tenho."),
+				[_l(VOZ, "Shh. Já passou. Tenho-te."),
 				 _l(VOZ, "Respira. Ou o que quer que tu faças no lugar disso.")],
 			]
 		elif d <= 6:
@@ -143,7 +144,7 @@ func death_revive(screen: int, deaths: int, lost: int) -> Array:
 			]
 		else:
 			tier = [
-				[_l(VOZ, "Tu cais, e eu te refaço. Já fizemos isto antes, tu e eu. Muito antes.")],
+				[_l(VOZ, "Tu cais, e eu refaço-te. Já fizemos isto antes, tu e eu. Muito antes.")],
 				[_l(VOZ, "Eu refaria o mundo inteiro para te pôr de pé."),
 				 _l(VOZ, "...Não me olhes assim. É modo de dizer.")],
 			]
@@ -157,26 +158,25 @@ func death_revive(screen: int, deaths: int, lost: int) -> Array:
 
 ## Abertura do run (tela 1), logo depois do prólogo em cards (que termina sem
 ## dizer "acorda" — quem diz é a Voz). A primeira coisa do mundo é cuidado.
+## Backlog #6: só o escuro e o "Acorda." na caixa — logo depois, o controle. O
+## resto da conversa (onde, quem, as cinzas, "Chama-me Voz") vira LEGENDA de
+## caminhada: `walk_arrival` da tela 1 (papel "king").
 func intro() -> Array:
 	return [
 		_c(NARRADOR, "(Escuro. Um coração batendo. Depois, cinza na boca.)", "heartbeat"),
 		_l(VOZ, "Acorda. ...Isso. Devagar. Eu estou aqui."),
-		_l(SOPHIA, "Onde...? Quem...?"),
-		_l(VOZ, "Uma pergunta de cada vez. Primeiro: as cinzas sob os teus pés eram a tua gente."),
-		_l(VOZ, "A dor que sentes é a única coisa verdadeira que este mundo te deu. Foi ela que quebrou o feitiço."),
-		_l(VOZ, "Chama-me Voz. Sobe comigo: cada faísca que libertares vai lembrar o que tu és."),
 	]
 
 
 ## O Rei sai da névoa (tela 1). A Voz o apresenta como amigo; um rito força o
-## duelo. Encenação: docs/ROTEIRO.md, cena A.
+## duelo. Encenação: docs/ROTEIRO.md, cena A. Backlog #6: 3 falas (a Cena A
+## inteira em ~9 s) — a Voz o conhece e jura que ele não te quer mal; o Rei
+## dá a lei do limiar; a máscara acende.
 func king_intro() -> Array:
 	return [
-		_c(VOZ, "Olha. Alguém vem da névoa. Não temas: eu o conheço. É um rei antigo, e é gentil.", "fog_thickens"),
-		_c(REI, "Faísca perdida... que bom que acordaste. Há eras eu guardo este limiar.", "king_emerges"),
-		_l(REI, "Mas o limiar tem uma lei: só passa quem me toca com a própria luz. Mostra-me a tua."),
-		_l(VOZ, "É um rito. Bate nele de coração leve. Ele não te quer mal."),
-		_c(REI, "(ergue o orbe; a máscara se acende) Vem.", "mask_lights"),
+		_c(VOZ, "Olha: alguém vem da névoa. Não temas, eu o conheço. É um rei antigo, e gentil. Não te quer mal.", "fog_thickens"),
+		_c(REI, "Faísca perdida... que bom que acordaste. O limiar tem uma lei: só passa quem me toca com a própria luz.", "king_emerges"),
+		_c(REI, "(ergue o orbe; a máscara se acende) Mostra-me a tua. Vem.", "mask_lights"),
 	]
 
 
@@ -185,7 +185,7 @@ func king_fall() -> Array:
 	return [
 		_c(REI, "(a máscara racha) ...Ah. A tua luz é maior do que eu lembrava.", "mask_cracks"),
 		_c(VOZ, "Sentiste? O selo dele se partiu. Lá em cima, sete tronos acabam de acordar.", "king_sinks"),
-		_l(VOZ, "Sete Arcontes, sete Anéis. Reúne-os todos, e eu te mostro como desfazer este mundo de mentira."),
+		_l(VOZ, "Sete Arcontes, sete Anéis. Reúne-os todos, e mostro-te como desfazer este mundo de mentira."),
 	]
 
 
@@ -202,7 +202,7 @@ func eon_intro(eon: int) -> Array:
 		]
 		1: return [
 			_l(VOZ, "O Éon da Fome. Estes mercados devoram quem compra. Tudo aqui tem preço, até a saudade."),
-			_l(VOZ, "O Arconte daqui vai te oferecer o que perdeste. Lembra: cópia não é volta."),
+			_l(VOZ, "O Arconte daqui vai oferecer-te o que perdeste. Lembra: cópia não é volta."),
 			_l(SOPHIA, "Eu nem sei o que perdi. Como vou recusar o que ele me oferecer?"),
 		]
 		2: return [
@@ -227,7 +227,7 @@ func eon_intro(eon: int) -> Array:
 		]
 		6: return [
 			_l(VOZ, "O Éon da Coroa. O último degrau. O Arconte daqui quase tocou o trono do Cego."),
-			_l(VOZ, "Ele vai te oferecer poder: a mais velha das mentiras, e a mais doce."),
+			_l(VOZ, "Ele vai oferecer-te poder: a mais velha das mentiras, e a mais doce."),
 			_l(SOPHIA, "Último degrau. Depois eu descubro quem sou. Tu prometeste."),
 		]
 	return []
@@ -260,7 +260,7 @@ func temptation(boss_id: String) -> Array:
 			_l(VOZ, "É o golpe mais cruel de todos. Eu sei. Escolhe."),
 		]
 		"arconte_praga": return [
-			_l("Belias", "Tudo apodrece, Portadora. Vi morrer tudo o que plantei. Rende-te agora, e eu te poupo do fim."),
+			_l("Belias", "Tudo apodrece, Portadora. Vi morrer tudo o que plantei. Rende-te agora, e eu poupo-te do fim."),
 			_l(VOZ, "Ele confunde cansaço com verdade. Escolhe."),
 		]
 		"arconte_coroa": return [
@@ -283,12 +283,34 @@ func concession_response() -> Array:
 	]
 
 
+## Card do Campeão de cada Éon (#20): o nome do bot temático do Éon (o mesmo das
+## legendas: "O Glutão que guarda o santuário...") e o santuário que ele guarda.
+## Nome ≤ 18 caracteres e título ≤ 52 (ESTILO §5) — exceto o Portador de
+## Esporos (21; cabe no letterbox de 600 px, conferido na captura). Sem a
+## palavra "Campeão" no card: ela já é o nome de uma dificuldade.
+const CHAMPION_CARDS := [
+	{"name": "O SONÂMBULO", "title": "Guardião do santuário do Torpor"},
+	{"name": "O GLUTÃO", "title": "Guardião do santuário da Fome"},
+	{"name": "O CARCEREIRO", "title": "Guardião do santuário da Corrente"},
+	{"name": "O BIBLIOTECÁRIO", "title": "Guardião do santuário do Silêncio"},
+	{"name": "O REFLEXO", "title": "Guardião do santuário do Espelho"},
+	{"name": "O PORTADOR DE ESPOROS", "title": "Guardião do santuário da Praga"},
+	{"name": "O PRETORIANO", "title": "Guardião do santuário da Coroa"},
+]
+
+
+func champion_card(eon: int) -> Dictionary:
+	if eon < 0 or eon >= CHAMPION_CARDS.size():
+		return {}
+	return CHAMPION_CARDS[eon]
+
+
 ## Fase 2 de um Arconte (a 50% da vida): legendas SEM pausar — a luta continua.
 ## Gancho (Onda 2): enemy._enter_phase2 → Gnosis.captions(Narrative.archon_phase2(type_id)).
 func archon_phase2(boss_id: String) -> Array:
 	match boss_id:
 		"arconte_sono": return [_l("Athoth", "Por que acordar? Lá fora só tem a falta!")]
-		"arconte_fome": return [_l("Harmas", "Me dá uma! Uma lembrança que seja minha!")]
+		"arconte_fome": return [_l("Harmas", "Dá-me uma! Uma lembrança que seja minha!")]
 		"arconte_corrente": return [_l("Galila", "Se eu soltar, eu caio! Todos caem!")]
 		"arconte_silencio": return [_l("Yabel", "(os pontos da boca dele esticam; alguma coisa lá dentro quer sair)")]
 		"arconte_espelho": return [
@@ -306,7 +328,7 @@ func _archon_death(who: String) -> Dictionary:
 		"sono": return _l("Athoth", "Ah... então é isto, estar acordado. Dói. ...É bonito.")
 		"fome": return _l("Harmas", "Nunca provei nada que fosse meu. Guarda as tuas lembranças. Guarda bem.")
 		"corrente": return _l("Galila", "Leve... é assim, sem elo? Ninguém me disse... que era leve.")
-		"silencio": return _l("Yabel", "(os pontos se rompem) Alguém respondeu a ele, uma vez, lá de cima. Eu ouvi. Ele me costurou por isso.")
+		"silencio": return _l("Yabel", "(os pontos se rompem) Alguém respondeu a ele, uma vez, lá de cima. Eu ouvi. Ele costurou-me por isso.")
 		"espelho": return _l("Astaphaios", "Fica com o teu rosto. Eu nunca tive um. ...Era bonito, o teu.")
 		"praga": return _l("Belias", "(na poça dele, uma coisa verde, minúscula) ...Brotou? Não olhes para mim. Olha aquilo.")
 		"coroa": return _l("Armupiel", "Diz a ele que eu... não. Ele não escuta. Nunca escutou.")
@@ -332,7 +354,7 @@ func ring_gained(boss_id: String, skill_name: String, count: int) -> Array:
 			lines.append(_l(SOPHIA, "(Ao tocar o Anel: uma nuvem branca, e um trono pequeno dentro dela.)"))
 			lines.append(_l(VOZ, "Sonhos do Torpor. Passam. Sobe."))
 		"fome": lines.append(_l(VOZ, "Faltam cinco. E a tua janela continua tua. Sobe."))
-		"corrente": lines.append(_l(VOZ, "Galila te classificou e perdeu. Faltam quatro."))
+		"corrente": lines.append(_l(VOZ, "Galila classificou-te e perdeu. Faltam quatro."))
 		"silencio": lines.append(_l(VOZ, "Ouve: as tuas magias voltaram a falar. Faltam três."))
 		"espelho":
 			lines.append(_l(VOZ, "Este Anel pesa, não pesa? ...Eu também não sei bem o que sou."))
@@ -364,7 +386,7 @@ func sanctuary(eon: int) -> Array:
 			_l(VOZ, "...Faz isso mais vezes. Combina contigo."),
 		]
 		3: return [
-			_l(VOZ, "Aqui eu me calo. Fala tu, hoje. Eu escuto."),
+			_l(VOZ, "Aqui me calo. Fala tu, hoje. Eu escuto."),
 			_l(SOPHIA, "Sonhei de novo com a nuvem branca. Tinha um trono pequeno no meio."),
 			_c(VOZ, "(um silêncio longo demais) ...Sonhos. Descansa. Eu vigio.", "wait_2s"),
 		]
@@ -471,9 +493,9 @@ func theft() -> Array:
 		_c(YAL, "(a máscara cai; atrás dela, só um olho cego) Eu sou o Cego de quem te falei. E não há outro além de mim.", "mask_falls"),
 		_l(YAL, "Chama-me pelo nome que nunca te disse: Yaldabaoth. Sabes o que portavas, Portadora? A mim."),
 		_l(YAL, "Nunca houve rio. Nunca houve janela. A tua gente? Cinzas de uma colheita qualquer."),
-		_l(YAL, "Eu te dei um luto para te dar um caminho. O luto é a coleira mais macia."),
+		_l(YAL, "Dei-te um luto para te dar um caminho. O luto é a coleira mais macia."),
 		_l(SOPHIA, "Eu chorei por eles."),
-		_l(YAL, "Choraste por mim. Os sete eram meus filhos, e tu me trouxeste o que restou deles."),
+		_l(YAL, "Choraste por mim. Os sete eram meus filhos, e tu trouxeste-me o que restou deles."),
 		_l("Uma voz nos Anéis", "...espera... eu... lembro..."),
 		_l(YAL, "(mais baixo, quase a Voz de antes) Tu disseste que ficavas comigo."),
 		_c(YAL, "(vira um motor de anéis e afunda no chão) Desta vez, não te levantes.", "sink"),
@@ -667,9 +689,15 @@ func sleeper_line(screen: int) -> Array:
 func walk_arrival(screen: int) -> Array:
 	var role := RunManager.screen_role(screen)
 	if role == "king":
+		# O resto da intro (#6), andando: ela acorda à esquerda, a Estela fica
+		# logo adiante e o duelo, à direita. A Cena A corta o que sobrar.
 		return [
-			_l(VOZ, "As cinzas ainda estão quentes. Anda: a névoa não espera ninguém."),
+			_l(SOPHIA, "Onde...? Quem...?"),
+			_l(VOZ, "Uma pergunta de cada vez. Primeiro: as cinzas sob os teus pés eram a tua gente."),
 			_l(SOPHIA, "(Uma pedra escrita, logo adiante. Alguém deixou palavras para quem acordasse.)"),
+			_l(VOZ, "A dor que sentes é a única coisa verdadeira que este mundo te deu. Foi ela que quebrou o feitiço."),
+			_l(VOZ, "Chama-me Voz. Sobe comigo: cada faísca que libertares vai lembrar o que tu és."),
+			_l(VOZ, "As cinzas ainda estão quentes. Anda: a névoa não espera ninguém."),
 		]
 	if role == "final":
 		return [_l(SOPHIA, "Tudo aqui é grande demais. Como um quarto de criança visto do chão.")]
@@ -746,12 +774,12 @@ func _arrival_pool(eon: int) -> Array:
 			[_l(VOZ, "Heimarmene, diziam os antigos: o Destino como corrente. Aqui, é corrente mesmo.")],
 			[_l(SOPHIA, "Os astros são os elos. Sete elos, sete céus, sete Arcontes."),
 			 _l(VOZ, "E tu já partiste dois. Continua.")],
-			[_l(VOZ, "Galila não te odeia. Ele te classifica. É pior.")],
+			[_l(VOZ, "Galila não te odeia. Classifica-te. É pior.")],
 			[_l(VOZ, "O Carcereiro do santuário prende primeiro e pergunta depois. Esquiva-te, e a corrente se parte.")],
 			[_l(SOPHIA, "Se a lei daqui é medo com coroa, quem usa a coroa?"),
 			 _l(VOZ, "O Cego, lá no alto. Ninguém mais. Sobe.")],
 			[_l(SOPHIA, "A pedra diz que o sopro no barro veio de fora deste mundo. Então eu também vim?"),
-			 _l(VOZ, "Vieste de mim. Eu te achei. Não esqueças a ordem das coisas.")],
+			 _l(VOZ, "Vieste de mim. Achei-te. Não esqueças a ordem das coisas.")],
 			[_l(VOZ, "Última porta antes do trono. As correntes dele cantam quando têm medo.")],
 			[_l(SOPHIA, "Um trono feito de elos. Ele se acorrentou a si mesmo para não cair.")],
 		]
@@ -776,7 +804,7 @@ func _arrival_pool(eon: int) -> Array:
 			 _l(VOZ, "Vaidade. Não repitas.")],
 			[_l(SOPHIA, "O nome na pedra é o meu. Sophia."),
 			 _l(VOZ, "Nome comum. Sabedoria. Metade das mães do Kenoma dá esse nome às filhas.")],
-			[_l(VOZ, "Astaphaios vai te dar o que mais queres: tu, antes de tudo. É o golpe mais cruel.")],
+			[_l(VOZ, "Astaphaios vai dar-te o que mais queres: tu, antes de tudo. É o golpe mais cruel.")],
 			[_l(VOZ, "O Reflexo do santuário recua quando bates. Bate onde ele vai estar.")],
 			[_l(SOPHIA, "A pedra diz que não foi o rosto dela na água. Foi uma luz falsa, vista de cima."),
 			 _l(VOZ, "Pedras repetem o que querem. Água é água. Sobe.")],
@@ -791,7 +819,7 @@ func _arrival_pool(eon: int) -> Array:
 			 _l(VOZ, "Dentro de ti. Fora daqui. Sobe.")],
 			[_l(VOZ, "Belias não mente. Está cansado, e acha que o cansaço é a verdade.")],
 			[_l(VOZ, "O Portador de Esporos do santuário envenena até depois de morto. Mata-o e afasta-te.")],
-			[_l(VOZ, "Cinco Anéis. Mais dois, e eu te mostro o fim de tudo isto.")],
+			[_l(VOZ, "Cinco Anéis. Mais dois, e mostro-te o fim de tudo isto.")],
 			[_l(SOPHIA, "Um príncipe desceu para buscar uma pérola e esqueceu quem era. Até que uma carta o lembrou."),
 			 _l(VOZ, "Bonito. Ninguém te mandou carta nenhuma. Tens a mim.")],
 			[_l(VOZ, "Última antessala podre. Depois dela, a Coroa. Aguenta.")],
