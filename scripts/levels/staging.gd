@@ -176,6 +176,9 @@ func _scene_open() -> void:
 			# M3: a música do Éon cai a −14 dB ao abrir o encontro ("Senta.").
 			Audio.duck_music(600.0, -14.0)
 			_ducked = true
+			_frame_npc()
+		"velkar":
+			_frame_npc()
 		"tentacao":
 			# #18: o Arconte já está no palco (Level._stage_archon); a câmera
 			# enquadra os dois, ela à esquerda e ele à direita.
@@ -268,7 +271,7 @@ func _on_finished(box: DialogueBox) -> void:
 			_unlock()
 		"anagnorise":
 			_cam_release(0.6)
-		"tentacao":
+		"tentacao", "soter", "velkar":
 			_cam_release(0.5)
 		"santuario":
 			if _music_stopped:
@@ -335,6 +338,26 @@ func _frame_boss() -> void:
 	var mid := (player.global_position.x + boss.global_position.x) * 0.5
 	# Desce o quadro como na cena D: os dois ficam ACIMA da caixa de diálogo.
 	_cam_to(1.0, Vector2(mid - _view_center().x, D_LIFT), 0.8)
+
+
+## Encontro com Soter/Velkar: a caixa cobria os dois (os pés ficam a 76 % da
+## tela, a caixa começa a ~65 %) — o NPC falava, ajoelhava e abençoava escondido.
+## Centra o quadro entre ela e o NPC mais perto e desce D_LIFT, como na tentação.
+func _frame_npc() -> void:
+	if player == null or level == null:
+		return
+	var npc: Node2D = null
+	var best := INF
+	for c in level.get_children():
+		if c is NpcEncounter:
+			var d := absf((c as Node2D).global_position.x - player.global_position.x)
+			if d < best:
+				best = d
+				npc = c
+	if npc == null:
+		return
+	var mid := (player.global_position.x + npc.global_position.x) * 0.5
+	_cam_to(1.0, Vector2(mid - _view_center().x, D_LIFT), 0.6)
 
 
 ## Onde o Rei espera o duelo (o 1º ponto de spawn da zona 0 do Level).

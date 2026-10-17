@@ -122,13 +122,14 @@ func _dialog(lines: Array, choices: Array, scene: String) -> DialogueBox:
 
 func _do_velkar() -> void:
 	# Termina numa escolha sem efeito mecânico ("Vem comigo" / "Fica em paz").
-	var d := DialogueBox.play(Narrative.velkar_meeting(), Narrative.velkar_choices())
+	# Pela encenação (cena "velkar"): a câmera sobe os dois acima da caixa.
+	var d := _dialog(Narrative.velkar_meeting(), Narrative.velkar_choices(), "velkar")
 	d.line_shown.connect(_on_line)
 	_art.set_anim("talk")
 	var choice: int = await d.choice_made
 	# A despedida: a mão no peito, sem voltar a falar.
 	_art.set_anim("farewell")
-	await DialogueBox.play(Narrative.velkar_farewell(choice)).finished
+	await _dialog(Narrative.velkar_farewell(choice), [], "velkar").finished
 	if not is_inside_tree():
 		return
 	Progression.add_orbs(150)
