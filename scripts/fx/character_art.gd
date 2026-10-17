@@ -1314,6 +1314,8 @@ static var _mesh_cache: Dictionary = {}    # chave do quadro+âncora → grade {
 
 var motion_distance: float = 0.0   # distância horizontal percorrida (fase da corrida/passo)
 var dodge_back: bool = false        # esquiva pra trás (o player liga; usa o quadro de recuo)
+var combo_step: int = 0             # golpe leve 1/2/3 do combo (o player liga; 0 = genérico)
+var _combat_clock: float = 99.0     # s desde o último estado de combate (parada → prontidão)
 var dissolve_max: float = 1.0       # forma que pode se refazer dissolve só até aqui
 var _last_x: float = INF
 var _wind_time: float = 0.0
@@ -1409,6 +1411,10 @@ func _hero_seq(states: Dictionary) -> String:
 		"windup_heavy": ["windup"], "windup_cast": ["cast"], "fall": ["jump"], "dead": ["hurt"],
 		"recover": ["idle"], "attack_heavy": ["attack"],
 	}
+	if st in ["windup", "attack"] and combo_step > 0 and states.has(st + str(combo_step)):
+		return st + str(combo_step)
+	if st == "idle" and _combat_clock < 1.8 and states.has("ready"):
+		return "ready"
 	if states.has(st):
 		return st
 	for alt in chain.get(st, []):
@@ -1424,6 +1430,20 @@ func _seq_index(seq: Dictionary, seq_name: String) -> int:
 	if n <= 1:
 		return 0
 	if seq_name == "run":
+		# fase pela DISTÂNCIA: cada quadro dura o quanto o pé apoiado recua
+		# nele (advance, px da folha) — o pé volta ao mesmo ponto a cada troca
+		var world_k: float = profile.height * 1.19 / float(frame_db("sophia").meta.body_px) if painted.get("hero", false) else 1.0
+		var adv: Array = seq.get("advance", [])
+		if adv.size() == n:
+			var total: float = 0.0
+			for v in adv:
+				total += float(v) * world_k
+			var d: float = fposmod(motion_distance, maxf(total, 1.0))
+			for j in n:
+				d -= float(adv[j]) * world_k
+				if d < 0.0:
+					return j
+			return n - 1
 		var cycle: float = float(seq.get("cycle_bodies", 1.6)) * profile.height * 1.19
 		return int(fposmod(motion_distance / maxf(cycle, 1.0), 1.0) * n) % n
 	if seq.get("loop", false) and float(seq.get("fps", 0.0)) > 0.0:
@@ -1553,11 +1573,22 @@ var _body_tex: Texture2D
 var _body_tip := Vector2.INF
 
 
+## Número ou lista do JSON (floats) → lista de inteiros.
+static func _int_list(v) -> Array:
+	var out: Array = []
+	if v is Array:
+		for x in v:
+			out.append(int(x))
+	elif v != null:
+		out.append(int(v))
+	return out
+
+
 ## Troca de quadro: passo no chão (som), início do smear do cajado.
 func _on_frame_changed(seq: Dictionary, seq_name: String, i: int, tip: Vector2) -> void:
-	if seq_name == "run" and i in seq.get("steps", []) and is_visible_in_tree():
+	if seq_name == "run" and i in _int_list(seq.get("steps", [])) and is_visible_in_tree():
 		Audio.play_sfx("step", 0.08, -6.0)
-	if seq.has("smear_at") and i == int(seq.smear_at) and tip != Vector2.INF and _body_tip != Vector2.INF:
+	if i in _int_list(seq.get("smear_at", [])) and tip != Vector2.INF and _body_tip != Vector2.INF:
 		_smear = {"a": _body_tip, "b": tip}
 		_smear_clock = 0.0
 	if anim_state == "dead" and i == seq.frames.size() - 1 and seq.frames.size() > 1:
@@ -1616,6 +1647,10 @@ func _tick_visual(delta: float) -> void:
 	_wind_time += delta
 	_smear_clock += delta
 	_impact = move_toward(_impact, 0.0, delta * 6.0)
+	if anim_state.begins_with("attack") or anim_state.begins_with("windup") or anim_state in ["cast", "hurt", "block"]:
+		_combat_clock = 0.0
+	else:
+		_combat_clock += delta
 	if is_inside_tree():
 		var x: float = global_position.x
 		if _last_x != INF:
@@ -1649,9 +1684,15 @@ func spawn_afterimage(col: Color, life: float = 0.08) -> void:
 	if _body_mesh.is_empty() or not is_inside_tree():
 		return
 	if _ghosts == null or not is_instance_valid(_ghosts):
+		# irmão (não filho): o nó do personagem não ganha filhos extras e o
+		# rastro fica atrás do corpo; some junto com o personagem
+		var host: Node = get_parent()
+		if host == null:
+			return
 		_ghosts = AfterimageLayer.new()
-		_ghosts.show_behind_parent = true
-		add_child(_ghosts)
+		host.add_child(_ghosts)
+		host.move_child(_ghosts, get_index())
+		tree_exiting.connect(_ghosts.queue_free)
 	_ghosts.add(get_global_transform() * _body_xform, _body_mesh, _body_tex, col, life)
 
 

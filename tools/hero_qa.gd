@@ -1,7 +1,14 @@
 extends Node2D
-## Prancha da Sophia: os estados do combate em pontos legíveis do tempo,
-## renderizada pelo próprio jogo. Verifica que `_hero_motion` tira o corpo do
-## neutro na esquiva, no dano e no bloqueio e salva shots/hero.png pra inspeção.
+## Prancha da Sophia (QA): cada estado do combate num ponto legível do tempo,
+## renderizada pelo próprio jogo. Com os QUADROS DESENHADOS (atlas
+## sophia_frames, docs/ANIMACAO.md) verifica:
+##  - todo estado resolve uma sequência com quadro válido (retângulo dentro do
+##    atlas, âncora finita, pé na linha do chão);
+##  - o corpo NÃO gira como cartão: rotação ≤ 0,12 rad, squash ≤ ±7%;
+##  - o movimento de reforço tem o sentido certo (esquiva inclina pra frente,
+##    dano recua e curva pra trás, morte termina no quadro deitado);
+##  - corrida não ganha empurrões extras (o quadro é que anima).
+## Salva shots/hero.png pra inspeção.
 var failures: int = 0
 
 func check(ok: bool, message: String) -> void:
@@ -16,11 +23,11 @@ func _ready() -> void:
 	await get_tree().process_frame
 	var p: ArtProfile = Bestiary.player_profile(GameContent.characters[0], 3, [])
 	check(p != null, "Perfil da Sophia ausente")
-	# [estado, anim_time] — o tempo escolhe o ponto mais legível de cada ação.
-	# Duas fileiras; a morte fica por último com folga (o corpo deita pra trás).
+	var db: Dictionary = CharacterArt.frame_db("sophia")
+	check(not db.is_empty(), "Atlas de quadros da Sophia ausente (rode tools/anim/build_frames.py)")
 	var rows := [
-		[["idle", 0.4], ["walk", 0.06], ["jump", 0.2], ["fall", 0.2], ["dodge", 0.06], ["dodge", 0.18], ["dodge", 0.29]],
-		[["block", 0.5], ["hurt", 0.03], ["attack_air", 0.25], ["attack_dive", 0.2], ["cast", 0.28], ["dead", 0.75]],
+		[["idle", 0.4], ["walk", 0.06], ["jump", 0.2], ["fall", 0.2], ["dodge", 0.06], ["dodge", 0.18], ["dodge_back", 0.15]],
+		[["block", 0.5], ["hurt", 0.03], ["attack_air", 0.25], ["attack_dive", 0.2], ["cast", 0.28], ["attack_heavy", 0.06], ["dead", 0.75]],
 	]
 	var cells: Array = []
 	for row in rows.size():
@@ -38,30 +45,44 @@ func _ready() -> void:
 		art.set_process(false)
 		art.scale = Vector2.ONE * 78.0 / (p.height * 1.19)
 		art.position = Vector2(spacing * (float(col) + 0.5), 128 + row * 176)
-		art.set_anim(state)
+		art.dodge_back = state == "dodge_back"
+		art.set_anim("dodge" if state == "dodge_back" else state)
 		art.anim_time = time
 		var m: Array = art._hero_motion()
-		check(m.size() == 5, "Formato do movimento: " + state)
-		var moved: bool = absf(m[0]) > 0.01 or absf(m[1]) > 0.01 or absf(m[2] - 1.0) > 0.01 or absf(m[3] - 1.0) > 0.01
-		if state in ["dodge", "hurt", "block", "dead", "cast", "attack_air", "attack_dive", "jump", "fall"]:
-			check(moved, "Sem movimento: %s (t=%.2f)" % [state, time])
+		check(m.size() == 6, "Formato do movimento: " + state)
+		check(absf(m[1]) <= CharacterArt.MAX_ROT + 0.001, "Cartão girando demais: %s rot=%.2f" % [state, m[1]])
+		check(absf(m[2] - 1.0) <= 0.0701 and absf(m[3] - 1.0) <= 0.0701, "Squash acima de 7%%: %s" % state)
+		if not db.is_empty():
+			var meta: Dictionary = db.meta
+			var seq_name: String = art._hero_seq(meta.states)
+			check(meta.states.has(seq_name), "Estado sem sequência: " + state)
+			var seq: Dictionary = meta.states[seq_name]
+			var idx: int = art._seq_index(seq, seq_name)
+			check(idx >= 0 and idx < seq.frames.size(), "Índice de quadro inválido: " + state)
+			var e: Dictionary = seq.frames[idx]
+			var fr: Dictionary = meta.frames[e.f]
+			var r: Array = fr.rect
+			check(r[0] >= 0 and r[1] >= 0 and r[0] + r[2] <= db.atlas.get_width() and r[1] + r[3] <= db.atlas.get_height(), "Quadro fora do atlas: " + e.f)
+			check(is_finite(float(e.anchor[0])) and is_finite(float(e.anchor[1])) and float(e.anchor[1]) > 0.0, "Âncora inválida: " + e.f)
+			if state == "dead":
+				check(String(e.f).contains("lying"), "Morte não termina deitada: " + e.f)
+			if state == "dodge_back":
+				check(seq_name == "dodge_back", "Esquiva pra trás sem quadro próprio")
 		if state == "dodge":
-			check(m[1] > 0.2 and m[3] < 0.9, "Esquiva não mergulha: t=%.2f" % time)
+			check(m[5] > 0.5, "Esquiva não inclina pra frente: t=%.2f" % time)
 		if state == "hurt":
-			check(m[0] < 0.0 and m[1] < 0.0, "Dano não recua")
+			check(m[0] < 0.0 and m[5] < 0.0, "Dano não recua")
 		if state == "block":
-			check(m[3] < 1.0 and m[1] < 0.0, "Bloqueio não agacha")
-		if state == "dead":
-			check(m[1] < -1.0, "Morte não tomba")
-		if state in ["idle", "walk"]:
-			check(not moved, "Estado com quadro próprio ganhou movimento extra: " + state)
+			check(m[3] < 1.0, "Bloqueio não assenta")
+		if state == "walk":
+			check(absf(m[0]) < 0.01 and absf(m[1]) < 0.01, "Corrida ganhou empurrão extra")
 		art.queue_redraw()
-		# linha do chão da célula
 		var floor_line := Line2D.new()
 		floor_line.width = 1.0
 		floor_line.default_color = Color(0.4, 0.5, 0.55, 0.5)
-		floor_line.add_point(art.position + Vector2(-spacing * 0.45, 0))
-		floor_line.add_point(art.position + Vector2(spacing * 0.45, 0))
+		var gy: float = CharacterArt.GROUND_Y * p.height / 44.0 * art.scale.y
+		floor_line.add_point(art.position + Vector2(-spacing * 0.45, gy))
+		floor_line.add_point(art.position + Vector2(spacing * 0.45, gy))
 		add_child(floor_line)
 		var label := Label.new()
 		label.position = Vector2(spacing * float(col) + 6, row * 176 + 4)
