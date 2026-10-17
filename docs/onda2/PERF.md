@@ -114,11 +114,12 @@ Leitura (mínimo de 3 rodadas, cache frio):
   Em CPU pura (headless): 1º inimigo 32 → 0 ms, 1ª morte da variante 50 → 0, nascer da variante 12 → 0.
 - Menores somem também (hit pesado 27 → 0, dodge perfeito 43 → 0, fase 2 de chefe 68 → 6...).
 - Sobra: `vfx_boss_death` 44 → 44 ms (fica de fora do prewarm porque sacode a câmera; acontece
-  com hit-stop e câmera lenta, então não aparece como travada) e ~26 ms no 1º golpe leve
-  (sem shader e sem textura: não atribuí).
+  com hit-stop e câmera lenta, então não aparece como travada) e ~25–35 ms no 1º golpe leve, só no
+  llvmpipe (CPU 0–4 ms; sem shader e sem textura). Tentei pré-desenhar o rastro (smear) com o
+  material de curvatura: não mudou; tirei. Não atribuí.
 - Valores negativos de "tex MB" = textura liberada no evento (normal).
 
-**O que o prewarm cobre** (`tools/perf/prewarm_proposta.gd`, ~120 linhas):
+**O que o prewarm cobre** (`tools/perf/prewarm_proposta.gd`, ~130 linhas):
 1. texturas de VFX (22 × 128 px) e as folhas `inhabitants` + `archons` (+ `yaldabaoth` no Rei/final),
    o `mesh_cache.res` e as texturas do boneco do Arconte do Éon — **segurando as referências**
    (`_warm_refs`) até a próxima fase;
@@ -131,10 +132,17 @@ Leitura (mínimo de 3 rodadas, cache frio):
    `spark_pickup`, `enemy_death`, `elite_death`, `boss_appear`, `boss_phase2`, `portal`,
    `projectile_trail`, `ImpactBurst`, `DamageNumber` (`boss_death` fica de fora: sacode a câmera).
 
-Tudo num nó `PrewarmStage` no centro da câmera, **alfa 0,01 e escala 0,25**, que some sozinho
-depois de 3 quadros desenhados. Sem som, sem tremor.
+Tudo num nó `PrewarmStage` **sobre a Sophia**, **alfa 0,01 e escala 0,25**, com
+`process_mode = ALWAYS`, que some sozinho depois de 3 quadros desenhados. Sem som, sem tremor.
 
-**Duas armadilhas que medi (e por isso o desenho é esse):**
+**Quatro armadilhas que medi (e por isso o desenho é esse):**
+- **Fora da tela não compila**: chamado no início do `Level._ready` (onde a integração pôs a
+  chamada), a câmera ainda não está posicionada; com o palco "no centro da câmera" ele caiu no
+  canto superior esquerdo, metade fora da tela, e a 1ª variante do Éon ainda engasgava. Ancorado
+  na Sophia (a câmera a segue), resolveu. Captura de depuração com o palco OPACO e por 400
+  quadros: `/home/user/caps/perf/dbg_stage/diag_f5.png`.
+- **O diálogo de abertura pausa a árvore**: sem `PROCESS_MODE_ALWAYS` o boneco articulado não é
+  montado e as partículas não emitem durante os 3 quadros.
 - **SubViewport invisível não serve**: desenhei tudo num SubViewport 32×32 e a 1ª morte ainda
   compilou a variante — o que compila lá não vale para a tela.
 - **Alfa < 0,007 o Godot descarta antes de desenhar** (não compila nada). Com 0,004 nada
