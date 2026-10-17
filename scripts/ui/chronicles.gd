@@ -1,6 +1,8 @@
 extends Control
 ## CRÔNICAS — o caderno das Estelas lidas. Lista as 18 entradas (trancadas
 ## mostram "???" e a dica de onde ficam); persistem entre runs (Gnosis).
+## Miniatura do afresco da Estela (Onda 3) no canto do painel de leitura, ao
+## lado do Éon e do título; trancada = pedra escura (sem spoiler).
 ## Cada entrada é um botão-linha FOCÁVEL: setas, W/S, D-pad e analógico andam
 ## (o foco do Godot faz o trabalho); Esc / B / Voltar → menu principal.
 ## Segurar ↑/↓ repete com atraso (QA L3): 1 passo no aperto, ~0,35 s parado,
@@ -11,6 +13,7 @@ const LIST_X := 22.0
 const LIST_Y := 66.0
 const ROW_H := 15.0
 const LIST_W := 214.0
+const PANEL_SIZE := Vector2(372, 292)   # painel de leitura (direita; vai até y 350)
 const REPEAT_DELAY := 0.35        # s segurando antes de começar a repetir
 const REPEAT_RATE := 0.08         # s entre passos repetidos
 
@@ -22,6 +25,9 @@ var _title: Label
 var _eon: Label
 var _body: Label
 var _source: Label
+var _thumb: Stela.ArtFrame
+var _panel: PanelContainer
+var _vbox: VBoxContainer
 var _hint_locked: Label
 var _back: Button
 var _hold_dir: int = 0            # direção segurada (-1 sobe, 1 desce, 0 nada)
@@ -88,22 +94,38 @@ func _ready() -> void:
 	var panel := PanelContainer.new()
 	panel.theme = CodexStyle.theme()
 	panel.position = Vector2(250, LIST_Y - 8)
-	panel.size = Vector2(372, 274)
+	panel.size = PANEL_SIZE
+	panel.clip_contents = true
 	hud.add_child(panel)
+	_panel = panel
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 4)
 	panel.add_child(vbox)
+	_vbox = vbox
+	# Cabeçalho: miniatura do afresco + Éon e título.
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 9)
+	vbox.add_child(top)
+	_thumb = Stela.ArtFrame.new()
+	_thumb.custom_minimum_size = Vector2(42, 40)
+	_thumb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	top.add_child(_thumb)
+	var tv := VBoxContainer.new()
+	tv.add_theme_constant_override("separation", 1)
+	tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tv.alignment = BoxContainer.ALIGNMENT_CENTER
+	top.add_child(tv)
 	_eon = Label.new()
 	_eon.add_theme_font_override("font", CodexStyle.display())
 	_eon.add_theme_font_size_override("font_size", 8)
 	_eon.add_theme_color_override("font_color", CodexStyle.MUTED)
-	vbox.add_child(_eon)
+	tv.add_child(_eon)
 	_title = Label.new()
 	_title.add_theme_font_size_override("font_size", 15)
 	_title.add_theme_color_override("font_color", CodexStyle.GOLD_HI)
 	_title.add_theme_font_override("font", CodexStyle.display())
 	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vbox.add_child(_title)
+	tv.add_child(_title)
 	var rule := CodexStyle.Rule.new()
 	rule.custom_minimum_size = Vector2(0, 7)
 	rule.color = Color(CodexStyle.GOLD, 0.7)
@@ -152,18 +174,52 @@ func _refresh() -> void:
 			b.add_theme_color_override(k, col)
 	var cur: Dictionary = _entries[_sel]
 	_eon.text = String(cur.eon).to_upper()
-	if Gnosis.is_unlocked(String(cur.id)):
+	var open_cur := Gnosis.is_unlocked(String(cur.id))
+	_thumb.locked = not open_cur
+	_thumb.texture = Stela.art_for(String(cur.id)) if open_cur else null
+	if open_cur:
 		_title.text = String(cur.title)
 		_body.text = "\n".join(PackedStringArray(cur.lines))
 		_body.visible = true
 		_hint_locked.text = ""
+		_hint_locked.visible = false
 		_source.text = "Fonte: %s" % String(cur.source)
+		_fit_body.call_deferred()
 	else:
 		_title.text = "???"
+		_body.add_theme_font_size_override("font_size", 12)
 		_body.text = ""
 		_body.visible = false          # a dica sobe pra logo abaixo do título
+		_panel.size = PANEL_SIZE
+		_hint_locked.visible = true
 		_hint_locked.text = "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler." % String(cur.hint)
 		_source.text = ""
+
+
+## Texto longo (Estelas de ~650 letras) não pode vazar do painel: a fonte do
+## corpo desce de 12 até 10 até o conteúdo caber (medido depois do layout).
+func _fit_body() -> void:
+	if _panel == null or not _body.visible:
+		return
+	var sb := _panel.get_theme_stylebox("panel")
+	var inner := PANEL_SIZE - (sb.get_minimum_size() if sb != null else Vector2.ZERO)
+	var w := inner.x
+	var sep := float(_vbox.get_theme_constant("separation"))
+	# Label com quebra automática não informa a altura quebrada no tamanho
+	# mínimo: mede pela fonte (cabeçalho + filete + corpo + fonte histórica).
+	var fixed := 40.0 + 7.0 + sep * 3.0
+	var flags := TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_ADAPTIVE
+	for fs in [12, 11, 10]:
+		var sfs := 10 if fs >= 11 else 9
+		var bf: Font = _body.get_theme_font("font")
+		var sf: Font = _source.get_theme_font("font")
+		var bh := bf.get_multiline_string_size(_body.text, HORIZONTAL_ALIGNMENT_LEFT, w, fs, -1, flags).y
+		var shh := sf.get_multiline_string_size(_source.text, HORIZONTAL_ALIGNMENT_LEFT, w, sfs, -1, flags).y
+		_body.add_theme_font_size_override("font_size", fs)
+		_source.add_theme_font_size_override("font_size", sfs)
+		if fixed + bh + shh + 10.0 <= inner.y:
+			break
+	_panel.size = PANEL_SIZE
 
 
 ## Repetição própria ao segurar (ver cabeçalho). O 1º passo vem do aperto.

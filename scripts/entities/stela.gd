@@ -8,6 +8,10 @@ class_name Stela
 ## Sophia no meio de um combo, o golpe leve é só golpe.
 ## Desenhada por código (obsidiana + inscrições em marfim + brilho de ouro
 ## enquanto ainda não foi lida). `entry` vem de `Gnosis.STELAS`.
+## Ilustração (Onda 3): cada Estela tem um afresco em `assets/stelae/<id>.png`
+## (recortado das folhas do GPT por assets/stelae/build_stelae.py), mostrado à
+## esquerda do texto no painel de leitura e como miniatura nas Crônicas
+## (`Stela.art_for(id)` + o Control `Stela.ArtFrame`).
 
 var entry: Dictionary = {}
 var _near: bool = false
@@ -118,6 +122,12 @@ func _enemy_near() -> bool:
 	return false
 
 
+## Ilustração da Estela `id` (null se não houver o arquivo).
+static func art_for(id: String) -> Texture2D:
+	var p := "res://assets/stelae/%s.png" % id
+	return load(p) if ResourceLoader.exists(p) else null
+
+
 ## Abre o painel de leitura; ao fechar, desbloqueia a Crônica (se inédita).
 func open() -> void:
 	_busy = true
@@ -209,12 +219,26 @@ class StelaPanel extends CanvasLayer:
 
 		var panel := PanelContainer.new()
 		panel.theme = CodexStyle.theme()
-		panel.custom_minimum_size = Vector2(540, 0)
+		panel.custom_minimum_size = Vector2(566, 0)
 		center.add_child(panel)
+
+		# Afresco à esquerda, texto à direita (sem ilustração: só o texto, como antes).
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
+		panel.add_child(row)
+		var tex := Stela.art_for(String(entry.get("id", "")))
+		if tex != null:
+			var art := Stela.ArtFrame.new()
+			art.texture = tex
+			art.custom_minimum_size = Vector2(142, 136)
+			art.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			row.add_child(art)
+		var text_w := 390.0 if tex != null else 540.0
 
 		var vbox := VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 5)
-		panel.add_child(vbox)
+		vbox.custom_minimum_size = Vector2(text_w, 0)
+		row.add_child(vbox)
 
 		var head := Label.new()
 		head.text = "ESTELA  ·  %s" % String(entry.get("eon", "Kenoma")).to_upper()
@@ -239,7 +263,7 @@ class StelaPanel extends CanvasLayer:
 		var lines: Array = entry.get("lines", [])
 		body.text = "\n".join(PackedStringArray(lines))
 		body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		body.custom_minimum_size = Vector2(500, 0)
+		body.custom_minimum_size = Vector2(text_w, 0)
 		body.add_theme_font_size_override("font_size", 11)
 		body.add_theme_color_override("font_color", CodexStyle.PAPER)
 		body.add_theme_constant_override("line_spacing", 2)
@@ -248,7 +272,7 @@ class StelaPanel extends CanvasLayer:
 		var src := Label.new()
 		src.text = "Fonte: %s" % String(entry.get("source", ""))
 		src.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		src.custom_minimum_size = Vector2(500, 0)
+		src.custom_minimum_size = Vector2(text_w, 0)
 		src.add_theme_font_size_override("font_size", 9)
 		src.add_theme_color_override("font_color", CodexStyle.MUTED)
 		vbox.add_child(src)
@@ -281,3 +305,39 @@ class StelaPanel extends CanvasLayer:
 
 	func _exit_tree() -> void:
 		PauseStack.pop(self)
+
+
+## Moldura do afresco da Estela: fundo azul-noite, a pintura inteira (proporção
+## mantida, centrada), filete de ouro duplo e cantoneiras. `locked` = ainda não
+## lida: pedra escura com o olho de ouro apagado (sem spoiler da imagem).
+class ArtFrame extends Control:
+	var texture: Texture2D:
+		set(v):
+			texture = v
+			queue_redraw()
+	var locked: bool = false:
+		set(v):
+			locked = v
+			queue_redraw()
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		var r := Rect2(Vector2.ZERO, size)
+		draw_rect(r.grow(1.5), Color(0, 0, 0, 0.55))
+		draw_rect(r, CodexStyle.INK_DEEP)
+		if texture != null and not locked:
+			var ts := texture.get_size()
+			var k := minf(size.x / ts.x, size.y / ts.y)
+			var ds := ts * k
+			draw_texture_rect(texture, Rect2((size - ds) * 0.5, ds), false)
+		else:
+			# pedra fechada: degradê escuro + o olho de ouro apagado
+			var c := size * 0.5
+			draw_circle(c, minf(size.x, size.y) * 0.28, Color(CodexStyle.GOLD, 0.05))
+			CodexStyle.draw_diamond(self, c, minf(size.x, size.y) * 0.08, Color(CodexStyle.GOLD_LO, 0.8))
+		draw_rect(r, Color(CodexStyle.GOLD, 0.9), false, 1.0)
+		draw_rect(r.grow(-2.5), Color(CodexStyle.GOLD_LO, 0.7), false, 0.6)
+		for p in [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)]:
+			CodexStyle.draw_diamond(self, p, 2.4, CodexStyle.GOLD_HI, Color(0, 0, 0, 0.6))
