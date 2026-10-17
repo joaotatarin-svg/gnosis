@@ -250,3 +250,47 @@ Numeração = posição na criaturas_folha.png (3×3, esq→dir, cima→baixo). 
 - `keyart_vertical_a.png` — 1024x1536 (2:3). Nota 8/10. Mesma cena recomposta; faixa de céu escuro no TOPO para o título (um pouco
   estreita — o título talvez precise sobrepor nuvens). Sem texto.
 - Observações: resolução nativa do ChatGPT; para a cápsula Steam (ex.: 3840x1240 / 600x900) precisa de upscale/recorte.
+
+## S11 — Corrida com cruzamento de pernas (pedido do animador)
+- Arquivo: `s11_run_cross_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32fd5-1254-83e9-993b-a2f7e95cfa44 (refs: 1_sophia_folha + s2_a)
+- Células: 0 contact_R · 1 pass · 2 contact_L · 3 pass · 4 contact_R · 5 pass · 6 contact_L · 7 pass (2 ciclos).
+- Nota: 8/10. Mesma escala/estilo da s2_a (h≈410–420). Pernas bem desenhadas (bota de perto x de longe distinguíveis, joelhos claros);
+  as passagens mostram o cruzamento. Cajado na mão de trás. O cristal de cada quadro fica perto da bota do quadro anterior (não se tocam).
+
+## S12 — Transição de morte
+- Arquivo APROVADO: `s12_die_trans_b.png` — 2×3. Rejeitada: `s12_die_trans_a.png` (no q5 ela caía p/ trás com a cabeça à ESQUERDA, quebrando a continuidade).
+  Mesmo chat da S11 (2 gerações).
+- Células: 0 struck (atingida em pé) · 1 stagger · 2 one_knee · 3 hand_ground · 4 topple (cabeça p/ direita) · 5 down (deitada).
+- Nota: 8/10. Sequência contínua 0→5, cajado escorregando e caindo ao lado; mesma escala.
+  struck encosta na metade da imagem (y≈524).
+
+## Resumo Fila 2
+- Aprovadas: portrait_sophia_a, portrait_npcs_a (alt. b), keyart_wide_a, keyart_vertical_a, s11_run_cross_a, s12_die_trans_b.
+- Gerações: 7 pedidos (8 imagens; 1 correção na S12). Nenhum aviso de limite.
+
+# CINEMÁTICAS (cards 1536x1024, sem texto, terço inferior calmo p/ legenda)
+Prólogo — chat: https://chatgpt.com/c/6ad3319f-2d74-83e9-84ca-57c9bfd7b136 (refs: 1_sophia_folha + painted/eons.png)
+- `cine_01_monada_a.png` — Mônada: fonte de luz branco-dourada infinita, halos concêntricos, sem figura. Terço inferior escuro. Nota 8.5.
+- `cine_02_eons_a.png` — Éons em pares: sizígias de luz de mãos dadas em arco ao redor da fonte, catedral de luz (Pleroma). Nota 8.5.
+- `cine_03_sophia_nuvem_a.png` — Sophia sozinha se inclina na borda da luz; da mão dela, uma nuvem de luz com um trono vago (sem o Demiurgo nítido); Éons ao fundo. Sophia reconhecível (cabelo prateado, marfim/ouro, sem cajado). Nota 8.
+- `cine_04_cego_a.png` — O Cego nasce: leão com corpo de serpente enrolado num trono escuro, coroa, chamas/brasas, solidão. A cegueira (olhos leitosos) quase não se lê em tamanho pequeno. Nota 8.
+- `cine_05_kenoma_a.png` — Kenoma: mundo-prisão de sete anéis/esferas concêntricos acorrentados, carcereiros sombrios nas bordas, luz branca distante no canto. Nota 8.
+- `cine_06_faisca_a.png` — A faísca acorda: Sophia deitada nas cinzas entre estátuas/mãos de barro com faíscas presas; uma faísca ciano no peito, cajado com cristal ao lado. Sophia pequena no quadro (legível em 640×360, mas pouco detalhe). Nota 8.
+Cenas — chat: https://chatgpt.com/c/6ad3341a-5d64-83e9-9381-c9f54cf7857d (refs: 1_sophia_folha + 9_rei_yaldabaoth + eons)
+- `cine_07_roubo_a.png` — O roubo: no salão dourado, os 7 anéis voam da Sophia (caída, braço estendido, cristal ciano) para a mão do Rei; a máscara branca cai revelando escuridão. Nota 9. (Sophia ocupa o meio-baixo; terço inferior é chão escuro, ok p/ legenda.)
+- `cine_08_descida_a.png` — Descida ao Centro: Sophia caindo de cabeça num abismo de cacos de luz, engrenagens lá embaixo, cajado com cristal. Nota 8.5. Terço inferior tem pedras escuras com algum detalhe (menos "calmo" que os outros, mas escuro).
+- `cine_09_anagnorise_a.png` — Anagnórise: Sophia ajoelhada abraça o Cego encolhido como criança, máscara quebrada ao lado, cajado com cristal no chão, luz suave de cima. Nota 9.
+Finais — chat: https://chatgpt.com/c/6ad33557-42c8-83e8-ab1d-2167215ba4aa (refs: 1_sophia_folha + cri_9 Adormecido + eons)
+- `cine_10_ascensao_a.png` — Ascensão: os Adormecidos sobem em colunas de luz dourada; Sophia por último, de costas/3-4, cajado erguido com cristal aceso. Nota 8.5. As pernas da Sophia chegam ao terço inferior (escuro).
+- `cine_11_ruptura_a.png` — Ruptura: mundo rachado por uma fenda de luz, Sophia de guarda na borda com o cajado fincado e o cristal aceso, cúpula ciano protegendo Adormecidos encolhidos. Nota 8.5.
+- `cine_12_semente_a.png` — Semente: Sophia ajoelhada planta uma semente de luz ciano; broto luminoso; cajado com cristal ao lado; Adormecidos começando a se mexer ao fundo. Nota 8.5.
+- Resumo cinemáticas: 12/12 aprovadas na 1ª geração (12 pedidos). Todas sem texto/marca d'água. Sophia reconhecível em 3, 6–12.
+
+## S13 — Corrida: poses intermediárias (in-betweens)
+- Arquivo APROVADO: `s13_run_between_b.png` — 2×4. Alternativa: `s13_run_between_a.png` (A/B do ChatGPT, muito parecida; h≈403–408).
+  Chat: https://chatgpt.com/c/6ad32fd5-1254-83e9-993b-a2f7e95cfa44 (mesmo da S11/S12; 1 pedido, 2 imagens)
+- Células: 0 R_pushoff (pé de trás saindo) · 1 R_knee_high · 2 R_reach (antes do contato) · 3 R_down (recebe o peso) ·
+  4 L_pushoff · 5 L_knee_high · 6 L_reach · 7 L_down.
+- Nota: 7.5/10. Mesma escala da s11 (h≈401–421) e mesmo estilo; pernas legíveis. Como em perfil as pernas D/E são quase simétricas,
+  a linha de baixo é parecida com a de cima (diferença está em qual perna fica à frente/sombreada). Encaixar entre os quadros da s11:
+  contact_R → R_down → R_pushoff(L)… — conferir no motor qual perna é qual.
