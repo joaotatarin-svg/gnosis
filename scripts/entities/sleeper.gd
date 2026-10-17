@@ -50,6 +50,9 @@ func _on_body_entered(body: Node) -> void:
 	_art.set_profile(p)
 	AoeNova.spawn(get_parent(), global_position + Vector2(0, -8), 0, 52.0, Color(1.0, 0.92, 0.55))
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -20), Color(1.0, 0.92, 0.55))
+	# A fala de quem acorda (legenda, sem pausar): gratidão, medo, recusa —
+	# o contrapeso moral do final Semente (ROTEIRO §5, gancho 5).
+	Gnosis.captions(Narrative.sleeper_line(screen))
 
 
 func _draw() -> void:
