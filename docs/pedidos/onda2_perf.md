@@ -1,20 +1,23 @@
 # Pedidos do agente de DESEMPENHO (Onda 2) a outros donos
 
 Detalhes, números e como reproduzir: `docs/onda2/PERF.md`. Os patches estão prontos e
-passam `git apply --check` na base `integracao/onda1`; foram validados numa cópia do
-projeto (validate.sh igual à base: só os 2 vermelhos conhecidos).
+passam `git apply --check` no `integracao/onda1` atual (dd25cdb); foram validados numa cópia
+dele (ver PERF.md §9).
 
-## 1. Técnico (ou o dono de `scripts/fx/vfx_library.gd` + `scripts/levels/level.gd`) — PRIORIDADE ALTA
-**Pré-aquecer o combate no load da fase** (fecha a pendência "engasgos até 193 ms no 1º golpe").
-- Aplicar: `git apply tools/perf/patches/vfx_prewarm.patch`
-  - acrescenta `VfxLibrary.prewarm(level)` no fim de `vfx_library.gd`;
-  - 1 linha em `level.gd::_ready`, logo depois de `_spawn_extras()`: `VfxLibrary.prewarm(self)`.
-- Se o `level.gd` tiver mudado e o patch não entrar: a linha é só essa; o corpo da função
-  é `tools/perf/prewarm_proposta.gd` (regenera os patches com `python3 tools/perf/gera_patch.py`).
-- Prova esperada depois de aplicar: `tools/perf/run.sh engasgos` → coluna "shaders" 0 em todos
-  os eventos e "tex MB" 0 (hoje: 3 variantes de shader e ~16 MB de textura no meio da luta).
-- Custo: ~160–190 ms a mais no load da fase (atrás do diálogo/card de abertura). Invisível
-  (alfa 0,01; captura em `/home/user/caps/perf/prewarm_antes_depois_f2.png`).
+## 1. Técnico / chefe (dono de `scripts/fx/vfx_library.gd`) — PRIORIDADE ALTA
+**O prewarm que já está em `integracao/onda1` (dd25cdb) não funciona** — medido: com ele, a
+1ª morte desmembrada, a 1ª esquiva e a 1ª variante do Éon ainda compilam shader no meio da luta,
+e ~16 MB de textura ainda sobem no 1º inimigo / 1ª morte da variante (picos de 137–244 ms no
+llvmpipe). Causas: alfa 0,004 (< 0,007 o Godot não desenha o item) e objetos de imitação que não
+geram as mesmas variantes (ver `docs/onda2/PERF.md` §5).
+- Aplicar: `git apply tools/perf/patches/vfx_prewarm.patch` (gerado sobre `integracao/onda1`):
+  troca só o corpo de `VfxLibrary.prewarm`; a chamada em `Level._ready` continua como está.
+- Se a base mudar: `python3 tools/perf/gera_patch.py --ref integracao/onda1` regenera
+  (o corpo vem de `tools/perf/prewarm_proposta.gd`).
+- Prova depois de aplicar: `tools/perf/run.sh engasgos` (rodar a sonda com `prewarm=0`, já que o
+  jogo pré-aquece sozinho) → colunas "shaders" e "tex MB" zeradas.
+- Custo: ~160–190 ms a mais no load da fase (CPU e llvmpipe), atrás do diálogo/card de abertura.
+  Invisível (alfa 0,01; captura `/home/user/caps/perf/prewarm_antes_depois_f2.png`).
 
 ## 2. Anim-Sophia (dono de `scripts/fx/character_art.gd`) — PRIORIDADE BAIXA (REVISAO #16)
 - Aplicar: `git apply tools/perf/patches/character_art_alloc.patch`

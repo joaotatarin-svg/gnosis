@@ -28,6 +28,7 @@ Não editei o jogo: medi e entreguei as correções como patch pronto para os do
 ## 3. Achados (tabela)
 | # | Achado | Evidência | Correção | Dono | Prioridade |
 |---|---|---|---|---|---|
+| P0 | **O `VfxLibrary.prewarm` que a integração pôs em `integracao/onda1` (dd25cdb) NÃO elimina os engasgos.** Usa alfa 0,004 — abaixo do limite de 0,007 em que o Godot nem desenha o item — e, mesmo com alfa 0,01 (testei), seus objetos sintéticos não acertam as mesmas variantes (gib com textura comum × recorte `AtlasTexture` com `filter_clip`; fantasma num `Sprite2D` × malha de triângulos) e não carrega as folhas | sonda na cópia de `integracao/onda1`: ainda 3 variantes e ~16 MB no meio da luta; picos 227/161/137/244/163 ms (llvmpipe) nos 5 eventos grandes | `vfx_prewarm.patch` **substitui** o corpo (a chamada no `Level` fica) | Técnico/chefe | ALTA |
 | P1 | **3 variantes de shader compiladas no meio da luta** (cache frio = 1ª sessão do jogador): 1º desmembramento (gib com `painted_clean` em retângulo recortado), 1ª esquiva (afterimage `painted_ghost`), 1ª criatura-variante do Éon (boneco articulado → shader de esqueleto 2D) | contagem do cache, 3/3 repetições | `VfxLibrary.prewarm` (patch) → **0** | Técnico | ALTA |
 | P2 | **~16 MB de textura carregados do disco e enviados à GPU no meio da luta**: folha `inhabitants` (8 MB) no 1º inimigo (carrega no 1º desenho), folha `archons` (7,2 MB) na 1ª morte de variante do Éon (os gibs recortam dela), boneco do Éon (1 MB), texturas de VFX (0,1–0,2 MB cada, 1º uso) | `RENDER_TEXTURE_MEM_USED` por evento | prewarm carrega e segura as referências → **0** | Técnico | ALTA |
 | P3 | O resto dos efeitos (partículas, aditivo, flashes, números, projétil, nova, portal...) **já compila no load** da fase: o Godot GLES3 compila a variante padrão quando o material nasce. Não eram a causa | 0 variantes nesses eventos | — | — | — |
@@ -141,9 +142,27 @@ depois de 3 quadros desenhados. Sem som, sem tremor.
   durante o diálogo/card de abertura. Captura: `/home/user/caps/perf/prewarm_antes_depois_f2.png`
   (esq. sem prewarm, dir. com — quadro 2 da fase; nada visível no centro).
 
+**O prewarm que já está em `integracao/onda1` (dd25cdb), medido** (cópia de `integracao/onda1`,
+cache frio, tela 3, 1 rodada; pico da 1ª vez / 2ª vez em ms no llvmpipe, variantes, MB de textura):
+
+| Evento | prewarm integrado (alfa 0,004) | o mesmo com alfa 0,01 |
+|---|---|---|
+| 1º inimigo | 227 / 32 · 0 · 8,0 MB | 156 / 40 · 0 · 8,0 MB |
+| 1º desmembramento | 161 / 34 · **1** | 194 / 36 · **1** |
+| 1ª esquiva | 137 / 32 · **1** | 206 / 30 · **1** |
+| 1ª variante do Éon | 244 / 29 · **1** · 1,0 MB | 195 / 28 · **1** · 1,0 MB |
+| 1ª morte da variante | 163 / 39 · 0 · 7,2 MB | 157 / 22 · 0 · 7,2 MB |
+
+Ou seja: só as texturinhas de VFX ficaram cobertas. As variantes dependem de detalhes do
+desenho (recorte de atlas, malha de triângulos, esqueleto), por isso a proposta usa os
+objetos REAIS do jogo e não imitações. `vfx_prewarm.patch` (gerado sobre `integracao/onda1`)
+troca só o corpo da função; a chamada no início do `Level._ready` continua; mantive a boa
+ideia de lá (número de dano 1234567890 = todos os glifos) e o `tell_glint` do Combate.
+
 **Prova ponta a ponta**: apliquei os patches numa cópia do projeto e rodei a sonda SEM o
 prewarm da sonda (o próprio `Level._ready` pré-aqueceu): 0 variantes e 0 MB de textura nos
-eventos de 1ª vez (`/home/user/caps/perf/patch_e2e_t3.json`).
+eventos de 1ª vez — na base antiga (`/home/user/caps/perf/patch_e2e_t3.json`) e na cópia de
+`integracao/onda1` (E2E_ONDA1).
 
 ## 6. Alocação por quadro (brief item 3 / REVISAO #16)
 `tools/perf/run.sh alloc` (µs por chamada, melhor de 5; variou 3–5× entre rodadas com a carga):
