@@ -23,6 +23,8 @@ extends Node
 ##          bloqueia nem faz parry. Padrão ia=1 = clássico (r1–r8).
 ##   sim=poca = SIMULA a proposta P3: poças hostis não somam — no máximo 1 tique
 ##          de "zona" a cada 0,7 s (o bot devolve a vida do tique extra e não conta).
+##   sim=poca3 = SIMULA a proposta P3 (números): poça hostil dura 3,0 s (era 5,0)
+##          e tem raio no máx. 40 (fase 2 era 48). O bot muda a poça ao nascer.
 ##   tempo=legado = reproduz o tempo das r1–r8 (bot no _process, botão solto
 ##          em tempo real, física com passo de vel/60 s). NÃO use para medir:
 ##          em vel 8 a física roda a 7,5 Hz e o dano sai ~2,4x maior (r8, 17/10).
@@ -43,6 +45,8 @@ func _ready() -> void:
 			w.shop_mode = a.substr(5)
 		elif a == "sim=poca":
 			w.sim_pool = true
+		elif a == "sim=poca3":
+			w.sim_pool3 = true
 		elif a == "tempo=legado":
 			w.legacy_timing = true
 		elif a.begins_with("ia="):
@@ -68,6 +72,7 @@ class BalanceWorker extends Node:
 	var out_base: String = "user://balance"
 	var ai_level: int = 1                # 1 = clássico (r1–r8); 2 = sai de poça e esquiva tiro
 	var legacy_timing: bool = false      # tempo=legado: física grossa das r1–r8 (vel 8 = passo de 0,13 s)
+	var sim_pool3: bool = false          # sim=poca3 (proposta P3, números)
 	var sim_pool: bool = false           # sim=poca (proposta P3)
 	var _zone_tick_t: float = -9.0
 	var _run_t: float = 0.0              # tempo de jogo total (s)       # último tique de poça contado (sim=poca)
@@ -368,6 +373,14 @@ class BalanceWorker extends Node:
 			_tag_projectile.call_deferred(n)
 		elif n is HazardZone:
 			_zones_hz.append(n)
+			if sim_pool3:
+				_shrink_pool.call_deferred(n)
+
+	## sim=poca3: aplica a proposta P3 na poça recém-criada (só ferramenta).
+	func _shrink_pool(hz: HazardZone) -> void:
+		if is_instance_valid(hz) and hz.hostile_to == "player" and hz.kind == "poison":
+			hz.duration = minf(hz.duration, 3.0)
+			hz.radius = minf(hz.radius, 40.0)
 
 	func _tag_projectile(pj: Projectile) -> void:
 		if not is_instance_valid(pj) or pj.target_team != "player":
