@@ -100,7 +100,20 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
 `blip_for_speaker(falante)` · `has_sfx/has_music/has_ambience` · `variants_of(nome)` · `set_volume(bus, linear)` ·
 `track_for_screen(tela)` · `ambience_for_screen(tela)` · `play_sfx_pitched(nome, tom, dB)` · `voice_theme(modo)` ·
 `cue(nome)` · `ring_note(i, devolvendo)` · `menu_track()` · `shutdown()` ·
-`play_sfx_later(nome, s, dB)` · `low_health_pulse()` (Onda 2b).
+`play_sfx_later(nome, s, dB)` · `low_health_pulse()` · `boss_track(éon)` · `boss_pending` (Onda 2b).
+
+### Silêncio antes do chefe e Centro (Onda 2b — NEURO R9, pedido da Encenação)
+
+- **Tela do Arconte** (e 3º encontro da Provação): ao chegar, a música do Éon sai em 0,6 s e a faixa de
+  chefe NÃO entra — fica só a ambiência. O stinger `boss_appear` (card de chefe / chefe nascendo) cai no
+  vazio e a faixa de chefe entra 0,3 s depois (fade 0,25 s; por baixo do ducking do card). Voltar da
+  pausa depois disso não refaz o silêncio; recomeçar a tela refaz. Rede de segurança: sem stinger em
+  25 s, a faixa entra. Tela 1 (Rei) e 68 (final) ficam com a Encenação.
+- **Morte do chefe** (`boss_die`): a música cai −30 dB em 150 ms, fica 1,6 s fora e volta em 1 s.
+- **Centro**: `track_for_screen()` devolve `""` (silêncio) no Centro enquanto nenhum caco voltou; voltar
+  da pausa (`PLAYING`) também não religa. `centro` entra no 1º caco (curva igual à do Level).
+- **Música de chefe por Arconte** (#40): `boss_track(éon)` usa `music/boss_<éon>.ogg` SE existir (opcional,
+  `OPTIONAL_MUSIC`); senão `boss`. Nenhuma instalada: as opções esperam o João (`boss_variants.py`).
 
 ### Avisos do combate e vida baixa (Onda 2b — NEURO R5 e R22)
 

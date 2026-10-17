@@ -259,6 +259,69 @@ func _run() -> void:
 	RunManager.run_active = keep_run
 	RunManager.current_screen = keep_screen
 
+	# (b9b) Silêncio antes do chefe (R9): na tela do Arconte a faixa de chefe
+	#       espera o stinger; entra ~0,3 s depois dele; voltar da pausa no meio
+	#       da luta não refaz o silêncio; a morte do chefe tira a música ~2 s.
+	var keep_run3: bool = RunManager.run_active
+	var keep_screen3: int = RunManager.current_screen
+	var keep_codex3: bool = CodexSession.active
+	CodexSession.active = false
+	RunManager.run_active = true
+	var archon := -1
+	for sc in range(2, RunManager.MAX_SCREEN + 1):
+		if RunManager.is_archon_screen(sc):
+			archon = sc
+			break
+	var eon_before := -1
+	for sc in range(archon - 1, 0, -1):
+		if not RunManager.is_boss_screen(sc) and not RunManager.is_center(sc):
+			eon_before = sc
+			break
+	RunManager.current_screen = eon_before
+	Audio._on_screen_changed(eon_before)
+	await _wait_real(0.1)
+	var before_track: String = Audio._playing_track
+	RunManager.current_screen = archon
+	Audio._on_screen_changed(archon)
+	await _wait_real(Audio.PRE_BOSS_FADE + 0.3)
+	var hushed_players := 0
+	for m in Audio._music:
+		if m.playing:
+			hushed_players += 1
+	var pend: String = Audio.boss_pending
+	await _wait_real(0.1)
+	Audio.play_sfx("boss_appear")
+	var appear_ms := Time.get_ticks_msec()
+	var still_pending_early: String = Audio.boss_pending
+	while Audio._playing_track != Audio.boss_track(RunManager.eon_index(archon)) and Time.get_ticks_msec() - appear_ms < 2000:
+		await get_tree().process_frame
+	var entry_ms := Time.get_ticks_msec() - appear_ms
+	check(before_track.begins_with("eon_") and hushed_players == 0 and pend == "boss" and still_pending_early == "boss"
+		and Audio._playing_track == "boss" and entry_ms >= int(Audio.BOSS_ENTRY_DELAY * 1000.0) - 20 and entry_ms < 900,
+		"R9: tela do Arconte (%d) — '%s' sai, %d player tocando antes do stinger, faixa '%s' entra %d ms depois do boss_appear" % [archon, before_track, hushed_players, pend, entry_ms])
+	Audio._on_state_changed(GameManager.State.PLAYING)          # voltar da pausa no meio da luta
+	await _wait_real(0.1)
+	check(Audio.boss_pending == "" and Audio._playing_track == "boss", "R9: voltar da pausa depois do stinger mantém a faixa de chefe (pendente '%s')" % Audio.boss_pending)
+	await _wait_real(0.1)
+	var k0 := Audio._temp_duck_db
+	Audio.play_sfx("boss_die")
+	await _wait_real(0.25)
+	await get_tree().process_frame
+	var k1 := Audio._temp_duck_db
+	await _wait_real(Audio.BOSS_KILL_HOLD + Audio.BOSS_KILL_OUT + 0.3)
+	var k2 := Audio._temp_duck_db
+	check(absf(k0) < 0.05 and k1 < Audio.BOSS_KILL_DB + 1.0 and absf(k2) < 0.05,
+		"R9: morte do chefe — música %.1f → %.1f → %.1f dB (some em 150 ms, volta ~2,6 s)" % [k0, k1, k2])
+	# Rede de segurança e troca de tela: o recomeço da tela refaz o silêncio.
+	Audio._on_screen_changed(archon)
+	var re_pending: String = Audio.boss_pending
+	check(re_pending == "boss" and Audio.boss_track(0) == ("boss_torpor" if Audio.has_music("boss_torpor") else "boss"),
+		"R9: recomeçar a tela do Arconte volta a esperar o stinger; boss_track sem variação instalada = 'boss'")
+	Audio._on_state_changed(GameManager.State.MENU)
+	RunManager.run_active = keep_run3
+	RunManager.current_screen = keep_screen3
+	CodexSession.active = keep_codex3
+
 	# (b10) Menu desfaz o que as cenas deixaram (tom, camadas).
 	Audio.set_music_layer_volume(0.2, "theme")
 	Audio.set_music_pitch(0.75, 0.0)
@@ -554,7 +617,8 @@ func _run() -> void:
 		for s in range(1, RunManager.MAX_SCREEN + 1):
 			var t: String = Audio.track_for_screen(s)
 			var silent_ok: bool = t == "" and RunManager.is_center(s) and not with_shard
-			if not music_names.has(t) and not silent_ok:
+			var optional_ok: bool = Audio.OPTIONAL_MUSIC.has(t) and Audio.has_music(t)
+			if not music_names.has(t) and not silent_ok and not optional_ok:
 				bad_tracks.append("tela %d (caco=%s) → '%s'" % [s, str(with_shard), t])
 	Progression.restored_rings.assign(keep_rr)
 	check(bad_tracks.is_empty(), "track_for_screen cobre todas as telas com faixa do catálogo (%s)" % str(bad_tracks))

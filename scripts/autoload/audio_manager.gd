@@ -88,7 +88,23 @@ const HEART_PULSE_DB := -6.0      # vinheta de vida baixa: bem por baixo (o arqu
 const HEART_PULSE_MIN_MS := 600   # nunca mais que ~1,6 batida/s, mesmo se o HUD chamar mais
 ## Faixas opcionais: tocam se o arquivo existir, sem ele o jogo usa a reserva.
 ## `menu` = tema do menu (opções por síntese aguardando o João; sem arquivo = `theme`).
-const OPTIONAL_MUSIC := ["menu"]
+## `boss_<éon>` = variação da música de chefe por Arconte (#40; opções geradas
+## por `tools/audio_synth/boss_variants.py`, aguardando o João; sem arquivo = `boss`).
+const OPTIONAL_MUSIC := ["menu", "boss_torpor", "boss_fome", "boss_corrente", "boss_silencio",
+	"boss_espelho", "boss_praga", "boss_coroa"]
+# Silêncio antes do chefe (NEURO R9): na tela do Arconte (e no 3º encontro da
+# Provação) a música do chefe NÃO entra ao chegar — a do Éon sai em 0,6 s e fica
+# só a ambiência; o stinger `boss_appear` (card de chefe) cai no vazio e a faixa
+# do chefe entra 0,3 s depois. Na morte do chefe a música some em 150 ms,
+# `boss_die` soa sozinho e ela volta ~2 s depois.
+const PRE_BOSS_FADE := 0.6
+const BOSS_ENTRY_DELAY := 0.3     # s entre o stinger e a faixa de chefe
+const BOSS_ENTRY_FADE := 0.25
+const BOSS_WAIT_MAX := 25.0       # rede de segurança: sem stinger em 25 s, a faixa entra mesmo assim
+const BOSS_KILL_DB := -30.0       # morte do chefe: a música quase some…
+const BOSS_KILL_IN := 0.15        # …em 150 ms,
+const BOSS_KILL_HOLD := 1.6       # fica fora enquanto o boss_die soa,
+const BOSS_KILL_OUT := 1.0        # e volta em 1 s (≈ 2,6 s ao todo)
 ## Todos os `cue` das falas (ROTEIRO §5) que `cue()` conhece. `wait_2s` é da UI
 ## (só é reconhecido, sem som). Ver `cue()`.
 const CUES := ["heartbeat", "fog_thickens", "king_emerges", "mask_lights", "mask_cracks", "king_sinks",
@@ -257,6 +273,11 @@ var _roubo_due_us: int = 0           # µs do corte agendado tema → `roubo` (0
 var _duck_scale: float = 1.0         # 1 = ducking de diálogo cheio; menor nas cenas musicais
 var _ring_note_ms: int = -100000     # último ring_note (a cena já tocou a gema: o sinal não repete)
 var _later: Array = []               # [µs, nome, dB]: SFX agendados por relógio real (ver _process)
+# --- silêncio antes do chefe (R9) ---
+var boss_pending: String = ""        # faixa de chefe esperando o stinger ("" = nada esperando)
+var _boss_due_us: int = 0            # µs em que a faixa de chefe entra (0 = não agendada)
+var _boss_wait_us: int = 0           # µs limite da espera (rede de segurança)
+var _boss_seen: bool = false         # o chefe já apareceu nesta visita da tela
 var _pulse_ms: int = -100000         # último low_health_pulse
 
 # --- memória pros ganchos por sinal ---
@@ -438,6 +459,7 @@ func _play(real_name: String, pitch: float, volume_db: float, world_pos: Vector2
 	p.pitch_scale = pitch
 	p.volume_db = volume_db
 	p.play()
+	_on_sfx_event(real_name)
 	return true
 
 
@@ -839,6 +861,10 @@ func _process(_delta: float) -> void:
 	if not _later.is_empty():
 		busy = true
 		_fire_later(now)
+	if boss_pending != "":
+		busy = true
+		if (_boss_due_us > 0 and now >= _boss_due_us) or (_boss_due_us == 0 and now >= _boss_wait_us):
+			_start_boss_track()
 	if _roubo_due_us > 0:
 		busy = true
 		if now >= _roubo_due_us:
@@ -958,8 +984,15 @@ func track_for_screen(screen: int) -> String:
 	if RunManager.is_king_screen(screen):
 		return "rei"
 	if RunManager.is_archon_screen(screen):
-		return "boss"
+		return boss_track(RunManager.eon_index(screen))
 	return "eon_" + EON_TRACKS[clampi(RunManager.eon_index(screen), 0, EON_TRACKS.size() - 1)]
+
+
+## Música de chefe do Arconte do Éon `eon` (0..6): `boss_<éon>` se o João
+## aprovar e o arquivo existir; senão a padrão, `boss`.
+func boss_track(eon: int) -> String:
+	var t: String = "boss_" + EON_TRACKS[clampi(eon, 0, EON_TRACKS.size() - 1)]
+	return t if has_music(t) else "boss"
 
 
 ## Faixa e ambiência da Provação: dois encontros no clima do Éon do Arconte
@@ -967,13 +1000,18 @@ func track_for_screen(screen: int) -> String:
 ## depende da fórmula de tela da CodexSession.
 func trial_track() -> String:
 	if CodexSession.stage >= 2:
-		return "boss"
+		return boss_track(CodexSession.boss_index)
 	return "eon_" + EON_TRACKS[clampi(CodexSession.boss_index, 0, EON_TRACKS.size() - 1)]
 
 
 func _play_trial_context() -> void:
 	_end_scene_music()
-	play_music(trial_track())
+	if CodexSession.stage >= 2:
+		_await_boss(trial_track())
+	else:
+		_boss_seen = false            # encontros 1–2: o chefe (3º) ainda vai aparecer
+		boss_pending = ""
+		play_music(trial_track())
 	var eon: String = EON_TRACKS[clampi(CodexSession.boss_index, 0, EON_TRACKS.size() - 1)]
 	play_ambience("amb_" + eon, AMB_ARCHON_DB if CodexSession.stage >= 2 else 0.0)
 
@@ -982,9 +1020,55 @@ func _play_run_context(screen: int) -> void:
 	_end_scene_music()
 	if RunManager.is_center(screen):
 		_update_center_music()
+	elif RunManager.is_archon_screen(screen):
+		_await_boss(track_for_screen(screen))
 	else:
 		play_music(track_for_screen(screen))
 	_update_ambience(screen)
+
+
+# --- Silêncio antes do chefe (NEURO R9) ------------------------------------
+
+## Tela de chefe: se o chefe ainda não apareceu nesta visita, a música atual sai
+## em 0,6 s e a do chefe fica ESPERANDO o stinger (`boss_appear`). Se já
+## apareceu (ex.: voltar da pausa no meio da luta), toca direto.
+func _await_boss(track: String) -> void:
+	if _boss_seen:
+		boss_pending = ""
+		play_music(track)
+		return
+	if boss_pending == track:
+		return                        # já esperando (contexto pedido 2×)
+	boss_pending = track
+	_boss_due_us = 0
+	_boss_wait_us = Time.get_ticks_usec() + int(BOSS_WAIT_MAX * 1000000.0)
+	current_track = track
+	if _playing_track != "" and _playing_track != track:
+		stop_music(PRE_BOSS_FADE)
+		current_track = track
+	_wake()
+
+
+func _start_boss_track() -> void:
+	var t := boss_pending
+	boss_pending = ""
+	_boss_due_us = 0
+	_boss_seen = true
+	if t != "" and not _shut_down:
+		play_music(t, true, 1.0, BOSS_ENTRY_FADE)
+
+
+## Ganchos de SFX com efeito na música (R9): o stinger solta a faixa de chefe
+## que esperava; a morte do chefe tira a música por ~2 s.
+func _on_sfx_event(real_name: String) -> void:
+	match real_name:
+		"boss_appear":
+			_boss_seen = true
+			if boss_pending != "" and _boss_due_us == 0:
+				_boss_due_us = Time.get_ticks_usec() + int(BOSS_ENTRY_DELAY * 1000000.0)
+				_wake()
+		"boss_die":
+			_start_temp_duck(BOSS_KILL_DB, BOSS_KILL_IN, BOSS_KILL_HOLD, BOSS_KILL_OUT)
 
 
 ## Centro (ROTEIRO §2, cena C): sem música até o 1º caco; depois `centro` entra
@@ -1003,6 +1087,8 @@ func _update_center_music() -> void:
 
 
 func _on_screen_changed(screen: int) -> void:
+	_boss_seen = false                # tela nova (ou recomeço): o chefe ainda não apareceu
+	boss_pending = ""
 	if CodexSession.active:
 		return                        # a Provação escolhe pelo estado (abaixo)
 	if RunManager.run_active:
@@ -1027,6 +1113,8 @@ func _on_state_changed(new_state: int) -> void:
 ## Menu: desfaz o que as cenas deixaram na música (tom, camadas, abaixada).
 func _reset_music_mods() -> void:
 	_end_scene_music()
+	boss_pending = ""
+	_boss_seen = false
 	_layer_db.clear()
 	_td_active = false
 	_temp_duck_db = 0.0
@@ -1062,6 +1150,8 @@ func menu_track() -> String:
 ## Em "roubo"/"sozinha" o diálogo abaixa a música só ~3 dB (a música É a cena).
 func voice_theme(mode: String) -> void:
 	_roubo_due_us = 0
+	if mode != "":
+		boss_pending = ""             # a cena manda na música
 	voice_theme_mode = mode
 	match mode:
 		"santuario":
