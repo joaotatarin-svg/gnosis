@@ -55,6 +55,9 @@ func set_profile(p: ArtProfile) -> void:
 	profile = p
 	painted = PaintedLibrary.character(p)
 	material = PaintedLibrary.material()
+	# Pinturas grandes exibidas a ~1/4: mipmap evita cintilar a borda (o
+	# BossPuppet, filho deste nó, herda o filtro).
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	if is_instance_valid(boss_puppet):
 		remove_child(boss_puppet)
 		boss_puppet.queue_free()

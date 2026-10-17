@@ -4,16 +4,38 @@ class_name PaintedLibrary
 static var textures: Dictionary = {}
 static var regions: Dictionary = {}
 static var shared_material: ShaderMaterial
+## Folhas com fundo cromático; cada uma tem versão limpa em `derived/`
+## (gerada por tools/anim/clean_sheets.py: alfa real, mesmas coordenadas).
+const KEYED_SHEETS := ["sophia", "archons", "yaldabaoth", "architecture", "inhabitants"]
+const DERIVED_DIR := "res://assets/painted/derived/"
 
+## Folha pintada. Prefere a DERIVADA (alfa real + mipmaps); se faltar, cai na
+## original com fundo magenta (o material então recorta no shader).
 static func sheet(file: String) -> Texture2D:
 	if not textures.has(file):
-		textures[file] = load("res://assets/painted/" + file + ".png")
+		var clean: String = DERIVED_DIR + file + ".png"
+		if ResourceLoader.exists(clean):
+			textures[file] = load(clean)
+		else:
+			textures[file] = load("res://assets/painted/" + file + ".png")
 	return textures[file]
 
+## true quando todas as folhas cromáticas têm versão derivada.
+static func has_clean_sheets() -> bool:
+	for f in KEYED_SHEETS:
+		if not ResourceLoader.exists(DERIVED_DIR + f + ".png"):
+			return false
+	return true
+
+## Material compartilhado das pinturas: só tinta/flash quando as folhas limpas
+## existem; senão o antigo recorte cromático (fallback).
 static func material() -> ShaderMaterial:
 	if shared_material == null:
 		shared_material = ShaderMaterial.new()
-		shared_material.shader = load("res://assets/shaders/painted_key.gdshader")
+		if has_clean_sheets():
+			shared_material.shader = load("res://assets/shaders/painted_clean.gdshader")
+		else:
+			shared_material.shader = load("res://assets/shaders/painted_key.gdshader")
 	return shared_material
 
 static func region(file: String, rect: Rect2) -> AtlasTexture:
