@@ -247,3 +247,13 @@ faixa `gifs/andar_bots_antes_depois.png`. Honesto: no glutão o rastejar de 6 qu
 
 **Bloco 4: criaturas cão, escudeiro, conjurador** (cão = trote A'', escala fixa 1,0 — a medida automática de quadrúpede dava 1,085 pela pose; escudeiro 0,984; conjurador 1,0) — `gifs/criaturas_andar_quadros_2.png`, `gifs/andar_criaturas2_depois.gif`. As 6 criaturas e os 7 bots têm intermediários desenhados.
 
+
+**Bloco 5: Sophia S16 (respiração) + S15 (recuperações).**
+- Parado = 8 quadros de respiração desenhados (S16, escala auto 1,000), laço a 5 qps.
+- Recuperações ao voltar pro parado (ação avulsa, corta se ela andar/atacar): **usadas** rec_light3, rec_cast,
+  rec_air (no lugar do pouso), rec_dodge, rec_hurt. **Descartadas** rec_light1, rec_light2 e rec_heavy: o
+  cajado troca de lado/altura em relação ao fim do golpe e à prontidão (conferido em
+  `gifs/sophia_s15_continuidade.png`: golpe → recuperação → prontidão). Menos quadros certos.
+- HeroQA: parado com 8 quadros; rec_light3 toca e termina; rec_light1 não volta.
+- O atlas da Sophia passou a 2048×4096 (80 quadros). GIFs: `gifs/sophia_parado_antes.gif` × `gifs/sophia_parado_depois.gif`,
+  quadros em `gifs/sophia_s15_s16_quadros.png`.

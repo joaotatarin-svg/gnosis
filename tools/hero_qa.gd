@@ -119,6 +119,26 @@ func _ready() -> void:
 			pa._tick_visual(1.0 / 60.0)
 		check(pa._hero_seq(db.meta.states) != "riposte", "Contra-ataque não termina")
 		pa.visible = false
+		# FLUIDEZ (S15/S16): parado = respiração de 8 quadros; voltando do 3º
+		# golpe leve pro parado toca a recuperação desenhada e ela termina
+		if db.meta.states.has("rec_light3"):
+			check(db.meta.states.idle.frames.size() >= 8, "Parado sem a respiração de 8 quadros (S16)")
+			var rc := CharacterArt.new()
+			add_child(rc)
+			rc.set_profile(p)
+			rc.set_process(false)
+			rc.combo_step = 3
+			rc.set_anim("attack")
+			rc.set_anim("idle")
+			check(rc._hero_seq(db.meta.states) == "rec_light3", "Recuperação do 3º golpe não toca (S15)")
+			for f in 40:
+				rc._tick_visual(1.0 / 60.0)
+			check(rc._hero_seq(db.meta.states) != "rec_light3", "Recuperação não termina")
+			rc.set_anim("attack")
+			rc.combo_step = 1
+			rc.set_anim("idle")
+			check(rc._hero_seq(db.meta.states) != "rec_light1", "rec_light1 (descartada) voltou a tocar")
+			rc.visible = false
 	await get_tree().process_frame
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw

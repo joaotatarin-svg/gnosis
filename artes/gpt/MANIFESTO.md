@@ -419,3 +419,14 @@ Sophia (chat https://chatgpt.com/c/6ad32fd5-1254-83e9-993b-a2f7e95cfa44):
   Ressalva: o cajado muda de mão/lado entre células (ex.: rec_cast vertical na frente; rec_light1 cruzado) — usar cada célula só com o golpe correspondente.
   q0 encosta na borda esquerda (x=2), a estocada q2 avança até x≈1248 (passa da célula, não toca).
 - `s16_idle_a.png` 2×4 — células: idle_0..idle_7 (ciclo contínuo de respiração).
+  Nota 8. Ciclo sutil e consistente (cabelo/faixas ondulam, corpo e cajado parados), escala idêntica entre células (h≈495–497).
+  O cristal encosta no topo da célula (y≈4 / 506) e as botas descem até y≈1003 — sem corte. Posição x varia até ~9 px entre células: alinhar pelos pés.
+
+Chefes (padrão C) `boss_<n>_<nome>_motion_a.png` 2×4: 0 walk_c0 (contato) · 1 walk_p0 (passagem) · 2 walk_c1 · 3 walk_p1 ·
+4 windup_1 (antecipação leve) · 5 windup_2 (antecipação máxima) · 6 strike_1 (impacto) · 7 strike_2 (follow-through).
+- `boss_1_athoth_motion_a.png` — padrão C (deslizar). Nota 8. Fiel ao athoth_c (perfil, halo de lado, trapos navy), mesma escala (h≈465–485),
+  orbes pequenos (soltos) no windup/strike. Linha de cima desce até y≈508 — separar por componente. Chat do Athoth refeito.
+- `boss_2_harmas_motion_a.png` — padrão C. Nota 8. Fiel (vista ~3/4 como o original), mesma escala (h≈440–470); veio com fundo MAGENTA
+  (o original era transparente — combinar no recorte). windup_2 punhos erguidos (frontal), strike com punhos no chão. Chat do Harmas.
+- `boss_3_galila_motion_a.png` — padrão C. Nota 8. Fiel ao galila_b (perfil), mesma escala (h≈410–446). As gaiolas-lanterna são vazadas
+  (magenta aparece por dentro — normal). strike_1 (estocada) vai de x≈708 a 1200, passa da célula sem tocar o vizinho. Chat da Galila.
