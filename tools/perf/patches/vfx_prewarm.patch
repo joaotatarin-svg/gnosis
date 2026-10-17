@@ -1,6 +1,6 @@
 --- a/scripts/fx/vfx_library.gd
 +++ b/scripts/fx/vfx_library.gd
-@@ -596,3 +596,134 @@
+@@ -596,3 +596,148 @@
  	p.scale_amount_curve = _scale_curve(0.3)
  	p.color = col
  	p.lifetime_randomness = 0.5
@@ -9,10 +9,10 @@
 +# ===========================================================================
 +# PRÉ-AQUECIMENTO (agente de Desempenho, Onda 2 — docs/onda2/PERF.md)
 +# ===========================================================================
-+## Chamado 1x no load da fase (Level._ready). No load, desenha por 3 quadros,
-+## no centro da câmera e QUASE TRANSPARENTE (alfa 0,01 em escala 0,25), cada
-+## combinação nó × material que o combate só usaria pela 1ª vez no meio da luta,
-+## e carrega (segurando a referência) as texturas da 1ª criatura/1º efeito.
++## Chamado 1x no load da fase (Level._ready). Desenha por 3 quadros, no centro
++## da câmera e QUASE TRANSPARENTE (alfa 0,01 em escala 0,25), o visual real
++## das criaturas da tela, os gibs, o afterimage, o esqueleto e os efeitos do
++## combate, e carrega (segurando a referência) as texturas da 1ª criatura/efeito.
 +## O driver compila as variantes de shader e sobe as texturas AGORA, e não no
 +## 1º golpe/1ª morte/1ª esquiva. Sem som, sem tremor, fora dos grupos do jogo.
 +## Medido: um SubViewport invisível NÃO serve (as variantes de lá não valem
@@ -68,28 +68,42 @@
 +	stage.global_position = cam.get_screen_center_position() if cam != null else Vector2(320, 180)
 +	var at := stage.global_position
 +	var col := Color(1.0, 0.85, 0.5)
-+	# 2a) folhas pintadas com o material das pinturas (rect + painted_clean)
++	# 2a) folhas pintadas com o material das pinturas (rect + painted_clean),
++	#     na escala em que aparecem no jogo (~1/5: usa os mesmos mipmaps)
 +	for t in _warm_refs:
 +		if t is Texture2D:
-+			var s := Sprite2D.new()
-+			s.texture = t
-+			s.material = PaintedLibrary.material()
-+			s.scale = Vector2.ONE * 0.02
-+			stage.add_child(s)
-+	# 2b) gib: o 1º desmembramento (textura recortada + painted_clean)
-+	var part := {
-+		"pts": PackedVector2Array([Vector2(-4, -4), Vector2(4, -4), Vector2(4, 4), Vector2(-4, 4)]),
-+		"col": Color.WHITE, "kind": "painted", "size": Vector2(8, 8), "flip": 1.0,
-+		"tex": PaintedLibrary.region("inhabitants", Rect2(0, 0, 64, 64)),
-+	}
-+	Gib.burst(stage, at, [part], 1.0, at.y + 9999.0, Vector2.ZERO, col, Color.BLACK)
-+	# 2c) afterimage da esquiva (painted_ghost em malha de triângulos). A camada
-+	#     é top_level (coordenadas de MUNDO): o alfa vai na cor da cópia.
++			var spr := Sprite2D.new()
++			spr.texture = t
++			spr.material = PaintedLibrary.material()
++			spr.scale = Vector2.ONE * 0.8
++			stage.add_child(spr)
++	# 2b) as criaturas desta tela: o VISUAL real (CharacterArt, sem Enemy: fora
++	#     do grupo "enemy", sem física/IA) — material próprio, folha, e o boneco
++	#     articulado da variante do Éon — e o 1º desmembramento de cada uma
++	#     (gibs reais, recortes da folha + painted_clean).
++	var types: Array = []
++	for id in Bestiary.types_for_screen(screen):
++		if not id in types:
++			types.append(id)
++	for id in types:
++		var prof = Bestiary.get_type(id).get("profile", null)
++		if prof == null:
++			continue
++		var art := CharacterArt.new()
++		stage.add_child(art)
++		art.set_profile(prof)
++		var parts: Array = art.gib_parts()
++		if not parts.is_empty():
++			Gib.burst(stage, at, parts, 1.0, at.y + 9999.0, Vector2.ZERO, col, Color.BLACK)
++	# 2c) afterimage da esquiva (painted_ghost em malha de triângulos, sobre o
++	#     atlas da Sophia). A camada é top_level (coordenadas de MUNDO): o alfa
++	#     vai na cor da cópia.
 +	var ghosts := CharacterArt.AfterimageLayer.new()
 +	stage.add_child(ghosts)
-+	var tex: Texture2D = PaintedLibrary.sheet("inhabitants")
++	var db: Dictionary = CharacterArt.frame_db("sophia")
++	var tex: Texture2D = db.atlas if not db.is_empty() else PaintedLibrary.sheet("inhabitants")
 +	var mesh: Dictionary = CharacterArt.grid_mesh("prewarm", Rect2(0, 0, 64, 64), Vector2(32, 64), Vector2(tex.get_width(), tex.get_height()))
-+	ghosts.add(Transform2D(0.0, Vector2(0.1, 0.1), 0.0, at), mesh, tex, Color(0.55, 0.85, 1.0, PREWARM_ALPHA * 2.0), 0.5)
++	ghosts.add(Transform2D(0.0, Vector2(0.25, 0.25), 0.0, at), mesh, tex, Color(0.55, 0.85, 1.0, PREWARM_ALPHA * 2.0), 0.5)
 +	# 2d) boneco articulado (Skeleton2D deforma Polygon2D: shader de esqueleto)
 +	var sk := Skeleton2D.new()
 +	sk.name = "Sk"
@@ -101,7 +115,7 @@
 +	sk.add_child(bone)
 +	stage.add_child(sk)
 +	var poly := Polygon2D.new()
-+	poly.texture = puppet_tex if puppet_tex != null else tex
++	poly.texture = puppet_tex if puppet_tex != null else PaintedLibrary.sheet("inhabitants")
 +	poly.polygon = PackedVector2Array([Vector2(-6, -6), Vector2(6, -6), Vector2(6, 6), Vector2(-6, 6)])
 +	poly.uv = PackedVector2Array([Vector2(0, 0), Vector2(32, 0), Vector2(32, 32), Vector2(0, 32)])
 +	stage.add_child(poly)

@@ -13,6 +13,7 @@ extends Node
 ## load da fase, ANTES de medir — prova de que a correção funciona sem editar o jogo.
 ## Para medir de verdade a 1ª vez, apague antes o cache de shaders do Godot
 ## (user://shader_cache) e o do driver (MESA_SHADER_CACHE_DISABLE=true) — o run.sh faz.
+## Diagnóstico: PERF_DIAG=<pasta> imprime o cache e salva capturas dos 1os quadros.
 
 func _ready() -> void:
 	AudioServer.set_bus_mute(0, true)   # ferramenta NUNCA toca som (pedido do dono)
@@ -137,13 +138,11 @@ class HitchWorker extends Node:
 			lv.set_process(false)
 			_pl_start = pl.global_position
 			return
-		if OS.has_environment("PERF_DIAG") and _frame - _level_frame in [1, 2, 3, 5, 10, 30]:
+		if OS.has_environment("PERF_DIAG") and _frame - _level_frame in [1, 2, 3, 4, 5, 6, 10, 30]:
 			var st := lv.get_node_or_null("PrewarmStage")
-			if st != null and st is Node2D:
-				var cam := lv.get_viewport().get_camera_2d()
-				print("DIAG stage pos=%s vis=%s mod=%s cam=%s camcenter=%s pl=%s" % [st.global_position, st.is_visible_in_tree(), st.modulate, cam, cam.get_screen_center_position() if cam else Vector2.ZERO, pl.global_position])
-				lv.get_viewport().get_texture().get_image().save_png("/home/user/caps/perf/diag_f%d.png" % (_frame - _level_frame))
-			print("DIAG f+%d stage=%s filhos=%d ghost_mat=%s cache_diff=%s" % [_frame - _level_frame, st != null, st.get_child(0).get_child_count() if st != null and st.get_child_count() > 0 else -1, CharacterArt.AfterimageLayer.ghost_material != null, _cache_diff(_cache_open, _cache_files())])
+			# captura (para provar que o palco do prewarm não aparece)
+			lv.get_viewport().get_texture().get_image().save_png(OS.get_environment("PERF_DIAG").path_join("diag_f%d.png" % (_frame - _level_frame)))
+			print("DIAG f+%d palco=%s cache_diff=%s" % [_frame - _level_frame, st != null, _cache_diff(_cache_open, _cache_files())])
 		match _phase:
 			"warm":
 				if _frame - _level_frame >= WARM:
