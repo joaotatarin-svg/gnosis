@@ -33,6 +33,14 @@ var _end_x: float = 1720.0        # parede fixa da direita
 var _zone_walls: Array = []       # paredes móveis da zona trancada
 var _cam_locked: bool = false     # câmera presa na zona (restaurar ao destrancar)
 var _ready_done: bool = false
+# DESFECHO ÚNICO da tela (REVISAO #1): vitória (tela/chefe vencido) OU morte
+# (volta ao checkpoint) — nunca as duas. Quem SELA primeiro manda. A vitória
+# sela na hora; a morte só sela quando acaba a queda (DEATH_GRACE s de jogo):
+# se o chefe/a tela cair nessa janela (golpe em voo, veneno, Esfera), conta a
+# vitória e a Sophia se levanta ali mesmo com 1 de vida.
+var _resolved: bool = false
+var _death_pending: bool = false  # caiu; a morte ainda não selou o desfecho
+const DEATH_GRACE := 1.5          # segundos de JOGO (timer não corre pausado)
 
 @onready var spawns: Node2D = $Spawns
 @onready var player: Player = $Player
@@ -304,6 +312,9 @@ func _lock_zone(c: float) -> void:
 	_set_camera_limits(c - ZONE_HALF, c + ZONE_HALF)
 	_cam_locked = true
 	Audio.play_sfx("zone_lock")
+	# Misericórdia oculta (Combate) recomeça a cada zona trancada.
+	if player and player.health and player.health.has_method("reset_mercy"):
+		player.health.call("reset_mercy")
 
 
 func _unlock_zone() -> void:
@@ -348,7 +359,7 @@ func _start_wave() -> void:
 			var fb := FinalBattle.new()
 			fb.name = "FinalBattle"
 			add_child(fb)
-			fb.won.connect(_win)
+			fb.won.connect(_on_final_won)
 			fb.start(self, enemy_scene, spawns.get_children())
 		return
 	if enemy_scene == null or wave_index >= waves.size():
@@ -409,12 +420,16 @@ func _on_enemy_defeated(e) -> void:
 	if wave_index >= waves.size():
 		_on_zone_cleared()
 	else:
-		await get_tree().create_timer(0.8).timeout
+		await get_tree().create_timer(0.8, false).timeout
 		if is_inside_tree():
 			_start_wave()
 
 
 func _on_screen_cleared() -> void:
+	if _resolved:
+		return                     # a morte já selou o desfecho desta tela
+	_resolved = true
+	_rescue_if_fallen()            # caiu junto com o chefe: a vitória vale
 	if not RunManager.run_active:
 		SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
 		return
@@ -500,6 +515,15 @@ func _restore_echo(boss_id: String) -> void:
 			return
 
 
+## As duas formas caíram juntas (FinalBattle.won): mesmo desfecho único.
+func _on_final_won() -> void:
+	if _resolved:
+		return
+	_resolved = true
+	_rescue_if_fallen()
+	_win()
+
+
 func _win() -> void:
 	RunManager.best_screen = maxi(RunManager.best_screen, screen)
 	RunManager.clear_saved_run()   # o run acabou de verdade — "Continuar" some
@@ -521,25 +545,66 @@ func _on_player_died() -> void:
 	# Fora de run (cena de teste direto): fim simples, como era.
 	if not RunManager.run_active:
 		SaveManager.save_game()
-		await get_tree().create_timer(1.3).timeout
+		await get_tree().create_timer(1.3, false).timeout
+		if not is_inside_tree():
+			return
 		GameManager.end_title = "Você caiu no Kenoma"
 		GameManager.end_subtitle = "Chegou até a Tela %d." % screen
 		SceneManager.change_scene("res://scenes/ui/EndScreen.tscn")
 		return
-	# CHECKPOINT: a morte não pega. Algo te recompõe — antes do roubo é a Voz
-	# (o carcereiro precisa da chave viva), depois são os próprios cacos.
-	# Custo: parte das faíscas escorre na queda.
+	if _resolved:
+		# A tela já foi vencida (o chefe caiu antes, no mesmo quadro, ou o golpe
+		# final ainda estava no ar): a queda não desfaz a vitória.
+		_rescue_if_fallen()
+		return
+	# A queda: a morte só sela o desfecho quando ela acaba. Timer de JOGO (não
+	# corre com o mundo pausado) e ligado a este nó (some com a tela).
+	_death_pending = true
+	get_tree().create_timer(DEATH_GRACE, false).timeout.connect(_commit_death)
+
+
+## Fim da queda: se nada venceu a tela nesse meio-tempo, a morte manda.
+## CHECKPOINT: a morte não pega. Algo te recompõe — antes do roubo é a Voz
+## (o carcereiro precisa da chave viva), depois são os próprios cacos.
+## Custo: parte das faíscas escorre na queda.
+func _commit_death() -> void:
+	if not is_inside_tree() or not _death_pending:
+		return
+	_death_pending = false
+	if _resolved:
+		return
+	_resolved = true
 	RunManager.deaths_this_run += 1
 	var lost := int(Progression.orbs * 0.2)
 	if lost > 0:
 		Progression.add_orbs(-lost)
 	SaveManager.save_game()
-	await get_tree().create_timer(1.5).timeout
+	await DialogueBox.play(Narrative.death_revive(screen, RunManager.deaths_this_run, lost)).finished
 	if not is_inside_tree():
 		return
-	await DialogueBox.play(Narrative.death_revive(screen, RunManager.deaths_this_run, lost)).finished
 	Audio.play_sfx("revive")
 	RunManager.respawn_at_checkpoint()
+
+
+## A Sophia caída numa tela já vencida se levanta ali mesmo, com 1 de vida
+## (sem contar a morte, sem perder faíscas). Usa `player.revive(hp)` se o
+## Combate expuser; senão, levanta pelo estado público do Player.
+func _rescue_if_fallen() -> void:
+	_death_pending = false
+	if player == null or player.health == null or not player.health.is_dead():
+		return
+	if player.has_method("revive"):
+		player.call("revive", 1)
+	else:
+		player.health.current_health = 1
+		player.health.health_changed.emit(player.health.current_health, player.health.max_health)
+		player.state = Player.State.IDLE
+		player.velocity = Vector2.ZERO
+		player.invuln_timer = maxf(player.invuln_timer, 1.2)
+	if GameManager.state == GameManager.State.GAME_OVER and not (RunManager.run_active and RunManager.is_final(screen)):
+		GameManager.set_state(GameManager.State.PLAYING)
+	Audio.play_sfx("revive")
+	VfxLibrary.dodge_perfect(self, player.global_position + Vector2(0, -20))
 
 
 func _unhandled_input(event: InputEvent) -> void:
