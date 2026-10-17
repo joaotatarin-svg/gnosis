@@ -17,6 +17,15 @@ uniform float cloth_amp = 0.0;         // px da folha
 uniform vec2 texel = vec2(0.0005);
 uniform float dissolve : hint_range(0.0, 1.0) = 0.0;
 uniform vec4 glow_color : source_color = vec4(1.0, 0.9, 0.6, 1.0);
+// CONTORNO DE LUZ (rim) na cor da luz do Éon: separa os inimigos escuros do
+// fundo escuro. rim_amt ≈ 0,3 parado, mais forte na preparação; rim_px = raio
+// em texels do atlas (borda interna da silhueta, sem sair dela).
+uniform vec4 rim_color : source_color = vec4(0.8, 0.9, 1.0, 1.0);
+uniform float rim_amt = 0.0;
+uniform float rim_px = 2.5;
+// saturação (1 = original): criaturas da família ainda sem arte própria saem
+// dessaturadas + tinta da criatura, para não serem miniaturas do Arconte
+uniform float sat_mul = 1.0;
 
 varying vec2 body_pos;                 // posição no corpo (0..1 de altura), pra o ruído
 varying vec4 vert_col;                 // cor do vértice, sem a textura
@@ -54,6 +63,20 @@ void fragment() {
 		}
 	}
 	vec4 c = texture(TEXTURE, uv);
+	if (sat_mul != 1.0) {
+		float l = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+		c.rgb = mix(vec3(l), c.rgb, sat_mul);
+	}
+	if (rim_amt > 0.0 && c.a > 0.05) {
+		// quanto o pixel está na BORDA: alfa dele menos o menor alfa ao redor
+		float mn = 1.0;
+		for (int i = 0; i < 8; i++) {
+			float a = float(i) * 0.785398;
+			mn = min(mn, texture(TEXTURE, uv + vec2(cos(a), sin(a)) * texel * rim_px).a);
+		}
+		float edge = clamp(c.a - mn, 0.0, 1.0);
+		c.rgb += rim_color.rgb * edge * rim_amt;
+	}
 	if (dissolve > 0.0) {
 		float n = vnoise(body_pos * 18.0) * 0.7 + vnoise(body_pos * 47.0) * 0.3;
 		n = mix(n, 1.0 - clamp(body_pos.y * -1.0, 0.0, 1.0), 0.25);

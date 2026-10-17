@@ -31,9 +31,12 @@ func _ready() -> void:
 	for id in ["colosso","rei_final"]:
 		var s: Dictionary = Bestiary.get_type(id)
 		entries.append({"name":id,"profile":s.profile,"style":s.style})
-	for id in ["glutao","pretoriano"]:
-		var c: Dictionary = Bestiary.get_type(id)
-		entries.append({"name":id+" (criatura)","profile":c.profile,"style":c.style})
+	# boneco em escala de criatura: glutão (2 camadas de braço do Harmas) e
+	# pretoriano (lâmina do Armupiel). Os bots têm arte própria agora; o QA
+	# monta o boneco do Arconte nessa escala à parte (puppet_idx).
+	for pair in [["glutao", 1], ["pretoriano", 6]]:
+		var c: Dictionary = Bestiary.get_type(String(pair[0]))
+		entries.append({"name":String(pair[0])+" (criatura)","profile":c.profile,"style":c.style,"puppet_idx":int(pair[1])})
 	await get_tree().process_frame
 	var args := OS.get_cmdline_user_args()
 	var mode: String = args[0] if args.size() > 0 else "check"
@@ -57,6 +60,17 @@ func _make(entry: Dictionary, parent: Node) -> CharacterArt:
 	parent.add_child(art)
 	art.set_profile(entry.profile)
 	art.set_process(false)
+	if art.boss_puppet == null and entry.has("puppet_idx"):
+		# bot de Éon com arte própria: o jogo não monta mais o boneco do Arconte,
+		# mas o QA continua testando o boneco dele na escala de criatura
+		var d: Dictionary = PaintedLibrary.character(Bestiary.bosses[int(entry.puppet_idx)].profile).duplicate()
+		d["puppet"] = int(entry.puppet_idx)
+		var bp := BossPuppet.new()
+		art.add_child(bp)
+		bp.configure(d)
+		bp.scale = Vector2(-1 if d.flip else 1, 1) * art.profile.height * 1.3 / 100.0
+		bp.position.y = CharacterArt.GROUND_Y * art.profile.height / 44.0
+		art.boss_puppet = bp
 	return art
 
 

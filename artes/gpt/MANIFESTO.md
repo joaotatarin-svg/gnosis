@@ -322,3 +322,71 @@ Chat: https://chatgpt.com/c/6ad33822-6c1c-83e9-9539-4ac389a72382 (refs: painted/
 
 ## Resumo Fila 4
 - Aprovadas: s14_parry_a, stelae_1_a, stelae_2_a, stelae_3_a (alt. b), menu_bg_a. 6 pedidos (7 imagens). Nenhum aviso de limite.
+
+# FILA 5
+
+## Cego pequeno (anagnórise, tela 68)
+- Arquivo: `cego_pequeno_a.png` — 2×3 (células 512×512), 1 geração. Chat das cenas: https://chatgpt.com/c/6ad3341a-5d64-83e9-9381-c9f54cf7857d (design do cine_09)
+- Células: 0 curled (abraça os joelhos, máscara caída ao lado — só aqui) · 1 tremble (encolhe mais) · 2 look_up (rosto cego p/ cima) ·
+  3 reach (mão estendida p/ direita) · 4 lifted (braços p/ cima, como criança) · 5 nestled (encostado de lado, olhos fechados).
+- Nota: 8/10. Figura frágil, cabelo grisalho, olhos leitosos/vendados, restos do manto marfim/ouro rasgado grandes demais; perfil p/ direita.
+  Fundo magenta limpo (885 px quase-magenta).
+- Observações: a linha de baixo está um pouco maior (h≈410–450) que a de cima (h≈330–390, poses agachadas) — conferir escala no recorte;
+  o manto do q3 encosta na borda esquerda (x=0); os braços erguidos do q4 sobem até y≈498 (perto da linha de cima, sem tocar).
+
+# FILA 6 — Bots de Éon (servos dos Arcontes; 2×4: idle_0 · walk_0 · walk_1 · walk_2 · windup · strike · hurt · death)
+
+## Bot 1 — Sonâmbulo (servo de Athoth)
+- Arquivo: `bot_1_sonambulo_a.png` — 1 geração. Chat: https://chatgpt.com/c/6ad37d01-a368-83e9-9723-f3937a9c2469 (ref: 1_athoth_torpor)
+- Nota: 8/10. Encapuzado navy com argolas douradas e halo pequeno (claramente da família de Athoth), olhos fechados, braços à frente,
+  pés descalços; windup/strike com orbe violeta pequeno (componente solto no strike). Perfil p/ direita. death = desmoronado no chão.
+
+## Bot 2 — Glutão (servo de Harmas)
+- Arquivo: `bot_2_glutao_a.png` — 1 geração. Chat: https://chatgpt.com/c/6ad37d8e-2090-83e9-8e3d-db4dc1408e45 (ref: 2_harmas_fome)
+- Nota: 7.5/10. Perfil p/ direita, baixo e inchado, pele vermelha, placas enferrujadas, elmo com chifres, boca dentada no ventre.
+  Ressalva: ainda lembra MUITO o Harmas (versão atarracada) — a silhueta mais baixa/redonda ajuda a distinguir, mas a paleta/elmo são iguais.
+  windup (boca da barriga escancarada), strike (bote de barriga), hurt, death (de costas).
+
+## Bot 3 — Carcereiro (servo de Galila)
+- Arquivo: `bot_3_carcereiro_a.png` — 1 geração. Chat: https://chatgpt.com/c/6ad37e1b-3ce0-83e9-845f-6f1c2f63aa4d (ref: 3_galila_corrente)
+- Nota: 8/10. Perfil p/ direita, magro e curvado, ferro escuro + trapos marfim (família Galila), chaves douradas na cintura, corrente com gancho.
+  windup (corrente girando acima da cabeça), strike (corrente arremessada reta), hurt, death.
+- Observações: a corrente do strike passa da célula (até x≈935, entra na coluna do hurt) mas não toca o vizinho — recortar por componente,
+  não por grade; o arco da corrente do windup sobe até y≈508.
+
+## Bot 4 — Bibliotecário Mudo (servo de Yabel)
+- Arquivo: `bot_4_mudo_a.png` — 1 geração. Chat: https://chatgpt.com/c/6ad37eb7-70cc-83e9-b59f-7be3113a3b08 (ref: 4_yabel_silencio)
+- Nota: 8/10. Perfil p/ direita, escriba curvado de máscara pálida (boca costurada), diadema dourado, manto navy com correntes,
+  faixas de pergaminho, pena na mão, rolos flutuando. windup (anel fino de silêncio), strike (onda fina + rolo voando), hurt, death.
+- Observações: os rolos flutuantes e a onda são componentes SOLTOS (o QA contou 11 peças) — agrupar com o corpo mais próximo no recorte.
+
+## Bot 5 — Reflexo (servo de Astaphaios)
+- Arquivo: `bot_5_reflexo_a.png` — 1 geração. Chat: https://chatgpt.com/c/6ad37f44-d9f0-83e9-8370-0cd4f655a7b1 (ref: 5_astaphaios_espelho)
+- Nota: 8/10. Humanoide esguio de vidro espelhado prateado com rachaduras douradas, rosto liso, lâmina curva de vidro; perfil p/ direita.
+  windup agachado, strike estocada/corte, hurt = salto p/ trás, death = estilhaçando em cacos (muitos componentes soltos).
+- Observação: o espelho reflete um pouco do magenta (tons rosados no corpo) — conferir o despill no recorte.
+
+## Bot 6 — Portador de Esporos (servo de Belias)
+- Arquivo: `bot_6_esporos_a.png` — 1 geração. Chat: https://chatgpt.com/c/6ad37fcf-5e20-83e8-97f1-a4b9028063d5 (ref: 6_belias_praga)
+- Nota: 8/10. Corcunda bípede de pele verde-acinzentada, espinhos e cogumelos na corcunda (família Belias), garras; perfil p/ direita.
+  windup (corcunda inchando), strike (nuvem de esporos esverdeada PEQUENA + garra), hurt, death (de bruços numa poça verde).
+- Observação: a nuvem do strike chega a ~8 px do quadro do hurt (x 864 vs 872) — não toca, mas é justo.
+
+## Bot 7 — Pretoriano da Coroa (servo de Armupiel)
+- Arquivo: `bot_7_pretoriano_a.png` — 1 geração. Chat: https://chatgpt.com/c/6ad3805b-dcc8-83e8-a61a-38b34fe02115 (ref: 7_armupiel_coroa)
+- Nota: 8/10. Guarda compacto de armadura dourada gravada e tabardo navy com estrelas, elmo com 3 pontas, BROQUEL grande à frente
+  (lado direito), lança curta; perfil p/ direita. windup lança acima do ombro, strike estocada por cima do escudo, hurt, death sobre o escudo.
+  Fundo limpo (51 px quase-magenta).
+
+## Bot 2 — Glutão REFEITO
+- Arquivo APROVADO: `bot_2_glutao_b.png` — 2×4. Mesmo chat do Glutão (https://chatgpt.com/c/6ad37d8e-2090-83e9-8e3d-db4dc1408e45).
+  1ª tentativa de refação foi BLOQUEADA pelo ChatGPT ("pode violar diretrizes sobre violência" — o prompt falava em pele translúcida com veias,
+  piercings e mordida); reformulei como criatura estilizada sem gore e passou. 2 pedidos, 1 imagem.
+- Nota: 8/10. Silhueta NOVA: criatura-saco baixa, curvada/de quatro, sem armadura nem elmo, pele rosa-avermelhada inchada, braços finos e
+  longos, cabeça careca pequena, bocarra dentada no ventre (assinatura), argolas e corrente de ouro sujo (paleta do Harmas). Mais baixa que
+  humano (h≈265–275 andando). windup (empina, boca escancarada), strike (bote baixo), hurt, death (murcho de lado).
+- `bot_2_glutao_a.png` fica como versão antiga (muito parecida com o Harmas).
+
+## Resumo Fila 6
+- Aprovadas: bot_1_sonambulo_a, bot_2_glutao_b, bot_3_carcereiro_a, bot_4_mudo_a, bot_5_reflexo_a, bot_6_esporos_a, bot_7_pretoriano_a.
+- 9 pedidos (8 imagens; 1 recusa por diretriz de violência). Nenhum aviso de limite.

@@ -40,6 +40,9 @@ func _ready() -> void:
 		"shader_cmp": await _shader_cmp()
 		"npc_board": await _npc_board()
 		"cego_board": await _cego_board()
+		"rim_board": await _rim_board()
+		"weapon_board": await _weapon_board()
+		"bot_board": await _bot_board()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -345,6 +348,121 @@ func _npc_board() -> void:
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://npc_board.png")
+	get_tree().quit()
+
+
+## Contorno de luz dos inimigos (#30): sobre o fundo escuro de Torpor,
+## Silêncio e Centro, cada linha = um Éon; à esquerda SEM contorno, à direita
+## COM (parado e preparando).
+func _rim_board() -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	var rows := [[0, ["sonambulo", "larva"]], [3, ["mudo", "invocador"]], [7, ["servo", "canino"]]]
+	for r in rows.size():
+		var eon: int = rows[r][0]
+		var bg := Sprite2D.new()
+		bg.texture = SceneryLibrary.layer(eon, "far")
+		bg.centered = false
+		bg.region_enabled = true
+		var tex_h: float = float(bg.texture.get_height())
+		bg.region_rect = Rect2(0, tex_h * 0.35, bg.texture.get_width(), tex_h * 0.45)
+		bg.scale = Vector2.ONE * 1280.0 / float(bg.texture.get_width())
+		bg.position = Vector2(0, r * 240)
+		bg.modulate = Color(0.75, 0.75, 0.8)
+		add_child(bg)
+		CharacterArt.rim_override = eon
+		var col: int = 0
+		for rim_on in [false, true]:
+			for id in rows[r][1]:
+				for st in ["idle", "windup"]:
+					var art := CharacterArt.new()
+					add_child(art)
+					art.set_profile(Bestiary.get_type(id).profile)
+					art.rim_enabled = rim_on
+					var sc: float = 150.0 / (art.profile.height * 1.3)
+					art.scale = Vector2(-sc, sc)
+					art.position = Vector2(80 + col * 160, r * 240 + 215) - Vector2(0, CharacterArt.GROUND_Y * art.profile.height / 44.0 * sc)
+					art.set_process(false)
+					art.set_anim(st)
+					art.pose_progress = 0.8 if st == "windup" else -1.0
+					for f in 20:
+						art._process(1.0 / 60.0)
+					art.modulate = Color.WHITE
+					col += 1
+			_label(("COM contorno" if rim_on else "SEM contorno") + " · Éon %d" % eon, Vector2(10 + (0 if not rim_on else 640), r * 240 + 6))
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://rim_board.png")
+	CharacterArt.rim_override = -1
+	get_tree().quit()
+
+
+## Bots de Éon (#7): para cada um, o Arconte (referência), o bot ANTES
+## (miniatura dos quadros do Arconte) e DEPOIS (arte própria, ou o interino
+## dessaturado/tingido enquanto a folha não chega), parado e preparando.
+func _bot_board() -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	RenderingServer.set_default_clear_color(Color("3a4450"))
+	var bots := [["sonambulo", "arconte_sono"], ["glutao", "arconte_fome"], ["carcereiro", "arconte_corrente"], ["mudo", "arconte_silencio"],
+		["reflexo", "arconte_espelho"], ["esporos", "arconte_praga"], ["pretoriano", "arconte_coroa"]]
+	for b in bots.size():
+		var cx: float = 92.0 + b * 182.0
+		var boss_p: ArtProfile = Bestiary.get_type(String(bots[b][1])).profile
+		var bot_p: ArtProfile = Bestiary.get_type(String(bots[b][0])).profile
+		var cells := [["ARCONTE", boss_p, "idle", false], ["antes", bot_p, "idle", true], ["depois", bot_p, "idle", false], ["depois", bot_p, "windup", false]]
+		for i in cells.size():
+			var art := CharacterArt.new()
+			add_child(art)
+			art.set_profile(cells[i][1])
+			if cells[i][3]:
+				# antes: os quadros do Arconte em escala de criatura, sem paleta própria
+				art._boss_db = CharacterArt.frame_db("bosses/" + BossPuppet.NAMES[["arconte_sono", "arconte_fome", "arconte_corrente", "arconte_silencio", "arconte_espelho", "arconte_praga", "arconte_coroa"].find(String(bots[b][1]))])
+				art.painted["family"] = false
+			var sc: float = (0.55 if i == 0 else 1.0) * 1.6
+			art.scale = Vector2(sc, sc)
+			var gy: float = [160.0, 330.0, 500.0, 680.0][i]
+			art.position = Vector2(cx, gy) - Vector2(0, CharacterArt.GROUND_Y * art.profile.height / 44.0 * sc)
+			art.set_process(false)
+			art.set_anim(String(cells[i][2]))
+			art.pose_progress = 0.8 if cells[i][2] == "windup" else -1.0
+			for f in 20:
+				art._process(1.0 / 60.0)
+			art.modulate = Color.WHITE
+			if b == 0:
+				_label(String(cells[i][0]), Vector2(4, gy - 150))
+		_label(String(bots[b][0]), Vector2(cx - 40, 4))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://bot_board.png")
+	get_tree().quit()
+
+
+## Progressão da arma (#46): a Sophia do nível 1 ao 5, parada, golpeando e
+## lançando magia (ponta do cajado, rastro e bracelete).
+func _weapon_board() -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	RenderingServer.set_default_clear_color(Color("1b232b"))
+	var states := [["idle", 0.4], ["attack_heavy", 0.06], ["cast", 0.2]]
+	for lvl in range(1, 6):
+		for s in states.size():
+			var p: ArtProfile = Bestiary.player_profile(GameContent.characters[0], lvl, [])
+			var art := CharacterArt.new()
+			add_child(art)
+			art.set_profile(p)
+			art.weapon_level_override = lvl
+			var sc: float = 200.0 / (p.height * 1.19)
+			art.scale = Vector2.ONE * sc
+			art.position = Vector2(110 + (lvl - 1) * 250 + (s - 1) * 60, 225 + s * 235) - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0 * sc)
+			art.set_process(false)
+			art.set_anim(String(states[s][0]))
+			for f in int(float(states[s][1]) * 60.0):
+				art._process(1.0 / 60.0)
+		_label("ARMA nível %d" % lvl, Vector2(60 + (lvl - 1) * 250, 8))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://weapon_board.png")
 	get_tree().quit()
 
 

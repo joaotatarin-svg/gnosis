@@ -1,0 +1,99 @@
+{
+ "_doc": "Bot de Éon glutao (servo de harmas) — arte própria, substitui a miniatura do Arconte. Folha bot_2_glutao_b (2x4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt, death). Tamanho em tela = o da família antiga (camada do boneco do Arconte).",
+ "group": "creatures",
+ "sheet": "artes/gpt/bot_2_glutao_b.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_0",
+  "walk_0",
+  "walk_1",
+  "walk_2",
+  "windup",
+  "strike",
+  "hurt",
+  "death"
+ ],
+ "old_body": "assets/painted/derived/puppets/harmas_body.png",
+ "old_flip": true,
+ "kind": "biped",
+ "body_px": 220,
+ "anchors": {
+  "death": "lying"
+ },
+ "anchor_fix": {},
+ "inbetween": {
+  "w1": [
+   "walk_0",
+   "walk_1",
+   1
+  ],
+  "w2": [
+   "walk_1",
+   "walk_2",
+   1
+  ],
+  "w3": [
+   "walk_2",
+   "walk_0",
+   1
+  ]
+ },
+ "flex": {},
+ "hem_wave": 0.0,
+ "states": {
+  "idle": {
+   "frames": [
+    "idle_0"
+   ]
+  },
+  "walk": {
+   "frames": [
+    "walk_0",
+    "walk_0-walk_1_50",
+    "walk_1",
+    "walk_1-walk_2_50",
+    "walk_2",
+    "walk_2-walk_0_50"
+   ],
+   "cycle_bodies": 0.9
+  },
+  "windup": {
+   "frames": [
+    "windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "recover": {
+   "frames": [
+    "strike",
+    "idle_0"
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ },
+ "size_fix": 0.8
+}

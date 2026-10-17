@@ -1,0 +1,102 @@
+{
+ "_doc": "Bot de Éon mudo (servo de yabel) — arte própria, substitui a miniatura do Arconte. Folha bot_4_mudo_a (2x4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt, death). Tamanho em tela = o da família antiga (camada do boneco do Arconte).",
+ "group": "creatures",
+ "sheet": "artes/gpt/bot_4_mudo_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_0",
+  "walk_0",
+  "walk_1",
+  "walk_2",
+  "windup",
+  "strike",
+  "hurt",
+  "death"
+ ],
+ "old_body": "assets/painted/derived/puppets/yabel_body.png",
+ "old_flip": true,
+ "kind": "spirit",
+ "body_px": 220,
+ "anchors": {
+  "death": "lying"
+ },
+ "anchor_fix": {},
+ "inbetween": {
+  "w1": [
+   "walk_0",
+   "walk_1",
+   1
+  ],
+  "w2": [
+   "walk_1",
+   "walk_2",
+   1
+  ],
+  "w3": [
+   "walk_2",
+   "walk_0",
+   1
+  ]
+ },
+ "flex": {
+  "cloth_top": 0.5,
+  "cloth_amp": 1.5
+ },
+ "hem_wave": 1.0,
+ "states": {
+  "idle": {
+   "frames": [
+    "idle_0"
+   ]
+  },
+  "walk": {
+   "frames": [
+    "walk_0",
+    "walk_0-walk_1_50",
+    "walk_1",
+    "walk_1-walk_2_50",
+    "walk_2",
+    "walk_2-walk_0_50"
+   ],
+   "loop": true,
+   "fps": 7.0
+  },
+  "windup": {
+   "frames": [
+    "windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "recover": {
+   "frames": [
+    "strike",
+    "idle_0"
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ }
+}

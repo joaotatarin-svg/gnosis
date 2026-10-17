@@ -169,3 +169,36 @@ Prova: `gifs/npcs_estados.png` (AnimQA `-- npc_board`).
 ## O Cego pequeno (cena D)
 
 Folha `artes/gpt/cego_pequeno_a.png` (2×3) → receita `tools/anim_bosses/recipes/cego_pequeno.json` (grupo `npcs`, linha de baixo × 0,92 para igualar a escala; sem pintura antiga, o `boss_frames.py` agora aceita isso) → `assets/painted/derived/npcs/cego_pequeno_frames.*`. Nó pronto: `scripts/fx/cego_pequeno.gd` (`class_name CegoPequeno`), origem no chão, ~22 px de mundo na escala 1 (33 px na escala 1,5 da cena), respiração, tremor em surtos, contorno pálido para ler no escuro e o halo quente do `glow`; sem atlas cai no desenho antigo. Ligação na cena: Pedido 7.
+
+## #30 Leitura dos inimigos escuros — contorno de luz do Éon
+
+`painted_boss.gdshader` ganhou um contorno interno (rim) aditivo: borda da silhueta (alfa do pixel −
+menor alfa num raio de 4 texels) × cor × intensidade. No `CharacterArt`, todo inimigo por quadros
+(chefes, família, criaturas; NPCs e Sophia não) usa a cor `glow` do Éon atual
+(`SceneryLibrary.look(RunManager.eon_index(tela))`, só leitura) com intensidade **0,32** e **0,64 na
+preparação** (soma ao contorno do telegrafo). `rim_enabled` desliga por personagem.
+Prancha (AnimQA `-- rim_board`): `gifs/contorno_inimigos_antes_depois.png` (Torpor, Silêncio, Centro;
+esquerda sem, direita com; parado e preparando) e o zoom `gifs/contorno_inimigos_zoom.png`.
+
+## #46 Progressão da arma visível na Sophia (níveis 1–5, sem arte nova)
+
+`CharacterArt._draw_weapon_glow`: no cristal do cajado (ponta medida por quadro no atlas) halo em camadas
+que cresce e esquenta por nível (ciano → branco-dourado), pulso; nível 3+ cintilação em cruz; 4+ motes
+orbitando; 5 anel dourado. Smear do cajado mais denso/quente por nível e com faíscas no 3+. Nível lido de
+`Progression.weapon_level` (só leitura; `weapon_level_override` para QA). As marcas antigas em arco
+(desenhadas fora do lugar com os quadros) ficam só na reserva das 6 poses.
+Limitações: o **bracelete não brilha** — não há posição do braço medida por quadro (estimar dava brilho
+flutuando fora do corpo); na **magia** a "ponta" medida é o orbe da mão livre (maior mancha ciano), então o
+halo engrossa o feitiço, não o cristal. Prancha: `gifs/arma_niveis_1a5.png` (AnimQA `-- weapon_board`:
+parada, golpe forte, magia × níveis 1→5).
+
+## #7 Bots de Éon (deixam de ser miniaturas dos Arcontes)
+
+- **Arte própria** (folhas `bot_<n>_<id>` do produtor → receitas `tools/anim_bosses/recipes/bot_<id>.json`, grupo
+  `creatures`, tamanho = o da família antiga): **os 7** — sonâmbulo, glutão, carcereiro, mudo, reflexo, esporos (corcunda bípede: `size_fix` 1,35 e `fit_override` pé no chão), pretoriano. `PaintedLibrary` passa a
+  usar `creatures/bot_<id>`; os 7 ids **saíram do mapa `families`** (sem atlas, caem na pintura única das criaturas pelo tipo de corpo). Glutão usa a folha **_b** (criatura-saco de quatro, `size_fix` 0,8). O PuppetQA continua testando o boneco do Harmas/Armupiel em escala de criatura montado à parte (`puppet_idx`).
+- **Interino** só para os parentes sem folha (alado, fantasma, cornudo):
+  quadros do Arconte com saturação × 0,45 + tinta da cor da criatura. Honesto: a silhueta continua a do
+  Arconte (auréola/coroa) — só a arte própria resolve; ficam pequenos (escala da criatura).
+- Prancha `gifs/bots_antes_depois.png` (AnimQA `-- bot_board`: Arconte a 55% · antes · depois parado · depois preparando).
+- Gerador das receitas: `tools/anim_bosses/mk_bot_recipes.py` (lê `C:\gnosis-wt\_gpt\out\bot_<n>_<id>_*.png`).

@@ -175,6 +175,7 @@ def build(name: str, use_rife: bool = True) -> None:
 		fit = {"body_frac": 1.0, "foot_gap": 0.0, "dx": 0.0, "rect_px": [0, 0]}
 	# correção de tamanho (silhueta nova com asas/coroa mais altas que a antiga)
 	fit["body_frac"] = round(fit["body_frac"] * float(R.get("size_fix", 1.0)), 5)
+	fit.update(R.get("fit_override", {}))      # ex.: {"foot_gap": 0} quando a silhueta nova pisa no chão
 	ref = R.get("ref", "idle_0")
 	ref_m = measure(raw[ref][0])
 	ref_body_src = ref_m["foot_y"] - ref_m["top"]
