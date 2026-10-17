@@ -21,7 +21,7 @@ var _edges: Array = []
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.75
+	dmg_scale = 0.65
 	keep_dist = Vector2(30.0, 80.0)
 	gap_by_phase = [0.85, 0.75, 0.65]
 	escape_hits = 3
@@ -82,7 +82,7 @@ func _build_moves() -> Dictionary:
 	# SALTO FAMINTO: some para o alto, a sombra persegue, cai em cima. Também
 	# é a resposta a quem cola nele (escape).
 	var salto := {"id": "salto", "kind": "leap", "anim": "slam", "wind": 0.7, "strike": 1.5, "recover": 1.2,
-		"unblock": true, "dmg": 1.1, "land_r": 64.0, "waves": 0, "rmin": 0.0, "rmax": 9999.0, "w": 0.8, "cd": 7.0, "aa": true}
+		"unblock": true, "dmg": 0.9, "land_r": 64.0, "waves": 0, "rmin": 0.0, "rmax": 9999.0, "w": 1.0, "cd": 5.5, "aa": true}
 	var salto2 := salto.duplicate()
 	salto2.id = "salto2"
 	salto2.waves = 2

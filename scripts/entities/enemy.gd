@@ -832,6 +832,10 @@ func _prune_minions() -> void:
 ## Cérebro do chefe (scripts/entities/bosses/*): decide golpes, fases e arena.
 ## null = inimigo comum (ou chefe sem script: cai no legado de 2 fases).
 var brain: BossBrain = null
+## Sequência de morte de chefe, passo a passo (para a arte/encenação ouvir):
+## 0 impacto (hitstop + câmera lenta) · 1 cambaleia (quadro hurt) · 2 colapso
+## (quadros de morte) · 3 pausa (silêncio) · 4 desintegração (defeated + gibs).
+signal boss_dying(step: int)
 ## Limiares de fase (fração da vida) — o HUD pode desenhar os marcadores.
 var phase_marks: Array = [0.5]
 
@@ -878,7 +882,7 @@ func _enter_phase(n: int) -> void:
 	phase = n
 	estate = EState.STAGGER
 	attack_timer = 0.9 if brain == null else BossBrain.PHASE_ROAR
-	attack_hitbox.deactivate()
+	attack_hitbox.set_deferred("monitoring", false)   # chamado dentro do sinal de acerto
 	attack_hitbox.scale = Vector2.ONE
 	_tint_base = Color(1, 1, 1, 1)
 	Juice.shake(0.7 + 0.15 * float(n - 2))
@@ -1120,6 +1124,10 @@ func stagger() -> void:
 
 
 func _on_died() -> void:
+	# chefes6: a morte de chefe vira um MOMENTO (BossBrain.death_sequence); no fim
+	# ela chama _on_died de novo e o caminho normal (recompensa, defeated, gibs) segue.
+	if brain != null and not revivable and brain.hold_death():
+		return
 	if estate == EState.DEAD:
 		return
 	estate = EState.DEAD

@@ -18,7 +18,7 @@ var _clones: Array = []
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.8
+	dmg_scale = 0.65
 	keep_dist = Vector2(50.0, 110.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 4

@@ -182,7 +182,7 @@ func chase(delta: float) -> bool:
 		dir = 0.0
 	var spd: float = e.move_speed * (0.5 if e.slow_timer > 0.0 else 1.0)
 	e.velocity.x = dir * spd + e._separation()
-	if _gap_t <= 0.0:
+	if _gap_t <= 0.0 and not _partner_busy():
 		var m := _pick(dist, _player_height(pl))
 		if not m.is_empty():
 			_start(m)
@@ -455,6 +455,34 @@ func _on_land(_m: Dictionary) -> void:
 	pass
 
 
+## Batalha dupla: a outra forma (FinalBattle liga). Uma ataca de cada vez —
+## justiça: a Sophia nunca lê dois telegrafos ao mesmo tempo.
+var partner: BossBrain = null
+
+
+## Batalha final: a forma se refez (`me`) ou a outra se refez — fase da luta.
+func revived(n: int, me: bool) -> void:
+	if me:
+		_dead = false
+		_dying = -1
+		_airborne = false
+		mv = {}
+		_chain.clear()
+		_hit_times.clear()
+	if n > phase and not _dead:
+		set_phase(n)
+	else:
+		e.phase = phase
+
+
+func busy() -> bool:
+	return e != null and is_instance_valid(e) and e.estate in [Enemy.EState.WINDUP, Enemy.EState.STRIKE]
+
+
+func _partner_busy() -> bool:
+	return partner != null and is_instance_valid(partner) and partner.busy()
+
+
 ## Golpe de repulsão padrão (quem não definiu o seu): pancada em volta de si.
 func _add_default_escape() -> void:
 	if not _find(escape_id).is_empty():
@@ -476,7 +504,7 @@ func _crowded() -> bool:
 func stun(t: float) -> void:
 	_self_stagger = true
 	_chain.clear()
-	e.attack_hitbox.deactivate()
+	e.attack_hitbox.call_deferred("deactivate")
 	e.attack_hitbox.scale = Vector2.ONE
 	e.estate = Enemy.EState.STAGGER
 	e.attack_timer = t
@@ -616,7 +644,7 @@ func hold_death() -> bool:
 	for n in _spawned.duplicate():
 		if is_instance_valid(n) and n is BossHazard:
 			remove_node(n)
-	e.attack_hitbox.deactivate()
+	e.attack_hitbox.call_deferred("deactivate")
 	e.attack_hitbox.scale = Vector2.ONE
 	e.contact_hitbox.set_deferred("monitoring", false)
 	e.hurtbox.set_deferred("monitoring", false)

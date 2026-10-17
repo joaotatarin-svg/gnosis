@@ -26,7 +26,7 @@ const MIST_CASTS := ["bocejo", "bocejo2", "cancao", "chuva"]
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.8
+	dmg_scale = 0.7
 	keep_dist = Vector2(130.0, 230.0)
 	gap_by_phase = [1.25, 1.0, 0.8]
 	escape_id = "fuga"

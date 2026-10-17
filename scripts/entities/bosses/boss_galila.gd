@@ -16,7 +16,7 @@ var _pends: Array = []
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.8
+	dmg_scale = 0.6
 	keep_dist = Vector2(60.0, 140.0)
 	gap_by_phase = [0.95, 0.8, 0.7]
 	escape_hits = 3
@@ -40,7 +40,7 @@ func _build_moves() -> Dictionary:
 	var puxao := {"id": "puxao", "kind": "cast", "anim": "ranged", "wind": 0.8, "strike": 0.25, "recover": 0.2,
 		"unblock": true, "rmin": 90.0, "rmax": 230.0, "w": 1.3, "cd": 5.0, "chain": ["corte_b"]}
 	var queda := {"id": "queda", "kind": "leap", "anim": "slam", "wind": 0.6, "strike": 1.6, "recover": 1.1,
-		"unblock": true, "dmg": 1.1, "land_r": 52.0, "rmin": 0.0, "rmax": 9999.0, "w": 0.7, "cd": 8.0, "aa": true}
+		"unblock": true, "dmg": 0.9, "land_r": 52.0, "rmin": 0.0, "rmax": 9999.0, "w": 0.7, "cd": 8.0, "aa": true}
 	var estocada2 := estocada.duplicate()
 	estocada2.id = "estocada2"
 	estocada2.recover = 0.25
@@ -127,7 +127,7 @@ func _pendulum(anchor: Vector2, ph: float, period: float) -> Node2D:
 	p.length = 222.0           # a gaiola passa a ~28 px do chão (altura do corpo)
 	p.phase = ph
 	p.period = period
-	p.damage = int(_base_dmg * 0.8)
+	p.damage = int(_base_dmg * 0.6)
 	p.owner_enemy = e
 	p.color = STEEL
 	e.get_parent().add_child(p)

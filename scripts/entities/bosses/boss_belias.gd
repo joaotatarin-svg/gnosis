@@ -21,7 +21,7 @@ var _was_stag: bool = false
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.75
+	dmg_scale = 0.55
 	keep_dist = Vector2(60.0, 160.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 3
@@ -36,7 +36,7 @@ func _build_moves() -> Dictionary:
 	var esporos := {"id": "esporos", "kind": "cast", "anim": "ranged", "wind": 0.75, "strike": 0.3, "recover": 0.7,
 		"unblock": true, "n": 3, "rmin": 0.0, "rmax": 9999.0, "w": 1.1, "cd": 4.5, "aa": true}
 	var enterrar := {"id": "enterrar", "kind": "leap", "anim": "charge", "burrow": true, "wind": 0.6, "strike": 1.7,
-		"recover": 1.4, "unblock": true, "dmg": 1.1, "land_r": 40.0, "rmin": 0.0, "rmax": 9999.0, "w": 0.6,
+		"recover": 1.4, "unblock": true, "dmg": 0.9, "land_r": 40.0, "rmin": 0.0, "rmax": 9999.0, "w": 0.6,
 		"cd": 8.0, "aa": true}
 	var nuvem := {"id": "nuvem", "kind": "cast", "anim": "ranged", "wind": 0.8, "strike": 0.3, "recover": 0.7,
 		"unblock": true, "rmin": 0.0, "rmax": 9999.0, "w": 1.0, "cd": 7.0, "aa": true}
@@ -116,7 +116,7 @@ func _pool_at(x: float, r: float, life: float = 0.0) -> void:
 	if _dead:
 		return
 	var lf: float = life if life > 0.0 else (6.0 if phase < 3 else 7.0)
-	var h := hazard(x, "circle", r, 0.05, 0.15, ROT)
+	var h := hazard(x, "circle", r, 0.05, 0.12, ROT)
 	h.active = lf
 	h.tick = POOL_TICK
 	h.silent = true

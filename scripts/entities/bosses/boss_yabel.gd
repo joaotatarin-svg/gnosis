@@ -18,7 +18,7 @@ var _zone_t: float = 0.0
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.8
+	dmg_scale = 0.65
 	keep_dist = Vector2(110.0, 200.0)
 	gap_by_phase = [1.0, 0.85, 0.7]
 	escape_hits = 3
@@ -34,7 +34,7 @@ func _build_moves() -> Dictionary:
 	var pergaminhos := {"id": "pergaminhos", "kind": "cast", "anim": "ranged", "wind": 0.8, "strike": 0.3,
 		"recover": 0.8, "unblock": true, "rmin": 0.0, "rmax": 9999.0, "w": 1.1, "cd": 4.5, "aa": true}
 	var mergulho := {"id": "mergulho", "kind": "leap", "anim": "charge", "wind": 0.5, "strike": 1.7, "recover": 1.2,
-		"unblock": true, "dmg": 1.0, "land_r": 56.0, "rmin": 0.0, "rmax": 9999.0, "w": 0.7, "cd": 7.0, "aa": true}
+		"unblock": true, "dmg": 0.85, "land_r": 56.0, "rmin": 0.0, "rmax": 9999.0, "w": 0.7, "cd": 7.0, "aa": true}
 	var grito := {"id": "grito", "kind": "cast", "anim": "ranged", "wind": 1.6, "strike": 0.4, "recover": 1.8,
 		"unblock": true, "rmin": 0.0, "rmax": 9999.0, "w": 1.4, "cd": 9.0, "aa": true}
 	var laminas := {"id": "laminas", "kind": "shot", "anim": "ranged", "wind": 0.75, "strike": 0.6, "recover": 0.6,
