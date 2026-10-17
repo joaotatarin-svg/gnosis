@@ -111,5 +111,34 @@ func _run() -> void:
 				push_error("QA FAIL: %s mede %.2f× a Sophia (< %.1f)" % [id, ratio, MIN_RATIO])
 		v.queue_free()
 		await get_tree().process_frame
+	# Chefe nascendo com o mundo PAUSADO (card de chefe): precisa aparecer.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	var pv := _make_vp()
+	pv.process_mode = Node.PROCESS_MODE_ALWAYS
+	var ph := Node2D.new()
+	ph.process_mode = Node.PROCESS_MODE_PAUSABLE
+	pv.add_child(ph)
+	PauseStack.push(self)            # como o card de chefe
+	var pe = scn.instantiate()
+	pe.type_id = "arconte_fome"
+	ph.add_child(pe)
+	pe.position = FOOT + Vector2(0, -24)
+	for i in 6:
+		await get_tree().process_frame
+	for c in ph.get_children():
+		if c != pe:
+			c.visible = false
+	for c in pe.get_children():
+		if c is CanvasItem and c != pe.visual and c.name != "Rim":
+			c.visible = false
+	await get_tree().process_frame
+	var hp := _measure(pv, "pausado")
+	PauseStack.pop(self)
+	print("SIZEPROBE|pausado|alt=%.0f" % hp)
+	if hp > 0.5 * 121.0:
+		print("QA PASS: chefe nascido com o mundo pausado já aparece (alt %.0f)" % hp)
+	else:
+		fails += 1
+		push_error("QA FAIL: chefe nascido com o mundo pausado não aparece (alt %.0f)" % hp)
 	print("SIZEPROBE|fim|falhas=%d" % fails)
 	get_tree().quit(1 if fails > 0 else 0)

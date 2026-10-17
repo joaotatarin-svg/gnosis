@@ -233,6 +233,12 @@ func _ready() -> void:
 	# (senão mantém o desenho procedural — fallback, sem erro).
 	_apply_illustrated_art()
 	_setup_readability()
+	# Pedido da Encenação: o chefe que nasce junto com o CARD DE CHEFE (mundo
+	# pausado no mesmo quadro) não aparecia, porque o CharacterArt só monta a
+	# pose no _process. Monta UMA pose agora (desenho não depende de pausa).
+	if visual != null and visual.profile != null:
+		visual.set_anim("idle")
+		visual._process(0.0)
 
 	player = get_tree().get_first_node_in_group("player")
 	if is_boss_enemy or is_champion:
