@@ -37,7 +37,7 @@
 Scripts OK · ScriptCheck OK · CodexQA FALHOU pass=32 (só "diretório de save independente" — o falso
 conhecido do override.cfg) · AudioQA OK pass=45 · GnoseQA OK 18 · SaveQA OK 13 · PuppetQA OK · HeroQA OK · WaveQA OK
 ```
-AudioQA rodado 4× seguidas depois dos consertos de relógio real: 0 falhas em todas.
+AudioQA depois dos consertos de relógio real: 3 rodadas avulsas + 2 pelo validate.sh, 0 falhas em todas (antes deles, 2 de 3 rodadas sob carga falharam).
 
 ## 5. O que NÃO ficou bom / não deu tempo
 - **Ninguém ouviu nada.** Os temas do menu são síntese aditiva e podem soar "de computador". Nenhum foi instalado: o menu continua com `theme`.
