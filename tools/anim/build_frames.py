@@ -163,7 +163,7 @@ def slice_sheet(path: str, grid, names):
 		y0, y1, x0, x1 = yy.min(), yy.max() + 1, xx.min(), xx.max() + 1
 		alpha = a[y0:y1, x0:x1] * m[y0:y1, x0:x1]
 		rgba = np.dstack([F[y0:y1, x0:x1], alpha * 255.0])
-		frames[name] = rgba
+		frames[name] = (rgba, (int(x0), int(y0)))
 	return frames
 
 
@@ -232,19 +232,28 @@ def main() -> None:
 	body_px = float(R["body_px"])
 	# 1) fatia todas as folhas e mede em escala de origem
 	raw = {}
+	fixed_anchor = {}
 	for sid, src in R["sources"].items():
 		path = os.path.join(ROOT, src["file"])
 		if not os.path.exists(path):
 			print("  (folha ausente, pulada)", src["file"])
 			continue
-		for name, rgba in slice_sheet(path, src["grid"], src["cells"]).items():
+		side = {}
+		side_path = path.replace(".png", ".json")
+		if os.path.exists(side_path):
+			side = json.load(open(side_path, encoding="utf-8")).get("anchors", {})
+		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"]).items():
 			raw[sid + "." + name] = [rgba, src.get("scale", 1.0)]
+			if name in side:
+				# âncora fixa (px da folha) → px locais do recorte
+				fixed_anchor[sid + "." + name] = (side[name][0] - origin[0], side[name][1] - origin[1])
 	ref = R["ref_frame"]
 	ref_m = measure(raw[ref][0])
 	ref_body = ref_m["foot_y"] - ref_m["top"]
 	# escala por folha: número fixo ou "auto:<célula em pé>" (iguala a altura
 	# pé→topo da cabeça dessa célula à do quadro de referência)
 	auto_scale = {}
+	base_pre = float(R["body_px"]) / max(1.0, ref_body)
 	for sid, src in R["sources"].items():
 		sc = src.get("scale", 1.0)
 		if isinstance(sc, str) and sc.startswith("auto:"):
@@ -256,7 +265,10 @@ def main() -> None:
 	for n in raw:
 		sid = n.split(".")[0]
 		v = raw[n][1]
-		raw[n][1] = auto_scale.get(sid, 1.0) if isinstance(v, str) else float(v)
+		if v == "atlas":
+			raw[n][1] = 1.0 / base_pre        # folha já na escala do atlas (intercalados do RIFE)
+		else:
+			raw[n][1] = auto_scale.get(sid, 1.0) if isinstance(v, str) else float(v)
 	base = body_px / (ref_m["foot_y"] - ref_m["top"])   # px de origem → px do atlas
 	# 2) normaliza e mede
 	used = []
@@ -276,6 +288,8 @@ def main() -> None:
 		canvas = np.zeros((h + 2 * PAD, w + 2 * PAD, 4), np.float32)
 		canvas[PAD:PAD + h, PAD:PAD + w] = small
 		frames[n] = {"img": canvas, "m": scale_meas(m_src, s, PAD, PAD), "scale": s}
+		if n in fixed_anchor:
+			frames[n]["fixed"] = [fixed_anchor[n][0] * s + PAD, fixed_anchor[n][1] * s + PAD]
 	refm = frames[ref]["m"] if ref in frames else scale_meas(ref_m, base, PAD, PAD)
 	d_front = refm["front_x"] - refm["pelvis_x"]
 	d_rear = refm["rear_x"] - refm["pelvis_x"]
@@ -301,8 +315,12 @@ def main() -> None:
 			"tip": [round(m["tip"][0], 2), round(m["tip"][1], 2)] if m["tip"] else None,
 			"scale": round(frames[n]["scale"], 5),
 		}
+		if "fixed" in frames[n]:
+			out_frames[n]["fixed_anchor"] = [round(v, 2) for v in frames[n]["fixed"]]
 	# 4) estados → sequências com âncora por quadro
 	def anchor(fr: dict, mode: str):
+		if "fixed_anchor" in fr:
+			return list(fr["fixed_anchor"])
 		if mode == "front":
 			return [fr["front_x"] - d_front, fr["foot_y"]]
 		if mode == "rear":
@@ -324,7 +342,15 @@ def main() -> None:
 		if not seq:
 			continue
 		entry = {"frames": seq, "dur": st.get("dur", []), "loop": bool(st.get("loop", False))}
-		if st.get("cycle_bodies") == "auto":
+		if "advance_split_of" in st and st["advance_split_of"] in out_states and "advance" in out_states[st["advance_split_of"]]:
+			# intercalados: cada quadro original divide o seu avanço com o meio
+			base_adv = out_states[st["advance_split_of"]]["advance"]
+			adv = []
+			for v in base_adv:
+				adv += [round(v / 2.0, 2), round(v / 2.0, 2)]
+			entry["advance"] = adv
+			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
+		elif st.get("cycle_bodies") == "auto":
 			# CORRIDA: quanto o corpo avança em cada quadro = quanto o pé
 			# apoiado recua em relação à pélvis até o quadro seguinte. Trocando
 			# de quadro a cada `advance[i]` de distância, o pé apoiado volta ao
@@ -343,7 +369,7 @@ def main() -> None:
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
 			print("  %s: avanço por quadro %s -> ciclo %.2f alturas" % (sname, adv, sum(adv) / body_px))
-		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at"]:
+		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change"]:
 			if key in st and key not in entry:
 				entry[key] = st[key]
 		out_states[sname] = entry

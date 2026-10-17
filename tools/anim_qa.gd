@@ -129,18 +129,13 @@ func _film_sophia() -> void:
 
 
 func _film_creatures() -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))   # fundo claro: bichos são escuros
 	var ids := ["servo", "canino", "larva"]
 	for k in ids.size():
-		var art := _creature(ids[k], Vector2(600, GROUND - k * 0.0), 1.1)
-		art.visible = true
-		var tl := [["idle", 0.3 + k * 0.5, 0.0], ["walk", 1.6, -150.0], ["windup", 0.5, 0.0], ["attack", 0.3, 0.0], ["recover", 0.3, 0.0],
-			["walk", 0.6, -120.0], ["hurt", 0.3, 40.0], ["idle", 0.3, 0.0], ["dead", 1.3, 0.0], ["dead", 2.0 - k * 0.5, 0.0]]
-		actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": GROUND, "lane": k})
-		art.z_index = 3 - k
-	# três faixas de profundidade (2.5D) pra não sobrepor
-	for a in actors:
-		a.art.position.y -= 70.0 * a.lane
-		a.y0 = a.art.position.y
+		var art := _creature(ids[k], Vector2(190 + k * 190, GROUND), 1.9)
+		var tl := [["idle", 0.3 + k * 0.25, 0.0], ["walk", 1.4, -55.0], ["windup", 0.5, 0.0], ["attack", 0.3, 0.0], ["recover", 0.3, 0.0],
+			["walk", 0.6, 45.0], ["hurt", 0.3, 30.0], ["idle", 0.3, 0.0], ["dead", 1.2, 0.0], ["dead", 1.0 - k * 0.25, 0.0]]
+		actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
 	_label("CRIATURAS — passo, preparo, golpe, dano, dissolução", Vector2(6, 6))
 
 
@@ -151,6 +146,8 @@ func _process(delta: float) -> void:
 	var alive := false
 	for a in actors:
 		var art: CharacterArt = a.art
+		if a.i >= a.tl.size():
+			continue
 		if a.i < 0 or a.t >= float(a.tl[a.i][1]):
 			a.i += 1
 			a.t = 0.0

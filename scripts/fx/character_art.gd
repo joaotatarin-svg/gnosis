@@ -119,6 +119,12 @@ func has_rig() -> bool:
 
 func set_anim(state: String) -> void:
 	if state != anim_state:
+		# pouso: saindo da queda/mergulho pro chão segura o quadro agachado
+		if anim_state in ["fall", "attack_dive"] and state in ["idle", "walk"]:
+			_land_t = 0.09
+		# renascer (checkpoint): saindo da morte, levanta apoiada no cajado
+		if anim_state == "dead" and state in ["idle", "walk"]:
+			_rise_t = 0.45
 		anim_state = state
 		anim_time = 0.0
 		# giro do manto na esquiva (contrato com o Áudio: some se não houver arquivo)
@@ -1316,6 +1322,9 @@ var motion_distance: float = 0.0   # distância horizontal percorrida (fase da c
 var dodge_back: bool = false        # esquiva pra trás (o player liga; usa o quadro de recuo)
 var combo_step: int = 0             # golpe leve 1/2/3 do combo (o player liga; 0 = genérico)
 var _combat_clock: float = 99.0     # s desde o último estado de combate (parada → prontidão)
+var _land_t: float = 0.0            # segura o quadro de pouso (s)
+var _rise_t: float = 0.0            # tempo restante do levantar (s)
+const USE_RUN_INBETWEENS := true    # corrida com os meios do RIFE (run16) quando houver
 var dissolve_max: float = 1.0       # forma que pode se refazer dissolve só até aqui
 var _last_x: float = INF
 var _wind_time: float = 0.0
@@ -1411,6 +1420,12 @@ func _hero_seq(states: Dictionary) -> String:
 		"windup_heavy": ["windup"], "windup_cast": ["cast"], "fall": ["jump"], "dead": ["hurt"],
 		"recover": ["idle"], "attack_heavy": ["attack"],
 	}
+	if _rise_t > 0.0 and st in ["idle", "walk"] and states.has("rise"):
+		return "rise"
+	if _land_t > 0.0 and st in ["idle", "walk"] and states.has("land"):
+		return "land"
+	if st in ["walk", "charge"] and USE_RUN_INBETWEENS and states.has("run16"):
+		return "run16"
 	if st in ["windup", "attack"] and combo_step > 0 and states.has(st + str(combo_step)):
 		return st + str(combo_step)
 	if st == "idle" and _combat_clock < 1.8 and states.has("ready"):
@@ -1429,7 +1444,7 @@ func _seq_index(seq: Dictionary, seq_name: String) -> int:
 	var n: int = seq.frames.size()
 	if n <= 1:
 		return 0
-	if seq_name == "run":
+	if seq_name.begins_with("run"):
 		# fase pela DISTÂNCIA: cada quadro dura o quanto o pé apoiado recua
 		# nele (advance, px da folha) — o pé volta ao mesmo ponto a cada troca
 		var world_k: float = profile.height * 1.19 / float(frame_db("sophia").meta.body_px) if painted.get("hero", false) else 1.0
@@ -1586,7 +1601,7 @@ static func _int_list(v) -> Array:
 
 ## Troca de quadro: passo no chão (som), início do smear do cajado.
 func _on_frame_changed(seq: Dictionary, seq_name: String, i: int, tip: Vector2) -> void:
-	if seq_name == "run" and i in _int_list(seq.get("steps", [])) and is_visible_in_tree():
+	if seq_name.begins_with("run") and i in _int_list(seq.get("steps", [])) and is_visible_in_tree():
 		Audio.play_sfx("step", 0.08, -6.0)
 	if i in _int_list(seq.get("smear_at", [])) and tip != Vector2.INF and _body_tip != Vector2.INF:
 		_smear = {"a": _body_tip, "b": tip}
@@ -1647,6 +1662,9 @@ func _tick_visual(delta: float) -> void:
 	_wind_time += delta
 	_smear_clock += delta
 	_impact = move_toward(_impact, 0.0, delta * 6.0)
+	_land_t = maxf(0.0, _land_t - delta)
+	if _rise_t > 0.0:
+		_rise_t = maxf(0.0, _rise_t - delta)
 	if anim_state.begins_with("attack") or anim_state.begins_with("windup") or anim_state in ["cast", "hurt", "block"]:
 		_combat_clock = 0.0
 	else:

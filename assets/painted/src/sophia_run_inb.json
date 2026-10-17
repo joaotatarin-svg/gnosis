@@ -1,0 +1,37 @@
+{
+ "anchors": {
+  "run_m0": [
+   246.18,
+   353.0
+  ],
+  "run_m1": [
+   731.51,
+   353.0
+  ],
+  "run_m2": [
+   1206.99,
+   352.0
+  ],
+  "run_m3": [
+   1683.06,
+   358.0
+  ],
+  "run_m4": [
+   247.69,
+   713.0
+  ],
+  "run_m5": [
+   745.21,
+   713.0
+  ],
+  "run_m6": [
+   1221.78,
+   711.0
+  ],
+  "run_m7": [
+   1686.06,
+   715.0
+  ]
+ },
+ "_doc": "âncoras (px da folha) dos intercalados; build_frames usa no lugar da medida"
+}

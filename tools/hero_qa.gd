@@ -65,7 +65,8 @@ func _ready() -> void:
 			check(r[0] >= 0 and r[1] >= 0 and r[0] + r[2] <= db.atlas.get_width() and r[1] + r[3] <= db.atlas.get_height(), "Quadro fora do atlas: " + e.f)
 			check(is_finite(float(e.anchor[0])) and is_finite(float(e.anchor[1])) and float(e.anchor[1]) > 0.0, "Âncora inválida: " + e.f)
 			if state == "dead":
-				check(String(e.f).contains("lying"), "Morte não termina deitada: " + e.f)
+				# deitada = último quadro da sequência e mais largo que alto
+				check(idx == seq.frames.size() - 1 and float(r[2]) > float(r[3]) * 1.3, "Morte não termina deitada: " + e.f)
 			if state == "dodge_back":
 				check(seq_name == "dodge_back", "Esquiva pra trás sem quadro próprio")
 		if state == "dodge":
