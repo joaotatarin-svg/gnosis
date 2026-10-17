@@ -4,8 +4,8 @@ Dados e método em `docs/onda2/BALANCE.md`. Rodadas em `/home/user/caps/balance/
 O Balance não edita o jogo: cada item diz arquivo, linha (base `integracao/onda1`) e o que mudar.
 
 ## 1. COMBATE — BLOQUEANTE: a batalha final pode travar (soft-lock)
-`scripts/entities/enemy.gd`, `_on_hit_received`, linhas ~785–799. O golpe que mata chama
-`health.take_damage()` → `_on_died()` põe `estate = DEAD` → mas a função segue e, na linha ~797,
+`scripts/entities/enemy.gd`, `_on_hit_received`, linhas 777–799. O golpe que mata chama
+`health.take_damage()` → `_on_died()` põe `estate = DEAD` → mas a função segue e, na linha 798,
 faz `estate = EState.HURT` (só escapa se o chefe estiver no WINDUP). O inimigo fica com **vida 0 e
 estado HURT**. Para inimigo comum é quase invisível (o corpo some pelo tween), mas nas **duas formas
 da tela 68** (`revivable`): `FinalBattle` registra a queda; aos 14 s chama `revive()`, que exige
