@@ -1,17 +1,55 @@
 extends Node
-## "Juice" = feedback que dá peso ao combate: hitstop, screen shake e câmera
-## lenta (finisher / esquiva perfeita). Autoload acessível como `Juice`.
+## "Juice" = feedback que dá peso ao combate: hitstop, tremor, chute de câmera,
+## câmera lenta e limite de flashes. Autoload `Juice`.
+## Números: docs/handoff/NEURO_SATISFACAO.md (R2, R3, R8, R10) e docs/COMBATE.md §3.
+## Tudo em constantes nomeadas aqui no topo: o ajuste fino é no playtest do João.
 
 signal shake_requested(trauma: float)
+signal kick_requested(dir: Vector2)                  ## R3: empurrão direcional da câmera
+signal hitstop_started(duration: float)              ## R1: flash/vibração da vítima em tempo real
+signal hitstop_ended()
+signal slowmo_changed(active: bool, scale: float)    ## R8: o Áudio abafa (passa-baixas) na lentidão
 
-var _hitstop_active := false
+# --- R2: hitstop por peso (segundos REAIS) ---
+const HITSTOP_SCALE := 0.05
+const HS_LIGHT := 0.050          # leve 1º/2º da string
+const HS_FINISHER := 0.090       # leve final da string / lançador (83–100 ms)
+const HS_HEAVY := 0.108          # pesado (100–117 ms)
+const HS_KILL_BONUS := 0.033     # golpe que mata (+2 quadros)
+const HS_CROWD_BONUS := 0.017    # pegou 3+ alvos (+1 quadro, uma vez só)
+const HS_MULTI_TICK := 0.025     # ticks intermediários do multi-hit (Giro)
+const HS_PLAYER_HURT := 0.075    # Sophia tomando dano
+const HS_DIVE := 0.100           # Queda Estelar batendo no chão
+const HS_MAX := 0.200            # teto absoluto
+# --- R3: tremor/chute ---
+const KICK_LIGHT := 2.0          # px no sentido do golpe
+const KICK_HEAVY := 4.0
+const TRAUMA_HEAVY := 0.30       # leve = 0 (só chute)
+const TRAUMA_HURT := 0.35        # Sophia tomando dano
+# --- R8: câmera lenta ---
+const SLOWMO_RAMP := 0.18        # volta em rampa (150–200 ms reais), não degrau
+# --- R10: fotossensibilidade ---
+const FLASH_MIN_INTERVAL := 0.333   # ≤ 3 flashes cheios/s por alvo
+const FLASH_HALF := 0.47            # força relativa do flash "do meio" (≈1,4 de 3,0)
+const FLASH_BOSS_CAP := 2.0         # chefe: flash cheio 2,0 (não 3,0)
+const FLASH_REDUCED := 0.5          # "Reduzir flashes": flash de sprite × 0,5
+const FLASH_PRUNE_MS := 5000        # poda dos ids mortos do registro de flashes
+
+var _hitstop_until_ms: int = 0
+var _hitstop_start_ms: int = 0
+var _hitstop_running := false
 var _base_scale := 1.0          # escala "de fundo" (speed_mult ou a do slow-mo ativo)
 var _slow_token := 0
+var _ramp_tween: Tween
+var _flash_ms: Dictionary = {}      # instance_id -> último flash cheio (ms)
+var _flash_pruned_ms: int = 0
 
 ## Preferências do jogador (Opções): intensidade do tremor de câmera (0..1) e
 ## vibração do controle ligada/desligada. O menu de opções grava aqui.
 var shake_mult := 1.0
 var rumble_enabled := true
+## R10: "Reduzir flashes" (Opções). O Técnico/UI espelha a opção do menu aqui.
+var reduce_flashes: bool = false
 
 ## Velocidade global do jogo (1.0 normal; >1 só em ferramentas — bot de balance).
 var speed_mult := 1.0:
@@ -21,41 +59,129 @@ var speed_mult := 1.0:
 		Engine.time_scale = v
 
 
-## Micro-congelamento no impacto. Usa timer em tempo real (ignora time_scale)
-## pra funcionar mesmo com o jogo "parado". Ao soltar, volta pra escala de fundo
-## (respeita um slow-mo em andamento).
-func hit_stop(duration: float = 0.06) -> void:
-	if _hitstop_active:
+func hitstop_active() -> bool:
+	return _hitstop_running
+
+
+## Fração restante do hitstop atual (1 = acabou de começar, 0 = acabou). R1:
+## a vibração da vítima encolhe com isto.
+func hitstop_left() -> float:
+	if not _hitstop_running:
+		return 0.0
+	var total := maxi(1, _hitstop_until_ms - _hitstop_start_ms)
+	return clampf(float(_hitstop_until_ms - Time.get_ticks_msec()) / float(total), 0.0, 1.0)
+
+
+## R2: micro-congelamento no impacto, em tempo REAL. Sobreposição: vale o MAIOR
+## fim (estende), nunca descarta o pedido novo. Ao soltar, volta para a escala
+## de fundo (respeita um slow-mo em andamento).
+func hit_stop(duration: float = HS_LIGHT) -> void:
+	duration = clampf(duration, 0.0, HS_MAX)
+	if duration <= 0.0:
 		return
-	_hitstop_active = true
-	Engine.time_scale = 0.05
-	# create_timer(tempo, process_always, process_in_physics, ignore_time_scale)
-	await get_tree().create_timer(duration, true, false, true).timeout
+	var now := Time.get_ticks_msec()
+	var until := now + int(duration * 1000.0)
+	if _hitstop_running:
+		_hitstop_until_ms = maxi(_hitstop_until_ms, mini(until, _hitstop_start_ms + int(HS_MAX * 1000.0)))
+		return
+	_hitstop_start_ms = now
+	_hitstop_until_ms = until
+	_hitstop_running = true
+	Engine.time_scale = HITSTOP_SCALE
+	hitstop_started.emit(duration)
+	while Time.get_ticks_msec() < _hitstop_until_ms:
+		var left := float(_hitstop_until_ms - Time.get_ticks_msec()) / 1000.0
+		# create_timer(tempo, process_always, process_in_physics, ignore_time_scale)
+		await get_tree().create_timer(maxf(left, 0.001), true, false, true).timeout
+	_hitstop_running = false
 	Engine.time_scale = _base_scale
-	_hitstop_active = false
+	hitstop_ended.emit()
 
 
-## Câmera lenta por `duration` segundos REAIS (finisher, esquiva perfeita).
+## R2: duração por peso. O Hitbox chama uma vez por golpe (não por alvo).
+## `ComboData.hitstop` (se existir e > 0) manda no lugar do automático.
+func hitstop_for(heavy: bool, finisher: bool, kills: bool, targets: int) -> float:
+	var d := HS_HEAVY if heavy else (HS_FINISHER if finisher else HS_LIGHT)
+	if kills:
+		d += HS_KILL_BONUS
+	if targets >= 3:
+		d += HS_CROWD_BONUS
+	return minf(d, HS_MAX)
+
+
+## R8: câmera lenta por `duration` s REAIS; sai em rampa (ease-in) de SLOWMO_RAMP.
 ## Um slow-mo novo substitui o anterior.
 func slow_mo(scale: float = 0.25, duration: float = 0.6) -> void:
 	_slow_token += 1
 	var my := _slow_token
-	_base_scale = scale
-	if not _hitstop_active:
-		Engine.time_scale = scale
+	if _ramp_tween != null and _ramp_tween.is_valid():
+		_ramp_tween.kill()
+	_base_scale = scale * speed_mult
+	if not _hitstop_running:
+		Engine.time_scale = _base_scale
+	slowmo_changed.emit(true, scale)
 	await get_tree().create_timer(duration, true, false, true).timeout
 	if my != _slow_token:
 		return                       # outro slow-mo assumiu
-	_base_scale = speed_mult
-	if not _hitstop_active:
-		Engine.time_scale = speed_mult
+	_ramp_tween = create_tween().set_ignore_time_scale(true)
+	_ramp_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_ramp_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_ramp_tween.tween_method(_set_base_scale, _base_scale, speed_mult, SLOWMO_RAMP)
+	# Espera por timer (um tween morto não emite `finished`).
+	await get_tree().create_timer(SLOWMO_RAMP, true, false, true).timeout
+	if my == _slow_token:
+		_set_base_scale(speed_mult)
+		slowmo_changed.emit(false, 1.0)
 
 
-## Pede tremor de câmera (a Camera2D com camera_shake.gd escuta).
+func _set_base_scale(v: float) -> void:
+	_base_scale = v
+	if not _hitstop_running:
+		Engine.time_scale = v
+
+
+func slowmo_active() -> bool:
+	return _base_scale < speed_mult * 0.99
+
+
+## R3: tremor por trauma (a câmera fica com o MAIOR pedido do quadro, não a soma).
 func shake(trauma: float = 0.4) -> void:
 	if shake_mult <= 0.001:
 		return
 	shake_requested.emit(trauma * shake_mult)
+
+
+## R3: empurrão direcional da câmera (golpe da Sophia). `dir_x` = lado do golpe.
+func kick(dir_x: float, heavy: bool = false) -> void:
+	if shake_mult <= 0.001 or dir_x == 0.0:
+		return
+	var px := (KICK_HEAVY if heavy else KICK_LIGHT) * shake_mult
+	kick_requested.emit(Vector2(signf(dir_x) * px, 0.0))
+
+
+## R10: força do flash permitida agora para `target` (0..1 sobre a cor cheia).
+## Cheio no máximo a cada 333 ms por alvo; no meio, meia força. Chefe: teto 2,0.
+## Uso: var k := Juice.flash_strength(self, is_boss_enemy)
+##      modulate = Color(1,1,1).lerp(Color(3,3,3), k)
+func flash_strength(target: Object, is_big: bool = false) -> float:
+	var now := Time.get_ticks_msec()
+	if now - _flash_pruned_ms > FLASH_PRUNE_MS:
+		_flash_pruned_ms = now
+		for id in _flash_ms.keys():
+			if not is_instance_id_valid(id):
+				_flash_ms.erase(id)
+	var k := 1.0
+	if target != null:
+		var id := target.get_instance_id()
+		if now - int(_flash_ms.get(id, -100000)) < int(FLASH_MIN_INTERVAL * 1000.0):
+			k = FLASH_HALF
+		else:
+			_flash_ms[id] = now
+	if is_big:
+		k *= (FLASH_BOSS_CAP - 1.0) / 2.0        # 3,0 → 2,0
+	if reduce_flashes:
+		k *= FLASH_REDUCED
+	return k
 
 
 ## Vibração do controle (Xbox/DualShock/genérico com rumble). Curta e discreta —
