@@ -696,7 +696,7 @@ class GroundFog extends Node2D:
 ## obeliscos nas bordas e braseiros acesos na cor do Éon, com luz no chão.
 func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
 	var c := Level.ZONE_FIRST_X
-	var set_node := Node2D.new()
+	var set_node := ArenaSet.new()
 	set_node.name = "ArenaSet"
 	set_node.z_index = -1
 	parent.add_child(set_node)
@@ -705,7 +705,10 @@ func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
 	var g: Color = look().glow
 	for side in [-1.0, 1.0]:
 		# obelisco (com o cristal) nas bordas
-		var ox: float = c + side * 292.0
+		# (na borda da arena, junto do véu da parede: emoldura a luta em vez de
+		# ficar atrás do chefe; com a câmera ainda fora do centro, só acende
+		# quando a zona tranca — ver ArenaSet)
+		var ox: float = c + side * 418.0
 		_contact_shadow(set_node, Vector2(ox, base_y), 30.0, 0.6)
 		var ob := PaintedLibrary.sprite(2, 168.0)
 		ob.material = mat
@@ -714,7 +717,7 @@ func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
 			ob.scale.x = -ob.scale.x
 		set_node.add_child(ob)
 		# braseiro aceso mais pra dentro
-		var bx: float = c + side * 222.0
+		var bx: float = c + side * 352.0
 		_contact_shadow(set_node, Vector2(bx, base_y + 1.0), 22.0, 0.6)
 		var br := PaintedLibrary.sprite(4, 46.0)
 		br.material = mat
@@ -729,6 +732,30 @@ func _build_boss_arena(parent: Node2D, feet_y: float) -> void:
 		pool.scale = Vector2(1.6, 0.35)
 		pool.modulate = Color(g.r, g.g, g.b, 0.22)
 		set_node.add_child(pool)
+
+
+class ArenaSet extends Node2D:
+	## Cenografia da arena do chefe que ACENDE quando a zona tranca (sobe da
+	## névoa em ~0,9 s): no começo da tela a câmera ainda não está centrada na
+	## arena e o obelisco apareceria no meio do quadro. Sem zona (ou se ela
+	## demorar), aparece sozinha depois de FALLBACK s.
+	const FALLBACK := 6.0
+	var _t: float = 0.0
+	var _on: bool = false
+
+	func _ready() -> void:
+		modulate.a = 0.0
+
+	func _process(delta: float) -> void:
+		_t += delta
+		if not _on:
+			var lv := get_parent()
+			if (lv != null and bool(lv.get("zone_active"))) or _t >= FALLBACK:
+				_on = true
+		if _on:
+			modulate.a = move_toward(modulate.a, 1.0, delta / 0.9)
+			if modulate.a >= 1.0:
+				set_process(false)
 
 
 ## PLATAFORMAS integradas (chamado no fim do quadro, depois que o Level as
