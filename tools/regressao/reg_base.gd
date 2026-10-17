@@ -86,9 +86,13 @@ func terminar() -> void:
 
 # --- tempo ---------------------------------------------------------------------
 
-## Espera `s` segundos de jogo, mesmo com a árvore pausada.
+## Espera `s` segundos de jogo CONTADOS EM QUADROS (os testes rodam com
+## --fixed-fps 60: 1 quadro = 1/60 s de jogo), mesmo com a árvore pausada.
+## Não usa relógio real nem timer: o jogo pode trocar relógio por delta sem
+## mudar o teste.
+const QPS := 60
 func wait(s: float) -> void:
-	await get_tree().create_timer(s, true, false, true).timeout
+	await frames(maxi(1, int(ceil(s * QPS))))
 
 
 func frames(n: int) -> void:
@@ -129,7 +133,8 @@ func level_at(screen: int, pular_falas: bool = true) -> Level:
 			break
 	if lv == null:
 		quebrado("Level da tela %d não ficou pronto" % screen)
-		await get_tree().create_timer(9999.0).timeout   # nunca segue
+		while true:
+			await get_tree().process_frame             # nunca segue (o quit já foi pedido)
 	return lv
 
 

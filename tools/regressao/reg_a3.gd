@@ -6,10 +6,9 @@ extends "res://tools/regressao/reg_base.gd"
 ## (nome, vida e fase do PRÓPRIO chefe), as duas formas têm barra, e a que
 ## sobra viva continua com barra.
 ##
-## Como o teste lê as barras (sem amarrar a implementação):
-##  - se o HUD tiver `boss_bars() -> Array[Dictionary]` com {node, ratio, phase}
-##    (contrato proposto ao UI-HUD), usa isso;
-##  - senão, a barra única da onda 1: {node: hud.boss, ratio: hud.boss_ratio, phase: hud.boss_phase_n}.
+## Como o teste lê as barras: SÓ pelo contrato do HUD (ui-hud, Onda 2)
+##   hud.boss_bars() -> Array de {node, ratio, phase}   (barras visíveis agora)
+## HUD sem `boss_bars()` = contrato ausente = falha (sem ler campos internos).
 
 const TOL := 0.04
 
@@ -44,6 +43,7 @@ func rodar() -> void:
 		return
 	info("formas: %s (%s) e %s (%s)" % [rei.type_id, rei.display_name, col.type_id, col.display_name])
 
+	check("hud_tem_contrato_boss_bars", hud.has_method("boss_bars"), "hud.boss_bars() existe=%s" % str(hud.has_method("boss_bars")))
 	# 1) Início: as duas formas têm barra; cada barra bate com o próprio chefe.
 	var bars := _barras(hud)
 	check("inicio_rei_tem_barra", _barra_de(bars, rei) != null, _desc(bars))
@@ -76,17 +76,15 @@ func rodar() -> void:
 	check("rei_caiu_barras_coerentes", _coerentes(bars), _desc(bars))
 
 
-## Barras que o HUD mostra agora: Array de {node, ratio, phase}.
+## Barras que o HUD mostra agora: Array de {node, ratio, phase} (contrato boss_bars()).
 func _barras(hud: Node) -> Array:
-	if hud.has_method("boss_bars"):
-		var r: Array = []
-		for b in hud.call("boss_bars"):
-			if b is Dictionary and b.get("node") != null:
-				r.append(b)
+	var r: Array = []
+	if not hud.has_method("boss_bars"):
 		return r
-	if "boss" in hud and hud.get("boss") != null:
-		return [{"node": hud.get("boss"), "ratio": float(hud.get("boss_ratio")), "phase": int(hud.get("boss_phase_n"))}]
-	return []
+	for b in hud.call("boss_bars"):
+		if b is Dictionary and b.get("node") != null:
+			r.append(b)
+	return r
 
 
 func _barra_de(bars: Array, e: Enemy):

@@ -4,14 +4,14 @@
 # imprime REG|<ID>|PASS ou REG|<ID>|FAIL. PASS = o bug NÃO acontece mais.
 # Uso: tools/regressao/run_all.sh [IDs...]        (padrão: todos)
 #      AUTOTESTE=1 tools/regressao/run_all.sh B1  (o teste simula a correção: deve dar PASS)
-# Variáveis: GODOT (padrão godot), TEMPO (s por teste, padrão 180), LOGDIR.
+# Variáveis: GODOT (padrão godot), TEMPO (s por teste, padrão 400; a máquina compartilhada pode ser lenta), LOGDIR.
 # Saída: tabela ID · bug · estado · falhas; código 0 só se TODOS passarem.
 # SEGURANÇA: R3 grava no user:// e só roda com override.cfg isolado (GNOSIS-WT-<cargo>).
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PROJ="$(cd "$HERE/../.." && pwd)"
 GODOT="${GODOT:-godot}"
-TEMPO="${TEMPO:-180}"
+TEMPO="${TEMPO:-400}"
 LOGDIR="${LOGDIR:-${TMPDIR:-/tmp}/gnosis_regressao/$(basename "$PROJ")}"
 mkdir -p "$LOGDIR"
 
