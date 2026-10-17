@@ -71,6 +71,7 @@ class BalanceWorker extends Node:
 	var sim_pool: bool = false           # sim=poca (proposta P3)
 	var _zone_tick_t: float = -9.0
 	var _run_t: float = 0.0              # tempo de jogo total (s)       # último tique de poça contado (sim=poca)
+	var _softlock: bool = false          # a tela travou (vida 0 que não morre)
 	var _blocked: bool = false           # diálogo/loja abertos neste quadro
 	var shop_mode: String = "classica"   # "classica" (r1–r8) ou "gasta" (+vida máx.)
 
@@ -232,11 +233,23 @@ class BalanceWorker extends Node:
 			_timeout = true
 			print("BAT TIMEOUT na tela %d zona %d — matando a zona" % [_cur, _zone_cur])
 			# Diagnóstico: quem estava vivo e onde (pra achar stalls determinísticos).
+			var alive_n := 0
+			var zero_n := 0
 			for e in get_tree().get_nodes_in_group("enemy"):
 				if is_instance_valid(e) and e.estate != Enemy.EState.DEAD:
+					alive_n += 1
+					if e.health.current_health <= 0:
+						zero_n += 1
 					print("BAT   vivo: %s hp=%d pos=(%.0f,%.0f) estado=%s range=%.0f cd=%.2f" % [e.type_id, e.health.current_health, e.global_position.x, e.global_position.y, Enemy.EState.keys()[e.estate], e.attack_range, e.cooldown_timer])
 					e._on_hit_received(e.health.max_health + 9999, pl.global_position, 10.0, false, null)
 			print("BAT   player: pos=(%.0f,%.0f) estado=%s cd=%.2f chao=%s" % [pl.global_position.x, pl.global_position.y, Player.State.keys()[pl.state], pl.attack_cd, str(pl.is_on_floor())])
+			# TRAVA: só sobrou inimigo com vida 0 que não morre (o golpe matou, mas
+			# o estado voltou de DEAD para HURT). Repetir o timeout não resolve.
+			if alive_n > 0 and zero_n == alive_n:
+				_softlock = true
+				print("BAT TRAVA na tela %d: %d inimigo(s) com vida 0 e estado != DEAD — encerrando" % [_cur, zero_n])
+				_finish("TRAVOU na tela %d (inimigo com vida 0 que não morre)" % _cur)
+				return
 		_drive(pl, delta)
 
 	## A "mão" do bot: anda até o inimigo mais perto, bate, esquiva, conjura.
@@ -476,7 +489,7 @@ class BalanceWorker extends Node:
 
 	func _flush_row() -> void:
 		if _cur > 0:
-			_rows.append({"screen": _cur, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": _timeout, "zones": _zones,
+			_rows.append({"screen": _cur, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": 2 if _softlock else (1 if _timeout else 0), "zones": _zones,
 				"src": _src.duplicate(), "boss": _boss, "hits": _hits, "maxhit": _maxhit,
 				"earned": _earned, "orbs": Progression.orbs, "maxhp": _mhp})
 		_earned = 0
@@ -501,7 +514,8 @@ class BalanceWorker extends Node:
 		var tot_m := 0
 		for r in _rows:
 			var warn := ""
-			if r.timeout: warn += " TIMEOUT"
+			if r.timeout == 2: warn += " TRAVOU"
+			elif r.timeout: warn += " TIMEOUT"
 			if r.dmg >= 70: warn += " HOT"
 			elif r.dmg <= 3 and r.screen > 3: warn += " COLD"
 			if r.time > 45.0 + 60.0 * float(r.zones) and not r.timeout: warn += " SLOW"
@@ -543,5 +557,5 @@ class BalanceWorker extends Node:
 			for k in ks:
 				parts.append("%s:%d" % [k, int(src[k])])
 			f.store_line("%d,%d,%.1f,%d,%d,%d,%d,%d,%s,%d,%d,%d,%s" % [r.screen, r.zones, r.time, r.dmg, r.deaths,
-				1 if r.timeout else 0, r.hits, r.maxhit, r.boss, r.earned, r.orbs, r.maxhp, ";".join(parts)])
+				r.timeout, r.hits, r.maxhit, r.boss, r.earned, r.orbs, r.maxhp, ";".join(parts)])
 		f.close()
