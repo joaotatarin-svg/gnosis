@@ -1,6 +1,6 @@
 extends Node2D
 class_name FinalBattle
-## A BATALHA FINAL (tela 54, a Mente): as DUAS formas do Demiurgo ao mesmo
+## A BATALHA FINAL (tela 68, a Mente): as DUAS formas do Demiurgo ao mesmo
 ## tempo — o Rei (a mentira, PNG) e o Colosso Oco (a verdade, procedural).
 ## Regra (Ornstein & Smough): quando uma cai, a outra a REFAZ em REVIVE_AFTER s;
 ## precisam cair num intervalo parecido. Os 7 Anéis giram em volta da arena e
@@ -21,6 +21,7 @@ var _larvas: Array = []
 var _t: float = 0.0
 var _done: bool = false
 var _first_fall_done: bool = false
+var _rings_free: bool = false       # a anagnórise levou os Anéis (não desenha mais)
 
 
 func start(parent: Node, scene: PackedScene, spawn_points: Array) -> void:
@@ -31,7 +32,7 @@ func start(parent: Node, scene: PackedScene, spawn_points: Array) -> void:
 	for f in forms:
 		f.revivable = true
 		f.defeated.connect(_on_form_down)
-	get_tree().call_group("hud", "toast", "As duas formas precisam cair JUNTAS.")
+	get_tree().call_group("hud", "toast", "As duas formas precisam cair juntas.")
 	# Card das duas faces (letterbox), como todo chefe ao nascer.
 	Gnosis.boss_card("demiurgo", RunManager.MAX_SCREEN)
 
@@ -67,7 +68,22 @@ func _on_form_down(e: Enemy) -> void:
 		var last := Progression.next_stolen_ring()
 		if last != "":
 			Progression.restore_ring(last)
+		# M9: o pico de poder coincide com o de memória — legendas, sem pausar
+		# (o relógio de 14 s corre). "Eu desci de propósito... para te buscar."
+		Juice.slow_mo(0.2, 1.2)
+		Gnosis.captions(Narrative.seventh_ring())
 
+
+
+## Cena D (Staging): os 7 Anéis param onde estão e passam para a encenação,
+## que os faz descer em espiral até a Sophia. Devolve as posições (mundo).
+func release_rings() -> Array:
+	var pts: Array = []
+	for k in 7:
+		pts.append(_ring_pos(k))
+	_rings_free = true
+	queue_redraw()
+	return pts
 
 func _other(e: Enemy) -> Enemy:
 	for f in forms:
@@ -112,6 +128,8 @@ func _ring_pos(k: int) -> Vector2:
 
 ## Os 7 Anéis girando em volta da arena (glifo por Arconte, brilho pulsante).
 func _draw() -> void:
+	if _rings_free:
+		return
 	for k in 7:
 		var p := to_local(_ring_pos(k))
 		var pulse := 0.6 + 0.4 * sin(_t * 3.0 + float(k))
