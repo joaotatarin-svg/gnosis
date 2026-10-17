@@ -139,6 +139,7 @@ class ProbeWorker extends Node:
 		_near = 0
 		_phase_t = {}
 		_phase_seen = {}
+		_src = {}
 		_plan = {}
 		_load_t = 0.0
 		_done_screen = false
@@ -251,9 +252,21 @@ class ProbeWorker extends Node:
 		_hp_seen = pl.health.current_health
 		pl.health.health_changed.connect(_on_pl_hp)
 
+	var _src: Dictionary = {}
+
 	func _on_pl_hp(cur: int, _mx: int) -> void:
 		if _fight_on and _hp_seen >= 0 and cur < _hp_seen:
 			_dmg_taken += _hp_seen - cur
+			var lab := "outro"
+			for b in _bosses:
+				if is_instance_valid(b) and b.brain != null and b.estate == Enemy.EState.STRIKE:
+					lab = str(b.brain.mv.get("id", "?"))
+			if lab == "outro":
+				var pl := get_tree().get_first_node_in_group("player") as Node2D
+				for hz in get_tree().get_nodes_in_group("boss_hazard"):
+					if is_instance_valid(hz) and pl != null and hz.contains(pl.global_position):
+						lab = "perigo"
+			_src[lab] = int(_src.get(lab, 0)) + _hp_seen - cur
 		_hp_seen = cur
 
 	func _end_fight(why: String) -> void:
@@ -270,9 +283,9 @@ class ProbeWorker extends Node:
 		for k in keys:
 			ph.append("%s@%.0fs" % [k, float(_phase_t[k])])
 		var row := {"screen": s, "boss": "+".join(names), "time": _t, "hits": _hits, "dealt": _dmg_dealt,
-			"taken": _dmg_taken, "near": _near, "why": why, "phases": " ".join(ph), "wl": Progression.weapon_level}
+			"taken": _dmg_taken, "near": _near, "why": why, "phases": " ".join(ph), "wl": Progression.weapon_level, "src": str(_src)}
 		_rows.append(row)
-		print("PROBE tela=%d %s t=%.0fs golpes=%d dano_dado=%d dano_tomado=%d quase_mortes=%d arma=%d [%s] %s" % [s, row.boss, _t, _hits, _dmg_dealt, _dmg_taken, _near, row.wl, why, row.phases])
+		print("PROBE tela=%d %s t=%.0fs golpes=%d dano_dado=%d dano_tomado=%d quase_mortes=%d arma=%d [%s] %s fontes=%s" % [s, row.boss, _t, _hits, _dmg_dealt, _dmg_taken, _near, row.wl, why, row.phases, row.src])
 		_flush_caps()
 		_next_screen.call_deferred()
 

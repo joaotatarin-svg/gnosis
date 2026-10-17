@@ -42,6 +42,13 @@ const PHASE_ROAR := 1.3               # s da transição de fase (invulnerável)
 ## SAI DE CIMA: quem cola e bate ESCAPE_HITS vezes em ESCAPE_WINDOW s leva o
 ## golpe de repulsão (vermelho, curto) — o chefe não é saco de pancada; a
 ## leitura é "3–4 golpes e sai". Cada chefe pode trocar o `escape_id`.
+## Multiplicador de dano por estado do chefe (as JANELAS de punição).
+var window_mult := {
+	Enemy.EState.WINDUP: 0.5, Enemy.EState.STRIKE: 0.5, Enemy.EState.CHASE: 0.85,
+	Enemy.EState.RECOVER: 1.2, Enemy.EState.STAGGER: 1.4, Enemy.EState.HURT: 1.0,
+}
+## Escala do dano de TODOS os golpes deste chefe (balance por chefe).
+var dmg_scale: float = 1.0
 var escape_hits: int = 4
 var escape_window: float = 2.5
 var escape_id: String = "repelir"
@@ -61,6 +68,12 @@ var _roar_t: float = 0.0
 var _t: float = 0.0
 var _spawned: Array = []
 var _dead: bool = false
+var _airborne: bool = false          # SALTO/MERGULHO: fora do alcance
+var _leap_y0: float = 0.0
+const LEAP_HIDE := 520.0
+var _dying: int = -1                  # -1 vivo · 0..3 na sequência · 4 = liberou a morte
+## Tempos da sequência de morte (s REAIS): impacto, cambaleio, colapso, pausa.
+const DEATH_STEPS := [0.35, 0.55, 0.95, 0.6]
 
 
 ## Fábrica: o script de cada chefe (por type_id; senão pelo kit).
@@ -86,13 +99,14 @@ func setup(enemy: Enemy) -> void:
 	rng.seed = hash("%s-%d" % [e.type_id, screen])
 	var hp := BossTuning.boss_health(e.type_id, screen)
 	e.health.setup(hp)
-	_base_dmg = e.attack_hitbox.damage
 	e.attack_cooldown = 0.0
 	_poise_max = BossTuning.expected_hit(BossTuning.expected_weapon_level(screen)) * POISE_HITS
 	_poise = _poise_max
 	moves = _build_moves()
 	_on_setup()
 	_add_default_escape()
+	_base_dmg = maxi(1, int(round(float(e.attack_hitbox.damage) * dmg_scale)))
+	e.contact_hitbox.damage = maxi(1, int(round(float(e.contact_hitbox.damage) * dmg_scale * 0.7)))
 	e.defeated.connect(_on_defeated)
 
 
@@ -211,6 +225,8 @@ func strike() -> bool:
 				else:
 					_fire(dir, float(oy))
 				i += 1
+		"leap":
+			_leap_start()
 		"cast":
 			pass
 	_on_strike(mv)
@@ -218,6 +234,9 @@ func strike() -> bool:
 
 
 func strike_tick(delta: float) -> void:
+	if _airborne:
+		e.velocity = Vector2.ZERO
+		e.global_position.y = _leap_y0 - LEAP_HIDE
 	if mv.is_empty():
 		return
 	if String(mv.get("kind", "")) == "charge":
@@ -231,9 +250,17 @@ func strike_tick(delta: float) -> void:
 
 ## Dano que chega: filtro do chefe + invulnerável no rugido de fase.
 func filter_damage(dmg: int, attacker: Node) -> int:
-	if _roar_t > 0.0:
+	if _roar_t > 0.0 or _dying >= 0 or _airborne:
 		return 0
-	return _filter(dmg, attacker)
+	dmg = _filter(dmg, attacker)
+	if dmg <= 0:
+		return dmg
+	# JANELAS: armado (preparando/golpeando) ele aguenta; aberto (recuperando,
+	# atordoado) ele sente. O jogo recompensa ESPERAR a hora e punir.
+	var k: float = float(window_mult.get(e.estate, 1.0))
+	if k < 1.0:
+		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -18.0 * e._art_scale), Color(0.85, 0.9, 1.0))
+	return maxi(1, int(round(float(dmg) * k)))
 
 
 ## POSTURA: false = não recua (o Enemy segue o golpe). Quebrar a postura =
@@ -376,6 +403,53 @@ func _start(m: Dictionary) -> void:
 	_on_windup(m)
 
 
+## SALTO (kind "leap"): some para o alto (ou para baixo da terra, se
+## `burrow`), uma sombra/marca SEGUE a Sophia e trava 0,45 s antes; ele cai
+## ali com pancada e ondas. Intocável no ar. strike = tempo no ar.
+func _leap_start() -> void:
+	var pl := _player()
+	_leap_y0 = e.global_position.y
+	_airborne = true
+	var burrow: bool = bool(mv.get("burrow", false))
+	ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, 10), e.eye_color)
+	AoeNova.spawn(e.get_parent(), e.global_position + Vector2(0, 14), 0, 70.0, e.eye_color)
+	Juice.shake(0.3)
+	e.global_position.y = _leap_y0 - LEAP_HIDE
+	e.reset_physics_interpolation()
+	var x0: float = pl.global_position.x if pl != null else e.global_position.x
+	var h := hazard(x0, "circle", float(mv.get("land_r", 70.0)), maxf(0.3, e.strike_time - 0.02), float(mv.get("dmg", 1.2)))
+	if burrow:
+		h.shape = "column"
+		h.half_w = float(mv.get("land_r", 46.0))
+	h.follow = pl
+	h.lock_at = 0.45
+	h.knockback = 300.0
+	h.struck.connect(_leap_land.bind(h))
+
+
+func _leap_land(h: BossHazard) -> void:
+	if not is_instance_valid(e) or _dead:
+		_airborne = false
+		return
+	_airborne = false
+	var b := arena_bounds()
+	e.global_position = Vector2(clampf(h.global_position.x, b.x + 40.0, b.y - 40.0), _leap_y0)
+	e.reset_physics_interpolation()
+	e.velocity = Vector2.ZERO
+	AoeNova.spawn(e.get_parent(), e.global_position + Vector2(0, 14), 0, 130.0, e.eye_color)
+	Juice.shake(0.6)
+	var waves: int = int(mv.get("waves", 0))
+	if waves > 0:
+		ground_wave(1, float(mv.get("wave_dmg", 0.6)), float(mv.get("wave_speed", 240.0)))
+		ground_wave(-1, float(mv.get("wave_dmg", 0.6)), float(mv.get("wave_speed", 240.0)))
+	_on_land(mv)
+
+
+## O salto pousou (extras do chefe).
+func _on_land(_m: Dictionary) -> void:
+	pass
+
+
 ## Golpe de repulsão padrão (quem não definiu o seu): pancada em volta de si.
 func _add_default_escape() -> void:
 	if not _find(escape_id).is_empty():
@@ -512,6 +586,69 @@ func _later(t: float, cb: Callable) -> void:
 	tm.timeout.connect(func() -> void:
 		if not _dead and is_instance_valid(self):
 			cb.call())
+
+
+## Morte = MOMENTO. Chamado pelo Enemy._on_died: true = segura a morte (a
+## sequência roda e depois chama _on_died de novo, que segue o caminho normal).
+func hold_death() -> bool:
+	if _dying >= 4:
+		return false
+	if _dying >= 0:
+		return true
+	_dying = 0
+	_dead = true
+	_chain.clear()
+	mv = {}
+	for n in _spawned.duplicate():
+		if is_instance_valid(n) and n is BossHazard:
+			remove_node(n)
+	e.attack_hitbox.deactivate()
+	e.attack_hitbox.scale = Vector2.ONE
+	e.contact_hitbox.set_deferred("monitoring", false)
+	e.hurtbox.set_deferred("monitoring", false)
+	e.estate = Enemy.EState.STAGGER
+	e.attack_timer = 999.0
+	e.velocity = Vector2(-e.atk_dir * 120.0, -80.0)
+	_death_sequence()
+	return true
+
+
+func _death_sequence() -> void:
+	# 0 — IMPACTO: o último golpe pesa (hitstop longo + câmera lenta curta)
+	e.boss_dying.emit(0)
+	Juice.hit_stop(0.2)
+	Juice.slow_mo(0.3, 1.0)
+	Juice.shake(0.8)
+	Juice.rumble(0.6, 0.8, 0.4)
+	e._flash(Color(3.2, 3.2, 3.2, 1), Enemy.VIB_HEAVY)
+	Audio.duck_music(3.0, -14.0)
+	await _real_wait(DEATH_STEPS[0])
+	# 1 — CAMBALEIA: o quadro de dor segurado, tremendo
+	_dying = 1
+	e.boss_dying.emit(1)
+	e._flash(Color(2.2, 2.0, 1.8, 1), Enemy.VIB_HEAVY)
+	await _real_wait(DEATH_STEPS[1])
+	# 2 — COLAPSO: os quadros de morte (de joelhos / desmoronando)
+	_dying = 2
+	e.boss_dying.emit(2)
+	e.estate = Enemy.EState.DEAD
+	Juice.shake(0.5)
+	await _real_wait(DEATH_STEPS[2])
+	# 3 — PAUSA: um instante de silêncio com o corpo caído
+	_dying = 3
+	e.boss_dying.emit(3)
+	await _real_wait(DEATH_STEPS[3])
+	# 4 — DESINTEGRAÇÃO: libera a morte normal (recompensa, defeated, gibs)
+	_dying = 4
+	e.boss_dying.emit(4)
+	if is_instance_valid(e):
+		e.estate = Enemy.EState.STAGGER
+		e._on_died()
+
+
+## Espera em tempo REAL (ignora câmera lenta e hitstop; corre com o jogo pausado).
+func _real_wait(t: float) -> void:
+	await get_tree().create_timer(t, true, false, true).timeout
 
 
 func _on_defeated(_x) -> void:

@@ -63,3 +63,18 @@ Se renomearem algum, me avisem (ou ajustem `scripts/entities/bosses/boss_brain.g
 ## Para o Áudio
 - `boss_phase2` toca em toda troca de fase (2 e 3). Se fizerem um `boss_phase3`, troco. A música sobe
   o pitch 3,5 % por fase (`Audio.set_music_pitch`) — se tiverem camadas por fase, me digam a API.
+
+## Para o integrador de ARTE (dir2/arte-gpt) — MORTE DE CHEFE = MOMENTO
+Feedback do João: "só desmonta no final; acaba murcha". Agora a morte de todo chefe com cérebro
+(não vale para as formas revivíveis da batalha final enquanto a outra está de pé) segue uma
+SEQUÊNCIA em tempo real, e o Enemy emite `signal boss_dying(step: int)`:
+| passo | tempo (s reais) | o que o jogo faz | estado/quadro |
+|---|---|---|---|
+| 0 impacto | 0,35 | hitstop 0,2 + câmera lenta 0,3× por 1 s + tremor + flash branco + música abaixa | STAGGER → quadro `hurt` |
+| 1 cambaleia | 0,55 | flash quente + vibração | `hurt` segurado |
+| 2 colapso | 0,95 | `estate = DEAD` → quadros `dead` (de joelhos/desmoronando) | `dead` |
+| 3 pausa | 0,60 | nada (silêncio, corpo caído) | `dead` |
+| 4 desintegração | — | `_on_died` normal: `boss_die`, recompensa, `defeated`, quadro de morte 0,4 s e gibs | `dead` → some |
+O chefe NÃO é removido antes do passo 4. Para os fragmentos de pintura em luz: ouçam
+`boss_dying(4)` (ou troquem `_burst_gibs`/`_death_pose_then_burst`, que são de vocês/do inimigos6).
+Se quiserem outros tempos, mudem `BossBrain.DEATH_STEPS` comigo.
