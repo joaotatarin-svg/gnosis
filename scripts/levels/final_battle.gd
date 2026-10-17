@@ -11,6 +11,19 @@ signal won
 const REVIVE_AFTER := 14.0
 const RING_SPAWN_EVERY := 6.0
 const MAX_LARVAS := 3
+# Onde as formas nascem (px a partir da parede esquerda da arena trancada da
+# Mente — Level._lock_final_arena). A vista (zoom 1,2) cobre ~533 px de mundo:
+# Sophia a 70, Rei (~85 px de largura) a 215, Colosso (~160 px) a 420.
+const ARENA_LEFT := Level.ZONE_FIRST_X - Level.ZONE_HALF
+const REI_DX := 215.0
+const COL_DX := 420.0
+# Na luta, as duas formas não se EMPILHAM (o Colosso por cima do Rei virava um
+# borrão dourado): se ficam a menos de APART_MIN px por STACK_TIME s, o Rei
+# (a mentira, que luta à distância) pisca para o outro lado da Sophia.
+const APART_MIN := 120.0
+const STACK_TIME := 0.5
+const BLINK_COOLDOWN := 3.5
+const BLINK_DIST := 190.0
 
 var enemy_scene: PackedScene
 var arena_center: Vector2 = Vector2(640, 250)
@@ -22,6 +35,8 @@ var _t: float = 0.0
 var _done: bool = false
 var _first_fall_done: bool = false
 var _rings_free: bool = false       # a anagnórise levou os Anéis (não desenha mais)
+var _stack_t: float = 0.0           # há quanto tempo as formas estão empilhadas
+var _blink_cd: float = 0.0
 # Sorteio PRÓPRIO da batalha (Balance): o randi() global também é consumido
 # pelo Áudio/gibs em quantidades que dependem do relógio real — a tela 68 dava
 # dano diferente em duas rodadas iguais do bot. Semeado pela tela.
@@ -31,8 +46,12 @@ var _rng: RandomNumberGenerator
 func start(parent: Node, scene: PackedScene, spawn_points: Array) -> void:
 	enemy_scene = scene
 	_rng = _screen_rng(RunManager.MAX_SCREEN)
-	var rei := _spawn("rei_final", parent, spawn_points[0].global_position)
-	var col := _spawn("colosso", parent, spawn_points[spawn_points.size() - 1].global_position + Vector2(120, 0))
+	# F2: as duas formas nascem DENTRO do quadro e separadas — o Rei à
+	# esquerda-centro, o Colosso à direita (a arena trancada começa em
+	# ARENA_LEFT; a Sophia acorda a 70 px dela e a câmera mostra ARENA_LEFT..+533).
+	var y: float = (spawn_points[0] as Node2D).global_position.y if not spawn_points.is_empty() else 250.0
+	var rei := _spawn("rei_final", parent, Vector2(ARENA_LEFT + REI_DX, y))
+	var col := _spawn("colosso", parent, Vector2(ARENA_LEFT + COL_DX, y))
 	forms = [rei, col]
 	for f in forms:
 		f.revivable = true
@@ -59,7 +78,48 @@ func _spawn(id: String, parent: Node, pos: Vector2) -> Enemy:
 	e.type_id = id
 	parent.add_child(e)
 	e.global_position = pos
+	# Nasce virado para a Sophia (no card o mundo está congelado).
+	var pl := get_tree().get_first_node_in_group("player") as Node2D
+	var vis = e.get("visual")
+	if pl != null and vis is Node2D and pl.global_position.x < pos.x:
+		(vis as Node2D).scale.x = -absf((vis as Node2D).scale.x)
 	return e
+
+
+## F2: separa as formas empilhadas — o Rei pisca para o outro lado da Sophia.
+func _keep_apart(delta: float) -> void:
+	_blink_cd -= delta
+	if forms.size() < 2:
+		return
+	var rei: Enemy = forms[0]
+	var col: Enemy = forms[1]
+	if not (is_instance_valid(rei) and is_instance_valid(col)) or down_since.has(rei) or down_since.has(col):
+		_stack_t = 0.0
+		return
+	if absf(rei.global_position.x - col.global_position.x) >= APART_MIN:
+		_stack_t = 0.0
+		return
+	_stack_t += delta
+	if _stack_t < STACK_TIME or _blink_cd > 0.0 or rei.estate != Enemy.EState.CHASE:
+		return
+	var pl := get_tree().get_first_node_in_group("player") as Node2D
+	if pl == null:
+		return
+	var lo := ARENA_LEFT + 50.0
+	var hi := ARENA_LEFT + Level.ZONE_HALF * 2.0 - 50.0
+	var side := -signf(col.global_position.x - pl.global_position.x)
+	if side == 0.0:
+		side = -1.0
+	var x := clampf(pl.global_position.x + side * BLINK_DIST, lo, hi)
+	if absf(x - col.global_position.x) < APART_MIN or absf(x - pl.global_position.x) < 90.0:
+		# Ela está contra a parede: o outro lado não cabe; vai além do Colosso.
+		x = clampf(col.global_position.x - side * BLINK_DIST, lo, hi)
+		if absf(x - col.global_position.x) < APART_MIN:
+			return
+	if rei.has_method("_blink_to"):
+		rei.call("_blink_to", x)
+	_blink_cd = BLINK_COOLDOWN
+	_stack_t = 0.0
 
 
 func _on_form_down(e: Enemy) -> void:
@@ -139,6 +199,7 @@ func _process(delta: float) -> void:
 	if _done:
 		return
 	_t += delta
+	_keep_apart(delta)
 	# Ressurreição: a forma caída se refaz se a outra demorar.
 	for e in down_since.keys():
 		if not is_instance_valid(e):

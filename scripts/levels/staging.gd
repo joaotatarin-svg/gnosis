@@ -169,6 +169,10 @@ func _scene_open() -> void:
 
 func _on_line(index: int, line: Dictionary) -> void:
 	_flush()
+	if index == 0:
+		# O golpe final pode criar o número DEPOIS de a cena abrir (a morte do
+		# chefe chama a cena no meio do golpe): limpa de novo na 1ª fala.
+		_clear_damage_numbers()
 	var cue := String(line.get("cue", ""))
 	var who := String(line.get("speaker", ""))
 	var text := String(line.get("text", ""))
