@@ -202,3 +202,22 @@ parada, golpe forte, magia × níveis 1→5).
   Arconte (auréola/coroa) — só a arte própria resolve; ficam pequenos (escala da criatura).
 - Prancha `gifs/bots_antes_depois.png` (AnimQA `-- bot_board`: Arconte a 55% · antes · depois parado · depois preparando).
 - Gerador das receitas: `tools/anim_bosses/mk_bot_recipes.py` (lê `C:\gnosis-wt\_gpt\out\bot_<n>_<id>_*.png`).
+
+## Bug "Harmas fantasma" (João, jogando) — corrigido
+
+- **Causa principal:** os meios do RIFE no andar (commit b1afc8b e os das criaturas/bots) fundiam duas
+  poses distantes — duas pernas/barrigas meio-sobrepostas que liam como corpo transparente. **Removidos de
+  todo andar** (chefes, criaturas, bots): só quadros desenhados, pela distância (bípedes de 2 passos:
+  walk_0 → idle_0 → walk_1 → idle_1; espectros/fera/Rei/Armupiel: walk_0 ↔ walk_1; criaturas e bots:
+  walk_0..2). Os meios do PARADO (poses quase iguais) ficaram.
+- **Causa secundária:** folhas que já vêm com alfa (Harmas, Soter) tinham o corpo a 0,94–0,996 de
+  opacidade (nenhum pixel 255). `build_frames.slice_sheet` agora deixa o miolo opaco (a borda
+  antisserrilhada e o que for translúcido de propósito ficam; `raw_alpha_cells` = ["fade"] do Soter, marcado
+  `translucent` no JSON).
+- **Trava automática (PuppetQA `_check_opacity`):** em todos os atlas (sophia, bosses, creatures, npcs)
+  falha se o miolo do corpo de algum quadro tiver opacidade média < 0,95 ou > 15% abaixo de 0,85, ou se
+  qualquer andar/corrida usar um meio do RIFE. Hoje: 311 quadros em 27 atlas, pior 0,982
+  (Astaphaios, véus translúcidos da arte). Sophia conferida (corrida `rund` sem RIFE).
+- Capturas: `gifs/harmas_andando_antes.gif` × `gifs/harmas_andando_depois.gif` e
+  `gifs/harmas_andando_antes_depois.png` (no trecho capturado o Harmas anda pouco: o "antes" não chega a
+  mostrar o quadro fundido; o "depois" não tem nenhum quadro fundido por construção).

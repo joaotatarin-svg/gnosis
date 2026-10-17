@@ -30,23 +30,7 @@
   "death": "lying"
  },
  "anchor_fix": {},
- "inbetween": {
-  "w1": [
-   "walk_0",
-   "walk_1",
-   1
-  ],
-  "w2": [
-   "walk_1",
-   "walk_2",
-   1
-  ],
-  "w3": [
-   "walk_2",
-   "walk_0",
-   1
-  ]
- },
+ "inbetween": {},
  "flex": {
   "cloth_top": 0.5,
   "cloth_amp": 1.5
@@ -61,14 +45,10 @@
   "walk": {
    "frames": [
     "walk_0",
-    "walk_0-walk_1_50",
     "walk_1",
-    "walk_1-walk_2_50",
-    "walk_2",
-    "walk_2-walk_0_50"
+    "walk_2"
    ],
-   "loop": true,
-   "fps": 7.0
+   "cycle_bodies": 0.9
   },
   "windup": {
    "frames": [

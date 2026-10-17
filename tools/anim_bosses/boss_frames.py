@@ -146,7 +146,7 @@ def build(name: str, use_rife: bool = True) -> None:
 	R = json.load(open(os.path.join(HERE, "recipes", name + ".json"), encoding="utf-8-sig"))
 	sheet = os.path.join(ROOT, R["sheet"])
 	cells = R.get("cells", ["idle_0", "idle_1", "walk_0", "walk_1", "windup", "strike", "hurt", "death"])
-	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells)
+	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []))
 	# recolorir células (ex.: o "fade" do Soter veio rosado: o GPT pintou o
 	# fantasma já misturado ao magenta) — mantém a luminância, troca a cor
 	for cn, col in R.get("recolor", {}).items():
@@ -250,7 +250,8 @@ def build(name: str, use_rife: bool = True) -> None:
 		m = frames[n]["m"]
 		flex[y:y + h, x:x + w] = flex_mask(img, m, R.get("flex", {}))
 		out_frames[n] = {"rect": [x, y, w, h], "top": round(m["top"], 2), "foot_y": round(m["foot_y"], 2),
-			"bottom": round(m["bottom"], 2), "pelvis_x": round(m["pelvis_x"], 2), "mid": bool(frames[n].get("mid", False))}
+			"bottom": round(m["bottom"], 2), "pelvis_x": round(m["pelvis_x"], 2), "mid": bool(frames[n].get("mid", False)),
+			"translucent": n in R.get("raw_alpha_cells", [])}
 	os.makedirs(OUT, exist_ok=True)
 	a = atlas[..., 3] / 255.0
 	rgb = fill_transparent_rgb(atlas[..., :3], a)

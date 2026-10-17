@@ -32,7 +32,8 @@
    "foot_y": 341.06,
    "bottom": 341.06,
    "pelvis_x": 117.35,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "idle_0-idle_1_25": {
    "rect": [
@@ -45,7 +46,8 @@
    "foot_y": 304.0,
    "bottom": 334.0,
    "pelvis_x": 124.5,
-   "mid": true
+   "mid": true,
+   "translucent": false
   },
   "idle_0-idle_1_50": {
    "rect": [
@@ -58,7 +60,8 @@
    "foot_y": 307.0,
    "bottom": 335.0,
    "pelvis_x": 129.65,
-   "mid": true
+   "mid": true,
+   "translucent": false
   },
   "idle_0-idle_1_75": {
    "rect": [
@@ -71,7 +74,8 @@
    "foot_y": 332.0,
    "bottom": 332.0,
    "pelvis_x": 130.7,
-   "mid": true
+   "mid": true,
+   "translucent": false
   },
   "idle_1": {
    "rect": [
@@ -84,7 +88,8 @@
    "foot_y": 339.71,
    "bottom": 339.71,
    "pelvis_x": 138.65,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "walk_0": {
    "rect": [
@@ -97,46 +102,8 @@
    "foot_y": 333.64,
    "bottom": 333.64,
    "pelvis_x": 165.0,
-   "mid": false
-  },
-  "walk_0-walk_1_25": {
-   "rect": [
-    0,
-    350,
-    263,
-    339
-   ],
-   "top": 45.0,
-   "foot_y": 326.0,
-   "bottom": 326.0,
-   "pelvis_x": 153.85,
-   "mid": true
-  },
-  "walk_0-walk_1_50": {
-   "rect": [
-    263,
-    350,
-    257,
-    339
-   ],
-   "top": 44.0,
-   "foot_y": 329.0,
-   "bottom": 329.0,
-   "pelvis_x": 147.8,
-   "mid": true
-  },
-  "walk_0-walk_1_75": {
-   "rect": [
-    1558,
-    0,
-    248,
-    344
-   ],
-   "top": 44.0,
-   "foot_y": 333.0,
-   "bottom": 333.0,
-   "pelvis_x": 148.6,
-   "mid": true
+   "mid": false,
+   "translucent": false
   },
   "walk_1": {
    "rect": [
@@ -149,12 +116,13 @@
    "foot_y": 339.71,
    "bottom": 339.71,
    "pelvis_x": 149.19,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "windup": {
    "rect": [
-    520,
-    350,
+    1558,
+    0,
     214,
     332
    ],
@@ -162,11 +130,12 @@
    "foot_y": 306.0,
    "bottom": 321.51,
    "pelvis_x": 118.91,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "strike": {
    "rect": [
-    734,
+    0,
     350,
     288,
     323
@@ -175,11 +144,12 @@
    "foot_y": 314.76,
    "bottom": 314.76,
    "pelvis_x": 137.09,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "hurt": {
    "rect": [
-    1022,
+    288,
     350,
     284,
     317
@@ -188,11 +158,12 @@
    "foot_y": 308.7,
    "bottom": 308.7,
    "pelvis_x": 164.06,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "death": {
    "rect": [
-    1306,
+    572,
     350,
     283,
     246
@@ -201,7 +172,8 @@
    "foot_y": 236.56,
    "bottom": 238.58,
    "pelvis_x": 186.4,
-   "mid": false
+   "mid": false,
+   "translucent": false
   }
  },
  "states": {
@@ -277,57 +249,14 @@
      ]
     },
     {
-     "f": "walk_0-walk_1_25",
-     "anchor": [
-      159.0,
-      334.71
-     ]
-    },
-    {
-     "f": "walk_0-walk_1_50",
-     "anchor": [
-      156.0,
-      335.71
-     ]
-    },
-    {
-     "f": "walk_0-walk_1_75",
-     "anchor": [
-      151.0,
-      337.71
-     ]
-    },
-    {
      "f": "walk_1",
      "anchor": [
       149.19,
       339.71
      ]
-    },
-    {
-     "f": "walk_0-walk_1_75",
-     "anchor": [
-      151.0,
-      337.71
-     ]
-    },
-    {
-     "f": "walk_0-walk_1_50",
-     "anchor": [
-      156.0,
-      335.71
-     ]
-    },
-    {
-     "f": "walk_0-walk_1_25",
-     "anchor": [
-      159.0,
-      334.71
-     ]
     }
    ],
-   "loop": true,
-   "fps": 6.0
+   "cycle_bodies": 0.9
   },
   "windup": {
    "frames": [

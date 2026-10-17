@@ -32,7 +32,8 @@
    "foot_y": 247.11,
    "bottom": 247.11,
    "pelvis_x": 78.7,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "idle_0-idle_1_25": {
    "rect": [
@@ -45,7 +46,8 @@
    "foot_y": 247.0,
    "bottom": 247.0,
    "pelvis_x": 78.96,
-   "mid": true
+   "mid": true,
+   "translucent": false
   },
   "idle_0-idle_1_50": {
    "rect": [
@@ -58,7 +60,8 @@
    "foot_y": 249.0,
    "bottom": 249.0,
    "pelvis_x": 79.3,
-   "mid": true
+   "mid": true,
+   "translucent": false
   },
   "idle_0-idle_1_75": {
    "rect": [
@@ -70,8 +73,9 @@
    "top": 8.0,
    "foot_y": 251.0,
    "bottom": 251.0,
-   "pelvis_x": 79.23,
-   "mid": true
+   "pelvis_x": 79.14,
+   "mid": true,
+   "translucent": false
   },
   "idle_1": {
    "rect": [
@@ -84,7 +88,8 @@
    "foot_y": 253.74,
    "bottom": 253.74,
    "pelvis_x": 80.72,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "talk_0": {
    "rect": [
@@ -97,7 +102,8 @@
    "foot_y": 247.11,
    "bottom": 247.66,
    "pelvis_x": 73.24,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "talk_1": {
    "rect": [
@@ -110,7 +116,8 @@
    "foot_y": 241.02,
    "bottom": 241.58,
    "pelvis_x": 83.06,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "bless_0": {
    "rect": [
@@ -123,7 +130,8 @@
    "foot_y": 253.74,
    "bottom": 253.74,
    "pelvis_x": 71.58,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "bless_1": {
    "rect": [
@@ -136,7 +144,8 @@
    "foot_y": 271.44,
    "bottom": 271.44,
    "pelvis_x": 83.34,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "turn_away": {
    "rect": [
@@ -149,7 +158,8 @@
    "foot_y": 243.24,
    "bottom": 243.24,
    "pelvis_x": 93.32,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "fade": {
    "rect": [
@@ -162,7 +172,8 @@
    "foot_y": 243.79,
    "bottom": 244.34,
    "pelvis_x": 78.26,
-   "mid": false
+   "mid": false,
+   "translucent": true
   }
  },
  "states": {
