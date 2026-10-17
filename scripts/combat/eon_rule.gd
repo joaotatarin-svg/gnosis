@@ -250,10 +250,11 @@ func _chain_hits(ch: Dictionary) -> void:
 		ch.hit.append(n)
 		var dmg := 4 + int(GameManager.current_screen / 10)
 		if n == player:
-			if n.has_method("_on_hit_received"):
-				n._on_hit_received(dmg, tip, 120.0, false, null)
+			# prende ANTES do dano (o dano liga i-frames e o apply_root recusa)
 			if n.has_method("apply_root"):
 				n.apply_root(CHAIN_ROOT)
+			if n.has_method("_on_hit_received"):
+				n._on_hit_received(dmg, tip, 120.0, false, null)
 		elif n is Enemy and n.estate != Enemy.EState.DEAD:
 			n.apply_damage(dmg * 3, tip, 160.0)
 			n.apply_root(CHAIN_ROOT * 2.0)

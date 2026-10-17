@@ -62,11 +62,15 @@ func _draw() -> void:
 
 func _on_area_entered(area: Area2D) -> void:
 	if area is Hurtbox and area.team == target_team:
-		area.receive_hit(damage, global_position, knockback)
+		# Status ANTES do dano: o dano liga os i-frames de dano da Sophia (0,6 s)
+		# e o apply_root dela recusa durante i-frames — na ordem antiga a corrente
+		# da Galila/do Carcereiro NUNCA prendia (achado do Combate2). Esquiva e
+		# bloqueio continuam escapando (o apply_root confere antes).
 		if root_time > 0.0 and area.owner != null and area.owner.has_method("apply_root"):
 			area.owner.apply_root(root_time)
 		if slow_time > 0.0 and area.owner != null and area.owner.has_method("apply_slow"):
 			area.owner.apply_slow(slow_time)
+		area.receive_hit(damage, global_position, knockback)
 		Juice.hit_stop(0.04)
 		Juice.shake(0.2)             # R3: vale o maior pedido do quadro (o dano na Sophia pede o seu)
 		Audio.play_sfx_at("proj_hit", global_position)
