@@ -1,5 +1,10 @@
 extends Control
-## Ateliê usa os MESMOS perfis e animador do jogo. Alterações são só prévia.
+## GALERIA (antigo Ateliê — backlog #17): a Sophia e os Arcontes com os MESMOS
+## perfis e animador do jogo (poses, pausar, espelhar, testar em combate).
+## Cada Arconte só aparece depois de ENCONTRADO na campanha e só pode ser
+## treinado na Provação depois de VENCIDO (`BestiaryLore`).
+## Ferramentas de desenvolvimento (receita visual, articulações, arma, paleta)
+## só no build de depuração — e nem nele com `--galeria-jogador` (capturas).
 
 const POSES := ["idle", "walk", "attack", "attack_heavy", "cast", "block", "dodge", "windup", "hurt", "sequence"]
 const POSE_NAMES := ["Repouso", "Caminhar", "Golpe leve", "Golpe forte", "Conjurar", "Aparar", "Esquiva", "Preparar golpe", "Receber impacto", "Ciclo de combate"]
@@ -30,6 +35,11 @@ var roster: Array[Button] = []
 var gear_button: Button
 var joints_button: Button
 var show_joints: bool = false
+var dev: bool = OS.is_debug_build() and not "--galeria-jogador" in OS.get_cmdline_user_args()
+var test_button: Button
+var tip_head: Label
+var tip_label: Label
+var _seen: Array[bool] = []
 
 func _ready() -> void:
 	GameManager.set_state(GameManager.State.MENU)
@@ -39,12 +49,13 @@ func _ready() -> void:
 	bg.modulate = Color(0.8, 0.8, 0.8)
 	add_child(bg)
 	add_child(CodexStyle.Motes.new())
-	CodexStyle.label(self, "Ateliê", Vector2(22, 9), 18, CodexStyle.GOLD_HI, 200, true)
-	CodexStyle.label(self, "ILUSTRAÇÃO · POSES · PERFIL · COMBATE", Vector2(22, 35), 7, CodexStyle.MUTED, 300, true)
+	CodexStyle.label(self, "Galeria", Vector2(22, 9), 18, CodexStyle.GOLD_HI, 200, true)
+	CodexStyle.label(self, "SOPHIA · ARCONTES · POSES", Vector2(22, 35), 7, CodexStyle.MUTED, 300, true)
 	CodexStyle.button(self, "Voltar", Vector2(543, 15), 75, func(): SceneManager.change_scene("res://scenes/ui/MainMenu.tscn"), false, "ui_back")
 	CodexStyle.button(self, "Bestiário", Vector2(446, 15), 88, func(): SceneManager.change_scene("res://scenes/ui/Gallery.tscn"))
 	for i in 8:
-		var title: String = "Sophia" if i == 0 else String(Bestiary.bosses[i - 1].name).split(",")[0]
+		_seen.append(i == 0 or BestiaryLore.is_seen(String(Bestiary.bosses[i - 1].id)))
+		var title: String = "Sophia" if i == 0 else (String(Bestiary.bosses[i - 1].name).split(",")[0] if _seen[i] else "? ? ?")
 		var b := CodexStyle.button(self, "%02d  %s" % [i, title], Vector2(22, 65 + i * 31), 126, _select.bind(i))
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		roster.append(b)
@@ -55,9 +66,13 @@ func _ready() -> void:
 	CodexStyle.rule(self, Vector2(391, 132), 200, Color(CodexStyle.GOLD, 0.6))
 	description = CodexStyle.label(self, "", Vector2(391, 140), 10, CodexStyle.MUTED, 230)
 	description.add_theme_font_override("font", CodexStyle.italic())
-	CodexStyle.label(self, "RECEITA VISUAL", Vector2(391, 212), 7, CodexStyle.GOLD, 200, true)
+	# Jogador: a DICA de combate da ficha. Depuração: a receita visual.
+	tip_head = CodexStyle.label(self, "RECEITA VISUAL" if dev else "DICA", Vector2(391, 212), 7, CodexStyle.GOLD, 200, true)
 	recipe = CodexStyle.label(self, "", Vector2(391, 225), 10, CodexStyle.MUTED, 218)
 	recipe.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	recipe.visible = dev
+	tip_label = CodexStyle.wrap_label(CodexStyle.label(self, "", Vector2(391, 225), 10, CodexStyle.PAPER, 222), 222)
+	tip_label.visible = not dev
 	joints_button = CodexStyle.button(self, "Ver articulações", Vector2(391, 249), 220, func():
 		show_joints = not show_joints
 		joints_button.text = "Ocultar articulações" if show_joints else "Ver articulações"
@@ -65,22 +80,26 @@ func _ready() -> void:
 			art.boss_puppet.debug_bones = show_joints
 			art.boss_puppet.debug_layer.visible = show_joints
 			art.boss_puppet.debug_layer.queue_redraw())
-	CodexStyle.button(self, "Testar em combate →", Vector2(391, 280), 220, func(): CodexSession.start_demo(maxi(0, selected - 1)), true)
+	joints_button.visible = dev
+	test_button = CodexStyle.button(self, "Testar em combate →", Vector2(391, 280), 220, func(): CodexSession.start_demo(maxi(0, selected - 1)), true)
 	CodexStyle.button(self, "‹", Vector2(169, 277), 28, func(): _set_pose(-1))
 	pose_label = CodexStyle.label(self, "Repouso", Vector2(201, 281), 9, CodexStyle.PAPER, 136, true)
 	pose_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	CodexStyle.button(self, "›", Vector2(343, 277), 28, func(): _set_pose(1))
-	CodexStyle.button(self, "Pausar / animar", Vector2(169, 313), 109, func():
+	CodexStyle.button(self, "Pausar / animar", Vector2(169, 313), 109 if dev else 202, func():
 		frozen = not frozen
 		art.set_process(not frozen))
-	CodexStyle.button(self, "Paleta", Vector2(286, 313), 85, func():
+	var pal := CodexStyle.button(self, "Paleta", Vector2(286, 313), 85, func():
 		palette = (palette + 1) % 3
 		_refresh())
+	pal.visible = dev
 	gear_label = CodexStyle.label(self, "", Vector2(180, 53), 7, CodexStyle.GOLD, 185, true)
+	gear_label.visible = dev
 	gear_button = CodexStyle.button(self, "Arma +", Vector2(391, 313), 105, func():
 		gear = gear % 5 + 1
 		_refresh())
-	CodexStyle.button(self, "Espelhar", Vector2(504, 313), 107, func(): art.scale.x *= -1)
+	gear_button.visible = dev
+	CodexStyle.button(self, "Espelhar", Vector2(504, 313) if dev else Vector2(391, 313), 107 if dev else 220, func(): art.scale.x *= -1)
 	_select(0)
 	roster[0].grab_focus()
 	CodexStyle.stagger_in(roster, -10.0, 0.03, 0.05)
@@ -109,18 +128,33 @@ func _refresh() -> void:
 		p.secondary = Color("d4a391")
 		p.eye = Color("ffbf89")
 	art.set_profile(p)
+	var locked := not _seen[selected]
+	art.modulate = Color(0, 0, 0, 0.85) if locked else Color.WHITE
 	if art.boss_puppet != null:
 		art.boss_puppet.debug_bones = show_joints
 		art.boss_puppet.debug_layer.visible = show_joints
 		art.boss_puppet.debug_layer.queue_redraw()
 	joints_button.disabled = selected == 0
-	art.modulate = [Color.WHITE,Color("a7e0d8"),Color("e2b5c4")][palette]
+	if not locked:
+		art.modulate = [Color.WHITE,Color("a7e0d8"),Color("e2b5c4")][palette]
 	var sc: float = 116.0 / p.height
 	art.scale = Vector2.ONE * sc
 	art.position = Vector2(265, 246 - 24.0 * p.height / 44.0 * sc)
 	name_label.text = "Sophia" if selected == 0 else String(Bestiary.bosses[selected - 1].name).split(",")[0]
 	type_label.text = "A FAÍSCA  /  PROTAGONISTA" if selected == 0 else "ARCONTE  /  " + RunManager.EON_NAMES[selected - 1].to_upper()
 	description.text = NOTES[selected]
+	var id := "sophia" if selected == 0 else String(Bestiary.bosses[selected - 1].id)
+	tip_label.text = BestiaryLore.tip(id)
+	tip_head.visible = dev or not locked
+	if locked:
+		name_label.text = "? ? ?"
+		type_label.text = "ARCONTE  /  AINDA NÃO ENCONTRADO"
+		description.text = "Continue a subida."
+		tip_label.text = ""
+	# Provação: a Sophia treina contra o Athoth; um Arconte, só depois de vencido.
+	var trial_ok := selected == 0 or BestiaryLore.boss_trial_unlocked(selected - 1)
+	test_button.disabled = not trial_ok
+	test_button.text = "Testar em combate →" if trial_ok else ("Vença-o na campanha para treinar" if not locked else "Ainda não encontrado")
 	var names := {"staff": "cajado", "hair": "cabelo", "pauldrons": "ombreiras", "helmet": "diadema", "hero": "faísca", "bracers": "braceletes", "crown": "coroa", "aura": "aura", "eyelid": "pálpebra", "maw": "boca", "horns": "chifres", "spikes": "espinhos", "blade": "lâmina", "chains": "correntes", "wings": "asas", "sewn": "boca costurada", "mirror": "espelhos", "rot": "gavinhas", "claws": "garras", "tail": "cauda", "bigcrown": "grande coroa"}
 	var parts := PackedStringArray()
 	for feature in p.features:

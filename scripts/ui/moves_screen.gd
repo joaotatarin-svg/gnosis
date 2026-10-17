@@ -1,8 +1,8 @@
 extends CanvasLayer
 class_name MovesScreen
 ## Tela de GOLPES & CONTROLES (overlay montado por código, sem cena).
-## Lista TODOS os combos da Sophia com a sequência de botões (J/K no teclado,
-## X/Y no controle), o nome e o nível de arma exigido — os trancados ficam em
+## Lista TODOS os combos da Sophia com a sequência de botões (as teclas e os
+## botões ATUAIS — remapeamento e tipo de controle via `InputGlyphs`), o nome e o nível de arma exigido — os trancados ficam em
 ## cinza com "Arma Nv. N" — mais os 7 Anéis (nome, Arconte, efeito; trancado
 ## se ainda não conquistado), a Esfera Solar e a tabela de controles.
 ## Rola com W/S, setas, analógico esquerdo ou roda do mouse. Fecha com Esc/B.
@@ -53,8 +53,16 @@ func _ready() -> void:
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.add_child(_list)
 	_fill()
-	var hint := CodexStyle.label(panel, "W/S · setas · analógico rolam      ·      Esc / B fecha", Vector2(18, PANEL_SIZE.y - 30), 10, CodexStyle.MUTED, 380)
-	hint.position.y = PANEL_SIZE.y - 30
+	var hint := InputGlyphs.Hint.new()
+	hint.pairs = [["@scroll", "rolam"], ["ui_cancel", "fecha"]]
+	hint.position = Vector2(18, PANEL_SIZE.y - 32)
+	hint.size = Vector2(300, 16)
+	hint.align = 0
+	panel.add_child(hint)
+	# Trocou teclado ↔ controle: as sequências e a tabela mudam junto.
+	var l := InputGlyphs.listener()
+	if l != null:
+		l.connect("device_changed", _on_device_changed)
 	_back = CodexStyle.button(panel, "Voltar", Vector2(PANEL_SIZE.x - 18 - 110, PANEL_SIZE.y - 40), 110, close, false, "")
 	_back.grab_focus()
 	CodexStyle.pop_in(panel)
@@ -62,11 +70,38 @@ func _ready() -> void:
 
 # --- conteúdo ---------------------------------------------------------------
 
+func _on_device_changed(_d: int) -> void:
+	_refill()
+
+
+func _refill() -> void:
+	if _list == null:
+		return
+	for c in _list.get_children():
+		_list.remove_child(c)
+		c.queue_free()
+	_fill()
+
+
+## Rótulo de `action` no teclado (todas as teclas: "L / Shift") ou no controle.
+func _kb(action: String) -> String:
+	var keys := PackedStringArray()
+	if InputMap.has_action(action):
+		for e in InputMap.action_get_events(action):
+			if e is InputEventKey:
+				keys.append(InputGlyphs.event_label(e, InputGlyphs.Device.KEYBOARD))
+	return " / ".join(keys) if not keys.is_empty() else "—"
+
+
+func _pad(action: String) -> String:
+	return InputGlyphs.label(action, InputGlyphs.pad_kind())
+
+
 func _fill() -> void:
 	var ch: CharacterData = GameManager.selected_character
 	if ch == null and GameContent.characters.size() > 0:
 		ch = GameContent.characters[0]
-	var gamepad := Input.get_connected_joypads().size() > 0
+	var gamepad := InputGlyphs.is_pad()
 	_header("GOLPES DO CAJADO", "sequência  (teclado · controle)" if not gamepad else "sequência  (controle · teclado)")
 	if ch != null:
 		var ground: Array = []
@@ -84,13 +119,13 @@ func _fill() -> void:
 		for c in air:
 			_combo_row(c, gamepad)
 	_gap()
-	_header("MAGIA INATA", "O  ·  RT")
+	_header("MAGIA INATA", "%s  ·  %s" % [_kb("skill2"), _pad("skill2")])
 	if ch != null:
 		var innate: SkillData = GameContent.innate_skill(ch)
 		if innate != null:
 			_row("%s" % innate.display_name, "%d Éter" % innate.mana_cost, innate.description, CodexStyle.PAPER, innate.color)
 	_gap()
-	_header("OS SETE ANÉIS", "U  ·  RB   (trocar: Q/E, 1–7 · LT)")
+	_header("OS SETE ANÉIS", "%s  ·  %s   (trocar: %s/%s, 1–7 · %s)" % [_kb("skill1"), _pad("skill1"), _kb("ring_prev"), _kb("ring_next"), _pad("ring_next")])
 	if ch != null:
 		var rs: Array = GameContent.ring_skills(ch)
 		for i in rs.size():
@@ -105,20 +140,20 @@ func _fill() -> void:
 			else:
 				_row(sk.display_name, "%d Éter" % sk.mana_cost, "%s  (%s)" % [sk.description, archon], CodexStyle.PAPER, sk.color)
 	_gap()
-	_header("CONTROLES", "teclado  ·  Xbox  ·  DualShock")
+	_header("CONTROLES", "teclado  ·  %s   (trocar em Opções › Controles)" % InputGlyphs.device_name(InputGlyphs.pad_kind()))
 	for c in [
-		["Mover", "A / D  (setas)", "analógico esq. / D-pad", "idem"],
-		["Pular", "Espaço", "A", "✕"],
-		["Golpe leve", "J", "X", "□"],
-		["Golpe forte", "K", "Y", "△"],
-		["Esquiva (invulnerável)", "L / Shift", "B", "○"],
-		["Bloquear / Aparar", "I  (segurar / no tempo)", "LB", "L1"],
-		["Anel equipado", "U", "RB", "R1"],
-		["Esfera Solar", "O", "RT", "R2"],
-		["Trocar Anel", "Q / E  ·  1–7", "LT / Back", "L2 / Share"],
-		["Pausa", "Esc / P", "Start", "Options"],
+		["Mover", "%s / %s  (setas)" % [InputGlyphs.label("move_left", InputGlyphs.Device.KEYBOARD), InputGlyphs.label("move_right", InputGlyphs.Device.KEYBOARD)], "analógico esq. / D-pad"],
+		["Pular", _kb("jump"), _pad("jump")],
+		["Golpe leve", _kb("attack_light"), _pad("attack_light")],
+		["Golpe forte", _kb("attack_heavy"), _pad("attack_heavy")],
+		["Esquiva (invulnerável)", _kb("dodge"), _pad("dodge")],
+		["Bloquear / Aparar", "%s  (segurar / no tempo)" % _kb("block"), _pad("block")],
+		["Anel equipado", _kb("skill1"), _pad("skill1")],
+		["Esfera Solar", _kb("skill2"), _pad("skill2")],
+		["Trocar Anel", "%s / %s  ·  1–7" % [_kb("ring_prev"), _kb("ring_next")], "%s / %s" % [_pad("ring_next"), _pad("ring_prev")]],
+		["Pausa", _kb("pause"), _pad("pause")],
 	]:
-		_control_row(c[0], c[1], c[2], c[3])
+		_control_row(c[0], c[1], c[2])
 	_gap()
 	_note("Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.")
 	_note("Escudeiros só caem com golpe forte ou magia.   A esquiva arrebenta a Corrente da Lei.")
@@ -126,8 +161,8 @@ func _fill() -> void:
 
 func _combo_row(c: ComboData, gamepad: bool) -> void:
 	var unlocked := c.required_weapon_level <= Progression.weapon_level
-	var kb := _seq(c.sequence, ["J", "K"])
-	var pad := _seq(c.sequence, ["X", "Y"])
+	var kb := _seq(c.sequence, [InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD), InputGlyphs.label("attack_heavy", InputGlyphs.Device.KEYBOARD)])
+	var pad := _seq(c.sequence, [_pad("attack_light"), _pad("attack_heavy")])
 	var seq := "%s   ·   %s" % [pad, kb] if gamepad else "%s   ·   %s" % [kb, pad]
 	var info := ""
 	if not unlocked:
@@ -223,10 +258,10 @@ func _row(name: String, mid: String, info: String, col: Color, mid_col: Color) -
 	_list.add_child(h)
 
 
-func _control_row(action: String, kb: String, xbox: String, ds: String) -> void:
+func _control_row(action: String, kb: String, pad: String) -> void:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 8)
-	for pair in [[action, 150, CodexStyle.PAPER], [kb, 150, CodexStyle.GOLD], [xbox, 130, CodexStyle.PAPER], [ds, 0, CodexStyle.MUTED]]:
+	for pair in [[action, 150, CodexStyle.PAPER], [kb, 180, CodexStyle.GOLD], [pad, 0, CodexStyle.PAPER]]:
 		var l := Label.new()
 		l.text = pair[0]
 		l.custom_minimum_size.x = pair[1]

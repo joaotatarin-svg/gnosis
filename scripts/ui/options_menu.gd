@@ -1,8 +1,11 @@
 extends Control
-## Opções (tela cheia ou overlay da pausa). Duas colunas:
-##   VÍDEO & JOGO — tela cheia · VSync · tremor de câmera (0–100%) · vibração ·
-##                  reduzir flashes · tamanho da legenda (P/M/G)
-##   ÁUDIO        — volumes Geral / Efeitos / Música
+## Opções (tela cheia ou overlay da pausa). Duas colunas (#34):
+##   VÍDEO     — modo de janela (janela · tela cheia · sem bordas) · VSync ·
+##               tremor de câmera (0–100%) · reduzir flashes
+##   ÁUDIO     — volumes Geral / Efeitos / Música
+##   JOGO      — velocidade do texto (0,5× · 1× · 2× · instantâneo) · legendas
+##               (P/M/G, com amostra) · números de dano · vibração do controle
+##   CONTROLES — "Teclas e botões" abre a tela de remapeamento (ControlsMenu)
 ## Tudo vai para `GameManager.settings` (ou Audio) e é salvo na hora pelo
 ## SaveManager; `GameManager.apply_settings()` reaplica vídeo no boot.
 ## Tremor, vibração e "Reduzir flashes" (padrão desligada) também são gravados
@@ -19,10 +22,20 @@ var overlay: bool = false
 
 const CAPTION_NAMES := ["Pequena", "Média", "Grande"]
 const COL_W := 236.0
+const ROW_H := 22.0
+## Modo de janela (`settings["window_mode"]`, contrato do Técnico):
+## 0 janela · 1 tela cheia exclusiva · 2 tela cheia sem borda.
+const WINDOW_NAMES := ["Janela", "Tela cheia", "Sem bordas"]
+## Velocidade do texto (`settings["text_speed"]`): 0.0 = instantâneo.
+const TEXT_SPEEDS := [0.5, 1.0, 2.0, 0.0]
+const TEXT_SPEED_NAMES := ["0,5×", "1×", "2×", "Instantâneo"]
 
 var _left: VBoxContainer
 var _right: VBoxContainer
-var _fullscreen: Button
+var _window: Button
+var _text_speed: Button
+var _controls: Button
+var _controls_open: bool = false
 var _vsync: Button
 var _rumble: Button
 var _caption: Button
@@ -41,38 +54,53 @@ func _ready() -> void:
 	_right.custom_minimum_size.x = COL_W
 	$Center/VBox/Cols.add_theme_constant_override("separation", 30)
 	var title: Label = $Center/VBox/Title
-	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_font_size_override("font_size", 20)
+	$Center/VBox.add_theme_constant_override("separation", 7)
+	_left.add_theme_constant_override("separation", 4)
+	_right.add_theme_constant_override("separation", 4)
 	var rule := CodexStyle.Rule.new()
 	rule.custom_minimum_size = Vector2(0, 7)
 	rule.color = Color(CodexStyle.GOLD, 0.85)
 	$Center/VBox.add_child(rule)
 	$Center/VBox.move_child(rule, 1)
-	_section(_left, "Vídeo & jogo")
-	_fullscreen = _toggle(_left, "Tela cheia", "fullscreen")
-	_first = _fullscreen
+	# --- coluna esquerda: vídeo + áudio ---
+	_section(_left, "Vídeo")
+	_window = _row_button(_left, "Modo de janela")
+	_window.pressed.connect(_cycle_window)
+	_refresh_window()
+	_first = _window
 	_vsync = _toggle(_left, "VSync", "vsync")
 	_slider(_left, "Tremor de câmera", 0.0, 1.0, float(GameManager.settings.get("shake", 1.0)), func(v: float):
 		GameManager.settings["shake"] = v
 		_push_juice(), func(v: float): return "%d%%" % int(round(v * 100.0)))
-	_rumble = _toggle(_left, "Vibração do controle", "rumble")
 	_toggle(_left, "Reduzir flashes", "reduce_flashes")
-	_caption = _row_button(_left, "Legendas")
+	_section(_left, "Áudio", true)
+	_slider(_left, "Volume geral", 0.0, 1.0, Audio.master_vol, func(v: float): Audio.set_volume("Master", v))
+	_slider(_left, "Efeitos", 0.0, 1.0, Audio.sfx_vol, func(v: float): Audio.set_volume("SFX", v))
+	_slider(_left, "Música", 0.0, 1.0, Audio.music_vol, func(v: float): Audio.set_volume("Music", v))
+	# --- coluna direita: jogo + controles ---
+	_section(_right, "Jogo")
+	_text_speed = _row_button(_right, "Velocidade do texto")
+	_text_speed.pressed.connect(_cycle_text_speed)
+	_refresh_text_speed()
+	_caption = _row_button(_right, "Legendas")
 	_caption.pressed.connect(_cycle_caption)
-	_refresh_caption()
-	_section(_right, "Áudio")
-	_slider(_right, "Volume geral", 0.0, 1.0, Audio.master_vol, func(v: float): Audio.set_volume("Master", v))
-	_slider(_right, "Efeitos", 0.0, 1.0, Audio.sfx_vol, func(v: float): Audio.set_volume("SFX", v))
-	_slider(_right, "Música", 0.0, 1.0, Audio.music_vol, func(v: float): Audio.set_volume("Music", v))
 	# Amostra viva do tamanho da legenda (muda junto com a opção).
 	_sample = Label.new()
 	_sample.text = "“Lembre-se do que arde.”"
 	_sample.add_theme_font_override("font", CodexStyle.italic())
 	_sample.add_theme_color_override("font_color", Color(CodexStyle.PAPER, 0.85))
 	_sample.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_sample.custom_minimum_size = Vector2(COL_W, 34)
+	_sample.custom_minimum_size = Vector2(COL_W, 26)
 	_sample.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_right.add_child(_sample)
 	_refresh_caption()
+	_toggle(_right, "Números de dano", "damage_numbers", true)
+	_rumble = _toggle(_right, "Vibração do controle", "rumble")
+	_section(_right, "Controles", true)
+	_controls = _row_button(_right, "Teclas e botões")
+	(_controls.get_node("Value") as Label).text = "›"
+	_controls.pressed.connect(_open_controls)
 	var back: Button = $Center/VBox/Back
 	back.pressed.connect(_back)
 	back.custom_minimum_size.y = CodexStyle.BTN_H
@@ -82,7 +110,11 @@ func _ready() -> void:
 		Audio.play_sfx("ui_open")
 
 
-func _section(parent: Node, text: String) -> void:
+func _section(parent: Node, text: String, gap: bool = false) -> void:
+	if gap:
+		var sp := Control.new()
+		sp.custom_minimum_size.y = 4
+		parent.add_child(sp)
 	var l := Label.new()
 	l.text = text.to_upper()
 	l.add_theme_font_override("font", CodexStyle.display())
@@ -97,7 +129,8 @@ func _row_button(parent: Node, text: String) -> Button:
 	b.set_meta("label", text)
 	b.text = text
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	b.custom_minimum_size = Vector2(COL_W, CodexStyle.BTN_H)
+	b.custom_minimum_size = Vector2(COL_W, ROW_H)
+	b.add_theme_font_size_override("font_size", 10)
 	var v := Label.new()
 	v.name = "Value"
 	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -114,12 +147,14 @@ func _row_button(parent: Node, text: String) -> Button:
 	return b
 
 
-## Botão que alterna um bool de GameManager.settings ("Tela cheia ...... Ligada").
-func _toggle(parent: Node, text: String, key: String) -> Button:
+## Botão que alterna um bool de GameManager.settings ("VSync ...... Ligada").
+## `default` = valor quando a chave ainda não existe nas opções.
+func _toggle(parent: Node, text: String, key: String, default: bool = false) -> Button:
 	var b := _row_button(parent, text)
 	b.set_meta("key", key)
+	b.set_meta("default", default)
 	b.pressed.connect(func():
-		GameManager.settings[key] = not bool(GameManager.settings.get(key, false))
+		GameManager.settings[key] = not bool(GameManager.settings.get(key, default))
 		_refresh_toggle(b)
 		_push_juice()
 		_apply_and_save())
@@ -128,10 +163,60 @@ func _toggle(parent: Node, text: String, key: String) -> Button:
 
 
 func _refresh_toggle(b: Button) -> void:
-	var on := bool(GameManager.settings.get(b.get_meta("key"), false))
+	var on := bool(GameManager.settings.get(b.get_meta("key"), b.get_meta("default", false)))
 	var v: Label = b.get_node("Value")
 	v.text = "Ligada" if on else "Desligada"
 	v.add_theme_color_override("font_color", CodexStyle.GOLD_HI if on else CodexStyle.MUTED)
+
+
+## Modo de janela: janela → tela cheia → sem bordas. Pelo `set_window_mode` do
+## Técnico quando existir (mantém `fullscreen` coerente); senão, o bool antigo.
+func _cycle_window() -> void:
+	var m := (_window_mode() + 1) % 3
+	if GameManager.has_method("set_window_mode"):
+		GameManager.call("set_window_mode", m)
+	else:
+		GameManager.settings["window_mode"] = m
+		GameManager.settings["fullscreen"] = m != 0
+	_refresh_window()
+	_apply_and_save()
+
+
+func _window_mode() -> int:
+	if GameManager.settings.has("window_mode"):
+		return clampi(int(GameManager.settings["window_mode"]), 0, 2)
+	return 2 if bool(GameManager.settings.get("fullscreen", false)) else 0
+
+
+func _refresh_window() -> void:
+	(_window.get_node("Value") as Label).text = WINDOW_NAMES[_window_mode()]
+
+
+func _cycle_text_speed() -> void:
+	GameManager.settings["text_speed"] = TEXT_SPEEDS[(_text_speed_index() + 1) % TEXT_SPEEDS.size()]
+	_refresh_text_speed()
+	_apply_and_save()
+
+
+func _text_speed_index() -> int:
+	var v := float(GameManager.settings.get("text_speed", 1.0))
+	var best := 1
+	for i in TEXT_SPEEDS.size():
+		if absf(float(TEXT_SPEEDS[i]) - v) < absf(float(TEXT_SPEEDS[best]) - v):
+			best = i
+	return best
+
+
+func _refresh_text_speed() -> void:
+	(_text_speed.get_node("Value") as Label).text = TEXT_SPEED_NAMES[_text_speed_index()]
+
+
+func _open_controls() -> void:
+	_controls_open = true
+	var m := ControlsMenu.open(self)
+	m.closed.connect(func():
+		_controls_open = false
+		_controls.grab_focus())
 
 
 func _cycle_caption() -> void:
@@ -211,6 +296,8 @@ func _back() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _controls_open:
+		return
 	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
 		Audio.play_sfx("ui_back")

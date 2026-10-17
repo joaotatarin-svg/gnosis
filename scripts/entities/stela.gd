@@ -35,7 +35,7 @@ func _ready() -> void:
 	area.body_exited.connect(_on_body_exited)
 
 	_prompt = Label.new()
-	_prompt.text = "J / X · ler a Estela"
+	_prompt.text = _prompt_text()
 	_prompt.position = Vector2(-60.0, -100.0)
 	_prompt.size = Vector2(120.0, 14.0)
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -52,7 +52,14 @@ func _process(delta: float) -> void:
 	# O convite só aparece quando ler é possível (sem inimigo vivo por perto).
 	if _near and not _busy:
 		_prompt.visible = not _enemy_near()
+		if _prompt.visible:
+			_prompt.text = _prompt_text()      # segue o dispositivo e o remapeamento (#33)
 	queue_redraw()
+
+
+## "J · ler a Estela" no teclado, "X · ler a Estela" no Xbox, etc.
+static func _prompt_text() -> String:
+	return "%s · ler a Estela" % InputGlyphs.label("attack_light")
 
 
 func _on_body_entered(body: Node) -> void:
@@ -250,7 +257,7 @@ class StelaPanel extends CanvasLayer:
 		var n: int = Gnosis.chronicles_count()
 		var total: int = Gnosis.chronicles_total()
 		foot.text = ("• nova Crônica  %d/%d" % [n, total]) if fresh else ("Crônica %d/%d" % [n, total])
-		foot.text += "      › fechar"
+		foot.text += "      %s fechar" % InputGlyphs.label("ui_cancel")
 		foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		foot.add_theme_font_size_override("font_size", 9)
 		foot.add_theme_color_override("font_color", CodexStyle.GOLD if fresh else CodexStyle.MUTED)

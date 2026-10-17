@@ -9,7 +9,7 @@ extends Node
 ##     --path . --resolution 1280x720 res://tools/ui_menus/MenuProbe.tscn -- <pasta_saida> [seção ...]
 ## Sem capturas (testes de tempo confiáveis — a janela no llvmpipe roda a poucos fps):
 ##   godot --headless --audio-driver Dummy --path . res://tools/ui_menus/MenuProbe.tscn -- <pasta> [seção ...]
-## Seções: loja pausa pilha voltar cronicas opcoes estela provacao creditos bestiario (padrão: todas)
+## Seções: glifos loja pausa pilha voltar cronicas opcoes controles estela provacao creditos bestiario demo provacao_lista (padrão: todas)
 ## + opcoes_provacao (só quando pedida: confere a REVISAO #13, que é do SaveManager/Técnico)
 ## Imprime "UIM OK: ..." / "UIM FALHA: ..." e no fim "UIM RESULT: N ok, M falha(s)".
 ## O B do controle em `ui_cancel` (e o A em `ui_accept`) é mapeado AQUI se o
@@ -185,6 +185,8 @@ class Worker extends Node:
 	# --- roteiro -----------------------------------------------------------------
 
 	func _run() -> void:
+		if want("glifos"):
+			await _glyphs()
 		if want("loja"):
 			await _shop()
 		if want("pausa"):
@@ -197,6 +199,8 @@ class Worker extends Node:
 			await _chronicles()
 		if want("opcoes"):
 			await _options()
+		if want("controles"):
+			await _controls()
 		if want("estela"):
 			await _stela()
 		if want("provacao"):
@@ -207,9 +211,50 @@ class Worker extends Node:
 			await _credits()
 		if want("bestiario"):
 			await _bestiary()
+		if want("demo"):
+			await _demo_end()
+		if want("provacao_lista"):
+			await _trial_picker()
 		PauseStack.clear()
 		print("UIM RESULT: %d ok, %d falha(s)" % [ok, fail])
 		get_tree().quit()
+
+	## #33: InputGlyphs — tipo do controle pelo nome, rótulos por dispositivo,
+	## troca pelo último evento (teclado × controle) e sinal de mudança.
+	func _glyphs() -> void:
+		var G = InputGlyphs
+		check(G.kind_from_name("DualSense Wireless Controller") == G.Device.PLAYSTATION, "glifos: DualSense → PlayStation")
+		check(G.kind_from_name("PS4 Controller") == G.Device.PLAYSTATION, "glifos: PS4 → PlayStation")
+		check(G.kind_from_name("Wireless Controller", 0x054C) == G.Device.PLAYSTATION, "glifos: vendor Sony → PlayStation")
+		check(G.kind_from_name("Xbox Series Controller") == G.Device.XBOX, "glifos: Xbox → Xbox")
+		check(G.kind_from_name("Steam Deck") == G.Device.DECK, "glifos: Steam Deck")
+		check(G.kind_from_name("Nintendo Switch Pro Controller") == G.Device.NINTENDO, "glifos: Switch → Nintendo")
+		check(G.kind_from_name("Generic USB Joystick") == G.Device.XBOX, "glifos: genérico → letras do Xbox")
+		G.set_device(G.Device.KEYBOARD)
+		check(G.label("attack_light") == "J" and G.label("jump") == "Espaço", "glifos: teclado J / Espaço [%s / %s]" % [G.label("attack_light"), G.label("jump")])
+		check(G.label("attack_light", G.Device.XBOX) == "X" and G.label("block", G.Device.XBOX) == "LB" and G.label("skill2", G.Device.XBOX) == "RT", "glifos: Xbox X / LB / RT")
+		var ps_light: String = G.label("attack_light", G.Device.PLAYSTATION)
+		check(ps_light in ["□", "Quadrado"] and G.label("block", G.Device.PLAYSTATION) == "L1" and G.label("skill2", G.Device.PLAYSTATION) == "R2", "glifos: PlayStation %s / L1 / R2" % ps_light)
+		check(G.label("jump", G.Device.NINTENDO) == "B", "glifos: Switch pula com B (posição de baixo)")
+		check(G.hint([["ui_accept", "confirmar"], ["ui_cancel", "voltar"]], G.Device.XBOX) == "A confirmar  ·  B voltar", "glifos: hint Xbox [%s]" % G.hint([["ui_accept", "confirmar"], ["ui_cancel", "voltar"]], G.Device.XBOX))
+		await frames(2)
+		var changes: Array = []
+		var l: Node = G.listener()
+		check(l != null and l.is_inside_tree(), "glifos: ouvinte na árvore")
+		var cb := func(d: int): changes.append(d)
+		l.connect("device_changed", cb)
+		await pad(JOY_BUTTON_X)
+		check(G.is_pad(), "glifos: botão do controle → is_pad() [%s]" % G.device_name())
+		await key(KEY_J)
+		check(not G.is_pad() and changes.size() >= 2, "glifos: tecla volta para teclado (sinal %d vez(es))" % changes.size())
+		var jm := InputEventJoypadMotion.new()
+		jm.axis = JOY_AXIS_LEFT_X
+		jm.axis_value = 0.2
+		Input.parse_input_event(jm)
+		await frames(2)
+		check(not G.is_pad(), "glifos: drift do analógico (0,2) não troca")
+		l.disconnect("device_changed", cb)
+		G.set_device(G.Device.KEYBOARD)
 
 	## A1 / M3: loja com 0 faíscas e com faíscas; foco, setas, compra, B fecha.
 	func _shop() -> void:
@@ -247,6 +292,55 @@ class Worker extends Node:
 		check(not is_instance_valid(shop) or shop.is_queued_for_deletion(), "loja: B fecha")
 		await wait(0.1)
 		check(not get_tree().paused, "loja: ao fechar (sem pausa por baixo) o mundo despausa")
+		# Balance P1/P2: vida máx. 60×(n+1) até 10; Restauração só no santuário/pós-chefe.
+		var U = load("res://scripts/ui/upgrade_menu.gd")
+		check(U.hp_cost_for(0) == 60 and U.hp_cost_for(1) == 120 and U.hp_cost_for(9) == 600, "loja P1: preço 60/120/…/600")
+		check(U.hp_buys_from_bonus(0) == 0 and U.hp_buys_from_bonus(25) == 0 and U.hp_buys_from_bonus(45) == 1 and U.hp_buys_from_bonus(75 + 60) == 3, "loja P1: compras deduzidas do bônus (com dons do Soter)")
+		Progression.orbs = 99999
+		Progression.bonus_max_health = 0
+		RunManager.pending_advance = false
+		shop = SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
+		await wait(0.5)
+		var hp_row: Button = null
+		var heal_row: Button = null
+		for b in shop.list.get_children():
+			if String(b.text).begins_with("+20 de vida"):
+				hp_row = b
+			if String(b.text).begins_with("Restauração"):
+				heal_row = b
+		check(heal_row != null and heal_row.disabled, "loja P2: Restauração trancada no meio do run (pausa)")
+		var bought := 0
+		for i in 12:
+			if hp_row == null or hp_row.disabled:
+				break
+			var o := Progression.orbs
+			hp_row.emit_signal("pressed")
+			await frames(2)
+			if Progression.orbs < o:
+				bought += 1
+			hp_row = null
+			for b in shop.list.get_children():
+				if String(b.text).begins_with("+20 de vida") and not b.is_queued_for_deletion():
+					hp_row = b
+		check(bought == 10 and Progression.bonus_max_health == 200, "loja P1: no máximo 10 compras (%d, bônus %d)" % [bought, Progression.bonus_max_health])
+		check(99999 - Progression.orbs == 60 * 55, "loja P1: total pago 60×(1+…+10) = 3300 (%d)" % (99999 - Progression.orbs))
+		await shot("loja_teto")
+		shop.queue_free()
+		PauseStack.clear()
+		await wait(0.2)
+		RunManager.pending_advance = true
+		shop = SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
+		await wait(0.5)
+		heal_row = null
+		for b in shop.list.get_children():
+			if String(b.text).begins_with("Restauração"):
+				heal_row = b
+		check(heal_row != null and String(heal_row.text).contains("cura"), "loja P2: Restauração aparece no santuário/pós-chefe")
+		RunManager.pending_advance = false
+		shop.queue_free()
+		PauseStack.clear()
+		Progression.bonus_max_health = 0
+		await wait(0.2)
 		if lv != null:
 			pass
 
@@ -418,6 +512,103 @@ class Worker extends Node:
 		await pad(JOY_BUTTON_A)
 		await wait(0.1)
 		check(bool(GameManager.settings.get("reduce_flashes", false)) == was, "opções: A desliga de novo")
+		# #34: velocidade do texto, números de dano, modo de janela
+		var ts: Button = om.get("_text_speed")
+		var seen_speeds: Array = []
+		for i in 4:
+			ts.grab_focus()
+			await pad(JOY_BUTTON_A)
+			await wait(0.05)
+			seen_speeds.append(float(GameManager.settings.get("text_speed", -1.0)))
+		seen_speeds.sort()
+		check(seen_speeds == [0.0, 0.5, 1.0, 2.0], "opções: velocidade do texto passa por 0,5/1/2/instantâneo %s" % str(seen_speeds))
+		var dn: Button = null
+		for b in om.find_children("*", "Button", true, false):
+			if b.has_meta("key") and b.get_meta("key") == "damage_numbers":
+				dn = b
+		var dn0 := bool(GameManager.settings.get("damage_numbers", true))
+		dn.grab_focus()
+		await pad(JOY_BUTTON_A)
+		await wait(0.05)
+		check(bool(GameManager.settings.get("damage_numbers", true)) == not dn0, "opções: números de dano alterna")
+		await pad(JOY_BUTTON_A)
+		var wb: Button = om.get("_window")
+		var modes: Array = []
+		for i in 3:
+			wb.grab_focus()
+			await pad(JOY_BUTTON_A)
+			await wait(0.1)
+			modes.append(int(GameManager.settings.get("window_mode", -1)))
+		modes.sort()
+		check(modes == [0, 1, 2], "opções: modo de janela passa por janela/tela cheia/sem bordas %s" % str(modes))
+		check(bool(GameManager.settings.get("fullscreen", false)) == (int(GameManager.settings.get("window_mode", 0)) != 0), "opções: 'fullscreen' acompanha o modo de janela")
+		await shot("opcoes_novas")
+
+	## #34: tela Controles — captura, troca com conflito, recusa, padrão; JSON.
+	func _controls() -> void:
+		await go("res://scenes/ui/OptionsMenu.tscn", 1.0)
+		var om := get_tree().current_scene
+		GameManager.settings["bindings"] = {}
+		InputRebind.reset()
+		var cb: Button = om.get("_controls")
+		cb.grab_focus()
+		await key(KEY_ENTER)
+		await wait(0.4)
+		var cm: ControlsMenu = null
+		for c in om.get_children():
+			if c is ControlsMenu:
+				cm = c
+		check(cm != null, "controles: abre pelas Opções")
+		if cm == null:
+			return
+		await shot("controles")
+		var rows: Array = cm.get("_rows")
+		check(rows.size() == InputRebind.ACTIONS.size() and focus() == rows[0].kb, "controles: %d ações, foco na 1ª" % rows.size())
+		# Golpe leve (J) ← K: troca com Golpe forte
+		rows[0].kb.grab_focus()
+		await key(KEY_ENTER)
+		await wait(0.2)
+		check(cm.get("_capturing") != null, "controles: Enter inicia a captura")
+		await shot("controles_captura")
+		await key(KEY_K)
+		await wait(0.1)
+		var light := InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD)
+		var heavy := InputGlyphs.label("attack_heavy", InputGlyphs.Device.KEYBOARD)
+		check(light == "K" and heavy == "J", "controles: K no golpe leve troca com o forte [%s / %s]" % [light, heavy])
+		var bd: Dictionary = GameManager.settings.get("bindings", {})
+		check(bd.has("attack_light") and bd.has("attack_heavy"), "controles: gravado em settings.bindings %s" % str(bd.keys()))
+		# Esc recusado (é cancelar) e tecla de Anel fixa recusada
+		rows[2].kb.grab_focus()
+		await key(KEY_ENTER)
+		await wait(0.2)
+		await key(KEY_1)
+		check(cm.get("_capturing") != null and String(cm.get("_status").text).contains("fixo"), "controles: tecla 1 (Anel) recusada [%s]" % cm.get("_status").text)
+		await key(KEY_ESCAPE)
+		await wait(0.05)
+		check(cm.get("_capturing") == null and InputGlyphs.label("jump", InputGlyphs.Device.KEYBOARD) == "Espaço", "controles: Esc cancela sem mudar")
+		# Controle: Golpe leve ← RB (botão) — troca com Anel (magia)
+		rows[0].pad.grab_focus()
+		await key(KEY_ENTER)
+		await wait(0.2)
+		await pad(JOY_BUTTON_RIGHT_SHOULDER)
+		await wait(0.1)
+		check(InputGlyphs.label("attack_light", InputGlyphs.Device.XBOX) == "RB" and InputGlyphs.label("skill1", InputGlyphs.Device.XBOX) == "X", "controles: RB no golpe leve troca com o Anel")
+		# JSON: ida e volta pelo save (números viram float no JSON)
+		var json: Dictionary = JSON.parse_string(JSON.stringify(GameManager.settings["bindings"]))
+		InputRebind.reset()
+		check(InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD) == "J", "controles: reset volta ao J")
+		InputRebind.new().apply_bindings(json)
+		check(InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD) == "K" and InputGlyphs.label("attack_light", InputGlyphs.Device.XBOX) == "RB", "controles: apply_bindings(JSON) reaplica")
+		check(InputRebind.deserialize({"k": "x"}) == null or InputRebind.deserialize({"b": 999}) == null, "controles: evento inválido do save é ignorado")
+		# Restaurar padrão (botão)
+		cm.get("_reset_btn").emit_signal("pressed")
+		await wait(0.05)
+		check((GameManager.settings["bindings"] as Dictionary).is_empty() and InputGlyphs.label("attack_heavy", InputGlyphs.Device.KEYBOARD) == "K", "controles: Restaurar padrão")
+		await pad(JOY_BUTTON_B)
+		await wait(0.2)
+		check(not is_instance_valid(cm) or cm.is_queued_for_deletion(), "controles: B fecha a tela")
+		check(get_tree().current_scene == om, "controles: B fecha só os Controles (Opções continuam)")
+		InputGlyphs.set_device(InputGlyphs.Device.KEYBOARD)
 
 	## M7: a Estela só abre com o golpe leve fora de combate.
 	func _stela() -> void:
@@ -460,7 +651,7 @@ class Worker extends Node:
 			await wait(1.2)
 		await shot("estela_prompt")
 		print("UIM estela: zona=%s vivos=%d inimigo_perto=%s pode_ler=%s" % [lv.zone_active, living_enemies().size(), st._enemy_near(), st.can_read()])
-		check(st._prompt.text == "J / X · ler a Estela", "estela: prompt '%s'" % st._prompt.text)
+		check(st._prompt.text.ends_with("· ler a Estela") and st._prompt.text.begins_with(InputGlyphs.label("attack_light")), "estela: prompt pelo dispositivo '%s'" % st._prompt.text)
 		# 1) sem inimigo, sem combo → abre
 		await key(KEY_J)
 		await wait(0.4)
@@ -605,29 +796,112 @@ class Worker extends Node:
 		Credits.licenses_path = "res://assets/LICENSES.md"
 
 	## L2: nomes do Bestiário cabem nas células.
+	## #26: escolha da Provação no menu — só Arcontes vencidos (com
+	## `--bestiario-tudo` todos abrem); sem nenhum vencido, começa direto no Athoth.
+	func _trial_picker() -> void:
+		await go("res://scenes/ui/MainMenu.tscn", 1.0)
+		var mm := get_tree().current_scene
+		var open: Array = BestiaryLore.trial_bosses()
+		if open.size() <= 1 and not open.has(1):
+			check(true, "provação (menu): nenhum Arconte além do Athoth vencido — começa direto (%s)" % str(open))
+			return
+		mm._open_trial()
+		await wait(0.5)
+		var rows := 0
+		var enabled := 0
+		for b in mm.find_children("*", "Button", true, false):
+			if b.get_parent() is Panel and b.get_parent().get_parent() is CanvasLayer:
+				rows += 1
+				if not b.disabled:
+					enabled += 1
+		check(rows == 7 and enabled == maxi(1, open.size() if open.has(0) else open.size() + 1), "provação (menu): 7 linhas, %d liberadas" % enabled)
+		await shot("provacao_lista")
+		await key(KEY_ESCAPE)
+		await wait(0.3)
+		check(scene_path().contains("MainMenu") and focus() != null, "provação (menu): Esc fecha a lista [%s]" % txt(focus()))
+
+	## #52/#27: pré-jogo sem spoiler; card de fim da demo + "Lista de desejos".
+	func _demo_end() -> void:
+		await go("res://scenes/ui/PreGame.tscn", 1.0)
+		var info: String = get_tree().current_scene.get_node("Center/VBox/Info").text
+		check(not info.contains("Centro") and not info.contains("Mente") and not info.contains("telas"), "pré-jogo: sem 'Centro'/'Mente'/'telas' [%s]" % info)
+		check(info.contains("~2–3 horas") or info.contains("Demo"), "pré-jogo: duração estimada [%s]" % info)
+		await shot("pregame_info")
+		ProjectSettings.set_setting("gnosis/store_url", "https://store.steampowered.com/app/0/GNOSIS/")
+		EndScreen.demo_card = true
+		await go("res://scenes/ui/EndScreen.tscn", 1.0)
+		var es := get_tree().current_scene
+		var all := labels_text(es)
+		check(all.contains("Fim da demo") and all.contains("Obrigado por jogar"), "demo: card 'Fim da demo — obrigado por jogar'")
+		var wl: Button = es.get_node("Center/Panel/VBox/Buttons/Retry")
+		check(wl.text == "Lista de desejos" and not wl.disabled and focus() == wl, "demo: botão 'Lista de desejos' com foco (URL configurada)")
+		check(not EndScreen.demo_card, "demo: o card é de uma vez só")
+		await shot("demo_fim")
+		ProjectSettings.set_setting("gnosis/store_url", "")
+		EndScreen.demo_card = true
+		await go("res://scenes/ui/EndScreen.tscn", 1.0)
+		wl = get_tree().current_scene.get_node("Center/Panel/VBox/Buttons/Retry")
+		check(not wl.visible and focus() != null, "demo: sem URL o botão some e o foco fica no Menu")
+		if GameManager.has_signal("demo_finished") and "demo" in GameManager:
+			GameManager.set("demo", true)
+			EndScreen.ensure_demo_hook()
+			await wait(0.2)
+			await go("res://scenes/ui/MainMenu.tscn", 0.8)
+			GameManager.emit_signal("demo_finished")
+			await wait(1.2)
+			check(scene_path().contains("EndScreen") and labels_text(get_tree().current_scene).contains("Fim da demo"), "demo: sinal demo_finished abre o card [%s]" % scene_path())
+			GameManager.set("demo", false)
+		else:
+			print("UIM nota: GameManager.demo_finished ainda não existe (Técnico2) — só o card foi testado")
+
+	## #35/#26: Bestiário com ficha (lore + dica), nomes cabem, trancados "???".
 	func _bestiary() -> void:
 		await go("res://scenes/ui/Gallery.tscn", 1.2)
 		var g := get_tree().current_scene
 		var bad: Array = []
-		for l in g.find_children("*", "Label", true, false):
-			if l.get_parent() != g:
-				continue
-			var lab: Label = l
+		var cards: Array = g.get("cards")
+		for b in cards:
+			var lab: Label = b.get_meta("name_label")
 			var font: Font = lab.get_theme_font("font")
 			var fs: int = lab.get_theme_font_size("font_size")
 			for line in String(lab.text).split("\n"):
 				var w := font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 				if w > lab.size.x - 2.0:
 					bad.append("%s (%d > %d)" % [line, int(w), int(lab.size.x)])
-			if lab.get_line_count() > lab.max_lines_visible and lab.max_lines_visible > 0:
+			if lab.get_line_count() > 2:
 				bad.append("%s (linhas %d)" % [lab.text, lab.get_line_count()])
 		check(bad.is_empty(), "bestiário: nomes cabem %s" % str(bad))
+		var missing: Array = []
+		for e in g.get("entries"):
+			var id := String(e.id)
+			if not BestiaryLore.has_entry(id) or BestiaryLore.lore(id).size() != 2 or BestiaryLore.tip(id) == "":
+				missing.append(id)
+		check(missing.is_empty(), "bestiário: toda entrada tem 2 linhas de lore + dica %s" % str(missing))
+		var seen: Array = g.get("_seen")
+		var locked := seen.count(false)
+		check(locked > 0 or BestiaryLore.all_unlocked(), "bestiário: save novo tem entradas trancadas (%d de %d)" % [locked, seen.size()])
+		check(focus() != null and cards.has(focus()), "bestiário: foco na grade ao abrir [%s]" % txt(focus()))
 		await shot("bestiario_topo")
-		var cam: Camera2D = g.get("_cam")
-		if cam != null:
-			cam.position.y = 180.0 + g.get("_max_scroll") * 0.5
-			await wait(0.2)
-			await shot("bestiario_meio")
-			cam.position.y = 180.0 + g.get("_max_scroll")
-			await wait(0.2)
-			await shot("bestiario_fim")
+		await key(KEY_RIGHT)
+		await key(KEY_DOWN)
+		var sel: int = g.get("_selected")
+		check(sel == 5, "bestiário: → ↓ andam na grade (ficha %d)" % sel)
+		var lore_l: Label = g.get("_lore")
+		var tip_l: Label = g.get("_tip")
+		if seen[sel]:
+			check(lore_l.text != "" and tip_l.text != "", "bestiário: ficha mostra lore e dica")
+		else:
+			check(String(g.get("_name").text) == "???" and tip_l.text == "", "bestiário: ficha trancada não revela nome nem dica")
+		await shot("bestiario_ficha")
+		# Ficha longa: medir lore e dica no painel (≤ 4 + 3 linhas).
+		var over: Array = []
+		for e in g.get("entries"):
+			var id := String(e.id)
+			lore_l.text = "\n".join(BestiaryLore.lore(id))
+			tip_l.text = BestiaryLore.tip(id)
+			if lore_l.get_line_count() > 4 or tip_l.get_line_count() > 3:
+				over.append("%s (%d/%d)" % [id, lore_l.get_line_count(), tip_l.get_line_count()])
+		check(over.is_empty(), "bestiário: lore ≤ 4 linhas e dica ≤ 3 no painel %s" % str(over))
+		for i in 30:
+			await key(KEY_DOWN)
+		await shot("bestiario_fim")

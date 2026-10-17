@@ -1,119 +1,209 @@
-extends Node2D
-## Codex / Galeria — o roster real do jogo (renderizado pelo motor de arte
-## procedural): evolução do herói, waves, bots de Éon, Arcontes, as formas do
-## Demiurgo e os aliados. W/S (ou setas) rolam; Esc volta ao menu.
+extends Control
+## BESTIÁRIO (backlog #35/#26): à esquerda a grade de fichas (o roster real do
+## jogo, desenhado pelo motor de arte), à direita a FICHA da selecionada — nome,
+## categoria, 2 linhas de lore e 1 dica tática (`BestiaryLore`). Só abre o que
+## já foi ENCONTRADO na campanha; o resto aparece como silhueta "???".
+## Setas/D-pad/analógico andam (a grade rola sozinha); Esc/B volta à Galeria.
 
-const COLS := 6
-const CW := 100.0        # largura da célula
-const CH := 116.0        # altura da célula (arte + nome, sem sobrepor)
-const X0 := 70.0
-const Y0 := 95.0
-const VIEW_H := 360.0    # altura visível (res base)
-const NAME_W := 92.0     # largura útil do nome dentro da célula
+const COLS := 4
+const CARD := Vector2(74, 86)
+const GAP := 5
+const GRID_POS := Vector2(12, 54)
+const GRID_SIZE := Vector2(318, 268)      # 3 linhas inteiras de fichas
+const PANEL_X := 342.0
+const PANEL_W := 284.0
+const NAME_W := 70.0
 
-var _cam: Camera2D
-var _max_scroll: float = 0.0
+var entries: Array = []          # [{id, n, p}]
+var cards: Array[Button] = []
+var _seen: Array[bool] = []
+var _detail_art: CharacterArt
+var _name: Label
+var _cat: Label
+var _lore: Label
+var _tip_head: Label
+var _tip: Label
+var _count: Label
+var _selected: int = -1
 
 
 func _ready() -> void:
-	var rows := 0
-
-	var entries: Array = []
-	var hero := GameContent.get_character("sophia")
-	entries.append({"n": "Sophia Nv. 1", "p": Bestiary.player_profile(hero, 1, [])})
-	entries.append({"n": "Sophia Nv. 3", "p": Bestiary.player_profile(hero, 3, [])})
-	entries.append({"n": "Sophia Nv. 5", "p": Bestiary.player_profile(hero, 5, [])})
-	for t in Bestiary.wave_types:
-		entries.append({"n": t.name, "p": t.profile})
-	for b in Bestiary.bosses:
-		entries.append({"n": b.name, "p": b.profile})
-	for s in Bestiary.specials:
-		entries.append({"n": s.name, "p": s.profile})
-	entries.append({"n": Bestiary.demiurge.name, "p": Bestiary.demiurge.profile})
-	entries.append({"n": "Soter, o Ungido", "p": Bestiary.soter_profile()})
-	entries.append({"n": "Velkar, o Arrependido", "p": Bestiary.velkar_profile()})
-
-	rows = int(ceil(float(entries.size()) / float(COLS)))
-	var total_h := Y0 + rows * CH + 40.0
-	_max_scroll = maxf(0.0, total_h - VIEW_H)
-
-	# fundo cobre tudo (inclusive a parte rolável)
-	var bg := ColorRect.new()
-	bg.color = Color("0a151c")
-	bg.position = Vector2(-40, -40)
-	bg.size = Vector2(760, total_h + 80.0)
-	bg.z_index = -10
+	var bg = load("res://scripts/fx/codex_sanctum.gd").new()
+	bg.menu = true
+	bg.medallion = 0.25
+	bg.modulate = Color(0.55, 0.55, 0.55)
 	add_child(bg)
+	_collect()
+	_build_header()
+	_build_grid()
+	_build_panel()
+	var foot := InputGlyphs.Hint.new()
+	foot.pairs = [["@nav", "navegar"], ["ui_cancel", "voltar"]]
+	foot.position = Vector2(12, 332)
+	foot.size = Vector2(GRID_SIZE.x, 16)
+	foot.font_size = 9
+	foot.icon_h = 12.0
+	add_child(foot)
+	if not cards.is_empty():
+		cards[0].grab_focus()
+		_show(0)
 
-	# cabeçalho fixo (não rola com a câmera)
-	var hud := CanvasLayer.new()
-	add_child(hud)
-	var header := ColorRect.new()
-	header.color = Color("0a151c")
-	header.size = Vector2(640,51)
-	hud.add_child(header)
-	var back := CodexStyle.button(hud, "Voltar", Vector2(541, 12), 80, _leave, false, "ui_back")
-	CodexStyle.label(hud, "Bestiário", Vector2(20, 8), 18, CodexStyle.GOLD_HI, 300, true)
-	var hint := CodexStyle.label(hud, "W/S · setas · analógico rolam   ·   Esc / B volta", Vector2(20, 32), 10, CodexStyle.MUTED, 320)
-	hint.add_theme_font_override("font", CodexStyle.italic())
-	CodexStyle.rule(hud, Vector2(0, 46), 640, Color(CodexStyle.GOLD, 0.5))
-	back.grab_focus()
 
+## Lista na ordem do encontro: Sophia, o Rei, criaturas, guardiões dos Éons,
+## Arcontes, aliados e, por último, o que só existe depois da virada.
+func _collect() -> void:
+	var hero := GameContent.get_character("sophia")
+	entries.append({"id": "sophia", "n": "Sophia", "p": Bestiary.player_profile(hero, 3, [])})
+	entries.append({"id": "rei", "n": "O Rei", "p": Bestiary.specials[0].profile})
+	for t in Bestiary.wave_types:
+		entries.append({"id": t.id, "n": t.name, "p": t.profile})
+	for b in Bestiary.bosses:
+		entries.append({"id": b.id, "n": String(b.name).split(",")[0], "p": b.profile})
+	entries.append({"id": "soter", "n": "Soter", "p": Bestiary.soter_profile()})
+	entries.append({"id": "velkar", "n": "Velkar", "p": Bestiary.velkar_profile()})
+	for s in Bestiary.specials:
+		if s.id != "rei":
+			entries.append({"id": s.id, "n": String(s.name), "p": s.profile})
+	entries.append({"id": Bestiary.demiurge.id, "n": Bestiary.demiurge.name, "p": Bestiary.demiurge.profile})
+	for e in entries:
+		_seen.append(BestiaryLore.is_seen(String(e.id)))
+
+
+func _build_header() -> void:
+	CodexStyle.label(self, "Bestiário", Vector2(20, 8), 18, CodexStyle.GOLD_HI, 300, true)
+	var n := 0
+	for s in _seen:
+		if s:
+			n += 1
+	_count = CodexStyle.label(self, "Encontrados  %d / %d" % [n, entries.size()], Vector2(20, 32), 9, CodexStyle.MUTED, 300)
+	_count.add_theme_font_override("font", CodexStyle.italic())
+	var back := CodexStyle.button(self, "Voltar", Vector2(541, 12), 80, _leave, false, "ui_back")
+	back.focus_mode = Control.FOCUS_NONE        # o foco fica na grade; Esc/B voltam
+	CodexStyle.rule(self, Vector2(0, 46), 640, Color(CodexStyle.GOLD, 0.5))
+
+
+func _build_grid() -> void:
+	var scroll := ScrollContainer.new()
+	scroll.position = GRID_POS
+	scroll.size = GRID_SIZE
+	scroll.follow_focus = true
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(scroll)
+	var grid := GridContainer.new()
+	grid.columns = COLS
+	grid.add_theme_constant_override("h_separation", GAP)
+	grid.add_theme_constant_override("v_separation", GAP)
+	scroll.add_child(grid)
 	for i in entries.size():
-		var col := i % COLS
-		var row := i / COLS
-		var cx := X0 + col * CW
-		var cy := Y0 + row * CH
-
-		var card := Polygon2D.new()
-		card.polygon = PackedVector2Array([Vector2(cx-48,cy-49),Vector2(cx+48,cy-49),Vector2(cx+48,cy+65),Vector2(cx-48,cy+65)])
-		card.color = Color("12232b")
-		var edge := Line2D.new()
-		edge.points = PackedVector2Array([Vector2(cx-48,cy-49),Vector2(cx+48,cy-49),Vector2(cx+48,cy+65),Vector2(cx-48,cy+65),Vector2(cx-48,cy-49)])
-		edge.width = 0.6
-		edge.default_color = Color(0.77, 0.65, 0.42, 0.35)
-		add_child(edge)
-		add_child(card)
-		var shadow := _shadow_at(Vector2(cx, cy + 28))
-		add_child(shadow)
-
-		var art := CharacterArt.new()
-		art.set_profile(entries[i].p)
-		var hgt: float = entries[i].p.height
-		var sc: float = 50.0 / (190.0 if art.painted.get("sheet","") == "yaldabaoth" else hgt*1.3)
-		art.scale = Vector2(sc, sc)
-		art.position = Vector2(cx, cy+25-24*hgt/44*sc)
-		add_child(art)
-
-		# Só o nome próprio (antes da vírgula) — o resto sobrepunha as células.
-		# Quebra em 2 linhas só se NÃO couber na célula (medido na fonte real, QA L2).
-		var short_name := String(entries[i].n).split(",")[0]
-		_label(_fit_name(short_name, NAME_W), Vector2(cx - 48, cy + 34), 9, HORIZONTAL_ALIGNMENT_CENTER, 96)
-
-	# câmera pra rolar (o viewport base é 640x360)
-	_cam = Camera2D.new()
-	_cam.position = Vector2(320, 180)
-	add_child(_cam)
-	_cam.make_current()
+		var b := Button.new()
+		b.custom_minimum_size = CARD
+		b.focus_mode = Control.FOCUS_ALL
+		b.add_theme_stylebox_override("normal", _card_frame())
+		b.focus_entered.connect(_show.bind(i))
+		b.mouse_entered.connect(func(): b.grab_focus())
+		CodexStyle._wire(b, "")
+		grid.add_child(b)
+		cards.append(b)
+		var art := _make_art(entries[i].p, 40.0)
+		art.position = _art_pos(art, entries[i].p, Vector2(CARD.x * 0.5, 58.0))
+		if not _seen[i]:
+			art.modulate = Color(0.0, 0.0, 0.0, 0.8)
+			art.set_process(false)
+		b.add_child(art)
+		var l := Label.new()
+		l.text = _fit_name(String(entries[i].n), NAME_W, 8) if _seen[i] else "???"
+		l.position = Vector2(2, 62)
+		l.size = Vector2(CARD.x - 4, 22)
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		l.max_lines_visible = 2
+		l.add_theme_font_size_override("font_size", 8)
+		l.add_theme_constant_override("line_spacing", -2)
+		l.add_theme_color_override("font_color", CodexStyle.PAPER if _seen[i] else CodexStyle.MUTED)
+		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		b.add_child(l)
+		b.set_meta("name_label", l)
 
 
-func _process(delta: float) -> void:
-	var dir := Input.get_axis("move_up", "move_down") if InputMap.has_action("move_up") else 0.0
-	if absf(dir) < 0.3:
-		dir = Input.get_axis("ui_up", "ui_down")
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
-		dir = -1.0
-	elif Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
-		dir = 1.0
-	if dir != 0.0 and _cam != null:
-		_cam.position.y = clampf(_cam.position.y + dir * 260.0 * delta, 180.0, 180.0 + _max_scroll)
+## Moldura leve da ficha na grade (o foco do tema acende por cima).
+func _card_frame() -> StyleBox:
+	var f := CodexStyle.panel_frame(0.5)
+	f.marks = CodexFrame.Marks.NONE
+	f.border = Color(CodexStyle.GOLD, 0.3)
+	f.inner = Color(0, 0, 0, 0)
+	f.shadow = 0.0
+	return f
 
 
-## Nome que cabe em `width` px (fonte do tema, 9 px): uma linha se couber; senão
-## quebra no espaço que deixa as duas linhas mais parelhas.
-func _fit_name(text: String, width: float) -> String:
+func _build_panel() -> void:
+	var frame := Panel.new()
+	frame.position = Vector2(PANEL_X - 6, 54)
+	frame.size = Vector2(PANEL_W + 12, GRID_SIZE.y)
+	frame.add_theme_stylebox_override("panel", CodexStyle.panel_frame(0.82))
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(frame)
+	_name = CodexStyle.label(self, "", Vector2(PANEL_X, 156), 16, CodexStyle.PAPER, PANEL_W, true)
+	_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_cat = CodexStyle.label(self, "", Vector2(PANEL_X, 179), 8, CodexStyle.GOLD, PANEL_W, true)
+	_cat.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	CodexStyle.rule(self, Vector2(PANEL_X + 52, 193), PANEL_W - 104, Color(CodexStyle.GOLD, 0.6))
+	_lore = CodexStyle.wrap_label(CodexStyle.label(self, "", Vector2(PANEL_X + 6, 200), 11, CodexStyle.MUTED, PANEL_W - 12), PANEL_W - 12)
+	_lore.add_theme_font_override("font", CodexStyle.italic())
+	_lore.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tip_head = CodexStyle.label(self, "DICA", Vector2(PANEL_X, 262), 7, CodexStyle.GOLD, PANEL_W, true)
+	_tip_head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_tip = CodexStyle.wrap_label(CodexStyle.label(self, "", Vector2(PANEL_X + 6, 274), 11, CodexStyle.PAPER, PANEL_W - 12), PANEL_W - 12)
+	_tip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+
+## Ficha da entrada `i` (chamada no foco).
+func _show(i: int) -> void:
+	if i == _selected or i < 0 or i >= entries.size():
+		return
+	_selected = i
+	var e: Dictionary = entries[i]
+	var id := String(e.id)
+	if _detail_art != null:
+		_detail_art.queue_free()
+	_detail_art = _make_art(e.p, 88.0)
+	_detail_art.position = _art_pos(_detail_art, e.p, Vector2(PANEL_X + PANEL_W * 0.5, 150.0))
+	add_child(_detail_art)
+	if not _seen[i]:
+		_detail_art.modulate = Color(0.0, 0.0, 0.0, 0.85)
+		_detail_art.set_process(false)
+		_name.text = "???"
+		_cat.text = "AINDA NÃO ENCONTRADO"
+		_lore.text = "Continue a subida."
+		_tip_head.visible = false
+		_tip.text = ""
+		return
+	_name.text = String(e.n)
+	_cat.text = BestiaryLore.category(id).to_upper()
+	_lore.text = "\n".join(BestiaryLore.lore(id))
+	var tip := BestiaryLore.tip(id)
+	_tip_head.visible = tip != ""
+	_tip.text = tip
+
+
+func _make_art(p: ArtProfile, height_px: float) -> CharacterArt:
+	var art := CharacterArt.new()
+	art.set_profile(p)
+	var hgt: float = p.height
+	var sc: float = height_px / (190.0 if art.painted.get("sheet", "") == "yaldabaoth" else hgt * 1.3)
+	art.scale = Vector2(sc, sc)
+	return art
+
+
+## Posição do nó da arte para os PÉS ficarem em `feet` (mesma conta do Ateliê).
+func _art_pos(art: CharacterArt, p: ArtProfile, feet: Vector2) -> Vector2:
+	return Vector2(feet.x, feet.y - 24.0 * p.height / 44.0 * art.scale.y)
+
+
+## Nome que cabe em `width` px: uma linha se couber; senão quebra no espaço que
+## deixa as duas linhas mais parelhas (medido na fonte real — QA L2).
+func _fit_name(text: String, width: float, fs: int = 9) -> String:
 	var font: Font = CodexStyle.body()
-	if font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x <= width:
+	if font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x <= width:
 		return text
 	var best := text
 	var best_w := INF
@@ -121,39 +211,11 @@ func _fit_name(text: String, width: float) -> String:
 	for k in range(1, words.size()):
 		var a := " ".join(words.slice(0, k))
 		var b := " ".join(words.slice(k))
-		var w := maxf(font.get_string_size(a, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x, font.get_string_size(b, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x)
+		var w := maxf(font.get_string_size(a, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x, font.get_string_size(b, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x)
 		if w < best_w:
 			best_w = w
 			best = a + "\n" + b
 	return best
-
-
-func _label(text: String, pos: Vector2, size: int, align: int, width: float) -> void:
-	add_child(_make_label(text, pos, size, align, width))
-
-
-func _make_label(text: String, pos: Vector2, size: int, align: int, width: float) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.position = pos
-	l.size = Vector2(width, 16)
-	l.horizontal_alignment = align
-	l.clip_text = false
-	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.max_lines_visible = 2
-	l.add_theme_font_size_override("font_size", size)
-	return l
-
-
-func _shadow_at(pos: Vector2) -> Polygon2D:
-	var s := Polygon2D.new()
-	s.color = Color(0, 0, 0, 0.28)
-	s.position = pos
-	s.polygon = PackedVector2Array([
-		Vector2(20, 0), Vector2(16, 3), Vector2(0, 5), Vector2(-16, 3),
-		Vector2(-20, 0), Vector2(-16, -3), Vector2(0, -5), Vector2(16, -3)
-	])
-	return s
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -163,6 +225,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		_leave()
 
 
-## Volta pro Ateliê (de onde o Bestiário é aberto) — botão e Esc/B iguais.
+## Volta para a Galeria (de onde o Bestiário é aberto) — botão e Esc/B iguais.
 func _leave() -> void:
 	SceneManager.change_scene("res://scenes/ui/CharacterAtelier.tscn")

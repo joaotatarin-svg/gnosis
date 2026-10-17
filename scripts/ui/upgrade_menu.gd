@@ -7,6 +7,15 @@ extends CanvasLayer
 ## item; setas/D-pad andam, Enter/A compra, Esc/B fecha. Depois de comprar, o
 ## foco fica no mesmo item (dá para comprar em série no controle).
 ## Pausa o mundo pela `PauseStack` (por cima da pausa, fechar volta para ela).
+## Economia (Balance P1/P2): +20 de vida máx. custa 60 × (n+1) e vende no
+## máximo 10 vezes; a Restauração (cura cheia) só no santuário e no pós-chefe
+## (`RunManager.pending_advance`) — aberta pela pausa, ela aparece trancada.
+
+const HP_STEP := 20
+const HP_BASE_COST := 60
+const HP_MAX_BUYS := 10
+const HEAL_COST := 50
+const SOTER_HP := 25                 # dom de vida do Soter (npc_encounter.gd)
 
 @onready var spark_label: Label = $Center/Panel/VBox/SparkLabel
 @onready var list: VBoxContainer = $Center/Panel/VBox/List
@@ -115,11 +124,19 @@ func _rebuild() -> void:
 					Progression.orbs >= cost, _buy_skill.bind(skill), skill.color)
 
 	# Vida / Éter máximos e cura.
-	_add("+20 de vida máx.", "", 60, Progression.orbs >= 60, _buy_hp, CodexStyle.LIFE_HI)
+	var n := hp_buys()
+	if n >= HP_MAX_BUYS:
+		_add("+20 de vida máx.  ·  %d / %d" % [n, HP_MAX_BUYS], "no máximo", -1, false, Callable(), CodexStyle.LIFE_HI)
+	else:
+		var hp_cost := hp_cost_for(n)
+		_add("+20 de vida máx.  ·  %d / %d" % [n, HP_MAX_BUYS], "", hp_cost, Progression.orbs >= hp_cost, _buy_hp, CodexStyle.LIFE_HI)
 	_add("+15 de Éter máx.", "", 60, Progression.orbs >= 60, _buy_mp, CodexStyle.ETHER_HI)
 	var pl := get_tree().get_first_node_in_group("player")
 	var hurt: bool = pl != null and pl.health != null and pl.health.current_health < pl.health.max_health
-	_add("Restauração  ·  cura completa", "" if hurt else "a vida já está cheia", 50, hurt and Progression.orbs >= 50, _buy_heal)
+	if heal_allowed():
+		_add("Restauração  ·  cura completa", "" if hurt else "a vida já está cheia", HEAL_COST, hurt and Progression.orbs >= HEAL_COST, _buy_heal)
+	else:
+		_add("Restauração  ·  cura completa", "só no santuário e depois do Arconte", -1, false, Callable())
 
 	# Foco: o 1º item ao abrir; depois de comprar, o mesmo item de antes
 	# (trancado também recebe foco — lê-se o preço e o aviso).
@@ -209,8 +226,41 @@ func _buy_skill(skill: SkillData) -> void:
 
 
 func _buy_hp() -> void:
-	_buy_sfx(Progression.buy_max_health(20, 60))
+	var n := hp_buys()
+	if n >= HP_MAX_BUYS:
+		Audio.play_sfx("shop_fail")
+		return
+	_buy_sfx(Progression.buy_max_health(HP_STEP, hp_cost_for(n)))
 	_rebuild()
+
+
+## Preço da (n+1)-ésima compra de vida: 60, 120, 180...
+static func hp_cost_for(n: int) -> int:
+	return HP_BASE_COST * (n + 1)
+
+
+## Quantas vezes a vida máx. já foi comprada NESTE run. Deduzida do bônus
+## (já salvo no run e zerado no reset): bônus = 20·n + 25·k, onde k (0–3) são
+## os dons de vida do Soter — 25·k mod 20 é diferente para cada k, então a
+## conta é exata. Usa `Progression.hp_buys` se o Técnico criar o contador.
+static func hp_buys() -> int:
+	if "hp_buys" in Progression:
+		return maxi(0, int(Progression.get("hp_buys")))
+	return hp_buys_from_bonus(Progression.bonus_max_health)
+
+
+static func hp_buys_from_bonus(bonus: int) -> int:
+	for k in 4:
+		var rest := bonus - SOTER_HP * k
+		if rest >= 0 and rest % HP_STEP == 0:
+			return rest / HP_STEP
+	return maxi(0, bonus / HP_STEP)
+
+
+## A cura cheia só é vendida fora da luta: santuário/pós-chefe (loja que avança
+## ao fechar) ou fora do run (Provação e testes).
+static func heal_allowed() -> bool:
+	return RunManager.pending_advance or not RunManager.run_active
 
 
 func _buy_mp() -> void:
@@ -219,7 +269,7 @@ func _buy_mp() -> void:
 
 
 func _buy_heal() -> void:
-	if not Progression.spend_orbs(50):
+	if not heal_allowed() or not Progression.spend_orbs(HEAL_COST):
 		Audio.play_sfx("shop_fail")
 		return
 	Audio.play_sfx("shop_buy")
