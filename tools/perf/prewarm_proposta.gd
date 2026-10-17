@@ -141,7 +141,7 @@ static func prewarm(level: Node) -> void:
 	stage.add_child(trail_host)
 	VfxLibrary.projectile_trail(trail_host, col)
 	ImpactBurst.spawn(stage, at, col)
-	DamageNumber.spawn(stage, at, 1, col)
+	DamageNumber.spawn(stage, at, 1234567890, col)   # todos os glifos 0–9 da fonte
 	# 3) Some depois de PREWARM_FRAMES quadros DESENHADOS (compila no desenho).
 	var left := [PREWARM_FRAMES]
 	var done := func() -> void:

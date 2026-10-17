@@ -4,7 +4,10 @@
   tools/perf/patches/vfx_prewarm.patch         (scripts/fx/vfx_library.gd + scripts/levels/level.gd)
   tools/perf/patches/character_art_alloc.patch (scripts/fx/character_art.gd — REVISAO #16)
 
-Uso: python3 tools/perf/gera_patch.py [--proj .] [--aplicar-em <copia_do_projeto>]
+Uso: python3 tools/perf/gera_patch.py [--proj .] [--ref integracao/onda1] [--aplicar-em <copia_do_projeto>]
+  --ref         versão do jogo sobre a qual gerar (git ref; "" = arquivos do worktree).
+                Se a base JÁ tem um `prewarm` (a integração pôs um), ele é SUBSTITUÍDO
+                (o de lá não funciona: ver docs/onda2/PERF.md §5) e a chamada no Level é mantida.
   --aplicar-em  também grava os arquivos alterados numa CÓPIA do projeto (para testar).
 Aplicar no jogo (dono do arquivo):  git apply tools/perf/patches/<nome>.patch
 """
@@ -12,13 +15,29 @@ import argparse
 import difflib
 import os
 import re
+import subprocess
+
+BASE = {"proj": ".", "ref": ""}
 
 
-def prewarm_body(proj):
+def base_text(rel):
+    """Conteúdo do arquivo do JOGO na base escolhida (git ref ou worktree)."""
+    if BASE["ref"]:
+        return subprocess.run(["git", "show", BASE["ref"] + ":" + rel], cwd=BASE["proj"],
+                              capture_output=True, text=True, check=True).stdout
+    return open(os.path.join(BASE["proj"], rel), encoding="utf-8").read()
+
+
+def prewarm_body(proj, base):
     src = open(os.path.join(proj, "tools/perf/prewarm_proposta.gd"), encoding="utf-8").read()
     body = src[src.index("## Texturas de VFX que o combate carrega sob demanda"):]
     body = body.replace("VfxLibrary.tex(n)", "tex(n)")
     body = re.sub(r"\bVfxLibrary\.", "", body)
+    # brilho do telegrafo (Combate, Onda 2): só existe nas bases novas
+    if "static func tell_glint(" in base:
+        anchor = "\tboss_phase2(stage, at, col)\n"
+        assert anchor in body
+        body = body.replace(anchor, anchor + "\ttell_glint(stage, at, false)\n\ttell_glint(stage, at, true)\n")
     header = (
         "\n\n# ===========================================================================\n"
         "# PRÉ-AQUECIMENTO (agente de Desempenho, Onda 2 — docs/onda2/PERF.md)\n"
@@ -36,12 +55,21 @@ def prewarm_body(proj):
 
 
 def vfx_library(proj):
-    s = open(os.path.join(proj, "scripts/fx/vfx_library.gd"), encoding="utf-8").read()
-    return s.rstrip("\n") + "\n" + prewarm_body(proj)
+    s = base_text("scripts/fx/vfx_library.gd")
+    if "static func prewarm(" in s:
+        # a base já tem um prewarm (último bloco do arquivo): troca a seção inteira
+        m = re.search(r"\n# =+\n# PRÉ-AQUECIMENTO", s)
+        assert m, "vfx_library.gd: seção PRÉ-AQUECIMENTO não encontrada"
+        tail = s[m.start():]
+        assert tail.count("\nstatic func ") == 1, "há outras funções depois do prewarm: revisar à mão"
+        s = s[:m.start()]
+    return s.rstrip("\n") + "\n" + prewarm_body(proj, s)
 
 
 def level(proj):
-    s = open(os.path.join(proj, "scripts/levels/level.gd"), encoding="utf-8").read()
+    s = base_text("scripts/levels/level.gd")
+    if "VfxLibrary.prewarm(self)" in s:
+        return s          # a base já chama o prewarm no load da fase
     old = "\t_spawn_extras()\n\tawait _play_narrative_beats()"
     new = ("\t_spawn_extras()\n"
            "\t# Compila shaders e sobe texturas do combate AGORA (atrás do card de\n"
@@ -53,7 +81,7 @@ def level(proj):
 
 
 def character_art(proj):
-    s = open(os.path.join(proj, "scripts/fx/character_art.gd"), encoding="utf-8").read()
+    s = base_text("scripts/fx/character_art.gd")
     chain = ('\tvar chain := {\n'
              '\t\t"walk": ["run"], "charge": ["run"], "dodge_back": ["dodge"], "attack_up": ["attack_heavy", "attack"],\n'
              '\t\t"attack_air": ["attack_heavy", "attack"], "attack_dive": ["attack_air", "attack_heavy", "attack"],\n'
@@ -102,15 +130,18 @@ def character_art(proj):
 
 
 def udiff(proj, rel, new):
-    old = open(os.path.join(proj, rel), encoding="utf-8").read()
+    old = base_text(rel)
     return "".join(difflib.unified_diff(old.splitlines(True), new.splitlines(True), "a/" + rel, "b/" + rel))
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--proj", default=".")
+    ap.add_argument("--ref", default="integracao/onda1")
     ap.add_argument("--aplicar-em", default="")
     a = ap.parse_args()
+    BASE["proj"] = a.proj
+    BASE["ref"] = a.ref
     out = os.path.join(a.proj, "tools/perf/patches")
     os.makedirs(out, exist_ok=True)
     files = {

@@ -1,12 +1,29 @@
 --- a/scripts/fx/vfx_library.gd
 +++ b/scripts/fx/vfx_library.gd
-@@ -596,3 +596,148 @@
- 	p.scale_amount_curve = _scale_curve(0.3)
- 	p.color = col
- 	p.lifetime_randomness = 0.5
-+
-+
-+# ===========================================================================
+@@ -623,65 +623,147 @@
+ 
+ 
+ # ===========================================================================
+-# PRÉ-AQUECIMENTO
+-# ===========================================================================
+-
+-## Pré-aquece efeitos, shaders, texturas e a fonte dos números de dano para o
+-## 1º golpe não engasgar (ONDA2: até 193 ms). Cria UMA vez cada efeito de
+-## combate dentro de um nó quase transparente no centro da vista (precisa ser
+-## DESENHADO para o shader compilar) e descarta tudo em ~0,4 s. Sem som, sem
+-## tremor. Chamar uma vez quando a fase carrega: `VfxLibrary.prewarm(level)`.
+-static func prewarm(parent: Node) -> void:
+-	if parent == null or not is_instance_valid(parent) or not parent.is_inside_tree():
+-		return
+-	var holder := Node2D.new()
+-	holder.name = "VfxPrewarm"
+-	holder.modulate = Color(1, 1, 1, 0.004)          # invisível na prática, mas desenhado
+-	parent.add_child(holder)
+-	var cam := parent.get_viewport().get_camera_2d()
+-	var p: Vector2 = cam.get_screen_center_position() if cam != null else Vector2(320, 180)
+-	holder.global_position = Vector2.ZERO
+-	# texturas usadas pelos efeitos de combate
+-	for n in ["spark", "spark2", "glow", "halo", "slash", "smoke", "smoke2", "star", "star2", "circle", "flame", "flame2", "magic", "magic2", "twirl", "symbol", "light", "trace"]:
 +# PRÉ-AQUECIMENTO (agente de Desempenho, Onda 2 — docs/onda2/PERF.md)
 +# ===========================================================================
 +## Chamado 1x no load da fase (Level._ready). Desenha por 3 quadros, no centro
@@ -39,7 +56,48 @@
 +	# 1) Disco → memória → GPU: texturas de VFX, folhas das criaturas e o
 +	#    boneco articulado da variante do Éon (família do Arconte).
 +	for n in PREWARM_TEX:
-+		tex(n)
+ 		tex(n)
+-	# partículas/sprites (multimesh + aditivo + normal)
+-	hit(holder, p, false)
+-	hit(holder, p, true)
+-	parry(holder, p)
+-	dodge_perfect(holder, p)
+-	enemy_death(holder, p)
+-	elite_death(holder, p)
+-	cast(holder, p)
+-	nova_ring(holder, p, 60.0)
+-	spark_pickup(holder, p)
+-	dust(holder, p)
+-	tell_glint(holder, p, false)
+-	tell_glint(holder, p, true)
+-	ImpactBurst.spawn(holder, p, Color(1, 0.9, 0.7))
+-	DamageNumber.spawn(holder, p, 1234567890, Color(1, 0.9, 0.6))   # glifos 0–9
+-	# desmembramento: peça vetorial, peça pintada (shader limpo) e gotas de luz
+-	var poly := PackedVector2Array([Vector2(-4, -4), Vector2(4, -4), Vector2(4, 4), Vector2(-4, 4)])
+-	var parts: Array = [{"pts": poly, "col": Color(0.5, 0.5, 0.5)}]
+-	var t: Texture2D = tex("glow")
+-	if t != null:
+-		parts.append({"pts": poly, "col": Color.WHITE, "tex": t, "size": Vector2(8, 8), "flip": 1.0})
+-	Gib.burst(holder, p, parts, 1.0, p.y + 400.0, Vector2.ZERO, Color(1, 0.9, 0.5), Color(0.1, 0.1, 0.1))
+-	# shaders da pintura (afterimage/curvatura) num sprite de 8 px
+-	for path in ["res://assets/shaders/painted_ghost.gdshader", "res://assets/shaders/painted_flex.gdshader"]:
+-		if ResourceLoader.exists(path):
+-			var sp := Sprite2D.new()
+-			sp.texture = t
+-			sp.scale = Vector2.ONE * 0.06
+-			var m := ShaderMaterial.new()
+-			m.shader = load(path)
+-			sp.material = m
+-			holder.add_child(sp)
+-			sp.global_position = p
+-	var sp2 := Sprite2D.new()
+-	sp2.texture = t
+-	sp2.scale = Vector2.ONE * 0.06
+-	sp2.material = PaintedLibrary.material()
+-	holder.add_child(sp2)
+-	sp2.global_position = p
+-	# some com tudo depois de alguns quadros desenhados (tempo REAL)
+-	parent.get_tree().create_timer(0.4, true, false, true).timeout.connect(holder.queue_free)
 +	var screen: int = RunManager.current_screen if RunManager.run_active else 0
 +	var sheets: Array = PREWARM_SHEETS.duplicate()
 +	if RunManager.run_active and (RunManager.is_king_screen(screen) or RunManager.is_final(screen)):
@@ -135,12 +193,14 @@
 +	elite_death(stage, at, col)
 +	boss_appear(stage, at, col)
 +	boss_phase2(stage, at, col)
++	tell_glint(stage, at, false)
++	tell_glint(stage, at, true)
 +	portal(stage, at, Color(0.8, 0.9, 1.0), 0.1)
 +	var trail_host := Node2D.new()
 +	stage.add_child(trail_host)
 +	projectile_trail(trail_host, col)
 +	ImpactBurst.spawn(stage, at, col)
-+	DamageNumber.spawn(stage, at, 1, col)
++	DamageNumber.spawn(stage, at, 1234567890, col)   # todos os glifos 0–9 da fonte
 +	# 3) Some depois de PREWARM_FRAMES quadros DESENHADOS (compila no desenho).
 +	var left := [PREWARM_FRAMES]
 +	var done := func() -> void:
@@ -149,15 +209,3 @@
 +			stage.queue_free()
 +	RenderingServer.frame_post_draw.connect(done)
 +	stage.tree_exited.connect(func(): RenderingServer.frame_post_draw.disconnect(done), CONNECT_ONE_SHOT)
---- a/scripts/levels/level.gd
-+++ b/scripts/levels/level.gd
-@@ -59,6 +59,9 @@
- 	_build_platforms()
- 	_build_walls()
- 	_spawn_extras()
-+	# Compila shaders e sobe texturas do combate AGORA (atrás do card de
-+	# abertura), e não no 1º golpe/morte/esquiva (docs/onda2/PERF.md).
-+	VfxLibrary.prewarm(self)
- 	await _play_narrative_beats()
- 	if not is_inside_tree():
- 		return
