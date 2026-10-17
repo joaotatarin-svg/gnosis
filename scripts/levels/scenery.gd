@@ -147,20 +147,33 @@ func _build_painted() -> void:
 
 
 ## Uma camada pintada espelhada: [ladrilho][ladrilho invertido], período 2×.
+## SEM EMENDA POR CONSTRUÇÃO (M5): é UM só quad (Sprite2D com região larga e
+## repetição em ESPELHO na amostragem), cobrindo PERIODS períodos a partir de
+## um período à esquerda — a câmera nunca chega numa junção entre quads. (Dois
+## sprites lado a lado em posição fracionária podiam deixar 1 px de fresta ou
+## de borda filtrada na junção.) O espelhamento da camada fica só de reserva.
+const PERIODS := 5
 func _painted_layer(kind: String, ms: Vector2, y_off: float, s: float, mod: Color) -> ParallaxLayer:
-	var l := _layer(ms, _tile_w * 2.0)
+	var l := _layer(ms, _tile_w * 2.0 * PERIODS)
 	l.motion_offset = _align(ms)
-	var tex := SceneryLibrary.layer(eon, kind)
-	for k in 2:
-		var sp := Sprite2D.new()
-		sp.texture = tex
-		sp.centered = false
-		sp.scale = Vector2(s, s)
-		sp.flip_h = k == 1
-		sp.position = Vector2(float(k) * _tile_w, FLOOR_Y - PAINT_H + y_off)
-		sp.modulate = mod
-		l.add_child(sp)
+	l.add_child(_mirror_strip(SceneryLibrary.layer(eon, kind), s, FLOOR_Y - PAINT_H + y_off, mod))
 	return l
+
+
+## Faixa pintada sem emenda: um quad com a textura repetida em espelho,
+## de x = -2·ladrilho até (PERIODS-1)·2·ladrilho (coords da camada).
+func _mirror_strip(tex: Texture2D, s: float, y: float, mod: Color) -> Sprite2D:
+	var sp := Sprite2D.new()
+	sp.texture = tex
+	sp.centered = false
+	sp.texture_repeat = CanvasItem.TEXTURE_REPEAT_MIRROR
+	sp.region_enabled = true
+	var tw := float(tex.get_width())
+	sp.region_rect = Rect2(-2.0 * tw, 0.0, 2.0 * tw * PERIODS, float(tex.get_height()))
+	sp.scale = Vector2(s, s)
+	sp.position = Vector2(-2.0 * tw * s, y)
+	sp.modulate = mod
+	return sp
 
 
 ## Céu fixo atrás de tudo (só aparece em pulos altos acima da pintura).
@@ -180,7 +193,9 @@ func _sky_fade(l: ParallaxLayer, sky: Color) -> void:
 	var p := Polygon2D.new()
 	var c0 := sky.darkened(0.35)
 	var c1 := Color(sky.r, sky.g, sky.b, 0.0)
-	p.polygon = PackedVector2Array([Vector2(0, top - 400), Vector2(_tile_w * 2, top - 400), Vector2(_tile_w * 2, top + 34), Vector2(0, top + 34)])
+	var x0 := -_tile_w * 2.0
+	var x1 := _tile_w * 2.0 * float(PERIODS - 1)
+	p.polygon = PackedVector2Array([Vector2(x0, top - 400), Vector2(x1, top - 400), Vector2(x1, top + 34), Vector2(x0, top + 34)])
 	p.vertex_colors = PackedColorArray([c0, c0, c1, c1])
 	l.add_child(p)
 
@@ -270,13 +285,21 @@ func _process(_delta: float) -> void:
 func _build_fallback() -> void:
 	var c: Color = FALLBACK[clampi(eon, 0, 8)]
 	_build_sky(c.darkened(0.5), c)
-	var l := _layer(Vector2(0.18, 1.0), 768.0)
-	var backdrop := Sprite2D.new()
-	backdrop.texture = PaintedLibrary.background(clampi(eon, 0, 8))
-	backdrop.centered = false
-	backdrop.scale = Vector2(768.0 / backdrop.texture.get_width(), 400.0 / backdrop.texture.get_height())
-	backdrop.modulate = Color(0.68, 0.73, 0.77)
-	l.add_child(backdrop)
+	# A v2 repetia a pintura SEM espelhar a cada 768 px: emenda dura (M5).
+	# Aqui: [pintura][pintura invertida] (a textura é recorte de atlas, então
+	# não dá para usar repetição em espelho na amostragem).
+	var tex := PaintedLibrary.background(clampi(eon, 0, 8))
+	var sc := Vector2(768.0 / tex.get_width(), 400.0 / tex.get_height())
+	var l := _layer(Vector2(0.18, 1.0), 768.0 * 2.0)
+	for k in 2:
+		var backdrop := Sprite2D.new()
+		backdrop.texture = tex
+		backdrop.centered = false
+		backdrop.scale = sc
+		backdrop.flip_h = k == 1
+		backdrop.position.x = 768.0 * float(k)
+		backdrop.modulate = Color(0.68, 0.73, 0.77)
+		l.add_child(backdrop)
 
 
 # --- props pintados (entre o horizonte e a faixa de luta) ---------------------------
