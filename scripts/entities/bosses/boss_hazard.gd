@@ -161,7 +161,8 @@ func threat_at(pt: Vector2) -> float:
 	if safe or damage <= 0 and effect == "":
 		return 0.0
 	var left: float = delay - _t
-	if left > 0.6 or not contains(pt):
+	var lead: float = 2.0 if shape == "arena" else 0.6
+	if left > lead or not contains(pt):
 		return 0.0
 	return 1.0
 

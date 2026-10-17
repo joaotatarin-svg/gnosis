@@ -581,6 +581,15 @@ func ground_y() -> float:
 	return e.global_position.y + 22.0 * e.scale.y
 
 
+## Toca um som só se ele existir no catálogo do Áudio (sem aviso no log).
+func sfx(snd: String, pos: Vector2) -> void:
+	var cat = Audio.get("CATALOG")
+	if cat is Dictionary:
+		var l = cat.get("sfx", [])
+		if l is Array and l.has(snd):
+			Audio.play_sfx_at(snd, pos)
+
+
 func _later(t: float, cb: Callable) -> void:
 	var tm := get_tree().create_timer(t, false, true)
 	tm.timeout.connect(func() -> void:
