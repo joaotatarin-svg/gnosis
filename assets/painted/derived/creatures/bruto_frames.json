@@ -23,7 +23,7 @@
  "frames": {
   "idle_0": {
    "rect": [
-    878,
+    526,
     0,
     163,
     248
@@ -32,11 +32,12 @@
    "foot_y": 240.42,
    "bottom": 240.42,
    "pelvis_x": 81.18,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "walk_0": {
    "rect": [
-    365,
+    186,
     0,
     171,
     249
@@ -45,24 +46,12 @@
    "foot_y": 241.67,
    "bottom": 241.67,
    "pelvis_x": 86.73,
-   "mid": false
-  },
-  "walk_0-walk_1_50": {
-   "rect": [
-    1041,
-    0,
-    169,
-    248
-   ],
-   "top": 20.0,
-   "foot_y": 240.0,
-   "bottom": 240.0,
-   "pelvis_x": 86.42,
-   "mid": true
+   "mid": false,
+   "translucent": false
   },
   "walk_1": {
    "rect": [
-    536,
+    357,
     0,
     169,
     249
@@ -71,20 +60,8 @@
    "foot_y": 241.67,
    "bottom": 241.67,
    "pelvis_x": 85.4,
-   "mid": false
-  },
-  "walk_1-walk_2_50": {
-   "rect": [
-    705,
-    0,
-    173,
-    249
-   ],
-   "top": 20.0,
-   "foot_y": 241.0,
-   "bottom": 241.0,
-   "pelvis_x": 88.07,
-   "mid": true
+   "mid": false,
+   "translucent": false
   },
   "walk_2": {
    "rect": [
@@ -97,24 +74,12 @@
    "foot_y": 242.92,
    "bottom": 243.55,
    "pelvis_x": 90.98,
-   "mid": false
-  },
-  "walk_2-walk_0_50": {
-   "rect": [
-    186,
-    0,
-    179,
-    250
-   ],
-   "top": 20.0,
-   "foot_y": 241.0,
-   "bottom": 241.0,
-   "pelvis_x": 89.09,
-   "mid": true
+   "mid": false,
+   "translucent": false
   },
   "windup": {
    "rect": [
-    1210,
+    689,
     0,
     191,
     228
@@ -123,11 +88,12 @@
    "foot_y": 220.99,
    "bottom": 220.99,
    "pelvis_x": 115.96,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "strike": {
    "rect": [
-    1561,
+    1040,
     0,
     234,
     213
@@ -136,11 +102,12 @@
    "foot_y": 205.32,
    "bottom": 205.94,
    "pelvis_x": 89.41,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "hurt": {
    "rect": [
-    1401,
+    880,
     0,
     160,
     216
@@ -149,11 +116,12 @@
    "foot_y": 209.08,
    "bottom": 209.08,
    "pelvis_x": 92.17,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "death": {
    "rect": [
-    1795,
+    1274,
     0,
     216,
     154
@@ -162,7 +130,8 @@
    "foot_y": 147.03,
    "bottom": 147.03,
    "pelvis_x": 121.33,
-   "mid": false
+   "mid": false,
+   "translucent": false
   }
  },
  "states": {
@@ -187,13 +156,6 @@
      ]
     },
     {
-     "f": "walk_0-walk_1_50",
-     "anchor": [
-      86.73,
-      240.67
-     ]
-    },
-    {
      "f": "walk_1",
      "anchor": [
       85.4,
@@ -201,24 +163,10 @@
      ]
     },
     {
-     "f": "walk_1-walk_2_50",
-     "anchor": [
-      87.98,
-      241.92
-     ]
-    },
-    {
      "f": "walk_2",
      "anchor": [
       90.98,
       242.92
-     ]
-    },
-    {
-     "f": "walk_2-walk_0_50",
-     "anchor": [
-      88.98,
-      241.92
      ]
     }
    ],

@@ -119,11 +119,22 @@ def scale_meas(m: dict, s: float, ox: float = 0.0, oy: float = 0.0) -> dict:
 
 
 # ---------------------------------------------------------------- fatiar
-def slice_sheet(path: str, grid, names):
+def slice_sheet(path: str, grid, names, raw_alpha_cells=()):
+	"""`raw_alpha_cells`: células cujo alfa da folha é mantido como veio
+	(translúcido DE PROPÓSITO, ex.: o "fade" do Soter)."""
 	img = Image.open(path)
+	a_raw = None
 	if img.mode == "RGBA" and np.asarray(img)[..., 3].min() < 250:
 		arr = np.asarray(img).astype(np.float32)
 		F, a = arr[..., :3], arr[..., 3] / 255.0
+		a_raw = a.copy()
+		# Folhas que JÁ vêm com alfa (Harmas, Soter): o GPT entrega o corpo a
+		# 0,94–0,996 de opacidade (nenhum pixel 255) → em jogo o fundo vazava
+		# pelo corpo (bug "Harmas fantasma"). Miolo da silhueta = opaco; a borda
+		# antisserrilhada e o que for translúcido de verdade (alfa < 0,6) ficam.
+		core = ndimage.binary_erosion(a > 0.5, iterations=2)
+		a = np.where((core & (a > 0.6)) | (a > 0.94), 1.0, a)
+		a[a < 0.05] = 0.0
 	else:
 		F, a, _ = key_array(np.asarray(img.convert("RGB")).astype(np.float32))
 	H, W = a.shape
@@ -161,7 +172,8 @@ def slice_sheet(path: str, grid, names):
 		m = np.isin(lab, keep)
 		yy, xx = np.nonzero(m)
 		y0, y1, x0, x1 = yy.min(), yy.max() + 1, xx.min(), xx.max() + 1
-		alpha = a[y0:y1, x0:x1] * m[y0:y1, x0:x1]
+		src_a = a_raw if (a_raw is not None and name in raw_alpha_cells) else a
+		alpha = src_a[y0:y1, x0:x1] * m[y0:y1, x0:x1]
 		rgba = np.dstack([F[y0:y1, x0:x1], alpha * 255.0])
 		frames[name] = (rgba, (int(x0), int(y0)))
 	return frames

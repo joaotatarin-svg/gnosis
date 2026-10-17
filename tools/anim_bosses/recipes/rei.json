@@ -17,11 +17,6 @@
    "idle_0",
    "idle_1",
    2
-  ],
-  "walk": [
-   "walk_0",
-   "walk_1",
-   2
   ]
  },
  "flex": {
@@ -39,12 +34,11 @@
    "fps": 4.0
   },
   "walk": {
-   "pingpong": [
+   "frames": [
     "walk_0",
     "walk_1"
    ],
-   "loop": true,
-   "fps": 6.0
+   "cycle_bodies": 0.9
   },
   "windup": {
    "frames": [

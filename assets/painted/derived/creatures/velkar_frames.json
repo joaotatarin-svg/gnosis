@@ -32,7 +32,8 @@
    "foot_y": 257.11,
    "bottom": 257.11,
    "pelvis_x": 94.69,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "idle_0-idle_1_25": {
    "rect": [
@@ -45,7 +46,8 @@
    "foot_y": 255.0,
    "bottom": 255.0,
    "pelvis_x": 88.49,
-   "mid": true
+   "mid": true,
+   "translucent": false
   },
   "idle_0-idle_1_50": {
    "rect": [
@@ -58,7 +60,8 @@
    "foot_y": 256.0,
    "bottom": 256.0,
    "pelvis_x": 87.72,
-   "mid": true
+   "mid": true,
+   "translucent": false
   },
   "idle_0-idle_1_75": {
    "rect": [
@@ -71,7 +74,8 @@
    "foot_y": 255.0,
    "bottom": 256.0,
    "pelvis_x": 83.84,
-   "mid": true
+   "mid": true,
+   "translucent": false
   },
   "idle_1": {
    "rect": [
@@ -84,7 +88,8 @@
    "foot_y": 257.67,
    "bottom": 258.22,
    "pelvis_x": 89.45,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "talk_0": {
    "rect": [
@@ -97,7 +102,8 @@
    "foot_y": 258.22,
    "bottom": 258.78,
    "pelvis_x": 84.71,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "talk_1": {
    "rect": [
@@ -110,7 +116,8 @@
    "foot_y": 258.22,
    "bottom": 258.22,
    "pelvis_x": 83.36,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "kneel": {
    "rect": [
@@ -123,7 +130,8 @@
    "foot_y": 168.22,
    "bottom": 169.33,
    "pelvis_x": 137.16,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "rise": {
    "rect": [
@@ -136,7 +144,8 @@
    "foot_y": 198.22,
    "bottom": 199.33,
    "pelvis_x": 124.38,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "farewell": {
    "rect": [
@@ -149,7 +158,8 @@
    "foot_y": 266.56,
    "bottom": 267.11,
    "pelvis_x": 94.4,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "walk_away": {
    "rect": [
@@ -162,7 +172,8 @@
    "foot_y": 241.56,
    "bottom": 242.11,
    "pelvis_x": 103.25,
-   "mid": false
+   "mid": false,
+   "translucent": false
   }
  },
  "states": {

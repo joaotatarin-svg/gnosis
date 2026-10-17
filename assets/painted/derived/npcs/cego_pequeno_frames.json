@@ -32,7 +32,8 @@
    "foot_y": 208.48,
    "bottom": 209.1,
    "pelvis_x": 195.78,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "trembling": {
    "rect": [
@@ -45,7 +46,8 @@
    "foot_y": 197.95,
    "bottom": 199.19,
    "pelvis_x": 176.16,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "look_up": {
    "rect": [
@@ -58,7 +60,8 @@
    "foot_y": 236.34,
    "bottom": 236.96,
    "pelvis_x": 156.06,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "reach": {
    "rect": [
@@ -71,7 +74,8 @@
    "foot_y": 228.74,
    "bottom": 230.45,
    "pelvis_x": 185.6,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "lifted": {
    "rect": [
@@ -84,7 +88,8 @@
    "foot_y": 254.37,
    "bottom": 254.94,
    "pelvis_x": 150.07,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "nestled": {
    "rect": [
@@ -97,7 +102,8 @@
    "foot_y": 235.57,
    "bottom": 237.28,
    "pelvis_x": 170.03,
-   "mid": false
+   "mid": false,
+   "translucent": false
   }
  },
  "states": {

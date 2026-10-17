@@ -51,6 +51,7 @@ func _ready() -> void:
 	else:
 		_check()
 		await _check_frames()
+		_check_opacity()
 	print("PUPPET QA: ",failures," falhas")
 	get_tree().quit(0 if failures == 0 else 1)
 
@@ -211,6 +212,78 @@ func _check_frames() -> void:
 		art.queue_free()
 	for line in lines: print(line)
 	print("chefes com quadros desenhados: ",framed)
+
+
+## NUNCA MAIS "FANTASMA" (bug do Harmas transparente ao andar, Onda 2):
+## em TODO atlas de quadros (sophia, bosses, creatures, npcs):
+##  - o miolo do corpo (pixels opacos cujo entorno a 3 px também é opaco) tem
+##    opacidade média ≥ 0,95 e no máx. 15% de pixels abaixo de 0,85 (quadros
+##    translúcidos DE PROPÓSITO, marcados "translucent" no JSON, ficam de fora);
+##  - nenhuma sequência de andar/correr usa meio do RIFE ("mid") — o meio entre
+##    poses distantes funde duas pernas e lê como corpo transparente.
+func _check_opacity() -> void:
+	var files: Array = ["res://assets/painted/derived/sophia_frames.json"]
+	for dir in ["bosses", "creatures", "npcs"]:
+		var path: String = "res://assets/painted/derived/" + dir + "/"
+		for f in DirAccess.get_files_at(path):
+			if f.ends_with("_frames.json"):
+				files.append(path + f)
+	var frames_checked: int = 0
+	var worst: Array = [1.0, ""]
+	for jp in files:
+		var data = JSON.parse_string(FileAccess.get_file_as_string(jp))
+		if typeof(data) != TYPE_DICTIONARY:
+			check(false, "JSON de quadros ilegível: " + jp)
+			continue
+		var tex = load(String(data.atlas))
+		if tex == null:
+			check(false, "Atlas ausente: " + String(data.atlas))
+			continue
+		var img: Image = tex.get_image()
+		if img.is_compressed():
+			img.decompress()
+		if img.has_mipmaps():
+			img.clear_mipmaps()
+		img.convert(Image.FORMAT_RGBA8)
+		var w: int = img.get_width()
+		var bytes: PackedByteArray = img.get_data()
+		for fname in data.frames:
+			var fr: Dictionary = data.frames[fname]
+			if fr.get("translucent", false):
+				continue
+			var r: Array = fr.rect
+			var x0: int = int(r[0]); var y0: int = int(r[1]); var fw: int = int(r[2]); var fh: int = int(r[3])
+			var core: int = 0
+			var low: int = 0
+			var sum: float = 0.0
+			for y in range(y0 + 3, y0 + fh - 3, 2):
+				for x in range(x0 + 3, x0 + fw - 3, 2):
+					var a: int = bytes[(y * w + x) * 4 + 3]
+					if a < 128:
+						continue
+					# miolo: os 4 vizinhos a 3 px também opacos (fora da borda antisserrilhada)
+					if bytes[(y * w + x - 3) * 4 + 3] < 128 or bytes[(y * w + x + 3) * 4 + 3] < 128 or bytes[((y - 3) * w + x) * 4 + 3] < 128 or bytes[((y + 3) * w + x) * 4 + 3] < 128:
+						continue
+					core += 1
+					sum += a / 255.0
+					if a < 217:
+						low += 1
+			if core < 30:
+				continue
+			frames_checked += 1
+			var mean: float = sum / core
+			var frac: float = float(low) / core
+			if mean < float(worst[0]):
+				worst = [mean, "%s:%s" % [String(data.character), fname]]
+			check(mean >= 0.95 and frac <= 0.15, "Quadro FANTASMA (corpo translúcido) %s:%s — opacidade média %.3f, %.0f%% abaixo de 0,85" % [String(data.character), fname, mean, frac * 100.0])
+		for sname in data.states:
+			if not (String(sname).begins_with("walk") or String(sname).begins_with("run")):
+				continue
+			for e in data.states[sname].frames:
+				var fe: String = String(e.f)
+				var mid: bool = data.frames.has(fe) and bool(data.frames[fe].get("mid", false))
+				check(not mid and not fe.begins_with("rinb."), "Andar/correr com meio do RIFE (lê como fantasma): %s:%s:%s" % [String(data.character), sname, fe])
+	print("OPACIDADE: %d quadros em %d atlas; menor opacidade média do corpo %.3f (%s)" % [frames_checked, files.size(), worst[0], worst[1]])
 
 
 func _place(art: CharacterArt, centre_x: float, ground_y: float, px_height: float) -> void:

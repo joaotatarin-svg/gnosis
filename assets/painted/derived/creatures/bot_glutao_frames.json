@@ -32,11 +32,12 @@
    "foot_y": 226.85,
    "bottom": 227.7,
    "pelvis_x": 119.6,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "walk_0": {
    "rect": [
-    313,
+    0,
     328,
     330,
     225
@@ -45,25 +46,13 @@
    "foot_y": 217.51,
    "bottom": 217.51,
    "pelvis_x": 127.31,
-   "mid": false
-  },
-  "walk_0-walk_1_50": {
-   "rect": [
-    958,
-    328,
-    316,
-    221
-   ],
-   "top": 8.0,
-   "foot_y": 213.0,
-   "bottom": 213.0,
-   "pelvis_x": 118.33,
-   "mid": true
+   "mid": false,
+   "translucent": false
   },
   "walk_1": {
    "rect": [
+    1527,
     0,
-    328,
     313,
     226
    ],
@@ -71,20 +60,8 @@
    "foot_y": 217.51,
    "bottom": 218.36,
    "pelvis_x": 130.5,
-   "mid": false
-  },
-  "walk_1-walk_2_50": {
-   "rect": [
-    1527,
-    0,
-    299,
-    229
-   ],
-   "top": 7.0,
-   "foot_y": 219.0,
-   "bottom": 221.0,
-   "pelvis_x": 123.93,
-   "mid": true
+   "mid": false,
+   "translucent": false
   },
   "walk_2": {
    "rect": [
@@ -97,20 +74,8 @@
    "foot_y": 223.45,
    "bottom": 225.15,
    "pelvis_x": 132.58,
-   "mid": false
-  },
-  "walk_2-walk_0_50": {
-   "rect": [
-    643,
-    328,
-    315,
-    225
-   ],
-   "top": 7.0,
-   "foot_y": 217.0,
-   "bottom": 217.0,
-   "pelvis_x": 123.84,
-   "mid": true
+   "mid": false,
+   "translucent": false
   },
   "windup": {
    "rect": [
@@ -123,7 +88,8 @@
    "foot_y": 319.44,
    "bottom": 320.29,
    "pelvis_x": 159.74,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "strike": {
    "rect": [
@@ -136,7 +102,8 @@
    "foot_y": 224.3,
    "bottom": 225.15,
    "pelvis_x": 187.34,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "hurt": {
    "rect": [
@@ -149,11 +116,12 @@
    "foot_y": 265.07,
    "bottom": 265.92,
    "pelvis_x": 98.16,
-   "mid": false
+   "mid": false,
+   "translucent": false
   },
   "death": {
    "rect": [
-    1274,
+    330,
     328,
     362,
     163
@@ -162,7 +130,8 @@
    "foot_y": 154.65,
    "bottom": 155.5,
    "pelvis_x": 200.86,
-   "mid": false
+   "mid": false,
+   "translucent": false
   }
  },
  "states": {
@@ -187,13 +156,6 @@
      ]
     },
     {
-     "f": "walk_0-walk_1_50",
-     "anchor": [
-      123.5,
-      216.51
-     ]
-    },
-    {
      "f": "walk_1",
      "anchor": [
       130.5,
@@ -201,24 +163,10 @@
      ]
     },
     {
-     "f": "walk_1-walk_2_50",
-     "anchor": [
-      123.58,
-      220.45
-     ]
-    },
-    {
      "f": "walk_2",
      "anchor": [
       132.58,
       223.45
-     ]
-    },
-    {
-     "f": "walk_2-walk_0_50",
-     "anchor": [
-      129.58,
-      219.45
      ]
     }
    ],
