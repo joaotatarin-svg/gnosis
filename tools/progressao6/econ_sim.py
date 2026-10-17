@@ -8,10 +8,11 @@ regras ANTIGAS (base 37ea6f5) e as NOVAS (Progression, Onda 6). Mostra, por
 magias no máximo e EM QUE TELA cada trilha chega ao topo.
 
 Uso:  python tools/progressao6/econ_sim.py <bot.csv> [--perfil guloso|arma|vida] [--perola]
-  guloso = compra sempre o item mais BARATO disponível (o pior caso: o que
+  guloso = compra sempre o item mais BARATO que couber (o pior caso: o que
            maximiza "upgrades no máximo" cedo — a queixa do playtest).
-  arma   = arma primeiro, depois vida, depois magias.
-  vida   = vida primeiro, depois arma, depois magias.
+  arma   = FOCADO: arma > vida > magias > Éter; junta faísca para o 1º item
+           aberto (selado não conta) em vez de gastar no resto.
+  vida   = FOCADO: vida > arma > magias > Éter.
   --perola = (regras novas) compra a Pérola do Hino assim que der (+25% de renda).
 A loja abre pela PAUSA a qualquer hora (as duas regras): o jogador compra ao
 fim de toda tela. Os Anéis chegam nas telas de Arconte (10, 19, ..., 64).
@@ -151,16 +152,21 @@ def simulate(rows, rules: Rules, perfil: str, perola: bool):
 			for k in owned:
 				if skills[k] < SKILL_MAX and t >= rules.skill_tier(k, skills[k]):
 					opts.append((rules.skill_cost(k, skills[k]), 2, "magia%d" % k))
-			opts = [o for o in opts if o[0] <= orbs]
+			if perfil == "guloso":
+				# compra o mais barato que couber (não junta para nada)
+				opts = [o for o in opts if o[0] <= orbs]
+				opts.sort(key=lambda o: (o[1] != -1, o[0]))
+			else:
+				# FOCADO: segue a prioridade e JUNTA faísca para o 1º item aberto
+				if perfil == "arma":
+					order = {-1: -1, 0: 0, 1: 1, 2: 2, 3: 3}
+				else:   # vida
+					order = {-1: -1, 1: 0, 0: 1, 2: 2, 3: 3}
+				opts.sort(key=lambda o: (order[o[1]], o[0]))
+				if opts and opts[0][0] > orbs:
+					opts = []
 			if not opts:
 				break
-			if perfil == "guloso":
-				opts.sort(key=lambda o: (o[1] != -1, o[0]))
-			elif perfil == "arma":
-				opts.sort(key=lambda o: (o[1], o[0]))
-			else:   # vida
-				order = {-1: -1, 1: 0, 0: 1, 2: 2, 3: 3}
-				opts.sort(key=lambda o: (order[o[1]], o[0]))
 			cost, _, what = opts[0]
 			orbs -= cost
 			spent += cost

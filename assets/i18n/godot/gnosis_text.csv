@@ -37,6 +37,12 @@ Ombreiras do Éon,Aeon Pauldrons
 Elmo do Guardião,Guardian's Helm
 Braceletes do Éon,Aeon Bracers
 Diadema da Fonte,Diadem of the Source
+Brasa Viva,Living Ember
+Cada faísca que te alcança cura 2 de vida.,Each spark that reaches you heals 2 health.
+Lâmpada de Óleo,Oil Lamp
+Cada faísca que te alcança devolve 3 de Éter.,Each spark that reaches you restores 3 Aether.
+Pérola do Hino,Pearl of the Hymn
+Toda faísca ganha rende um quarto a mais.,Every spark you earn yields a quarter more.
 Sophia,Sophia
 "Uma faísca sem memória, desperta nas cinzas do Kenoma. Luta com o cajado e com a luz que ainda lembra.","A spark without memory, woken in the ashes of the Kenoma. She fights with her staff and the light that still remembers."
 Golpe de Cajado,Staff Strike
@@ -1371,12 +1377,17 @@ Arma no nível máximo,Weapon at max level
 %s  ·  Nv. %d → %d,%s  ·  Lv. %d → %d
 +20 de vida máx.  ·  %d / %d,+20 max health  ·  %d / %d
 no máximo,maxed out
-+15 de Éter máx.,+15 max Aether
++15 de Éter máx.  ·  %d / %d,+15 max Aether  ·  %d / %d
+%s  ·  em uso,%s  ·  in use
+%s  ·  usar,%s  ·  use
+Relíquia  ·  %s,Relic  ·  %s
 Restauração  ·  cura completa,Restoration  ·  full heal
 a vida já está cheia,health is already full
 só no santuário e depois do Arconte,only at the shrine and after the Archon
+Selado  ·  vença %s para abrir,Sealed  ·  defeat %s to open
 Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short
 Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades
+selado  ·  vença %s,sealed  ·  defeat %s
 Menu,Menu
 PAUSA,PAUSED
 Continuar,Continue

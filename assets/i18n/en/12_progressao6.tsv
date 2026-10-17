@@ -1,0 +1,13 @@
+# Lote 12 — Onda 6 (Progressão): relíquias e linhas novas da loja (selos por Arconte).
+game_content._build_relics.4ace25	Living Ember
+game_content._build_relics.3a0d93	Each spark that reaches you heals 2 health.
+game_content._build_relics.d8250f	Oil Lamp
+game_content._build_relics.77c5be	Each spark that reaches you restores 3 Aether.
+game_content._build_relics.1e005f	Pearl of the Hymn
+game_content._build_relics.68f07d	Every spark you earn yields a quarter more.
+upgrade_menu._rebuild.591292	+15 max Aether  ·  %d / %d
+upgrade_menu._rebuild.8ffaef	%s  ·  in use
+upgrade_menu._rebuild.fe513f	%s  ·  use
+upgrade_menu._rebuild.58c64b	Relic  ·  %s
+upgrade_menu._update_status.74cd2e	Sealed  ·  defeat %s to open
+upgrade_menu._add_sealed.3e1bec	sealed  ·  defeat %s
