@@ -1,0 +1,25 @@
+# Lote 09 — Onda 4: traduções da Onda 2 cujo id mudou (mesmo texto pt, função/escopo novo)
+narrative.walk_arrival.5254fb	Where...? Who...?
+narrative.walk_arrival.d7f30b	One question at a time. First: the ashes beneath your feet were your people.
+narrative.walk_arrival.1ddde1	The pain you feel is the only true thing this world has given you. It is what broke the spell.
+narrative.walk_arrival.632b4d	Call me Voice. Climb with me: every spark you set free will remember what you are.
+enemy.display_name.cef7da	Archon
+codex_menu._build_legacy_backdrop.457f61	SOPHIA
+codex_menu._build_legacy_backdrop.23c457	the spark that does not bow
+codex_menu._open_trial.c63558	Trial
+hud._key_name.f61d6e	Space
+hud._pad_button_name.6dcd4c	A
+hud._pad_button_name.ae4f28	B
+hud._pad_button_name.c032ad	X
+hud._pad_button_name.23eb4d	Y
+hud._pad_button_name.2d1958	LB
+hud._pad_button_name.38026d	RB
+hud._pad_button_name.952f37	Start
+hud._pad_axis_name.bc410c	RT
+hud._draw_counters.a602bb	Weapon Lv. %d
+input_glyphs.pad_button_name.52b177	L1
+input_glyphs.pad_button_name.95ced8	R1
+input_glyphs.pad_button_name.6bf5da	Options
+input_glyphs.pad_axis_name.c857f4	R2
+options_menu.WINDOW_NAMES.e80112	Fullscreen
+options_menu._ready.578afe	Music

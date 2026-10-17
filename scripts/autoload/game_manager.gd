@@ -44,6 +44,8 @@ var first_run: bool = false
 ##   damage_numbers (bool) → números de dano (Combate/HUD)
 ##   bindings (Dictionary ação → lista de eventos) → remapeamento; aplicado
 ##              por `scripts/ui/input_rebind.gd` (`apply_bindings`) se existir
+##   locale (String: "" = idioma do sistema · "pt_BR" · "en") → idioma do texto;
+##              aplicado aqui por `I18n.apply` (scripts/i18n/i18n.gd, Onda 4)
 ##   settings_rev (int) → revisão das opções gravadas (migração; ver
 ##              `SaveManager.migrate_settings`). Não é opção do jogador.
 const SETTINGS_DEFAULT := {
@@ -63,6 +65,9 @@ const SETTINGS_DEFAULT := {
 	# Acessibilidade: corta clarões/flashes de tela cheia (fotossensibilidade).
 	# Quem desenha flash lê `Juice.reduce_flashes` (espelhado em apply_settings).
 	"reduce_flashes": false,
+	# Idioma (Onda 4 — i18n): "" = automático pelo sistema na 1ª vez e até o
+	# jogador escolher nas Opções; "pt_BR" / "en" = escolha salva.
+	"locale": "",
 }
 var settings: Dictionary = SETTINGS_DEFAULT.duplicate()
 
@@ -89,6 +94,7 @@ func apply_settings() -> void:
 	settings["shake"] = clampf(float(settings["shake"]), 0.0, 1.0)
 	settings["caption_size"] = clampi(int(settings["caption_size"]), 0, 2)
 	settings["text_speed"] = clampf(float(settings["text_speed"]), 0.0, 4.0)
+	I18n.apply(String(settings["locale"]))
 	_sync_window_mode()
 	_apply_bindings()
 	# Espelha tremor/vibração no Juice (campos da branch principal), se ele já

@@ -55,8 +55,12 @@ def load_rows() -> list[dict]:
 		return list(csv.DictReader(f))
 
 
-def load_lotes() -> tuple[dict[str, str], list[str]]:
+def load_lotes() -> tuple[dict[str, str], list[str], dict[str, str]]:
+	"""(id → inglês, problemas, compostos). Linha `=<texto pt>	<inglês>` é um texto
+	COMPOSTO pelo código (não existe literal no fonte: "Campeão " + "da Fome",
+	"Arconte  ·  " + nome...): entra direto na tabela do jogo, chave = o pt."""
 	tr: dict[str, str] = {}
+	extra: dict[str, str] = {}
 	problems: list[str] = []
 	for p in sorted(LOTES.glob("*.tsv")):
 		for no, ln in enumerate(p.read_text(encoding="utf-8").split("\n"), 1):
@@ -66,16 +70,29 @@ def load_lotes() -> tuple[dict[str, str], list[str]]:
 				problems.append(f"{p.name}:{no}: sem TAB")
 				continue
 			k, v = ln.split("\t", 1)
-			k = k.strip()
 			v = v.replace("\\n", "\n").rstrip("\r")   # espaços nas pontas são significativos
+			if k.startswith("="):
+				pt = k[1:].replace("\\n", "\n")
+				if pt in extra:
+					problems.append(f"{p.name}:{no}: composto repetido {pt!r}")
+				if _fmt_seq(pt) != _fmt_seq(v):
+					problems.append(f"{p.name}:{no}: formato {_fmt_seq(pt)} != {_fmt_seq(v)} em {pt!r}")
+				extra[pt] = v
+				continue
+			k = k.strip()
 			if k in tr:
 				problems.append(f"{p.name}:{no}: id repetido {k}")
 			tr[k] = v
-	return tr, problems
+	return tr, problems, extra
 
 
 def _fmt(s: str) -> list[str]:
 	return sorted(re.findall(r"%[-+0-9.]*[dsfv%]", s))
+
+
+def _fmt_seq(s: str) -> list[str]:
+	"""Tipos dos % NA ORDEM (o jogo casa o padrão pt e preenche o en na mesma ordem)."""
+	return [m[-1] for m in re.findall(r"%[-+0-9.]*[dsfv]", s.replace("%%", ""))]
 
 
 def check(r: dict, en: str) -> list[str]:
@@ -83,6 +100,8 @@ def check(r: dict, en: str) -> list[str]:
 	out = []
 	if _fmt(pt) != _fmt(en):
 		out.append(f"formato {_fmt(pt)} ≠ {_fmt(en)}")
+	elif _fmt_seq(pt) != _fmt_seq(en):
+		out.append(f"ordem dos % diferente: {_fmt_seq(pt)} ≠ {_fmt_seq(en)}")
 	if pt.count("\n") != en.count("\n") and r["kind"] not in ("ui",):
 		out.append(f"quebras de linha pt={pt.count(chr(10))} en={en.count(chr(10))}")
 	if (pt[:1].isspace(), pt[-1:].isspace()) != (en[:1].isspace(), en[-1:].isspace()):
@@ -108,13 +127,41 @@ def check(r: dict, en: str) -> list[str]:
 	return out
 
 
+TABLE = ROOT / "scripts" / "i18n" / "en_table.gd"
+
+
+def gd_str(s: str) -> str:
+	"""Literal de string GDScript (aspas duplas, escapes padrão)."""
+	return '"' + s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\t", "\\t").replace("\r", "") + '"'
+
+
+def write_table(done: list[dict], extra: dict[str, str]) -> None:
+	"""Tabela que o JOGO lê (GnosisTranslation): pt → en. Gerada — não edite à mão."""
+	table: dict[str, str] = {}
+	for r in done:
+		if r["pt"] != r["en"]:
+			table[r["pt"]] = r["en"]
+	for k, v in extra.items():
+		if k != v:
+			table[k] = v
+	out = ["extends RefCounted",
+		"## GERADO por tools/i18n/build.py a partir de assets/i18n/en/*.tsv — NÃO EDITE.",
+		"## Chave = texto em português exato; valor = inglês. Lido por GnosisTranslation.",
+		"", "const EXACT := {"]
+	for k in sorted(table):
+		out.append("\t" + gd_str(k) + ": " + gd_str(table[k]) + ",")
+	out.append("}")
+	TABLE.write_text("\n".join(out) + "\n", encoding="utf-8", newline="\n")
+	print(f"tabela do jogo: {len(table)} entradas -> {TABLE.relative_to(ROOT).as_posix()}")
+
+
 def po_escape(s: str) -> str:
 	return s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\t", "\\t")
 
 
 def main() -> int:
 	rows = load_rows()
-	tr, problems = load_lotes()
+	tr, problems, extra = load_lotes()
 	ids = {r["id"] for r in rows}
 	for k in tr:
 		if k not in ids:
@@ -156,7 +203,13 @@ def main() -> int:
 		po.append(f'msgid "{po_escape(r["pt"])}"')
 		po.append(f'msgstr "{po_escape(r["en"])}"')
 		po.append("")
+	for k, v in extra.items():
+		po.append("#. composto (montado pelo código)")
+		po.append(f'msgid "{po_escape(k)}"')
+		po.append(f'msgstr "{po_escape(v)}"')
+		po.append("")
 	(OUT / "en.po").write_text("\n".join(po), encoding="utf-8")
+	write_table(done, extra)
 
 	lines = [
 		f"strings: {len(rows)}   traduzidas: {len(done)}   faltando: {len(missing)}",

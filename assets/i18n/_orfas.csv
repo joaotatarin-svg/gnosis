@@ -1,0 +1,161 @@
+id,pt,en,kind,speaker,limit,where,note
+narrative._faiscas.bfc90d,uma faísca escorre,One spark drains,narrativa,,115,scripts/autoload/narrative.gd:62,
+narrative.death_revive.4c0dfd,Shh. Já passou. Eu te tenho.,Shh. It is over. I have you.,dialogo,A Voz,115,scripts/autoload/narrative.gd:128,
+narrative.death_revive.b28ec9,"Tu cais, e eu te refaço. Já fizemos isto antes, tu e eu. Muito antes.","You fall, and I remake you. We have done this before, you and I. Long before.",dialogo,A Voz,115,scripts/autoload/narrative.gd:146,
+narrative.king_intro.41a536,"Olha. Alguém vem da névoa. Não temas: eu o conheço. É um rei antigo, e é gentil.","Look. Someone comes out of the mist. Do not fear: I know him. He is an ancient king, and he is kind.",dialogo,A Voz,115,scripts/autoload/narrative.gd:175,
+narrative.king_intro.ac8146,Faísca perdida... que bom que acordaste. Há eras eu guardo este limiar.,Lost spark... how good that you have woken. For ages I have kept this threshold.,dialogo,O Rei,115,scripts/autoload/narrative.gd:176,
+narrative.king_intro.fee21a,Mas o limiar tem uma lei: só passa quem me toca com a própria luz. Mostra-me a tua.,But the threshold has a law: none may pass who does not touch me with their own light. Show me yours.,dialogo,O Rei,115,scripts/autoload/narrative.gd:177,
+narrative.king_intro.eba3ba,É um rito. Bate nele de coração leve. Ele não te quer mal.,It is a rite. Strike him with a light heart. He means you no harm.,dialogo,A Voz,115,scripts/autoload/narrative.gd:178,
+narrative.king_intro.c25cf0,(ergue o orbe; a máscara se acende) Vem.,(raises the orb; the mask lights up) Come.,dialogo,O Rei,115,scripts/autoload/narrative.gd:179,
+narrative.king_fall.c1e06c,"Sete Arcontes, sete Anéis. Reúne-os todos, e eu te mostro como desfazer este mundo de mentira.","Seven Archons, seven Rings. Gather them all, and I will show you how to undo this world of lies.",dialogo,A Voz,115,scripts/autoload/narrative.gd:188,
+narrative.eon_intro.8cbd83,O Arconte daqui vai te oferecer o que perdeste. Lembra: cópia não é volta.,The Archon here will offer you what you lost. Remember: a copy is not a return.,dialogo,A Voz,115,scripts/autoload/narrative.gd:205,
+narrative.eon_intro.8c1504,"Ele vai te oferecer poder: a mais velha das mentiras, e a mais doce.","He will offer you power: the oldest of lies, and the sweetest.",dialogo,A Voz,115,scripts/autoload/narrative.gd:230,
+narrative.temptation.6ec48e,"Tudo apodrece, Portadora. Vi morrer tudo o que plantei. Rende-te agora, e eu te poupo do fim.","Everything rots, Bearer. I watched all I planted die. Surrender now, and I will spare you the end.",dialogo,Belias,115,scripts/autoload/narrative.gd:263,
+narrative.archon_phase2.56694d,Me dá uma! Uma lembrança que seja minha!,Give me one! One memory that is mine!,legenda,Harmas,95,scripts/autoload/narrative.gd:291,
+narrative._archon_death.c22b91,"(os pontos se rompem) Alguém respondeu a ele, uma vez, lá de cima. Eu ouvi. Ele me costurou por isso.","(the stitches burst) Someone answered him once, from up above. I heard it. He sewed me shut for it.",dialogo,Yabel,115,scripts/autoload/narrative.gd:309,
+narrative.ring_gained.72af48,Galila te classificou e perdeu. Faltam quatro.,"Galila classified you, and lost. Four to go.",dialogo,A Voz,115,scripts/autoload/narrative.gd:335,
+narrative.sanctuary.fd860f,"Aqui eu me calo. Fala tu, hoje. Eu escuto.","Here I fall quiet. You speak, today. I will listen.",dialogo,A Voz,115,scripts/autoload/narrative.gd:367,
+narrative.theft.335706,Eu te dei um luto para te dar um caminho. O luto é a coleira mais macia.,I gave you a grief so I could give you a path. Grief is the softest of collars.,dialogo,Yaldabaoth,115,scripts/autoload/narrative.gd:474,
+narrative.theft.33508c,"Choraste por mim. Os sete eram meus filhos, e tu me trouxeste o que restou deles.","You wept for me. The seven were my children, and you brought me what was left of them.",dialogo,Yaldabaoth,115,scripts/autoload/narrative.gd:476,
+narrative.apply_ending.48b169,"Toda faísca voltou à Fonte. O Kenoma se desfez como um sonho ao acordar.
+Verdade inteira. Mundo nenhum.","Each spark returned to the Source. The Kenoma faded like dreams at dawn.
+The whole truth. No world at all.",card_cinema,,240,scripts/autoload/narrative.gd:614,
+narrative.apply_ending.994a4b,"Sophia sentou-se no trono ainda morno. A coroa serviu.
+Ninguém mais seria abandonado. Ninguém mais sairia.","Sophia sat on the still-warm throne. The crown fit.
+No one would be abandoned again. No one would ever leave.",card_cinema,,240,scripts/autoload/narrative.gd:618,
+narrative.apply_ending.5cccea,"Sophia recusou o trono e a porta. Desceu de volta, de faísca em faísca.
+Sem apocalipse e sem prisão: liberdade lenta, a única que dura.","Sophia refused throne and door. She went back down, spark by spark.
+No apocalypse and no prison: a slow freedom, the only kind that lasts.",card_cinema,,240,scripts/autoload/narrative.gd:622,
+narrative._arrival_pool.6b02c1,Galila não te odeia. Ele te classifica. É pior.,Galila does not hate you. He classifies you. That is worse.,legenda,A Voz,95,scripts/autoload/narrative.gd:749,
+narrative._arrival_pool.d1bd6a,Vieste de mim. Eu te achei. Não esqueças a ordem das coisas.,You came from me. I found you. Do not forget the order of things.,legenda,A Voz,95,scripts/autoload/narrative.gd:754,
+narrative._arrival_pool.0d69b5,"Astaphaios vai te dar o que mais queres: tu, antes de tudo. É o golpe mais cruel.","Astaphaios will give you what you want most: you, before everything. The cruelest blow.",legenda,A Voz,95,scripts/autoload/narrative.gd:779,
+narrative._arrival_pool.778e0b,"Cinco Anéis. Mais dois, e eu te mostro o fim de tudo isto.","Five Rings. Two more, and I will show you the end of all this.",legenda,A Voz,95,scripts/autoload/narrative.gd:794,
+stela._ready.c33be5,J / X · ler a Estela,J / X · read the Stele,ui_estela,,,scripts/entities/stela.gd:33,
+stela._ready.adc6ff,      › fechar,      › close,ui_estela,,,scripts/entities/stela.gd:209,
+cinematic.prologue.e5613a,"No princípio não havia princípio.
+Havia o Um — sem nome, sem medida, pleno.
+Os antigos o chamaram Mônada, Abismo, Silêncio.","In the beginning there was no beginning.
+There was the One — nameless, measureless, full.
+The ancients called it Monad, Depth, Silence.",card_cinema,,240,scripts/fx/cinematic.gd:57,
+cinematic.prologue.06441e,"Dele emanaram os Éons, aos pares, como luz que transborda.
+No Pleroma nada dormia. Nada esquecia.","From it the Aeons emanated, in pairs, like overflowing light.
+In the Pleroma nothing slept. Nothing forgot.",card_cinema,,240,scripts/fx/cinematic.gd:58,
+cinematic.prologue.ac3cdb,"A mais jovem, Sophia — a Sabedoria —, quis alcançar a Fonte sozinha.
+Do desejo sem par nasceu um filho sem forma,
+e ela o escondeu numa nuvem.","The youngest, Sophia — Wisdom — sought to reach the Source alone.
+From that unpartnered desire came a formless son,
+and she hid him in a cloud.",card_cinema,,240,scripts/fx/cinematic.gd:59,
+cinematic.prologue.4dd67e,"Cego para a Luz de onde veio, ele se acreditou o único deus.
+E fez um mundo copiando o que nunca viu: o Kenoma, o vazio.","Blind to the Light he came from, he believed himself the only god.
+And he made a world copying what he never saw: the Kenoma, the void.",card_cinema,,240,scripts/fx/cinematic.gd:60,
+cinematic.prologue.97ec52,"Sete Arcontes. Sete esferas. Sete correntes.
+E dentro do barro, escondida, a faísca que ele levou da mãe.","Seven Archons. Seven spheres. Seven chains.
+And within the clay, hidden, the spark he took from his mother.",card_cinema,,240,scripts/fx/cinematic.gd:61,
+cinematic.prologue.4eff7a,"As faíscas dormem.
+
+Uma delas acaba de sentir dor.","The sparks are sleeping.
+
+One of them has just felt pain.",card_cinema,,240,scripts/fx/cinematic.gd:62,
+cinematic.epilogue.622c86,"João Tatarin — direção, produção e escolhas
+Arte ilustrada gerada por IA sob direção do autor
+Código escrito com Claude (Anthropic) e Codex (OpenAI)
+Sons e efeitos CC0/CC-BY — ver assets/LICENSES.md
+
+Inspirado nos textos de Nag Hammadi, na Pistis Sophia
+e nos relatos de Irineu, Hipólito e Clemente.","João Tatarin — direction, production and choices
+Illustrated art generated by AI under the author's direction
+Code written with Claude (Anthropic) and Codex (OpenAI)
+Sounds and effects CC0/CC-BY — see assets/LICENSES.md
+
+Inspired by the Nag Hammadi texts, the Pistis Sophia
+and the accounts of Irenaeus, Hippolytus and Clement.",card_cinema,,240,scripts/fx/cinematic.gd:88,
+codex_trial._ready.f294f2,A/D mover   ESPAÇO saltar   J/K golpes   SHIFT esquiva   I aparar   U anel   O esfera,A/D move   SPACE jump   J/K strikes   SHIFT dodge   I parry   U ring   O orb,ui,,,scripts/levels/codex_trial.gd:48,
+codex_trial._show_result.fc8b0c,Ir pra Campanha  →,To the Campaign  →,ui,,,scripts/levels/codex_trial.gd:106,
+final_battle.start.5a95a1,As duas formas precisam cair JUNTAS.,Both forms must fall TOGETHER.,toast,,60,scripts/levels/final_battle.gd:34,
+character_atelier.NOTES.a674f1,"A memória da luz tomou forma.
+Seis poses ilustradas, túnica bipartida
+e bracelete da Mônada.","The memory of light took shape.
+Six illustrated poses, a two-part tunic
+and the Monad's bracelet.",ui,,,scripts/ui/character_atelier.gd:7,
+character_atelier.NOTES.af2f76,"O guardião que ensina a dormir.
+Pálpebra selada, corpo espectral
+e névoa que rouba movimento.","The guardian who teaches sleep.
+Sealed eyelid, spectral body
+and a mist that steals movement.",ui,,,scripts/ui/character_atelier.gd:8,
+character_atelier.NOTES.838af4,"A fome que nunca se reconhece.
+Boca no torso, massa colossal
+e sucção antes do impacto.","The hunger that never knows itself.
+A mouth in the torso, colossal bulk
+and suction before the impact.",ui,,,scripts/ui/character_atelier.gd:9,
+character_atelier.NOTES.b49f06,"Toda lei deseja uma corrente.
+Elos pendentes, ombros de ferro
+e investida que aprisiona.","Every law longs for a chain.
+Hanging links, iron shoulders
+and a charge that imprisons.",ui,,,scripts/ui/character_atelier.gd:10,
+character_atelier.NOTES.7c7f46,"Palavras enterradas no vazio.
+Asas rasgadas, boca costurada
+e uma aura que silencia os Anéis.","Words buried in the void.
+Torn wings, a sewn mouth
+and an aura that silences the Rings.",ui,,,scripts/ui/character_atelier.gd:11,
+character_atelier.NOTES.266f5c,"O reflexo deseja o seu lugar.
+Prata, cacos em órbita
+e uma sombra na segunda fase.","The reflection wants your place.
+Silver, orbiting shards
+and a shadow in the second phase.",ui,,,scripts/ui/character_atelier.gd:12,
+character_atelier.NOTES.f83240,"A vida que se esqueceu de morrer.
+Quatro patas, gavinhas
+e rastros de veneno.","The life that forgot to die.
+Four legs, tendrils
+and trails of poison.",ui,,,scripts/ui/character_atelier.gd:13,
+character_atelier.NOTES.153ead,"Um trono feito de obediência.
+Coroa alta, massa e hierarquia.
+Servos sustentam sua armadura.","A throne made of obedience.
+Tall crown, bulk and hierarchy.
+Servants hold up its armor.",ui,,,scripts/ui/character_atelier.gd:14,
+character_atelier._ready.397850,Ateliê,Atelier,ui,,,scripts/ui/character_atelier.gd:41,
+character_atelier._ready.8f68c8,ILUSTRAÇÃO · POSES · PERFIL · COMBATE,ILLUSTRATION · POSES · PROFILE · COMBAT,ui,,,scripts/ui/character_atelier.gd:42,
+chronicles._ready.5caed5,W/S · setas · D-pad escolhem   ·   Esc / B volta,W/S · arrows · D-pad choose   ·   Esc / B back,ui,,,scripts/ui/chronicles.gd:34,
+chronicles._refresh.74ade2,"Estela ainda não lida.
+Onde: %s
+Chegue perto e aperte o golpe leve (J / X) para ler.","Stele not yet read.
+Where: %s
+Get close and press light strike (J / X) to read.",ui,,,scripts/ui/chronicles.gd:152,format string: manter os %
+codex_menu._build_actions.19a2cf,"Continuar  ·  %s, tela %d","Continue  ·  %s, screen %d",ui,,,scripts/ui/codex_menu.gd:95,format string: manter os %
+codex_menu._build_actions.512ba3,Ateliê & Bestiário,Atelier & Bestiary,ui,,,scripts/ui/codex_menu.gd:113,
+codex_menu._on_new_campaign.aa9cfc,"Isso apaga o progresso salvo — %s, tela %d — e as faíscas e melhorias desta jornada.
+Finais vistos e opções ficam.","This erases your saved progress — %s, screen %d — and this journey's sparks and upgrades.
+Endings seen and options are kept.",ui,,,scripts/ui/codex_menu.gd:159,format string: manter os %
+credits.FALLBACK_ATTRIBUTION.aea9fc,"Música de Kevin MacLeod (incompetech.com), licenciada sob Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/","Music by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/",ui,,,scripts/ui/credits.gd:16,
+credits.FALLBACK_ATTRIBUTION.0aa983,"Efeitos sonoros: ""Fantasy Sound Effects Library"" e ""Magic SFX Preview Pack"" de Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0.","Sound effects: ""Fantasy Sound Effects Library"" and ""Magic SFX Preview Pack"" by Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0.",ui,,,scripts/ui/credits.gd:17,
+credits.FALLBACK_ATTRIBUTION.88fd3c,Demais sons e sprites de partícula: Kenney (kenney.nl) e autores CC0 do OpenGameArt.org.,Other sounds and particle sprites: Kenney (kenney.nl) and CC0 authors at OpenGameArt.org.,ui,,,scripts/ui/credits.gd:18,
+credits._ready.4a8cbf,W/S · setas · analógico rolam   ·   Esc / B volta,W/S · arrows · stick scroll   ·   Esc / B back,ui,,,scripts/ui/credits.gd:71 scripts/ui/gallery.gd:56,
+credits._fill.9a47d3,(Anthropic),(Anthropic),ui,,,scripts/ui/credits.gd:88,
+credits._fill.54b33c,Kevin MacLeod  ·  incompetech.com,Kevin MacLeod  ·  incompetech.com,ui,,,scripts/ui/credits.gd:93,
+credits._fill.8d7ea0,Licença Creative Commons: By Attribution 4.0,Creative Commons License: By Attribution 4.0,ui,,,scripts/ui/credits.gd:95,
+credits._fill.03355b,https://creativecommons.org/licenses/by/4.0/,https://creativecommons.org/licenses/by/4.0/,ui,,,scripts/ui/credits.gd:96,
+credits._fill.e2f3ff,Atribuição,Attribution,ui,,,scripts/ui/credits.gd:98,
+credits._fill.e64bb8,Sons e partículas,Sounds and particles,ui,,,scripts/ui/credits.gd:104,
+dialogue_box._draw.fd5362,continuar,continue,ui,,,scripts/ui/dialogue_box.gd:328,
+gallery._ready.775f1e,Sophia Nv.1,Sophia Lv.1,ui,,,scripts/ui/gallery.gd:22,
+gallery._ready.969100,Sophia Nv.3,Sophia Lv.3,ui,,,scripts/ui/gallery.gd:23,
+gallery._ready.4cac4c,Sophia Nv.5,Sophia Lv.5,ui,,,scripts/ui/gallery.gd:24,
+gallery._ready.0d853f,"Soter, o Ungido","Soter, the Anointed",ui,,,scripts/ui/gallery.gd:32,
+gallery._ready.111c67,"Velkar, o Arrependido","Velkar, the Penitent",ui,,,scripts/ui/gallery.gd:33,
+moves_screen._ready.b2099a,W/S · setas · analógico rolam      ·      Esc / B fecha,W/S · arrows · stick scroll      ·      Esc / B close,ui,,,scripts/ui/moves_screen.gd:56,
+moves_screen._fill.a9ca16,O  ·  RT,O  ·  RT,ui,,,scripts/ui/moves_screen.gd:87,
+moves_screen._fill.4a8bed,"U  ·  RB   (trocar: Q/E, 1–7 · LT)","U  ·  RB   (switch: Q/E, 1–7 · LT)",ui,,,scripts/ui/moves_screen.gd:93,
+moves_screen._fill.aefa0f,teclado  ·  Xbox  ·  DualShock,keyboard  ·  Xbox  ·  DualShock,ui,,,scripts/ui/moves_screen.gd:108,
+moves_screen._fill.5d8e51,A / D  (setas),A / D  (arrows),ui,,,scripts/ui/moves_screen.gd:110,
+moves_screen._fill.58668e,J,J,ui,,,scripts/ui/moves_screen.gd:112 scripts/ui/moves_screen.gd:129,
+moves_screen._fill.a7ee38,K,K,ui,,,scripts/ui/moves_screen.gd:113 scripts/ui/moves_screen.gd:129,
+moves_screen._fill.1e384b,L / Shift,L / Shift,ui,,,scripts/ui/moves_screen.gd:114,
+moves_screen._fill.973db8,I  (segurar / no tempo),I  (hold / timed),ui,,,scripts/ui/moves_screen.gd:115,
+moves_screen._fill.b2c7c0,U,U,ui,,,scripts/ui/moves_screen.gd:116,
+moves_screen._fill.08a914,O,O,ui,,,scripts/ui/moves_screen.gd:117,
+moves_screen._fill.c6e453,Q / E  ·  1–7,Q / E  ·  1–7,ui,,,scripts/ui/moves_screen.gd:118,
+moves_screen._fill.2f1056,LT / Back,LT / Back,ui,,,scripts/ui/moves_screen.gd:118,
+moves_screen._fill.3d66d7,L2 / Share,L2 / Share,ui,,,scripts/ui/moves_screen.gd:118,
+moves_screen._fill.80a13c,Esc / P,Esc / P,ui,,,scripts/ui/moves_screen.gd:119,
+options_menu._ready.392176,Vídeo & jogo,Video & game,ui,,,scripts/ui/options_menu.gd:48,
+pregame._ready.2597eb,%d telas  ·  sete Éons  ·  sete Arcontes  ·  o Centro  ·  a Mente,%d screens  ·  seven Aeons  ·  seven Archons  ·  the Center  ·  the Mind,ui,,,scripts/ui/pregame.gd:47,format string: manter os %
+upgrade_menu._rebuild.95d49a,+20 de vida máx.,+20 max health,ui,,,scripts/ui/upgrade_menu.gd:102,

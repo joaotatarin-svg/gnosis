@@ -51,6 +51,9 @@ NOT_TEXT = {
 	"Godot", "GNOSIS-WT", "Windows", "Linux", "macOS", "Web", "Mac OS X", "platform:",
 	"Collision", "FinalBattle", "ArenaSet", "Label", "Button", "Panel", "HSlider", "HSeparator",
 	"Value", "Back", "Menu", "Title",
+	# Onda 4: nomes de nó/meta, tokens de ação e prefixos técnicos (nunca exibidos)
+	"EonRule", "FlashLayer", "Rim", "Staging", "EndWalls", "DemoEndHook", "InputGlyphsListener",
+	"Why", "@move", "@nav", "@scroll", "ACH_", "áàâãéêíóôõúüç",
 }
 
 _DIALOG_FUNCS = ("_l(", "_c(", "line(", "_say(")
@@ -123,6 +126,8 @@ def classify(l):
 				return "card_chefe_nome", "", 18
 			return "card_chefe_titulo", "", 52
 	if f.endswith("narrative.gd"):
+		if l.scope == "CHAMPION_CARDS":
+			return ("card_chefe_nome", "", 18) if key == "name" else ("card_chefe_titulo", "", 52)
 		if l.scope == "ORDINAIS":
 			return "ordinal", "", 0
 		if "walk" in l.scope or "caption" in l.scope or l.scope.endswith("_pool") \

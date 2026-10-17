@@ -8,7 +8,6 @@ narrative.ORDINAIS.ad25d1	fourth
 narrative.ORDINAIS.ea2301	fifth
 narrative.ORDINAIS.dd74aa	sixth
 narrative.ORDINAIS.61ca9a	seventh
-narrative._faiscas.bfc90d	One spark drains
 narrative._faiscas.a349af	%d sparks drain
 narrative.death_revive.34c7a4	DIE. Why will you not die?
 narrative.death_revive.46672f	(The Rings stop spinning... sink... and stitch me back together, shard by shard.)
@@ -31,7 +30,6 @@ narrative.death_revive.acf3e3	He does not stay with you. No one stays with you. 
 narrative.death_revive.ab336d	Climb. Thrones are not won lying down.
 narrative.death_revive.9afed6	No. No, no, no. Get UP.
 narrative.death_revive.c4b404	Hold on to my voice and climb it. I will not lose you in some ditch of the Kenoma.
-narrative.death_revive.4c0dfd	Shh. It is over. I have you.
 narrative.death_revive.a21972	Breathe. Or whatever it is you do instead.
 narrative.death_revive.2fb1ec	Again. Be still. I am holding your spark: it does not slip away from me.
 narrative.death_revive.b71122	Every return costs dearly. Pay in sparks, not in yourself. You are worth every one of them.
@@ -40,29 +38,17 @@ narrative.death_revive.8be5c7	Get up. I need you whole.
 narrative.death_revive.08e8be	...You. I need you. That is what I meant.
 narrative.death_revive.b1e5cd	Do not die before your time. ...Before we are done. Before we are done together.
 narrative.death_revive.e7931e	As many times as it takes, lost spark. I do not know how to give up on you. Not now.
-narrative.death_revive.b28ec9	You fall, and I remake you. We have done this before, you and I. Long before.
 narrative.death_revive.f6d94f	I would remake the whole world to set you back on your feet.
 narrative.death_revive.6b1f20	...Do not look at me like that. It is a figure of speech.
 narrative.death_revive.efe9f1	(The light stitches you back together. %s from your open hand.)
 narrative.intro.0178c1	(Darkness. A heart beating. Then, ash in the mouth.)
 narrative.intro.b35d30	Wake. ...That is it. Slowly. I am here.
-narrative.intro.5254fb	Where...? Who...?
-narrative.intro.d7f30b	One question at a time. First: the ashes beneath your feet were your people.
-narrative.intro.1ddde1	The pain you feel is the only true thing this world has given you. It is what broke the spell.
-narrative.intro.632b4d	Call me Voice. Climb with me: every spark you set free will remember what you are.
-narrative.king_intro.41a536	Look. Someone comes out of the mist. Do not fear: I know him. He is an ancient king, and he is kind.
-narrative.king_intro.ac8146	Lost spark... how good that you have woken. For ages I have kept this threshold.
-narrative.king_intro.fee21a	But the threshold has a law: none may pass who does not touch me with their own light. Show me yours.
-narrative.king_intro.eba3ba	It is a rite. Strike him with a light heart. He means you no harm.
-narrative.king_intro.c25cf0	(raises the orb; the mask lights up) Come.
 narrative.king_fall.ec258a	(the mask cracks) ...Ah. Your light is greater than I remembered.
 narrative.king_fall.203263	Did you feel it? His seal has broken. Up above, seven thrones have just awoken.
-narrative.king_fall.c1e06c	Seven Archons, seven Rings. Gather them all, and I will show you how to undo this world of lies.
 narrative.eon_intro.903814	The Aeon of Torpor. Here the dead do not know they have died; the city dreams for them.
 narrative.eon_intro.0d82fc	Do not hate those who sleep. Yesterday, you slept.
 narrative.eon_intro.a2c9fb	I wanted to lie down too. ...I won't.
 narrative.eon_intro.71d9fb	The Aeon of Hunger. These markets devour whoever buys. Everything here has a price, even longing.
-narrative.eon_intro.8cbd83	The Archon here will offer you what you lost. Remember: a copy is not a return.
 narrative.eon_intro.1d46af	I don't even know what I lost. How do I refuse whatever he offers me?
 narrative.eon_intro.e656b5	The Aeon of the Chain. The law of this place does not protect: it binds. Every seal is a padlock.
 narrative.eon_intro.bebc3b	I follow a voice I can't see. Is that a chain too?
@@ -77,7 +63,6 @@ narrative.eon_intro.c39c2a	The Aeon of Blight. The sparks here go out slowly, li
 narrative.eon_intro.cd252b	Despair is their last weapon. It is not yours.
 narrative.eon_intro.c610fe	I'm tired. For the first time, I say it out loud: tired.
 narrative.eon_intro.ac3f3f	The Aeon of the Crown. The last step. The Archon here nearly touched the Blind One's throne.
-narrative.eon_intro.8c1504	He will offer you power: the oldest of lies, and the sweetest.
 narrative.eon_intro.a2cb56	The last step. Then I find out who I am. You promised.
 narrative.temptation.920e2e	Athoth
 narrative.temptation.e52bd3	Bearer... you do not sleep either, do you? I know this weariness. Lie down. I will dream the rest for you.
@@ -96,7 +81,6 @@ narrative.temptation.700e01	Astaphaios
 narrative.temptation.26a7d1	Look: it is us, before the ashes, at the window, counting boats. Stay this side of the glass. I will take the rest.
 narrative.temptation.473067	It is the cruelest blow of all. I know. Choose.
 narrative.temptation.90eb81	Belias
-narrative.temptation.6ec48e	Everything rots, Bearer. I watched all I planted die. Surrender now, and I will spare you the end.
 narrative.temptation.a00337	He mistakes weariness for truth. Choose.
 narrative.temptation.e4b255	Armupiel
 narrative.temptation.91eb60	The Blind One never once looked at me. Perhaps he will look at you. Take my crown. Be what I almost was.
@@ -106,7 +90,6 @@ narrative.refusal_response.de7267	Good. Refusal is a blade too, and you are shar
 narrative.concession_response.ab673a	...You took his bribe. The sparks weigh in your pocket. And on your soul.
 narrative.concession_response.93840c	I do not judge you. But remember: whatever an Archon gives, he collects.
 narrative.archon_phase2.488a7c	Why wake? Out there is only the lack!
-narrative.archon_phase2.56694d	Give me one! One memory that is mine!
 narrative.archon_phase2.05bcba	If I let go, I fall! Everyone falls!
 narrative.archon_phase2.dc31ad	(the stitches of his mouth stretch; something inside wants out)
 narrative.archon_phase2.006494	(The glass cracks. Where the river was, for an instant: a white cloud. Someone small, crying.)

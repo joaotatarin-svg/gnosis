@@ -68,6 +68,8 @@ Flor Podre,Rotten Bloom
 Planta um canteiro de veneno que fere quem pisa.,Plants a poison patch that hurts whoever steps in.
 Coroa Partida,Broken Crown
 A coroa do Arconte se parte em luz: dano enorme em área.,The Archon's crown shatters into light: huge area damage.
+Fim da demo,End of the demo
+Obrigado por jogar. O resto da subida continua no jogo completo.,Thank you for playing. The rest of the climb continues in the full game.
 Limiar — O Rei,Threshold — The King
 A Mente,The Mind
 O Centro %s,The Center %s
@@ -291,7 +293,7 @@ quarto,fourth
 quinto,fifth
 sexto,sixth
 sétimo,seventh
-uma faísca escorre,One spark drains
+Uma faísca escorre,One spark drains
 %d faíscas escorrem,%d sparks drain
 MORRE. Por que tu não morres?,DIE. Why will you not die?
 "(Os Anéis param de girar... descem... e me costuram de volta, caco por caco.)","(The Rings stop spinning... sink... and stitch me back together, shard by shard.)"
@@ -314,7 +316,7 @@ Ele não fica contigo. Ninguém fica contigo. Só eu.,He does not stay with you.
 Sobe. Os tronos não se vencem deitada.,Climb. Thrones are not won lying down.
 "Não. Não, não, não. LEVANTA.","No. No, no, no. Get UP."
 Agarra a minha voz e sobe por ela. Não te perco numa vala do Kenoma.,Hold on to my voice and climb it. I will not lose you in some ditch of the Kenoma.
-Shh. Já passou. Eu te tenho.,Shh. It is over. I have you.
+Shh. Já passou. Tenho-te.,Shh. It is over. I have you.
 Respira. Ou o que quer que tu faças no lugar disso.,Breathe. Or whatever it is you do instead.
 De novo. Fica quieta. Eu seguro a tua faísca: ela não escapa de mim.,Again. Be still. I am holding your spark: it does not slip away from me.
 "Cada volta custa caro. Paga com faíscas, não contigo. Tu vales cada uma delas.","Every return costs dearly. Pay in sparks, not in yourself. You are worth every one of them."
@@ -323,29 +325,23 @@ Levanta. Eu preciso de ti inteira.,Get up. I need you whole.
 ...De ti. Eu preciso de ti. Foi o que eu quis dizer.,...You. I need you. That is what I meant.
 Não morras antes da hora. ...Antes de acabarmos. Antes de acabarmos juntos.,Do not die before your time. ...Before we are done. Before we are done together.
 "Quantas vezes forem precisas, faísca perdida. Não sei desistir de ti. Não agora.","As many times as it takes, lost spark. I do not know how to give up on you. Not now."
-"Tu cais, e eu te refaço. Já fizemos isto antes, tu e eu. Muito antes.","You fall, and I remake you. We have done this before, you and I. Long before."
+"Tu cais, e eu refaço-te. Já fizemos isto antes, tu e eu. Muito antes.","You fall, and I remake you. We have done this before, you and I. Long before."
 Eu refaria o mundo inteiro para te pôr de pé.,I would remake the whole world to set you back on your feet.
 ...Não me olhes assim. É modo de dizer.,...Do not look at me like that. It is a figure of speech.
 (A luz te costura de volta. %s da tua mão aberta.),(The light stitches you back together. %s from your open hand.)
 "(Escuro. Um coração batendo. Depois, cinza na boca.)","(Darkness. A heart beating. Then, ash in the mouth.)"
 Acorda. ...Isso. Devagar. Eu estou aqui.,Wake. ...That is it. Slowly. I am here.
-Onde...? Quem...?,Where...? Who...?
-Uma pergunta de cada vez. Primeiro: as cinzas sob os teus pés eram a tua gente.,One question at a time. First: the ashes beneath your feet were your people.
-A dor que sentes é a única coisa verdadeira que este mundo te deu. Foi ela que quebrou o feitiço.,The pain you feel is the only true thing this world has given you. It is what broke the spell.
-Chama-me Voz. Sobe comigo: cada faísca que libertares vai lembrar o que tu és.,Call me Voice. Climb with me: every spark you set free will remember what you are.
-"Olha. Alguém vem da névoa. Não temas: eu o conheço. É um rei antigo, e é gentil.","Look. Someone comes out of the mist. Do not fear: I know him. He is an ancient king, and he is kind."
-Faísca perdida... que bom que acordaste. Há eras eu guardo este limiar.,Lost spark... how good that you have woken. For ages I have kept this threshold.
-Mas o limiar tem uma lei: só passa quem me toca com a própria luz. Mostra-me a tua.,But the threshold has a law: none may pass who does not touch me with their own light. Show me yours.
-É um rito. Bate nele de coração leve. Ele não te quer mal.,It is a rite. Strike him with a light heart. He means you no harm.
-(ergue o orbe; a máscara se acende) Vem.,(raises the orb; the mask lights up) Come.
+"Olha: alguém vem da névoa. Não temas, eu o conheço. É um rei antigo, e gentil. Não te quer mal.","Look: someone comes out of the mist. Do not fear, I know him. An ancient king, and kind. He means you no harm."
+Faísca perdida... que bom que acordaste. O limiar tem uma lei: só passa quem me toca com a própria luz.,Lost spark... how good that you woke. The threshold has one law: none pass but those who touch me with their light.
+(ergue o orbe; a máscara se acende) Mostra-me a tua. Vem.,(raises the orb; the mask lights up) Show me yours. Come.
 (a máscara racha) ...Ah. A tua luz é maior do que eu lembrava.,(the mask cracks) ...Ah. Your light is greater than I remembered.
 "Sentiste? O selo dele se partiu. Lá em cima, sete tronos acabam de acordar.","Did you feel it? His seal has broken. Up above, seven thrones have just awoken."
-"Sete Arcontes, sete Anéis. Reúne-os todos, e eu te mostro como desfazer este mundo de mentira.","Seven Archons, seven Rings. Gather them all, and I will show you how to undo this world of lies."
+"Sete Arcontes, sete Anéis. Reúne-os todos, e mostro-te como desfazer este mundo de mentira.","Seven Archons, seven Rings. Gather them all, and I will show you how to undo this world of lies."
 O Éon do Torpor. Aqui os mortos não sabem que morreram; a cidade sonha por eles.,The Aeon of Torpor. Here the dead do not know they have died; the city dreams for them.
 Não odeies os que dormem. Ontem tu dormias.,"Do not hate those who sleep. Yesterday, you slept."
 Eu também queria deitar. ...Não vou.,I wanted to lie down too. ...I won't.
 "O Éon da Fome. Estes mercados devoram quem compra. Tudo aqui tem preço, até a saudade.","The Aeon of Hunger. These markets devour whoever buys. Everything here has a price, even longing."
-O Arconte daqui vai te oferecer o que perdeste. Lembra: cópia não é volta.,The Archon here will offer you what you lost. Remember: a copy is not a return.
+O Arconte daqui vai oferecer-te o que perdeste. Lembra: cópia não é volta.,The Archon here will offer you what you lost. Remember: a copy is not a return.
 Eu nem sei o que perdi. Como vou recusar o que ele me oferecer?,I don't even know what I lost. How do I refuse whatever he offers me?
 O Éon da Corrente. A lei deste lugar não protege: prende. Cada selo é um cadeado.,The Aeon of the Chain. The law of this place does not protect: it binds. Every seal is a padlock.
 Eu sigo uma voz que não vejo. Isso também é corrente?,I follow a voice I can't see. Is that a chain too?
@@ -360,7 +356,7 @@ Eu quero ver o meu rosto. Mesmo que ele me ataque.,I want to see my face. Even i
 O desespero é a última arma deles. Não é a tua.,Despair is their last weapon. It is not yours.
 Estou cansada. Pela primeira vez eu digo em voz alta: cansada.,"I'm tired. For the first time, I say it out loud: tired."
 O Éon da Coroa. O último degrau. O Arconte daqui quase tocou o trono do Cego.,The Aeon of the Crown. The last step. The Archon here nearly touched the Blind One's throne.
-"Ele vai te oferecer poder: a mais velha das mentiras, e a mais doce.","He will offer you power: the oldest of lies, and the sweetest."
+"Ele vai oferecer-te poder: a mais velha das mentiras, e a mais doce.","He will offer you power: the oldest of lies, and the sweetest."
 Último degrau. Depois eu descubro quem sou. Tu prometeste.,The last step. Then I find out who I am. You promised.
 Athoth,Athoth
 "Portadora... tu também não dormes, não é? Conheço esse cansaço. Deita. Eu sonho o resto por ti.","Bearer... you do not sleep either, do you? I know this weariness. Lie down. I will dream the rest for you."
@@ -379,7 +375,7 @@ Astaphaios,Astaphaios
 "Olha: somos nós, antes das cinzas, à janela, contando barcos. Fica deste lado do vidro. Eu fico com o resto.","Look: it is us, before the ashes, at the window, counting boats. Stay this side of the glass. I will take the rest."
 É o golpe mais cruel de todos. Eu sei. Escolhe.,It is the cruelest blow of all. I know. Choose.
 Belias,Belias
-"Tudo apodrece, Portadora. Vi morrer tudo o que plantei. Rende-te agora, e eu te poupo do fim.","Everything rots, Bearer. I watched all I planted die. Surrender now, and I will spare you the end."
+"Tudo apodrece, Portadora. Vi morrer tudo o que plantei. Rende-te agora, e eu poupo-te do fim.","Everything rots, Bearer. I watched all I planted die. Surrender now, and I will spare you the end."
 Ele confunde cansaço com verdade. Escolhe.,He mistakes weariness for truth. Choose.
 Armupiel,Armupiel
 O Cego nunca olhou para mim. Talvez olhe para ti. Toma a minha coroa. Sê o que eu quase fui.,The Blind One never once looked at me. Perhaps he will look at you. Take my crown. Be what I almost was.
@@ -388,8 +384,22 @@ Ele mente. Escolhe.,He lies. Choose.
 "Bem. A recusa também é uma lâmina, e tu a estás afiando.","Good. Refusal is a blade too, and you are sharpening it."
 ...Aceitaste o suborno dele. As faíscas pesam no bolso. E na alma.,...You took his bribe. The sparks weigh in your pocket. And on your soul.
 "Não te julgo. Mas lembra: tudo o que um Arconte dá, ele cobra.","I do not judge you. But remember: whatever an Archon gives, he collects."
+O SONÂMBULO,THE SLEEPWALKER
+Guardião do santuário do Torpor,Guardian of the Shrine of Torpor
+O GLUTÃO,THE GLUTTON
+Guardião do santuário da Fome,Guardian of the Shrine of Hunger
+O CARCEREIRO,THE JAILER
+Guardião do santuário da Corrente,Guardian of the Shrine of the Chain
+O BIBLIOTECÁRIO,THE LIBRARIAN
+Guardião do santuário do Silêncio,Guardian of the Shrine of Silence
+O REFLEXO,THE REFLECTION
+Guardião do santuário do Espelho,Guardian of the Shrine of the Mirror
+O PORTADOR DE ESPOROS,THE SPORE-BEARER
+Guardião do santuário da Praga,Guardian of the Shrine of Blight
+O PRETORIANO,THE PRAETORIAN
+Guardião do santuário da Coroa,Guardian of the Shrine of the Crown
 Por que acordar? Lá fora só tem a falta!,Why wake? Out there is only the lack!
-Me dá uma! Uma lembrança que seja minha!,Give me one! One memory that is mine!
+Dá-me uma! Uma lembrança que seja minha!,Give me one! One memory that is mine!
 "Se eu soltar, eu caio! Todos caem!","If I let go, I fall! Everyone falls!"
 (os pontos da boca dele esticam; alguma coisa lá dentro quer sair),(the stitches of his mouth stretch; something inside wants out)
 "(O vidro racha. No lugar do rio, por um instante: uma nuvem branca. Alguém pequeno chorando.)","(The glass cracks. Where the river was, for an instant: a white cloud. Someone small, crying.)"
@@ -399,7 +409,7 @@ Corte! Ao rei! ...Ninguém vem. Nunca ninguém vem.,Court! To the king! ...No on
 "Ah... então é isto, estar acordado. Dói. ...É bonito.",Ah... so this is being awake. It hurts. ...It is beautiful.
 Nunca provei nada que fosse meu. Guarda as tuas lembranças. Guarda bem.,I never tasted anything that was mine. Keep your memories. Keep them well.
 "Leve... é assim, sem elo? Ninguém me disse... que era leve.","Light... is this what it is, without a link? No one told me... it was light."
-"(os pontos se rompem) Alguém respondeu a ele, uma vez, lá de cima. Eu ouvi. Ele me costurou por isso.","(the stitches burst) Someone answered him once, from up above. I heard it. He sewed me shut for it."
+"(os pontos se rompem) Alguém respondeu a ele, uma vez, lá de cima. Eu ouvi. Ele costurou-me por isso.","(the stitches burst) Someone answered him once, from up above. I heard it. He sewed me shut for it."
 "Fica com o teu rosto. Eu nunca tive um. ...Era bonito, o teu.","Keep your face. I never had one. ...It was beautiful, yours."
 "(na poça dele, uma coisa verde, minúscula) ...Brotou? Não olhes para mim. Olha aquilo.","(in his puddle, something green, tiny) ...Did it sprout? Do not look at me. Look at that."
 Diz a ele que eu... não. Ele não escuta. Nunca escutou.,Tell him that I... no. He does not listen. He never listened.
@@ -408,7 +418,7 @@ Sete.,Seven.
 "(Ao tocar o Anel: uma nuvem branca, e um trono pequeno dentro dela.)","(As I touch the Ring: a white cloud, and a small throne inside it.)"
 Sonhos do Torpor. Passam. Sobe.,Dreams of Torpor. They pass. Climb.
 Faltam cinco. E a tua janela continua tua. Sobe.,Five to go. And your window is still yours. Climb.
-Galila te classificou e perdeu. Faltam quatro.,"Galila classified you, and lost. Four to go."
+Galila classificou-te e perdeu. Faltam quatro.,"Galila classified you, and lost. Four to go."
 Ouve: as tuas magias voltaram a falar. Faltam três.,Listen: your spells speak again. Three to go.
 "Este Anel pesa, não pesa? ...Eu também não sei bem o que sou.","This Ring is heavy, is it not? ...I do not quite know what I am either."
 Só sei que não quero ficar só de novo.,I only know I do not want to be alone again.
@@ -423,7 +433,7 @@ Como tu és? De verdade.,What are you like? Really.
 Nada bonito de se ver. Acredita: é melhor assim.,Nothing pretty to look at. Believe me: it is better this way.
 "(E, pela primeira vez desde as cinzas, eu rio.)","(And, for the first time since the ashes, I laugh.)"
 ...Faz isso mais vezes. Combina contigo.,...Do that more often. It suits you.
-"Aqui eu me calo. Fala tu, hoje. Eu escuto.","Here I fall quiet. You speak, today. I will listen."
+"Aqui me calo. Fala tu, hoje. Eu escuto.","Here I fall quiet. You speak, today. I will listen."
 Sonhei de novo com a nuvem branca. Tinha um trono pequeno no meio.,I dreamed of the white cloud again. There was a small throne in the middle.
 (um silêncio longo demais) ...Sonhos. Descansa. Eu vigio.,(a silence far too long) ...Dreams. Rest. I keep watch.
 Como eu era? Antes.,What was I like? Before.
@@ -476,9 +486,9 @@ E agora? Tu prometeste me mostrar.,And now? You promised to show me.
 "(a máscara cai; atrás dela, só um olho cego) Eu sou o Cego de quem te falei. E não há outro além de mim.","(the mask falls; behind it, only a blind eye) I am the Blind One I told you of. And there is no other but me."
 "Chama-me pelo nome que nunca te disse: Yaldabaoth. Sabes o que portavas, Portadora? A mim.","Call me by the name I never told you: Yaldabaoth. Do you know what you were bearing, Bearer? Me."
 Nunca houve rio. Nunca houve janela. A tua gente? Cinzas de uma colheita qualquer.,There never was a river. There never was a window. Your people? Ashes from some harvest or other.
-Eu te dei um luto para te dar um caminho. O luto é a coleira mais macia.,I gave you a grief so I could give you a path. Grief is the softest of collars.
+Dei-te um luto para te dar um caminho. O luto é a coleira mais macia.,I gave you a grief so I could give you a path. Grief is the softest of collars.
 Eu chorei por eles.,I wept for them.
-"Choraste por mim. Os sete eram meus filhos, e tu me trouxeste o que restou deles.","You wept for me. The seven were my children, and you brought me what was left of them."
+"Choraste por mim. Os sete eram meus filhos, e tu trouxeste-me o que restou deles.","You wept for me. The seven were my children, and you brought me what was left of them."
 Uma voz nos Anéis,A voice in the Rings
 ...espera... eu... lembro...,...wait... I... remember...
 "(mais baixo, quase a Voz de antes) Tu disseste que ficavas comigo.","(softer, almost the Voice of before) You said you would stay with me."
@@ -552,8 +562,12 @@ Porque é teu.,Because it's yours.
 Eu sonhava que voava. Aqui embaixo tudo pesa tanto.,I dreamed I could fly. Down here everything weighs so much.
 "Eu não pedi isto. ...Mas agora que vejo, não quero fechar os olhos.","I didn't ask for this. ...But now that I see, I don't want to close my eyes."
 Contam de uma que anda entre os que dormem. Eras tu?,They talk of a woman who walks among the sleepers. Was that you?
-As cinzas ainda estão quentes. Anda: a névoa não espera ninguém.,The ashes are still warm. Walk: the mist waits for no one.
+Onde...? Quem...?,Where...? Who...?
+Uma pergunta de cada vez. Primeiro: as cinzas sob os teus pés eram a tua gente.,One question at a time. First: the ashes beneath your feet were your people.
 "(Uma pedra escrita, logo adiante. Alguém deixou palavras para quem acordasse.)","(A stone with writing, just ahead. Someone left words for whoever woke.)"
+A dor que sentes é a única coisa verdadeira que este mundo te deu. Foi ela que quebrou o feitiço.,The pain you feel is the only true thing this world has given you. It is what broke the spell.
+Chama-me Voz. Sobe comigo: cada faísca que libertares vai lembrar o que tu és.,Call me Voice. Climb with me: every spark you set free will remember what you are.
+As cinzas ainda estão quentes. Anda: a névoa não espera ninguém.,The ashes are still warm. Walk: the mist waits for no one.
 Tudo aqui é grande demais. Como um quarto de criança visto do chão.,Everything here is too big. Like a child's room seen from the floor.
 "(O chão é feito de engrenagens. Giram devagar, como se respirassem.)","(The floor is made of gears. They turn slowly, as if breathing.)"
 Os ecos têm o rosto dos Arcontes. Mas se movem como ele.,The echoes have the Archons' faces. But they move like him.
@@ -590,12 +604,12 @@ Um mercado inteiro na barriga dele. E ainda me olha com fome.,A whole market in 
 "Heimarmene, diziam os antigos: o Destino como corrente. Aqui, é corrente mesmo.","Heimarmene, the ancients said: Fate as a chain. Here, it truly is a chain."
 "Os astros são os elos. Sete elos, sete céus, sete Arcontes.","The stars are the links. Seven links, seven heavens, seven Archons."
 E tu já partiste dois. Continua.,And you have broken two already. Go on.
-Galila não te odeia. Ele te classifica. É pior.,Galila does not hate you. He classifies you. That is worse.
+Galila não te odeia. Classifica-te. É pior.,Galila does not hate you. He classifies you. That is worse.
 "O Carcereiro do santuário prende primeiro e pergunta depois. Esquiva-te, e a corrente se parte.","The shrine's Jailer binds first and asks later. Dodge, and the chain snaps."
 "Se a lei daqui é medo com coroa, quem usa a coroa?","If the law here is fear wearing a crown, who wears the crown?"
 "O Cego, lá no alto. Ninguém mais. Sobe.","The Blind One, high above. No one else. Climb."
 A pedra diz que o sopro no barro veio de fora deste mundo. Então eu também vim?,The stone says the breath in the clay came from outside this world. So did I?
-Vieste de mim. Eu te achei. Não esqueças a ordem das coisas.,You came from me. I found you. Do not forget the order of things.
+Vieste de mim. Achei-te. Não esqueças a ordem das coisas.,You came from me. I found you. Do not forget the order of things.
 Última porta antes do trono. As correntes dele cantam quando têm medo.,Last door before the throne. His chains sing when they are afraid.
 Um trono feito de elos. Ele se acorrentou a si mesmo para não cair.,A throne made of links. He chained himself so he wouldn't fall.
 Livros em branco. Milhares. Alguém apagou uma biblioteca inteira.,Blank books. Thousands. Someone erased an entire library.
@@ -616,7 +630,7 @@ Conheces a história? A Sabedoria viu o próprio rosto na água e desceu atrás 
 Vaidade. Não repitas.,Vanity. Do not repeat it.
 O nome na pedra é o meu. Sophia.,The name on the stone is mine. Sophia.
 Nome comum. Sabedoria. Metade das mães do Kenoma dá esse nome às filhas.,A common name. Wisdom. Half the mothers in the Kenoma give it to their daughters.
-"Astaphaios vai te dar o que mais queres: tu, antes de tudo. É o golpe mais cruel.","Astaphaios will give you what you want most: you, before everything. The cruelest blow."
+"Astaphaios vai dar-te o que mais queres: tu, antes de tudo. É o golpe mais cruel.","Astaphaios will give you what you want most: you, before everything. The cruelest blow."
 O Reflexo do santuário recua quando bates. Bate onde ele vai estar.,The shrine's Reflection backs away when you strike. Strike where it will be.
 "A pedra diz que não foi o rosto dela na água. Foi uma luz falsa, vista de cima.","The stone says it wasn't her face in the water. It was a false light, seen from above."
 Pedras repetem o que querem. Água é água. Sobe.,Stones repeat whatever they like. Water is water. Climb.
@@ -629,7 +643,7 @@ A pedra diz que o Reino está dentro e fora. Dentro deste pântano?,The stone sa
 Dentro de ti. Fora daqui. Sobe.,Inside you. Outside of here. Climb.
 "Belias não mente. Está cansado, e acha que o cansaço é a verdade.","Belias does not lie. He is tired, and he thinks tiredness is the truth."
 O Portador de Esporos do santuário envenena até depois de morto. Mata-o e afasta-te.,The shrine's Spore-Bearer poisons even after death. Kill it and step away.
-"Cinco Anéis. Mais dois, e eu te mostro o fim de tudo isto.","Five Rings. Two more, and I will show you the end of all this."
+"Cinco Anéis. Mais dois, e mostro-te o fim de tudo isto.","Five Rings. Two more, and I will show you the end of all this."
 Um príncipe desceu para buscar uma pérola e esqueceu quem era. Até que uma carta o lembrou.,A prince went down to fetch a pearl and forgot who he was. Until a letter reminded him.
 Bonito. Ninguém te mandou carta nenhuma. Tens a mim.,Lovely. No one sent you any letter. You have me.
 "Última antessala podre. Depois dela, a Coroa. Aguenta.","The last rotten antechamber. After it, the Crown. Hold on."
@@ -749,8 +763,167 @@ Tantas vezes provou os presentes deles. O trono só lhe pareceu familiar.,So man
 "Não eram a gente dela. Agora são. E dentro dela, pequeno, alguém aprendia a ver.","They were not her people. Now they are. And inside her, small, someone was learning to see."
 A faísca lembrou. O resto é silêncio.,The spark remembered. The rest is silence.
 O arquivo de save estava ilegível e foi ignorado.,The save file was unreadable and has been ignored.
+O save principal estava danificado; o progresso foi recuperado da cópia de segurança.,The main save was damaged; your progress was recovered from the backup copy.
 "Um progresso de versão anterior foi descartado (o mapa mudou). Faíscas totais, finais e opções foram preservados.","Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept."
 "O checkpoint salvo não existe neste mapa e foi descartado. Faíscas, finais e opções foram preservados.","The saved checkpoint does not exist on this map and was discarded. Sparks, endings and options were kept."
+A névoa engrossa: só se vê o que está perto.,The fog thickens: only what is near can be seen.
+Correntes pendem do teto. Atraia os inimigos para a varredura.,Chains hang from the ceiling. Lure the enemies into the sweep.
+O primeiro grilhão,The First Shackle
+Vença o Rei no Limiar.,Defeat the King at the Threshold.
+Acordada,Awake
+"Vença Athoth, o Arconte do Torpor.","Defeat Athoth, the Archon of Torpor."
+Sem fome,No More Hunger
+"Vença Harmas, o Arconte da Fome.","Defeat Harmas, the Archon of Hunger."
+Elo partido,Broken Link
+"Vença Galila, o Arconte da Corrente.","Defeat Galila, the Archon of the Chain."
+A palavra de volta,The Word Returns
+"Vença Yabel, o Arconte do Silêncio.","Defeat Yabel, the Archon of Silence."
+Sem reflexo,No Reflection
+"Vença Astaphaios, o Arconte do Espelho.","Defeat Astaphaios, the Archon of the Mirror."
+Febre vencida,The Fever Breaks
+"Vença Belias, o Arconte da Praga.","Defeat Belias, the Archon of Blight."
+Coroa no chão,Crown in the Dust
+"Vença Armupiel, o Arconte da Coroa.","Defeat Armupiel, the Archon of the Crown."
+Passo firme,Steady Step
+Vença Athoth sem cair nenhuma vez na jornada.,Defeat Athoth without falling once in the journey.
+Intocada,Untouched
+Vença um Arconte sem levar dano na tela dele.,Defeat an Archon without taking damage on their screen.
+Lâmina inteira,Whole Blade
+Leve a arma ao nível máximo.,Raise the weapon to its maximum level.
+Quatro despertos,Four Awakened
+Desperte 4 Adormecidos numa mesma jornada.,Awaken 4 Sleepers in a single journey.
+A pedra fala,The Stone Speaks
+Leia a primeira Estela.,Read the first Stele.
+Crônicas completas,Complete Chronicles
+Leia as 18 Estelas.,Read all 18 Stelae.
+Todos os nomes,Every Name
+Encontre todas as criaturas do caminho.,Find every creature along the way.
+Memória inteira,Whole Memory
+Recupere os 7 cacos de memória no Centro.,Recover the 7 memory shards in the Center.
+Ascensão,Ascension
+Chegue ao final Ascensão.,Reach the Ascension ending.
+Ruptura,Rupture
+Chegue ao final Ruptura.,Reach the Rupture ending.
+Semente,Seed
+Chegue ao final Semente.,Reach the Seed ending.
+Três portas,Three Doors
+Veja os 3 finais.,See all 3 endings.
+Caminho estreito,Narrow Path
+Termine a jornada no Difícil ou acima.,Finish the journey on Hard or above.
+A faísca que acordou sem memória no Limiar.,The spark who woke without memory at the Threshold.
+Atravessa os sete Éons para lembrar quem é.,She crosses the seven Aeons to remember who she is.
+A arma desperta nos santuários: cada nível abre combos novos.,The weapon awakens at the shrines: each level opens new combos.
+Restos de luz que o Kenoma não terminou de apagar.,Scraps of light the Kenoma has not finished putting out.
+Rastejam para onde ainda há calor.,They crawl toward wherever there is still warmth.
+Fracas e lentas: um combo leve resolve.,Weak and slow: a light combo settles it.
+Uma faísca que esqueceu o próprio nome.,A spark that forgot its own name.
+"Vaga depressa, sem rumo, atrás de quem ainda brilha.","It wanders fast and aimless, chasing whoever still shines."
+Rápida: espere a investida passar e responda.,"Fast: let the lunge pass, then answer."
+Forjado em hyle e obediência pelo Demiurgo.,Forged from hyle and obedience by the Demiurge.
+Carrega a lâmina como quem carrega uma ordem.,It carries its blade the way one carries an order.
+Apare o golpe dourado e puna a abertura.,Parry the golden strike and punish the opening.
+Uma larva que guardou fogo demais.,A larva that kept too much fire.
+Corre até a luz mais próxima e se desfaz em chamas.,It runs to the nearest light and bursts into flame.
+A explosão não pode ser aparada: esquive.,The blast cannot be parried: dodge.
+"Guardião de casca espinhosa, posto nas portas dos Éons.","A thorn-shelled guardian, posted at the gates of the Aeons."
+"Lento para se erguer, pesado para cair.","Slow to rise, heavy to fall."
+"Quando ele erguer os braços, saia: a pancada esmaga o chão.","When it raises its arms, get clear: the blow crushes the ground."
+Uma besta criada para farejar faíscas.,A beast bred to sniff out sparks.
+Não late. Investe.,It does not bark. It charges.
+Esquive da investida e golpeie enquanto ele freia.,Dodge the charge and strike while it skids to a halt.
+Ceifador de chifres que colhe a luz como trigo maduro.,A horned reaper that gathers light like ripe wheat.
+Não guarda raiva; só cumpre a colheita.,It holds no anger; it only reaps.
+Apare o golpe dourado e responda com o combo.,Parry the golden strike and answer with the combo.
+Guarda o Selo com um escudo que não conhece cansaço.,It guards the Seal with a shield that knows no weariness.
+"Atrás dele, a ordem; à frente, ninguém.","Behind it, order; before it, no one."
+O golpe leve bate no escudo: use o forte ou uma magia.,Light strikes hit the shield: use a heavy strike or a spell.
+Vigia dos céus baixos do Kenoma.,A watcher of the Kenoma's low skies.
+"Do alto, aponta e dispara.","From on high, it aims and fires."
+Atira de longe: aproxime-se entre um disparo e outro.,It shoots from afar: close in between one shot and the next.
+Massa de ferro que obedece sem perguntar.,A mass of iron that obeys without asking.
+Cada passo faz o chão lembrar o próprio peso.,Each step makes the ground remember its own weight.
+Não troque golpes com ele: esquive da pancada e volte.,Do not trade blows with it: dodge the slam and come back.
+Anuncia o Silêncio com uma coroa e um cajado.,It heralds Silence with a crown and a staff.
+A voz não chega; só o disparo.,The voice never arrives; only the shot.
+Atira de longe: feche a distância e não pare de golpear.,It shoots from afar: close the distance and keep striking.
+Um eco do vazio que não decide onde está.,An echo of the void that cannot decide where it is.
+Some diante da presa e surge às suas costas.,It vanishes before its prey and appears at its back.
+"Quando ele sumir, vire-se: ele reaparece atrás de você.","When it vanishes, turn around: it reappears behind you."
+Semeia o chão de larvas e reza por elas.,It sows the ground with larvae and prays for them.
+Prefere a distância e a multidão.,It prefers distance and a crowd.
+"Derrube-o primeiro, antes que o chão se encha de larvas.","Take it down first, before the ground fills with larvae."
+Uma forma que o Kenoma começou e desistiu de terminar.,A form the Kenoma began and gave up on finishing.
+"Garras, espinhos e pressa.","Claws, thorns and haste."
+Investe com força: esquive e contra-ataque.,It charges hard: dodge and counter.
+Caminha dormindo pelas catacumbas do Torpor.,It walks asleep through the catacombs of Torpor.
+"Boceja, e quem respira o bocejo fica pesado.","It yawns, and whoever breathes the yawn grows heavy."
+Saia da frente do bocejo: ele deixa você lenta.,Stay out of the yawn's path: it slows you down.
+"A Fome feita corpo, com uma boca no lugar do peito.","Hunger made flesh, with a mouth where its chest should be."
+Nunca está cheio; só está com menos fome.,It is never full; only less hungry.
+Cada mordida que acerta o cura: não deixe que ele morda.,Every bite that lands heals it: do not let it bite.
+Ninguém sabe do que é acusado; ele também não.,No one knows what they are accused of; neither does he.
+A corrente dele nunca solta o que prende.,His chain never lets go of what it holds.
+A corrente prende você no lugar: esquive quando ele lançar.,The chain pins you in place: dodge when he throws it.
+Guarda a biblioteca de livros em branco.,He guards the library of blank books.
+"A boca costurada; o silêncio, contagioso.","His mouth sewn shut; his silence, contagious."
+Perto dele as magias calam: lute com a arma.,"Near him, spells fall silent: fight with the weapon."
+"O Espelho devolve tudo, até o golpe.","The Mirror returns everything, even the blow."
+Recua no instante exato do ataque.,It pulls back at the exact instant of the attack.
+Ele recua do primeiro golpe: avance e emende o combo.,It recoils from the first strike: press in and chain the combo.
+"Carrega a Praga nas costas, como um jardim podre.","It carries Blight on its back, like a rotten garden."
+"Morto, ainda floresce.","Dead, it still blooms."
+"Ao cair, deixa uma poça de veneno: afaste-se dela.",When it falls it leaves a pool of poison: move away from it.
+A guarda pessoal da Coroa.,The Crown's personal guard.
+Não dá as costas a ninguém.,It turns its back on no one.
+"De frente, só o golpe forte fere: ataque pelas costas.",From the front only heavy strikes wound it: attack from behind.
+O Espelho tira dela a forma e a enche de vazio.,The Mirror strips her of her form and fills it with void.
+"Luta como ela, e mais depressa do que ela.","It fights like her, and faster than her."
+Não troque golpes: apare e responda.,Do not trade blows: parry and answer.
+"Athoth, Arconte do Torpor, oferece o sono como quem oferece abrigo.","Athoth, Archon of Torpor, offers sleep the way one offers shelter."
+A névoa dele rouba o movimento.,His fog steals movement.
+Saia da névoa: dentro dela você fica lenta.,Get out of the fog: inside it you are slowed.
+"Harmas, Arconte da Fome, vende tudo o que falta.","Harmas, Archon of Hunger, sells everything that is missing."
+Uma boca sem fim no lugar do torso.,An endless mouth where the torso should be.
+"Quando ele começar a sugar, afaste-se antes da pancada.","When he starts to suck in, move away before the slam."
+"Galila, Arconte da Corrente, classifica, julga e prende.","Galila, Archon of the Chain, classifies, judges and binds."
+Toda lei deseja uma corrente.,Every law longs for a chain.
+A corrente prende no lugar: esquive do lançamento e da investida.,The chain pins you in place: dodge the throw and the charge.
+"Yabel, Arconte do Silêncio, não fala: só cala.","Yabel, Archon of Silence, does not speak: he only silences."
+A aura dele enterra as magias no vazio.,His aura buries spells in the void.
+"Na aura, use a arma. Ferido, ele surge às suas costas.","Inside the aura, use the weapon. Wounded, he appears at your back."
+"Astaphaios, Arconte do Espelho, devolve as palavras de quem o enfrenta.","Astaphaios, Archon of the Mirror, returns the words of whoever faces him."
+"Prata, cacos e um “nós” que não é ninguém.","Silver, shards and a “we” that is no one."
+"Ferido, chama a Sombra da Sophia: não deixe que ela cerque você.","Wounded, he calls Sophia's Shadow: do not let it surround you."
+"Belias, Arconte da Praga, confunde cansaço com verdade.","Belias, Archon of Blight, mistakes weariness for truth."
+"Onde passa, a vida esquece de morrer.","Wherever he passes, life forgets to die."
+A investida deixa poças de veneno: não lute em cima delas.,His charge leaves pools of poison: do not fight standing in them.
+"Armupiel, Arconte da Coroa: quase rei de tudo.","Armupiel, Archon of the Crown: almost king of everything."
+Um trono feito de obediência.,A throne made of obedience.
+"Ferido, chama servos e se blinda: derrube os servos primeiro.","Wounded, he summons servants and shields himself: take the servants down first."
+O sacerdote branco que guarda o Limiar.,The white priest who guards the Threshold.
+Gentil demais para quem fecha uma passagem.,Too kind for one who bars a passage.
+Apare os golpes dourados; esquive dos vermelhos.,Parry the golden strikes; dodge the red ones.
+"A máscara do Rei, agora sem quem a sustente.","The King's mask, with no one left to hold it up."
+Mais frágil e mais rápida que a do Limiar.,More fragile and faster than the one at the Threshold.
+Leia o brilho cedo: o golpe chega mais depressa.,Read the glow early: the blow arrives sooner.
+O que havia atrás da máscara: um gigante oco.,What lay behind the mask: a hollow giant.
+Os cacos do rosto ainda refletem luz alheia.,The shards of its face still reflect borrowed light.
+Fique fora do alcance da pancada e golpeie na volta.,Stay out of the slam's reach and strike on its way back.
+"Yaldabaoth, o Demiurgo: fez o Kenoma e o chamou de seu.","Yaldabaoth, the Demiurge: he made the Kenoma and called it his."
+Cego para tudo o que não é ele.,Blind to all that is not himself.
+Nenhuma arma basta sozinha: lembre-se do que arde.,No weapon is enough on its own: remember what burns.
+"Soter, o Ungido, caminha livre pelo Kenoma: o Cego não o vê.","Soter, the Anointed, walks freely through the Kenoma: the Blind One cannot see him."
+"Cura, desperta e pergunta. Nunca luta.","He heals, awakens and asks. He never fights."
+Ele não luta: escolha um dos dons que ele oferece.,He does not fight: choose one of the gifts he offers.
+"Velkar, o Arconte que soltou a própria corrente.","Velkar, the Archon who let go of his own chain."
+Perdeu a coroa e o posto; ficou com a culpa.,He lost the crown and the post; he kept the guilt.
+Ele não luta: ouça o que ele tem a dizer.,He does not fight: listen to what he has to say.
+A faísca,The spark
+Aliado,Ally
+Arconte  ·  ,Archon  ·  
+Guardião  ·  ,Guardian  ·  
+Arconte  ·  Espelho,Archon  ·  Mirror
+Criatura do Kenoma,Creature of the Kenoma
 Arconte,Archon
 %s (Elite),%s (Elite)
 Campeão %s,Champion %s
@@ -758,36 +931,27 @@ da ,of
 do ,of 
 OS TRÊS SELOS,THE THREE SEALS
 selos abertos,seals opened
-J / X · ler a Estela,J / X · read the Stele
+%s · ler a Estela,%s · read the Stele
 Crônica desbloqueada: %s  (%d/%d),Chronicle unlocked: %s  (%d/%d)
 ESTELA  ·  %s,STELE  ·  %s
 Kenoma,Kenoma
 Fonte: %s,Source: %s
 • nova Crônica  %d/%d,• new Chronicle  %d/%d
 Crônica %d/%d,Chronicle %d/%d
-      › fechar,      › close
-"No princípio não havia princípio.
-Havia o Um — sem nome, sem medida, pleno.
-Os antigos o chamaram Mônada, Abismo, Silêncio.","In the beginning there was no beginning.
-There was the One — nameless, measureless, full.
-The ancients called it Monad, Depth, Silence."
-"Dele emanaram os Éons, aos pares, como luz que transborda.
-No Pleroma nada dormia. Nada esquecia.","From it the Aeons emanated, in pairs, like overflowing light.
-In the Pleroma nothing slept. Nothing forgot."
-"A mais jovem, Sophia — a Sabedoria —, quis alcançar a Fonte sozinha.
+      %s fechar,      %s close
+"No princípio havia o Um. Dele emanaram os Éons, aos pares,
+como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
+like overflowing light. There nothing slept. Nothing forgot."
+"A mais jovem, Sophia, quis alcançar a Fonte sozinha.
 Do desejo sem par nasceu um filho sem forma,
-e ela o escondeu numa nuvem.","The youngest, Sophia — Wisdom — sought to reach the Source alone.
-From that unpartnered desire came a formless son,
+e ela o escondeu numa nuvem.","The youngest, Sophia, sought to reach the Source alone.
+From that unpartnered desire a formless son was born,
 and she hid him in a cloud."
-"Cego para a Luz de onde veio, ele se acreditou o único deus.
-E fez um mundo copiando o que nunca viu: o Kenoma, o vazio.","Blind to the Light he came from, he believed himself the only god.
-And he made a world copying what he never saw: the Kenoma, the void."
-"Sete Arcontes. Sete esferas. Sete correntes.
-E dentro do barro, escondida, a faísca que ele levou da mãe.","Seven Archons. Seven spheres. Seven chains.
-And within the clay, hidden, the spark he took from his mother."
-"As faíscas dormem.
+"Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.
+No barro dormem as faíscas que ele levou da mãe.
 
-Uma delas acaba de sentir dor.","The sparks are sleeping.
+Uma delas acaba de sentir dor.","Blind to the Light, he believed himself the only god and made the Kenoma.
+In the clay sleep the sparks he took from his mother.
 
 One of them has just felt pain."
 Todas as pedras foram lidas. A faísca lembra por inteiro.,Every stone has been read. The spark remembers in full.
@@ -809,7 +973,6 @@ Inspired by the Nag Hammadi texts, the Pistis Sophia
 and the accounts of Irenaeus, Hippolytus and Clement."
 ...mãe?,...mother?
 qualquer tecla avança  ·  Esc pula,any key continues  ·  Esc skips
-A/D mover   ESPAÇO saltar   J/K golpes   SHIFT esquiva   I aparar   U anel   O esfera,A/D move   SPACE jump   J/K strikes   SHIFT dodge   I parry   U ring   O orb
 I  ·  A FAÍSCA DESPERTA,I  ·  THE SPARK AWAKENS
 II  ·  QUEBRE A GUARDA,II  ·  BREAK THE GUARD
 III  ·  ENCARE O ARCONTE,III  ·  FACE THE ARCHON
@@ -822,12 +985,17 @@ Tempo  %02d:%02d    ·    Melhor combo  %d,Time  %02d:%02d    ·    Best combo  
 "Isto foi a Provação (treino). A Campanha tem %d telas e sete Arcontes — no menu, em ""Nova campanha"".","That was the Trial (training). The Campaign has %d screens and seven Archons — in the menu, under ""New campaign""."
 Respire. Sua vida será restaurada.,Breathe. Your health will be restored.
 Esquive do vermelho. Apare o dourado.,Dodge the red. Parry the gold.
-Ir pra Campanha  →,To the Campaign  →
+Ir para a Campanha  →,Go to the Campaign  →
 Repetir a Provação,Repeat the Trial
 Próximo encontro  →,Next encounter  →
 Tentar novamente,Try again
 Voltar ao menu,Back to menu
-As duas formas precisam cair JUNTAS.,Both forms must fall TOGETHER.
+As duas formas precisam cair juntas.,Both forms must fall together.
+brilho vermelho não se apara:,a red glow can't be parried:
+Vermelho não se apara: esquive.,Red can't be parried: dodge.
+brilho amarelo:,yellow glow:
+apare no tempo,parry on time
+Brilho amarelo: bloqueie no tempo e apare.,Yellow glow: block on time to parry.
 Recusar,Refuse
 Ceder,Yield
 Siga em frente  →,Keep going  →
@@ -883,12 +1051,13 @@ Coroa alta, massa e hierarquia.
 Servos sustentam sua armadura.","A throne made of obedience.
 Tall crown, bulk and hierarchy.
 Servants hold up its armor."
-Ateliê,Atelier
-ILUSTRAÇÃO · POSES · PERFIL · COMBATE,ILLUSTRATION · POSES · PROFILE · COMBAT
+Galeria,Gallery
+SOPHIA · ARCONTES · POSES,SOPHIA · ARCHONS · POSES
 Voltar,Back
 Bestiário,Bestiary
 %02d  %s,%02d  %s
 RECEITA VISUAL,VISUAL RECIPE
+DICA,TIP
 Ver articulações,Show joints
 Ocultar articulações,Hide joints
 Testar em combate →,Test in combat →
@@ -898,6 +1067,10 @@ Arma +,Weapon +
 Espelhar,Mirror
 A FAÍSCA  /  PROTAGONISTA,THE SPARK  /  PROTAGONIST
 ARCONTE  /  ,ARCHON  /  
+ARCONTE  /  AINDA NÃO ENCONTRADO,ARCHON  /  NOT YET FOUND
+Continue a subida.,Keep climbing.
+Vença-o na campanha para treinar,Defeat him in the campaign to train
+Ainda não encontrado,Not yet found
 cajado,staff
 cabelo,hair
 ombreiras,pauldrons
@@ -926,7 +1099,6 @@ ARMA %d / 5,WEAPON %d / 5
 ARCONTE,ARCHON
    ·   PALETA %d / 3,   ·   PALETTE %d / 3
 Crônicas,Chronicles
-W/S · setas · D-pad escolhem   ·   Esc / B volta,W/S · arrows · D-pad choose   ·   Esc / B back
 "%d de %d Estelas lidas — o ensino dos antigos, pedra a pedra","%d of %d Stelae read — the teaching of the ancients, stone by stone"
 %02d   %s,%02d   %s
 "Estela ainda não lida.
@@ -939,34 +1111,48 @@ a faísca que não se curva,the spark that does not bow
 O DESPERTAR   ·   v%s,THE AWAKENING   ·   v%s
 O DESPERTAR DA FAÍSCA,THE AWAKENING OF THE SPARK
 Sete Éons. Sete Arcontes. Uma faísca que ainda se lembra.,Seven Aeons. Seven Archons. One spark that still remembers.
-"Continuar  ·  %s, tela %d","Continue  ·  %s, screen %d"
+Continuar  ·  %s,Continue  ·  %s
 Nova campanha,New campaign
 Provação  ·  treino de 3 encontros,Trial  ·  3-encounter training
-Ateliê & Bestiário,Atelier & Bestiary
+Galeria & Bestiário,Gallery & Bestiary
 Opções,Options
 Créditos,Credits
 Sair,Quit
 Começar de novo?,Start over?
-"Isso apaga o progresso salvo — %s, tela %d — e as faíscas e melhorias desta jornada.
-Finais vistos e opções ficam.","This erases your saved progress — %s, screen %d — and this journey's sparks and upgrades.
+"Isso apaga o progresso salvo — %s — e as faíscas e melhorias desta jornada.
+Finais vistos e opções ficam.","This erases your saved progress — %s — and this journey's sparks and upgrades.
 Endings seen and options are kept."
 Apagar e começar,Erase and start
-"Música de Kevin MacLeod (incompetech.com), licenciada sob Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/","Music by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/"
-"Efeitos sonoros: ""Fantasy Sound Effects Library"" e ""Magic SFX Preview Pack"" de Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0.","Sound effects: ""Fantasy Sound Effects Library"" and ""Magic SFX Preview Pack"" by Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0."
-Demais sons e sprites de partícula: Kenney (kenney.nl) e autores CC0 do OpenGameArt.org.,Other sounds and particle sprites: Kenney (kenney.nl) and CC0 authors at OpenGameArt.org.
-W/S · setas · analógico rolam   ·   Esc / B volta,W/S · arrows · stick scroll   ·   Esc / B back
+Provação,Trial
+Escolha o Arconte do 3º encontro,Choose the Archon for the 3rd encounter
+%s  ·  %s,%s  ·  %s
+Controles,Controls
+AÇÃO,ACTION
+TECLADO,KEYBOARD
+Restaurar padrão,Restore defaults
+CONTROLE  ·  %s,CONTROLLER  ·  %s
+Analógico / D-pad,Stick / D-pad
+Aperte o novo botão para “%s”  ·  %s cancela,Press the new button for “%s”  ·  %s cancels
+Aperte a nova tecla para “%s”  ·  Esc cancela,Press the new key for “%s”  ·  Esc cancels
+Nada mudou.,Nothing changed.
+Aperte um botão do controle (ou Esc para cancelar).,Press a controller button (or Esc to cancel).
+Aperte uma tecla (ou Start para cancelar).,Press a key (or Start to cancel).
+Trocado com “%s”.,Swapped with “%s”.
+Salvo.,Saved.
+Layout de fábrica restaurado.,Factory layout restored.
+Música: Kevin MacLeod (incompetech.com) — Licensed under Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/,Music: Kevin MacLeod (incompetech.com) — Licensed under Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/
+"Efeitos sonoros: ""Fantasy Sound Effects Library"" — Little Robot Sound Factory (www.littlerobotsoundfactory.com) — CC-BY 3.0 — https://creativecommons.org/licenses/by/3.0/","Sound effects: ""Fantasy Sound Effects Library"" — Little Robot Sound Factory (www.littlerobotsoundfactory.com) — CC-BY 3.0 — https://creativecommons.org/licenses/by/3.0/"
+Efeitos CC0: Kenney (kenney.nl) e autores CC0 do OpenGameArt.org,CC0 effects: Kenney (kenney.nl) and CC0 authors at OpenGameArt.org
+Partículas: Kenney Particle Pack (CC0),Particles: Kenney Particle Pack (CC0)
 O DESPERTAR,THE AWAKENING
 Criação e direção,Created and directed by
 João Tatarin,João Tatarin
 Desenvolvido com,Developed with
 Claude,Claude
-(Anthropic),(Anthropic)
-Música,Music
-Kevin MacLeod  ·  incompetech.com,Kevin MacLeod  ·  incompetech.com
-Licença Creative Commons: By Attribution 4.0,Creative Commons License: By Attribution 4.0
-https://creativecommons.org/licenses/by/4.0/,https://creativecommons.org/licenses/by/4.0/
-Atribuição,Attribution
-Sons e partículas,Sounds and particles
+(Anthropic)  ·  e Codex (OpenAI),(Anthropic)  ·  and Codex (OpenAI)
+Arte ilustrada gerada por IA sob direção do autor,Illustrated art generated by AI under the author's direction
+Música e sons,Music and sound
+Pacotes de sons e partículas,Sound and particle packs
 Fontes,Fonts
 Cinzel e Cinzel Decorative  —  Natanael Gama,Cinzel and Cinzel Decorative  —  Natanael Gama
 Alegreya  —  Juan Pablo del Peral / Huerta Tipográfica,Alegreya  —  Juan Pablo del Peral / Huerta Tipográfica
@@ -975,7 +1161,7 @@ Motor,Engine
 "Godot Engine  —  © Juan Linietsky, Ariel Manzur e colaboradores (licença MIT)","Godot Engine  —  © Juan Linietsky, Ariel Manzur and contributors (MIT license)"
 Obrigado por despertar.,Thank you for waking.
 %s  —  %s  (%s),%s  —  %s  (%s)
-continuar,continue
+%s: %s,%s: %s
 A TRAVESSIA TERMINOU,THE CROSSING IS OVER
 A FAÍSCA SE APAGOU,THE SPARK WENT OUT
 Fim,The End
@@ -983,66 +1169,149 @@ Crônicas  %d / %d      ·      Finais vistos  %d / 3,Chronicles  %d / %d      �
 Finais vistos: %d/3,Endings seen: %d/3
 Jogar de novo,Play again
 Tentar de novo,Try again
-Sophia Nv.1,Sophia Lv.1
-Sophia Nv.3,Sophia Lv.3
-Sophia Nv.5,Sophia Lv.5
-"Soter, o Ungido","Soter, the Anointed"
-"Velkar, o Arrependido","Velkar, the Penitent"
-Provação,Trial
+DEMO  ·  O LIMIAR E O TORPOR,DEMO  ·  THE THRESHOLD AND TORPOR
+"Obrigado por jogar.
+A subida continua por mais seis Éons no jogo completo.","Thank you for playing.
+The climb goes on through six more Aeons in the full game."
+Adicione GNOSIS à sua lista de desejos.,Add GNOSIS to your wishlist.
+Lista de desejos,Wishlist
+Encontrados  %d / %d,Found  %d / %d
+AINDA NÃO ENCONTRADO,NOT YET FOUND
+lança o inimigo para o alto,launches the enemy into the air
+golpe no ar,air strike
+Conquista  ·  %s,Achievement  ·  %s
+golpe leve,light strike
+golpe forte,heavy strike
+"bloquear · no tempo, apara","block · on time, parries"
+sequência do cajado,staff combo
+Esfera Solar (gasta Éter),Sun Orb (costs Aether)
+telegrafo amarelo:,yellow tell:
+vermelho:,red:
+pausa · Golpes & Controles,pause · Moves & Controls
+usar o Anel equipado (gasta Éter),use the equipped Ring (costs Aether)
+trocar de Anel,switch Ring
+Analógico,Stick
+%s  %s,%s  %s
+Espaço,Space
+Esc,Esc
+Shift,Shift
+Enter,Enter
+Esq.,Left
+Dir.,Right
+Cima,Up
+Baixo,Down
+A,A
+B,B
+X,X
+Y,Y
+LB,LB
+RB,RB
+Start,Start
+D-pad Esq.,D-pad Left
+D-pad Dir.,D-pad Right
+D-pad Cima,D-pad Up
+D-pad Baixo,D-pad Down
+Botão %d,Button %d
+LT,LT
+RT,RT
+Eixo %d,Axis %d
+Arma Nv. %d,Weapon Lv. %d
+FASE II,PHASE II
+Teclado,Keyboard
+Xbox,Xbox
+PlayStation,PlayStation
+Nintendo,Nintendo
+Steam Deck,Steam Deck
+%s %s,%s %s
+Setas,Arrows
+D-pad,D-pad
+Mouse esq.,Left mouse
+Mouse dir.,Right mouse
+Mouse meio,Middle mouse
+Mouse %d,Mouse %d
+Ctrl,Ctrl
+Alt,Alt
+Tab,Tab
+Backspace,Backspace
+L1,L1
+L,L
+R1,R1
+R,R
+L3,L3
+LS,LS
+R3,R3
+RS,RS
+Create,Create
+View,View
+Options,Options
+PS,PS
+Home,Home
+Guia,Guide
+D-pad ←,D-pad ←
+D-pad →,D-pad →
+D-pad ↑,D-pad ↑
+D-pad ↓,D-pad ↓
+Share,Share
+Mic,Mic
+L2,L2
+ZL,ZL
+R2,R2
+ZR,ZR
+Analógico ←,Stick ←
+Analógico →,Stick →
+Analógico ↑,Stick ↑
+Analógico ↓,Stick ↓
+Analógico dir.,Right stick
+Cruz,Cross
+Círculo,Circle
+Quadrado,Square
+Triângulo,Triangle
+Saltar,Jump
+Aparar / bloquear,Parry / block
+Anel (magia),Ring (spell)
+Próximo Anel,Next Ring
+Anel anterior,Previous Ring
+Andar para a esquerda,Move left
+Andar para a direita,Move right
+Andar para o fundo,Move up (into the scene)
+Andar para a frente,Move down (toward you)
+Esc é reservado para pausar e voltar.,Esc is reserved for pause and back.
+%s é reservado para pausar.,%s is reserved for pause.
+O analógico fica para andar.,The stick is reserved for movement.
+Use uma tecla ou um botão do controle.,Use a key or a controller button.
+%s é atalho fixo (%s).,%s is a fixed shortcut (%s).
+Anel ,Ring 
 Golpes & Controles,Moves & Controls
 ARMA NV. %d / %d,WEAPON LV. %d / %d
-W/S · setas · analógico rolam      ·      Esc / B fecha,W/S · arrows · stick scroll      ·      Esc / B close
 GOLPES DO CAJADO,STAFF STRIKES
 sequência  (teclado · controle),sequence  (keyboard · gamepad)
 sequência  (controle · teclado),sequence  (gamepad · keyboard)
 NO AR  (durante o salto),IN THE AIR  (while jumping)
 MAGIA INATA,INNATE SPELL
-O  ·  RT,O  ·  RT
 %d Éter,%d Aether
 OS SETE ANÉIS,THE SEVEN RINGS
-"U  ·  RB   (trocar: Q/E, 1–7 · LT)","U  ·  RB   (switch: Q/E, 1–7 · LT)"
+"%s  ·  %s   (trocar: %s/%s, 1–7 · %s)","%s  ·  %s   (switch: %s/%s, 1–7 · %s)"
 Anel %d,Ring %d
 Trancado — vença %s,Locked — defeat %s
 Roubado pelo Rei — recupere o caco no Centro,Stolen by the King — recover the shard in the Center
 %s  (%s),%s  (%s)
 CONTROLES,CONTROLS
-teclado  ·  Xbox  ·  DualShock,keyboard  ·  Xbox  ·  DualShock
+teclado  ·  %s   (trocar em Opções › Controles),keyboard  ·  %s   (change in Options › Controls)
 Mover,Move
-A / D  (setas),A / D  (arrows)
+%s / %s  (setas),%s / %s  (arrows)
 analógico esq. / D-pad,left stick / D-pad
 Pular,Jump
-Espaço,Space
-A,A
-J,J
-X,X
-K,K
-Y,Y
 Esquiva (invulnerável),Dodge (invulnerable)
-L / Shift,L / Shift
-B,B
 Bloquear / Aparar,Block / Parry
-I  (segurar / no tempo),I  (hold / timed)
-LB,LB
-L1,L1
+%s  (segurar / no tempo),%s  (hold / on time)
 Anel equipado,Equipped Ring
-U,U
-RB,RB
-R1,R1
-O,O
-RT,RT
-R2,R2
 Trocar Anel,Switch Ring
-Q / E  ·  1–7,Q / E  ·  1–7
-LT / Back,LT / Back
-L2 / Share,L2 / Share
+%s / %s  ·  1–7,%s / %s  ·  1–7
+%s / %s,%s / %s
 Pausa,Pause
-Esc / P,Esc / P
-Start,Start
-Options,Options
 Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.,YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you.
 Escudeiros só caem com golpe forte ou magia.   A esquiva arrebenta a Corrente da Lei.,Squires only fall to heavy strikes or magic.   A dodge snaps the Chain of the Law.
 %s   ·   %s,%s   ·   %s
-Arma Nv. %d,Weapon Lv. %d
 lançador,launcher
 %d golpes,%d hits
 área,area
@@ -1052,19 +1321,33 @@ o Arconte,the Archon
 Pequena,Small
 Média,Medium
 Grande,Large
-Vídeo & jogo,Video & game
+Janela,Windowed
 Tela cheia,Fullscreen
+Sem bordas,Borderless
+"0,5×",0.5×
+1×,1×
+2×,2×
+Instantâneo,Instant
+Vídeo,Video
+Modo de janela,Window mode
 VSync,VSync
 Tremor de câmera,Camera shake
-Vibração do controle,Controller vibration
-Legendas,Subtitles
+Reduzir flashes,Reduce flashes
 Áudio,Audio
 Volume geral,Master volume
 Efeitos,Effects
+Música,Music
+Jogo,Game
+Velocidade do texto,Text speed
+Legendas,Subtitles
 “Lembre-se do que arde.”,“Remember what burns.”
+Números de dano,Damage numbers
+Vibração do controle,Controller vibration
+Teclas e botões,Keys and buttons
 Ligada,On
 Desligada,Off
 Provação  ·  encontro %d / 3,Trial  ·  encounter %d / 3
+Disponível fora de combate,Available outside combat
 "Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d.","You'll return to the menu. Your saved return point remains: %s, screen %d."
 Você volta ao menu. A Provação não grava progresso.,You'll return to the menu. The Trial doesn't save progress.
 Abandonar a jornada?,Abandon the journey?
@@ -1075,7 +1358,8 @@ Mais que o dobro. Para quem já lê o vermelho e o amarelo.,More than double. Fo
 "Vida e dano ×3,5. Apare só o necessário — e não erre.",Health and damage ×3.5. Parry only what you must — and don't miss.
 %s — %s,%s — %s
 DIFICULDADE,DIFFICULTY
-%d telas  ·  sete Éons  ·  sete Arcontes  ·  o Centro  ·  a Mente,%d screens  ·  seven Aeons  ·  seven Archons  ·  the Center  ·  the Mind
+Demo  ·  o Limiar e o Torpor  ·  ~20 minutos,Demo  ·  the Threshold and Torpor  ·  ~20 minutes
+Sete Éons  ·  Sete Arcontes  ·  ~2–3 horas,Seven Aeons  ·  Seven Archons  ·  ~2–3 hours
 Santuário de Ascensão,Shrine of Ascension
 Voltar ao jogo,Back to game
 Seguir caminho,Move on
@@ -1084,10 +1368,14 @@ Arma Nv. %d → %d,Weapon Lv. %d → %d
 Arma no nível máximo,Weapon at max level
 %s  ·  Nv. %d (máx.),%s  ·  Lv. %d (max.)
 %s  ·  Nv. %d → %d,%s  ·  Lv. %d → %d
-+20 de vida máx.,+20 max health
++20 de vida máx.  ·  %d / %d,+20 max health  ·  %d / %d
+no máximo,maxed out
 +15 de Éter máx.,+15 max Aether
 Restauração  ·  cura completa,Restoration  ·  full heal
 a vida já está cheia,health is already full
+só no santuário e depois do Arconte,only at the shrine and after the Archon
+Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short
+Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades
 Menu,Menu
 PAUSA,PAUSED
 Continuar,Continue
