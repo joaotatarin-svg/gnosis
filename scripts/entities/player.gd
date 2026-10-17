@@ -20,6 +20,12 @@ const DODGE_IFRAMES := 0.24
 const PARRY_WINDOW := 0.18       # aparar = apertar bloqueio pouco antes do golpe
 const BLOCK_CHIP := 0.25         # fração do dano que passa ao bloquear (não aparar)
 const RIG_HEIGHT := 68.0         # altura da Sophia ilustrada (px de mundo)
+# --- feedback (NEURO_SATISFACAO R1/R10; docs/COMBATE.md §7) ---
+const FLASH_FADE := 0.11         # R1: o flash some em 110 ms REAIS depois do hitstop
+const VIB_AMP := 1.5             # R1: vibração da vítima (px) durante o hitstop
+const VIB_STEP_MS := 33          # troca de lado a cada ~33 ms reais
+const HURT_TINT := Color(2.2, 0.9, 0.9, 1)   # R10: dano sem vermelho saturado (antes 4,1,1)
+const DEAD_DECEL := 600.0        # morta: freia o deslize até parar
 
 var data: CharacterData
 var state: State = State.IDLE
@@ -70,6 +76,13 @@ var _step_timer: float = 0.0
 var _was_on_floor: bool = true
 var _fall_speed: float = 0.0       # velocidade vertical do frame anterior (pouso)
 
+# R1: flash instantâneo mantido no hitstop e apagado em tempo real; vibração.
+var _flash_col: Color = Color(1, 1, 1, 1)
+var _flash_t: float = -1.0       # <0 = sem flash ativo
+var _vib_amp: float = 0.0
+var _vib_until_ms: int = 0
+var _vib_seen: bool = false
+
 @onready var visual: CharacterArt = $Visual
 @onready var hitbox: Hitbox = $Hitbox
 @onready var hurtbox: Hurtbox = $Hurtbox
@@ -87,11 +100,15 @@ func _ready() -> void:
 	add_child(health)
 	health.setup(data.max_health + Progression.bonus_max_health)
 	health.died.connect(_on_died)
+	# Misericórdia oculta (§4): só um brilho frio discreto, sem texto.
+	health.mercy_spared.connect(func() -> void: _flash(Color(1.6, 1.6, 2.0, 1)))
 	# HP carregado da tela anterior (run em andamento) + a faísca se recompõe
 	# um pouco entre as fendas (30% do que falta — balance 2026-09-11: sem
 	# NENHUMA cura no run, o dano só acumulava e matava por atrito).
 	if RunManager.run_active and RunManager.carry_health >= 0:
-		health.current_health = mini(health.max_health, RunManager.carry_health)
+		# (mínimo 1: o heal não revive morto — REVISAO #11 — e um carry 0 não
+		# pode fazer a Sophia nascer "morta sem morrer")
+		health.current_health = clampi(RunManager.carry_health, 1, health.max_health)
 		health.heal(int((health.max_health - health.current_health) * 0.3))
 		health.health_changed.emit(health.current_health, health.max_health)
 
@@ -113,12 +130,23 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if state == State.DEAD:
-		return
 	# Resgate do vazio: caiu fora do mundo → volta pro chão da arena.
 	if global_position.y > 700.0:
 		global_position = Vector2(clampf(global_position.x, -600.0, 1600.0), 200.0)
 		velocity = Vector2.ZERO
+		reset_physics_interpolation()
+		var cam := get_node_or_null("Camera2D")
+		if cam != null and cam.has_method("snap"):
+			cam.snap()
+	if state == State.DEAD:
+		# A4: morta no ar (ou de pé) CAI até o chão e toca a pose de morte —
+		# antes congelava no ar no último quadro (QA_UX_BUGS A4).
+		if not is_on_floor():
+			velocity.y += GRAVITY * delta
+		velocity.x = move_toward(velocity.x, 0.0, DEAD_DECEL * delta)
+		move_and_slide()
+		_sync_anim()
+		return
 	_tick_timers(delta)
 	match state:
 		State.ATTACK: _process_attack(delta)
@@ -376,8 +404,7 @@ func _process_attack(delta: float) -> void:
 				Audio.play_sfx(_swing_sfx())   # o corte sai do wind-up
 			if not air_move:
 				velocity.x = facing * current_move.lunge * (1.35 if current_move.is_heavy() else 1.0)
-			if current_move.is_heavy():
-				Juice.shake(0.4)           # peso do golpe forte
+			# (R3: o tremor do pesado sai do Hitbox SÓ se acertar)
 			# Golpe de área no chão (Fúria da Mônada / Colapso).
 			if current_move.aoe_radius > 0.0 and not air_move:
 				var col := data.sprite_color.lerp(Color(1.0, 0.95, 0.7), 0.55)
@@ -392,8 +419,8 @@ func _process_attack(delta: float) -> void:
 				dive_landed = true
 				var col := data.sprite_color.lerp(Color(1.0, 0.95, 0.7), 0.55)
 				AoeNova.spawn(get_parent(), global_position + Vector2(0, 8), pending_dmg, current_move.aoe_radius, col)
-				Juice.shake(0.7)
-				Juice.hit_stop(0.08)
+				Juice.shake(0.5)
+				Juice.hit_stop(Juice.HS_DIVE)
 				_squash(Vector2(facing * 1.4, 0.7))
 				action_timer = minf(action_timer, 0.18)
 		else:
@@ -444,11 +471,8 @@ func _process_attack(delta: float) -> void:
 
 
 ## Chamado pelo Hitbox quando um golpe do herói acerta — alimenta o combo.
+## (R4: o som e o VFX do impacto saem UMA vez no Hitbox, no ponto de contato.)
 func register_hit() -> void:
-	var heavy := current_move != null and current_move.is_heavy()
-	Audio.play_sfx("hit_heavy" if heavy else "hit")
-	if heavy:
-		VfxLibrary.hit(get_parent(), global_position + Vector2(26.0 * facing, -14.0), true, Color(1.0, 0.9, 0.55))
 	combo_count += 1
 	combo_show_timer = 1.4
 	combo_changed.emit(combo_count)
@@ -500,7 +524,7 @@ func _process_block(delta: float) -> void:
 func _parry(attacker: Node) -> void:
 	invuln_timer = 0.30
 	Juice.hit_stop(0.12)
-	Juice.shake(0.6)
+	Juice.shake(0.35)
 	Juice.rumble(0.6, 0.3, 0.18)
 	Audio.play_sfx("parry")
 	VfxLibrary.parry(get_parent(), global_position + Vector2(16.0 * facing, -16.0))
@@ -607,6 +631,7 @@ func _cast_skill(skill: SkillData) -> void:
 				var dx: float = e.global_position.x - global_position.x
 				if absf(dx) < 260.0 and absf(e.global_position.y - global_position.y) < 90.0:
 					e.global_position.x -= signf(dx) * minf(absf(dx) - 40.0, 150.0)
+					e.reset_physics_interpolation()     # puxão de até 150 px: sem rastro interpolado
 			AoeNova.spawn(get_parent(), global_position + Vector2(40.0 * facing, -6), total, 90.0, col)
 			Juice.shake(0.35)
 		"r_corrente":
@@ -642,7 +667,7 @@ func _cast_skill(skill: SkillData) -> void:
 			# Coroa da Mônada: a nova da Fonte — dano enorme em área.
 			AoeNova.spawn(get_parent(), global_position, total, 210.0, col)
 			Juice.slow_mo(0.35, 0.4)
-			Juice.shake(0.8)
+			Juice.shake(0.6)
 		_:
 			# Fallback genérico por tipo (magias futuras).
 			match skill.type:
@@ -688,9 +713,15 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, u
 			_blocked(damage, source_position)
 		return
 
-	# Tomou dano.
+	# Tomou dano. Hitstop/tremor de dano aqui (vale para Hitbox, projétil, veneno
+	# e explosão); o Juice fica com o MAIOR pedido, não soma.
+	var hp_before := health.current_health
 	health.take_damage(damage)
+	if health.current_health < hp_before:
+		Juice.hit_stop(Juice.HS_PLAYER_HURT)
+		Juice.shake(Juice.TRAUMA_HURT)
 	if health.is_dead():
+		_flash(HURT_TINT, VIB_AMP)
 		return                     # _on_died já pôs o estado em DEAD — não voltar pra IDLE
 	Audio.play_sfx("player_hurt")
 	Juice.rumble(0.0, 0.6, 0.22)
@@ -704,7 +735,7 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, u
 	state = State.HURT
 	action_timer = 0.3
 	hitbox.deactivate()
-	_flash(Color(4, 1, 1, 1))
+	_flash(HURT_TINT, VIB_AMP)
 
 
 var _perfect_cd: float = 0.0
@@ -719,7 +750,7 @@ func _perfect_dodge() -> void:
 	mana = minf(float(max_mana_total), mana + 12.0)
 	mana_changed.emit(int(mana), max_mana_total)
 	Juice.slow_mo(0.3, 0.35)
-	Juice.shake(0.25)
+	Juice.kick(float(dodge_dir), false)
 	_flash(Color(2.0, 2.2, 3.0, 1))
 	VfxLibrary.dodge_perfect(get_parent(), global_position + Vector2(0, -20))
 	Audio.play_sfx("dodge_perfect")
@@ -745,7 +776,10 @@ func _process_hurt(delta: float) -> void:
 
 func _on_died() -> void:
 	state = State.DEAD
-	velocity = Vector2.ZERO
+	velocity.x = 0.0                 # cai reto (A4); a gravidade cuida do y
+	velocity.y = maxf(velocity.y, 0.0)
+	hitbox.deactivate()
+	cast_anim_timer = 0.0
 	Audio.play_sfx("player_die")
 	died.emit()
 
@@ -804,9 +838,46 @@ func _squash(target: Vector2) -> void:
 	t.tween_property(visual, "scale", Vector2(facing, 1.0), 0.16)
 
 
-func _flash(color: Color) -> void:
+## R1/R10: flash INSTANTÂNEO (no mesmo quadro), mantido enquanto durar o
+## hitstop e apagado em FLASH_FADE s REAIS; força limitada pelo Juice (≤3/s
+## cheios, "Reduzir flashes"). `vibrate` > 0 = a vítima treme no hitstop.
+func _flash(color: Color, vibrate: float = 0.0) -> void:
 	if visual == null:
 		return
-	var t := create_tween()
-	t.tween_property(visual, "modulate", color, 0.03)
-	t.tween_property(visual, "modulate", Color(1, 1, 1, 1), 0.14)
+	var k: float = Juice.flash_strength(self, false)
+	_flash_col = Color(1, 1, 1, 1).lerp(color, k)
+	_flash_col.a = 1.0
+	_flash_t = 0.0
+	visual.modulate = _flash_col
+	if vibrate > 0.0:
+		_vib_amp = vibrate
+		_vib_until_ms = Time.get_ticks_msec() + 250
+		_vib_seen = false
+
+
+## Flash e vibração correm em tempo REAL (o hitstop deixa o jogo a 5 %).
+func _process(delta: float) -> void:
+	if visual == null:
+		return
+	var real_dt: float = delta / maxf(Engine.time_scale, 0.001)
+	var frozen: bool = Juice.hitstop_active()
+	if _flash_t >= 0.0:
+		if not frozen:
+			_flash_t += real_dt
+		var k := 1.0 - clampf(_flash_t / FLASH_FADE, 0.0, 1.0)
+		visual.modulate = Color(1, 1, 1, 1).lerp(_flash_col, k)
+		if k <= 0.0:
+			_flash_t = -1.0
+	if _vib_amp > 0.0:
+		var now := Time.get_ticks_msec()
+		if frozen:
+			_vib_seen = true
+			var side := 1.0 if (now / VIB_STEP_MS) % 2 == 0 else -1.0
+			var a := _vib_amp * Juice.hitstop_left() * side
+			if is_on_floor():
+				visual.position = Vector2(a, 0.0)
+			else:
+				visual.position = Vector2(0.0, a)
+		elif _vib_seen or now > _vib_until_ms:
+			_vib_amp = 0.0
+			visual.position = Vector2.ZERO

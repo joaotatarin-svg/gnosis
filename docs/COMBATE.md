@@ -6,36 +6,35 @@ e ficam em **constantes nomeadas no topo de cada arquivo** (ajuste fino no playt
 
 ---
 
-## ESTADO PARA A PRÓXIMA SESSÃO (17/10/2026 — sessão pausada pelo dono)
+## ESTADO (17/10/2026, Onda 2 na nuvem — branch `dir2/combate`)
 
-**Feito e commitado:**
-- `tools/combat_cam_probe.gd` + `tools/CombatCamProbe.tscn` — SONDA DA CÂMERA (headless,
-  ~10 s por tela). Roda o roteiro "corre → vira → esquiva" (o pior caso) com inimigos
-  congelados/invisíveis e mede, quadro a quadro, a posição da Sophia NA TELA (640×360).
-  `godot --headless --audio-driver Dummy --fixed-fps 60 --path . res://tools/CombatCamProbe.tscn -- <tela> [log.csv]`
-  → `CAMPROBE tela=3 fora=1 borda=16 minx=-1 ...` (fora = centro dela fora da tela;
-  borda = a menos de 24 px da borda).
-- Este documento (diagnóstico + plano da Fase A + lista COMPLETA da Fase B).
+**Feito e commitado (Fase A + Fase B):**
+1. Câmera §2 aplicada (`camera_shake.gd`): look-ahead/enquadramento no alvo, trava
+   `SAFE_MARGIN`, zoom 1,2, pés a 76 %, tremor por ruído contínuo, chute direcional, limites
+   novos entram deslizando (`LIMIT_GLIDE`), `snap()`. Segue o corpo no `_physics_process`.
+   Sonda telas 3/8/10/22/50: **antes** `fora=1 borda=16 minx=-1` (10: 0/0) → **depois**
+   `fora=0 borda=0 minx=38` em todas.
+2. Juice §3 (R2/R3/R8/R10): hitstop por peso que estende (não descarta), `hitstop_active()`,
+   `hitstop_left()`, `kick()`, `slow_mo` com rampa e `slowmo_changed`, `flash_strength()`,
+   `reduce_flashes`.
+3. Hitbox §3.4: um impacto por golpe (hitstop/chute/tremor/som 1× por quadro), um VFX por alvo
+   no ponto de contato (`ImpactBurst.spawn(..., heavy)`).
+4. Misericórdia §4 + `reset_mercy()`; REVISAO #11 (heal não revive, dano negativo não cura).
+5. Orbes §5: chegadas em fila (55 ms), `spark` + `hud.spark_orb_arrived()` na chegada; sem
+   órbita e todo orbe entrega (sonda `res://tools/combate/OrbProbe.tscn`: 9/9).
+6. `reset_physics_interpolation()` nos teleportes do player/enemy (§6).
+7. Fase B §7 em player/enemy (R1 flash instantâneo em tempo real + vibração da vítima; R5
+   telegrafo 45 % com pulso 2 Hz + brilho 180 ms com FORMA redonda/losango, e o flash volta
+   para o telegrafo; R4 som/VFX únicos e voz de dor ≤ 1/250 ms; R8 slow-mo racionado; R10;
+   A4 morta cai até o chão e toca "dead"; gancho de legenda da fase 2; `attack_impact`,
+   `impact_at`, `hurt_power`).
+8. `VfxLibrary.prewarm(parent)` (sonda `res://tools/combate/PrewarmProbe.tscn`).
 
-**Capturas ANTES** (em `C:\gnosis-wt\_caps\combate\antes\`):
-- `tela3/8/22/50/10.png` (quadro 420), `seq\{demo,combo,heavy,dodge}.gif` + `_sheet.png`
-  (tela 3, 150 quadros, every=2), `probe{3,8,22,50,10}.csv` (sonda).
-- Helpers: `C:\gnosis-wt\_caps\combate\shot.sh` e `probe.sh` (já com `--audio-driver Dummy`
-  e `--position 4000,4000`).
+**Pendente (fora dos arquivos do Combate):** ver `docs/pedidos/onda2_combate.md` — `reset_mercy`
+ao trancar zona, chamar `prewarm`, `physics_interpolation` no project.godot, sons `tell_*`,
+`spark_orb_arrived` no HUD, opção "Reduzir flashes", `snap()` na Provação.
 
-**NÃO feito (a próxima sessão executa, nesta ordem):**
-1. Câmera (§2 — causa raiz achada, código pronto abaixo). Medir com a sonda: meta `fora=0 borda=0`.
-2. Juice R2/R3/R8/R10 (§3 — código pronto abaixo).
-3. Hitbox: hitstop por peso + tremor deduplicado + chute direcional (§3.4).
-4. Misericórdia oculta em `health_component.gd` (§4 — aprovada pelo dono).
-5. Orbes R6 (`spark_orb.gd`) (§5).
-6. Interpolação de física (§6).
-7. Validar (`tools/validate.ps1 -Path C:\gnosis-wt\combate`), capturas DEPOIS, GIFs
-   `--follow player`, commit.
-8. Fase B (§7) quando o chefe liberar `player.gd`/`enemy.gd`.
-
-**Atenção:** `override.cfg` no worktree (user:// isolado, criado pelo chefe) — NÃO commitar.
-`.import` reescritos pelo editor headless — NÃO commitar (use `git add` por arquivo).
+**Atenção:** `override.cfg` e `.import` reescritos no worktree — NÃO commitar (`git add` por arquivo).
 
 ---
 

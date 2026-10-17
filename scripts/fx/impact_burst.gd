@@ -10,14 +10,15 @@ var _dirs: Array[Vector2] = []
 const LIFE := 0.32
 
 
-static func spawn(parent: Node, pos: Vector2, col: Color) -> void:
+## `heavy` = o golpe pesado ganha as partículas grandes (talho + poeira) NESTE
+## mesmo ponto — R4: um acerto = um evento de impacto, não dois empilhados.
+static func spawn(parent: Node, pos: Vector2, col: Color, heavy: bool = false) -> void:
 	var b := ImpactBurst.new()
 	b.color = col
 	parent.add_child(b)
 	b.global_position = pos
-	# partículas por cima do desenho vetorial (golpe leve; o pesado chama
-	# VfxLibrary.hit(heavy=true) direto no player/enemy)
-	VfxLibrary.hit(parent, pos, false, col)
+	# partículas por cima do desenho vetorial
+	VfxLibrary.hit(parent, pos, heavy, col)
 
 
 func _ready() -> void:

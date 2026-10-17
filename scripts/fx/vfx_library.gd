@@ -127,6 +127,9 @@ static func _flash_sprite(parent: Node, pos: Vector2, texture: String, col: Colo
 static func screen_flash(parent: Node, col: Color = Color(1, 1, 1, 0.55), dur: float = 0.35) -> void:
 	if parent == null or not is_instance_valid(parent) or not parent.is_inside_tree():
 		return
+	# R10: "Reduzir flashes" corta o clarão de tela para 35 %.
+	if Juice.reduce_flashes:
+		col.a *= 0.35
 	var layer := CanvasLayer.new()
 	layer.layer = 5
 	var rect := ColorRect.new()
@@ -178,6 +181,27 @@ static func hit(parent: Node, pos: Vector2, heavy: bool = false, col: Color = Co
 		d.scale_amount_max = 0.16
 		d.scale_amount_curve = _grow_curve()
 		d.color_ramp = _ramp(Color(0.35, 0.3, 0.3, 0.55))
+
+
+## R5: brilho de aviso do golpe inimigo, 180 ms antes do impacto (= quando a
+## janela de parry abre). FORMA além da cor (daltonismo): aparável = estrela
+## REDONDA amarela; imparável = estrela PONTIAGUDA (losango) vermelha, maior.
+## Fica acima de todo VFX de impacto (nunca coberto por fagulha). Sempre toca
+## (é informação, não enfeite) e não é cortado por "Reduzir flashes".
+static func tell_glint(parent: Node, pos: Vector2, unblockable: bool) -> void:
+	if not _ok(parent, true):
+		return
+	if unblockable:
+		var s := _flash_sprite(parent, pos, "star", Color(1.0, 0.32, 0.25, 1.0), 0.12, 0.42, 0.14, true)
+		s.rotation = PI * 0.25                       # losango
+		s.z_index = Z + 8
+		var c := _flash_sprite(parent, pos, "glow", Color(1.0, 0.25, 0.2, 0.7), 0.08, 0.22, 0.14, true)
+		c.z_index = Z + 7
+	else:
+		var r := _flash_sprite(parent, pos, "star2", Color(1.0, 0.9, 0.35, 1.0), 0.1, 0.32, 0.12, true)
+		r.z_index = Z + 8
+		var c2 := _flash_sprite(parent, pos, "circle", Color(1.0, 0.92, 0.5, 0.55), 0.05, 0.2, 0.12, true)
+		c2.z_index = Z + 7
 
 
 ## Parry: anel branco-azulado + fagulhas geladas.
@@ -298,7 +322,7 @@ static func boss_death(parent: Node, pos: Vector2, col: Color = Color(1.0, 0.85,
 		if not is_instance_valid(parent) or not parent.is_inside_tree():
 			return
 		screen_flash(parent, Color(col.r, col.g, col.b, 0.6), 0.5)
-		Juice.shake(1.4)
+		Juice.shake(1.0)                 # (o trauma satura em 1 de qualquer jeito)
 		_flash_sprite(parent, pos, "halo", Color(col.r, col.g, col.b, 1.0), 0.2, 2.4, 0.7)
 		_flash_sprite(parent, pos, "halo", Color(1, 1, 1, 0.8), 0.1, 1.4, 0.45)
 		_flash_sprite(parent, pos, "glow", Color(1, 1, 1, 0.8), 0.3, 1.1, 0.4)
@@ -596,3 +620,68 @@ static func _amb(p: CPUParticles2D, texture: String, amount: int, life: float, c
 	p.scale_amount_curve = _scale_curve(0.3)
 	p.color = col
 	p.lifetime_randomness = 0.5
+
+
+# ===========================================================================
+# PRÉ-AQUECIMENTO
+# ===========================================================================
+
+## Pré-aquece efeitos, shaders, texturas e a fonte dos números de dano para o
+## 1º golpe não engasgar (ONDA2: até 193 ms). Cria UMA vez cada efeito de
+## combate dentro de um nó quase transparente no centro da vista (precisa ser
+## DESENHADO para o shader compilar) e descarta tudo em ~0,4 s. Sem som, sem
+## tremor. Chamar uma vez quando a fase carrega: `VfxLibrary.prewarm(level)`.
+static func prewarm(parent: Node) -> void:
+	if parent == null or not is_instance_valid(parent) or not parent.is_inside_tree():
+		return
+	var holder := Node2D.new()
+	holder.name = "VfxPrewarm"
+	holder.modulate = Color(1, 1, 1, 0.004)          # invisível na prática, mas desenhado
+	parent.add_child(holder)
+	var cam := parent.get_viewport().get_camera_2d()
+	var p: Vector2 = cam.get_screen_center_position() if cam != null else Vector2(320, 180)
+	holder.global_position = Vector2.ZERO
+	# texturas usadas pelos efeitos de combate
+	for n in ["spark", "spark2", "glow", "halo", "slash", "smoke", "smoke2", "star", "star2", "circle", "flame", "flame2", "magic", "magic2", "twirl", "symbol", "light", "trace"]:
+		tex(n)
+	# partículas/sprites (multimesh + aditivo + normal)
+	hit(holder, p, false)
+	hit(holder, p, true)
+	parry(holder, p)
+	dodge_perfect(holder, p)
+	enemy_death(holder, p)
+	elite_death(holder, p)
+	cast(holder, p)
+	nova_ring(holder, p, 60.0)
+	spark_pickup(holder, p)
+	dust(holder, p)
+	tell_glint(holder, p, false)
+	tell_glint(holder, p, true)
+	ImpactBurst.spawn(holder, p, Color(1, 0.9, 0.7))
+	DamageNumber.spawn(holder, p, 1234567890, Color(1, 0.9, 0.6))   # glifos 0–9
+	# desmembramento: peça vetorial, peça pintada (shader limpo) e gotas de luz
+	var poly := PackedVector2Array([Vector2(-4, -4), Vector2(4, -4), Vector2(4, 4), Vector2(-4, 4)])
+	var parts: Array = [{"pts": poly, "col": Color(0.5, 0.5, 0.5)}]
+	var t: Texture2D = tex("glow")
+	if t != null:
+		parts.append({"pts": poly, "col": Color.WHITE, "tex": t, "size": Vector2(8, 8), "flip": 1.0})
+	Gib.burst(holder, p, parts, 1.0, p.y + 400.0, Vector2.ZERO, Color(1, 0.9, 0.5), Color(0.1, 0.1, 0.1))
+	# shaders da pintura (afterimage/curvatura) num sprite de 8 px
+	for path in ["res://assets/shaders/painted_ghost.gdshader", "res://assets/shaders/painted_flex.gdshader"]:
+		if ResourceLoader.exists(path):
+			var sp := Sprite2D.new()
+			sp.texture = t
+			sp.scale = Vector2.ONE * 0.06
+			var m := ShaderMaterial.new()
+			m.shader = load(path)
+			sp.material = m
+			holder.add_child(sp)
+			sp.global_position = p
+	var sp2 := Sprite2D.new()
+	sp2.texture = t
+	sp2.scale = Vector2.ONE * 0.06
+	sp2.material = PaintedLibrary.material()
+	holder.add_child(sp2)
+	sp2.global_position = p
+	# some com tudo depois de alguns quadros desenhados (tempo REAL)
+	parent.get_tree().create_timer(0.4, true, false, true).timeout.connect(holder.queue_free)
