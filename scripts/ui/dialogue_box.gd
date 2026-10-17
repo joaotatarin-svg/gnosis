@@ -27,8 +27,9 @@ class_name DialogueBox
 ## RUBRICA (backlog #22) — modo `narration`: fala SEM falante cujo texto é só uma
 ## rubrica entre parênteses (ou com `mode: "narration"`) não usa a caixa: o texto
 ## aparece centralizado, em itálico, sem os parênteses, sobre um véu.
-##   · `dark` (padrão: só na 1ª fala da caixa) = tela escura (abre a cena no escuro);
-##   · senão véu leve na base, para a Encenação seguir visível (anéis voando etc.).
+##   · `dark` = tela escura (abre a cena no escuro). Padrão: só na 1ª fala da caixa
+##     e só se o `cue` dela não for encenação visual (sem cue, ou "heartbeat"/"wait_2s");
+##   · senão véu leve na base, para a Encenação seguir visível (anéis voltando etc.).
 ##   O campo `dark: true/false` da fala manda no padrão.
 ## Velocidade do texto: `GameManager.settings["text_speed"]` (multiplicador 0,5/1/2;
 ## 0, ≥10 ou "instant" = instantâneo) — ver text_speed(). A legenda usa o mesmo.
@@ -57,6 +58,8 @@ const NARR_DARK_A := 0.97         # véu da rubrica escura
 const NARR_FADE := 0.45           # s da troca caixa ↔ rubrica
 const ADVANCE_ACTION := "jump"    # botão mostrado no rodapé (pular/A também avança)
 const GLYPHS_PATH := "res://scripts/ui/input_glyphs.gd"
+## Cues que NÃO pedem a cena visível (som/tempo): a rubrica de abertura pode ser escura.
+const DARK_OK_CUES := ["", "heartbeat", "wait_2s"]
 
 var lines: Array = []
 var choices: Array = []      # String ou {text: String, enabled: bool}
@@ -284,7 +287,7 @@ func _show_line() -> void:
 	_speaker.text = who
 	_plate.visible = who != ""
 	var narr := is_narration(l)
-	_set_narration(narr, bool(l.get("dark", idx == 0)) if narr else false)
+	_set_narration(narr, narration_dark(l, idx) if narr else false)
 	if narr:
 		_narr_text.text = narration_text(String(l.get("text", "")))
 		_text.text = ""
@@ -319,6 +322,13 @@ static func is_narration(l: Dictionary) -> bool:
 		return false
 	var t := String(l.get("text", "")).strip_edges()
 	return t.length() > 2 and t.begins_with("(") and t.ends_with(")") and t.count("(") == 1
+
+
+## Rubrica escura? `dark` da fala; senão só a 1ª da caixa sem cue visual.
+static func narration_dark(l: Dictionary, index: int) -> bool:
+	if l.has("dark"):
+		return bool(l["dark"])
+	return index == 0 and String(l.get("cue", "")) in DARK_OK_CUES
 
 
 ## Texto da rubrica sem os parênteses de fora (o itálico já marca a rubrica).

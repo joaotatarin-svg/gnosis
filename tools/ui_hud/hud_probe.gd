@@ -431,6 +431,11 @@ class P extends Node:
 		var probe := [{"speaker": "", "text": "(Silêncio.)"}, {"speaker": "A Voz", "text": "(baixinho) Agora."},
 			{"speaker": "", "text": "Sem parênteses."}, {"speaker": "", "text": "(a) e (b)"}, {"speaker": "Sophia", "text": "x", "mode": "narration"}]
 		print("HUDP|rubrica|detecta=", probe.map(func(l): return DialogueBox.is_narration(l)))
+		# Escura só na abertura sem encenação visual: intro (heartbeat), Centro (wait_2s);
+		# a anagnórise (rings_return) fica leve para ver os Anéis voltando.
+		var fl: Array = Narrative.final_lines()
+		print("HUDP|rubrica|escura intro=%s centro=%s final=%s" % [str(DialogueBox.narration_dark(Narrative.intro()[0], 0)),
+			str(DialogueBox.narration_dark(Narrative.center_intro()[0], 0)), str(DialogueBox.narration_dark(fl[0], 0))])
 
 	## Velocidade do texto (Opções): mede as letras visíveis após 0,5 s.
 	func _speed() -> void:
