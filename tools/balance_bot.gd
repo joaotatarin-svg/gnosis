@@ -8,8 +8,9 @@ extends Node
 ## pra direita até o gatilho da próxima zona; o timeout é por ZONA parada.
 ## Uso: godot --headless --audio-driver Dummy --fixed-fps 60 --path . \
 ##          res://tools/BalanceBot.tscn -- [tela_ini] [tela_fim] [vel] [seed=N] [out=/caminho/base]
-##   vel  = multiplicador de velocidade (padrão 3; Juice.speed_mult). Com
-##          --fixed-fps 60, use vel <= 8 (8 passos de física por quadro).
+##   vel  = multiplicador de velocidade (padrão 3; Juice.speed_mult). O bot sobe
+##          physics_ticks_per_second para 60×vel: o passo de física continua
+##          sendo 1/60 s de jogo, e o resultado não depende de vel.
 ##   seed = semente do sorteio global (padrão 1). É re-semeada a CADA tela
 ##          (hash de seed+tela): uma mudança na tela 10 não muda o sorteio da 11.
 ##   loja=gasta = na loja pós-chefe, depois de arma e magias, gasta o resto em
@@ -20,6 +21,9 @@ extends Node
 ##   ia=2 = bot "v2" (Onda 2): além do clássico, SAI de poça hostil (veneno de
 ##          Belias) e ESQUIVA de projétil que vem na direção dele. Ainda não
 ##          bloqueia nem faz parry. Padrão ia=1 = clássico (r1–r8).
+##   tempo=legado = reproduz o tempo das r1–r8 (bot no _process, botão solto
+##          em tempo real, física com passo de vel/60 s). NÃO use para medir:
+##          em vel 8 a física roda a 7,5 Hz e o dano sai ~2,4x maior (r8, 17/10).
 ##   out  = base dos arquivos de saída (gera <base>.txt e <base>.csv); padrão
 ##          user://balance. O .csv tem uma linha por tela e o dano por FONTE.
 ## DETERMINISMO (Onda 2): rode SEMPRE com --fixed-fps 60 — sem isso o delta
@@ -35,6 +39,8 @@ func _ready() -> void:
 			w.base_seed = int(a.substr(5))
 		elif a.begins_with("loja="):
 			w.shop_mode = a.substr(5)
+		elif a == "tempo=legado":
+			w.legacy_timing = true
 		elif a.begins_with("ia="):
 			w.ai_level = int(a.substr(3))
 		elif a.begins_with("out="):
@@ -57,6 +63,8 @@ class BalanceWorker extends Node:
 	var base_seed: int = 1
 	var out_base: String = "user://balance"
 	var ai_level: int = 1                # 1 = clássico (r1–r8); 2 = sai de poça e esquiva tiro
+	var legacy_timing: bool = false      # tempo=legado: física grossa das r1–r8 (vel 8 = passo de 0,13 s)
+	var _blocked: bool = false           # diálogo/loja abertos neste quadro
 	var shop_mode: String = "classica"   # "classica" (r1–r8) ou "gasta" (+vida máx.)
 
 	const ZONE_TIMEOUT := 100.0        # s de jogo numa zona sem limpar = travada
@@ -106,6 +114,12 @@ class BalanceWorker extends Node:
 		process_mode = Node.PROCESS_MODE_ALWAYS
 		SaveManager.persist_enabled = false   # ferramenta não suja o save real
 		Juice.speed_mult = speed
+		if not legacy_timing:
+			# Acelerar SEM engrossar a física: o Godot 4 não aumenta os passos de
+			# física com time_scale (só o delta). Então sobe os passos por segundo
+			# junto: cada passo continua sendo 1/60 s de jogo (igual ao jogo real).
+			Engine.physics_ticks_per_second = int(round(60.0 * speed))
+			Engine.max_physics_steps_per_frame = maxi(8, int(ceil(speed)) + 1)
 		GameManager.selected_character = GameContent.characters[0]
 		Progression.reset_run()
 		RunManager.begin()
@@ -142,6 +156,7 @@ class BalanceWorker extends Node:
 				else:
 					c._finish()
 				had_dialog = true
+		_blocked = had_dialog
 		if had_dialog:
 			return
 		# 2) loja pós-chefe: compra o que der (emula progressão real) e fecha
@@ -150,13 +165,28 @@ class BalanceWorker extends Node:
 			return
 		for c in cs.get_children():
 			if c is CanvasLayer and c.has_method("_close"):
+				_blocked = true
 				_auto_shop()
 				c._close()
 				return
+		_blocked = false
 		# 3) fim do run (vitória ou passou da última tela pedida)
 		if not RunManager.run_active or RunManager.current_screen > last_screen:
 			_finish("fim do run (tela %d)" % RunManager.current_screen)
 			return
+		if legacy_timing:
+			_tick(delta)
+
+	## Física: o bot joga e mede a cada passo de física (1/60 s de JOGO em
+	## qualquer velocidade). No modo legado (r1–r8) isso rodava no _process.
+	func _physics_process(delta: float) -> void:
+		if _done or _blocked or legacy_timing:
+			return
+		if not RunManager.run_active or RunManager.current_screen > last_screen:
+			return
+		_tick(delta)
+
+	func _tick(delta: float) -> void:
 		var pl: Player = get_tree().get_first_node_in_group("player")
 		if pl == null or pl.health == null:
 			return
@@ -398,7 +428,10 @@ class BalanceWorker extends Node:
 		return false
 
 	func _release_later(a: String) -> void:
-		await get_tree().create_timer(0.05, true, false, true).timeout
+		if legacy_timing:
+			await get_tree().create_timer(0.05, true, false, true).timeout   # 0,05 s REAIS
+		else:
+			await get_tree().create_timer(0.05, true, true, false).timeout   # 0,05 s de JOGO
 		Input.action_release(a)
 
 	func _auto_shop() -> void:
@@ -465,7 +498,7 @@ class BalanceWorker extends Node:
 		for k in keys:
 			parts.append("%s=%d" % [k, int(_src_total[k])])
 		lines.append("FONTES: " + ", ".join(parts))
-		lines.append("seed=%d vel=%.1f telas %d-%d loja=%s ia=%d" % [base_seed, speed, first_screen, last_screen, shop_mode, ai_level])
+		lines.append("seed=%d vel=%.1f telas %d-%d loja=%s ia=%d tempo=%s" % [base_seed, speed, first_screen, last_screen, shop_mode, ai_level, "legado" if legacy_timing else "fisica"])
 		var f := FileAccess.open(out_base + ".txt", FileAccess.WRITE)
 		for l in lines:
 			print("BAL ", l)
