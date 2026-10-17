@@ -291,7 +291,7 @@ narrative.ORDINAIS.ad25d1,quarto,fourth,ordinal,,,scripts/autoload/narrative.gd:
 narrative.ORDINAIS.ea2301,quinto,fifth,ordinal,,,scripts/autoload/narrative.gd:23,
 narrative.ORDINAIS.dd74aa,sexto,sixth,ordinal,,,scripts/autoload/narrative.gd:23,
 narrative.ORDINAIS.61ca9a,sétimo,seventh,ordinal,,,scripts/autoload/narrative.gd:23,
-narrative._faiscas.bfc90d,uma faísca escorre,one spark drains,narrativa,,115,scripts/autoload/narrative.gd:62,
+narrative._faiscas.bfc90d,uma faísca escorre,One spark drains,narrativa,,115,scripts/autoload/narrative.gd:62,
 narrative._faiscas.a349af,%d faíscas escorrem,%d sparks drain,narrativa,,115,scripts/autoload/narrative.gd:62,format string: manter os %
 narrative.death_revive.34c7a4,MORRE. Por que tu não morres?,DIE. Why will you not die?,dialogo,Yaldabaoth,115,scripts/autoload/narrative.gd:77,
 narrative.death_revive.46672f,"(Os Anéis param de girar... descem... e me costuram de volta, caco por caco.)","(The Rings stop spinning... sink... and stitch me back together, shard by shard.)",dialogo,Sophia,115,scripts/autoload/narrative.gd:78,
@@ -673,7 +673,7 @@ narrative._cleared_pool.003c76,Não pares. A fome sente o cheiro de quem para.,D
 narrative._cleared_pool.191c72,"Enquanto ele falava, a Voz não disse nada. Nada.","While he was talking, the Voice said nothing. Nothing.",legenda,Sophia,95,scripts/autoload/narrative.gd:851,
 narrative._cleared_pool.084614,Se o Cego fez os sete à imagem dele... derrubar os sete derruba o quê?,If the Blind One made the seven in his image... what falls when the seven fall?,legenda,Sophia,95,scripts/autoload/narrative.gd:852,
 narrative._cleared_pool.6f70f5,Os selos caem. A ordem deles era só ferrugem.,The seals fall. Their order was only rust.,legenda,A Voz,95,scripts/autoload/narrative.gd:855,
-narrative._cleared_pool.af727d,Gritam ‘lei’ quando morrem. Nenhum diz ‘justiça’.,They cry ‘law’ as they die. None of them says ‘justice’.,legenda,Sophia,95,scripts/autoload/narrative.gd:856,
+narrative._cleared_pool.af727d,Gritam ‘lei’ quando morrem. Nenhum diz ‘justiça’.,They cry ‘law’ as they die. None of them says ‘justice.’,legenda,Sophia,95,scripts/autoload/narrative.gd:856,
 narrative._cleared_pool.94fdcd,Cada selo quebrado é uma corrente a menos no mundo. Tu és boa nisto.,Every broken seal is one less chain in the world. You are good at this.,legenda,A Voz,95,scripts/autoload/narrative.gd:857,
 narrative._cleared_pool.4c50b1,Boa em quebrar. A Voz nunca me elogia por outra coisa.,Good at breaking. The Voice never praises me for anything else.,legenda,Sophia,95,scripts/autoload/narrative.gd:858,
 narrative._cleared_pool.a72ac8,Não filosofes com o carcereiro. Ele adora.,Do not philosophize with the jailer. He loves it.,legenda,A Voz,95,scripts/autoload/narrative.gd:859,

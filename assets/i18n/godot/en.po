@@ -1468,7 +1468,7 @@ msgstr "seventh"
 #. narrative._faiscas.bfc90d  [narrativa]
 #: scripts/autoload/narrative.gd:62
 msgid "uma faísca escorre"
-msgstr "one spark drains"
+msgstr "One spark drains"
 
 #. narrative._faiscas.a349af  [narrativa]
 #: scripts/autoload/narrative.gd:62
@@ -3348,7 +3348,7 @@ msgstr "The seals fall. Their order was only rust."
 #. narrative._cleared_pool.af727d  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:856
 msgid "Gritam ‘lei’ quando morrem. Nenhum diz ‘justiça’."
-msgstr "They cry ‘law’ as they die. None of them says ‘justice’."
+msgstr "They cry ‘law’ as they die. None of them says ‘justice.’"
 
 #. narrative._cleared_pool.94fdcd  [legenda · A Voz]
 #: scripts/autoload/narrative.gd:857
