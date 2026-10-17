@@ -390,3 +390,14 @@ Chat: https://chatgpt.com/c/6ad33822-6c1c-83e9-9539-4ac389a72382 (refs: painted/
 ## Resumo Fila 6
 - Aprovadas: bot_1_sonambulo_a, bot_2_glutao_b, bot_3_carcereiro_a, bot_4_mudo_a, bot_5_reflexo_a, bot_6_esporos_a, bot_7_pretoriano_a.
 - 9 pedidos (8 imagens; 1 recusa por diretriz de violência). Nenhum aviso de limite.
+
+# FILA 7 — Quadros intermediários desenhados (mesmo chat da folha original)
+Padrão A (bots/criaturas) `<id>_motion_a.png`, 2×4: 0 walk_contact_A · 1 walk_down_A · 2 walk_pass_A · 3 walk_up_A · 4 walk_contact_B ·
+5 walk_pass_B · 6 recover_0 (saindo do strike) · 7 recover_1 (quase idle).
+- `bot_1_sonambulo_motion_a.png` — padrão A. Nota 8. Mesma escala da folha original (h≈415–454), passos legíveis, recuperação com braços voltando. Chat do bot 1.
+- `bot_2_glutao_motion_a.png` — padrão A (andar = rastejar de 6 quadros). Nota 7.5. Fiel ao glutao_b, mesma escala (h≈250–285).
+  Diferenças entre quadros do rastejar são SUTIS (bom p/ fluidez, mas quase repetidos); rec_0 (empinado) e rec_1 ok. Chat do bot 2.
+- `bot_3_carcereiro_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈400–445), corrente pendurada com gancho em todos os quadros. Chat do bot 3.
+- `bot_4_mudo_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈403–448); rolos flutuantes balançam junto (alguns soltos — agrupar). Chat do bot 4.
+- `bot_5_reflexo_motion_a.png` — padrão A. Nota 8 (APROVADA). Alternativa `bot_5_reflexo_motion_b.png` (A/B; passos mais uniformes, nota 7.5). Chat do bot 5.
+- `bot_6_esporos_motion_a.png` — padrão A. Nota 8. Fiel, mesma escala (h≈396–430), passos de corcunda legíveis; rec_0 com a corcunda empinada. Chat do bot 6.

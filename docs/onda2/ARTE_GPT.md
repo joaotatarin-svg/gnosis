@@ -235,3 +235,6 @@ pés). `tools/anim_bosses/add_motion.py <receita>=<folha>` liga a folha (padrão
 `gifs/andar_bots_antes.gif` × `gifs/andar_bots_depois.gif` (AnimQA `-- film_walk x sonambulo glutao carcereiro`),
 faixa `gifs/andar_bots_antes_depois.png`. Honesto: no glutão o rastejar de 6 quadros tem diferenças sutis
 (o produtor avisou) — fica mais "vivo", não muito mais legível.
+
+**Bloco 2 (parcial): reflexo** (folha motion_a aprovada; escala 1,032) — `gifs/reflexo_andar_quadros.png`. Faltam esporos, pretoriano, 6 criaturas, S15/S16 da Sophia e os 9 chefes (ainda não chegaram).
+
