@@ -79,6 +79,7 @@ func _ready() -> void:
 	_speaker.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
 	_speaker.add_theme_constant_override("outline_size", 3)
 	_speaker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_speaker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED   # i18n: I18n.t em _show
 	_root.add_child(_speaker)
 
 	_text = Label.new()
@@ -96,6 +97,7 @@ func _ready() -> void:
 	_text.add_theme_constant_override("outline_size", 4)
 	_text.add_theme_constant_override("line_spacing", -1)
 	_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_text.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED      # i18n: I18n.t em _show
 	_root.add_child(_text)
 
 
@@ -180,9 +182,10 @@ func _type(delta: float) -> void:
 
 func _show(l: Dictionary) -> void:
 	_showing = true
-	var text := String(l.get("text", ""))
+	# i18n (Onda 4): exibe traduzido; o falante pt segue como chave de retrato/blip.
+	var text := I18n.t(String(l.get("text", "")))
 	var who := String(l.get("speaker", ""))
-	_speaker.text = who
+	_speaker.text = I18n.t(who)
 	_strip.portrait = DialogueBox.portrait_for(who, String(l.get("mood", "")))
 	# Com retrato, o texto abre espaço à esquerda (o medalhão fica dentro da faixa).
 	_text.offset_left = 62.0 if _strip.portrait != null else 24.0

@@ -331,7 +331,7 @@ class _RowDeco extends Control:
 			CodexStyle.draw_spark(self, Vector2(x - 9.0, y), 4.2, col)
 			draw_string(font, Vector2(x, y + 4.5), s, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, col)
 		if sub != "":
-			draw_string(CodexStyle.italic(), Vector2(12, size.y - 7.0), sub, HORIZONTAL_ALIGNMENT_LEFT, size.x - 90.0, 10, Color(CodexStyle.GOLD, 0.9) if affordable else Color(CodexStyle.MUTED, 0.5))
+			draw_string(CodexStyle.italic(), Vector2(12, size.y - 7.0), I18n.t(sub), HORIZONTAL_ALIGNMENT_LEFT, size.x - 90.0, 10, Color(CodexStyle.GOLD, 0.9) if affordable else Color(CodexStyle.MUTED, 0.5))
 
 
 class _SparkIcon extends Control:

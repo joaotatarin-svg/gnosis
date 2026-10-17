@@ -6,6 +6,8 @@ extends Control
 ##   JOGO      — velocidade do texto (0,5× · 1× · 2× · instantâneo) · legendas
 ##               (P/M/G, com amostra) · números de dano · vibração do controle
 ##   CONTROLES — "Teclas e botões" abre a tela de remapeamento (ControlsMenu)
+##   IDIOMA    — (i18n, Onda 4) linha "Idioma · Language" no topo de JOGO:
+##               Português ↔ English → `settings["locale"]` (ver scripts/i18n/i18n.gd)
 ## Tudo vai para `GameManager.settings` (ou Audio) e é salvo na hora pelo
 ## SaveManager; `GameManager.apply_settings()` reaplica vídeo no boot.
 ## Tremor, vibração e "Reduzir flashes" (padrão desligada) também são gravados
@@ -39,6 +41,7 @@ var _controls_open: bool = false
 var _vsync: Button
 var _rumble: Button
 var _caption: Button
+var _lang: Button
 var _first: Control
 var _sample: Label
 
@@ -80,6 +83,10 @@ func _ready() -> void:
 	_slider(_left, "Música", 0.0, 1.0, Audio.music_vol, func(v: float): Audio.set_volume("Music", v))
 	# --- coluna direita: jogo + controles ---
 	_section(_right, "Jogo")
+	# Idioma: rótulo nos DOIS idiomas (quem caiu no idioma errado acha a opção).
+	_lang = _row_button(_right, "Idioma · Language")
+	_lang.pressed.connect(_cycle_language)
+	_refresh_language()
 	_text_speed = _row_button(_right, "Velocidade do texto")
 	_text_speed.pressed.connect(_cycle_text_speed)
 	_refresh_text_speed()
@@ -217,6 +224,19 @@ func _open_controls() -> void:
 	m.closed.connect(func():
 		_controls_open = false
 		_controls.grab_focus())
+
+
+## Português ↔ English. Grava o código escolhido (deixa de seguir o sistema).
+## Os rótulos com texto literal trocam na hora (o Godot avisa a árvore toda).
+func _cycle_language() -> void:
+	var nxt := I18n.EN if I18n.current() == I18n.PT else I18n.PT
+	GameManager.settings["locale"] = nxt
+	_apply_and_save()
+	_refresh_language()
+
+
+func _refresh_language() -> void:
+	(_lang.get_node("Value") as Label).text = I18n.name_of(I18n.current())
 
 
 func _cycle_caption() -> void:

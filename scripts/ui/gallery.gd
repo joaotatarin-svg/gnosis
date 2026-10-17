@@ -202,6 +202,7 @@ func _art_pos(art: CharacterArt, p: ArtProfile, feet: Vector2) -> Vector2:
 ## Nome que cabe em `width` px: uma linha se couber; senão quebra no espaço que
 ## deixa as duas linhas mais parelhas (medido na fonte real — QA L2).
 func _fit_name(text: String, width: float, fs: int = 9) -> String:
+	text = I18n.t(text)      # i18n: quebra o nome EXIBIDO (o Label não retraduz o inglês)
 	var font: Font = CodexStyle.body()
 	if font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x <= width:
 		return text

@@ -5,7 +5,6 @@ narrative.archon_phase2.a267c3	Court! To the king! ...No one comes. No one ever 
 narrative._archon_death.804202	Ah... so this is being awake. It hurts. ...It is beautiful.
 narrative._archon_death.511b65	I never tasted anything that was mine. Keep your memories. Keep them well.
 narrative._archon_death.e36893	Light... is this what it is, without a link? No one told me... it was light.
-narrative._archon_death.c22b91	(the stitches burst) Someone answered him once, from up above. I heard it. He sewed me shut for it.
 narrative._archon_death.6f1fbf	Keep your face. I never had one. ...It was beautiful, yours.
 narrative._archon_death.ea1f92	(in his puddle, something green, tiny) ...Did it sprout? Do not look at me. Look at that.
 narrative._archon_death.b6f37a	Tell him that I... no. He does not listen. He never listened.
@@ -14,7 +13,6 @@ narrative.ring_gained.aa0385	(...) The %s Ring. His passion obeys you now: %s.
 narrative.ring_gained.28b04f	(As I touch the Ring: a white cloud, and a small throne inside it.)
 narrative.ring_gained.03d385	Dreams of Torpor. They pass. Climb.
 narrative.ring_gained.175708	Five to go. And your window is still yours. Climb.
-narrative.ring_gained.72af48	Galila classified you, and lost. Four to go.
 narrative.ring_gained.8b59c3	Listen: your spells speak again. Three to go.
 narrative.ring_gained.24b365	This Ring is heavy, is it not? ...I do not quite know what I am either.
 narrative.ring_gained.d6841e	I only know I do not want to be alone again.
@@ -29,7 +27,6 @@ narrative.sanctuary.c5d610	What are you like? Really.
 narrative.sanctuary.485b45	Nothing pretty to look at. Believe me: it is better this way.
 narrative.sanctuary.e9b9d5	(And, for the first time since the ashes, I laugh.)
 narrative.sanctuary.dfe404	...Do that more often. It suits you.
-narrative.sanctuary.fd860f	Here I fall quiet. You speak, today. I will listen.
 narrative.sanctuary.c66132	I dreamed of the white cloud again. There was a small throne in the middle.
 narrative.sanctuary.485d6e	(a silence far too long) ...Dreams. Rest. I keep watch.
 narrative.sanctuary.b590ee	What was I like? Before.
@@ -82,9 +79,7 @@ narrative.theft.208ead	(The seven Rings tear themselves from your fingers, one b
 narrative.theft.dbffa8	(the mask falls; behind it, only a blind eye) I am the Blind One I told you of. And there is no other but me.
 narrative.theft.4a87ee	Call me by the name I never told you: Yaldabaoth. Do you know what you were bearing, Bearer? Me.
 narrative.theft.61c8a6	There never was a river. There never was a window. Your people? Ashes from some harvest or other.
-narrative.theft.335706	I gave you a grief so I could give you a path. Grief is the softest of collars.
 narrative.theft.9f2882	I wept for them.
-narrative.theft.33508c	You wept for me. The seven were my children, and you brought me what was left of them.
 narrative.theft.128140	A voice in the Rings
 narrative.theft.ee6bb0	...wait... I... remember...
 narrative.theft.af5784	(softer, almost the Voice of before) You said you would stay with me.

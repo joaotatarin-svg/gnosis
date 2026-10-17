@@ -249,6 +249,8 @@ def main() -> int:
 	report_only = "--report" in sys.argv
 	lits: list[Lit] = []
 	for p in sorted((ROOT / "scripts").rglob("*.gd")):
+		if p.parent.name == "i18n":
+			continue   # a própria tabela gerada (en_table.gd) e o tradutor
 		lits += scan_gd(p)
 	for p in sorted((ROOT / "scenes").rglob("*.tscn")):
 		lits += scan_tscn(p)

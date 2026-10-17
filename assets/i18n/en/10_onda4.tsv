@@ -1,0 +1,369 @@
+# Lote 10 — Onda 4 (17/10/2026): textos novos ou reescritos depois da Onda 2
+# (Narrativa Emocional, Encenação 3, UI3, conquistas, bestiário, controles).
+# Registro: a Voz/Rei/Arcontes sem contrações; Sophia com; UI no imperativo.
+game_manager.finish_demo.c408cf	End of the demo
+game_manager.finish_demo.02a6f8	Thank you for playing. The rest of the climb continues in the full game.
+save_manager.load_game.17684a	The main save was damaged; your progress was recovered from the backup copy.
+eon_rule._ready.acfccc	The fog thickens: only what is near can be seen.
+eon_rule._ready.b0f357	Chains hang from the ceiling. Lure the enemies into the sweep.
+narrative._faiscas.48157b	One spark drains
+narrative.death_revive.3ca876	Shh. It is over. I have you.
+narrative.death_revive.1685c6	You fall, and I remake you. We have done this before, you and I. Long before.
+narrative.king_intro.d2dbd2	Look: someone comes out of the mist. Do not fear, I know him. An ancient king, and kind. He means you no harm.
+narrative.king_intro.95edb4	Lost spark... how good that you woke. The threshold has one law: none pass but those who touch me with their light.
+narrative.king_intro.d4fc93	(raises the orb; the mask lights up) Show me yours. Come.
+narrative.king_fall.6c70d0	Seven Archons, seven Rings. Gather them all, and I will show you how to undo this world of lies.
+narrative.eon_intro.14b66d	The Archon here will offer you what you lost. Remember: a copy is not a return.
+narrative.eon_intro.17d4c7	He will offer you power: the oldest of lies, and the sweetest.
+narrative.temptation.04f293	Everything rots, Bearer. I watched all I planted die. Surrender now, and I will spare you the end.
+narrative.CHAMPION_CARDS.9bd706	THE SLEEPWALKER
+narrative.CHAMPION_CARDS.2ff3e3	Guardian of the Shrine of Torpor
+narrative.CHAMPION_CARDS.59d67d	THE GLUTTON
+narrative.CHAMPION_CARDS.545ce0	Guardian of the Shrine of Hunger
+narrative.CHAMPION_CARDS.3fbf20	THE JAILER
+narrative.CHAMPION_CARDS.2c2c79	Guardian of the Shrine of the Chain
+narrative.CHAMPION_CARDS.483624	THE LIBRARIAN
+narrative.CHAMPION_CARDS.e7d9f4	Guardian of the Shrine of Silence
+narrative.CHAMPION_CARDS.2009ac	THE REFLECTION
+narrative.CHAMPION_CARDS.737f7b	Guardian of the Shrine of the Mirror
+narrative.CHAMPION_CARDS.ca7f76	THE SPORE-BEARER
+narrative.CHAMPION_CARDS.f05756	Guardian of the Shrine of Blight
+narrative.CHAMPION_CARDS.a65286	THE PRAETORIAN
+narrative.CHAMPION_CARDS.92fc53	Guardian of the Shrine of the Crown
+narrative.archon_phase2.4353ec	Give me one! One memory that is mine!
+narrative._archon_death.850f15	(the stitches burst) Someone answered him once, from up above. I heard it. He sewed me shut for it.
+narrative.ring_gained.75560b	Galila classified you, and lost. Four to go.
+narrative.sanctuary.9c6bbc	Here I fall quiet. You speak, today. I will listen.
+narrative.theft.e11b26	I gave you a grief so I could give you a path. Grief is the softest of collars.
+narrative.theft.9b11cd	You wept for me. The seven were my children, and you brought me what was left of them.
+narrative._arrival_pool.68c1cc	Galila does not hate you. He classifies you. That is worse.
+narrative._arrival_pool.e773b3	You came from me. I found you. Do not forget the order of things.
+narrative._arrival_pool.e7a770	Astaphaios will give you what you want most: you, before everything. The cruelest blow.
+narrative._arrival_pool.7931eb	Five Rings. Two more, and I will show you the end of all this.
+achievement_data.LIST.e62075	The First Shackle
+achievement_data.LIST.2e64f0	Defeat the King at the Threshold.
+achievement_data.LIST.e9864c	Awake
+achievement_data.LIST.55f8d1	Defeat Athoth, the Archon of Torpor.
+achievement_data.LIST.e521ac	No More Hunger
+achievement_data.LIST.0c25f2	Defeat Harmas, the Archon of Hunger.
+achievement_data.LIST.a1cfbf	Broken Link
+achievement_data.LIST.c4f6ac	Defeat Galila, the Archon of the Chain.
+achievement_data.LIST.7a8aec	The Word Returns
+achievement_data.LIST.c225f3	Defeat Yabel, the Archon of Silence.
+achievement_data.LIST.701888	No Reflection
+achievement_data.LIST.f78fb9	Defeat Astaphaios, the Archon of the Mirror.
+achievement_data.LIST.4b1a25	The Fever Breaks
+achievement_data.LIST.cfd33d	Defeat Belias, the Archon of Blight.
+achievement_data.LIST.297c97	Crown in the Dust
+achievement_data.LIST.1a473f	Defeat Armupiel, the Archon of the Crown.
+achievement_data.LIST.7acfda	Steady Step
+achievement_data.LIST.82873f	Defeat Athoth without falling once in the journey.
+achievement_data.LIST.a58940	Untouched
+achievement_data.LIST.4f9760	Defeat an Archon without taking damage on their screen.
+achievement_data.LIST.71bb7f	Whole Blade
+achievement_data.LIST.95b35d	Raise the weapon to its maximum level.
+achievement_data.LIST.f69332	Four Awakened
+achievement_data.LIST.dcb645	Awaken 4 Sleepers in a single journey.
+achievement_data.LIST.173998	The Stone Speaks
+achievement_data.LIST.be9d83	Read the first Stele.
+achievement_data.LIST.6c0a7c	Complete Chronicles
+achievement_data.LIST.98a28d	Read all 18 Stelae.
+achievement_data.LIST.472b2e	Every Name
+achievement_data.LIST.42cac9	Find every creature along the way.
+achievement_data.LIST.ab8d05	Whole Memory
+achievement_data.LIST.ab0203	Recover the 7 memory shards in the Center.
+achievement_data.LIST.d6ec34	Ascension
+achievement_data.LIST.8e5d24	Reach the Ascension ending.
+achievement_data.LIST.e4b175	Rupture
+achievement_data.LIST.3821da	Reach the Rupture ending.
+achievement_data.LIST.559b07	Seed
+achievement_data.LIST.e85451	Reach the Seed ending.
+achievement_data.LIST.8c74a8	Three Doors
+achievement_data.LIST.ebdfad	See all 3 endings.
+achievement_data.LIST.a03557	Narrow Path
+achievement_data.LIST.37b842	Finish the journey on Hard or above.
+bestiary_lore.ENTRIES.c7f50c	The spark who woke without memory at the Threshold.
+bestiary_lore.ENTRIES.cda74a	She crosses the seven Aeons to remember who she is.
+bestiary_lore.ENTRIES.b3ddbe	The weapon awakens at the shrines: each level opens new combos.
+bestiary_lore.ENTRIES.b592cc	Scraps of light the Kenoma has not finished putting out.
+bestiary_lore.ENTRIES.775f54	They crawl toward wherever there is still warmth.
+bestiary_lore.ENTRIES.b5a650	Weak and slow: a light combo settles it.
+bestiary_lore.ENTRIES.13bb2a	A spark that forgot its own name.
+bestiary_lore.ENTRIES.d6ccd8	It wanders fast and aimless, chasing whoever still shines.
+bestiary_lore.ENTRIES.79f69a	Fast: let the lunge pass, then answer.
+bestiary_lore.ENTRIES.1acfaf	Forged from hyle and obedience by the Demiurge.
+bestiary_lore.ENTRIES.4da718	It carries its blade the way one carries an order.
+bestiary_lore.ENTRIES.d99444	Parry the golden strike and punish the opening.
+bestiary_lore.ENTRIES.7fc39d	A larva that kept too much fire.
+bestiary_lore.ENTRIES.553ffe	It runs to the nearest light and bursts into flame.
+bestiary_lore.ENTRIES.8f830b	The blast cannot be parried: dodge.
+bestiary_lore.ENTRIES.a0d412	A thorn-shelled guardian, posted at the gates of the Aeons.
+bestiary_lore.ENTRIES.214c99	Slow to rise, heavy to fall.
+bestiary_lore.ENTRIES.bf1980	When it raises its arms, get clear: the blow crushes the ground.
+bestiary_lore.ENTRIES.701160	A beast bred to sniff out sparks.
+bestiary_lore.ENTRIES.d1bb35	It does not bark. It charges.
+bestiary_lore.ENTRIES.7dbeb6	Dodge the charge and strike while it skids to a halt.
+bestiary_lore.ENTRIES.adfd27	A horned reaper that gathers light like ripe wheat.
+bestiary_lore.ENTRIES.613c95	It holds no anger; it only reaps.
+bestiary_lore.ENTRIES.78b745	Parry the golden strike and answer with the combo.
+bestiary_lore.ENTRIES.e9525d	It guards the Seal with a shield that knows no weariness.
+bestiary_lore.ENTRIES.1da729	Behind it, order; before it, no one.
+bestiary_lore.ENTRIES.93f473	Light strikes hit the shield: use a heavy strike or a spell.
+bestiary_lore.ENTRIES.1880f3	A watcher of the Kenoma's low skies.
+bestiary_lore.ENTRIES.db6fdf	From on high, it aims and fires.
+bestiary_lore.ENTRIES.90d8f6	It shoots from afar: close in between one shot and the next.
+bestiary_lore.ENTRIES.3a7052	A mass of iron that obeys without asking.
+bestiary_lore.ENTRIES.25fb70	Each step makes the ground remember its own weight.
+bestiary_lore.ENTRIES.8989af	Do not trade blows with it: dodge the slam and come back.
+bestiary_lore.ENTRIES.ffbd3a	It heralds Silence with a crown and a staff.
+bestiary_lore.ENTRIES.b115fd	The voice never arrives; only the shot.
+bestiary_lore.ENTRIES.a51a84	It shoots from afar: close the distance and keep striking.
+bestiary_lore.ENTRIES.0c8f59	An echo of the void that cannot decide where it is.
+bestiary_lore.ENTRIES.053cbf	It vanishes before its prey and appears at its back.
+bestiary_lore.ENTRIES.2aae9e	When it vanishes, turn around: it reappears behind you.
+bestiary_lore.ENTRIES.2c6b00	It sows the ground with larvae and prays for them.
+bestiary_lore.ENTRIES.b190fb	It prefers distance and a crowd.
+bestiary_lore.ENTRIES.e1b3e1	Take it down first, before the ground fills with larvae.
+bestiary_lore.ENTRIES.71896b	A form the Kenoma began and gave up on finishing.
+bestiary_lore.ENTRIES.945f46	Claws, thorns and haste.
+bestiary_lore.ENTRIES.8e09ef	It charges hard: dodge and counter.
+bestiary_lore.ENTRIES.b48374	It walks asleep through the catacombs of Torpor.
+bestiary_lore.ENTRIES.f9f24b	It yawns, and whoever breathes the yawn grows heavy.
+bestiary_lore.ENTRIES.0743d5	Stay out of the yawn's path: it slows you down.
+bestiary_lore.ENTRIES.768e83	Hunger made flesh, with a mouth where its chest should be.
+bestiary_lore.ENTRIES.a1ddf1	It is never full; only less hungry.
+bestiary_lore.ENTRIES.e76087	Every bite that lands heals it: do not let it bite.
+bestiary_lore.ENTRIES.b9ab7a	No one knows what they are accused of; neither does he.
+bestiary_lore.ENTRIES.2df98a	His chain never lets go of what it holds.
+bestiary_lore.ENTRIES.d31738	The chain pins you in place: dodge when he throws it.
+bestiary_lore.ENTRIES.5638bf	He guards the library of blank books.
+bestiary_lore.ENTRIES.197850	His mouth sewn shut; his silence, contagious.
+bestiary_lore.ENTRIES.a7bc4d	Near him, spells fall silent: fight with the weapon.
+bestiary_lore.ENTRIES.065040	The Mirror returns everything, even the blow.
+bestiary_lore.ENTRIES.b4bf78	It pulls back at the exact instant of the attack.
+bestiary_lore.ENTRIES.8d57aa	It recoils from the first strike: press in and chain the combo.
+bestiary_lore.ENTRIES.d8c42e	It carries Blight on its back, like a rotten garden.
+bestiary_lore.ENTRIES.b876b4	Dead, it still blooms.
+bestiary_lore.ENTRIES.38a685	When it falls it leaves a pool of poison: move away from it.
+bestiary_lore.ENTRIES.7233c3	The Crown's personal guard.
+bestiary_lore.ENTRIES.3b8fb5	It turns its back on no one.
+bestiary_lore.ENTRIES.15c21d	From the front only heavy strikes wound it: attack from behind.
+bestiary_lore.ENTRIES.590d68	The Mirror strips her of her form and fills it with void.
+bestiary_lore.ENTRIES.2c141a	It fights like her, and faster than her.
+bestiary_lore.ENTRIES.bc10cb	Do not trade blows: parry and answer.
+bestiary_lore.ENTRIES.7967cf	Athoth, Archon of Torpor, offers sleep the way one offers shelter.
+bestiary_lore.ENTRIES.7d5949	His fog steals movement.
+bestiary_lore.ENTRIES.fb4061	Get out of the fog: inside it you are slowed.
+bestiary_lore.ENTRIES.813652	Harmas, Archon of Hunger, sells everything that is missing.
+bestiary_lore.ENTRIES.0b3bf8	An endless mouth where the torso should be.
+bestiary_lore.ENTRIES.4f3a88	When he starts to suck in, move away before the slam.
+bestiary_lore.ENTRIES.33ab3b	Galila, Archon of the Chain, classifies, judges and binds.
+bestiary_lore.ENTRIES.e4391c	Every law longs for a chain.
+bestiary_lore.ENTRIES.185040	The chain pins you in place: dodge the throw and the charge.
+bestiary_lore.ENTRIES.33cae8	Yabel, Archon of Silence, does not speak: he only silences.
+bestiary_lore.ENTRIES.a6b3d6	His aura buries spells in the void.
+bestiary_lore.ENTRIES.5fe225	Inside the aura, use the weapon. Wounded, he appears at your back.
+bestiary_lore.ENTRIES.807fc2	Astaphaios, Archon of the Mirror, returns the words of whoever faces him.
+bestiary_lore.ENTRIES.6f75c6	Silver, shards and a “we” that is no one.
+bestiary_lore.ENTRIES.6504c8	Wounded, he calls Sophia's Shadow: do not let it surround you.
+bestiary_lore.ENTRIES.fdbab9	Belias, Archon of Blight, mistakes weariness for truth.
+bestiary_lore.ENTRIES.890764	Wherever he passes, life forgets to die.
+bestiary_lore.ENTRIES.5efbb0	His charge leaves pools of poison: do not fight standing in them.
+bestiary_lore.ENTRIES.3f6b23	Armupiel, Archon of the Crown: almost king of everything.
+bestiary_lore.ENTRIES.f7c470	A throne made of obedience.
+bestiary_lore.ENTRIES.1a90b8	Wounded, he summons servants and shields himself: take the servants down first.
+bestiary_lore.ENTRIES.df2335	The white priest who guards the Threshold.
+bestiary_lore.ENTRIES.99886a	Too kind for one who bars a passage.
+bestiary_lore.ENTRIES.ba05fc	Parry the golden strikes; dodge the red ones.
+bestiary_lore.ENTRIES.59f02d	The King's mask, with no one left to hold it up.
+bestiary_lore.ENTRIES.e5541b	More fragile and faster than the one at the Threshold.
+bestiary_lore.ENTRIES.2b07b2	Read the glow early: the blow arrives sooner.
+bestiary_lore.ENTRIES.00df00	What lay behind the mask: a hollow giant.
+bestiary_lore.ENTRIES.2bfd73	The shards of its face still reflect borrowed light.
+bestiary_lore.ENTRIES.46e32f	Stay out of the slam's reach and strike on its way back.
+bestiary_lore.ENTRIES.e6fd81	Yaldabaoth, the Demiurge: he made the Kenoma and called it his.
+bestiary_lore.ENTRIES.732cf4	Blind to all that is not himself.
+bestiary_lore.ENTRIES.974de9	No weapon is enough on its own: remember what burns.
+bestiary_lore.ENTRIES.dbf409	Soter, the Anointed, walks freely through the Kenoma: the Blind One cannot see him.
+bestiary_lore.ENTRIES.ecb4c5	He heals, awakens and asks. He never fights.
+bestiary_lore.ENTRIES.0fc644	He does not fight: choose one of the gifts he offers.
+bestiary_lore.ENTRIES.193a39	Velkar, the Archon who let go of his own chain.
+bestiary_lore.ENTRIES.d47435	He lost the crown and the post; he kept the guilt.
+bestiary_lore.ENTRIES.f4e808	He does not fight: listen to what he has to say.
+bestiary_lore.category.eaceb5	The spark
+bestiary_lore.category.00a3e5	Ally
+bestiary_lore.category.6dffc1	Archon  ·  
+bestiary_lore.category.187bde	Guardian  ·  
+bestiary_lore.category.d8f090	Archon  ·  Mirror
+bestiary_lore.category.de87bb	Creature of the Kenoma
+stela._prompt_text.b63049	%s · read the Stele
+stela._ready.1fd862	      %s close
+cinematic.prologue.56bd6b	In the beginning there was the One. From it the Aeons emanated, in pairs,\nlike overflowing light. There nothing slept. Nothing forgot.
+cinematic.prologue.c37f5c	The youngest, Sophia, sought to reach the Source alone.\nFrom that unpartnered desire a formless son was born,\nand she hid him in a cloud.
+cinematic.prologue.c1bdfa	Blind to the Light, he believed himself the only god and made the Kenoma.\nIn the clay sleep the sparks he took from his mother.\n\nOne of them has just felt pain.
+codex_trial._show_result.1464d5	Go to the Campaign  →
+final_battle.start.abc7e4	Both forms must fall together.
+level._tutor_watch.8b7973	a red glow can't be parried:
+level._tutor_watch.b8d004	Red can't be parried: dodge.
+level._tutor_watch.bcb21e	yellow glow:
+level._tutor_watch.99b506	parry on time
+level._tutor_watch.9ce9ae	Yellow glow: block on time to parry.
+character_atelier._ready.96dcc1	Gallery
+character_atelier._ready.05c153	SOPHIA · ARCHONS · POSES
+character_atelier._ready.34511b	TIP
+character_atelier._refresh.e96e8c	ARCHON  /  NOT YET FOUND
+character_atelier._refresh.d768c8	Keep climbing.
+character_atelier._refresh.90db0a	Defeat him in the campaign to train
+character_atelier._refresh.a35eb9	Not yet found
+codex_menu._build_actions.a0db4d	Continue  ·  %s
+codex_menu._build_actions.dfc5b2	Gallery & Bestiary
+codex_menu._on_new_campaign.b88117	This erases your saved progress — %s — and this journey's sparks and upgrades.\nEndings seen and options are kept.
+codex_menu._open_trial.d37464	Choose the Archon for the 3rd encounter
+codex_menu._open_trial.d1a79e	%s  ·  %s
+controls_menu._ready.0ba15d	Controls
+controls_menu._ready.69339d	ACTION
+controls_menu._ready.dfc9b4	KEYBOARD
+controls_menu._ready.93248f	Restore defaults
+controls_menu._refresh.c4f532	CONTROLLER  ·  %s
+controls_menu._refresh.32d211	Stick / D-pad
+controls_menu._begin.6b4b93	Press the new button for “%s”  ·  %s cancels
+controls_menu._begin.bde928	Press the new key for “%s”  ·  Esc cancels
+controls_menu._process.43a908	Nothing changed.
+controls_menu._input.e9af13	Press a controller button (or Esc to cancel).
+controls_menu._input.65cc5a	Press a key (or Start to cancel).
+controls_menu._input.dafff9	Swapped with “%s”.
+controls_menu._input.084805	Saved.
+controls_menu._reset.568016	Factory layout restored.
+credits.FALLBACK_ATTRIBUTION.3602d1	Music: Kevin MacLeod (incompetech.com) — Licensed under Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/
+credits.FALLBACK_ATTRIBUTION.3f66e1	Sound effects: "Fantasy Sound Effects Library" — Little Robot Sound Factory (www.littlerobotsoundfactory.com) — CC-BY 3.0 — https://creativecommons.org/licenses/by/3.0/
+credits.FALLBACK_ATTRIBUTION.6ee00a	CC0 effects: Kenney (kenney.nl) and CC0 authors at OpenGameArt.org
+credits.FALLBACK_ATTRIBUTION.b995dd	Particles: Kenney Particle Pack (CC0)
+credits._fill.6f5d62	(Anthropic)  ·  and Codex (OpenAI)
+credits._fill.07907f	Illustrated art generated by AI under the author's direction
+credits._fill.dce7b1	Music and sound
+credits._fill.a27bc5	Sound and particle packs
+dialogue_box._reason_text.d9cd37	%s: %s
+end_screen._build_demo.cb9867	DEMO  ·  THE THRESHOLD AND TORPOR
+end_screen._build_demo.98a1ee	Thank you for playing.\nThe climb goes on through six more Aeons in the full game.
+end_screen._build_demo.b20f6c	Add GNOSIS to your wishlist.
+end_screen._build_demo.671b28	Wishlist
+gallery._build_header.0ccaf6	Found  %d / %d
+gallery._show.ab4581	NOT YET FOUND
+hud._on_weapon.3b2ee9	launches the enemy into the air
+hud._on_weapon.d40c9a	air strike
+hud._on_achievement.87fa2b	Achievement  ·  %s
+hud._queue_screen_hints.97ec4f	light strike
+hud._queue_screen_hints.df3f2e	heavy strike
+hud._queue_screen_hints.3c90a7	block · on time, parries
+hud._queue_screen_hints.6b344d	staff combo
+hud._queue_screen_hints.61dfe8	Sun Orb (costs Aether)
+hud._queue_screen_hints.f4f473	yellow tell:
+hud._queue_screen_hints.e9b353	red:
+hud._queue_screen_hints.bd84ff	pause · Moves & Controls
+hud._check_ring_hints.385e09	use the equipped Ring (costs Aether)
+hud._check_ring_hints.beab08	switch Ring
+hud.key_label.84c4c5	Stick
+hud.key_label.f999e2	%s  %s
+hud._key_name.1f7a4f	Esc
+hud._key_name.469d5b	Shift
+hud._key_name.2b9ece	Enter
+hud._key_name.71815f	Left
+hud._key_name.72acb3	Right
+hud._key_name.4effab	Up
+hud._key_name.74fd00	Down
+hud._pad_button_name.53157e	D-pad Left
+hud._pad_button_name.b7d05d	D-pad Right
+hud._pad_button_name.442f4a	D-pad Up
+hud._pad_button_name.237b1b	D-pad Down
+hud._pad_button_name.67c850	Button %d
+hud._pad_axis_name.6c62fb	LT
+hud._pad_axis_name.e39ae1	Axis %d
+hud._draw_one_boss.794201	PHASE II
+input_glyphs.DEVICE_NAMES.84601a	Keyboard
+input_glyphs.DEVICE_NAMES.288e67	Xbox
+input_glyphs.DEVICE_NAMES.92f1af	PlayStation
+input_glyphs.DEVICE_NAMES.0cac14	Nintendo
+input_glyphs.DEVICE_NAMES.2e7e57	Steam Deck
+input_glyphs.label.265fc5	%s %s
+input_glyphs.label.e962eb	Arrows
+input_glyphs.label.c7df92	D-pad
+input_glyphs.event_label.721307	Left mouse
+input_glyphs.event_label.9a682d	Right mouse
+input_glyphs.event_label.6db19b	Middle mouse
+input_glyphs.event_label.72bf7f	Mouse %d
+input_glyphs.key_name.dd6a02	Ctrl
+input_glyphs.key_name.e30eff	Alt
+input_glyphs.key_name.fe06eb	Tab
+input_glyphs.key_name.88d130	Backspace
+input_glyphs.pad_button_name.d160e0	L
+input_glyphs.pad_button_name.065765	R
+input_glyphs.pad_button_name.c6cacb	L3
+input_glyphs.pad_button_name.5bd2f7	LS
+input_glyphs.pad_button_name.09ffce	R3
+input_glyphs.pad_button_name.54561f	RS
+input_glyphs.pad_button_name.6e157c	Create
+input_glyphs.pad_button_name.69bd4e	View
+input_glyphs.pad_button_name.02543e	PS
+input_glyphs.pad_button_name.70f8bb	Home
+input_glyphs.pad_button_name.61f07c	Guide
+input_glyphs.pad_button_name.9c9976	D-pad ←
+input_glyphs.pad_button_name.3a513e	D-pad →
+input_glyphs.pad_button_name.fb562a	D-pad ↑
+input_glyphs.pad_button_name.c1a617	D-pad ↓
+input_glyphs.pad_button_name.09ca55	Share
+input_glyphs.pad_button_name.dea937	Mic
+input_glyphs.pad_axis_name.a58b12	L2
+input_glyphs.pad_axis_name.5e26d9	ZL
+input_glyphs.pad_axis_name.684bd5	ZR
+input_glyphs.pad_axis_name.9b6056	Stick ←
+input_glyphs.pad_axis_name.0299fa	Stick →
+input_glyphs.pad_axis_name.039f2a	Stick ↑
+input_glyphs.pad_axis_name.b94b4e	Stick ↓
+input_glyphs.pad_axis_name.a979cb	Right stick
+input_glyphs._ps_face.fa0035	Cross
+input_glyphs._ps_face.3053b7	Circle
+input_glyphs._ps_face.4ada0c	Square
+input_glyphs._ps_face.41660a	Triangle
+input_rebind.ACTIONS.2e5178	Jump
+input_rebind.ACTIONS.2e7906	Parry / block
+input_rebind.ACTIONS.affa74	Ring (spell)
+input_rebind.ACTIONS.6bfbb7	Next Ring
+input_rebind.ACTIONS.ed0fac	Previous Ring
+input_rebind.ACTIONS.d2738a	Move left
+input_rebind.ACTIONS.51f016	Move right
+input_rebind.ACTIONS.fd93fa	Move up (into the scene)
+input_rebind.ACTIONS.ccccfd	Move down (toward you)
+input_rebind.refusal.61edbf	Esc is reserved for pause and back.
+input_rebind.refusal.dfef46	%s is reserved for pause.
+input_rebind.refusal.4cf221	The stick is reserved for movement.
+input_rebind.refusal.423e81	Use a key or a controller button.
+input_rebind.refusal.89abfa	%s is a fixed shortcut (%s).
+input_rebind.refusal.ca7aae	Ring 
+moves_screen._fill.e70dc5	%s  ·  %s   (switch: %s/%s, 1–7 · %s)
+moves_screen._fill.039994	keyboard  ·  %s   (change in Options › Controls)
+moves_screen._fill.c40586	%s / %s  (arrows)
+moves_screen._fill.180124	%s  (hold / on time)
+moves_screen._fill.fbc62b	%s / %s  ·  1–7
+moves_screen._fill.02e810	%s / %s
+options_menu.WINDOW_NAMES.717700	Windowed
+options_menu.WINDOW_NAMES.e90e25	Borderless
+options_menu.TEXT_SPEED_NAMES.f777fc	0.5×
+options_menu.TEXT_SPEED_NAMES.af7b38	1×
+options_menu.TEXT_SPEED_NAMES.26abea	2×
+options_menu.TEXT_SPEED_NAMES.43c5c6	Instant
+options_menu._ready.03e7e1	Video
+options_menu._ready.21ed2a	Window mode
+options_menu._ready.2c5c42	Reduce flashes
+options_menu._ready.4cc92d	Game
+options_menu._ready.738111	Text speed
+options_menu._ready.a33fe8	Damage numbers
+options_menu._ready.0d64f3	Keys and buttons
+pause_menu._lock_upgrades_in_combat.da279d	Available outside combat
+pregame.info_text.b0bc62	Demo  ·  the Threshold and Torpor  ·  ~20 minutes
+pregame.info_text.c3cdd0	Seven Aeons  ·  Seven Archons  ·  ~2–3 hours
+upgrade_menu._rebuild.c03253	+20 max health  ·  %d / %d
+upgrade_menu._rebuild.29a2f3	maxed out
+upgrade_menu._rebuild.8ac00e	only at the shrine and after the Archon
+upgrade_menu._update_status.deb328	Not enough sparks  ·  %d short
+upgrade_menu._update_status.cdab2e	Not enough sparks for the upgrades
+options_menu._ready.0a4f5c	Language · Idioma

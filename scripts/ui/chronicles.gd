@@ -213,8 +213,8 @@ func _fit_body() -> void:
 		var sfs := 10 if fs >= 11 else 9
 		var bf: Font = _body.get_theme_font("font")
 		var sf: Font = _source.get_theme_font("font")
-		var bh := bf.get_multiline_string_size(_body.text, HORIZONTAL_ALIGNMENT_LEFT, w, fs, -1, flags).y
-		var shh := sf.get_multiline_string_size(_source.text, HORIZONTAL_ALIGNMENT_LEFT, w, sfs, -1, flags).y
+		var bh := bf.get_multiline_string_size(I18n.t(_body.text), HORIZONTAL_ALIGNMENT_LEFT, w, fs, -1, flags).y
+		var shh := sf.get_multiline_string_size(I18n.t(_source.text), HORIZONTAL_ALIGNMENT_LEFT, w, sfs, -1, flags).y
 		_body.add_theme_font_size_override("font_size", fs)
 		_source.add_theme_font_size_override("font_size", sfs)
 		if fixed + bh + shh + 10.0 <= inner.y:

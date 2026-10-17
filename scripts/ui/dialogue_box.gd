@@ -239,6 +239,9 @@ func _ready() -> void:
 	_narr_text.add_theme_constant_override("outline_size", 4)
 	_narr_text.add_theme_constant_override("line_spacing", 2)
 	_narr_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# i18n (Onda 4): o texto chega já traduzido por I18n.t (a digitação conta as
+	# letras do texto EXIBIDO; com a tradução automática os índices desalinhariam).
+	_narr_text.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	_narr.add_child(_narr_text)
 
 	_box = Control.new()
@@ -281,6 +284,7 @@ func _ready() -> void:
 	_speaker.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_speaker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_speaker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_speaker.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	_plate.add_child(_speaker)
 
 	_text = Label.new()
@@ -292,6 +296,7 @@ func _ready() -> void:
 	_text.add_theme_color_override("font_color", CodexStyle.PAPER)
 	_text.add_theme_constant_override("line_spacing", 1)
 	_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_text.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	_box.add_child(_text)
 
 	_choice_box = HBoxContainer.new()
@@ -345,15 +350,15 @@ func _show_line() -> void:
 	_speaker_name = who
 	_portrait = portrait_for(who, String(l.get("mood", "")))
 	_blip = blip_for(who)
-	_speaker.text = who
+	_speaker.text = I18n.t(who)        # o nome pt continua a chave de retrato/blip
 	_plate.visible = who != ""
 	var narr := is_narration(l)
 	_set_narration(narr, narration_dark(l, idx) if narr else false)
 	if narr:
-		_narr_text.text = narration_text(String(l.get("text", "")))
+		_narr_text.text = narration_text(I18n.t(String(l.get("text", ""))))
 		_text.text = ""
 	else:
-		_text.text = String(l.get("text", ""))
+		_text.text = I18n.t(String(l.get("text", "")))
 		_narr_text.text = ""
 	_label().visible_characters = 0
 	_shown = 0.0
@@ -591,7 +596,7 @@ func _show_choices() -> void:
 			btn.disabled = not c.get("enabled", true)
 			if btn.disabled and c.has("hint"):
 				btn.tooltip_text = c.hint
-				reasons.append(_reason_text(btn.text, String(c.hint)))
+				reasons.append(_reason_text(I18n.t(btn.text), I18n.t(String(c.hint))))
 		CodexStyle.style_button(btn)
 		CodexStyle._wire(btn, "")
 		btn.pressed.connect(_on_choice.bind(i))
@@ -610,6 +615,7 @@ func _show_choices() -> void:
 		bb.focus_neighbor_bottom = bb.get_path_to(bb)
 		bb.focus_neighbor_left = bb.get_path_to(prev)
 		bb.focus_neighbor_right = bb.get_path_to(next)
+	_reason.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED   # já traduzido acima
 	_reason.text = "  ·  ".join(reasons)
 	_reason.visible = not reasons.is_empty()
 	_place()
@@ -746,7 +752,7 @@ class _Cont extends Control:
 			return
 		var g = DialogueBox.glyphs()
 		var font: Font = CodexStyle.display()
-		var word := "continuar"
+		var word := I18n.t("continuar")
 		var ww := font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, 7).x
 		var ih := 10.0
 		var iw: float = g.icon_width(ADVANCE_ACTION, ih) if g != null else 0.0
