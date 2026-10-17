@@ -42,7 +42,20 @@ Não editei o jogo: medi e entreguei as correções como patch pronto para os do
 GL = janela 320×180 no llvmpipe, só as contagens valem. n=12 criaturas extras (repostas
 quando morrem), Sophia imortal atacando sem parar.
 
-PERFIL_AQUI
+| Tela | Papel | CPU n=0 ms mediana / p99 / máx | CPU n=extra ms mediana / p99 / máx | vivos | GL draw calls | GL objetos | nós |
+|---:|---|---|---|---:|---:|---:|---:|
+| 1 | Rei | 0.41 / 4.76 / 55.2 | 1.09 / 4.38 / 63.2 | 12.2 | 331 | 1332 | 441 |
+| 3 | travessia | 0.50 / 1.85 / 43.3 | 1.34 / 5.96 / 18.9 | 12.5 | 327 | 972 | 596 |
+| 10 | Arconte | 0.43 / 4.86 / 82.4 | 1.14 / 5.87 / 58.2 | 12.3 | 398 | 1355 | 452 |
+| 22 | travessia | 0.49 / 4.84 / 66.1 | 1.19 / 11.58 / 60.1 | 12.0 | 406 | 1752 | 491 |
+| 36 | antessala | 0.57 / 4.50 / 103.9 | 1.35 / 6.56 / 135.5 | 13.0 | 403 | 1801 | 514 |
+| 50 | travessia | 0.44 / 1.40 / 219.6 | 1.29 / 5.22 / 58.4 | 13.2 | 368 | 1265 | 532 |
+| 63 | antessala | 0.63 / 4.47 / 87.3 | 1.39 / 5.92 / 56.1 | 12.6 | 358 | 1121 | 499 |
+| 64 | Arconte + roubo | 0.49 / 3.42 / 51.3 | 1.29 / 7.73 / 79.4 | 12.9 | 360 | 1395 | 392 |
+| 65 | Centro | 0.41 / 2.39 / 162.7 | 1.12 / 7.98 / 65.0 | 12.5 | 341 | 976 | 436 |
+| 68 | final (dupla) | 0.54 / 3.87 / 63.1 | 1.38 / 7.60 / 46.0 | 15.1 | 361 | 885 | 449 |
+
+Draw calls por criatura (GL, tela 3, sem ataque): n=0 → 210, n=6 → 285 ⇒ **~12,5 por criatura**.
 
 Leitura: a CPU do jogo cabe com folga (mediana ≤ 1,4 ms com 13–15 inimigos). Os p99 de
 4–12 ms e máximos de 50–220 ms aparecem também SEM inimigos e mudam de rodada para rodada:
@@ -53,7 +66,56 @@ de CPU. Tela 68 (batalha dupla) tem mais vivos (15) e fica no mesmo patamar.
 `OUT=/home/user/caps/perf/run2 REPS=3 tools/perf/run.sh engasgos` (tela 3, cache de shaders
 FRIO a cada rodada: `user://shader_cache` apagado e `MESA_SHADER_CACHE_DISABLE=true`).
 
-ENGASGOS_AQUI
+Repetições: cpu/prewarm=0: 3, cpu/prewarm=1: 3, gl/prewarm=0: 3, gl/prewarm=1: 3. Excesso = pico da 1ª vez − pico da 2ª vez (mínimo entre repetições, ms). Shaders = variantes compiladas no evento (arquivos novos/crescidos em user://shader_cache, cache frio). Tex = MB de textura enviados à GPU no evento.
+
+| Evento | CPU excesso sem → com prewarm | GL excesso sem → com | shaders sem → com | tex MB sem → com | shaders (sem prewarm) |
+|---|---|---|---|---|---|
+| inimigo_nasce | 32 → 0 | 169 → 4 | 0 → 0 | 8.0 → 0.0 |  |
+| sophia_golpe_leve | 0 → 4 | 28 → 26 | 0 → 0 | 0.0 → 0.0 |  |
+| impact_burst | 0 → 0 | 31 → 0 | 0 → 0 | 0.1 → 0.0 |  |
+| damage_number | 0 → 1 | 0 → 0 | 0 → 0 | 0.1 → -0.0 |  |
+| vfx_hit_leve | 2 → 0 | 0 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| vfx_hit_pesado | 0 → 0 | 27 → 0 | 0 → 0 | 0.2 → 0.0 |  |
+| inimigo_leva_golpe | 0 → 0 | 0 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| inimigo_morre_desmembra | 0 → 4 | 181 → 3 | 1 → 0 | 0.0 → -0.1 | CanvasShaderGLES3/903bfe1c |
+| spark_orb | 0 → 0 | 0 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| sophia_esquiva | 1 → 2 | 103 → 0 | 1 → 0 | 0.0 → 0.0 | CanvasShaderGLES3/7f418b5f |
+| sophia_pesado | 0 → 3 | 0 → 1 | 0 → 0 | 0.0 → 0.0 |  |
+| sophia_magia_inata | 3 → 2 | 25 → 0 | 0 → 0 | 0.2 → 0.0 |  |
+| vfx_parry | 0 → 1 | 1 → 0 | 0 → 0 | 0.2 → 0.0 |  |
+| vfx_dodge_perfect | 0 → 0 | 43 → 0 | 0 → 0 | 0.1 → 0.0 |  |
+| vfx_cast | 0 → 2 | 0 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| vfx_nova_ring | 0 → 0 | 0 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| vfx_dust | 0 → 2 | 0 → 10 | 0 → 0 | 0.0 → 0.0 |  |
+| vfx_spark_pickup | 0 → 0 | 0 → 0 | 0 → 0 | 0.1 → 0.0 |  |
+| vfx_enemy_death | 3 → 0 | 0 → 7 | 0 → 0 | 0.0 → 0.0 |  |
+| vfx_elite_death | 1 → 2 | 27 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| hazard_zone | 0 → 0 | 4 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| aoe_nova | 0 → 0 | 0 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| projetil | 0 → 2 | 3 → 7 | 0 → 0 | 0.0 → 0.0 |  |
+| vfx_screen_flash | 0 → 3 | 0 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| vfx_portal | 0 → 2 | 2 → 0 | 0 → 0 | 0.1 → 0.0 |  |
+| vfx_boss_appear | 0 → 1 | 27 → 0 | 0 → 0 | 0.0 → 0.0 |  |
+| vfx_boss_phase2 | 1 → 1 | 68 → 6 | 0 → 0 | 0.1 → 0.0 |  |
+| vfx_boss_death | 0 → 2 | 44 → 44 | 0 → 0 | 0.1 → 0.0 |  |
+| inimigo_eon_nasce | 12 → 0 | 160 → 1 | 1 → 0 | 1.0 → 0.0 | SkeletonShaderGLES3/6bb7c9a2 |
+| inimigo_eon_morre | 50 → 0 | 124 → 8 | 0 → 0 | 7.2 → 0.1 |  |
+
+- Custo do prewarm no load (chamada, CPU headless, mínimo): 161 ms
+- Custo do prewarm no load (chamada, janela llvmpipe, mínimo): 167 ms
+- prewarm=0: variantes compiladas DURANTE a luta (soma dos eventos): [3, 3, 3]; no cache ao abrir a fase: [10, 10, 10]
+- prewarm=1: variantes compiladas DURANTE a luta (soma dos eventos): [0, 0, 0]; no cache ao abrir a fase: [13, 13, 13]
+- Cache QUENTE (2ª sessão, sem prewarm): variantes compiladas durante a luta = 0
+
+Leitura (mínimo de 3 rodadas, cache frio):
+- **Os 5 engasgos grandes** (llvmpipe): 1º inimigo **169 → 4 ms**, 1º desmembramento **181 → 3**,
+  1ª esquiva **103 → 0**, 1ª variante do Éon **160 → 1**, 1ª morte da variante **124 → 8**.
+  Em CPU pura (headless): 1º inimigo 32 → 0 ms, 1ª morte da variante 50 → 0, nascer da variante 12 → 0.
+- Menores somem também (hit pesado 27 → 0, dodge perfeito 43 → 0, fase 2 de chefe 68 → 6...).
+- Sobra: `vfx_boss_death` 44 → 44 ms (fica de fora do prewarm porque sacode a câmera; acontece
+  com hit-stop e câmera lenta, então não aparece como travada) e ~26 ms no 1º golpe leve
+  (sem shader e sem textura: não atribuí).
+- Valores negativos de "tex MB" = textura liberada no evento (normal).
 
 **O que o prewarm cobre** (`tools/perf/prewarm_proposta.gd`, ~120 linhas):
 1. texturas de VFX (22 × 128 px) e as folhas `inhabitants` + `archons` (+ `yaldabaoth` no Rei/final),
@@ -129,6 +191,16 @@ Maior arquivo: `derived/sophia_frames.png` (5,7 MB no pck; 2048² com mipmaps = 
 ## 9. Validação
 `tools/validate.sh` no meu worktree e na cópia com os 2 patches aplicados — iguais à base:
 ```
-VALIDACAO_AQUI
+# meu worktree (dir2/perf) — tools/validate.sh
+Scripts        OK         6s  pass=0  code=0
+ScriptCheck    OK         2s  pass=0  code=0
+CodexQA        FALHOU    17s  pass=32  code=1   | QA FAIL: diretório de save independente
+AudioQA        FALHOU     5s  pass=23  code=1   | QA FAIL: duck(): música -4.4 → -4.4 → -4.4 dB
+GnoseQA        OK        17s  pass=18  code=0
+SaveQA         OK         1s  pass=13  code=0
+PuppetQA/HeroQA/WaveQA OK
+# cópia do projeto com vfx_prewarm.patch + character_art_alloc.patch aplicados
+SCRIPTCHECK: 110 scripts, 0 com erro
+(mesmo resumo acima: só os 2 vermelhos conhecidos)
 ```
 (`diretório de save independente` = falso conhecido do override.cfg; `duck()` = bug conhecido do Áudio.)
