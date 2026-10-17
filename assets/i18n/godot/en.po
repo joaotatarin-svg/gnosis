@@ -5,6 +5,456 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. bestiary._build.c70469  [bestiario]
+#: scripts/autoload/bestiary.gd:180
+msgid "Larva do Kenoma"
+msgstr "Kenoma Larva"
+
+#. bestiary._build.041a5a  [bestiario]
+#: scripts/autoload/bestiary.gd:182
+msgid "Sombra Errante"
+msgstr "Wandering Shade"
+
+#. bestiary._build.565fa2  [bestiario]
+#: scripts/autoload/bestiary.gd:184
+msgid "Servo do Demiurgo"
+msgstr "Demiurge's Servant"
+
+#. bestiary._build.acf0b4  [bestiario]
+#: scripts/autoload/bestiary.gd:187
+msgid "Larva Ardente"
+msgstr "Burning Larva"
+
+#. bestiary._build.d4861d  [bestiario]
+#: scripts/autoload/bestiary.gd:190
+msgid "Guardião Espinhoso"
+msgstr "Thorned Guardian"
+
+#. bestiary._build.5df56c  [bestiario]
+#: scripts/autoload/bestiary.gd:192
+msgid "Besta Canina"
+msgstr "Hound Beast"
+
+#. bestiary._build.3861c4  [bestiario]
+#: scripts/autoload/bestiary.gd:194
+msgid "Ceifador Cornudo"
+msgstr "Horned Reaper"
+
+#. bestiary._build.9bbbd2  [bestiario]
+#: scripts/autoload/bestiary.gd:197
+msgid "Escudeiro do Selo"
+msgstr "Seal Squire"
+
+#. bestiary._build.f3ab88  [bestiario]
+#: scripts/autoload/bestiary.gd:200
+msgid "Vigia Alado"
+msgstr "Winged Sentinel"
+
+#. bestiary._build.9bf35e  [bestiario]
+#: scripts/autoload/bestiary.gd:202
+msgid "Bruto de Ferro"
+msgstr "Iron Brute"
+
+#. bestiary._build.0af239  [bestiario]
+#: scripts/autoload/bestiary.gd:204
+msgid "Arauto do Silêncio"
+msgstr "Herald of Silence"
+
+#. bestiary._build.3cff43  [bestiario]
+#: scripts/autoload/bestiary.gd:207
+msgid "Fantasma do Vazio"
+msgstr "Void Phantom"
+
+#. bestiary._build.87688f  [bestiario]
+#: scripts/autoload/bestiary.gd:210
+msgid "Invocador de Larvas"
+msgstr "Larva Summoner"
+
+#. bestiary._build.beb9c7  [bestiario]
+#: scripts/autoload/bestiary.gd:213
+msgid "Aberração do Vazio"
+msgstr "Void Aberration"
+
+#. bestiary._build.ab02a5  [bestiario]
+#: scripts/autoload/bestiary.gd:218
+msgid "Sonâmbulo"
+msgstr "Sleepwalker"
+
+#. bestiary._build.2b9c1a  [bestiario]
+#: scripts/autoload/bestiary.gd:221
+msgid "Glutão"
+msgstr "Glutton"
+
+#. bestiary._build.07ed98  [bestiario]
+#: scripts/autoload/bestiary.gd:224
+msgid "Carcereiro"
+msgstr "Jailer"
+
+#. bestiary._build.b15c1a  [bestiario]
+#: scripts/autoload/bestiary.gd:227
+msgid "Bibliotecário Mudo"
+msgstr "Mute Librarian"
+
+#. bestiary._build.02158a  [bestiario]
+#: scripts/autoload/bestiary.gd:230
+msgid "Reflexo"
+msgstr "Reflection"
+
+#. bestiary._build.529dff  [bestiario]
+#: scripts/autoload/bestiary.gd:233
+msgid "Portador de Esporos"
+msgstr "Spore-Bearer"
+
+#. bestiary._build.94d379  [bestiario]
+#: scripts/autoload/bestiary.gd:236
+msgid "Pretoriano da Coroa"
+msgstr "Crown Praetorian"
+
+#. bestiary._build.9a8e21  [bestiario]
+#: scripts/autoload/bestiary.gd:240
+msgid "Sombra da Sophia"
+msgstr "Sophia's Shadow"
+
+#. bestiary._build.cd9f88  [bestiario]
+#: scripts/autoload/bestiary.gd:252
+msgid "Athoth, Arconte do Torpor"
+msgstr "Athoth, Archon of Torpor"
+
+#. bestiary._build.7f99d0  [bestiario]
+#: scripts/autoload/bestiary.gd:255
+msgid "Harmas, Arconte da Fome"
+msgstr "Harmas, Archon of Hunger"
+
+#. bestiary._build.1cf359  [bestiario]
+#: scripts/autoload/bestiary.gd:258
+msgid "Galila, Arconte da Corrente"
+msgstr "Galila, Archon of the Chain"
+
+#. bestiary._build.e9b247  [bestiario]
+#: scripts/autoload/bestiary.gd:261
+msgid "Yabel, Arconte do Silêncio"
+msgstr "Yabel, Archon of Silence"
+
+#. bestiary._build.1d1aa8  [bestiario]
+#: scripts/autoload/bestiary.gd:264
+msgid "Astaphaios, Arconte do Espelho"
+msgstr "Astaphaios, Archon of the Mirror"
+
+#. bestiary._build.0d91f6  [bestiario]
+#: scripts/autoload/bestiary.gd:267
+msgid "Belias, Arconte da Praga"
+msgstr "Belias, Archon of Blight"
+
+#. bestiary._build.43457b  [bestiario]
+#: scripts/autoload/bestiary.gd:270
+msgid "Armupiel, Arconte da Coroa"
+msgstr "Armupiel, Archon of the Crown"
+
+#. bestiary._build.d82541  [bestiario]
+#: scripts/autoload/bestiary.gd:277
+msgid "O Rei"
+msgstr "The King"
+
+#. bestiary._build.14730e  [bestiario]
+#: scripts/autoload/bestiary.gd:281
+msgid "O Rei — a Mentira"
+msgstr "The King — the Lie"
+
+#. bestiary._build.8a39d6  [bestiario]
+#: scripts/autoload/bestiary.gd:285
+msgid "O Colosso Oco — a Verdade"
+msgstr "Hollow Colossus — the Truth"
+
+#. bestiary._build.c293d3  [bestiario]
+#: scripts/autoload/bestiary.gd:289
+msgid "Yaldabaoth"
+msgstr "Yaldabaoth"
+
+#. bestiary._build.740cc1  [bestiario]
+#: scripts/autoload/bestiary.gd:297
+msgid "Eco de "
+msgstr "Echo of "
+
+#. bestiary._build.dcccff  [nome]
+#: scripts/autoload/bestiary.gd:302
+msgid "Ombreiras do Éon"
+msgstr "Aeon Pauldrons"
+
+#. bestiary._build.a4b38a  [nome]
+#: scripts/autoload/bestiary.gd:303
+msgid "Elmo do Guardião"
+msgstr "Guardian's Helm"
+
+#. bestiary._build.d4a343  [nome]
+#: scripts/autoload/bestiary.gd:304
+msgid "Braceletes do Éon"
+msgstr "Aeon Bracers"
+
+#. bestiary._build.4c2b27  [nome]
+#: scripts/autoload/bestiary.gd:305
+msgid "Diadema da Fonte"
+msgstr "Diadem of the Source"
+
+#. game_content._build_characters.b0fb6f  [golpe_magia]
+#: scripts/autoload/game_content.gd:57
+msgid "Sophia"
+msgstr "Sophia"
+
+#. game_content._build_characters.2cc339  [golpe_magia]
+#: scripts/autoload/game_content.gd:58
+msgid "Uma faísca sem memória, desperta nas cinzas do Kenoma. Luta com o cajado e com a luz que ainda lembra."
+msgstr "A spark without memory, woken in the ashes of the Kenoma. She fights with her staff and the light that still remembers."
+
+#. game_content._build_characters.d3e408  [golpe_magia]
+#: scripts/autoload/game_content.gd:68
+msgid "Golpe de Cajado"
+msgstr "Staff Strike"
+
+#. game_content._build_characters.827ea1  [golpe_magia]
+#: scripts/autoload/game_content.gd:69
+msgid "Cajado Duplo"
+msgstr "Double Staff"
+
+#. game_content._build_characters.18f0fa  [golpe_magia]
+#: scripts/autoload/game_content.gd:70
+msgid "Sopro Arcano"
+msgstr "Arcane Breath"
+
+#. game_content._build_characters.ebdc7f  [golpe_magia]
+#: scripts/autoload/game_content.gd:71
+msgid "Impacto Arcano"
+msgstr "Arcane Impact"
+
+#. game_content._build_characters.18f304  [golpe_magia]
+#: scripts/autoload/game_content.gd:73
+msgid "Fenda Arcana"
+msgstr "Arcane Rift"
+
+#. game_content._build_characters.848bd2  [golpe_magia]
+#: scripts/autoload/game_content.gd:74
+msgid "Ascensão Arcana"
+msgstr "Arcane Ascent"
+
+#. game_content._build_characters.cf85da  [golpe_magia]
+#: scripts/autoload/game_content.gd:76
+msgid "Explosão Arcana"
+msgstr "Arcane Burst"
+
+#. game_content._build_characters.8e2928  [golpe_magia]
+#: scripts/autoload/game_content.gd:77
+msgid "Corte Ascendente"
+msgstr "Rising Cut"
+
+#. game_content._build_characters.fe5782  [golpe_magia]
+#: scripts/autoload/game_content.gd:78
+msgid "Giro Celeste"
+msgstr "Celestial Spin"
+
+#. game_content._build_characters.d0f780  [golpe_magia]
+#: scripts/autoload/game_content.gd:79
+msgid "Queda Estelar"
+msgstr "Starfall"
+
+#. game_content._build_characters.986674  [golpe_magia]
+#: scripts/autoload/game_content.gd:81
+msgid "Tempestade de Cajado"
+msgstr "Staff Tempest"
+
+#. game_content._build_characters.602a01  [golpe_magia]
+#: scripts/autoload/game_content.gd:82
+msgid "Rasgo Duplo"
+msgstr "Twin Rend"
+
+#. game_content._build_characters.328647  [golpe_magia]
+#: scripts/autoload/game_content.gd:84
+msgid "Fúria da Mônada"
+msgstr "Fury of the Monad"
+
+#. game_content._build_characters.93c06b  [golpe_magia]
+#: scripts/autoload/game_content.gd:85
+msgid "Colapso Arcano"
+msgstr "Arcane Collapse"
+
+#. game_content._build_characters.5b6f4c  [golpe_magia]
+#: scripts/autoload/game_content.gd:91
+msgid "Esfera Solar"
+msgstr "Sun Orb"
+
+#. game_content._build_characters.27e4a0  [golpe_magia]
+#: scripts/autoload/game_content.gd:91
+msgid "Explode ao acertar."
+msgstr "Explodes on impact."
+
+#. game_content._build_characters.7360e7  [golpe_magia]
+#: scripts/autoload/game_content.gd:92
+msgid "Névoa do Sono"
+msgstr "Sleep Mist"
+
+#. game_content._build_characters.c6c58e  [golpe_magia]
+#: scripts/autoload/game_content.gd:92
+msgid "Nuvem que adormece: inimigos dentro ficam lentos."
+msgstr "A drowsy cloud: enemies inside it slow down."
+
+#. game_content._build_characters.bb39dc  [golpe_magia]
+#: scripts/autoload/game_content.gd:93
+msgid "Boca Voraz"
+msgstr "Ravenous Maw"
+
+#. game_content._build_characters.b72ec1  [golpe_magia]
+#: scripts/autoload/game_content.gd:93
+msgid "Suga os inimigos para perto e morde."
+msgstr "Sucks enemies in close and bites."
+
+#. game_content._build_characters.dd6df2  [golpe_magia]
+#: scripts/autoload/game_content.gd:94
+msgid "Corrente da Lei"
+msgstr "Chain of the Law"
+
+#. game_content._build_characters.f4e9d0  [golpe_magia]
+#: scripts/autoload/game_content.gd:94
+msgid "Corrente que prende o alvo no lugar."
+msgstr "A chain that pins the target in place."
+
+#. game_content._build_characters.cfbb2d  [golpe_magia]
+#: scripts/autoload/game_content.gd:95
+msgid "Grito Mudo"
+msgstr "Mute Scream"
+
+#. game_content._build_characters.febc50  [golpe_magia]
+#: scripts/autoload/game_content.gd:95
+msgid "Cala todo golpe em preparo ao redor (atordoa)."
+msgstr "Silences all nearby wind-ups (stuns)."
+
+#. game_content._build_characters.c48f73  [golpe_magia]
+#: scripts/autoload/game_content.gd:96
+msgid "Por 5 s, todo golpe recebido volta para quem o deu."
+msgstr "For 5 s, every hit you take returns to whoever dealt it."
+
+#. game_content._build_characters.9922e5  [golpe_magia]
+#: scripts/autoload/game_content.gd:97
+msgid "Flor Podre"
+msgstr "Rotten Bloom"
+
+#. game_content._build_characters.36846d  [golpe_magia]
+#: scripts/autoload/game_content.gd:97
+msgid "Planta um canteiro de veneno que fere quem pisa."
+msgstr "Plants a poison patch that hurts whoever steps in."
+
+#. game_content._build_characters.64af3e  [golpe_magia]
+#: scripts/autoload/game_content.gd:98
+msgid "Coroa Partida"
+msgstr "Broken Crown"
+
+#. game_content._build_characters.ac2791  [golpe_magia]
+#: scripts/autoload/game_content.gd:98
+msgid "A coroa do Arconte se parte em luz: dano enorme em área."
+msgstr "The Archon's crown shatters into light: huge area damage."
+
+#. game_manager.screen_title.f0f1c5  [ui]
+#: scripts/autoload/game_manager.gd:88
+msgid "Limiar — O Rei"
+msgstr "Threshold — The King"
+
+#. game_manager.screen_title.a0294c  [ui]
+#: scripts/autoload/game_manager.gd:89
+msgid "A Mente"
+msgstr "The Mind"
+
+#. game_manager.screen_title.e9ad2c  [ui]
+#: scripts/autoload/game_manager.gd:90
+msgid "O Centro %s"
+msgstr "The Center %s"
+
+#. game_manager.screen_title.a13df8  [ui]
+#: scripts/autoload/game_manager.gd:91
+msgid "%s · Chegada"
+msgstr "%s · Arrival"
+
+#. game_manager.screen_title.76f65a  [ui]
+#: scripts/autoload/game_manager.gd:92
+msgid "%s · O Desafio"
+msgstr "%s · The Challenge"
+
+#. game_manager.screen_title.bcc8a0  [ui]
+#: scripts/autoload/game_manager.gd:93
+msgid "%s · Antessala"
+msgstr "%s · Antechamber"
+
+#. game_manager.screen_title.4907e4  [ui]
+#: scripts/autoload/game_manager.gd:94
+msgid "%s · O Arconte"
+msgstr "%s · The Archon"
+
+#. game_manager.screen_title.8bca3a  [ui]
+#: scripts/autoload/game_manager.gd:98
+msgid "%s · Travessia %s"
+msgstr "%s · Crossing %s"
+
+#. game_manager._roman.ca73ab  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "I"
+msgstr "I"
+
+#. game_manager._roman.e95267  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "II"
+msgstr "II"
+
+#. game_manager._roman.a6178c  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "III"
+msgstr "III"
+
+#. game_manager._roman.932eaa  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "IV"
+msgstr "IV"
+
+#. game_manager._roman.c9ee56  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "V"
+msgstr "V"
+
+#. game_manager._roman.85ebe3  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "VI"
+msgstr "VI"
+
+#. game_manager._roman.0ea48f  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "VII"
+msgstr "VII"
+
+#. game_manager._roman.8985af  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "VIII"
+msgstr "VIII"
+
+#. game_manager._roman.b04dce  [ui]
+#: scripts/autoload/game_manager.gd:102
+msgid "IX"
+msgstr "IX"
+
+#. game_manager.difficulty_name.45e118  [ui]
+#: scripts/autoload/game_manager.gd:140
+msgid "Normal"
+msgstr "Normal"
+
+#. game_manager.difficulty_name.36dc8f  [ui]
+#: scripts/autoload/game_manager.gd:141
+msgid "Difícil"
+msgstr "Hard"
+
+#. game_manager.difficulty_name.3e6659  [ui]
+#: scripts/autoload/game_manager.gd:142
+msgid "Muito Difícil"
+msgstr "Very Hard"
+
+#. game_manager.difficulty_name.83caa2  [ui]
+#: scripts/autoload/game_manager.gd:143
+msgid "Campeão"
+msgstr "Champion"
+
 #. gnosis.STELAS.f8a7d0  [eon_nome]
 #: scripts/autoload/gnosis.gd:29
 msgid "O Limiar"
@@ -1500,42 +1950,42 @@ msgstr "...You took his bribe. The sparks weigh in your pocket. And on your soul
 msgid "Não te julgo. Mas lembra: tudo o que um Arconte dá, ele cobra."
 msgstr "I do not judge you. But remember: whatever an Archon gives, he collects."
 
-#. narrative.archon_phase2.488a7c  [dialogo · Athoth]
+#. narrative.archon_phase2.488a7c  [legenda · Athoth]
 #: scripts/autoload/narrative.gd:290
 msgid "Por que acordar? Lá fora só tem a falta!"
 msgstr "Why wake? Out there is only the lack!"
 
-#. narrative.archon_phase2.56694d  [dialogo · Harmas]
+#. narrative.archon_phase2.56694d  [legenda · Harmas]
 #: scripts/autoload/narrative.gd:291
 msgid "Me dá uma! Uma lembrança que seja minha!"
 msgstr "Give me one! One memory that is mine!"
 
-#. narrative.archon_phase2.05bcba  [dialogo · Galila]
+#. narrative.archon_phase2.05bcba  [legenda · Galila]
 #: scripts/autoload/narrative.gd:292
 msgid "Se eu soltar, eu caio! Todos caem!"
 msgstr "If I let go, I fall! Everyone falls!"
 
-#. narrative.archon_phase2.dc31ad  [dialogo · Yabel]
+#. narrative.archon_phase2.dc31ad  [legenda · Yabel]
 #: scripts/autoload/narrative.gd:293
 msgid "(os pontos da boca dele esticam; alguma coisa lá dentro quer sair)"
 msgstr "(the stitches of his mouth stretch; something inside wants out)"
 
-#. narrative.archon_phase2.006494  [dialogo · Sophia]
+#. narrative.archon_phase2.006494  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:295
 msgid "(O vidro racha. No lugar do rio, por um instante: uma nuvem branca. Alguém pequeno chorando.)"
 msgstr "(The glass cracks. Where the river was, for an instant: a white cloud. Someone small, crying.)"
 
-#. narrative.archon_phase2.50cc44  [dialogo · Astaphaios]
+#. narrative.archon_phase2.50cc44  [legenda · Astaphaios]
 #: scripts/autoload/narrative.gd:296
 msgid "Esse não! Esse reflexo não é para ti!"
 msgstr "Not that one! That reflection is not for you!"
 
-#. narrative.archon_phase2.b03753  [dialogo · Belias]
+#. narrative.archon_phase2.b03753  [legenda · Belias]
 #: scripts/autoload/narrative.gd:298
 msgid "Por que insistes? Eu só quero que pare de doer!"
 msgstr "Why do you insist? I only want it to stop hurting!"
 
-#. narrative.archon_phase2.a267c3  [dialogo · Armupiel]
+#. narrative.archon_phase2.a267c3  [legenda · Armupiel]
 #: scripts/autoload/narrative.gd:299
 msgid "Corte! Ao rei! ...Ninguém vem. Nunca ninguém vem."
 msgstr "Court! To the king! ...No one comes. No one ever comes."
@@ -1815,17 +2265,17 @@ msgstr "Weapon awakened (+1 level)"
 msgid "Vigor (+25 de vida máx.)"
 msgstr "Vigor (+25 max health)"
 
-#. narrative.after_soter.9dd002  [dialogo · A Voz]
+#. narrative.after_soter.9dd002  [legenda · A Voz]
 #: scripts/autoload/narrative.gd:424
 msgid "Com quem falavas? ...Não vi ninguém. Sobe."
 msgstr "Who were you talking to? ...I saw no one. Climb."
 
-#. narrative.after_soter.afc806  [dialogo · A Voz]
+#. narrative.after_soter.afc806  [legenda · A Voz]
 #: scripts/autoload/narrative.gd:425
 msgid "Paraste muito tempo. Não pares. ...Por favor."
 msgstr "You stopped for a long time. Do not stop. ...Please."
 
-#. narrative.after_soter.a32a36  [dialogo · A Voz]
+#. narrative.after_soter.a32a36  [legenda · A Voz]
 #: scripts/autoload/narrative.gd:426
 msgid "Falta pouco. Não deixes ninguém te atrasar agora."
 msgstr "Not far now. Do not let anyone slow you down."
@@ -2000,47 +2450,47 @@ msgstr "His echoes are down here. Each one keeps a piece he took from me. I'm go
 msgid "Caco de memória recuperado: %s"
 msgstr "Memory shard recovered: %s"
 
-#. narrative.echo_memory.79c2b1  [dialogo · Sophia]
+#. narrative.echo_memory.79c2b1  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:508
 msgid "Antes de tudo, eu não dormia. Ninguém dormia. Éramos muitos, olhando juntos."
 msgstr "Before everything, I didn't sleep. No one slept. We were many, watching together."
 
-#. narrative.echo_memory.9aac6b  [dialogo · Sophia]
+#. narrative.echo_memory.9aac6b  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:511
 msgid "Eu quis ver a Fonte sozinha. Tive fome de um rosto que ninguém tinha visto."
 msgstr "I wanted to see the Source alone. I hungered for a face no one had ever seen."
 
-#. narrative.echo_memory.638231  [dialogo · Sophia]
+#. narrative.echo_memory.638231  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:512
 msgid "Não havia rio. Havia um poço. Merou tirava água dele. Eles existiram."
 msgstr "There was no river. There was a well. Merou drew water from it. They were real."
 
-#. narrative.echo_memory.f9207a  [dialogo · Sophia]
+#. narrative.echo_memory.f9207a  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:515
 msgid "Do meu querer sem par nasceu alguém. Pequeno. Torto. Meu."
 msgstr "From my wanting without a partner, someone was born. Small. Crooked. Mine."
 
-#. narrative.echo_memory.808cd5  [dialogo · Sophia]
+#. narrative.echo_memory.808cd5  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:518
 msgid "Tive vergonha. Fiz uma nuvem de luz, pus um trono pequeno no meio... e fechei."
 msgstr "I was ashamed. I made a cloud of light, set a small throne in the middle... and closed it."
 
-#. narrative.echo_memory.70ef12  [dialogo · Sophia]
+#. narrative.echo_memory.70ef12  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:519
 msgid "A nuvem branca. Era isso."
 msgstr "The white cloud. That's what it was."
 
-#. narrative.echo_memory.076f65  [dialogo · Sophia]
+#. narrative.echo_memory.076f65  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:522
 msgid "Ele gritou que não havia outro além dele. Eu respondi lá de cima: “Erras, Samael.”"
 msgstr "He shouted that there was no other but him. I answered from above: “You are wrong, Samael.”"
 
-#. narrative.echo_memory.65ec13  [dialogo · Sophia]
+#. narrative.echo_memory.65ec13  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:523
 msgid "Foi a última vez que falei com ele."
 msgstr "It was the last time I spoke to him."
 
-#. narrative.echo_memory.5c1e2f  [dialogo · Sophia]
+#. narrative.echo_memory.5c1e2f  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:526
 msgid "Eu chorei. Das lágrimas veio a água; do medo, a matéria. Este mundo é o meu luto."
 msgstr "I wept. From the tears came water; from the fear, matter. This world is my grief."
@@ -2060,12 +2510,12 @@ msgstr "Two faces: the one you loved and the one you fear. Both are me. Bring do
 msgid "Então caem as duas. Juntas."
 msgstr "Then both fall. Together."
 
-#. narrative.seventh_ring.586be0  [dialogo · Sophia]
+#. narrative.seventh_ring.586be0  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:546
 msgid "A Coroa voltou. E com ela, o porquê: eu desci de propósito."
 msgstr "The Crown is back. And with it, the reason why: I came down on purpose."
 
-#. narrative.seventh_ring.79997a  [dialogo · Sophia]
+#. narrative.seventh_ring.79997a  [legenda · Sophia]
 #: scripts/autoload/narrative.gd:547
 msgid "Para desfazer o que tu fazias. E para te buscar."
 msgstr "To undo what you were doing. And to bring you home."
@@ -3269,3 +3719,1403 @@ msgstr "They were not her people. Now they are. And inside her, small, someone w
 #: scripts/autoload/narrative.gd:962
 msgid "A faísca lembrou. O resto é silêncio."
 msgstr "The spark remembered. The rest is silence."
+
+#. save_manager.load_game.bd4bd0  [ui]
+#: scripts/autoload/save_manager.gd:61
+msgid "O arquivo de save estava ilegível e foi ignorado."
+msgstr "The save file was unreadable and has been ignored."
+
+#. save_manager.load_game.a99a60  [ui]
+#: scripts/autoload/save_manager.gd:74
+msgid "Um progresso de versão anterior foi descartado (o mapa mudou). Faíscas totais, finais e opções foram preservados."
+msgstr "Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept."
+
+#. save_manager.load_game.e9b25b  [ui]
+#: scripts/autoload/save_manager.gd:77
+msgid "O checkpoint salvo não existe neste mapa e foi descartado. Faíscas, finais e opções foram preservados."
+msgstr "The saved checkpoint does not exist on this map and was discarded. Sparks, endings and options were kept."
+
+#. enemy_data._top.cef7da  [ui]
+#: scripts/data/enemy_data.gd:6
+msgid "Arconte"
+msgstr "Archon"
+
+#. enemy._ready.93c65e  [ui]
+#: scripts/entities/enemy.gd:136
+msgid "%s (Elite)"
+msgstr "%s (Elite)"
+
+#. enemy._ready.5fbd7f  [ui]
+#: scripts/entities/enemy.gd:145
+msgid "Campeão %s"
+msgstr "Champion %s"
+
+#. enemy._eon_title.5101be  [ui]
+#: scripts/entities/enemy.gd:205
+msgid "da "
+msgstr "of "
+
+#. enemy._eon_title.ce4410  [ui]
+#: scripts/entities/enemy.gd:205
+msgid "do "
+msgstr "of "
+
+#. seal_puzzle._build_hint.4778ec  [ui]
+#: scripts/entities/seal_puzzle.gd:34
+msgid "OS TRÊS SELOS"
+msgstr "THE THREE SEALS"
+
+#. seal_puzzle._solve.b16c6d  [ui]
+#: scripts/entities/seal_puzzle.gd:79
+msgid "selos abertos"
+msgstr "seals opened"
+
+#. stela._ready.c33be5  [ui_estela]
+#: scripts/entities/stela.gd:33
+msgid "J / X · ler a Estela"
+msgstr "J / X · read the Stele"
+
+#. stela.open.bfded4  [ui_estela]
+#: scripts/entities/stela.gd:85
+msgid "Crônica desbloqueada: %s  (%d/%d)"
+msgstr "Chronicle unlocked: %s  (%d/%d)"
+
+#. stela._draw.f08366  [ui_estela]
+#: scripts/entities/stela.gd:169
+msgid "ESTELA  ·  %s"
+msgstr "STELE  ·  %s"
+
+#. stela._draw.0b4c7d  [ui_estela]
+#: scripts/entities/stela.gd:169
+msgid "Kenoma"
+msgstr "Kenoma"
+
+#. stela._draw.7be33a  [ui_estela]
+#: scripts/entities/stela.gd:198
+msgid "Fonte: %s"
+msgstr "Source: %s"
+
+#. stela._draw.4deab3  [ui_estela]
+#: scripts/entities/stela.gd:208
+msgid "• nova Crônica  %d/%d"
+msgstr "• new Chronicle  %d/%d"
+
+#. stela._draw.9f1fce  [ui_estela]
+#: scripts/entities/stela.gd:208
+msgid "Crônica %d/%d"
+msgstr "Chronicle %d/%d"
+
+#. stela._draw.adc6ff  [ui_estela]
+#: scripts/entities/stela.gd:209
+msgid "      › fechar"
+msgstr "      › close"
+
+#. cinematic.prologue.e5613a  [card_cinema]
+#: scripts/fx/cinematic.gd:57
+msgid "No princípio não havia princípio.\nHavia o Um — sem nome, sem medida, pleno.\nOs antigos o chamaram Mônada, Abismo, Silêncio."
+msgstr "In the beginning there was no beginning.\nThere was the One — nameless, measureless, full.\nThe ancients called it Monad, Depth, Silence."
+
+#. cinematic.prologue.06441e  [card_cinema]
+#: scripts/fx/cinematic.gd:58
+msgid "Dele emanaram os Éons, aos pares, como luz que transborda.\nNo Pleroma nada dormia. Nada esquecia."
+msgstr "From it the Aeons emanated, in pairs, like overflowing light.\nIn the Pleroma nothing slept. Nothing forgot."
+
+#. cinematic.prologue.ac3cdb  [card_cinema]
+#: scripts/fx/cinematic.gd:59
+msgid "A mais jovem, Sophia — a Sabedoria —, quis alcançar a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma,\ne ela o escondeu numa nuvem."
+msgstr "The youngest, Sophia — Wisdom — sought to reach the Source alone.\nFrom that unpartnered desire came a formless son,\nand she hid him in a cloud."
+
+#. cinematic.prologue.4dd67e  [card_cinema]
+#: scripts/fx/cinematic.gd:60
+msgid "Cego para a Luz de onde veio, ele se acreditou o único deus.\nE fez um mundo copiando o que nunca viu: o Kenoma, o vazio."
+msgstr "Blind to the Light he came from, he believed himself the only god.\nAnd he made a world copying what he never saw: the Kenoma, the void."
+
+#. cinematic.prologue.97ec52  [card_cinema]
+#: scripts/fx/cinematic.gd:61
+msgid "Sete Arcontes. Sete esferas. Sete correntes.\nE dentro do barro, escondida, a faísca que ele levou da mãe."
+msgstr "Seven Archons. Seven spheres. Seven chains.\nAnd within the clay, hidden, the spark he took from his mother."
+
+#. cinematic.prologue.4eff7a  [card_cinema]
+#: scripts/fx/cinematic.gd:62
+msgid "As faíscas dormem.\n\nUma delas acaba de sentir dor."
+msgstr "The sparks are sleeping.\n\nOne of them has just felt pain."
+
+#. cinematic.epilogue.4ab9df  [card_cinema]
+#: scripts/fx/cinematic.gd:85
+msgid "Todas as pedras foram lidas. A faísca lembra por inteiro."
+msgstr "Every stone has been read. The spark remembers in full."
+
+#. cinematic.epilogue.8e89d7  [card_cinema]
+#: scripts/fx/cinematic.gd:86
+msgid "Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas."
+msgstr "%d Stelae were left unread in the Kenoma. The Chronicles keep the ones that were read."
+
+#. cinematic.epilogue.2f5ff6  [card_cinema]
+#: scripts/fx/cinematic.gd:87
+msgid "CRÔNICAS  %d / %d"
+msgstr "CHRONICLES  %d / %d"
+
+#. cinematic.epilogue.863da2  [card_cinema]
+#: scripts/fx/cinematic.gd:88
+msgid "GNOSIS"
+msgstr "GNOSIS"
+
+#. cinematic.epilogue.622c86  [card_cinema]
+#: scripts/fx/cinematic.gd:88
+msgid "João Tatarin — direção, produção e escolhas\nArte ilustrada gerada por IA sob direção do autor\nCódigo escrito com Claude (Anthropic) e Codex (OpenAI)\nSons e efeitos CC0/CC-BY — ver assets/LICENSES.md\n\nInspirado nos textos de Nag Hammadi, na Pistis Sophia\ne nos relatos de Irineu, Hipólito e Clemente."
+msgstr "João Tatarin — direction, production and choices\nIllustrated art generated by AI under the author's direction\nCode written with Claude (Anthropic) and Codex (OpenAI)\nSounds and effects CC0/CC-BY — see assets/LICENSES.md\n\nInspired by the Nag Hammadi texts, the Pistis Sophia\nand the accounts of Irenaeus, Hippolytus and Clement."
+
+#. cinematic.epilogue.17a290  [card_cinema]
+#: scripts/fx/cinematic.gd:91
+msgid "...mãe?"
+msgstr "...mother?"
+
+#. cinematic._build_cards.c7f240  [card_cinema]
+#: scripts/fx/cinematic.gd:174
+msgid "qualquer tecla avança  ·  Esc pula"
+msgstr "any key continues  ·  Esc skips"
+
+#. codex_trial._ready.f294f2  [ui]
+#: scripts/levels/codex_trial.gd:48
+msgid "A/D mover   ESPAÇO saltar   J/K golpes   SHIFT esquiva   I aparar   U anel   O esfera"
+msgstr "A/D move   SPACE jump   J/K strikes   SHIFT dodge   I parry   U ring   O orb"
+
+#. codex_trial._ready.7dcce7  [toast]
+#: scripts/levels/codex_trial.gd:50
+msgid "I  ·  A FAÍSCA DESPERTA"
+msgstr "I  ·  THE SPARK AWAKENS"
+
+#. codex_trial._ready.1e3e14  [toast]
+#: scripts/levels/codex_trial.gd:50
+msgid "II  ·  QUEBRE A GUARDA"
+msgstr "II  ·  BREAK THE GUARD"
+
+#. codex_trial._ready.2329e1  [toast]
+#: scripts/levels/codex_trial.gd:50
+msgid "III  ·  ENCARE O ARCONTE"
+msgstr "III  ·  FACE THE ARCHON"
+
+#. codex_trial._process.93a682  [ui]
+#: scripts/levels/codex_trial.gd:56
+msgid "PROVAÇÃO  %d / 3   ·   %02d:%02d"
+msgstr "TRIAL  %d / 3   ·   %02d:%02d"
+
+#. codex_trial._show_result.5077e5  [ui]
+#: scripts/levels/codex_trial.gd:95
+msgid "GNOSIS  /  PROVAÇÃO  (treino)"
+msgstr "GNOSIS  /  TRIAL  (training)"
+
+#. codex_trial._show_result.faefd4  [ui]
+#: scripts/levels/codex_trial.gd:96
+msgid "A luz permanece."
+msgstr "The light endures."
+
+#. codex_trial._show_result.1a76a8  [ui]
+#: scripts/levels/codex_trial.gd:96
+msgid "O selo cedeu."
+msgstr "The seal broke."
+
+#. codex_trial._show_result.dd2f86  [ui]
+#: scripts/levels/codex_trial.gd:96
+msgid "A faísca resiste."
+msgstr "The spark resists."
+
+#. codex_trial._show_result.bbc4d3  [ui]
+#: scripts/levels/codex_trial.gd:97
+msgid "Tempo  %02d:%02d    ·    Melhor combo  %d"
+msgstr "Time  %02d:%02d    ·    Best combo  %d"
+
+#. codex_trial._show_result.6623a5  [ui]
+#: scripts/levels/codex_trial.gd:100
+msgid "Isto foi a Provação (treino). A Campanha tem %d telas e sete Arcontes — no menu, em \"Nova campanha\"."
+msgstr "That was the Trial (training). The Campaign has %d screens and seven Archons — in the menu, under \"New campaign\"."
+
+#. codex_trial._show_result.ba7313  [ui]
+#: scripts/levels/codex_trial.gd:102
+msgid "Respire. Sua vida será restaurada."
+msgstr "Breathe. Your health will be restored."
+
+#. codex_trial._show_result.66105b  [ui]
+#: scripts/levels/codex_trial.gd:102
+msgid "Esquive do vermelho. Apare o dourado."
+msgstr "Dodge the red. Parry the gold."
+
+#. codex_trial._show_result.fc8b0c  [ui]
+#: scripts/levels/codex_trial.gd:106
+msgid "Ir pra Campanha  →"
+msgstr "To the Campaign  →"
+
+#. codex_trial._show_result.788c52  [ui]
+#: scripts/levels/codex_trial.gd:111
+msgid "Repetir a Provação"
+msgstr "Repeat the Trial"
+
+#. codex_trial._show_result.dce1a6  [ui]
+#: scripts/levels/codex_trial.gd:115
+msgid "Próximo encontro  →"
+msgstr "Next encounter  →"
+
+#. codex_trial._show_result.04fc24  [ui]
+#: scripts/levels/codex_trial.gd:115
+msgid "Tentar novamente"
+msgstr "Try again"
+
+#. codex_trial._show_result.509aa0  [ui]
+#: scripts/levels/codex_trial.gd:120
+msgid "Voltar ao menu"
+msgstr "Back to menu"
+
+#. final_battle.start.5a95a1  [toast]
+#: scripts/levels/final_battle.gd:34
+msgid "As duas formas precisam cair JUNTAS."
+msgstr "Both forms must fall TOGETHER."
+
+#. level._play_narrative_beats.34d9f2  [ui]
+#: scripts/levels/level.gd:147
+msgid "Recusar"
+msgstr "Refuse"
+
+#. level._play_narrative_beats.8eb3bb  [ui]
+#: scripts/levels/level.gd:147
+msgid "Ceder"
+msgstr "Yield"
+
+#. level._on_zone_cleared.5e6b69  [toast]
+#: scripts/levels/level.gd:338
+msgid "Siga em frente  →"
+msgstr "Keep going  →"
+
+#. level._on_player_died.f920d1  [ui]
+#: scripts/levels/level.gd:525
+msgid "Você caiu no Kenoma"
+msgstr "You fell in the Kenoma"
+
+#. level._on_player_died.ba60d8  [ui]
+#: scripts/levels/level.gd:526
+msgid "Chegou até a Tela %d."
+msgstr "Reached Screen %d."
+
+#. character_atelier.POSE_NAMES.ab1389  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Repouso"
+msgstr "Idle"
+
+#. character_atelier.POSE_NAMES.9d9e20  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Caminhar"
+msgstr "Walk"
+
+#. character_atelier.POSE_NAMES.c5210f  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Golpe leve"
+msgstr "Light strike"
+
+#. character_atelier.POSE_NAMES.0026e0  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Golpe forte"
+msgstr "Heavy strike"
+
+#. character_atelier.POSE_NAMES.9f88c3  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Conjurar"
+msgstr "Cast"
+
+#. character_atelier.POSE_NAMES.eb407e  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Aparar"
+msgstr "Parry"
+
+#. character_atelier.POSE_NAMES.d2fa09  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Esquiva"
+msgstr "Dodge"
+
+#. character_atelier.POSE_NAMES.4fc80b  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Preparar golpe"
+msgstr "Wind-up"
+
+#. character_atelier.POSE_NAMES.ff015c  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Receber impacto"
+msgstr "Take a hit"
+
+#. character_atelier.POSE_NAMES.651562  [ui]
+#: scripts/ui/character_atelier.gd:5
+msgid "Ciclo de combate"
+msgstr "Combat cycle"
+
+#. character_atelier.NOTES.a674f1  [ui]
+#: scripts/ui/character_atelier.gd:7
+msgid "A memória da luz tomou forma.\nSeis poses ilustradas, túnica bipartida\ne bracelete da Mônada."
+msgstr "The memory of light took shape.\nSix illustrated poses, a two-part tunic\nand the Monad's bracelet."
+
+#. character_atelier.NOTES.af2f76  [ui]
+#: scripts/ui/character_atelier.gd:8
+msgid "O guardião que ensina a dormir.\nPálpebra selada, corpo espectral\ne névoa que rouba movimento."
+msgstr "The guardian who teaches sleep.\nSealed eyelid, spectral body\nand a mist that steals movement."
+
+#. character_atelier.NOTES.838af4  [ui]
+#: scripts/ui/character_atelier.gd:9
+msgid "A fome que nunca se reconhece.\nBoca no torso, massa colossal\ne sucção antes do impacto."
+msgstr "The hunger that never knows itself.\nA mouth in the torso, colossal bulk\nand suction before the impact."
+
+#. character_atelier.NOTES.b49f06  [ui]
+#: scripts/ui/character_atelier.gd:10
+msgid "Toda lei deseja uma corrente.\nElos pendentes, ombros de ferro\ne investida que aprisiona."
+msgstr "Every law longs for a chain.\nHanging links, iron shoulders\nand a charge that imprisons."
+
+#. character_atelier.NOTES.7c7f46  [ui]
+#: scripts/ui/character_atelier.gd:11
+msgid "Palavras enterradas no vazio.\nAsas rasgadas, boca costurada\ne uma aura que silencia os Anéis."
+msgstr "Words buried in the void.\nTorn wings, a sewn mouth\nand an aura that silences the Rings."
+
+#. character_atelier.NOTES.266f5c  [ui]
+#: scripts/ui/character_atelier.gd:12
+msgid "O reflexo deseja o seu lugar.\nPrata, cacos em órbita\ne uma sombra na segunda fase."
+msgstr "The reflection wants your place.\nSilver, orbiting shards\nand a shadow in the second phase."
+
+#. character_atelier.NOTES.f83240  [ui]
+#: scripts/ui/character_atelier.gd:13
+msgid "A vida que se esqueceu de morrer.\nQuatro patas, gavinhas\ne rastros de veneno."
+msgstr "The life that forgot to die.\nFour legs, tendrils\nand trails of poison."
+
+#. character_atelier.NOTES.153ead  [ui]
+#: scripts/ui/character_atelier.gd:14
+msgid "Um trono feito de obediência.\nCoroa alta, massa e hierarquia.\nServos sustentam sua armadura."
+msgstr "A throne made of obedience.\nTall crown, bulk and hierarchy.\nServants hold up its armor."
+
+#. character_atelier._ready.397850  [ui]
+#: scripts/ui/character_atelier.gd:41
+msgid "Ateliê"
+msgstr "Atelier"
+
+#. character_atelier._ready.8f68c8  [ui]
+#: scripts/ui/character_atelier.gd:42
+msgid "ILUSTRAÇÃO · POSES · PERFIL · COMBATE"
+msgstr "ILLUSTRATION · POSES · PROFILE · COMBAT"
+
+#. character_atelier._ready.6da1db  [ui]
+#: scripts/ui/character_atelier.gd:43
+msgid "Voltar"
+msgstr "Back"
+
+#. character_atelier._ready.65a46c  [ui]
+#: scripts/ui/character_atelier.gd:44
+msgid "Bestiário"
+msgstr "Bestiary"
+
+#. character_atelier._ready.308b49  [ui]
+#: scripts/ui/character_atelier.gd:47
+msgid "%02d  %s"
+msgstr "%02d  %s"
+
+#. character_atelier._ready.bac98a  [ui]
+#: scripts/ui/character_atelier.gd:57
+msgid "RECEITA VISUAL"
+msgstr "VISUAL RECIPE"
+
+#. character_atelier._ready.f0e373  [ui]
+#: scripts/ui/character_atelier.gd:60
+msgid "Ver articulações"
+msgstr "Show joints"
+
+#. character_atelier._ready.548950  [ui]
+#: scripts/ui/character_atelier.gd:62
+msgid "Ocultar articulações"
+msgstr "Hide joints"
+
+#. character_atelier._ready.755ace  [ui]
+#: scripts/ui/character_atelier.gd:67
+msgid "Testar em combate →"
+msgstr "Test in combat →"
+
+#. character_atelier._ready.f80d20  [ui]
+#: scripts/ui/character_atelier.gd:72
+msgid "Pausar / animar"
+msgstr "Pause / animate"
+
+#. character_atelier._ready.9f8323  [ui]
+#: scripts/ui/character_atelier.gd:75
+msgid "Paleta"
+msgstr "Palette"
+
+#. character_atelier._ready.5a7a6d  [ui]
+#: scripts/ui/character_atelier.gd:79
+msgid "Arma +"
+msgstr "Weapon +"
+
+#. character_atelier._ready.a926ae  [ui]
+#: scripts/ui/character_atelier.gd:82
+msgid "Espelhar"
+msgstr "Mirror"
+
+#. character_atelier._refresh.da2b88  [ui]
+#: scripts/ui/character_atelier.gd:121
+msgid "A FAÍSCA  /  PROTAGONISTA"
+msgstr "THE SPARK  /  PROTAGONIST"
+
+#. character_atelier._refresh.988509  [ui]
+#: scripts/ui/character_atelier.gd:121
+msgid "ARCONTE  /  "
+msgstr "ARCHON  /  "
+
+#. character_atelier._refresh.f32f86  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "cajado"
+msgstr "staff"
+
+#. character_atelier._refresh.2106c4  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "cabelo"
+msgstr "hair"
+
+#. character_atelier._refresh.7eb249  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "ombreiras"
+msgstr "pauldrons"
+
+#. character_atelier._refresh.766108  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "diadema"
+msgstr "diadem"
+
+#. character_atelier._refresh.27d0ab  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "faísca"
+msgstr "spark"
+
+#. character_atelier._refresh.d3cffa  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "braceletes"
+msgstr "bracers"
+
+#. character_atelier._refresh.f5e5a6  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "coroa"
+msgstr "crown"
+
+#. character_atelier._refresh.2c2a89  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "aura"
+msgstr "aura"
+
+#. character_atelier._refresh.bc20a6  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "pálpebra"
+msgstr "eyelid"
+
+#. character_atelier._refresh.42a505  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "boca"
+msgstr "maw"
+
+#. character_atelier._refresh.3190bf  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "chifres"
+msgstr "horns"
+
+#. character_atelier._refresh.9a73b4  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "espinhos"
+msgstr "spikes"
+
+#. character_atelier._refresh.d81b4c  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "lâmina"
+msgstr "blade"
+
+#. character_atelier._refresh.f22cf2  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "correntes"
+msgstr "chains"
+
+#. character_atelier._refresh.7ddbb6  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "asas"
+msgstr "wings"
+
+#. character_atelier._refresh.c5f290  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "boca costurada"
+msgstr "sewn mouth"
+
+#. character_atelier._refresh.dfd3c1  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "espelhos"
+msgstr "mirrors"
+
+#. character_atelier._refresh.85e396  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "gavinhas"
+msgstr "tendrils"
+
+#. character_atelier._refresh.03d64a  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "garras"
+msgstr "claws"
+
+#. character_atelier._refresh.50c633  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "cauda"
+msgstr "tail"
+
+#. character_atelier._refresh.905347  [ui]
+#: scripts/ui/character_atelier.gd:123
+msgid "grande coroa"
+msgstr "great crown"
+
+#. character_atelier._refresh.19c7d2  [ui]
+#: scripts/ui/character_atelier.gd:127
+msgid "Conceito → ilustração → "
+msgstr "Concept → illustration → "
+
+#. character_atelier._refresh.86a85c  [ui]
+#: scripts/ui/character_atelier.gd:127
+msgid "poses"
+msgstr "poses"
+
+#. character_atelier._refresh.eaccbb  [ui]
+#: scripts/ui/character_atelier.gd:127
+msgid "articulações"
+msgstr "joints"
+
+#. character_atelier._refresh.e5efb5  [ui]
+#: scripts/ui/character_atelier.gd:128
+msgid "ARMA %d / 5"
+msgstr "WEAPON %d / 5"
+
+#. character_atelier._refresh.e181e1  [ui]
+#: scripts/ui/character_atelier.gd:128
+msgid "ARCONTE"
+msgstr "ARCHON"
+
+#. character_atelier._refresh.c5f770  [ui]
+#: scripts/ui/character_atelier.gd:128
+msgid "   ·   PALETA %d / 3"
+msgstr "   ·   PALETTE %d / 3"
+
+#. chronicles._ready.d6356f  [ui]
+#: scripts/ui/chronicles.gd:30
+msgid "Crônicas"
+msgstr "Chronicles"
+
+#. chronicles._ready.5caed5  [ui]
+#: scripts/ui/chronicles.gd:34
+msgid "W/S · setas · D-pad escolhem   ·   Esc / B volta"
+msgstr "W/S · arrows · D-pad choose   ·   Esc / B back"
+
+#. chronicles._refresh.30a149  [ui]
+#: scripts/ui/chronicles.gd:131
+msgid "%d de %d Estelas lidas — o ensino dos antigos, pedra a pedra"
+msgstr "%d of %d Stelae read — the teaching of the ancients, stone by stone"
+
+#. chronicles._refresh.36ff38  [ui]
+#: scripts/ui/chronicles.gd:136
+msgid "%02d   %s"
+msgstr "%02d   %s"
+
+#. chronicles._refresh.74ade2  [ui]
+#: scripts/ui/chronicles.gd:152
+msgid "Estela ainda não lida.\nOnde: %s\nChegue perto e aperte o golpe leve (J / X) para ler."
+msgstr "Stele not yet read.\nWhere: %s\nGet close and press light strike (J / X) to read."
+
+#. codex_menu._build_backdrop.457f61  [ui]
+#: scripts/ui/codex_menu.gd:63
+msgid "SOPHIA"
+msgstr "SOPHIA"
+
+#. codex_menu._build_backdrop.23c457  [ui]
+#: scripts/ui/codex_menu.gd:66
+msgid "a faísca que não se curva"
+msgstr "the spark that does not bow"
+
+#. codex_menu._build_title.479019  [ui]
+#: scripts/ui/codex_menu.gd:73
+msgid "O DESPERTAR   ·   v%s"
+msgstr "THE AWAKENING   ·   v%s"
+
+#. codex_menu._build_title.662951  [ui]
+#: scripts/ui/codex_menu.gd:81
+msgid "O DESPERTAR DA FAÍSCA"
+msgstr "THE AWAKENING OF THE SPARK"
+
+#. codex_menu._build_title.dcaf64  [ui]
+#: scripts/ui/codex_menu.gd:83
+msgid "Sete Éons. Sete Arcontes. Uma faísca que ainda se lembra."
+msgstr "Seven Aeons. Seven Archons. One spark that still remembers."
+
+#. codex_menu._build_actions.19a2cf  [ui]
+#: scripts/ui/codex_menu.gd:95
+msgid "Continuar  ·  %s, tela %d"
+msgstr "Continue  ·  %s, screen %d"
+
+#. codex_menu._build_actions.597f3a  [ui]
+#: scripts/ui/codex_menu.gd:101
+msgid "Nova campanha"
+msgstr "New campaign"
+
+#. codex_menu._build_actions.2b6441  [ui]
+#: scripts/ui/codex_menu.gd:107
+msgid "Provação  ·  treino de 3 encontros"
+msgstr "Trial  ·  3-encounter training"
+
+#. codex_menu._build_actions.512ba3  [ui]
+#: scripts/ui/codex_menu.gd:113
+msgid "Ateliê & Bestiário"
+msgstr "Atelier & Bestiary"
+
+#. codex_menu._build_actions.4c8df5  [ui]
+#: scripts/ui/codex_menu.gd:119
+msgid "Opções"
+msgstr "Options"
+
+#. codex_menu._build_actions.fa59a5  [ui]
+#: scripts/ui/codex_menu.gd:121
+msgid "Créditos"
+msgstr "Credits"
+
+#. codex_menu._build_actions.3ffa2a  [ui]
+#: scripts/ui/codex_menu.gd:123
+msgid "Sair"
+msgstr "Quit"
+
+#. codex_menu._on_new_campaign.f2ca3e  [ui]
+#: scripts/ui/codex_menu.gd:158
+msgid "Começar de novo?"
+msgstr "Start over?"
+
+#. codex_menu._on_new_campaign.aa9cfc  [ui]
+#: scripts/ui/codex_menu.gd:159
+msgid "Isso apaga o progresso salvo — %s, tela %d — e as faíscas e melhorias desta jornada.\nFinais vistos e opções ficam."
+msgstr "This erases your saved progress — %s, screen %d — and this journey's sparks and upgrades.\nEndings seen and options are kept."
+
+#. codex_menu._on_new_campaign.2c92c9  [ui]
+#: scripts/ui/codex_menu.gd:160
+msgid "Apagar e começar"
+msgstr "Erase and start"
+
+#. credits.FALLBACK_ATTRIBUTION.aea9fc  [ui]
+#: scripts/ui/credits.gd:16
+msgid "Música de Kevin MacLeod (incompetech.com), licenciada sob Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/"
+msgstr "Music by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/"
+
+#. credits.FALLBACK_ATTRIBUTION.0aa983  [ui]
+#: scripts/ui/credits.gd:17
+msgid "Efeitos sonoros: \"Fantasy Sound Effects Library\" e \"Magic SFX Preview Pack\" de Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0."
+msgstr "Sound effects: \"Fantasy Sound Effects Library\" and \"Magic SFX Preview Pack\" by Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0."
+
+#. credits.FALLBACK_ATTRIBUTION.88fd3c  [ui]
+#: scripts/ui/credits.gd:18
+msgid "Demais sons e sprites de partícula: Kenney (kenney.nl) e autores CC0 do OpenGameArt.org."
+msgstr "Other sounds and particle sprites: Kenney (kenney.nl) and CC0 authors at OpenGameArt.org."
+
+#. credits._ready.4a8cbf  [ui]
+#: scripts/ui/credits.gd:71
+msgid "W/S · setas · analógico rolam   ·   Esc / B volta"
+msgstr "W/S · arrows · stick scroll   ·   Esc / B back"
+
+#. credits._fill.7d8bc6  [ui]
+#: scripts/ui/credits.gd:81
+msgid "O DESPERTAR"
+msgstr "THE AWAKENING"
+
+#. credits._fill.73bef1  [ui]
+#: scripts/ui/credits.gd:83
+msgid "Criação e direção"
+msgstr "Created and directed by"
+
+#. credits._fill.7c4483  [ui]
+#: scripts/ui/credits.gd:84
+msgid "João Tatarin"
+msgstr "João Tatarin"
+
+#. credits._fill.ca7bd6  [ui]
+#: scripts/ui/credits.gd:86
+msgid "Desenvolvido com"
+msgstr "Developed with"
+
+#. credits._fill.f60dab  [ui]
+#: scripts/ui/credits.gd:87
+msgid "Claude"
+msgstr "Claude"
+
+#. credits._fill.9a47d3  [ui]
+#: scripts/ui/credits.gd:88
+msgid "(Anthropic)"
+msgstr "(Anthropic)"
+
+#. credits._fill.578afe  [ui]
+#: scripts/ui/credits.gd:91
+msgid "Música"
+msgstr "Music"
+
+#. credits._fill.54b33c  [ui]
+#: scripts/ui/credits.gd:93
+msgid "Kevin MacLeod  ·  incompetech.com"
+msgstr "Kevin MacLeod  ·  incompetech.com"
+
+#. credits._fill.8d7ea0  [ui]
+#: scripts/ui/credits.gd:95
+msgid "Licença Creative Commons: By Attribution 4.0"
+msgstr "Creative Commons License: By Attribution 4.0"
+
+#. credits._fill.03355b  [ui]
+#: scripts/ui/credits.gd:96
+msgid "https://creativecommons.org/licenses/by/4.0/"
+msgstr "https://creativecommons.org/licenses/by/4.0/"
+
+#. credits._fill.e2f3ff  [ui]
+#: scripts/ui/credits.gd:98
+msgid "Atribuição"
+msgstr "Attribution"
+
+#. credits._fill.e64bb8  [ui]
+#: scripts/ui/credits.gd:104
+msgid "Sons e partículas"
+msgstr "Sounds and particles"
+
+#. credits._fill.8c17f1  [ui]
+#: scripts/ui/credits.gd:108
+msgid "Fontes"
+msgstr "Fonts"
+
+#. credits._fill.ab46e4  [ui]
+#: scripts/ui/credits.gd:109
+msgid "Cinzel e Cinzel Decorative  —  Natanael Gama"
+msgstr "Cinzel and Cinzel Decorative  —  Natanael Gama"
+
+#. credits._fill.f9346e  [ui]
+#: scripts/ui/credits.gd:110
+msgid "Alegreya  —  Juan Pablo del Peral / Huerta Tipográfica"
+msgstr "Alegreya  —  Juan Pablo del Peral / Huerta Tipográfica"
+
+#. credits._fill.bf8dd2  [ui]
+#: scripts/ui/credits.gd:111
+msgid "SIL Open Font License 1.1  (assets/fonts/*/OFL.txt)"
+msgstr "SIL Open Font License 1.1  (assets/fonts/*/OFL.txt)"
+
+#. credits._fill.ceaed7  [ui]
+#: scripts/ui/credits.gd:113
+msgid "Motor"
+msgstr "Engine"
+
+#. credits._fill.2ea63c  [ui]
+#: scripts/ui/credits.gd:114
+msgid "Godot Engine  —  © Juan Linietsky, Ariel Manzur e colaboradores (licença MIT)"
+msgstr "Godot Engine  —  © Juan Linietsky, Ariel Manzur and contributors (MIT license)"
+
+#. credits._fill.2a9b2b  [ui]
+#: scripts/ui/credits.gd:116
+msgid "Obrigado por despertar."
+msgstr "Thank you for waking."
+
+#. credits._read_licenses.0f74a4  [ui]
+#: scripts/ui/credits.gd:150
+msgid "%s  —  %s  (%s)"
+msgstr "%s  —  %s  (%s)"
+
+#. end_screen._ready.69ebf6  [ui]
+#: scripts/ui/end_screen.gd:20
+msgid "A TRAVESSIA TERMINOU"
+msgstr "THE CROSSING IS OVER"
+
+#. end_screen._ready.5f3e04  [ui]
+#: scripts/ui/end_screen.gd:20
+msgid "A FAÍSCA SE APAGOU"
+msgstr "THE SPARK WENT OUT"
+
+#. end_screen._ready.1b0369  [ui]
+#: scripts/ui/end_screen.gd:25
+msgid "Fim"
+msgstr "The End"
+
+#. end_screen._ready.bbba68  [ui]
+#: scripts/ui/end_screen.gd:49
+msgid "Crônicas  %d / %d      ·      Finais vistos  %d / 3"
+msgstr "Chronicles  %d / %d      ·      Endings seen  %d / 3"
+
+#. end_screen._ready.d5c6af  [ui]
+#: scripts/ui/end_screen.gd:51
+msgid "Finais vistos: %d/3"
+msgstr "Endings seen: %d/3"
+
+#. end_screen._ready.1d6fac  [ui]
+#: scripts/ui/end_screen.gd:55
+msgid "Jogar de novo"
+msgstr "Play again"
+
+#. end_screen._ready.4842fe  [ui]
+#: scripts/ui/end_screen.gd:55
+msgid "Tentar de novo"
+msgstr "Try again"
+
+#. gallery._ready.775f1e  [ui]
+#: scripts/ui/gallery.gd:22
+msgid "Sophia Nv.1"
+msgstr "Sophia Lv.1"
+
+#. gallery._ready.969100  [ui]
+#: scripts/ui/gallery.gd:23
+msgid "Sophia Nv.3"
+msgstr "Sophia Lv.3"
+
+#. gallery._ready.4cac4c  [ui]
+#: scripts/ui/gallery.gd:24
+msgid "Sophia Nv.5"
+msgstr "Sophia Lv.5"
+
+#. gallery._ready.0d853f  [ui]
+#: scripts/ui/gallery.gd:32
+msgid "Soter, o Ungido"
+msgstr "Soter, the Anointed"
+
+#. gallery._ready.111c67  [ui]
+#: scripts/ui/gallery.gd:33
+msgid "Velkar, o Arrependido"
+msgstr "Velkar, the Penitent"
+
+#. hud.screen_title.c63558  [ui]
+#: scripts/ui/hud.gd:313
+msgid "Provação"
+msgstr "Trial"
+
+#. moves_screen._ready.60373a  [ui]
+#: scripts/ui/moves_screen.gd:41
+msgid "Golpes & Controles"
+msgstr "Moves & Controls"
+
+#. moves_screen._ready.d3bc0b  [ui]
+#: scripts/ui/moves_screen.gd:42
+msgid "ARMA NV. %d / %d"
+msgstr "WEAPON LV. %d / %d"
+
+#. moves_screen._ready.b2099a  [ui]
+#: scripts/ui/moves_screen.gd:56
+msgid "W/S · setas · analógico rolam      ·      Esc / B fecha"
+msgstr "W/S · arrows · stick scroll      ·      Esc / B close"
+
+#. moves_screen._fill.2b72fb  [ui]
+#: scripts/ui/moves_screen.gd:70
+msgid "GOLPES DO CAJADO"
+msgstr "STAFF STRIKES"
+
+#. moves_screen._fill.e49d1c  [ui]
+#: scripts/ui/moves_screen.gd:70
+msgid "sequência  (teclado · controle)"
+msgstr "sequence  (keyboard · gamepad)"
+
+#. moves_screen._fill.479c05  [ui]
+#: scripts/ui/moves_screen.gd:70
+msgid "sequência  (controle · teclado)"
+msgstr "sequence  (gamepad · keyboard)"
+
+#. moves_screen._fill.7a65a5  [ui]
+#: scripts/ui/moves_screen.gd:83
+msgid "NO AR  (durante o salto)"
+msgstr "IN THE AIR  (while jumping)"
+
+#. moves_screen._fill.517e4d  [ui]
+#: scripts/ui/moves_screen.gd:87
+msgid "MAGIA INATA"
+msgstr "INNATE SPELL"
+
+#. moves_screen._fill.a9ca16  [ui]
+#: scripts/ui/moves_screen.gd:87
+msgid "O  ·  RT"
+msgstr "O  ·  RT"
+
+#. moves_screen._fill.4e7ebd  [ui]
+#: scripts/ui/moves_screen.gd:91
+msgid "%d Éter"
+msgstr "%d Aether"
+
+#. moves_screen._fill.3df5a1  [ui]
+#: scripts/ui/moves_screen.gd:93
+msgid "OS SETE ANÉIS"
+msgstr "THE SEVEN RINGS"
+
+#. moves_screen._fill.4a8bed  [ui]
+#: scripts/ui/moves_screen.gd:93
+msgid "U  ·  RB   (trocar: Q/E, 1–7 · LT)"
+msgstr "U  ·  RB   (switch: Q/E, 1–7 · LT)"
+
+#. moves_screen._fill.f942c8  [ui]
+#: scripts/ui/moves_screen.gd:102
+msgid "Anel %d"
+msgstr "Ring %d"
+
+#. moves_screen._fill.c58e46  [ui]
+#: scripts/ui/moves_screen.gd:102
+msgid "Trancado — vença %s"
+msgstr "Locked — defeat %s"
+
+#. moves_screen._fill.58d8f0  [ui]
+#: scripts/ui/moves_screen.gd:104
+msgid "Roubado pelo Rei — recupere o caco no Centro"
+msgstr "Stolen by the King — recover the shard in the Center"
+
+#. moves_screen._fill.b8c43e  [ui]
+#: scripts/ui/moves_screen.gd:106
+msgid "%s  (%s)"
+msgstr "%s  (%s)"
+
+#. moves_screen._fill.7c910c  [ui]
+#: scripts/ui/moves_screen.gd:108
+msgid "CONTROLES"
+msgstr "CONTROLS"
+
+#. moves_screen._fill.aefa0f  [ui]
+#: scripts/ui/moves_screen.gd:108
+msgid "teclado  ·  Xbox  ·  DualShock"
+msgstr "keyboard  ·  Xbox  ·  DualShock"
+
+#. moves_screen._fill.ad859d  [ui]
+#: scripts/ui/moves_screen.gd:110
+msgid "Mover"
+msgstr "Move"
+
+#. moves_screen._fill.5d8e51  [ui]
+#: scripts/ui/moves_screen.gd:110
+msgid "A / D  (setas)"
+msgstr "A / D  (arrows)"
+
+#. moves_screen._fill.6901de  [ui]
+#: scripts/ui/moves_screen.gd:110
+msgid "analógico esq. / D-pad"
+msgstr "left stick / D-pad"
+
+#. moves_screen._fill.6ec317  [ui]
+#: scripts/ui/moves_screen.gd:111
+msgid "Pular"
+msgstr "Jump"
+
+#. moves_screen._fill.f61d6e  [ui]
+#: scripts/ui/moves_screen.gd:111
+msgid "Espaço"
+msgstr "Space"
+
+#. moves_screen._fill.6dcd4c  [ui]
+#: scripts/ui/moves_screen.gd:111
+msgid "A"
+msgstr "A"
+
+#. moves_screen._fill.58668e  [ui]
+#: scripts/ui/moves_screen.gd:112
+msgid "J"
+msgstr "J"
+
+#. moves_screen._fill.c032ad  [ui]
+#: scripts/ui/moves_screen.gd:112
+msgid "X"
+msgstr "X"
+
+#. moves_screen._fill.a7ee38  [ui]
+#: scripts/ui/moves_screen.gd:113
+msgid "K"
+msgstr "K"
+
+#. moves_screen._fill.23eb4d  [ui]
+#: scripts/ui/moves_screen.gd:113
+msgid "Y"
+msgstr "Y"
+
+#. moves_screen._fill.893568  [ui]
+#: scripts/ui/moves_screen.gd:114
+msgid "Esquiva (invulnerável)"
+msgstr "Dodge (invulnerable)"
+
+#. moves_screen._fill.1e384b  [ui]
+#: scripts/ui/moves_screen.gd:114
+msgid "L / Shift"
+msgstr "L / Shift"
+
+#. moves_screen._fill.ae4f28  [ui]
+#: scripts/ui/moves_screen.gd:114
+msgid "B"
+msgstr "B"
+
+#. moves_screen._fill.569ddb  [ui]
+#: scripts/ui/moves_screen.gd:115
+msgid "Bloquear / Aparar"
+msgstr "Block / Parry"
+
+#. moves_screen._fill.973db8  [ui]
+#: scripts/ui/moves_screen.gd:115
+msgid "I  (segurar / no tempo)"
+msgstr "I  (hold / timed)"
+
+#. moves_screen._fill.2d1958  [ui]
+#: scripts/ui/moves_screen.gd:115
+msgid "LB"
+msgstr "LB"
+
+#. moves_screen._fill.52b177  [ui]
+#: scripts/ui/moves_screen.gd:115
+msgid "L1"
+msgstr "L1"
+
+#. moves_screen._fill.dfc732  [ui]
+#: scripts/ui/moves_screen.gd:116
+msgid "Anel equipado"
+msgstr "Equipped Ring"
+
+#. moves_screen._fill.b2c7c0  [ui]
+#: scripts/ui/moves_screen.gd:116
+msgid "U"
+msgstr "U"
+
+#. moves_screen._fill.38026d  [ui]
+#: scripts/ui/moves_screen.gd:116
+msgid "RB"
+msgstr "RB"
+
+#. moves_screen._fill.95ced8  [ui]
+#: scripts/ui/moves_screen.gd:116
+msgid "R1"
+msgstr "R1"
+
+#. moves_screen._fill.08a914  [ui]
+#: scripts/ui/moves_screen.gd:117
+msgid "O"
+msgstr "O"
+
+#. moves_screen._fill.bc410c  [ui]
+#: scripts/ui/moves_screen.gd:117
+msgid "RT"
+msgstr "RT"
+
+#. moves_screen._fill.c857f4  [ui]
+#: scripts/ui/moves_screen.gd:117
+msgid "R2"
+msgstr "R2"
+
+#. moves_screen._fill.53acee  [ui]
+#: scripts/ui/moves_screen.gd:118
+msgid "Trocar Anel"
+msgstr "Switch Ring"
+
+#. moves_screen._fill.c6e453  [ui]
+#: scripts/ui/moves_screen.gd:118
+msgid "Q / E  ·  1–7"
+msgstr "Q / E  ·  1–7"
+
+#. moves_screen._fill.2f1056  [ui]
+#: scripts/ui/moves_screen.gd:118
+msgid "LT / Back"
+msgstr "LT / Back"
+
+#. moves_screen._fill.3d66d7  [ui]
+#: scripts/ui/moves_screen.gd:118
+msgid "L2 / Share"
+msgstr "L2 / Share"
+
+#. moves_screen._fill.77b70c  [ui]
+#: scripts/ui/moves_screen.gd:119
+msgid "Pausa"
+msgstr "Pause"
+
+#. moves_screen._fill.80a13c  [ui]
+#: scripts/ui/moves_screen.gd:119
+msgid "Esc / P"
+msgstr "Esc / P"
+
+#. moves_screen._fill.952f37  [ui]
+#: scripts/ui/moves_screen.gd:119
+msgid "Start"
+msgstr "Start"
+
+#. moves_screen._fill.6bf5da  [ui]
+#: scripts/ui/moves_screen.gd:119
+msgid "Options"
+msgstr "Options"
+
+#. moves_screen._fill.55ae3a  [ui]
+#: scripts/ui/moves_screen.gd:123
+msgid "Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva."
+msgstr "YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you."
+
+#. moves_screen._fill.f6e4fd  [ui]
+#: scripts/ui/moves_screen.gd:124
+msgid "Escudeiros só caem com golpe forte ou magia.   A esquiva arrebenta a Corrente da Lei."
+msgstr "Squires only fall to heavy strikes or magic.   A dodge snaps the Chain of the Law."
+
+#. moves_screen._combo_row.c769a7  [ui]
+#: scripts/ui/moves_screen.gd:131
+msgid "%s   ·   %s"
+msgstr "%s   ·   %s"
+
+#. moves_screen._combo_row.a602bb  [ui]
+#: scripts/ui/moves_screen.gd:134
+msgid "Arma Nv. %d"
+msgstr "Weapon Lv. %d"
+
+#. moves_screen._combo_row.f9974b  [ui]
+#: scripts/ui/moves_screen.gd:138
+msgid "lançador"
+msgstr "launcher"
+
+#. moves_screen._combo_row.bf7102  [ui]
+#: scripts/ui/moves_screen.gd:140
+msgid "%d golpes"
+msgstr "%d hits"
+
+#. moves_screen._combo_row.c3b1be  [ui]
+#: scripts/ui/moves_screen.gd:142
+msgid "área"
+msgstr "area"
+
+#. moves_screen._combo_row.60e3a8  [ui]
+#: scripts/ui/moves_screen.gd:143
+msgid "dano %d"
+msgstr "damage %d"
+
+#. moves_screen._archon_name.70dc6e  [ui]
+#: scripts/ui/moves_screen.gd:161
+msgid "o Arconte de %s"
+msgstr "the Archon of %s"
+
+#. moves_screen._archon_name.465f62  [ui]
+#: scripts/ui/moves_screen.gd:162
+msgid "o Arconte"
+msgstr "the Archon"
+
+#. options_menu.CAPTION_NAMES.4f6fe2  [ui]
+#: scripts/ui/options_menu.gd:18
+msgid "Pequena"
+msgstr "Small"
+
+#. options_menu.CAPTION_NAMES.d8a313  [ui]
+#: scripts/ui/options_menu.gd:18
+msgid "Média"
+msgstr "Medium"
+
+#. options_menu.CAPTION_NAMES.0b6d3b  [ui]
+#: scripts/ui/options_menu.gd:18
+msgid "Grande"
+msgstr "Large"
+
+#. options_menu._ready.392176  [ui]
+#: scripts/ui/options_menu.gd:48
+msgid "Vídeo & jogo"
+msgstr "Video & game"
+
+#. options_menu._ready.e80112  [ui]
+#: scripts/ui/options_menu.gd:49
+msgid "Tela cheia"
+msgstr "Fullscreen"
+
+#. options_menu._ready.04688b  [ui]
+#: scripts/ui/options_menu.gd:51
+msgid "VSync"
+msgstr "VSync"
+
+#. options_menu._ready.5095c2  [ui]
+#: scripts/ui/options_menu.gd:52
+msgid "Tremor de câmera"
+msgstr "Camera shake"
+
+#. options_menu._ready.36a9db  [ui]
+#: scripts/ui/options_menu.gd:55
+msgid "Vibração do controle"
+msgstr "Controller vibration"
+
+#. options_menu._ready.3f163c  [ui]
+#: scripts/ui/options_menu.gd:56
+msgid "Legendas"
+msgstr "Subtitles"
+
+#. options_menu._ready.54a83d  [ui]
+#: scripts/ui/options_menu.gd:59
+msgid "Áudio"
+msgstr "Audio"
+
+#. options_menu._ready.c80011  [ui]
+#: scripts/ui/options_menu.gd:60
+msgid "Volume geral"
+msgstr "Master volume"
+
+#. options_menu._ready.fed262  [ui]
+#: scripts/ui/options_menu.gd:61
+msgid "Efeitos"
+msgstr "Effects"
+
+#. options_menu._ready.30bf10  [ui]
+#: scripts/ui/options_menu.gd:65
+msgid "“Lembre-se do que arde.”"
+msgstr "“Remember what burns.”"
+
+#. options_menu._refresh_toggle.31d43c  [ui]
+#: scripts/ui/options_menu.gd:130
+msgid "Ligada"
+msgstr "On"
+
+#. options_menu._refresh_toggle.164bf4  [ui]
+#: scripts/ui/options_menu.gd:130
+msgid "Desligada"
+msgstr "Off"
+
+#. pause_menu._role_text.352f78  [ui]
+#: scripts/ui/pause_menu.gd:50
+msgid "Provação  ·  encontro %d / 3"
+msgstr "Trial  ·  encounter %d / 3"
+
+#. pause_menu._ask_quit.0c5877  [ui]
+#: scripts/ui/pause_menu.gd:106
+msgid "Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d."
+msgstr "You'll return to the menu. Your saved return point remains: %s, screen %d."
+
+#. pause_menu._ask_quit.9e31c8  [ui]
+#: scripts/ui/pause_menu.gd:108
+msgid "Você volta ao menu. A Provação não grava progresso."
+msgstr "You'll return to the menu. The Trial doesn't save progress."
+
+#. pause_menu._ask_quit.d7932f  [ui]
+#: scripts/ui/pause_menu.gd:109
+msgid "Abandonar a jornada?"
+msgstr "Abandon the journey?"
+
+#. pause_menu._ask_quit.a2f17f  [ui]
+#: scripts/ui/pause_menu.gd:109
+msgid "Abandonar"
+msgstr "Abandon"
+
+#. pregame.DIFF_DESCS.f8d666  [ui]
+#: scripts/ui/pregame.gd:16
+msgid "A travessia como foi pensada. Pontos de retorno a cada Éon."
+msgstr "The crossing as it was designed. Return points in every Aeon."
+
+#. pregame.DIFF_DESCS.c97360  [ui]
+#: scripts/ui/pregame.gd:17
+msgid "Inimigos com 50% a mais de vida e dano."
+msgstr "Enemies with 50% more health and damage."
+
+#. pregame.DIFF_DESCS.44759e  [ui]
+#: scripts/ui/pregame.gd:18
+msgid "Mais que o dobro. Para quem já lê o vermelho e o amarelo."
+msgstr "More than double. For those who already read red and yellow."
+
+#. pregame.DIFF_DESCS.fb2e94  [ui]
+#: scripts/ui/pregame.gd:19
+msgid "Vida e dano ×3,5. Apare só o necessário — e não erre."
+msgstr "Health and damage ×3.5. Parry only what you must — and don't miss."
+
+#. pregame._ready.964803  [ui]
+#: scripts/ui/pregame.gd:32
+msgid "%s — %s"
+msgstr "%s — %s"
+
+#. pregame._ready.ed5f7a  [ui]
+#: scripts/ui/pregame.gd:37
+msgid "DIFICULDADE"
+msgstr "DIFFICULTY"
+
+#. pregame._ready.2597eb  [ui]
+#: scripts/ui/pregame.gd:47
+msgid "%d telas  ·  sete Éons  ·  sete Arcontes  ·  o Centro  ·  a Mente"
+msgstr "%d screens  ·  seven Aeons  ·  seven Archons  ·  the Center  ·  the Mind"
+
+#. upgrade_menu._ready.ef0a9f  [ui]
+#: scripts/ui/upgrade_menu.gd:25
+msgid "Santuário de Ascensão"
+msgstr "Shrine of Ascension"
+
+#. upgrade_menu._ready.87090a  [ui]
+#: scripts/ui/upgrade_menu.gd:54
+msgid "Voltar ao jogo"
+msgstr "Back to game"
+
+#. upgrade_menu._ready.fc9a7c  [ui]
+#: scripts/ui/upgrade_menu.gd:54
+msgid "Seguir caminho"
+msgstr "Move on"
+
+#. upgrade_menu._rebuild.8a9815  [ui]
+#: scripts/ui/upgrade_menu.gd:81
+msgid "abre: "
+msgstr "opens: "
+
+#. upgrade_menu._rebuild.782524  [ui]
+#: scripts/ui/upgrade_menu.gd:82
+msgid "Arma Nv. %d → %d"
+msgstr "Weapon Lv. %d → %d"
+
+#. upgrade_menu._rebuild.ac6d4d  [ui]
+#: scripts/ui/upgrade_menu.gd:85
+msgid "Arma no nível máximo"
+msgstr "Weapon at max level"
+
+#. upgrade_menu._rebuild.3efade  [ui]
+#: scripts/ui/upgrade_menu.gd:95
+msgid "%s  ·  Nv. %d (máx.)"
+msgstr "%s  ·  Lv. %d (max.)"
+
+#. upgrade_menu._rebuild.25f367  [ui]
+#: scripts/ui/upgrade_menu.gd:98
+msgid "%s  ·  Nv. %d → %d"
+msgstr "%s  ·  Lv. %d → %d"
+
+#. upgrade_menu._rebuild.95d49a  [ui]
+#: scripts/ui/upgrade_menu.gd:102
+msgid "+20 de vida máx."
+msgstr "+20 max health"
+
+#. upgrade_menu._rebuild.91ac76  [ui]
+#: scripts/ui/upgrade_menu.gd:103
+msgid "+15 de Éter máx."
+msgstr "+15 max Aether"
+
+#. upgrade_menu._rebuild.df1a37  [ui]
+#: scripts/ui/upgrade_menu.gd:106
+msgid "Restauração  ·  cura completa"
+msgstr "Restoration  ·  full heal"
+
+#. upgrade_menu._rebuild.3c4a13  [ui]
+#: scripts/ui/upgrade_menu.gd:106
+msgid "a vida já está cheia"
+msgstr "health is already full"
+
+#. EndScreen.Menu.57f5f5  [ui_cena]
+#: scenes/ui/EndScreen.tscn:80
+msgid "Menu"
+msgstr "Menu"
+
+#. PauseMenu.Title.241b4a  [ui_cena]
+#: scenes/ui/PauseMenu.tscn:30
+msgid "PAUSA"
+msgstr "PAUSED"
+
+#. PauseMenu.Resume.b8cb6f  [ui_cena]
+#: scenes/ui/PauseMenu.tscn:40
+msgid "Continuar"
+msgstr "Continue"
+
+#. PauseMenu.Upgrades.944ffb  [ui_cena]
+#: scenes/ui/PauseMenu.tscn:48
+msgid "Melhorias"
+msgstr "Upgrades"
+
+#. PauseMenu.Quit.847330  [ui_cena]
+#: scenes/ui/PauseMenu.tscn:56
+msgid "Abandonar a jornada"
+msgstr "Abandon the journey"
+
+#. PreGame.DiffLabel.3ddc51  [ui_cena]
+#: scenes/ui/PreGame.tscn:50
+msgid "Dificuldade"
+msgstr "Difficulty"
+
+#. PreGame.Start.b00aa0  [ui_cena]
+#: scenes/ui/PreGame.tscn:64
+msgid "Começar a travessia"
+msgstr "Begin the crossing"
+
+#. UpgradeMenu.Title.8f34cf  [ui_cena]
+#: scenes/ui/UpgradeMenu.tscn:31
+msgid "SANTUÁRIO DE ASCENSÃO"
+msgstr "SHRINE OF ASCENSION"
+
+#. UpgradeMenu.SparkLabel.9c2b08  [ui_cena]
+#: scenes/ui/UpgradeMenu.tscn:36
+msgid "Faíscas: 0"
+msgstr "Sparks: 0"

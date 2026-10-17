@@ -3,7 +3,8 @@
 
 Fonte da tradução: os lotes `assets/i18n/en/*.tsv`, uma linha por texto:
     <id do strings.csv><TAB><inglês>
-(linhas começando com `#` são comentário; `\\n` vira quebra de linha).
+(linhas começando com `#` são comentário; `\\n` vira quebra de linha; espaços no começo/fim
+do texto não precisam ser escritos: são herdados do pt, como em "Eco de " → "Echo of ").
 
 O que faz:
   1. preenche a coluna `en` de `assets/i18n/strings.csv` (o resto do CSV é do extract.py);
@@ -66,7 +67,7 @@ def load_lotes() -> tuple[dict[str, str], list[str]]:
 				continue
 			k, v = ln.split("\t", 1)
 			k = k.strip()
-			v = v.replace("\\n", "\n").rstrip()
+			v = v.replace("\\n", "\n").rstrip("\r")   # espaços nas pontas são significativos
 			if k in tr:
 				problems.append(f"{p.name}:{no}: id repetido {k}")
 			tr[k] = v
@@ -84,24 +85,18 @@ def check(r: dict, en: str) -> list[str]:
 		out.append(f"formato {_fmt(pt)} ≠ {_fmt(en)}")
 	if pt.count("\n") != en.count("\n") and r["kind"] not in ("ui",):
 		out.append(f"quebras de linha pt={pt.count(chr(10))} en={en.count(chr(10))}")
+	if (pt[:1].isspace(), pt[-1:].isspace()) != (en[:1].isspace(), en[-1:].isspace()):
+		out.append("espaço no começo/fim diferente do pt (pedaço concatenado)")
 	if re.findall(r"\[/?\w+[^\]]*\]", pt) != re.findall(r"\[/?\w+[^\]]*\]", en):
 		out.append("tags BBCode diferentes")
 	lim = int(r["limit"]) if r.get("limit") else 0
-	if lim:
-		# linhas de card de cinema: limite por linha (~60), não no total
-		if r["kind"] == "card_cinema" and "\n" in en:
-			longest = max(len(x) for x in en.split("\n"))
-			cap = max(62, max(len(x) for x in pt.split("\n")))
-			if longest > cap:
-				out.append(f"linha de card com {longest} car. (> {cap})")
-		elif len(en) > max(lim, len(pt)):
+	if lim and r["kind"] != "card_cinema":
+		# limite em caracteres (ESTILO_TEXTO §5) — aproximação rápida; quem decide se
+		# CABE é tools/i18n/EnFit.tscn, que mede em pixels com as fontes do jogo.
+		if len(en) > max(lim, len(pt)):
 			out.append(f"{len(en)} car. > limite {lim}")
 		elif len(en) > lim:
 			out.append(f"{len(en)} car. > limite {lim} (o pt também passa: {len(pt)})")
-	elif r["kind"].startswith("ui") or r["kind"] in ("golpe_magia", "bestiario", "nome"):
-		# UI sem limite medido: o pt já cabe no layout; o en não deve passar de pt + 10%
-		if len(en) > max(len(pt) * 1.10, len(pt) + 3):
-			out.append(f"UI: en {len(en)} car. > pt {len(pt)} (+10%)")
 	for pat, why in FORBIDDEN:
 		if why and re.search(pat, en):
 			out.append(f"glossário: {why}")
@@ -128,6 +123,13 @@ def main() -> int:
 	missing: list[str] = []
 	for r in rows:
 		r["en"] = tr.get(r["id"], "")   # os lotes são a única fonte do inglês
+		if r["en"]:
+			# espaço nas pontas (pedaço concatenado no código, ex.: "Eco de "): herda do pt,
+			# porque editores costumam apagar espaço no fim da linha do .tsv.
+			pt = r["pt"]
+			lead = pt[:len(pt) - len(pt.lstrip())]
+			trail = pt[len(pt.rstrip()):]
+			r["en"] = lead + r["en"].strip(" ") + trail
 		if not r["en"]:
 			missing.append(r["id"])
 			continue

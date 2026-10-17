@@ -1,4 +1,94 @@
 keys,en
+Larva do Kenoma,Kenoma Larva
+Sombra Errante,Wandering Shade
+Servo do Demiurgo,Demiurge's Servant
+Larva Ardente,Burning Larva
+Guardião Espinhoso,Thorned Guardian
+Besta Canina,Hound Beast
+Ceifador Cornudo,Horned Reaper
+Escudeiro do Selo,Seal Squire
+Vigia Alado,Winged Sentinel
+Bruto de Ferro,Iron Brute
+Arauto do Silêncio,Herald of Silence
+Fantasma do Vazio,Void Phantom
+Invocador de Larvas,Larva Summoner
+Aberração do Vazio,Void Aberration
+Sonâmbulo,Sleepwalker
+Glutão,Glutton
+Carcereiro,Jailer
+Bibliotecário Mudo,Mute Librarian
+Reflexo,Reflection
+Portador de Esporos,Spore-Bearer
+Pretoriano da Coroa,Crown Praetorian
+Sombra da Sophia,Sophia's Shadow
+"Athoth, Arconte do Torpor","Athoth, Archon of Torpor"
+"Harmas, Arconte da Fome","Harmas, Archon of Hunger"
+"Galila, Arconte da Corrente","Galila, Archon of the Chain"
+"Yabel, Arconte do Silêncio","Yabel, Archon of Silence"
+"Astaphaios, Arconte do Espelho","Astaphaios, Archon of the Mirror"
+"Belias, Arconte da Praga","Belias, Archon of Blight"
+"Armupiel, Arconte da Coroa","Armupiel, Archon of the Crown"
+O Rei,The King
+O Rei — a Mentira,The King — the Lie
+O Colosso Oco — a Verdade,Hollow Colossus — the Truth
+Yaldabaoth,Yaldabaoth
+Eco de ,Echo of 
+Ombreiras do Éon,Aeon Pauldrons
+Elmo do Guardião,Guardian's Helm
+Braceletes do Éon,Aeon Bracers
+Diadema da Fonte,Diadem of the Source
+Sophia,Sophia
+"Uma faísca sem memória, desperta nas cinzas do Kenoma. Luta com o cajado e com a luz que ainda lembra.","A spark without memory, woken in the ashes of the Kenoma. She fights with her staff and the light that still remembers."
+Golpe de Cajado,Staff Strike
+Cajado Duplo,Double Staff
+Sopro Arcano,Arcane Breath
+Impacto Arcano,Arcane Impact
+Fenda Arcana,Arcane Rift
+Ascensão Arcana,Arcane Ascent
+Explosão Arcana,Arcane Burst
+Corte Ascendente,Rising Cut
+Giro Celeste,Celestial Spin
+Queda Estelar,Starfall
+Tempestade de Cajado,Staff Tempest
+Rasgo Duplo,Twin Rend
+Fúria da Mônada,Fury of the Monad
+Colapso Arcano,Arcane Collapse
+Esfera Solar,Sun Orb
+Explode ao acertar.,Explodes on impact.
+Névoa do Sono,Sleep Mist
+Nuvem que adormece: inimigos dentro ficam lentos.,A drowsy cloud: enemies inside it slow down.
+Boca Voraz,Ravenous Maw
+Suga os inimigos para perto e morde.,Sucks enemies in close and bites.
+Corrente da Lei,Chain of the Law
+Corrente que prende o alvo no lugar.,A chain that pins the target in place.
+Grito Mudo,Mute Scream
+Cala todo golpe em preparo ao redor (atordoa).,Silences all nearby wind-ups (stuns).
+"Por 5 s, todo golpe recebido volta para quem o deu.","For 5 s, every hit you take returns to whoever dealt it."
+Flor Podre,Rotten Bloom
+Planta um canteiro de veneno que fere quem pisa.,Plants a poison patch that hurts whoever steps in.
+Coroa Partida,Broken Crown
+A coroa do Arconte se parte em luz: dano enorme em área.,The Archon's crown shatters into light: huge area damage.
+Limiar — O Rei,Threshold — The King
+A Mente,The Mind
+O Centro %s,The Center %s
+%s · Chegada,%s · Arrival
+%s · O Desafio,%s · The Challenge
+%s · Antessala,%s · Antechamber
+%s · O Arconte,%s · The Archon
+%s · Travessia %s,%s · Crossing %s
+I,I
+II,II
+III,III
+IV,IV
+V,V
+VI,VI
+VII,VII
+VIII,VIII
+IX,IX
+Normal,Normal
+Difícil,Hard
+Muito Difícil,Very Hard
+Campeão,Champion
 O Limiar,The Threshold
 "A Mônada, o Inefável","The Monad, the Ineffable"
 "Antes dos mundos, antes de o tempo contar, havia o Um.","Before the worlds, before time began to count, there was the One."
@@ -658,3 +748,351 @@ Tantas vezes provou os presentes deles. O trono só lhe pareceu familiar.,So man
 "Na cidade das cinzas aprendeu os nomes. Ina, que cantava errado. Merou, do poço. Tasso, do telhado. Disse cada um em voz alta.","In the city of ash she learned the names. Ina, who sang off-key. Merou, of the well. Tasso, of the roof. She said each one aloud."
 "Não eram a gente dela. Agora são. E dentro dela, pequeno, alguém aprendia a ver.","They were not her people. Now they are. And inside her, small, someone was learning to see."
 A faísca lembrou. O resto é silêncio.,The spark remembered. The rest is silence.
+O arquivo de save estava ilegível e foi ignorado.,The save file was unreadable and has been ignored.
+"Um progresso de versão anterior foi descartado (o mapa mudou). Faíscas totais, finais e opções foram preservados.","Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept."
+"O checkpoint salvo não existe neste mapa e foi descartado. Faíscas, finais e opções foram preservados.","The saved checkpoint does not exist on this map and was discarded. Sparks, endings and options were kept."
+Arconte,Archon
+%s (Elite),%s (Elite)
+Campeão %s,Champion %s
+da ,of 
+do ,of 
+OS TRÊS SELOS,THE THREE SEALS
+selos abertos,seals opened
+J / X · ler a Estela,J / X · read the Stele
+Crônica desbloqueada: %s  (%d/%d),Chronicle unlocked: %s  (%d/%d)
+ESTELA  ·  %s,STELE  ·  %s
+Kenoma,Kenoma
+Fonte: %s,Source: %s
+• nova Crônica  %d/%d,• new Chronicle  %d/%d
+Crônica %d/%d,Chronicle %d/%d
+      › fechar,      › close
+"No princípio não havia princípio.
+Havia o Um — sem nome, sem medida, pleno.
+Os antigos o chamaram Mônada, Abismo, Silêncio.","In the beginning there was no beginning.
+There was the One — nameless, measureless, full.
+The ancients called it Monad, Depth, Silence."
+"Dele emanaram os Éons, aos pares, como luz que transborda.
+No Pleroma nada dormia. Nada esquecia.","From it the Aeons emanated, in pairs, like overflowing light.
+In the Pleroma nothing slept. Nothing forgot."
+"A mais jovem, Sophia — a Sabedoria —, quis alcançar a Fonte sozinha.
+Do desejo sem par nasceu um filho sem forma,
+e ela o escondeu numa nuvem.","The youngest, Sophia — Wisdom — sought to reach the Source alone.
+From that unpartnered desire came a formless son,
+and she hid him in a cloud."
+"Cego para a Luz de onde veio, ele se acreditou o único deus.
+E fez um mundo copiando o que nunca viu: o Kenoma, o vazio.","Blind to the Light he came from, he believed himself the only god.
+And he made a world copying what he never saw: the Kenoma, the void."
+"Sete Arcontes. Sete esferas. Sete correntes.
+E dentro do barro, escondida, a faísca que ele levou da mãe.","Seven Archons. Seven spheres. Seven chains.
+And within the clay, hidden, the spark he took from his mother."
+"As faíscas dormem.
+
+Uma delas acaba de sentir dor.","The sparks are sleeping.
+
+One of them has just felt pain."
+Todas as pedras foram lidas. A faísca lembra por inteiro.,Every stone has been read. The spark remembers in full.
+Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas.,%d Stelae were left unread in the Kenoma. The Chronicles keep the ones that were read.
+CRÔNICAS  %d / %d,CHRONICLES  %d / %d
+GNOSIS,GNOSIS
+"João Tatarin — direção, produção e escolhas
+Arte ilustrada gerada por IA sob direção do autor
+Código escrito com Claude (Anthropic) e Codex (OpenAI)
+Sons e efeitos CC0/CC-BY — ver assets/LICENSES.md
+
+Inspirado nos textos de Nag Hammadi, na Pistis Sophia
+e nos relatos de Irineu, Hipólito e Clemente.","João Tatarin — direction, production and choices
+Illustrated art generated by AI under the author's direction
+Code written with Claude (Anthropic) and Codex (OpenAI)
+Sounds and effects CC0/CC-BY — see assets/LICENSES.md
+
+Inspired by the Nag Hammadi texts, the Pistis Sophia
+and the accounts of Irenaeus, Hippolytus and Clement."
+...mãe?,...mother?
+qualquer tecla avança  ·  Esc pula,any key continues  ·  Esc skips
+A/D mover   ESPAÇO saltar   J/K golpes   SHIFT esquiva   I aparar   U anel   O esfera,A/D move   SPACE jump   J/K strikes   SHIFT dodge   I parry   U ring   O orb
+I  ·  A FAÍSCA DESPERTA,I  ·  THE SPARK AWAKENS
+II  ·  QUEBRE A GUARDA,II  ·  BREAK THE GUARD
+III  ·  ENCARE O ARCONTE,III  ·  FACE THE ARCHON
+PROVAÇÃO  %d / 3   ·   %02d:%02d,TRIAL  %d / 3   ·   %02d:%02d
+GNOSIS  /  PROVAÇÃO  (treino),GNOSIS  /  TRIAL  (training)
+A luz permanece.,The light endures.
+O selo cedeu.,The seal broke.
+A faísca resiste.,The spark resists.
+Tempo  %02d:%02d    ·    Melhor combo  %d,Time  %02d:%02d    ·    Best combo  %d
+"Isto foi a Provação (treino). A Campanha tem %d telas e sete Arcontes — no menu, em ""Nova campanha"".","That was the Trial (training). The Campaign has %d screens and seven Archons — in the menu, under ""New campaign""."
+Respire. Sua vida será restaurada.,Breathe. Your health will be restored.
+Esquive do vermelho. Apare o dourado.,Dodge the red. Parry the gold.
+Ir pra Campanha  →,To the Campaign  →
+Repetir a Provação,Repeat the Trial
+Próximo encontro  →,Next encounter  →
+Tentar novamente,Try again
+Voltar ao menu,Back to menu
+As duas formas precisam cair JUNTAS.,Both forms must fall TOGETHER.
+Recusar,Refuse
+Ceder,Yield
+Siga em frente  →,Keep going  →
+Você caiu no Kenoma,You fell in the Kenoma
+Chegou até a Tela %d.,Reached Screen %d.
+Repouso,Idle
+Caminhar,Walk
+Golpe leve,Light strike
+Golpe forte,Heavy strike
+Conjurar,Cast
+Aparar,Parry
+Esquiva,Dodge
+Preparar golpe,Wind-up
+Receber impacto,Take a hit
+Ciclo de combate,Combat cycle
+"A memória da luz tomou forma.
+Seis poses ilustradas, túnica bipartida
+e bracelete da Mônada.","The memory of light took shape.
+Six illustrated poses, a two-part tunic
+and the Monad's bracelet."
+"O guardião que ensina a dormir.
+Pálpebra selada, corpo espectral
+e névoa que rouba movimento.","The guardian who teaches sleep.
+Sealed eyelid, spectral body
+and a mist that steals movement."
+"A fome que nunca se reconhece.
+Boca no torso, massa colossal
+e sucção antes do impacto.","The hunger that never knows itself.
+A mouth in the torso, colossal bulk
+and suction before the impact."
+"Toda lei deseja uma corrente.
+Elos pendentes, ombros de ferro
+e investida que aprisiona.","Every law longs for a chain.
+Hanging links, iron shoulders
+and a charge that imprisons."
+"Palavras enterradas no vazio.
+Asas rasgadas, boca costurada
+e uma aura que silencia os Anéis.","Words buried in the void.
+Torn wings, a sewn mouth
+and an aura that silences the Rings."
+"O reflexo deseja o seu lugar.
+Prata, cacos em órbita
+e uma sombra na segunda fase.","The reflection wants your place.
+Silver, orbiting shards
+and a shadow in the second phase."
+"A vida que se esqueceu de morrer.
+Quatro patas, gavinhas
+e rastros de veneno.","The life that forgot to die.
+Four legs, tendrils
+and trails of poison."
+"Um trono feito de obediência.
+Coroa alta, massa e hierarquia.
+Servos sustentam sua armadura.","A throne made of obedience.
+Tall crown, bulk and hierarchy.
+Servants hold up its armor."
+Ateliê,Atelier
+ILUSTRAÇÃO · POSES · PERFIL · COMBATE,ILLUSTRATION · POSES · PROFILE · COMBAT
+Voltar,Back
+Bestiário,Bestiary
+%02d  %s,%02d  %s
+RECEITA VISUAL,VISUAL RECIPE
+Ver articulações,Show joints
+Ocultar articulações,Hide joints
+Testar em combate →,Test in combat →
+Pausar / animar,Pause / animate
+Paleta,Palette
+Arma +,Weapon +
+Espelhar,Mirror
+A FAÍSCA  /  PROTAGONISTA,THE SPARK  /  PROTAGONIST
+ARCONTE  /  ,ARCHON  /  
+cajado,staff
+cabelo,hair
+ombreiras,pauldrons
+diadema,diadem
+faísca,spark
+braceletes,bracers
+coroa,crown
+aura,aura
+pálpebra,eyelid
+boca,maw
+chifres,horns
+espinhos,spikes
+lâmina,blade
+correntes,chains
+asas,wings
+boca costurada,sewn mouth
+espelhos,mirrors
+gavinhas,tendrils
+garras,claws
+cauda,tail
+grande coroa,great crown
+Conceito → ilustração → ,Concept → illustration → 
+poses,poses
+articulações,joints
+ARMA %d / 5,WEAPON %d / 5
+ARCONTE,ARCHON
+   ·   PALETA %d / 3,   ·   PALETTE %d / 3
+Crônicas,Chronicles
+W/S · setas · D-pad escolhem   ·   Esc / B volta,W/S · arrows · D-pad choose   ·   Esc / B back
+"%d de %d Estelas lidas — o ensino dos antigos, pedra a pedra","%d of %d Stelae read — the teaching of the ancients, stone by stone"
+%02d   %s,%02d   %s
+"Estela ainda não lida.
+Onde: %s
+Chegue perto e aperte o golpe leve (J / X) para ler.","Stele not yet read.
+Where: %s
+Get close and press light strike (J / X) to read."
+SOPHIA,SOPHIA
+a faísca que não se curva,the spark that does not bow
+O DESPERTAR   ·   v%s,THE AWAKENING   ·   v%s
+O DESPERTAR DA FAÍSCA,THE AWAKENING OF THE SPARK
+Sete Éons. Sete Arcontes. Uma faísca que ainda se lembra.,Seven Aeons. Seven Archons. One spark that still remembers.
+"Continuar  ·  %s, tela %d","Continue  ·  %s, screen %d"
+Nova campanha,New campaign
+Provação  ·  treino de 3 encontros,Trial  ·  3-encounter training
+Ateliê & Bestiário,Atelier & Bestiary
+Opções,Options
+Créditos,Credits
+Sair,Quit
+Começar de novo?,Start over?
+"Isso apaga o progresso salvo — %s, tela %d — e as faíscas e melhorias desta jornada.
+Finais vistos e opções ficam.","This erases your saved progress — %s, screen %d — and this journey's sparks and upgrades.
+Endings seen and options are kept."
+Apagar e começar,Erase and start
+"Música de Kevin MacLeod (incompetech.com), licenciada sob Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/","Music by Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0 — https://creativecommons.org/licenses/by/4.0/"
+"Efeitos sonoros: ""Fantasy Sound Effects Library"" e ""Magic SFX Preview Pack"" de Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0.","Sound effects: ""Fantasy Sound Effects Library"" and ""Magic SFX Preview Pack"" by Little Robot Sound Factory (www.littlerobotsoundfactory.com), CC-BY 3.0."
+Demais sons e sprites de partícula: Kenney (kenney.nl) e autores CC0 do OpenGameArt.org.,Other sounds and particle sprites: Kenney (kenney.nl) and CC0 authors at OpenGameArt.org.
+W/S · setas · analógico rolam   ·   Esc / B volta,W/S · arrows · stick scroll   ·   Esc / B back
+O DESPERTAR,THE AWAKENING
+Criação e direção,Created and directed by
+João Tatarin,João Tatarin
+Desenvolvido com,Developed with
+Claude,Claude
+(Anthropic),(Anthropic)
+Música,Music
+Kevin MacLeod  ·  incompetech.com,Kevin MacLeod  ·  incompetech.com
+Licença Creative Commons: By Attribution 4.0,Creative Commons License: By Attribution 4.0
+https://creativecommons.org/licenses/by/4.0/,https://creativecommons.org/licenses/by/4.0/
+Atribuição,Attribution
+Sons e partículas,Sounds and particles
+Fontes,Fonts
+Cinzel e Cinzel Decorative  —  Natanael Gama,Cinzel and Cinzel Decorative  —  Natanael Gama
+Alegreya  —  Juan Pablo del Peral / Huerta Tipográfica,Alegreya  —  Juan Pablo del Peral / Huerta Tipográfica
+SIL Open Font License 1.1  (assets/fonts/*/OFL.txt),SIL Open Font License 1.1  (assets/fonts/*/OFL.txt)
+Motor,Engine
+"Godot Engine  —  © Juan Linietsky, Ariel Manzur e colaboradores (licença MIT)","Godot Engine  —  © Juan Linietsky, Ariel Manzur and contributors (MIT license)"
+Obrigado por despertar.,Thank you for waking.
+%s  —  %s  (%s),%s  —  %s  (%s)
+A TRAVESSIA TERMINOU,THE CROSSING IS OVER
+A FAÍSCA SE APAGOU,THE SPARK WENT OUT
+Fim,The End
+Crônicas  %d / %d      ·      Finais vistos  %d / 3,Chronicles  %d / %d      ·      Endings seen  %d / 3
+Finais vistos: %d/3,Endings seen: %d/3
+Jogar de novo,Play again
+Tentar de novo,Try again
+Sophia Nv.1,Sophia Lv.1
+Sophia Nv.3,Sophia Lv.3
+Sophia Nv.5,Sophia Lv.5
+"Soter, o Ungido","Soter, the Anointed"
+"Velkar, o Arrependido","Velkar, the Penitent"
+Provação,Trial
+Golpes & Controles,Moves & Controls
+ARMA NV. %d / %d,WEAPON LV. %d / %d
+W/S · setas · analógico rolam      ·      Esc / B fecha,W/S · arrows · stick scroll      ·      Esc / B close
+GOLPES DO CAJADO,STAFF STRIKES
+sequência  (teclado · controle),sequence  (keyboard · gamepad)
+sequência  (controle · teclado),sequence  (gamepad · keyboard)
+NO AR  (durante o salto),IN THE AIR  (while jumping)
+MAGIA INATA,INNATE SPELL
+O  ·  RT,O  ·  RT
+%d Éter,%d Aether
+OS SETE ANÉIS,THE SEVEN RINGS
+"U  ·  RB   (trocar: Q/E, 1–7 · LT)","U  ·  RB   (switch: Q/E, 1–7 · LT)"
+Anel %d,Ring %d
+Trancado — vença %s,Locked — defeat %s
+Roubado pelo Rei — recupere o caco no Centro,Stolen by the King — recover the shard in the Center
+%s  (%s),%s  (%s)
+CONTROLES,CONTROLS
+teclado  ·  Xbox  ·  DualShock,keyboard  ·  Xbox  ·  DualShock
+Mover,Move
+A / D  (setas),A / D  (arrows)
+analógico esq. / D-pad,left stick / D-pad
+Pular,Jump
+Espaço,Space
+A,A
+J,J
+X,X
+K,K
+Y,Y
+Esquiva (invulnerável),Dodge (invulnerable)
+L / Shift,L / Shift
+B,B
+Bloquear / Aparar,Block / Parry
+I  (segurar / no tempo),I  (hold / timed)
+LB,LB
+L1,L1
+Anel equipado,Equipped Ring
+U,U
+RB,RB
+R1,R1
+O,O
+RT,RT
+R2,R2
+Trocar Anel,Switch Ring
+Q / E  ·  1–7,Q / E  ·  1–7
+LT / Back,LT / Back
+L2 / Share,L2 / Share
+Pausa,Pause
+Esc / P,Esc / P
+Start,Start
+Options,Options
+Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.,YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you.
+Escudeiros só caem com golpe forte ou magia.   A esquiva arrebenta a Corrente da Lei.,Squires only fall to heavy strikes or magic.   A dodge snaps the Chain of the Law.
+%s   ·   %s,%s   ·   %s
+Arma Nv. %d,Weapon Lv. %d
+lançador,launcher
+%d golpes,%d hits
+área,area
+dano %d,damage %d
+o Arconte de %s,the Archon of %s
+o Arconte,the Archon
+Pequena,Small
+Média,Medium
+Grande,Large
+Vídeo & jogo,Video & game
+Tela cheia,Fullscreen
+VSync,VSync
+Tremor de câmera,Camera shake
+Vibração do controle,Controller vibration
+Legendas,Subtitles
+Áudio,Audio
+Volume geral,Master volume
+Efeitos,Effects
+“Lembre-se do que arde.”,“Remember what burns.”
+Ligada,On
+Desligada,Off
+Provação  ·  encontro %d / 3,Trial  ·  encounter %d / 3
+"Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d.","You'll return to the menu. Your saved return point remains: %s, screen %d."
+Você volta ao menu. A Provação não grava progresso.,You'll return to the menu. The Trial doesn't save progress.
+Abandonar a jornada?,Abandon the journey?
+Abandonar,Abandon
+A travessia como foi pensada. Pontos de retorno a cada Éon.,The crossing as it was designed. Return points in every Aeon.
+Inimigos com 50% a mais de vida e dano.,Enemies with 50% more health and damage.
+Mais que o dobro. Para quem já lê o vermelho e o amarelo.,More than double. For those who already read red and yellow.
+"Vida e dano ×3,5. Apare só o necessário — e não erre.",Health and damage ×3.5. Parry only what you must — and don't miss.
+%s — %s,%s — %s
+DIFICULDADE,DIFFICULTY
+%d telas  ·  sete Éons  ·  sete Arcontes  ·  o Centro  ·  a Mente,%d screens  ·  seven Aeons  ·  seven Archons  ·  the Center  ·  the Mind
+Santuário de Ascensão,Shrine of Ascension
+Voltar ao jogo,Back to game
+Seguir caminho,Move on
+abre: ,opens: 
+Arma Nv. %d → %d,Weapon Lv. %d → %d
+Arma no nível máximo,Weapon at max level
+%s  ·  Nv. %d (máx.),%s  ·  Lv. %d (max.)
+%s  ·  Nv. %d → %d,%s  ·  Lv. %d → %d
++20 de vida máx.,+20 max health
++15 de Éter máx.,+15 max Aether
+Restauração  ·  cura completa,Restoration  ·  full heal
+a vida já está cheia,health is already full
+Menu,Menu
+PAUSA,PAUSED
+Continuar,Continue
+Melhorias,Upgrades
+Abandonar a jornada,Abandon the journey
+Dificuldade,Difficulty
+Começar a travessia,Begin the crossing
+SANTUÁRIO DE ASCENSÃO,SHRINE OF ASCENSION
+Faíscas: 0,Sparks: 0

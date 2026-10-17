@@ -63,6 +63,11 @@ def forced(l):
 	# ordinais da Narrative entram no texto ("o sétimo Anel").
 	if l.scope == "ORDINAIS":
 		return True
+	# Ateliê: valores do dicionário de partes ("staff": "cajado") e o "poses" da receita
+	if f.endswith("character_atelier.gd") and ("var names :=" in l.line_src and re.search(r":\s*$", b)):
+		return True
+	if f.endswith("character_atelier.gd") and l.text == "poses":
+		return True
 	# o código de dev/QA e avisos de console nunca chegam ao jogador
 	if re.search(r"\b(push_warning|push_error|printerr|print|print_debug|assert)\s*\(", b):
 		return False
@@ -117,7 +122,9 @@ def classify(l):
 	if f.endswith("narrative.gd"):
 		if l.scope == "ORDINAIS":
 			return "ordinal", "", 0
-		if "walk" in l.scope or "caption" in l.scope or l.scope.endswith("_pool") or l.scope == "sleeper_line":
+		if "walk" in l.scope or "caption" in l.scope or l.scope.endswith("_pool") \
+				or l.scope in ("sleeper_line", "archon_phase2", "echo_memory", "seventh_ring", "after_soter"):
+			# legendas (Gnosis.captions): ganchos da Onda 2 sem pausar o jogo
 			return "legenda", sp, 95
 		if "card" in l.scope or "epilogue" in l.scope or "prologue" in l.scope or l.scope == "apply_ending":
 			return "card_cinema", sp, 240
