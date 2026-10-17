@@ -101,8 +101,14 @@ Efeito esperado: parcial (o tiro de alado/arauto continua) — confirmar com o b
 **Observação (sem número):** Fome mais fácil que Torpor (71 × 103 de dano/min). Não proponho mexer antes do
 playtest: os inimigos de longe (sonâmbulo) pesam mais para o bot do que para um humano.
 
-### 5a. Simulação de P3
-(preenchido abaixo quando a rodada `r8_poca3` terminar)
+### 5a. Simulação de P3 (`r8_poca3`)
+Tela 55 (Belias): **639 → 528** de dano (poça 376 → 232, −38%), 51,9 → 47,7 s, quase-mortes 8 → 7.
+Belias continua o pico dos Arcontes (Armupiel 432), mas o salto Espelho → Praga fica menor.
+Cuidado ao ler o total do run (6 880 → 6 259): a simulação também encolheu a poça que o Portador de
+Esporos deixa ao morrer (`enemy.gd:869`, a P3 não mexe nela) e, a partir da tela 47, as lutas divergem
+em cascata (vida carregada entre telas); a queda de −32% na Coroa é efeito dessa cascata, não da P3.
+Se quiser Belias no nível do Armupiel, um passo a mais seria o tique da poça hostil 0,7 → 1,0 s
+(`hazard_zone.gd:64`) — não simulado.
 
 ## 6. Como comparar r8 × r9 depois do Combate (item 4 do brief)
 ```
