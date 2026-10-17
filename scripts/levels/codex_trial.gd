@@ -4,6 +4,12 @@ extends Level
 var completed: bool = false
 var result_layer: CanvasLayer
 var phase_label: Label
+## Faixa de dicas de controle (segue o dispositivo em uso — QA P3).
+var hint_label: Label
+var _pad: bool = false
+
+const HINT_KEYS := "A/D mover   ESPAÇO saltar   J/K golpes   SHIFT esquiva   I aparar   U anel   O esfera"
+const HINT_PAD := "Analógico mover   A saltar   X/Y golpes   B esquiva   LB aparar   RB anel   RT esfera"
 
 func _ready() -> void:
 	# A entrada direta serve às ferramentas de QA.
@@ -45,9 +51,30 @@ func _ready() -> void:
 	add_child(layer)
 	phase_label = CodexStyle.label(layer, "", Vector2(390, 13), 10, CodexStyle.GOLD, 230)
 	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	CodexStyle.label(layer, "A/D mover   ESPAÇO saltar   J/K golpes   SHIFT esquiva   I aparar   U anel   O esfera", Vector2(18, 341), 8, CodexStyle.MUTED, 615)
+	hint_label = CodexStyle.label(layer, "", Vector2(18, 341), 8, CodexStyle.MUTED, 615)
+	_pad = not Input.get_connected_joypads().is_empty()
+	_refresh_hints()
 	_start_wave()
 	get_tree().call_group("hud", "toast", ["I  ·  A FAÍSCA DESPERTA", "II  ·  QUEBRE A GUARDA", "III  ·  ENCARE O ARCONTE"][CodexSession.stage])
+
+## Troca a faixa de dicas para o último dispositivo usado (não consome o evento).
+func _input(event: InputEvent) -> void:
+	var pad := _pad
+	if event is InputEventJoypadButton and event.pressed:
+		pad = true
+	elif event is InputEventJoypadMotion and absf(event.axis_value) > 0.5:
+		pad = true
+	elif (event is InputEventKey and event.pressed) or (event is InputEventMouseButton and event.pressed):
+		pad = false
+	if pad != _pad:
+		_pad = pad
+		_refresh_hints()
+
+
+func _refresh_hints() -> void:
+	if hint_label != null:
+		hint_label.text = HINT_PAD if _pad else HINT_KEYS
+
 
 func _process(delta: float) -> void:
 	if not completed and GameManager.state == GameManager.State.PLAYING:
@@ -82,7 +109,7 @@ func _on_player_died() -> void:
 
 func _show_result(won: bool) -> void:
 	GameManager.set_state(GameManager.State.PAUSED)
-	get_tree().paused = true
+	PauseStack.push(self)
 	result_layer = CanvasLayer.new()
 	result_layer.layer = 30
 	result_layer.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -103,22 +130,22 @@ func _show_result(won: bool) -> void:
 	var y := 222.0
 	var first: Button
 	if final:
-		first = CodexStyle.button(result_layer, "Ir pra Campanha  →", Vector2(170, y), 285, func():
-			get_tree().paused = false
+		first = CodexStyle.button(result_layer, "Ir para a Campanha  →", Vector2(170, y), 285, func():
+			PauseStack.clear()
 			Audio.play_sfx("ui_confirm")
 			SceneManager.change_scene("res://scenes/ui/PreGame.tscn"), true)
 		y += 36
 		CodexStyle.button(result_layer, "Repetir a Provação", Vector2(170, y), 285, func():
-			get_tree().paused = false
+			PauseStack.clear()
 			CodexSession.start_demo(CodexSession.boss_index))
 	else:
 		first = CodexStyle.button(result_layer, "Próximo encontro  →" if won else "Tentar novamente", Vector2(170, y), 285, func():
-			get_tree().paused = false
+			PauseStack.clear()
 			if won: CodexSession.next_stage()
 			else: CodexSession.start_demo(CodexSession.boss_index), true)
 	y += 36
 	CodexStyle.button(result_layer, "Voltar ao menu", Vector2(170, y), 285, func():
-		get_tree().paused = false
+		PauseStack.clear()
 		Audio.play_sfx("ui_back")
 		SceneManager.change_scene("res://scenes/ui/MainMenu.tscn"))
 	first.grab_focus()

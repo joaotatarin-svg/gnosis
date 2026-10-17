@@ -425,7 +425,29 @@ class Worker extends Node:
 		lv.player.global_position = st.global_position + Vector2(-40, -10)
 		lv.player.velocity = Vector2.ZERO
 		await wait(0.8)
+		# Teleportar até a pedra pode trancar a zona seguinte: com zona ativa a
+		# Estela NÃO abre (combate). Confere isso e depois limpa a zona.
+		if lv.zone_active:
+			await key(KEY_J)
+			await wait(0.4)
+			check(_stela_panel() == null, "estela: com a zona trancada, J é só golpe")
+			var p0 := _stela_panel()
+			if p0 != null:
+				p0.queue_free()
+				PauseStack.clear()
+			for e in living_enemies():
+				e.health.take_damage(99999)
+			for _i in 40:
+				await wait(0.15)
+				await skip_dialogs()
+				if not lv.zone_active and living_enemies().is_empty():
+					break
+			lv.player.global_position = st.global_position + Vector2(-40, -10)
+			lv.player.velocity = Vector2.ZERO
+			lv.player.combo_sequence.clear()
+			await wait(1.2)
 		await shot("estela_prompt")
+		print("UIM estela: zona=%s vivos=%d inimigo_perto=%s pode_ler=%s" % [lv.zone_active, living_enemies().size(), st._enemy_near(), st.can_read()])
 		check(st._prompt.text == "J / X · ler a Estela", "estela: prompt '%s'" % st._prompt.text)
 		# 1) sem inimigo, sem combo → abre
 		await key(KEY_J)
