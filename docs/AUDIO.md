@@ -42,6 +42,15 @@
 - **Tema do menu**: 3 opções por síntese em `tools/audio_synth/menu_theme.py` (A Esferas, B Coro,
   C Caixinha) — NÃO instaladas; o menu segue com `theme` até o João escolher.
 
+**Onda 2b (17/10/2026, branch `dir2/audio2`, nuvem):**
+- Avisos do combate `tell_parry`/`tell_unblock` (síntese, `tells.py`). Têm bus próprio `Tell`, fora do
+  abafado da câmera lenta, e tom fixo. Medição de leitura sob a música em `tools/audio/tell_check.py`.
+- `heartbeat` virou UMA batida. A intro toca duas pelo cue; o HUD usa `low_health_pulse()`.
+- R9: na tela do Arconte a música de chefe espera o stinger; na morte do chefe a música some ~2,6 s.
+- Centro: `track_for_screen` devolve silêncio até o 1º caco.
+- Sorteio do áudio num `RandomNumberGenerator` próprio (pedido do Balance: não desalinha o global).
+- Música de chefe por Arconte: 7 opções (`boss_variants.py`). Nenhuma instalada; aguardam o João.
+
 **Falta / problemas conhecidos (honesto):**
 - **Ninguém OUVIU nada ainda** (nem as magias da Onda 1, nem nada da Onda 2). Tudo foi avaliado por
   medição e espectrograma. Lista de amostras no relatório `docs/onda2/AUDIO.md`.
