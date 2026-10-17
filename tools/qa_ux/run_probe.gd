@@ -341,6 +341,10 @@ class Probe extends Node:
 		for h in huds:
 			if "_boss_box" in h and h._boss_box != null and h._boss_box.visible:
 				bars += 1
+			elif h.has_method("boss_bars"):
+				bars += (h.call("boss_bars") as Array).size()
+			elif "boss" in h and h.boss != null:
+				bars += 1     # HUD da onda 1: uma barra (var boss)
 		_boss_bar_max = maxi(_boss_bar_max, bars)
 
 	## Loja: botões habilitados sem faíscas suficientes?

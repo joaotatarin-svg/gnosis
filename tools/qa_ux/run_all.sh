@@ -41,7 +41,8 @@ one() {
 	rc=$?
 	end="$(grep -h '|END|' "$log" | head -1 | cut -c1-200)"
 	nb="$(grep -c '|BUG?|' "$log")"
-	ne="$(grep -cE 'SCRIPT ERROR|^ERROR' "$log")"
+	# "resources still in use at exit" = vazamento inofensivo ao sair (REVISAO #15): não conta.
+	ne="$(grep -E 'SCRIPT ERROR|^ERROR' "$log" | grep -vc 'resources still in use at exit')"
 	echo "tela $s rc=$rc bugs=$nb erros=$ne ${end:-SEM_END}"
 }
 export -f one
