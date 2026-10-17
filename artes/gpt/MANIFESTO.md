@@ -371,3 +371,22 @@ Chat: https://chatgpt.com/c/6ad33822-6c1c-83e9-9539-4ac389a72382 (refs: painted/
 - Nota: 8/10. Corcunda bípede de pele verde-acinzentada, espinhos e cogumelos na corcunda (família Belias), garras; perfil p/ direita.
   windup (corcunda inchando), strike (nuvem de esporos esverdeada PEQUENA + garra), hurt, death (de bruços numa poça verde).
 - Observação: a nuvem do strike chega a ~8 px do quadro do hurt (x 864 vs 872) — não toca, mas é justo.
+
+## Bot 7 — Pretoriano da Coroa (servo de Armupiel)
+- Arquivo: `bot_7_pretoriano_a.png` — 1 geração. Chat: https://chatgpt.com/c/6ad3805b-dcc8-83e8-a61a-38b34fe02115 (ref: 7_armupiel_coroa)
+- Nota: 8/10. Guarda compacto de armadura dourada gravada e tabardo navy com estrelas, elmo com 3 pontas, BROQUEL grande à frente
+  (lado direito), lança curta; perfil p/ direita. windup lança acima do ombro, strike estocada por cima do escudo, hurt, death sobre o escudo.
+  Fundo limpo (51 px quase-magenta).
+
+## Bot 2 — Glutão REFEITO
+- Arquivo APROVADO: `bot_2_glutao_b.png` — 2×4. Mesmo chat do Glutão (https://chatgpt.com/c/6ad37d8e-2090-83e9-8e3d-db4dc1408e45).
+  1ª tentativa de refação foi BLOQUEADA pelo ChatGPT ("pode violar diretrizes sobre violência" — o prompt falava em pele translúcida com veias,
+  piercings e mordida); reformulei como criatura estilizada sem gore e passou. 2 pedidos, 1 imagem.
+- Nota: 8/10. Silhueta NOVA: criatura-saco baixa, curvada/de quatro, sem armadura nem elmo, pele rosa-avermelhada inchada, braços finos e
+  longos, cabeça careca pequena, bocarra dentada no ventre (assinatura), argolas e corrente de ouro sujo (paleta do Harmas). Mais baixa que
+  humano (h≈265–275 andando). windup (empina, boca escancarada), strike (bote baixo), hurt, death (murcho de lado).
+- `bot_2_glutao_a.png` fica como versão antiga (muito parecida com o Harmas).
+
+## Resumo Fila 6
+- Aprovadas: bot_1_sonambulo_a, bot_2_glutao_b, bot_3_carcereiro_a, bot_4_mudo_a, bot_5_reflexo_a, bot_6_esporos_a, bot_7_pretoriano_a.
+- 9 pedidos (8 imagens; 1 recusa por diretriz de violência). Nenhum aviso de limite.
