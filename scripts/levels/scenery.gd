@@ -129,6 +129,7 @@ func _build_painted() -> void:
 	_sky_fade(_far, d.sky)
 	if eon == 7:
 		_orbit_sparks(_far, s)
+	_far_motes(d.haze)
 	# Raios: foco no astro da pintura (coords da camada far).
 	_ray_pt = Vector2(lk.ray.x * _tile_w, FLOOR_Y - PAINT_H + lk.ray.y * PAINT_H)
 	_rays = _screen_rect("rays")
@@ -227,6 +228,39 @@ func _add_fog(ms: Vector2, y_top: float, y_peak: float, y_bot: float, col: Color
 	m.set_shader_parameter("speed", speed)
 	m.set_shader_parameter("seed", seed_v + float(eon))
 	_fogs.append({"rect": r, "ms": ms, "y": y_top})
+
+
+## PROFUNDIDADE (VFX.md falta 4): poeira LONGE — pontinhos pequenos e apagados
+## numa camada que anda 15% da câmera (as partículas do Éon, em VfxLibrary,
+## ficam paradas na tela; a poeira PERTO do chão fica no Foreground). Camada
+## espelhada a cada 720 px: a poeira cobre a travessia inteira.
+func _far_motes(hz: Color) -> void:
+	var l := _layer(Vector2(0.15, 0.9), 720.0)
+	var p := CPUParticles2D.new()
+	p.texture = VfxLibrary.tex("circle")
+	p.local_coords = true
+	p.position = Vector2(360.0, FLOOR_Y - 130.0)
+	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	p.emission_rect_extents = Vector2(360.0, 120.0)
+	p.amount = 22
+	p.lifetime = 10.0
+	p.preprocess = 10.0
+	p.direction = Vector2(1, -0.4)
+	p.spread = 50.0
+	p.gravity = Vector2.ZERO
+	p.initial_velocity_min = 1.5
+	p.initial_velocity_max = 4.0
+	p.scale_amount_min = 0.010
+	p.scale_amount_max = 0.022
+	var dark := bool(look().get("ray_dark", false))
+	var c := Color(0.08, 0.0, 0.05) if dark else hz.lightened(0.35)
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(c, 0.0))
+	ramp.set_color(1, Color(c, 0.0))
+	ramp.add_point(0.5, Color(c, 0.45 if dark else 0.35))
+	p.color_ramp = ramp
+	l.add_child(p)
+	p.emitting = true
 
 
 ## Centro: faíscas em órbita em volta da esfera da máquina (nas duas metades).
@@ -856,6 +890,7 @@ class Foreground extends Node2D:
 	var boss: bool = false
 	var anchors: Array = []
 	var _bokeh: CPUParticles2D
+	var _dust: CPUParticles2D
 	const SPEED := 1.35      # > 1 = passa mais rápido que o mundo (está à frente)
 	const SPAN := 6800.0     # até onde vai o entulho (cobre a travessia de 3 zonas)
 
@@ -867,6 +902,8 @@ class Foreground extends Node2D:
 		position.x = c.x * (1.0 - SPEED)
 		if _bokeh != null:
 			_bokeh.position = Vector2(c.x * SPEED, c.y)
+		if _dust != null:
+			_dust.position = Vector2(c.x * SPEED, c.y + 140.0)
 
 	func _ready() -> void:
 		if rng == null:
@@ -938,6 +975,38 @@ class Foreground extends Node2D:
 		_bokeh.color_ramp = ramp
 		add_child(_bokeh)
 		_bokeh.emitting = true
+		# poeira PERTO (faixa de baixo, P2/VFX 4): grãos maiores e lentos passando
+		# rente ao chão na frente da câmera — vida sem cruzar a faixa de luta.
+		_dust = CPUParticles2D.new()
+		_dust.texture = VfxLibrary.tex("light")
+		_dust.local_coords = true
+		_dust.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+		_dust.emission_rect_extents = Vector2(360, 26)
+		_dust.amount = 9
+		_dust.lifetime = 8.0
+		_dust.preprocess = 8.0
+		_dust.direction = Vector2(1, -0.1)
+		_dust.spread = 25.0
+		_dust.gravity = Vector2.ZERO
+		_dust.initial_velocity_min = 5.0
+		_dust.initial_velocity_max = 12.0
+		_dust.scale_amount_min = 0.03
+		_dust.scale_amount_max = 0.07
+		var dc: Color = Color(g).lerp(Color(0.8, 0.8, 0.85), 0.5)
+		var dr := Gradient.new()
+		dr.set_color(0, Color(dc, 0.0))
+		dr.set_color(1, Color(dc, 0.0))
+		dr.add_point(0.5, Color(dc, 0.16))
+		if lk.get("ray_dark", false):
+			dr = Gradient.new()
+			dr.set_color(0, Color(0.06, 0.0, 0.04, 0.0))
+			dr.set_color(1, Color(0.06, 0.0, 0.04, 0.0))
+			dr.add_point(0.5, Color(0.06, 0.0, 0.04, 0.3))
+		else:
+			_dust.material = VfxLibrary._additive()
+		_dust.color_ramp = dr
+		add_child(_dust)
+		_dust.emitting = true
 
 
 # --- vinheta (CanvasLayer abaixo do HUD) ------------------------------------------
