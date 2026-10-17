@@ -183,3 +183,13 @@ Numeração = posição na criaturas_folha.png (3×3, esq→dir, cima→baixo). 
 - Arquivo: `cri_4_cao_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad329a1-d56c-83e9-bd0b-449eb52a9e02
 - Nota: 8/10. Quadrúpede em perfil p/ direita, fiel; walk de 3 quadros; windup agachado, strike bote com mandíbula, hurt empinando,
   death caído de lado (ossinhos soltos = pixels pequenos). Quadros dentro das células.
+
+## Criatura 5 — Escudeiro (escudo de bronze com sol + lança)
+- Arquivo: `cri_5_escudeiro_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32a23-b868-83e9-800c-a3b0f08b48ba
+- Nota: 7.5/10. Perfil p/ direita, fiel; o escudo fica no braço do lado do espectador (cobre o corpo p/ a câmera, não à frente
+  do inimigo) — igual à ref. windup lança acima do ombro, strike estocada, hurt, death (escudo caído no chão, lança solta).
+
+## Criatura 6 — Conjurador de crânio (manto verde-petróleo, máscara de crânio, cajado de anel)
+- Arquivo: `cri_6_conjurador_a.png` — 2×4, 1 geração. Chat: https://chatgpt.com/c/6ad32aa4-0640-83ea-ab1a-f6cff168f18d
+- Nota: 8/10. Perfil p/ direita, fiel; walk 3 quadros; windup cajado acima da cabeça, strike cajado à frente com 1 orbe pequeno
+  (componente solto), hurt, death (de joelhos, cajado no chão). Brilho mínimo.

@@ -135,17 +135,13 @@ func _check() -> void:
 ## fica de reserva e o CharacterArt toca o atlas. Checa estados obrigatórios,
 ## retângulos dentro do atlas, ALTURA DO CORPO igual à do boneco antigo (±3%),
 ## pés no chão, boneco parado/invisível, telegrafo virando contorno e gibs do
-## quadro. Criaturas da família (glutão...) continuam no boneco.
+## quadro. Criaturas da família (glutão...) usam os quadros do seu Arconte.
 func _check_frames() -> void:
 	var framed: int = 0
 	var lines: Array = []
 	for entry in entries:
 		var art := _make(entry,self)
-		var creature: bool = String(entry.name).ends_with("(criatura)")
-		if creature:
-			check(not art.has_boss_frames(),"Criatura da família não deveria usar os quadros do chefe: "+entry.name)
-			art.queue_free()
-			continue
+		# criaturas da família (glutão, pretoriano) usam os quadros do seu Arconte
 		if not art.has_boss_frames():
 			art.queue_free()
 			continue

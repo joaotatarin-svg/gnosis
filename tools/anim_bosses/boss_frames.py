@@ -147,7 +147,19 @@ def build(name: str, use_rife: bool = True) -> None:
 	sheet = os.path.join(ROOT, R["sheet"])
 	cells = R.get("cells", ["idle_0", "idle_1", "walk_0", "walk_1", "windup", "strike", "hurt", "death"])
 	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells)
-	fit = old_fit(os.path.join(ROOT, R["old_body"]), bool(R.get("old_flip", True)))
+	# grupo de saída: derived/<grupo>/ (bosses | creatures) e src/<grupo>/ (meios)
+	group = R.get("group", "bosses")
+	OUT = os.path.join(ROOT, "assets", "painted", "derived", group)
+	SRC_MIDS = os.path.join(ROOT, "assets", "painted", "src", group)
+	if "old_rect" in R:
+		# criaturas: a pintura antiga é um Rect2 da folha derivada (inhabitants)
+		x, y, w, h = R["old_rect"]
+		img = Image.open(os.path.join(ROOT, R["old_sheet"])).convert("RGBA").crop((x, y, x + w, y + h))
+		tmp_old = os.path.join(tempfile.mkdtemp(prefix="oldfit_"), "old.png")
+		img.save(tmp_old)
+		fit = old_fit(tmp_old, bool(R.get("old_flip", False)))
+	else:
+		fit = old_fit(os.path.join(ROOT, R["old_body"]), bool(R.get("old_flip", True)))
 	# correção de tamanho (silhueta nova com asas/coroa mais altas que a antiga)
 	fit["body_frac"] = round(fit["body_frac"] * float(R.get("size_fix", 1.0)), 5)
 	ref = R.get("ref", "idle_0")
@@ -235,9 +247,10 @@ def build(name: str, use_rife: bool = True) -> None:
 	has_flex = bool(flex.any())
 	if has_flex:
 		Image.fromarray((flex * 255).round().astype(np.uint8), "RGB").save(os.path.join(OUT, name + "_frames_flex.png"), optimize=True)
-	meta = {"character": "bosses/" + name, "atlas": "res://assets/painted/derived/bosses/%s_frames.png" % name,
-		"flex": ("res://assets/painted/derived/bosses/%s_frames_flex.png" % name) if has_flex else "",
-		"sil": "res://assets/painted/derived/bosses/%s_frames_sil.png" % name,
+	rp = "res://assets/painted/derived/%s/%s" % (group, name)
+	meta = {"character": group + "/" + name, "atlas": rp + "_frames.png",
+		"flex": (rp + "_frames_flex.png") if has_flex else "",
+		"sil": rp + "_frames_sil.png",
 		"body_px": body_px, "kind": R.get("kind", "biped"), "fit": fit,
 		"cloth_amp": R.get("flex", {}).get("cloth_amp", 0.0), "hem_wave": R.get("hem_wave", 0.0),
 		"atlas_size": [2048, atlas_h], "frames": out_frames, "states": states}

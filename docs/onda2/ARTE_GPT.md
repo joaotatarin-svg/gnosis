@@ -90,3 +90,24 @@ mostra o nome do Colosso desde o início. Não é arte → Pedido 4.
    barra única mostra o nome dele enquanto só o Rei está visível — já listado como A3 no QA-UX.
 3. **enemy.gd (morte do chefe)**: opcional — tocar o estado `dead` (quadro `death` + dissolução)
    ~0,4 s antes do desmembramento, para o quadro de morte desenhado aparecer.
+
+## Criaturas (bloco extra, mesmo pipeline)
+
+Folhas `cri_<n>_<nome>` do produtor (2×4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt,
+death), grupo `creatures` (`assets/painted/derived/creatures/`, receitas com `"group": "creatures"`
+e `old_sheet`/`old_rect` = Rect2 da pintura única em `inhabitants`). Integradas: larva (índice 0,
+todos os WRAITH comuns), espadachim (1, humanoide padrão), bruto (2, BRUTE/COLOSSUS — folha _b),
+cão (3, BEAST), escudeiro (4, escudo), conjurador (5, cajado). Andar = 3 quadros + 3 meios do
+RIFE pela distância (larva em laço por tempo); parado = 1 quadro + respiração da mola. A tinta
+leve por tipo (`profile.primary`) continua. Soter/Velkar/Adormecido (6–8) seguem na pintura única
+até virem folhas.
+
+As **criaturas da família de cada Arconte** (sonâmbulo, glutão, carcereiro, pretoriano...) agora
+usam os quadros do seu Arconte em escala de criatura — antes eram o boneco da pintura antiga, e
+ficariam com cara do chefe antigo ao lado do chefe novo. `gifs/familia_athoth_tela4.png`.
+
+WaveQA atualizado para o método novo: cada estado da criatura toca a sua sequência própria e a
+mola mexe o corpo inteiro sem girar o cartão (squash ≤ 7%, preparar recua, golpe avança).
+Capturas: `gifs/criaturas_prancha_antes_depois.png` (pintura única × quadros), `gifs/criaturas_quadros.png`.
+Obs.: com o shader corrigido as criaturas ficam no brilho real da pintura (antes saíam escurecidas
+pela cor ao quadrado do `painted_flex`).

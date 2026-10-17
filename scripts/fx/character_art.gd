@@ -71,7 +71,10 @@ func set_profile(p: ArtProfile) -> void:
 		boss_puppet.position.y = GROUND_Y * profile.height / 44.0
 	# Chefe com QUADROS DESENHADOS: o CharacterArt toca os quadros e o boneco
 	# fica de reserva (existe, mas não anima nem aparece).
-	_boss_db = frame_db("bosses/" + String(painted.frames)) if painted.has("frames") else {}
+	var fname: String = String(painted.get("frames", ""))
+	if fname != "" and not fname.contains("/"):
+		fname = "bosses/" + fname
+	_boss_db = frame_db(fname) if fname != "" else {}
 	_flex_material().shader = load(BOSS_SHADER if has_boss_frames() else FLEX_SHADER)
 	_bsp = Vector2.ZERO
 	_bsv = Vector2.ZERO
@@ -1551,6 +1554,9 @@ func _draw_painted(s: float) -> void:
 		m[0] = float(m[0]) + float(meta.fit.dx) * hw / s
 		m[4] = float(m[4]) - float(meta.fit.foot_gap) * hw / s
 		_boss_shown = {"rect": rect, "anchor": anchor, "k": k, "tex": tex}
+		# criaturas comuns: mesma tinta leve por tipo da pintura única
+		if painted.get("sheet", "") == "inhabitants" and not profile.painted_id in ["soter", "velkar", "sleeper"]:
+			tint = Color.WHITE.lerp(profile.primary.lightened(0.3), 0.22)
 	else:
 		var rect: Rect2
 		var anchor: Vector2

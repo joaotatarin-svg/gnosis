@@ -1,0 +1,304 @@
+{
+ "character": "creatures/escudeiro",
+ "atlas": "res://assets/painted/derived/creatures/escudeiro_frames.png",
+ "flex": "",
+ "sil": "res://assets/painted/derived/creatures/escudeiro_frames_sil.png",
+ "body_px": 220.0,
+ "kind": "biped",
+ "fit": {
+  "body_frac": 0.94211,
+  "foot_gap": 0.02368,
+  "dx": -0.07015,
+  "rect_px": [
+   425,
+   380
+  ]
+ },
+ "cloth_amp": 0.0,
+ "hem_wave": 0.0,
+ "atlas_size": [
+  2048,
+  512
+ ],
+ "frames": {
+  "idle_0": {
+   "rect": [
+    219,
+    0,
+    231,
+    234
+   ],
+   "top": 6.61,
+   "foot_y": 226.61,
+   "bottom": 226.61,
+   "pelvis_x": 85.24,
+   "mid": false
+  },
+  "walk_0": {
+   "rect": [
+    896,
+    0,
+    224,
+    231
+   ],
+   "top": 7.84,
+   "foot_y": 223.55,
+   "bottom": 224.16,
+   "pelvis_x": 84.75,
+   "mid": false
+  },
+  "walk_0-walk_1_50": {
+   "rect": [
+    1563,
+    0,
+    222,
+    229
+   ],
+   "top": 8.0,
+   "foot_y": 221.0,
+   "bottom": 221.0,
+   "pelvis_x": 94.25,
+   "mid": true
+  },
+  "walk_1": {
+   "rect": [
+    1342,
+    0,
+    221,
+    230
+   ],
+   "top": 7.84,
+   "foot_y": 222.94,
+   "bottom": 222.94,
+   "pelvis_x": 98.32,
+   "mid": false
+  },
+  "walk_1-walk_2_50": {
+   "rect": [
+    1120,
+    0,
+    222,
+    231
+   ],
+   "top": 8.0,
+   "foot_y": 223.0,
+   "bottom": 223.0,
+   "pelvis_x": 92.75,
+   "mid": true
+  },
+  "walk_2": {
+   "rect": [
+    450,
+    0,
+    223,
+    232
+   ],
+   "top": 7.23,
+   "foot_y": 224.16,
+   "bottom": 224.77,
+   "pelvis_x": 83.33,
+   "mid": false
+  },
+  "walk_2-walk_0_50": {
+   "rect": [
+    673,
+    0,
+    223,
+    232
+   ],
+   "top": 9.0,
+   "foot_y": 223.0,
+   "bottom": 224.0,
+   "pelvis_x": 82.78,
+   "mid": true
+  },
+  "windup": {
+   "rect": [
+    0,
+    0,
+    219,
+    237
+   ],
+   "top": 9.06,
+   "foot_y": 229.68,
+   "bottom": 229.68,
+   "pelvis_x": 140.24,
+   "mid": false
+  },
+  "strike": {
+   "rect": [
+    0,
+    237,
+    270,
+    194
+   ],
+   "top": 7.23,
+   "foot_y": 186.78,
+   "bottom": 186.78,
+   "pelvis_x": 101.73,
+   "mid": false
+  },
+  "hurt": {
+   "rect": [
+    1785,
+    0,
+    195,
+    196
+   ],
+   "top": 17.03,
+   "foot_y": 188.62,
+   "bottom": 188.62,
+   "pelvis_x": 91.14,
+   "mid": false
+  },
+  "death": {
+   "rect": [
+    270,
+    237,
+    242,
+    154
+   ],
+   "top": 7.84,
+   "foot_y": 146.33,
+   "bottom": 146.33,
+   "pelvis_x": 103.79,
+   "mid": false
+  }
+ },
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "f": "idle_0",
+     "anchor": [
+      85.24,
+      226.61
+     ]
+    }
+   ]
+  },
+  "walk": {
+   "frames": [
+    {
+     "f": "walk_0",
+     "anchor": [
+      84.75,
+      223.55
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_50",
+     "anchor": [
+      91.32,
+      222.55
+     ]
+    },
+    {
+     "f": "walk_1",
+     "anchor": [
+      98.32,
+      222.94
+     ]
+    },
+    {
+     "f": "walk_1-walk_2_50",
+     "anchor": [
+      90.32,
+      224.16
+     ]
+    },
+    {
+     "f": "walk_2",
+     "anchor": [
+      83.33,
+      224.16
+     ]
+    },
+    {
+     "f": "walk_2-walk_0_50",
+     "anchor": [
+      83.75,
+      224.16
+     ]
+    }
+   ],
+   "cycle_bodies": 0.9
+  },
+  "windup": {
+   "frames": [
+    {
+     "f": "windup",
+     "anchor": [
+      140.24,
+      229.68
+     ]
+    }
+   ]
+  },
+  "attack": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      101.73,
+      186.78
+     ]
+    }
+   ]
+  },
+  "recover": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      101.73,
+      186.78
+     ]
+    },
+    {
+     "f": "idle_0",
+     "anchor": [
+      85.24,
+      226.61
+     ]
+    }
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      91.14,
+      188.62
+     ]
+    }
+   ]
+  },
+  "dead": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      91.14,
+      188.62
+     ]
+    },
+    {
+     "f": "death",
+     "anchor": [
+      103.79,
+      146.33
+     ]
+    }
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ }
+}

@@ -1,0 +1,102 @@
+{
+ "_doc": "Receita dos quadros da criatura espadachim (inhabitants índice 1). Folha do GPT 2x4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt, death.",
+ "group": "creatures",
+ "sheet": "artes/gpt/cri_2_espadachim_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_0",
+  "walk_0",
+  "walk_1",
+  "walk_2",
+  "windup",
+  "strike",
+  "hurt",
+  "death"
+ ],
+ "old_sheet": "assets/painted/derived/inhabitants.png",
+ "old_rect": [
+  425,
+  0,
+  425,
+  400
+ ],
+ "old_flip": false,
+ "kind": "biped",
+ "body_px": 220,
+ "anchors": {},
+ "anchor_fix": {},
+ "inbetween": {
+  "w1": [
+   "walk_0",
+   "walk_1",
+   1
+  ],
+  "w2": [
+   "walk_1",
+   "walk_2",
+   1
+  ],
+  "w3": [
+   "walk_2",
+   "walk_0",
+   1
+  ]
+ },
+ "flex": {},
+ "hem_wave": 0.0,
+ "states": {
+  "idle": {
+   "frames": [
+    "idle_0"
+   ]
+  },
+  "walk": {
+   "frames": [
+    "walk_0",
+    "walk_0-walk_1_50",
+    "walk_1",
+    "walk_1-walk_2_50",
+    "walk_2",
+    "walk_2-walk_0_50"
+   ],
+   "cycle_bodies": 0.9
+  },
+  "windup": {
+   "frames": [
+    "windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "recover": {
+   "frames": [
+    "strike",
+    "idle_0"
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ }
+}

@@ -64,10 +64,11 @@ static func character(p: ArtProfile) -> Dictionary:
 		var rects := [Rect2(0,0,379,505),Rect2(379,0,408,503),Rect2(787,0,380,516),Rect2(1167,0,369,507),Rect2(0,506,373,518),Rect2(373,523,427,473),Rect2(800,510,367,514),Rect2(1167,507,369,517)]
 		var d := {"sheet":"archons", "rect":rects[boss], "flip":true, "puppet":boss}
 		# Quadros desenhados (folha do GPT → tools/anim_bosses/boss_frames.py):
-		# só o chefe em pessoa (e o seu eco); as criaturas da família seguem no
-		# boneco. Sem atlas, o CharacterArt cai no boneco (fallback).
-		if own == id:
-			d["frames"] = BossPuppet.NAMES[boss]
+		# o chefe, o seu eco e as criaturas da família (em escala de criatura —
+		# continuam "parentes" visuais do Arconte, como na pintura única).
+		# Sem atlas, o CharacterArt cai no boneco (fallback).
+		d["frames"] = BossPuppet.NAMES[boss]
+		d["family"] = own != id
 		return d
 	if id in ["rei", "rei_final", "demiurgo"]:
 		return {"sheet":"yaldabaoth", "rect":Rect2(15,0,1046,1024), "flip":false, "puppet":8, "frames":"rei"}
@@ -81,7 +82,12 @@ static func character(p: ArtProfile) -> Dictionary:
 	if id == "velkar": index = 7
 	if id == "sleeper": index = 8
 	var rects := [Rect2(0,0,425,400),Rect2(425,0,425,400),Rect2(850,0,397,400),Rect2(0,406,425,380),Rect2(425,406,425,380),Rect2(850,406,397,380),Rect2(0,786,425,475),Rect2(425,790,425,471),Rect2(850,790,397,471)]
-	return {"sheet":"inhabitants", "rect":rects[index], "flip":false}
+	var d := {"sheet":"inhabitants", "rect":rects[index], "flip":false}
+	# Quadros desenhados das criaturas (mesmo pipeline dos chefes, grupo
+	# creatures/); sem atlas o CharacterArt segue na pintura única.
+	var creature_frames := ["larva","espadachim","bruto","cao","escudeiro","conjurador","soter","velkar","sleeper"]
+	d["frames"] = "creatures/" + creature_frames[index]
+	return d
 
 static func prop(index: int) -> Texture2D:
 	var rects := [Rect2(85,0,325,545),Rect2(575,205,360,305),Rect2(1120,5,280,540),Rect2(5,564,530,409),Rect2(605,550,270,410),Rect2(928,720,598,195)]
