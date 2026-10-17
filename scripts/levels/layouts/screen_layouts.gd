@@ -131,7 +131,8 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 			_add(out, 0, {"t": hz, "x": 400.0})
 			for i in n:
 				_set_arena(out, i, ["baixa", "degraus", "bordas"][(pick + i) % 3])
-				_guard(out, i, guard)
+				if i == n - 1:
+					_guard(out, i, guard)      # guarda só na arena final (bot r1: +60 de dano com as duas)
 				if i >= 1:
 					out.gaps[i - 1] = PASS_LONG
 					_add(out, i, {"t": hz, "x": 130.0})

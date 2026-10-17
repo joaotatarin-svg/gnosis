@@ -246,6 +246,8 @@ static func _hazard(level: Level, t: String, x: float, it: Dictionary, rng: Rand
 	if h == null:
 		return
 	h.phase = rng.randf_range(0.0, 4.0)
+	if it.has("dx"):
+		h.dmg_mult = 0.7            # guarda de ARENA: a luta já cobra; o cenário só tempera
 	level.add_child(h)
 	h.global_position = Vector2(x, FLOOR)
 

@@ -4,7 +4,7 @@ extends Node
 ## toda a travessia (da parede esquerda à direita), costurando os quadros numa
 ## faixa só: o layout inteiro (plataformas, perigos, segredos) numa imagem.
 ## Uso: godot --audio-driver Dummy --path . --resolution 320x180 --position 4000,4000 \
-##        res://tools/level6/Board.tscn -- <tela> <saida.png> [dj] [y_centro]
+##        res://tools/level6/Board.tscn -- <tela> <saida.png> [dj] [node=e1.3a] [y_centro]
 ##   dj = concede o pulo duplo (se o Progression já expuser grant_double_jump).
 ## A faixa sai com 2 px de imagem = 1 px de mundo, de y-180 a y+180 do centro.
 
@@ -20,6 +20,10 @@ func _ready() -> void:
 	for i in range(2, args.size()):
 		if args[i] == "dj":
 			w.dj = true
+		elif args[i].begins_with("zoom="):
+			w.zoom = float(args[i].substr(5))
+		elif args[i].begins_with("node="):
+			w.node_id = args[i].substr(5)
 		elif args[i].is_valid_float():
 			w.cy = float(args[i])
 	get_tree().root.add_child.call_deferred(w)
@@ -29,7 +33,9 @@ class BoardWorker extends Node:
 	var screen: int = 2
 	var out: String = "user://board.png"
 	var dj: bool = false
+	var node_id: String = ""         # nó do mapa (ex.: e1.3a); "" = padrão da camada
 	var cy: float = 160.0
+	var zoom: float = 1.0            # zoom=2: metade do mundo por quadro (janela 320x180 → 1 px = 1 px de mundo)
 	var _count: int = 0
 	var _cam: Camera2D
 	var _tiles: Array = []
@@ -47,6 +53,10 @@ class BoardWorker extends Node:
 		Gnosis.persist_enabled = false
 		RunManager.current_screen = screen
 		GameManager.current_screen = screen
+		if "map_route_seed" in RunManager:
+			RunManager.set("map_route_seed", 0)
+		if node_id != "" and "current_node" in RunManager:
+			RunManager.set("current_node", node_id)
 		if dj and Progression.has_method("grant_double_jump"):
 			Progression.call("grant_double_jump")
 		get_tree().change_scene_to_file.call_deferred("res://scenes/levels/Level01.tscn")
@@ -105,16 +115,17 @@ class BoardWorker extends Node:
 		ov.z_as_relative = false
 		lv.add_child(ov)
 		_cam = Camera2D.new()
-		_cam.zoom = Vector2(1.0, 1.0)
+		_cam.zoom = Vector2(zoom, zoom)
 		_cam.process_callback = Camera2D.CAMERA2D_PROCESS_IDLE
 		lv.add_child(_cam)
 		_cam.make_current()
 		var left: float = Level.WALL_LEFT - 60.0
 		var right: float = float(lv.get("_end_x")) + 60.0
-		var x := left + 320.0
-		while x - 320.0 < right:
+		var half_w := 320.0 / zoom
+		var x := left + half_w
+		while x - half_w < right:
 			_xs.append(x)
-			x += 640.0
+			x += half_w * 2.0
 		print("BOARD tela %d: %d quadros (x %.0f..%.0f)" % [screen, _xs.size(), left, right])
 
 	func _stitch() -> void:
