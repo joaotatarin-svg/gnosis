@@ -3,6 +3,11 @@ extends Node
 ## Autoload (singleton) acessível de qualquer lugar como `GameManager`.
 
 signal state_changed(new_state: int)
+## DEMO (backlog #27): a campanha da demo terminou (o Athoth caiu e o jogador
+## seguiu adiante). A UI liga aqui o card "Fim da demo — obrigado por jogar" +
+## "Lista de desejos" (URL em `gnosis/store_url`). Se NINGUÉM estiver ligado,
+## o `finish_demo()` cai na tela de fim padrão (nunca trava).
+signal demo_finished()
 
 enum State { BOOT, MENU, PLAYING, PAUSED, UPGRADE, GAME_OVER }
 enum Difficulty { NORMAL, HARD, VERY_HARD, CHAMPION }
@@ -14,14 +19,37 @@ var current_screen: int = 1              # tela/fase atual (balanceamento)
 var end_title: String = ""               # texto da tela de fim (game over/vitória)
 var end_subtitle: String = ""
 
+## Modo DEMO: Rei + Torpor; a campanha acaba depois do Athoth (tela 10).
+## Liga por `--demo` na linha de comando, pela feature de export `demo`
+## (preset "Windows Demo") ou pelo ProjectSettings `gnosis/demo=true`.
+## Save separado em `user://demo/` (SaveManager/Gnosis/Achievements).
+var demo: bool = false
+const DEMO_LAST_SCREEN := 10          # tela do Athoth (1º Arconte)
+const DEMO_DIR := "user://demo/"
+
+## 1ª execução (não havia save nenhum): o SaveManager liga isto antes de
+## aplicar as opções — tela cheia por padrão (backlog #24).
+var first_run: bool = false
+
 ## OPÇÕES do jogador (salvas pelo SaveManager, aplicadas no boot por
 ## `apply_settings`). Quem consome cada uma:
 ##   fullscreen / vsync → aqui (DisplayServer)
 ##   shake (0.0–1.0)    → tremor de câmera (Juice/camera_shake leem daqui)
 ##   rumble (bool)      → vibração do controle (Juice.rumble lê daqui)
 ##   caption_size (0=P, 1=M, 2=G) → legendas/diálogos (DialogueBox lê daqui)
+##   window_mode (0 janela · 1 tela cheia exclusiva · 2 tela cheia sem borda)
+##                      → aqui; `fullscreen` (bool antigo) acompanha: use
+##                        `set_window_mode(m)`. 1ª execução sem save = 2.
+##   text_speed (float: 0.5/1.0/2.0; 0.0 = instantâneo) → diálogos/legendas
+##   damage_numbers (bool) → números de dano (Combate/HUD)
+##   bindings (Dictionary ação → lista de eventos) → remapeamento; aplicado
+##              por `scripts/ui/input_rebind.gd` (`apply_bindings`) se existir
 const SETTINGS_DEFAULT := {
 	"fullscreen": false,
+	"window_mode": 0,
+	"text_speed": 1.0,
+	"damage_numbers": true,
+	"bindings": {},
 	"vsync": true,
 	"shake": 1.0,
 	"rumble": true,
@@ -34,6 +62,7 @@ var settings: Dictionary = SETTINGS_DEFAULT.duplicate()
 
 
 func _ready() -> void:
+	demo = detect_demo()
 	_load_patches()
 	_load_gamepad_db()
 	_register_inputs()
@@ -49,6 +78,9 @@ func apply_settings() -> void:
 		settings[k] = SETTINGS_DEFAULT[k] if typeof(v) == TYPE_NIL else v
 	settings["shake"] = clampf(float(settings["shake"]), 0.0, 1.0)
 	settings["caption_size"] = clampi(int(settings["caption_size"]), 0, 2)
+	settings["text_speed"] = clampf(float(settings["text_speed"]), 0.0, 4.0)
+	_sync_window_mode()
+	_apply_bindings()
 	# Espelha tremor/vibração no Juice (campos da branch principal), se ele já
 	# existir — no boot o GameManager nasce antes do Juice; o SaveManager
 	# chama de novo depois.
@@ -62,10 +94,127 @@ func apply_settings() -> void:
 			juice.set("reduce_flashes", reduce_flashes())
 	if DisplayServer.get_name() == "headless":
 		return
-	var want := DisplayServer.WINDOW_MODE_FULLSCREEN if bool(settings["fullscreen"]) else DisplayServer.WINDOW_MODE_WINDOWED
+	var want := window_mode_for(int(settings["window_mode"]))
 	if DisplayServer.window_get_mode() != want:
 		DisplayServer.window_set_mode(want)
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if bool(settings["vsync"]) else DisplayServer.VSYNC_DISABLED)
+
+
+# --- modo de janela -----------------------------------------------------------
+
+## O que foi aplicado da última vez (para saber QUAL das duas chaves o menu
+## mudou: o menu antigo alterna `fullscreen`, o novo escreve `window_mode`).
+var _applied_fullscreen: Variant = null
+var _applied_mode: Variant = null
+
+
+## Muda o modo de janela pelos dois lados (use isto no menu de Opções).
+func set_window_mode(mode: int) -> void:
+	settings["window_mode"] = clampi(mode, 0, 2)
+	settings["fullscreen"] = settings["window_mode"] != 0
+	apply_settings()
+
+
+## Modo do DisplayServer para a opção (0 janela · 1 exclusiva · 2 sem borda).
+## No Godot 4, WINDOW_MODE_FULLSCREEN já é a "tela cheia sem borda" (janela do
+## tamanho do monitor); a exclusiva troca a resolução do monitor.
+static func window_mode_for(mode: int) -> DisplayServer.WindowMode:
+	match mode:
+		1: return DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+		2: return DisplayServer.WINDOW_MODE_FULLSCREEN
+	return DisplayServer.WINDOW_MODE_WINDOWED
+
+
+## Mantém `fullscreen` (bool antigo) e `window_mode` coerentes: quem mudou
+## desde a última aplicação manda; o outro acompanha.
+func _sync_window_mode() -> void:
+	var fs := bool(settings["fullscreen"])
+	var mode := clampi(int(settings["window_mode"]), 0, 2)
+	if _applied_mode != null and mode != int(_applied_mode):
+		fs = mode != 0                      # o menu novo escreveu o modo
+	elif _applied_fullscreen != null and fs != bool(_applied_fullscreen):
+		mode = 2 if fs else 0               # o menu antigo alternou o bool
+	elif fs != (mode != 0):
+		mode = 2 if fs else 0               # save antigo: só tinha o bool
+	settings["fullscreen"] = fs
+	settings["window_mode"] = mode
+	_applied_fullscreen = fs
+	_applied_mode = mode
+
+
+## 1ª execução (nenhum save): tela cheia sem borda — o SaveManager chama antes
+## do apply_settings. Ferramentas de captura/QA (cena passada na linha de
+## comando ou argumentos depois de `--`) ficam em janela.
+func apply_first_run_defaults(ignore_tools: bool = false) -> void:
+	first_run = true
+	if not ignore_tools and _launched_by_tool():
+		return
+	settings["fullscreen"] = true
+	settings["window_mode"] = 2
+
+
+func _launched_by_tool() -> bool:
+	for a in OS.get_cmdline_args():
+		if String(a).ends_with(".tscn") or String(a).ends_with(".scn"):
+			return true
+	for a in OS.get_cmdline_user_args():
+		if String(a) != "--demo":
+			return true
+	return false
+
+
+# --- remapeamento -------------------------------------------------------------
+
+## Aplica `settings["bindings"]` pelo `scripts/ui/input_rebind.gd` (da UI) se
+## ele existir e tiver `apply_bindings(dict)`. Vazio = layout de fábrica.
+func _apply_bindings() -> void:
+	var b = settings.get("bindings", {})
+	if typeof(b) != TYPE_DICTIONARY or (b as Dictionary).is_empty():
+		return
+	var path := "res://scripts/ui/input_rebind.gd"
+	if not ResourceLoader.exists(path):
+		return
+	var scr = load(path)
+	if scr == null:
+		return
+	# Aceita função estática (script) ou de instância (objeto novo).
+	if scr is Script and (scr as Script).can_instantiate():
+		var obj = (scr as Script).new()
+		if obj != null and obj.has_method("apply_bindings"):
+			obj.call("apply_bindings", b)
+		if obj is Node:
+			(obj as Node).free()
+
+
+# --- demo ---------------------------------------------------------------------
+
+## Demo ligada? `--demo` (antes ou depois de `--`), feature de export `demo`
+## ou `gnosis/demo=true` no ProjectSettings.
+static func detect_demo() -> bool:
+	if "--demo" in OS.get_cmdline_args() or "--demo" in OS.get_cmdline_user_args():
+		return true
+	if OS.has_feature("demo"):
+		return true
+	return bool(ProjectSettings.get_setting("gnosis/demo", false))
+
+
+## A tela é a última da demo? (o avanço dela encerra a demo).
+func is_demo_end(screen: int) -> bool:
+	return demo and screen >= DEMO_LAST_SCREEN
+
+
+## Fim da demo: emite `demo_finished` para a UI. Sem ninguém ligado, cai na
+## tela de fim padrão com o agradecimento (fallback — nunca trava).
+func finish_demo() -> void:
+	set_state(State.GAME_OVER)
+	end_title = "Fim da demo"
+	end_subtitle = "Obrigado por jogar. O resto da subida continua no jogo completo."
+	if demo_finished.get_connections().is_empty():
+		var sm := get_node_or_null("/root/SceneManager")
+		if sm != null:
+			sm.call("change_scene", "res://scenes/ui/EndScreen.tscn")
+		return
+	demo_finished.emit()
 
 
 ## Multiplicador do tremor de câmera (0..1) — pra quem gera o tremor.
