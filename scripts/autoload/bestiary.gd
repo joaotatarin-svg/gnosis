@@ -43,7 +43,21 @@ func mark_seen(id: String) -> bool:
 		return false
 	_seen[id] = true
 	seen_changed.emit(id)
+	# Grava logo (uma vez por quadro, no máximo): fechar o jogo no meio da tela
+	# não perde o registro. O run gravado continua sendo o checkpoint.
+	if not _save_queued:
+		_save_queued = true
+		_flush_seen.call_deferred()
 	return true
+
+
+var _save_queued: bool = false
+
+
+func _flush_seen() -> void:
+	_save_queued = false
+	if RunManager.run_active and not CodexSession.active:
+		SaveManager.save_game()
 
 
 func seen_ids() -> Array[String]:
