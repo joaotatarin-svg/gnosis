@@ -8,6 +8,7 @@ extends Node
 ##  D) Sophia no quadro: anda até a zona trancar e mede o x de TELA por 3 s.     (A5)
 ##  E) Escolha final (3 botões): cabem na tela? o motivo do bloqueado aparece?   (A6)
 ##  F) Pausa no meio do Arconte (tela 10): Melhorias trancada e com o porquê?     (M6)
+##  G) Tentação (tela 10) SÓ com controle: A escolhe depois da guarda anti-aperto?  (B1)
 ## Saída: "VIS|<caso>|<detalhe>" e PNGs vis_*.png na pasta.
 ## Uso: godot --audio-driver Dummy --path . --resolution 1280x720 --position 4000,4000 \
 ##        res://tools/qa_visual/VisualProbe.tscn -- <pasta> [casos=ABCD]
@@ -23,7 +24,7 @@ func _ready() -> void:
 
 class V extends Node:
 	var out_dir: String
-	var cases: String = "ABCDEF"
+	var cases: String = "ABCDEFG"
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
@@ -113,7 +114,7 @@ class V extends Node:
 		var nm := "<nenhum>"
 		if b != null and is_instance_valid(b):
 			nm = str(b.get("display_name"))
-		return "barra_de='%s' ratio=%.2f fase=%d visivel=%.2f" % [nm, float(h.get("boss_ratio")), int(h.get("boss_phase_n")), float(h.get("_boss_show"))]
+		return "barra_de='%s' ratio=%s fase=%s" % [nm, str(h.get("boss_ratio")), str(h.get("boss_phase_n"))]
 
 	func _run() -> void:
 		if "A" in cases:
@@ -129,6 +130,8 @@ class V extends Node:
 			await _case_choices()
 		if "F" in cases:
 			await _case_pause_boss()
+		if "G" in cases:
+			await _case_tentacao_pad()
 		log_v("FIM", "")
 		get_tree().quit()
 
@@ -283,3 +286,39 @@ class V extends Node:
 				b = n
 		log_v("pausa_chefe", "paused=%s chefes_vivos=%d melhorias=%s" % [str(get_tree().paused), bosses().size(), ("desabilitada=" + str(b.disabled)) if b != null else "nao_achada"])
 		await shot("pausa_chefe")
+
+	# ---- G) tentação só com controle ----
+	func _case_tentacao_pad() -> void:
+		GameManager.selected_character = GameContent.characters[0]
+		Progression.reset_run()
+		RunManager.begin()
+		Narrative.once("prologue")
+		RunManager.current_screen = 10
+		GameManager.current_screen = 10
+		get_tree().change_scene_to_file("res://scenes/levels/Level01.tscn")
+		await wait(1.0)
+		var d: DialogueBox = null
+		for k in 80:
+			d = null
+			for c in get_tree().root.get_children():
+				if c is DialogueBox:
+					d = c
+			if d == null:
+				await wait(0.2)
+				continue
+			if d._in_choices:
+				break
+			await pad(JOY_BUTTON_X)       # avança fala (X = golpe leve)
+			await wait(0.25)
+		if d == null or not d._in_choices:
+			log_v("tentacao_pad", "nao_chegou_na_escolha")
+			return
+		var made := [-1]
+		d.choice_made.connect(func(i): made[0] = i)
+		await pad(JOY_BUTTON_A)           # cedo: a guarda deve comer
+		await wait(0.1)
+		var cedo: int = made[0]
+		await wait(1.0)                   # passa a guarda
+		await pad(JOY_BUTTON_A)
+		await wait(0.5)
+		log_v("tentacao_pad", "A_cedo_escolheu=%s A_depois=%s caixa_aberta=%s" % [str(cedo != -1), str(made[0]), str(is_instance_valid(d) and d.is_inside_tree())])

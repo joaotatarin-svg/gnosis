@@ -48,7 +48,13 @@ Folhas: `qa_visual_caps/r1/combate_t03_combo_pesado_esquiva_aparar.jpg`, `combat
 Ferramentas: `tools/qa_visual/PerfTimeline.tscn` (= `tools/PerfProbe` do Técnico + espião de engasgos que mede TODOS os quadros, com o momento) e `tools/qa_visual/JitterProbe.tscn` + `jitter_csv.py` (tremor).
 Números na seção 5. Resumo honesto:
 - **vsync DESLIGADO:** 100–190 qps médios com 12–24 criaturas; 1% low 35–90; nenhum quadro >100 ms; 0–5 quadros >33 ms por 12 s.
-- **vsync LIGADO: NÃO deu pra medir.** Com a janela fora do monitor (regra do silêncio/sem janela) o Windows (DWM) estrangula a apresentação: 21–30 qps constantes (≈ 40 ms por quadro), inclusive com a janela 5 px dentro do canto. Isso é artefato da janela invisível, não o jogo — mas **precisa ser confirmado com a janela VISÍVEL** (o padrão das Opções é VSync "Ligada"; se fosse real, o jogo inteiro rodaria a 25 qps). Pedido ao chefe: autorizar 1 medição com janela visível no 2º monitor, ou o João olhar o contador de FPS (FpsOverlay) jogando.
+- **vsync LIGADO = ~21 qps nesta máquina, MESMO COM A JANELA VISÍVEL. (V1 — CRÍTICO, a confirmar pelo João.)**
+  Com autorização do chefe medi com a janela visível (`--position 100,100`, ≤60 s): **tela 22: 21,4 qps médios, 1% low 19,7, 46,8 ms por quadro; tela 68: 21,4 / 17,3 / 46,8 ms**; JitterProbe tela 22 com vsync: 21 qps.
+  Com vsync desligado, as mesmas telas fazem 180/146 qps. Ou seja: o jogo não está pesado — **é o vsync** (gl_compatibility/OpenGL + AMD RX 7600 + monitor 144 Hz + 2º monitor de outra frequência) que segura cada quadro ~47 ms.
+  **O padrão das Opções é VSync "Ligada"** (`game_manager.gd:25`). Se isso vale para o João jogando, o jogo roda a ~21 qps por padrão.
+  (Antes eu tinha chamado isso de artefato da janela invisível — estava ERRADO: visível dá o mesmo.)
+  Sugestões ao Técnico/Perf: (1) confirmar com o João (Opções → VSync desligada × ligada, olhando o FpsOverlay); (2) testar `--rendering-driver opengl3_angle` (D3D11) e `VSYNC_ADAPTIVE`/`VSYNC_MAILBOX`; (3) até resolver, **padrão VSync desligado + `Engine.max_fps` = taxa do monitor** (ou 144) para não queimar GPU.
+  Logs: `C:\gnosis-wt\_caps\qa-visual\r1\vsync_visivel\`.
 - **Tremor de 1 px:** PARADA, a câmera e a Sophia ficam imóveis (0 quadros com movimento ≥0,25 px depois de 0,6 s). ANDANDO a ~370 qps a câmera anda todo quadro (contínua). Há **saltos de ~2 px (espaço 640×360 = ~4 px na tela) concentrados nos 50 ms em que a Sophia ARRANCA** (look-ahead acelerando) — 58 quadros "rápidos demais" em 3 s, todos entre 0,40 e 0,45 s. Não é tremor contínuo; pode ser sentido como um "tranco" ao começar a andar. Limite: o Godot não expõe a posição 2D interpolada, então a da Sophia é reconstruída (lerp físico); a da câmera é a real (`canvas_transform`).
 
 ### P4 — Tela 68: o REI aparece?
@@ -78,35 +84,37 @@ Obs.: a 1ª importação headless de um worktree novo deu **segfault** ao import
 - Varredura automática: **0 pixels magenta** em 967 capturas (`tools/qa_visual/magenta.py`); emendas verticais no chão **7/68 → 0/68** (`tools/qa_visual/seams.py`; antes/depois `C:\gnosis-wt\_caps\qa-visual\crop_emenda_antes_depois.png`).
 
 ## 3. Re-teste dos 24 itens de `docs/QA_UX_BUGS.md`
-Coluna r0 = base 589a751 (capturas). Coluna r1 = base b04f413 (o que já reverifiquei; "—" = ainda não reverificado nesta base).
+r0 = base 589a751. **r1 = base b04f413 (estado atual).** Caminhos relativos a `C:\gnosis-wt\_caps\qa-visual\` (r0) e `C:\gnosis-wt\_caps\qa-visual\r1\` (r1).
 
-| ID | r0 (589a751) | r1 (b04f413) | Evidência |
+| ID | r0 (589a751) | **r1 (b04f413)** | Evidência r1 |
 |---|---|---|---|
-| B1 controle A/B | **CORRIGIDO** (ui_accept = A, ui_cancel = B; A entra em Nova campanha, B volta, A escolhe na tentação) | — | `C:\gnosis-wt\_caps\qa-visual\padprobe\log.txt` |
-| A1 loja sem foco/Esc | **CORRIGIDO** (foco no 1º item, ↓ navega, Esc/B fecha; também no santuário) | — | `uiprobe\ui09_loja_pela_pausa.png`, `vis\log.txt` |
-| A2 legenda sobre menus | **CORRIGIDO** na pausa/loja/opções/golpes. Resíduo baixo: durante o *fade-in* da loja do santuário a legenda ainda aparece por cima | — | `uiprobe\ui08..ui11`, `run\s24_end.png` |
-| A3 tela 68 uma barra | AINDA OCORRIA | **CORRIGIDO** (duas barras: "O Rei — a Mentira" e "O Colosso Oco — a Verdade") | `r1/t68_inicio_rei_na_borda.jpg` |
-| A4 morte congela no ar / de pé sem queda | AINDA OCORRIA (no ar y=219 fixo; de pé anim=idle) | — | `r0/03_A4_morte_sem_queda.jpg` |
-| A5 câmera tira a Sophia do quadro | AINDA OCORRIA, generalizado (8/8 telas, fora em 15–27 de 30 amostras ao trancar a zona) | **CORRIGIDO** (0 quadros fora em 3 lutas filmadas) | `r0/01_A5_sophia_fora_do_quadro.jpg`; `r1/combate_*.jpg` |
-| A6 escolha final estoura | PARCIAL (cabia; motivo do "Semente" só em tooltip) | **CORRIGIDO** (cabe e mostra "Semente: exige 4 Adormecidos…" abaixo dos botões) | `r0/06_A6_escolha_final.jpg`, `r1/cenaD_t68_falas.jpg` (escolha) |
-| A7 sem dica de controles | AINDA OCORRIA | **CORRIGIDO (parcial)**: faixa de teclas no topo na tela 1 (A·D mover, Espaço…) e dicas contextuais ("U usar o Anel"); só vi teclas de teclado | `r1/cena_t1.png` (quadros 020+) |
-| M1 legenda cobre pés/telegrafos | AINDA OCORRIA | **AINDA OCORRE, pior com o zoom 1,2**: com barra de chefe a faixa sobe e fica na altura das canelas/pés da Sophia (pés em y≈259/360; faixa começa ≈257) e cobre a névoa-telegrafo | `r1/M1_legenda_nos_pes_t10.jpg` |
-| M2 toast colado no Anel | **CORRIGIDO** (toast centralizado; "roubados" separado) | — | `prancha_hud.png` (hud_68) |
-| M3 itens indisponíveis parecem selecionados | **CORRIGIDO** (apagados + "Faíscas insuficientes · faltam 50") | — | `uiprobe\ui09_loja_pela_pausa.png` |
-| M4 card × HUD | NÃO REPRODUZIDO em 1280×720 (HUD inteiro; legenda acima do card sem sobrepor). Não testei 1366×768 | — | `miscprobe\misc_esc_no_card.png` |
-| M5 emendas 1 px | **CORRIGIDO** (7/68 → 0/68) | — | `crop_emenda_antes_depois.png` |
-| M6 cura no meio do chefe | **CORRIGIDO** (Melhorias desabilitada com chefe vivo, com o porquê) | — | `vis\vis_pausa_chefe.png`, `VIS|pausa_chefe|…desabilitada=true` |
-| M7 golpe abre a Estela | **CORRIGIDO** (não abre com inimigo perto/zona trancada) | — | `miscprobe\misc_estela_painel.png` |
-| L1 B não volta no Ateliê/Bestiário | **CORRIGIDO** | — | `uiprobe\log.txt` (`B_volta`) |
-| L2 nomes cortados no Bestiário | **CORRIGIDO** | — | `uiprobe\ui24_Gallery.png` |
-| L3 Crônicas rolam 3 linhas | **CORRIGIDO** (0,25 s = 1 linha) | — | `miscprobe\log.txt` |
-| L4 Sophia "fala" morta | AINDA OCORRIA | — | `uiprobe\ui15_morte.png` |
-| P1 ornamentos sobre textos | Parece CORRIGIDO (pré-jogo/opções limpos) | — | `uiprobe\ui02_pregame.png` |
-| P2 parede invisível / chão liso | PARCIAL (chão ganhou reflexo; câmera ainda mostra 90 px além da parede em r0) | — | `miscprobe\misc_camera_parede_esq.png` |
-| P3 Provação só mostra teclado | AINDA OCORRIA | — | `uiprobe\ui26_provacao.png` |
-| P4 "Esc / B fecham" mentia | **CORRIGIDO** (B agora é ui_cancel) | — | `padprobe\log.txt` |
-| D1 user:// compartilhado | NÃO TESTÁVEL aqui (override.cfg isola os worktrees) | — | — |
-| D2 vazamentos ao sair | AINDA OCORRE (inofensivo) | AINDA OCORRE | qualquer `.log` |
+| B1 controle A/B | CORRIGIDO | **CORRIGIDO** — A escolhe na tentação só com controle (a caixa fecha). A PadProbe da qa diz "caixa_ainda_aberta=true" porque aperta A dentro da guarda anti-aperto de 0,25 s (`CHOICE_GUARD`) — é a SONDA, não o jogo | `vis\logAG.txt` (`VIS\|tentacao_pad\|…A_depois=0 caixa_aberta=false`) |
+| A1 loja sem foco/Esc | CORRIGIDO | **CORRIGIDO** (foco no 1º item, ↓ navega, B fecha — pausa e santuário) | `uiprobe\log.txt`, `vis\log.txt` |
+| A2 legenda sobre menus | CORRIGIDO (resíduo no fade-in da loja) | **CORRIGIDO** na pausa/loja/opções/golpes | `uiprobe\ui08..ui11` |
+| A3 tela 68 uma barra | AINDA OCORRIA | **CORRIGIDO** — duas barras; fase II vai pro chefe certo; quando o Rei cai a do Colosso continua | `miscprobe\log.txt` (`barras=[…]`), qa_visual_caps `r1/t68_inicio_rei_na_borda.jpg` |
+| A4 morte congela / sem queda | AINDA OCORRIA | **CORRIGIDO** — no ar cai até o chão (y 216→286) e faz `dead`; de pé `anim=dead`, deitada | `miscprobe\log.txt`, `uiprobe\ui15_morte.png` |
+| A5 Sophia fora do quadro | AINDA OCORRIA (generalizado) | **CORRIGIDO** — 8/8 telas, 0/30 amostras fora; no card do Athoth x=50/640 | `vis\log.txt` (`quadro_tNN`) |
+| A6 escolha final estoura | PARCIAL | **CORRIGIDO** (cabe; motivo do Semente escrito abaixo) | qa_visual_caps `r1/cenaD_t68_falas.jpg` |
+| A7 sem dica de controles | AINDA OCORRIA | **CORRIGIDO (parcial)** — faixa de teclas na tela 1 e dicas contextuais; só ícones de TECLADO | `cena_t1.png` |
+| M1 legenda cobre pés | AINDA OCORRIA | **AINDA OCORRE (pior com zoom 1,2)** — com barra de chefe a faixa fica na altura das canelas/pés e cobre telegrafo de chão | qa_visual_caps `r1/M1_legenda_nos_pes_t10.jpg` |
+| M2 toast colado no Anel | CORRIGIDO | não revisto (sem regressão visível nas cenas 64/68) | — |
+| M3 indisponíveis parecem selecionados | CORRIGIDO | **CORRIGIDO** | `uiprobe\ui09_loja_pela_pausa.png` |
+| M4 card × HUD | não reproduzido em 1280×720 | não revisto | — |
+| M5 emendas 1 px | CORRIGIDO (7/68 → 0/68) | ver §2-r1 | — |
+| M6 cura no meio do chefe | CORRIGIDO | **CORRIGIDO** (Melhorias desabilitada com chefe vivo) | `vis\log.txt` |
+| M7 golpe abre a Estela | CORRIGIDO | **CORRIGIDO** (não abre com inimigo perto) | `miscprobe\log.txt` |
+| L1 B no Ateliê/Bestiário | CORRIGIDO | **CORRIGIDO** | `uiprobe\log.txt` |
+| L2 nomes cortados | CORRIGIDO | **CORRIGIDO** | `uiprobe\ui24_Gallery.png` |
+| L3 Crônicas 3 linhas | CORRIGIDO | **CORRIGIDO** (0,25 s = 1 linha) | `miscprobe\log.txt` |
+| L4 Sophia "fala" morta | AINDA OCORRIA | **CORRIGIDO** (sem legenda na morte) | `uiprobe\ui15_morte.png` |
+| P1 ornamentos | parece corrigido | parece corrigido | `uiprobe\ui02_pregame.png` |
+| P2 parede invisível | PARCIAL (90 px além) | **PARCIAL** (53 px além da parede) | `miscprobe\log.txt` |
+| P3 Provação só teclado | AINDA OCORRIA | **AINDA OCORRE** ("A/D mover · ESPAÇO saltar · J/K golpes…" mesmo com controle) | `uiprobe\ui26_provacao.png` |
+| P4 "Esc / B fecham" | CORRIGIDO | **CORRIGIDO** | `padprobe\log.txt` |
+| D1 user:// compartilhado | não testável (override.cfg) | não testável | — |
+| D2 vazamentos ao sair | AINDA OCORRE (inofensivo) | AINDA OCORRE (inofensivo) | qualquer `.log` |
+
+**Placar r1: 15 corrigidos (B1 A1 A2 A3 A4 A5 A6 M3 M6 M7 L1 L2 L3 L4 P4) + P1 parece corrigido · 2 parciais (A7, P2) · 2 AINDA OCORREM (M1, P3) · D2 inofensivo · D1 não testável · M2/M4/M5 sem regressão vista (M5 ver §2).**
 
 ## 4. Regressões / achados novos
 | ID | Sev. | Base | O quê / como reproduzir | Captura | Arquivo provável → dono |
@@ -119,8 +127,9 @@ Coluna r0 = base 589a751 (capturas). Coluna r1 = base b04f413 (o que já reverif
 | H1 | Baixa | r0 | `hud.gd:371` `_bar`: com vida quase 0 o "fantasma" da barra vira polígono degenerado → `ERROR: Invalid polygon data, triangulation failed` (13–23 por morte, spam no console) | log `C:\gnosis-wt\_caps\qa-visual\extra\hud_die.log` | `hud.gd` (`_wedge` com largura < 2×chanfro) → **ui-hud** (reverificar em r1) |
 | H2 | Baixa | r0 | Contador de faíscas do HUD congela com a árvore pausada: atrás da loja mostra o valor velho (HUD 0 × loja 147, tela 19) | `run\s19_shop.png` | `hud.gd` `_process` → **ui-hud** |
 | H3 | Baixa | r0 | Card do Campeão desenhado POR CIMA da loja do santuário quando o Campeão morre durante o card (só com morte muito rápida) | `r0/09_loja_card_e_rei_amarelo.jpg` | `cinematic.gd` → **encenacao** |
-| T1 | Baixa (ferramenta) | r0 | `MiscProbe` (qa) quebra no caso da batalha final: `hud._boss_name` não existe mais (HUD nova) → SCRIPT ERROR e o processo não fecha | `miscprobe\log.txt` linha 55 | `tools/qa_ux/misc_probe.gd` → **qa** |
-| V1 | ? (a confirmar) | r0/r1 | vsync ligado = 21–30 qps com janela fora do monitor (provável artefato do DWM) | seção 5 | **perf/tecnico** confirmar com janela visível |
+| T2 | Baixa (ferramenta) | r1 | `PadProbe` acusa "tentação: caixa ainda aberta" porque aperta A dentro da guarda `CHOICE_GUARD` (0,25 s) do DialogueBox — falso positivo; o jogo escolhe certo com A depois da guarda | `C:\gnosis-wt\_caps\qa-visual1\padprobe\log.txt` × `r1is\logAG.txt` | `tools/qa_ux/pad_probe.gd` (esperar 0,3 s) → **qa** |
+| T1 | Baixa (ferramenta) | r0 (corrigido em r1) | `MiscProbe` (qa) quebra no caso da batalha final: `hud._boss_name` não existe mais (HUD nova) → SCRIPT ERROR e o processo não fecha | `miscprobe\log.txt` linha 55 | `tools/qa_ux/misc_probe.gd` → **qa** |
+| V1 | **CRÍTICA** (a confirmar pelo João) | r1 | vsync ligado (o PADRÃO) = ~21 qps (46,8 ms/quadro) com janela VISÍVEL nesta máquina; vsync off = 146–182 qps | §0 P3 | `game_manager.gd` (padrão vsync) / driver → **tecnico** + perf |
 
 ## 5. FPS real (PerfTimeline = PerfProbe + espião de engasgos; 12 s medindo, Sophia atacando sem parar, arena cheia)
 GPU AMD RX 7600, renderer `gl_compatibility`, janela 1280×720 fora do monitor, **vsync desligado** (com vsync ligado ver V1).
