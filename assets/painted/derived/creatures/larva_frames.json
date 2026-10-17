@@ -1,0 +1,305 @@
+{
+ "character": "creatures/larva",
+ "atlas": "res://assets/painted/derived/creatures/larva_frames.png",
+ "flex": "res://assets/painted/derived/creatures/larva_frames_flex.png",
+ "sil": "res://assets/painted/derived/creatures/larva_frames_sil.png",
+ "body_px": 220.0,
+ "kind": "spirit",
+ "fit": {
+  "body_frac": 0.655,
+  "foot_gap": 0.085,
+  "dx": -0.01396,
+  "rect_px": [
+   425,
+   400
+  ]
+ },
+ "cloth_amp": 1.5,
+ "hem_wave": 1.0,
+ "atlas_size": [
+  2048,
+  512
+ ],
+ "frames": {
+  "idle_0": {
+   "rect": [
+    496,
+    0,
+    251,
+    251
+   ],
+   "top": 8.3,
+   "foot_y": 228.3,
+   "bottom": 243.63,
+   "pelvis_x": 132.6,
+   "mid": false
+  },
+  "walk_0": {
+   "rect": [
+    0,
+    0,
+    270,
+    262
+   ],
+   "top": 7.53,
+   "foot_y": 253.6,
+   "bottom": 253.6,
+   "pelvis_x": 120.34,
+   "mid": false
+  },
+  "walk_0-walk_1_50": {
+   "rect": [
+    747,
+    0,
+    271,
+    238
+   ],
+   "top": 8.0,
+   "foot_y": 227.0,
+   "bottom": 227.0,
+   "pelvis_x": 120.95,
+   "mid": true
+  },
+  "walk_1": {
+   "rect": [
+    0,
+    262,
+    281,
+    215
+   ],
+   "top": 6.77,
+   "foot_y": 199.94,
+   "bottom": 207.6,
+   "pelvis_x": 131.48,
+   "mid": false
+  },
+  "walk_1-walk_2_50": {
+   "rect": [
+    1774,
+    0,
+    272,
+    216
+   ],
+   "top": 16.0,
+   "foot_y": 208.0,
+   "bottom": 208.0,
+   "pelvis_x": 143.03,
+   "mid": true
+  },
+  "walk_2": {
+   "rect": [
+    1018,
+    0,
+    265,
+    234
+   ],
+   "top": 7.53,
+   "foot_y": 212.2,
+   "bottom": 226.77,
+   "pelvis_x": 132.12,
+   "mid": false
+  },
+  "walk_2-walk_0_50": {
+   "rect": [
+    1510,
+    0,
+    264,
+    221
+   ],
+   "top": 7.0,
+   "foot_y": 199.0,
+   "bottom": 213.0,
+   "pelvis_x": 146.18,
+   "mid": true
+  },
+  "windup": {
+   "rect": [
+    1283,
+    0,
+    227,
+    225
+   ],
+   "top": 18.26,
+   "foot_y": 209.14,
+   "bottom": 218.33,
+   "pelvis_x": 102.15,
+   "mid": false
+  },
+  "strike": {
+   "rect": [
+    281,
+    262,
+    385,
+    183
+   ],
+   "top": 7.53,
+   "foot_y": 174.64,
+   "bottom": 174.64,
+   "pelvis_x": 162.58,
+   "mid": false
+  },
+  "hurt": {
+   "rect": [
+    270,
+    0,
+    226,
+    258
+   ],
+   "top": 19.03,
+   "foot_y": 245.16,
+   "bottom": 250.53,
+   "pelvis_x": 83.69,
+   "mid": false
+  },
+  "death": {
+   "rect": [
+    666,
+    262,
+    334,
+    119
+   ],
+   "top": 7.53,
+   "foot_y": 110.25,
+   "bottom": 111.02,
+   "pelvis_x": 201.18,
+   "mid": false
+  }
+ },
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "f": "idle_0",
+     "anchor": [
+      132.6,
+      228.3
+     ]
+    }
+   ]
+  },
+  "walk": {
+   "frames": [
+    {
+     "f": "walk_0",
+     "anchor": [
+      120.34,
+      253.6
+     ]
+    },
+    {
+     "f": "walk_0-walk_1_50",
+     "anchor": [
+      121.48,
+      226.6
+     ]
+    },
+    {
+     "f": "walk_1",
+     "anchor": [
+      131.48,
+      199.94
+     ]
+    },
+    {
+     "f": "walk_1-walk_2_50",
+     "anchor": [
+      131.12,
+      198.2
+     ]
+    },
+    {
+     "f": "walk_2",
+     "anchor": [
+      132.12,
+      212.2
+     ]
+    },
+    {
+     "f": "walk_2-walk_0_50",
+     "anchor": [
+      123.12,
+      213.6
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 7.0
+  },
+  "windup": {
+   "frames": [
+    {
+     "f": "windup",
+     "anchor": [
+      102.15,
+      209.14
+     ]
+    }
+   ]
+  },
+  "attack": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      162.58,
+      174.64
+     ]
+    }
+   ]
+  },
+  "recover": {
+   "frames": [
+    {
+     "f": "strike",
+     "anchor": [
+      162.58,
+      174.64
+     ]
+    },
+    {
+     "f": "idle_0",
+     "anchor": [
+      132.6,
+      228.3
+     ]
+    }
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      83.69,
+      245.16
+     ]
+    }
+   ]
+  },
+  "dead": {
+   "frames": [
+    {
+     "f": "hurt",
+     "anchor": [
+      83.69,
+      245.16
+     ]
+    },
+    {
+     "f": "death",
+     "anchor": [
+      188.17,
+      111.02
+     ]
+    }
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ }
+}

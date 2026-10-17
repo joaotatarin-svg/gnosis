@@ -1,0 +1,86 @@
+{
+ "_doc": "Receita do NPC velkar (inhabitants índice 7). Folha do GPT 2x4: idle_0, idle_1, talk_0, talk_1, kneel, rise, farewell, walk_away.",
+ "group": "creatures",
+ "sheet": "artes/gpt/npc_velkar_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_0",
+  "idle_1",
+  "talk_0",
+  "talk_1",
+  "kneel",
+  "rise",
+  "farewell",
+  "walk_away"
+ ],
+ "ref": "idle_0",
+ "old_sheet": "assets/painted/derived/inhabitants.png",
+ "old_rect": [
+  425,
+  790,
+  425,
+  471
+ ],
+ "old_flip": false,
+ "kind": "npc",
+ "body_px": 240,
+ "anchors": {},
+ "anchor_fix": {},
+ "inbetween": {
+  "idle": [
+   "idle_0",
+   "idle_1",
+   2
+  ]
+ },
+ "flex": {},
+ "hem_wave": 0.0,
+ "states": {
+  "idle": {
+   "pingpong": [
+    "idle_0",
+    "idle_1"
+   ],
+   "loop": true,
+   "fps": 3.0
+  },
+  "talk": {
+   "frames": [
+    "talk_0",
+    "talk_1"
+   ],
+   "loop": true,
+   "fps": 2.5
+  },
+  "kneel": {
+   "frames": [
+    "kneel"
+   ]
+  },
+  "rise": {
+   "frames": [
+    "rise",
+    "idle_0"
+   ],
+   "dur": [
+    0.4
+   ]
+  },
+  "farewell": {
+   "frames": [
+    "farewell"
+   ]
+  },
+  "walk": {
+   "frames": [
+    "walk_away",
+    "idle_1"
+   ],
+   "loop": true,
+   "fps": 2.5
+  }
+ }
+}

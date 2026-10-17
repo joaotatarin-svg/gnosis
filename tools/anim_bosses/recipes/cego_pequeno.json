@@ -1,0 +1,62 @@
+{
+ "_doc": "O Cego pequeno (cena D, anagnórise). Folha do GPT 2x3: curled, trembling, look_up, reach, lifted, nestled; linha de baixo ~8% maior (scale_fix 0.92). Sem pintura antiga: o tamanho vem de scripts/fx/cego_pequeno.gd.",
+ "group": "npcs",
+ "sheet": "artes/gpt/cego_pequeno_a.png",
+ "grid": [
+  3,
+  2
+ ],
+ "cells": [
+  "curled",
+  "trembling",
+  "look_up",
+  "reach",
+  "lifted",
+  "nestled"
+ ],
+ "ref": "curled",
+ "kind": "npc",
+ "body_px": 200,
+ "scale_fix": {
+  "reach": 0.92,
+  "lifted": 0.92,
+  "nestled": 0.92
+ },
+ "anchors": {},
+ "anchor_fix": {},
+ "inbetween": {},
+ "flex": {},
+ "hem_wave": 0.0,
+ "states": {
+  "curled": {
+   "frames": [
+    "curled"
+   ]
+  },
+  "trembling": {
+   "frames": [
+    "trembling"
+   ]
+  },
+  "look_up": {
+   "frames": [
+    "look_up"
+   ]
+  },
+  "reach": {
+   "frames": [
+    "reach"
+   ]
+  },
+  "lifted": {
+   "frames": [
+    "lifted"
+   ]
+  },
+  "nestled": {
+   "frames": [
+    "nestled"
+   ]
+  }
+ }
+}

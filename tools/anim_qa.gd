@@ -35,6 +35,11 @@ func _ready() -> void:
 	match mode:
 		"film_sophia": _film_sophia()
 		"film_criaturas": _film_creatures()
+		"film_boss": _film_boss(args[2] if args.size() >= 3 else "arconte_sono")
+		"boss_board": await _boss_board(args[2] if args.size() >= 3 else "")
+		"shader_cmp": await _shader_cmp()
+		"npc_board": await _npc_board()
+		"cego_board": await _cego_board()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -122,7 +127,7 @@ func _film_sophia() -> void:
 		["windup", 0.04, 0.0], ["attack", 0.30, 30.0], ["windup", 0.04, 0.0], ["attack", 0.32, 30.0],
 		["idle", 0.25, 0.0], ["windup_heavy", 0.17, 0.0], ["attack_heavy", 0.45, 40.0], ["idle", 0.3, 0.0],
 		["dodge", 0.30, 330.0], ["idle", 0.2, 0.0], ["dodge", 0.30, -330.0, true], ["idle", 0.25, 0.0],
-		["block", 0.5, 0.0], ["cast", 0.55, 0.0], ["idle", 0.2, 0.0], ["jump", 0.35, 0.0, false, -1.0], ["fall", 0.35, 0.0, false, 1.0],
+		["block", 0.5, 0.0], ["block_parry", 0.45, 0.0], ["riposte", 0.45, 20.0], ["cast", 0.55, 0.0], ["idle", 0.2, 0.0], ["jump", 0.35, 0.0, false, -1.0], ["fall", 0.35, 0.0, false, 1.0],
 		["idle", 0.3, 0.0], ["hurt", 0.45, -40.0], ["dead", 1.6, 0.0], ["dead", 0.01, 0.0]]
 	actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
 	_label("SOPHIA — filme de animação (AnimQA)", Vector2(6, 6))
@@ -155,7 +160,16 @@ func _process(delta: float) -> void:
 				continue
 			var step: Array = a.tl[a.i]
 			art.dodge_back = step.size() > 3 and bool(step[3])
-			art.set_anim(String(step[0]))
+			# ações avulsas (S14): "block_parry" = guarda + aparo; "riposte" = contra-ataque
+			match String(step[0]):
+				"block_parry":
+					art.set_anim("block")
+					art.play_action("parry")
+				"riposte":
+					art.set_anim("idle")
+					art.play_action("riposte")
+				_:
+					art.set_anim(String(step[0]))
 		if a.i >= a.tl.size():
 			continue
 		alive = true
@@ -163,7 +177,8 @@ func _process(delta: float) -> void:
 		a.t += delta
 		art.position.x += float(st[2]) * delta
 		# pose_progress das criaturas (preparo/golpe/recuo)
-		art.pose_progress = clampf(a.t / float(st[1]), 0.0, 1.0) if String(st[0]) in ["windup", "attack", "recover"] and not art.painted.get("hero", false) else -1.0
+		var s0: String = String(st[0])
+		art.pose_progress = clampf(a.t / float(st[1]), 0.0, 1.0) if (s0.begins_with("windup") or s0.begins_with("attack") or s0 == "recover") and not art.painted.get("hero", false) else -1.0
 		if st.size() > 4:
 			# arco do pulo: sobe e desce
 			var u: float = a.t / float(st[1])
@@ -199,6 +214,177 @@ func _run_drift() -> void:
 	f.close()
 	print("RUN DRIFT: ", rows.size(), " quadros")
 	get_tree().quit()
+
+
+# ------------------------------------------------------------------ chefes
+## Chefe pelo id do Bestiário (arconte_sono, ..., colosso, rei_final).
+func _boss(id: String, pos: Vector2, sc: float, puppet: bool = false) -> CharacterArt:
+	var art := CharacterArt.new()
+	add_child(art)
+	var p: ArtProfile = Bestiary.get_type(id).profile
+	art.set_profile(p)
+	if puppet:
+		art._boss_db = {}          # força o boneco (comparação antes × depois)
+	art.position = pos - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0 * sc)
+	art.scale = Vector2(sc, sc)
+	return art
+
+
+## Prancha ANTES × DEPOIS por chefe com quadros: linha de cima = boneco antigo,
+## linha de baixo = quadros desenhados, nos mesmos estados/instantes.
+## `only` = um id; vazio = todos os chefes que têm atlas.
+func _boss_board(only: String) -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	get_window().size = Vector2i(1400, 520)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	var ids: Array = []
+	for b in Bestiary.bosses:
+		ids.append(b.id)
+	ids.append_array(["colosso", "rei_final"])
+	if only != "":
+		ids = [only]
+	var cells := [["idle", -1.0, 0.6], ["walk", -1.0, 0.5], ["windup", 0.9, 0.6], ["attack", 0.15, 0.06], ["recover", 0.5, 0.2], ["hurt", -1.0, 0.08], ["dead", -1.0, 0.5]]
+	for id in ids:
+		var probe := _boss(id, Vector2(-999, -999), 1.0)
+		var framed: bool = probe.has_boss_frames()
+		probe.free()
+		if not framed and only == "":
+			continue
+		var stage := Node2D.new()
+		add_child(stage)
+		for row in 2:
+			for i in cells.size():
+				var art := _boss(id, Vector2(100 + i * 200, 240 + row * 260), 1.6, row == 0)
+				remove_child(art)
+				stage.add_child(art)
+				art.set_process(false)
+				art.set_anim(String(cells[i][0]))
+				# avança o relógio visual como no jogo (mola, boneco) até o instante
+				var steps: int = int(float(cells[i][2]) * 60.0)
+				for f in steps:
+					art.pose_progress = float(cells[i][1]) if float(cells[i][1]) < 0.0 else float(cells[i][1]) * float(f + 1) / steps
+					if cells[i][0] == "walk":
+						art.motion_stride = 1.0
+						art.motion_distance += 2.0
+					art._process(1.0 / 60.0)
+				if row == 0:
+					var lb := Label.new()
+					lb.text = String(cells[i][0])
+					lb.position = Vector2(i * 200 + 10, 4)
+					stage.add_child(lb)
+			var tag := Label.new()
+			tag.text = ("BONECO (antes)" if row == 0 else "QUADROS (depois)") + "  " + id
+			tag.position = Vector2(8, 250 + row * 260 - 30)
+			stage.add_child(tag)
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		_save((out if out != "" else "user://boss_board") + "_" + id + ".png")
+		stage.queue_free()
+		await get_tree().process_frame
+	get_tree().quit()
+
+
+## Sophia e uma criatura com o shader painted_flex (cor ao quadrado) × o
+## painted_boss (cor do vértice separada): prova do achado do shader.
+func _shader_cmp() -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	for col in 2:
+		var art := _sophia(Vector2(140 + col * 260, GROUND), 2.0)
+		var cr := _creature("servo", Vector2(230 + col * 260, GROUND), 1.6)
+		for a in [art, cr]:
+			a.set_process(false)
+			a.set_anim("idle")
+			if col == 1:
+				a._flex_material().shader = load(CharacterArt.BOSS_SHADER)
+			a.queue_redraw()
+		_label("painted_flex (hoje)" if col == 0 else "cor do vértice 1x (corrigido)", Vector2(80 + col * 260, 20))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://shader_cmp.png")
+	get_tree().quit()
+
+
+## NPCs por quadros: Soter, Velkar (estados pedidos ao encontro) e o
+## Adormecido dormindo → despertando (troca de perfil como no sleeper.gd).
+func _npc_board() -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	var rows := [[Bestiary.soter_profile(), ["idle", "talk", "bless", "fade"]], [Bestiary.velkar_profile(), ["idle", "talk", "kneel", "farewell"]]]
+	for r in rows.size():
+		for i in rows[r][1].size():
+			var art := CharacterArt.new()
+			add_child(art)
+			art.set_profile(rows[r][0])
+			art.position = Vector2(60 + i * 110, 120 + r * 120) - Vector2(0, CharacterArt.GROUND_Y * art.profile.height / 44.0)
+			art.set_process(false)
+			art.set_anim(String(rows[r][1][i]))
+			for f in 40:
+				art._process(1.0 / 60.0)
+			_label(String(rows[r][1][i]), Vector2(40 + i * 110, 10 + r * 120))
+	# Adormecido: dormindo, depois acorda (0,3 / 0,8 / 1,5 / 3 s)
+	var times := [-1.0, 0.3, 0.8, 1.5, 3.0]
+	for i in times.size():
+		var art := CharacterArt.new()
+		add_child(art)
+		var p := ArtProfile.new()
+		p.body = ArtProfile.Body.HUMANOID
+		p.height = 42.0
+		p.painted_id = "sleeper"
+		p.primary = Color("435962")
+		p.eye = Color(0.5, 0.5, 0.55)
+		art.set_profile(p)
+		art.set_anim("idle")
+		art.position = Vector2(60 + i * 110, 340) - Vector2(0, CharacterArt.GROUND_Y * p.height / 44.0)
+		art.set_process(false)
+		if times[i] >= 0.0:
+			var q: ArtProfile = p.duplicate()
+			q.eye = Color(1.0, 0.92, 0.55)
+			art.set_profile(q)
+			for f in int(times[i] * 60.0):
+				art._process(1.0 / 60.0)
+		_label("dorme" if times[i] < 0.0 else "acorda %.1fs" % times[i], Vector2(40 + i * 110, 250))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://npc_board.png")
+	get_tree().quit()
+
+
+## O Cego pequeno (cena D): poses pelo glow como a encenação anima, ao lado
+## da Sophia (escala 1,5 como no staging.gd), em fundo escuro da Mente.
+func _cego_board() -> void:
+	RenderingServer.set_default_clear_color(Color("140f1c"))
+	var cases := [["curled", 0.0, 1.5], ["trembling", 0.0, 1.5], ["look_up", 0.3, 1.5], ["reach", 0.7, 1.5], ["lifted", 1.0, 1.5], ["nestled", 1.0, 0.5]]
+	for i in cases.size():
+		var x: float = 60.0 + i * 100.0
+		var s := _sophia(Vector2(x - 26.0, GROUND), 1.0)
+		s.set_process(false)
+		s.set_anim("idle")
+		s.queue_redraw()
+		var c := CegoPequeno.new()
+		add_child(c)
+		c.position = Vector2(x + 4.0, GROUND)
+		c.scale = Vector2.ONE * float(cases[i][2])
+		c.glow = float(cases[i][1])
+		if cases[i][0] == "trembling":
+			c.set_anim("trembling")
+		c._process(0.0)
+		_label("%s (glow %.1f)" % [cases[i][0], cases[i][1]], Vector2(x - 40.0, GROUND + 10.0))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://cego_board.png")
+	get_tree().quit()
+
+
+## Filme de um chefe sozinho: parado → anda → prepara (hold) → golpe → recupera
+## → dano → parado → prepara forte → golpe forte → morte (dissolve).
+func _film_boss(id: String) -> void:
+	RenderingServer.set_default_clear_color(Color("56636e"))
+	var art := _boss(id, Vector2(300, GROUND), 1.5)
+	art.scale.x = -art.scale.x       # olha pra esquerda, como no jogo
+	var tl := [["idle", 1.2, 0.0], ["walk", 1.2, -40.0], ["windup", 0.8, 0.0], ["attack", 0.25, 0.0], ["recover", 0.6, 0.0],
+		["idle", 0.4, 0.0], ["hurt", 0.4, 25.0], ["idle", 0.5, 0.0], ["windup_heavy", 0.9, 0.0], ["attack_heavy", 0.3, 0.0],
+		["recover", 0.6, 0.0], ["dead", 1.2, 0.0], ["dead", 0.01, 0.0]]
+	actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
+	_label("CHEFE %s — quadros desenhados (AnimQA)" % id, Vector2(6, 6))
 
 
 func _save(path: String) -> void:

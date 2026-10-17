@@ -45,7 +45,9 @@ func _ready() -> void:
 	if mode == "boards": await _boards(out)
 	elif mode == "seq": await _sequence(out)
 	elif mode == "perf": await _perf()
-	else: _check()
+	else:
+		_check()
+		await _check_frames()
 	print("PUPPET QA: ",failures," falhas")
 	get_tree().quit(0 if failures == 0 else 1)
 
@@ -127,6 +129,74 @@ func _check() -> void:
 		table.append("%-24s grade %2dx%2d  vértices %4d  triângulos %4d (de %d)  camadas %d  peças %d  montagem %.0f ms" % [entry.name,puppet.grid.x,puppet.grid.y,puppet.vertex_count,puppet.triangle_count,cells,puppet.limb_layers.size(),puppet.pieces.size(),ms])
 		art.queue_free()
 	for line in table: print(line)
+
+
+## Chefes com QUADROS DESENHADOS (tools/anim_bosses/boss_frames.py): o boneco
+## fica de reserva e o CharacterArt toca o atlas. Checa estados obrigatórios,
+## retângulos dentro do atlas, ALTURA DO CORPO igual à do boneco antigo (±3%),
+## pés no chão, boneco parado/invisível, telegrafo virando contorno e gibs do
+## quadro. Criaturas da família (glutão...) usam os quadros do seu Arconte.
+func _check_frames() -> void:
+	var framed: int = 0
+	var lines: Array = []
+	for entry in entries:
+		var art := _make(entry,self)
+		# criaturas da família (glutão, pretoriano) usam os quadros do seu Arconte
+		if not art.has_boss_frames():
+			art.queue_free()
+			continue
+		framed += 1
+		var meta: Dictionary = art._boss_db.meta
+		var atlas: Texture2D = art._boss_db.atlas
+		for st in ["idle","walk","windup","attack","hurt","dead"]:
+			check(meta.states.has(st),"Quadros sem o estado '%s': %s" % [st,entry.name])
+		var bad_rect: int = 0
+		for fname in meta.frames:
+			var r: Array = meta.frames[fname].rect
+			if float(r[0]) < 0 or float(r[1]) < 0 or float(r[0])+float(r[2]) > atlas.get_width() or float(r[1])+float(r[3]) > atlas.get_height():
+				bad_rect += 1
+		check(bad_rect == 0,"Quadros fora do atlas: %s (%d)" % [entry.name,bad_rect])
+		# altura do corpo em px de mundo: quadro de referência × boneco antigo
+		var hw: float = art._boss_world_h()
+		var k: float = hw*float(meta.fit.body_frac)/float(meta.body_px)
+		var ref: Dictionary = meta.frames[meta.states.idle.frames[0].f]
+		var body_world: float = (float(ref.foot_y)-float(ref.top))*k
+		var old_world: float = hw*float(meta.fit.body_frac)
+		check(absf(body_world/old_world-1.0) < 0.03,"Altura do corpo diferente do boneco: %s (%.1f × %.1f px)" % [entry.name,body_world,old_world])
+		# pés no chão: a âncora dos quadros parados fica na linha do pé (±3% do corpo)
+		var foot_err: float = 0.0
+		for e in meta.states.idle.frames:
+			var fr: Dictionary = meta.frames[e.f]
+			if not fr.get("mid",false):
+				foot_err = maxf(foot_err,absf(float(e.anchor[1])-float(fr.foot_y))/float(meta.body_px))
+		check(foot_err < 0.03,"Pé fora do chão no idle: %s (%.1f%%)" % [entry.name,foot_err*100.0])
+		# boneco de reserva: não aparece e nem monta a malha
+		art.set_process(true)
+		art.set_anim("windup")
+		art.pose_progress = 0.5
+		art.modulate = Color(1.0,0.85,0.2,1.0)      # tom do telegrafo (Enemy.TELEGRAPH_PARRYABLE)
+		art._process(1.0/60.0)
+		check(not art.boss_puppet.visible,"Boneco visível junto com os quadros: "+entry.name)
+		check(art.boss_puppet.skin == null,"Boneco montado/animado com quadros ativos: "+entry.name)
+		check(art.modulate.is_equal_approx(Color.WHITE) and art.telegraph_color.a > 0.5,"Telegrafo não virou contorno: "+entry.name)
+		# golpe: a mola dá o estalo (avanço positivo logo após a entrada)
+		art.set_anim("attack")
+		art.pose_progress = 0.1
+		for f in 5: art._process(1.0/60.0)
+		check(float(art._boss_m[0]) > 0.5,"Golpe sem estalo (mola parada): "+entry.name)
+		# gibs: 3×3 pedaços do último quadro desenhado (headless pode não
+		# desenhar; aí o teste preenche o quadro à mão, como o _draw faria)
+		await get_tree().process_frame
+		if art._boss_shown.is_empty():
+			var fr0: Dictionary = meta.frames[meta.states.attack.frames[0].f]
+			var rr: Array = fr0.rect
+			art._boss_shown = {"rect": Rect2(rr[0],rr[1],rr[2],rr[3]), "anchor": Vector2(meta.states.attack.frames[0].anchor[0],meta.states.attack.frames[0].anchor[1]), "k": k, "tex": atlas}
+		var gibs: Array = art.gib_parts()
+		check(gibs.size() == 9 and gibs[0].has("tex") and (gibs[0].tex as AtlasTexture).atlas == atlas,"Gibs do chefe não vêm do quadro: "+entry.name)
+		lines.append("%-24s QUADROS: %d quadros, %d estados, corpo %.1f px (boneco %.1f), atlas %dx%d" % [entry.name,meta.frames.size(),meta.states.size(),body_world,old_world,atlas.get_width(),atlas.get_height()])
+		art.queue_free()
+	for line in lines: print(line)
+	print("chefes com quadros desenhados: ",framed)
 
 
 func _place(art: CharacterArt, centre_x: float, ground_y: float, px_height: float) -> void:

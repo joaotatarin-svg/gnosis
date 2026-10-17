@@ -215,6 +215,76 @@
     "jump_4",
     "jump_5"
    ]
+  },
+  "s11": {
+   "file": "assets/painted/src/sophia_s11_a.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": 0.97,
+   "cells": [
+    "contD_0",
+    "passD_0",
+    "contE_0",
+    "passE_0",
+    "contD_1",
+    "passD_1",
+    "contE_1",
+    "passE_1"
+   ]
+  },
+  "s12": {
+   "file": "assets/painted/src/sophia_s12_b.png",
+   "grid": [
+    3,
+    2
+   ],
+   "scale": 1.0,
+   "cells": [
+    "hit",
+    "stagger",
+    "knee",
+    "hand",
+    "fall",
+    "lying"
+   ]
+  },
+  "s13": {
+   "file": "assets/painted/src/sophia_s13_b.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": 0.97,
+   "cells": [
+    "toeoffD",
+    "kneeD",
+    "reachD",
+    "weightD",
+    "toeoffE",
+    "kneeE",
+    "reachE",
+    "weightE"
+   ]
+  },
+  "s14": {
+   "file": "assets/painted/src/sophia_s14_a.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": 0.97,
+   "cells": [
+    "guard",
+    "parry",
+    "deflect",
+    "open",
+    "thrust",
+    "spin",
+    "follow",
+    "back"
+   ]
   }
  },
  "frame_fix": {
@@ -318,22 +388,29 @@
   },
   "dead": {
    "frames": [
-    "s9.die_0@rear",
-    "s9.die_1@pelvis",
-    "s9.die_2",
-    "s9.die_3"
+    "s12.hit",
+    "s12.stagger",
+    "s12.knee",
+    "s12.hand",
+    "s12.fall",
+    "s12.lying"
    ],
    "dur": [
+    0.1,
     0.14,
-    0.16,
-    0.12
+    0.14,
+    0.12,
+    0.1
    ],
-   "anchor": "lying"
+   "anchor": "rear"
   },
   "block": {
    "frames": [
-    "s1a.block"
+    "s14.guard",
+    "s14.back"
    ],
+   "loop": true,
+   "fps": 2.0,
    "anchor": "front"
   },
   "windup": {
@@ -481,36 +558,6 @@
    ],
    "anchor": "front"
   },
-  "run16": {
-   "frames": [
-    "s2.run_0",
-    "rinb.run_m0",
-    "s2.run_1",
-    "rinb.run_m1",
-    "s2.run_2",
-    "rinb.run_m2",
-    "s2.run_3",
-    "rinb.run_m3",
-    "s2.run_4",
-    "rinb.run_m4",
-    "s2.run_5",
-    "rinb.run_m5",
-    "s2.run_6",
-    "rinb.run_m6",
-    "s2.run_7",
-    "rinb.run_m7"
-   ],
-   "anchor": "pelvis",
-   "steps": [
-    0,
-    8
-   ],
-   "advance_split_of": "run",
-   "support_change": [
-    7,
-    15
-   ]
-  },
   "rise": {
    "frames": [
     "s9.rise_0",
@@ -520,6 +567,67 @@
     0.22
    ],
    "anchor": "pelvis"
+  },
+  "rund": {
+   "frames": [
+    "s2.run_0",
+    "s13.toeoffE",
+    "s13.weightD",
+    "s2.run_1",
+    "s2.run_2",
+    "s13.kneeE",
+    "s2.run_3",
+    "s13.reachE",
+    "s2.run_4",
+    "s13.weightE",
+    "s13.toeoffD",
+    "s2.run_5",
+    "s13.kneeD",
+    "s2.run_6",
+    "s13.reachD",
+    "s2.run_7"
+   ],
+   "anchor": "pelvis",
+   "cycle_bodies": "auto",
+   "steps": [
+    0,
+    7
+   ],
+   "support": {
+    "s13.reachD": "rear"
+   }
+  },
+  "parry": {
+   "frames": [
+    "s14.parry",
+    "s14.deflect",
+    "s14.open",
+    "s14.guard"
+   ],
+   "dur": [
+    0.08,
+    0.12,
+    0.1
+   ],
+   "anchor": "front"
+  },
+  "riposte": {
+   "frames": [
+    "s14.thrust",
+    "s14.spin",
+    "s14.follow",
+    "s14.back"
+   ],
+   "dur": [
+    0.1,
+    0.1,
+    0.12
+   ],
+   "anchor": "front",
+   "smear_at": [
+    1,
+    2
+   ]
   }
  }
 }

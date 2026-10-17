@@ -1,0 +1,315 @@
+{
+ "character": "creatures/velkar",
+ "atlas": "res://assets/painted/derived/creatures/velkar_frames.png",
+ "flex": "",
+ "sil": "res://assets/painted/derived/creatures/velkar_frames_sil.png",
+ "body_px": 240.0,
+ "kind": "npc",
+ "fit": {
+  "body_frac": 0.88747,
+  "foot_gap": 0.07006,
+  "dx": -0.06071,
+  "rect_px": [
+   425,
+   471
+  ]
+ },
+ "cloth_amp": 0.0,
+ "hem_wave": 0.0,
+ "atlas_size": [
+  2048,
+  512
+ ],
+ "frames": {
+  "idle_0": {
+   "rect": [
+    696,
+    0,
+    169,
+    264
+   ],
+   "top": 17.11,
+   "foot_y": 257.11,
+   "bottom": 257.11,
+   "pelvis_x": 94.69,
+   "mid": false
+  },
+  "idle_0-idle_1_25": {
+   "rect": [
+    1210,
+    0,
+    170,
+    263
+   ],
+   "top": 17.0,
+   "foot_y": 255.0,
+   "bottom": 255.0,
+   "pelvis_x": 88.49,
+   "mid": true
+  },
+  "idle_0-idle_1_50": {
+   "rect": [
+    865,
+    0,
+    172,
+    264
+   ],
+   "top": 17.0,
+   "foot_y": 256.0,
+   "bottom": 256.0,
+   "pelvis_x": 87.72,
+   "mid": true
+  },
+  "idle_0-idle_1_75": {
+   "rect": [
+    1037,
+    0,
+    173,
+    264
+   ],
+   "top": 17.0,
+   "foot_y": 255.0,
+   "bottom": 256.0,
+   "pelvis_x": 83.84,
+   "mid": true
+  },
+  "idle_1": {
+   "rect": [
+    366,
+    0,
+    176,
+    265
+   ],
+   "top": 17.67,
+   "foot_y": 257.67,
+   "bottom": 258.22,
+   "pelvis_x": 89.45,
+   "mid": false
+  },
+  "talk_0": {
+   "rect": [
+    181,
+    0,
+    185,
+    266
+   ],
+   "top": 17.11,
+   "foot_y": 258.22,
+   "bottom": 258.78,
+   "pelvis_x": 84.71,
+   "mid": false
+  },
+  "talk_1": {
+   "rect": [
+    542,
+    0,
+    154,
+    265
+   ],
+   "top": 18.78,
+   "foot_y": 258.22,
+   "bottom": 258.22,
+   "pelvis_x": 83.36,
+   "mid": false
+  },
+  "kneel": {
+   "rect": [
+    1804,
+    0,
+    214,
+    177
+   ],
+   "top": 7.67,
+   "foot_y": 168.22,
+   "bottom": 169.33,
+   "pelvis_x": 137.16,
+   "mid": false
+  },
+  "rise": {
+   "rect": [
+    1598,
+    0,
+    206,
+    206
+   ],
+   "top": 13.78,
+   "foot_y": 198.22,
+   "bottom": 199.33,
+   "pelvis_x": 124.38,
+   "mid": false
+  },
+  "farewell": {
+   "rect": [
+    0,
+    0,
+    181,
+    274
+   ],
+   "top": 12.11,
+   "foot_y": 266.56,
+   "bottom": 267.11,
+   "pelvis_x": 94.4,
+   "mid": false
+  },
+  "walk_away": {
+   "rect": [
+    1380,
+    0,
+    218,
+    249
+   ],
+   "top": 17.67,
+   "foot_y": 241.56,
+   "bottom": 242.11,
+   "pelvis_x": 103.25,
+   "mid": false
+  }
+ },
+ "states": {
+  "idle": {
+   "frames": [
+    {
+     "f": "idle_0",
+     "anchor": [
+      94.69,
+      257.11
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_25",
+     "anchor": [
+      92.69,
+      256.11
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_50",
+     "anchor": [
+      91.69,
+      256.67
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_75",
+     "anchor": [
+      89.69,
+      256.67
+     ]
+    },
+    {
+     "f": "idle_1",
+     "anchor": [
+      89.45,
+      257.67
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_75",
+     "anchor": [
+      89.69,
+      256.67
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_50",
+     "anchor": [
+      91.69,
+      256.67
+     ]
+    },
+    {
+     "f": "idle_0-idle_1_25",
+     "anchor": [
+      92.69,
+      256.11
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 3.0
+  },
+  "talk": {
+   "frames": [
+    {
+     "f": "talk_0",
+     "anchor": [
+      84.71,
+      258.22
+     ]
+    },
+    {
+     "f": "talk_1",
+     "anchor": [
+      83.36,
+      258.22
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 2.5
+  },
+  "kneel": {
+   "frames": [
+    {
+     "f": "kneel",
+     "anchor": [
+      137.16,
+      168.22
+     ]
+    }
+   ]
+  },
+  "rise": {
+   "frames": [
+    {
+     "f": "rise",
+     "anchor": [
+      124.38,
+      198.22
+     ]
+    },
+    {
+     "f": "idle_0",
+     "anchor": [
+      94.69,
+      257.11
+     ]
+    }
+   ],
+   "dur": [
+    0.4
+   ]
+  },
+  "farewell": {
+   "frames": [
+    {
+     "f": "farewell",
+     "anchor": [
+      94.4,
+      266.56
+     ]
+    }
+   ]
+  },
+  "walk": {
+   "frames": [
+    {
+     "f": "walk_away",
+     "anchor": [
+      103.25,
+      241.56
+     ]
+    },
+    {
+     "f": "idle_1",
+     "anchor": [
+      89.45,
+      257.67
+     ]
+    }
+   ],
+   "loop": true,
+   "fps": 2.5
+  }
+ }
+}
