@@ -38,6 +38,5 @@ func _run_next() -> void:
 
 
 func _on_orb_gone(o: SparkOrb) -> void:
-	var near: bool = o.global_position.distance_to(_player.global_position + Vector2(0, -10)) < 20.0
-	if near:
+	if o.delivered:
 		_arrivals.append([o.index, Time.get_ticks_msec() - _t0])
