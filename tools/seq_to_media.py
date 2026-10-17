@@ -23,7 +23,7 @@ Opções:
     --suffix S       acrescenta S aos nomes de saída (ex.: _follow)
 
 Exemplo completo (filmar a Sophia e montar):
-    godot --path . --fixed-fps 60 --resolution 1280x720 --position 4000,4000 ^
+    godot --path . --audio-driver Dummy --fixed-fps 60 --resolution 1280x720 --position 4000,4000 ^
         res://tools/Shot.tscn -- 3 C:/caps/sophia.png 60 seq=150 every=2 act=demo solo
     python tools/seq_to_media.py C:/caps/sophia --follow player --suffix _follow
 """

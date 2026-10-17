@@ -11,6 +11,7 @@
   (b) roda as cenas de QA headless: ScriptCheck, CodexQA, AudioQA, GnoseQA, SaveQA, PuppetQA,
       HeroQA, WaveQA (cada uma sai com 0/1 sozinha). Com -Full também roda o
       CodexPlaytest (bot jogando o desafio por inputs reais; até ~3 min).
+      Toda execução usa `--audio-driver Dummy` (sem som no PC do dono).
   (c) resumo: uma linha por etapa (OK/FALHOU/TEMPO), nº de "QA PASS", tempo,
       e as primeiras linhas de erro de quem falhou. Logs completos em -LogDir.
 
@@ -111,7 +112,7 @@ Write-Host "Logs:  $LogDir`n"
 # (a) scripts: abrir o editor headless compila todos os scripts e reimporta.
 if ($Only.Count -eq 0 -or $Only -contains "Scripts") {
 	Write-Host "-> Scripts (editor headless)..." -NoNewline
-	$r = Invoke-Step "Scripts" @("--headless", "--path", $Path, "--editor", "--quit")
+	$r = Invoke-Step "Scripts" @("--headless", "--audio-driver", "Dummy", "--path", $Path, "--editor", "--quit")
 	$results += $r
 	Write-Host (" {0} ({1}s)" -f $(if ($r.Ok) { "ok" } else { "FALHOU" }), $r.Secs)
 }
@@ -131,7 +132,7 @@ foreach ($name in $todo.Keys) {
 		continue
 	}
 	Write-Host "-> $name..." -NoNewline
-	$r = Invoke-Step $name @("--headless", "--path", $Path, $scene, "--quit-after", "20000")
+	$r = Invoke-Step $name @("--headless", "--audio-driver", "Dummy", "--path", $Path, $scene, "--quit-after", "20000")
 	$results += $r
 	Write-Host (" {0} ({1}s, {2} PASS)" -f $(if ($r.Ok) { "ok" } elseif ($r.TimedOut) { "TEMPO ESGOTADO" } else { "FALHOU" }), $r.Secs, $r.Passes)
 }

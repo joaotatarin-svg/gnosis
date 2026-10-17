@@ -24,13 +24,14 @@ extends Node
 ##   o tools/seq_to_media.py usa isso pra recortar acompanhando o personagem.
 ##   RECOMENDADO: passar `--fixed-fps 60` ao Godot (antes do `--`) pra que o
 ##   tempo de jogo entre quadros seja fixo mesmo que salvar o PNG seja lento.
-## Ex.: godot --path . --fixed-fps 60 --resolution 1280x720 --position 4000,4000 \
+## Ex.: godot --path . --audio-driver Dummy --fixed-fps 60 --resolution 1280x720 --position 4000,4000 \
 ##        res://tools/Shot.tscn -- 3 C:/caps/sophia.png 60 seq=90 every=2 act=demo solo
 
 const ACTS := ["idle", "walk", "light", "heavy", "dodge", "magic", "jump", "combo", "demo"]
 
 
 func _ready() -> void:
+	AudioServer.set_bus_mute(0, true)   # ferramenta NUNCA toca som (pedido do dono)
 	var w := ShotWorker.new()
 	var args := OS.get_cmdline_user_args()
 	if args.size() >= 1:

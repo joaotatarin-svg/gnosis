@@ -9,6 +9,7 @@ const SKIP_DIRS := ["res://.godot", "res://addons", "res://builds", "res://.agen
 
 
 func _ready() -> void:
+	AudioServer.set_bus_mute(0, true)   # ferramenta NUNCA toca som
 	var files: Array[String] = []
 	_scan("res://", files)
 	var bad: Array[String] = []

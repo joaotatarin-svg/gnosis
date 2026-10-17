@@ -4,13 +4,14 @@ extends Node
 ## N criaturas comuns (repõe quem morre), a Sophia ataca sem parar (gera golpes,
 ## faíscas, desmembramento) e mede o tempo de cada frame por alguns segundos.
 ## Uso:
-##   godot --path . --resolution 1280x720 --position 4000,4000 res://tools/PerfProbe.tscn -- \
+##   godot --path . --audio-driver Dummy --resolution 1280x720 --position 4000,4000 res://tools/PerfProbe.tscn -- \
 ##         [tela=19] [n=12] [seg=10] [vsync=0|1] [ataque=1|0] [out=C:/x/perf.json]
 ## Imprime "PERF ..." (qps médio, mínimo, p1%, tempo de frame médio/p99/máx,
 ## draw calls, nós, memória) e grava o JSON em `out` (se dado). NÃO use
 ## --fixed-fps aqui (ele falsifica o tempo real).
 
 func _ready() -> void:
+	AudioServer.set_bus_mute(0, true)   # ferramenta NUNCA toca som (pedido do dono)
 	var p := PerfWorker.new()
 	for a in OS.get_cmdline_user_args():
 		var kv := a.split("=", true, 1)
