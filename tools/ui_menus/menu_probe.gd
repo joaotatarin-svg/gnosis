@@ -9,7 +9,7 @@ extends Node
 ##     --path . --resolution 1280x720 res://tools/ui_menus/MenuProbe.tscn -- <pasta_saida> [seção ...]
 ## Sem capturas (testes de tempo confiáveis — a janela no llvmpipe roda a poucos fps):
 ##   godot --headless --audio-driver Dummy --path . res://tools/ui_menus/MenuProbe.tscn -- <pasta> [seção ...]
-## Seções: loja pausa pilha voltar cronicas opcoes estela provacao creditos bestiario (padrão: todas)
+## Seções: glifos loja pausa pilha voltar cronicas opcoes estela provacao creditos bestiario (padrão: todas)
 ## + opcoes_provacao (só quando pedida: confere a REVISAO #13, que é do SaveManager/Técnico)
 ## Imprime "UIM OK: ..." / "UIM FALHA: ..." e no fim "UIM RESULT: N ok, M falha(s)".
 ## O B do controle em `ui_cancel` (e o A em `ui_accept`) é mapeado AQUI se o
@@ -185,6 +185,8 @@ class Worker extends Node:
 	# --- roteiro -----------------------------------------------------------------
 
 	func _run() -> void:
+		if want("glifos"):
+			await _glyphs()
 		if want("loja"):
 			await _shop()
 		if want("pausa"):
@@ -210,6 +212,43 @@ class Worker extends Node:
 		PauseStack.clear()
 		print("UIM RESULT: %d ok, %d falha(s)" % [ok, fail])
 		get_tree().quit()
+
+	## #33: InputGlyphs — tipo do controle pelo nome, rótulos por dispositivo,
+	## troca pelo último evento (teclado × controle) e sinal de mudança.
+	func _glyphs() -> void:
+		var G = InputGlyphs
+		check(G.kind_from_name("DualSense Wireless Controller") == G.Device.PLAYSTATION, "glifos: DualSense → PlayStation")
+		check(G.kind_from_name("PS4 Controller") == G.Device.PLAYSTATION, "glifos: PS4 → PlayStation")
+		check(G.kind_from_name("Wireless Controller", 0x054C) == G.Device.PLAYSTATION, "glifos: vendor Sony → PlayStation")
+		check(G.kind_from_name("Xbox Series Controller") == G.Device.XBOX, "glifos: Xbox → Xbox")
+		check(G.kind_from_name("Steam Deck") == G.Device.DECK, "glifos: Steam Deck")
+		check(G.kind_from_name("Nintendo Switch Pro Controller") == G.Device.NINTENDO, "glifos: Switch → Nintendo")
+		check(G.kind_from_name("Generic USB Joystick") == G.Device.XBOX, "glifos: genérico → letras do Xbox")
+		G.set_device(G.Device.KEYBOARD)
+		check(G.label("attack_light") == "J" and G.label("jump") == "Espaço", "glifos: teclado J / Espaço [%s / %s]" % [G.label("attack_light"), G.label("jump")])
+		check(G.label("attack_light", G.Device.XBOX) == "X" and G.label("block", G.Device.XBOX) == "LB" and G.label("skill2", G.Device.XBOX) == "RT", "glifos: Xbox X / LB / RT")
+		var ps_light: String = G.label("attack_light", G.Device.PLAYSTATION)
+		check(ps_light in ["□", "Quadrado"] and G.label("block", G.Device.PLAYSTATION) == "L1" and G.label("skill2", G.Device.PLAYSTATION) == "R2", "glifos: PlayStation %s / L1 / R2" % ps_light)
+		check(G.label("jump", G.Device.NINTENDO) == "B", "glifos: Switch pula com B (posição de baixo)")
+		check(G.hint([["ui_accept", "confirmar"], ["ui_cancel", "voltar"]], G.Device.XBOX) == "A confirmar  ·  B voltar", "glifos: hint Xbox [%s]" % G.hint([["ui_accept", "confirmar"], ["ui_cancel", "voltar"]], G.Device.XBOX))
+		await frames(2)
+		var changes: Array = []
+		var l: Node = G.listener()
+		check(l != null and l.is_inside_tree(), "glifos: ouvinte na árvore")
+		var cb := func(d: int): changes.append(d)
+		l.connect("device_changed", cb)
+		await pad(JOY_BUTTON_X)
+		check(G.is_pad(), "glifos: botão do controle → is_pad() [%s]" % G.device_name())
+		await key(KEY_J)
+		check(not G.is_pad() and changes.size() >= 2, "glifos: tecla volta para teclado (sinal %d vez(es))" % changes.size())
+		var jm := InputEventJoypadMotion.new()
+		jm.axis = JOY_AXIS_LEFT_X
+		jm.axis_value = 0.2
+		Input.parse_input_event(jm)
+		await frames(2)
+		check(not G.is_pad(), "glifos: drift do analógico (0,2) não troca")
+		l.disconnect("device_changed", cb)
+		G.set_device(G.Device.KEYBOARD)
 
 	## A1 / M3: loja com 0 faíscas e com faíscas; foco, setas, compra, B fecha.
 	func _shop() -> void:
