@@ -54,3 +54,9 @@ Se você é a CONTINUAÇÃO de um agente interrompido: comece com `git log --one
 e `git diff`; revise o que o anterior deixou (não jogue fora sem motivo), valide, commite e siga o brief do seu cargo
 em `docs/handoff/briefs/`. Os `.uid` não rastreados das sondas (tools/qa_ux, tools/revisao, pause_stack, scenery_library)
 NÃO são seus: não commite.
+
+## Fila de CPU (desde 06:45 UTC)
+O container tem 4 CPUs e chegou a carga 60. O comando `godot` agora é um semáforo: no máximo 5 Godot ao mesmo tempo;
+os demais ESPERAM um slot (não é travamento). Por isso: rode o validate com `TIMEOUT=900 tools/validate.sh`, não rode
+várias instâncias pesadas em paralelo (bot de balance: uma por vez), e prefira `--only` com as QAs que o seu trabalho
+afeta durante o desenvolvimento (a rodada completa no fim).
