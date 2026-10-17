@@ -848,3 +848,7 @@ static func prewarm(level: Node) -> void:
 			stage.queue_free()
 	RenderingServer.frame_post_draw.connect(done)
 	stage.tree_exited.connect(func(): RenderingServer.frame_post_draw.disconnect(done), CONNECT_ONE_SHOT)
+	# Sem janela (headless: bot de balance, QAs) não há quadro desenhado e o
+	# frame_post_draw nunca vem — o palco ficaria para sempre rodando (ALWAYS).
+	if DisplayServer.get_name() == "headless":
+		level.get_tree().create_timer(0.5, true, false, true).timeout.connect(stage.queue_free)
