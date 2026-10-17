@@ -66,6 +66,28 @@ Sugestão: nascer as duas formas dentro do quadro (x ≤ ~560 do espaço 640), s
 
 ---
 
+## VSync — bissecção (pedido do chefe; janela VISÍVEL em 100,100, ≤40 s por medição, tela 22, `--audio-driver Dummy`)
+Sonda portátil `tools/qa_visual/VsProbe.tscn` (só abre a tela, pula falas, espera 2 s e mede 8 s; sem criaturas extras, sem ataque).
+Worktrees temporários `C:\gnosis-wt\bisect-a` / `bisect-b` (apagados ao fim). Logs: `C:\gnosis-wt\_caps\qa-visual\r1\bisect\`.
+
+| Base | vsync | qps médio | ms médio / p99 / máx |
+|---|---|---|---|
+| (a) `codex/despertar` d291db0 — **pré-Onda 1** | ligado | **28,0** | 35,7 / 48,8 / 52,6 |
+| (a) idem | desligado (fora do monitor) | 619,7 | 1,6 / 2,1 / 2,6 |
+| (b) 4eb4809 — Onda 1 fechada | ligado | **25,6** | 39,1 / 51,5 / 54,0 |
+| (c) b04f413+ — integração atual | ligado | **24,7** | 40,5 / 52,9 / 54,3 |
+| (c) idem, `physics_interpolation` desligada em tempo real | ligado | 25,0 | 40,0 / 52,1 / 55,5 |
+| (c) idem, vsync do JEITO DO JOGO (Opções padrão aplicadas no boot, `vsync=keep`) | ligado (modo 1) | **21,6** | 46,4 / 48,9 / 50,2 |
+| (c) idem | desligado | 395,3 | 2,5 / 3,3 / 8,0 |
+| (c) idem, `Engine.max_fps = 144` | desligado | 130,4 | 7,7 / 16,6 / 20,5 |
+| (c) idem, `Engine.max_fps = 60` | desligado | 60,0 | 16,7 / 30,8 / 31,4 |
+
+**Conclusão: NÃO é regressão da Onda 1 nem da Onda 2.** A base pré-Onda 1 já dava 28 qps com vsync ligado; physics_interpolation não muda nada (25,0 × 24,7).
+É o vsync do OpenGL (Compatibility) nesta máquina (RX 7600, driver 26.8.1, monitor 144 Hz + 2º monitor 1366×768): qualquer modo de vsync (ENABLED/ADAPTIVE/MAILBOX, OpenGL ou ANGLE) fica em 20–28 qps, enquanto sem vsync a mesma cena faz 400–620 qps.
+A pequena queda a→c (28 → 25 → 21,6) acompanha o custo maior por quadro, mas o teto vem do vsync.
+Ainda não descartado: recurso do driver AMD (Radeon Chill/limitador) que só age sem entrada real de usuário — por isso **o João precisa confirmar jogando** (Opções → VSync, FpsOverlay ligado).
+**Recomendação ao Técnico:** padrão `vsync = false` + `Engine.max_fps = 144` (ou a taxa do monitor via `DisplayServer.screen_get_refresh_rate()`); 144 dá 130 qps médios aqui. Manter a opção VSync para quem quiser, com aviso.
+
 ## 1. Validação (`tools/validate.ps1`)
 | Etapa | r0 (589a751) | r1 (b04f413) |
 |---|---|---|
