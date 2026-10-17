@@ -249,8 +249,10 @@ func _run() -> void:
 	Audio.set_music_layer_volume(0.2, "theme")
 	Audio.set_music_pitch(0.75, 0.0)
 	Audio._on_state_changed(GameManager.State.MENU)
-	check(Audio._layer_db.is_empty() and is_equal_approx(Audio._music_pitch, 1.0) and Audio.current_track == "theme",
-		"menu zera tom e camadas e volta ao tema")
+	check(Audio._layer_db.is_empty() and is_equal_approx(Audio._music_pitch, 1.0) and Audio.current_track == Audio.menu_track(),
+		"menu zera tom e camadas e volta ao tema do menu ('%s')" % Audio.menu_track())
+	check(Audio.menu_track() == ("menu" if Audio.has_music("menu") else "theme"),
+		"tema do menu: 'menu' se o arquivo existir, senão 'theme' (hoje: %s)" % Audio.menu_track())
 
 	# (b11) Corte seco: fade 0 para a anterior na hora e a nova entra cheia.
 	Audio.play_music("rei", true, 1.0, 0.0)
@@ -336,6 +338,95 @@ func _run() -> void:
 		and absf((m1 - m0) + 4.0) < 0.3 and absf(m2 - m0) < 0.3,
 		"slow-mo: corte %.0f Hz (esquiva %.0f Hz), música %.1f → %.1f → %.1f dB, filtro desliga ao sair" % [hz_cut, hz_dodge, m0, m1, m2])
 
+	# (b15) Tema da Voz (ROTEIRO §5 #8): santuário baixo → roubo distorcido 3 s
+	#       e corte seco para `roubo` → anagnórise sozinho e lento. Fora de run.
+	var keep_run2: bool = RunManager.run_active
+	var keep_codex: bool = CodexSession.active
+	RunManager.run_active = false
+	CodexSession.active = false
+	Audio._on_state_changed(GameManager.State.MENU)
+	Audio.voice_theme("santuario")
+	var sanct_ok: bool = Audio.current_track == "theme" and is_equal_approx(float(Audio._layer_db.get("theme", 99.0)), Audio.VOICE_SANCTUARY_DB) \
+		and Audio.voice_theme_mode == "santuario" and is_equal_approx(Audio._duck_scale, 1.0)
+	Audio.voice_theme("roubo")
+	var stolen_ok: bool = Audio._playing_track == "theme" and is_equal_approx(Audio._music_pitch, Audio.VOICE_STOLEN_PITCH) \
+		and not Audio._layer_db.has("theme") and Audio._duck_scale < 0.5
+	var t_roubo := Time.get_ticks_msec()
+	await _wait_real(Audio.VOICE_STOLEN_SECS - 0.4)
+	var early: String = Audio._playing_track
+	while Audio._playing_track != "roubo" and Time.get_ticks_msec() - t_roubo < int(Audio.VOICE_STOLEN_SECS * 1000.0) + 600:
+		await get_tree().process_frame
+	var cut_ms := Time.get_ticks_msec() - t_roubo
+	var n_roubo := 0
+	for m in Audio._music:
+		if m.playing:
+			n_roubo += 1
+	check(sanct_ok and stolen_ok and early == "theme" and Audio._playing_track == "roubo" and n_roubo == 1
+		and is_equal_approx(Audio._music_pitch, 1.0) and absf(cut_ms - Audio.VOICE_STOLEN_SECS * 1000.0) < 400.0,
+		"tema da Voz: santuário (−3 dB) → roubo a 0,75 → corte seco para 'roubo' em %d ms (%d player)" % [cut_ms, n_roubo])
+	# Uma troca de cena no meio cancela o corte agendado.
+	Audio.voice_theme("roubo")
+	Audio.voice_theme("sozinha")
+	await _wait_real(Audio.VOICE_STOLEN_SECS + 0.3)
+	check(Audio._playing_track == "theme" and is_equal_approx(Audio._music_pitch, Audio.VOICE_ALONE_PITCH),
+		"anagnórise: tema sozinho e lento (%.2f) e o corte do roubo agendado antes foi cancelado (%s)" % [Audio._music_pitch, Audio._playing_track])
+	var s0 := AudioServer.get_bus_volume_db(music_bus)
+	Audio.duck(true)
+	await _wait_real(0.4)
+	var s1 := AudioServer.get_bus_volume_db(music_bus)
+	Audio.duck(false)
+	await _wait_real(1.0)
+	check(absf((s1 - s0) - Audio.DUCK_MUSIC_DB * Audio.SCENE_DUCK_SCALE) < 0.5,
+		"na cena musical o diálogo abaixa a música só %.1f dB (normal: %.1f)" % [s1 - s0, Audio.DUCK_MUSIC_DB])
+	Audio.voice_theme("")
+	check(Audio.voice_theme_mode == "" and is_equal_approx(Audio._duck_scale, 1.0), "voice_theme('') encerra a cena e devolve o ducking normal")
+	# Névoa (cena A): abaixada longa; a troca de tela solta.
+	Audio.cue("fog_thickens")
+	await _wait_real(0.4)
+	var fog_db: float = Audio._temp_duck_db
+	Audio._end_scene_music()
+	await _wait_real(1.0)
+	check(absf(fog_db - Audio.FOG_DUCK_DB) < 0.3 and absf(Audio._temp_duck_db) < 0.05,
+		"cue fog_thickens abaixa a música %.1f dB e a troca de tela solta (%.1f)" % [fog_db, Audio._temp_duck_db])
+	RunManager.run_active = keep_run2
+	CodexSession.active = keep_codex
+
+	# (b16) Todo `cue` usado nas falas (narrative.gd) é conhecido por Audio.cue();
+	#       cue desconhecido devolve false; gemas do roubo sobem, as da volta descem.
+	var nsrc := FileAccess.get_file_as_string("res://scripts/autoload/narrative.gd")
+	var cre := RegEx.new()
+	cre.compile("_c\\(.+\"([a-z0-9_]+)\"\\)")
+	var used_cues: Dictionary = {}
+	for m in cre.search_all(nsrc):
+		used_cues[m.get_string(1)] = true
+	var unknown_cues: Array[String] = []
+	for c in used_cues:
+		if not Audio.CUES.has(c):
+			unknown_cues.append(c)
+	var cue_fail: Array[String] = []
+	for c in Audio.CUES:
+		if not Audio.cue(c):
+			cue_fail.append(c)
+	Audio._on_state_changed(GameManager.State.MENU)
+	check(used_cues.size() >= 15 and unknown_cues.is_empty() and cue_fail.is_empty() and not Audio.cue("__nao_existe__"),
+		"%d cues nas falas, todos tratados por Audio.cue() (desconhecidos: %s; falharam: %s)" % [used_cues.size(), str(unknown_cues), str(cue_fail)])
+	await _wait_real(0.1)
+	var steal_p: Array[float] = []
+	var ret_p: Array[float] = []
+	for i in 2:
+		Audio.ring_note(i, false)
+		for k in Audio._players.size():
+			if Audio._pl_name[k] == "ring_steal" and Audio._pl_start[k] == Audio._pl_start.max():
+				steal_p.append(Audio._players[k].pitch_scale)
+		Audio.ring_note(i, true)
+		for k in Audio._players.size():
+			if Audio._pl_name[k] == "ring_gain" and Audio._pl_start[k] == Audio._pl_start.max():
+				ret_p.append(Audio._players[k].pitch_scale)
+		await _wait_real(0.06)
+	check(steal_p.size() == 2 and ret_p.size() == 2 and steal_p[1] > steal_p[0] and ret_p[1] < ret_p[0]
+		and is_equal_approx(steal_p[1] / steal_p[0], pow(2.0, 1.0 / 12.0)),
+		"ring_note: roubo sobe um semitom por gema %s, a volta desce %s" % [str(steal_p), str(ret_p)])
+
 	# (c) tocar SFX inexistente não gera erro (cache negativa) — e o pool aguenta rajada.
 	Audio.play_sfx("__nao_existe__")
 	Audio.play_sfx_at("__nao_existe__", Vector2(9999, 0))
@@ -379,7 +470,7 @@ func _run() -> void:
 	for d in SCAN_DIRS:
 		_collect_gd(d, files)
 	var re := RegEx.new()
-	re.compile("play_(sfx_at|sfx|music)\\(\"([A-Za-z0-9_]+)\"")
+	re.compile("play_(sfx_at|sfx_pitched|sfx|music)\\(\"([A-Za-z0-9_]+)\"")
 	var unknown: Array[String] = []
 	var used: Dictionary = {}
 	for f in files:

@@ -89,7 +89,47 @@ Packs brutos: fora do git, `GNOSIS_PACKS` (padrão: `assets/_packs` da cópia or
 `stop_music(fade)` · `set_music_pitch(p, fade=1)` · `duck_music(segundos, db=-12)` · `set_music_layer_volume(t, faixa='')` ·
 `play_ambience(nome, volume_db=0)` · `stop_ambience(fade)` · `duck(on)` · `is_ducked()` · `play_blip(falante)` ·
 `blip_for_speaker(falante)` · `has_sfx/has_music/has_ambience` · `variants_of(nome)` · `set_volume(bus, linear)` ·
-`track_for_screen(tela)` · `ambience_for_screen(tela)`.
+`track_for_screen(tela)` · `ambience_for_screen(tela)` · `play_sfx_pitched(nome, tom, dB)` · `voice_theme(modo)` ·
+`cue(nome)` · `ring_note(i, devolvendo)` · `menu_track()` · `shutdown()`.
+
+### Tema da Voz e API das cenas (Onda 2 — ROTEIRO §2 e §5 #8)
+
+`theme` (Gregorian Chant) é o **tema da Voz**. Quem encena chama:
+
+| Chamada | Quando | O que faz |
+|---|---|---|
+| `Audio.voice_theme("santuario")` | antes da conversa do santuário | `theme` entra em 2 s, 3 dB abaixo (+ ducking do diálogo = −12 dB) |
+| `Audio.voice_theme("")` | depois da conversa | volta à música da tela (Éon/Arconte/Provação) |
+| `Audio.cue(line.get("cue", ""))` | a cada fala mostrada (`DialogueBox.line_shown`) | som do `cue` (tabela abaixo); devolve false se o cue é desconhecido |
+| `Audio.ring_note(i, devolvendo)` | cada gema que voa (roubo, i = 0..6) / volta (anagnórise) | `ring_steal` +1 semitom por gema / `ring_gain` −1 semitom por gema |
+| `Audio.play_sfx("clap")` | roubo #4 (sem cue) | 2 palmas secas e lentas em sala de pedra |
+
+| `cue` | Som |
+|---|---|
+| `heartbeat` | `heartbeat` (2 batidas abafadas) |
+| `fog_thickens` | `fog_swell` + música −8 dB ("desce a 40 %") até `king_emerges` ou a troca de tela |
+| `king_emerges` | `king_step`; na tela do Rei também `boss_appear` −8 dB e a música volta em 2 s |
+| `mask_lights` / `mask_cracks` | `mask_light` / o mesmo um trítono abaixo, −3 dB |
+| `king_sinks` | `fog_swell` a 0,8 de tom |
+| `chime` | `mask_light` −6 dB |
+| `music_stop` | para a música em 1,5 s |
+| `voice_merge` | `voice_merge` |
+| `rings_fly` | nada (o som é por gema: `ring_note`) |
+| `mask_falls` | `voice_theme("roubo")`: corte seco para `theme` a 0,75 por 3 s REAIS → corte seco para `roubo` (sem loop) |
+| `sink` | `dive` + `fog_swell` a 0,6 + música para em 1,5 s |
+| `rings_return` | corte seco da música |
+| `flash` | `nova` + `ring_gain` −3 dB |
+| `colossus_shrinks` | `child_breath` |
+| `theme_alone` | `voice_theme("sozinha")`: `theme` a 0,9, entra em 4 s |
+| `reclaim` | `revive` −6 dB |
+| `wait_2s` | nada (é da UI) |
+
+Em `roubo`/`sozinha` o ducking de diálogo vale só 35 % (~−3 dB): ali a música É a cena. Trocar de tela,
+voltar ao menu ou abrir a Provação desfaz tudo (cancela o corte agendado, solta abaixadas de cena).
+O AudioQA confere que todo `cue` usado em `narrative.gd` é tratado.
+
+**Tema do menu:** o menu toca `menu` se `music/menu.ogg` existir (faixa opcional, `OPTIONAL_MUSIC`), senão
+`theme`. As opções sintetizadas estão em `tools/audio_synth/menu_theme.py` (ver ESTADO).
 
 Falantes → voz: Sophia → `blip_sophia`; O Rei, Yaldabaoth e os 7 Arcontes → `blip_rei`; A Voz, Soter, ??? →
 `blip_voz`; Estela → `blip_estela`; resto → `blip_npc`. A UI chama `Audio.play_blip(speaker)` a cada
@@ -201,6 +241,9 @@ Var = nº de arquivos (`nome`, `nome_2`...). M-max = loudness momentânea máx. 
 | `sfx/mask_light.ogg` | S | 1 | -17.0 | novo |
 | `sfx/voice_merge.ogg` | S | 1 | -15.0 | novo |
 | `sfx/whisper.ogg` | S | 1 | -21.0 | novo |
+| `sfx/heartbeat.ogg` | S | 1 | -18.0 | onda 2 |
+| `sfx/clap.ogg` | S | 1 | -15.2 | onda 2 |
+| `sfx/child_breath.ogg` | S | 1 | -21.0 | onda 2 |
 
 | Música | Faixa (Kevin MacLeod) | Loop (s) | Alvo LUFS |
 |---|---|---|---|

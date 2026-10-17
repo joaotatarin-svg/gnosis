@@ -336,6 +336,22 @@
   "peak": -1.0
  },
  {
+  "name": "child_breath",
+  "cat": "story_whisper",
+  "dur": 2.22,
+  "ch": 2,
+  "Mmax": -21.0,
+  "peak": -12.0
+ },
+ {
+  "name": "clap",
+  "cat": "story",
+  "dur": 2.03,
+  "ch": 2,
+  "Mmax": -15.2,
+  "peak": -1.0
+ },
+ {
   "name": "cloth",
   "cat": "cloth",
   "dur": 0.35,
@@ -446,6 +462,14 @@
   "ch": 1,
   "Mmax": -26.2,
   "peak": -1.0
+ },
+ {
+  "name": "heartbeat",
+  "cat": "story_heart",
+  "dur": 1.92,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -5.3
  },
  {
   "name": "hit",

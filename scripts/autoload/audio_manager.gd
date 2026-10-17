@@ -64,6 +64,25 @@ const PAN_MAX := 0.5
 const PAN_BUSES := {-2: "SFX_L2", -1: "SFX_L1", 1: "SFX_R1", 2: "SFX_R2"}
 const NO_POS := Vector2(INF, INF)
 const EON_TRACKS := ["torpor", "fome", "corrente", "silencio", "espelho", "praga", "coroa"]
+# Tema da Voz (ROTEIRO §5 #8): `theme` é a música DELA. Santuário = baixo, por
+# baixo da conversa; roubo = distorcido 3 s e corta; anagnórise = volta sozinho.
+const VOICE_THEME := "theme"
+const VOICE_SANCTUARY_DB := -3.0  # + o ducking normal do diálogo (−9) = −12 dB
+const VOICE_STOLEN_PITCH := 0.75  # roubo: tema 5 semitons abaixo e mais lento…
+const VOICE_STOLEN_SECS := 3.0    # …por 3 s → corte seco → `roubo`
+const VOICE_ALONE_PITCH := 0.9    # anagnórise: o tema volta sozinho, mais lento
+const VOICE_ALONE_FADE := 4.0
+const SCENE_FADE := 2.0           # entrada/saída do tema no santuário
+const SCENE_DUCK_SCALE := 0.35    # roubo/anagnórise: a música É a cena — diálogo abaixa só ~3 dB
+const FOG_DUCK_DB := -8.0         # cena A: "a música do Limiar desce a 40 %"
+## Faixas opcionais: tocam se o arquivo existir, sem ele o jogo usa a reserva.
+## `menu` = tema do menu (opções por síntese aguardando o João; sem arquivo = `theme`).
+const OPTIONAL_MUSIC := ["menu"]
+## Todos os `cue` das falas (ROTEIRO §5) que `cue()` conhece. `wait_2s` é da UI
+## (só é reconhecido, sem som). Ver `cue()`.
+const CUES := ["heartbeat", "fog_thickens", "king_emerges", "mask_lights", "mask_cracks", "king_sinks",
+	"wait_2s", "chime", "music_stop", "voice_merge", "rings_fly", "mask_falls", "sink",
+	"rings_return", "flash", "colossus_shrinks", "theme_alone", "reclaim"]
 
 ## CATÁLOGO: todo nome de som que o jogo pode pedir. O AudioQA confere que cada
 ## um está documentado em docs/AUDIO.md e que não há arquivo órfão na pasta.
@@ -101,6 +120,8 @@ const CATALOG := {
 		"blip_voz", "blip_rei", "blip_sophia", "blip_estela", "blip_npc",
 		# --- roteiro: "o Rei sai da névoa" (tela 1) ---
 		"fog_swell", "king_step", "mask_light", "voice_merge", "whisper",
+		# --- roteiro: intro, roubo e anagnórise (ROTEIRO §2, sons ★) ---
+		"heartbeat", "clap", "child_breath",
 	],
 	"music": [
 		"theme", "rei",
@@ -206,6 +227,11 @@ var _temp_duck_tween: Tween
 var _music_pitch: float = 1.0
 var _pitch_tween: Tween
 var _shut_down: bool = false
+
+# --- tema da Voz / cenas ---
+var voice_theme_mode: String = ""    # "", "santuario", "roubo", "sozinha"
+var _scene_token: int = 0            # invalida o corte agendado do roubo
+var _duck_scale: float = 1.0         # 1 = ducking de diálogo cheio; menor nas cenas musicais
 
 # --- memória pros ganchos por sinal ---
 var _last_weapon: int = 1
@@ -874,12 +900,14 @@ func trial_track() -> String:
 
 
 func _play_trial_context() -> void:
+	_end_scene_music()
 	play_music(trial_track())
 	var eon: String = EON_TRACKS[clampi(CodexSession.boss_index, 0, EON_TRACKS.size() - 1)]
 	play_ambience("amb_" + eon, AMB_ARCHON_DB if CodexSession.stage >= 2 else 0.0)
 
 
 func _play_run_context(screen: int) -> void:
+	_end_scene_music()
 	if RunManager.is_center(screen):
 		_update_center_music()
 	else:
@@ -911,7 +939,7 @@ func _on_state_changed(new_state: int) -> void:
 	match new_state:
 		GameManager.State.MENU:
 			_reset_music_mods()
-			play_music("theme")
+			play_music(menu_track())
 			stop_ambience()
 		GameManager.State.PLAYING:
 			# Provação ANTES do run: CodexSession.start_demo() também liga
@@ -924,6 +952,7 @@ func _on_state_changed(new_state: int) -> void:
 
 ## Menu: desfaz o que as cenas deixaram na música (tom, camadas, abaixada).
 func _reset_music_mods() -> void:
+	_end_scene_music()
 	_layer_db.clear()
 	if _temp_duck_tween != null and _temp_duck_tween.is_valid():
 		_temp_duck_tween.kill()
@@ -931,6 +960,157 @@ func _reset_music_mods() -> void:
 	if not is_equal_approx(_music_pitch, 1.0):
 		set_music_pitch(1.0, 0.0)
 	_wake()
+
+
+## Faixa do menu: `menu` se o arquivo existir (tema próprio, escolha do João),
+## senão `theme` (que é o tema da Voz — ver `voice_theme`).
+func menu_track() -> String:
+	for t in OPTIONAL_MUSIC:
+		if t == "menu" and has_music(t):
+			return t
+	return VOICE_THEME
+
+
+# --- Tema da Voz e API das cenas (ROTEIRO §2 e §5 #8) ----------------------
+#
+# Quem encena (Level/Cinematic) chama no momento da fala:
+#   Audio.voice_theme("santuario")  antes da conversa do santuário;
+#   Audio.voice_theme("")           depois dela (volta à música da tela);
+#   Audio.cue(line.get("cue", ""))  a cada fala mostrada (DialogueBox.line_shown);
+#   Audio.ring_note(i, devolvendo)  a cada gema que voa (roubo) ou volta (anagnórise).
+# Trocar de tela (ou voltar ao menu) desfaz tudo o que a cena deixou.
+
+## O tema da Voz em cada momento da história:
+##   "santuario" — `theme` entra em 2 s, 3 dB abaixo (+ o ducking do diálogo);
+##   "roubo"     — corte seco para `theme` a 0,75 de tom (distorcido) por 3 s
+##                 de relógio real, depois corte seco para `roubo` (sem loop);
+##   "sozinha"   — `theme` volta sozinho, lento (0,9), entrando em 4 s;
+##   ""          — fim: volta à música da tela (Éon/Arconte/Provação).
+## Em "roubo"/"sozinha" o diálogo abaixa a música só ~3 dB (a música É a cena).
+func voice_theme(mode: String) -> void:
+	_scene_token += 1
+	voice_theme_mode = mode
+	match mode:
+		"santuario":
+			_duck_scale = 1.0
+			_layer_db[VOICE_THEME] = VOICE_SANCTUARY_DB
+			play_music(VOICE_THEME, true, 1.0, SCENE_FADE)
+			_wake()
+		"roubo":
+			_duck_scale = SCENE_DUCK_SCALE
+			_layer_db.erase(VOICE_THEME)
+			_release_temp_duck(0.0)
+			stop_music(0.0)               # recomeça do início mesmo se o tema já tocava
+			play_music(VOICE_THEME, false, VOICE_STOLEN_PITCH, 0.0)
+			_apply_volumes()
+			var token := _scene_token
+			# Timer que ignora time_scale e pausa: 3 s REAIS (a cena roda em slow-mo/pausa).
+			get_tree().create_timer(VOICE_STOLEN_SECS, true, false, true).timeout.connect(
+				func() -> void:
+					if token == _scene_token and not _shut_down:
+						play_music("roubo", false, 1.0, 0.0))
+		"sozinha":
+			_duck_scale = SCENE_DUCK_SCALE
+			_layer_db.erase(VOICE_THEME)
+			_release_temp_duck(0.0)
+			play_music(VOICE_THEME, true, VOICE_ALONE_PITCH, VOICE_ALONE_FADE)
+			_apply_volumes()
+		_:
+			voice_theme_mode = ""
+			_layer_db.erase(VOICE_THEME)
+			if CodexSession.active:
+				_play_trial_context()
+			elif RunManager.run_active:
+				_play_run_context(RunManager.current_screen)
+			else:
+				_end_scene_music()
+
+
+## Desfaz o estado de cena (troca de tela, menu, Provação): cancela o corte
+## agendado do roubo e devolve o ducking de diálogo ao normal.
+func _end_scene_music() -> void:
+	_scene_token += 1
+	voice_theme_mode = ""
+	if _temp_duck_db < -0.01:          # abaixada de cena (ex.: névoa) não atravessa a tela
+		_release_temp_duck(DUCK_OUT)
+	if _duck_scale != 1.0:
+		_duck_scale = 1.0
+		_apply_volumes()
+
+
+## Solta a abaixada de `duck_music` em `secs` (0 = na hora).
+func _release_temp_duck(secs: float) -> void:
+	if _temp_duck_tween != null and _temp_duck_tween.is_valid():
+		_temp_duck_tween.kill()
+	if secs <= 0.0:
+		_set_temp_duck(0.0)
+		return
+	_temp_duck_tween = create_tween().set_ignore_time_scale(true)
+	_temp_duck_tween.tween_method(_set_temp_duck, _temp_duck_db, 0.0, secs)
+
+
+## Som de um `cue` de fala (ROTEIRO §5). Devolve true se o cue é conhecido
+## (mesmo os que não têm som, como `wait_2s`); false = cue desconhecido.
+## A imagem (névoa, máscara, gemas) é de quem encena; aqui só o som.
+func cue(cue_name: String) -> bool:
+	if _shut_down:
+		return CUES.has(cue_name)
+	match cue_name:
+		"heartbeat":                 # intro: coração no escuro
+			play_sfx("heartbeat")
+		"fog_thickens":              # cena A: névoa adensa; a música do Limiar desce a 40 %
+			play_sfx("fog_swell")
+			duck_music(9999.0, FOG_DUCK_DB)
+		"king_emerges":              # cenas A e B: o Rei sai da névoa
+			play_sfx("king_step")
+			if RunManager.run_active and RunManager.is_king_screen(RunManager.current_screen):
+				play_sfx("boss_appear", -1.0, -8.0)
+				_release_temp_duck(SCENE_FADE)
+		"mask_lights":               # cena A: a máscara acende
+			play_sfx("mask_light")
+		"mask_cracks":               # queda do Rei: o mesmo sino, um trítono abaixo (rachado)
+			play_sfx_pitched("mask_light", pow(2.0, -6.0 / 12.0), -3.0)
+		"king_sinks":                # o Rei afunda na névoa
+			play_sfx_pitched("fog_swell", 0.8, -2.0)
+		"chime":                     # o nome de Ina
+			play_sfx_pitched("mask_light", 1.0, -6.0)
+		"music_stop":                # santuário da Coroa: a música da Voz para
+			stop_music(1.5)
+		"voice_merge":               # cena B: Voz e Rei em uníssono
+			play_sfx("voice_merge")
+		"rings_fly":                 # cena B: as gemas voam — o som é por gema (ring_note)
+			pass
+		"mask_falls":                # cena B: a máscara cai — tema distorcido → roubo
+			voice_theme("roubo")
+		"sink":                      # cena B: vira motor e afunda; a música para
+			play_sfx("dive")
+			play_sfx_pitched("fog_swell", 0.6, 0.0)
+			stop_music(1.5)
+		"rings_return":              # cena D: corte de música; os Anéis voltam (ring_note)
+			stop_music(0.0)
+		"flash":                     # cena D: clarão + acorde
+			play_sfx("nova")
+			play_sfx_pitched("ring_gain", 1.0, -3.0)
+		"colossus_shrinks":          # cena D: o Colosso oco; respiração pequena
+			play_sfx("child_breath")
+		"theme_alone":               # cena D: o tema da Voz, agora dela
+			voice_theme("sozinha")
+		"reclaim":                   # cena D: o pequeno vira luz
+			play_sfx("revive", -1.0, -6.0)
+		"wait_2s":
+			pass
+		_:
+			return false
+	return true
+
+
+## Uma gema do roubo/anagnórise (0..6). Roubo: `ring_steal` um semitom ACIMA a
+## cada gema; devolução (`returning`): `ring_gain` um semitom ABAIXO a cada uma.
+func ring_note(index: int, returning: bool = false) -> bool:
+	var i := clampi(index, 0, 6)
+	if returning:
+		return play_sfx_pitched("ring_gain", pow(2.0, -float(i) / 12.0), -4.0)
+	return play_sfx_pitched("ring_steal", pow(2.0, float(i) / 12.0), -2.0)
 
 
 # --- Ganchos por sinal (Progression) ------------------------------------
@@ -982,7 +1162,7 @@ func set_volume(bus_name: String, linear: float) -> void:
 func _apply_volumes() -> void:
 	_set_bus("Master", master_vol, 0.0)
 	_set_bus("SFX", sfx_vol, 0.0)
-	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck + _temp_duck_db + _layer_now + SLOW_MUSIC_DB * _slow)
+	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck * _duck_scale + _temp_duck_db + _layer_now + SLOW_MUSIC_DB * _slow)
 	_set_bus("Ambience", music_vol, DUCK_AMB_DB * _duck)
 
 
