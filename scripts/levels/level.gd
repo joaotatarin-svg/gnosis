@@ -43,6 +43,12 @@ var _death_pending: bool = false  # caiu; a morte ainda não selou o desfecho
 const DEATH_GRACE := 1.5          # segundos de JOGO (timer não corre pausado)
 var _staging: Staging = null      # encenação das cenas (staging.gd), criada sob demanda
 var _last_boss_pos: Vector2 = Vector2.ZERO   # onde o chefe caiu (a queda do Rei)
+# LAYOUT (level6, Onda 6): a forma da tela vem de ScreenLayouts (tipo, passagens,
+# alturas, perigos, segredos, objetivo por zona) e é montada pelo LayoutBuilder.
+var layout: Dictionary = {}
+var _zone_x: Array = []           # centro de cada zona (passagens têm comprimento próprio)
+var _layout_res: Dictionary = {}  # o que o builder montou (objetivos, vãos de plataforma)
+const AIR_SPAWN_Y := 150.0        # voadores nascem no alto da arena
 
 # ABERTURA (backlog #6): na tela 1 a Sophia acorda à ESQUERDA, com a Estela
 # "logo adiante"; o resto da intro vira legenda enquanto ela anda, e a Cena A
@@ -80,6 +86,10 @@ func _ready() -> void:
 	else:
 		zones = [[_test_wave()]]  # rodando Level01.tscn direto (teste)
 	_layout_arena()
+	# Telas com a passagem 0 ABERTA (segredo, antessala): a Sophia nasce antes.
+	if RunManager.run_active and player != null and not is_nan(float(layout.get("spawn_x", NAN))):
+		player.global_position.x = float(layout.spawn_x)
+		_snap_camera()
 	if RunManager.run_active and RunManager.is_king_screen(screen) and player != null:
 		player.global_position.x = KING_SPAWN_X
 		_snap_camera()
@@ -226,7 +236,25 @@ func _tutor_hint(_e: Node, segs: Array, fallback: String) -> void:
 
 
 func zone_center(i: int) -> float:
+	if i >= 0 and i < _zone_x.size():
+		return float(_zone_x[i])
 	return ZONE_FIRST_X + float(i) * ZONE_STEP
+
+
+## Começo (x de mundo) da passagem ANTES da zona i: a parede esquerda da tela
+## (i = 0) ou a parede direita da zona anterior.
+func passage_start(i: int) -> float:
+	if i <= 0:
+		return WALL_LEFT
+	return zone_center(i - 1) + ZONE_HALF
+
+
+## Objetivo da zona i ("ondas", "totem", "proteger") — prancha/HUD/QA.
+func zone_objective(i: int) -> String:
+	var zs: Array = layout.get("zones", [])
+	if i >= 0 and i < zs.size():
+		return String(zs[i].get("objective", "ondas"))
+	return "ondas"
 
 
 ## Limites jogáveis atuais (x mín, x máx): a zona trancada ou a arena inteira.
@@ -238,13 +266,21 @@ func arena_bounds() -> Vector2:
 	return Vector2(WALL_LEFT, _end_x)
 
 
-## Comprimento da arena e pontos de descanso, derivados do número de zonas.
+## Comprimento da arena e pontos de descanso, derivados do número de zonas e
+## do LAYOUT da tela (cada passagem tem o seu comprimento: travessias longas).
+## O descanso fica no meio de cada passagem.
 func _layout_arena() -> void:
 	var n := maxi(1, zones.size())
+	layout = ScreenLayouts.plan(screen, n)
+	var gaps: Array = layout.get("gaps", [])
+	_zone_x = [ZONE_FIRST_X]
+	for i in range(1, n):
+		var gap: float = float(gaps[i - 1]) if i - 1 < gaps.size() else ScreenLayouts.PASS_SHORT
+		_zone_x.append(float(_zone_x[i - 1]) + ZONE_HALF * 2.0 + gap)
 	_end_x = zone_center(n - 1) + ARENA_PAD
 	rest_points = [Vector2(-380.0, GROUND_Y)]
-	for i in n - 1:
-		rest_points.append(Vector2(zone_center(i) + ZONE_STEP * 0.5, GROUND_Y))
+	for i in range(1, n):
+		rest_points.append(Vector2((passage_start(i) + zone_center(i) - ZONE_HALF) * 0.5, GROUND_Y))
 	# A câmera nunca mostra além das paredes fixas.
 	_set_camera_limits(WALL_LEFT, _end_x)
 
@@ -375,24 +411,60 @@ func _build_eon_scenery() -> void:
 	sc.build_vignette(self)
 
 
-## Plataformas one-way (sobe por baixo, pousa em cima). Foco em jogabilidade:
-## dão reposicionamento e verticalidade sem tirar o combate do chão. Layout
-## determinístico por tela e por zona; telas de chefe ficam limpas.
+## LAYOUT da tela (level6): plataformas one-way em 2–4 alturas, perigos do
+## Éon, segredos no alto, escalada, torre da saída e objetos de objetivo —
+## tudo do plano de ScreenLayouts, montado pelo LayoutBuilder. Determinístico
+## por tela; telas de chefe ficam limpas (o plano devolve "chefe").
 func _build_platforms() -> void:
 	if RunManager.run_active and RunManager.is_boss_screen(screen):
 		return
-	var layouts := [
-		[Vector2(320, 250), Vector2(600, 214)],
-		[Vector2(220, 250), Vector2(470, 250), Vector2(720, 214)],
-		[Vector2(400, 224)],
-		[Vector2(260, 250), Vector2(640, 250)],
-		[Vector2(180, 250), Vector2(430, 216), Vector2(700, 250)],
-	]
-	for z in maxi(1, zones.size()):
-		var layout: Array = layouts[(screen + z * 2) % layouts.size()]
-		var shift := Vector2(float(z) * ZONE_STEP, 0.0)
-		for pos in layout:
-			add_child(_make_platform(pos + shift, 130.0))
+	if layout.is_empty():
+		layout = ScreenLayouts.plan(screen, maxi(1, zones.size()))
+	_layout_res = LayoutBuilder.build(self, layout)
+
+
+## Plataforma one-way comum (pública: o LayoutBuilder usa).
+func make_platform(center: Vector2, w: float) -> StaticBody2D:
+	return _make_platform(center, w)
+
+
+## Trechos do chão (x0, x1) ocupados pelo conteúdo da tela — Estela, baú,
+## Adormecido, Selos e encontros — que perigos/torres não podem cobrir.
+## Mesma conta de posição do _spawn_extras e do Gnosis._stela_pos.
+func reserved_spans() -> Array:
+	var out: Array = []
+	if rest_points.is_empty():
+		return out
+	var last: int = rest_points.size() - 1
+	var stela: Vector2 = rest_points[0] + Vector2(150.0, 0.0)
+	if rest_points.size() >= 2:
+		stela = rest_points[1 + (screen % (rest_points.size() - 1))] + Vector2(-200.0, 0.0)
+	out.append([stela.x - 45.0, stela.x + 45.0])
+	if screen % 3 == 1:
+		var cx: float = rest_points[mini(1, last)].x + 40.0
+		out.append([cx - 35.0, cx + 35.0])
+	if screen % 4 == 2:
+		var sx: float = _sleeper_x()
+		out.append([sx - 40.0, sx + 40.0])
+	if screen % 7 == 3:
+		var px: float = rest_points[last].x + 170.0
+		out.append([px - 125.0, px + 125.0])
+	if RunManager.run_active:
+		var eon := RunManager.eon_index(screen)
+		var off := RunManager.eon_offset(screen)
+		if (off == 6 and eon in [1, 3, 5]) or (off == 5 and eon == 6):
+			var mx: float = rest_points[rest_points.size() / 2].x
+			out.append([mx - 60.0, mx + 60.0])
+	return out
+
+
+## Onde dorme o Adormecido: no descanso 0 (atrás do começo) ou, se a Sophia
+## nasce antes (passagem 0 aberta), atrás DELA — continua opcional ("olhe pra trás").
+func _sleeper_x() -> float:
+	var sp := float(layout.get("spawn_x", NAN))
+	if not is_nan(sp):
+		return sp - 70.0
+	return rest_points[0].x - 90.0
 
 
 ## Paredes invisíveis nas bordas da arena: ninguém (jogador, inimigo, knockback)
@@ -451,7 +523,7 @@ func _spawn_extras() -> void:
 		var sl := Sleeper.new()
 		sl.screen = screen
 		add_child(sl)
-		sl.global_position = rest_points[0] + Vector2(-90.0, -10.0)
+		sl.global_position = Vector2(_sleeper_x(), rest_points[0].y - 10.0)
 	if screen % 7 == 3:
 		var puz := SealPuzzle.new()
 		puz.screen = screen
@@ -499,7 +571,34 @@ func _start_zone(i: int) -> void:
 		Gnosis.zone_started(screen, i, zones.size())
 	if _staging != null:
 		_staging.zone_started()      # o Rei de cena (tela 1) dá lugar ao de verdade
+	_arm_objective(i)
 	_start_wave()
+
+
+## OBJETIVO da zona (layout): o totem começa a invocar / a luz começa a contar.
+func _arm_objective(i: int) -> void:
+	var obj = _layout_res.get("objectives", {}).get(i)
+	if obj == null or not is_instance_valid(obj):
+		return
+	if obj.has_method("arm"):
+		obj.call("arm")
+	var msg := ""
+	match zone_objective(i):
+		"totem": msg = "Um totem chama reforços: quebre-o."
+		"proteger": msg = "Proteja a luz do Adormecido: lute longe dela."
+	if msg != "":
+		get_tree().call_group("hud", "toast", msg)
+
+
+## A zona acabou: o totem racha, a luz paga (ou não).
+func _close_objective(i: int) -> void:
+	var obj = _layout_res.get("objectives", {}).get(i)
+	if obj == null or not is_instance_valid(obj):
+		return
+	if obj.has_method("finish"):
+		obj.call("finish")
+	elif obj.has_method("disarm"):
+		obj.call("disarm")
 
 
 func _lock_zone(c: float) -> void:
@@ -527,17 +626,39 @@ func _unlock_zone() -> void:
 		Audio.play_sfx("zone_clear")
 
 
-## Três pontos de spawn relativos ao centro da zona (centro-160, centro, centro+160).
+## Três pontos de spawn relativos ao centro da zona (centro-160, centro, centro+160),
+## empurrados para fora de baixo das plataformas baixas (ninguém nasce dentro
+## de um degrau).
 func _place_spawns(c: float) -> void:
 	var pts := spawns.get_children()
 	for k in pts.size():
 		var p: Node2D = pts[k]
-		p.position = Vector2(c + (float(k) - float(pts.size() - 1) * 0.5) * 160.0, 250.0)
+		p.position = Vector2(_spawn_x(c + (float(k) - float(pts.size() - 1) * 0.5) * 160.0, c), 250.0)
+
+
+## X de nascimento no chão livre de plataforma baixa, dentro da zona.
+func _spawn_x(x: float, c: float) -> float:
+	var spans: Array = _layout_res.get("spans", [])
+	var out := LayoutBuilder._clear_x(x, spans, c)
+	return clampf(out, c - ZONE_HALF + 40.0, c + ZONE_HALF - 40.0)
+
+
+## Voador? (contrato com inimigos6: `Enemy.is_flyer()` / `flying`, ou Bestiary.is_flyer)
+func _is_flyer(e: Node) -> bool:
+	if e.has_method("is_flyer"):
+		return bool(e.call("is_flyer"))
+	for prop in ["is_flyer", "flying", "flies"]:
+		if prop in e and bool(e.get(prop)):
+			return true
+	if Bestiary.has_method("is_flyer") and "type_id" in e:
+		return bool(Bestiary.call("is_flyer", String(e.get("type_id"))))
+	return false
 
 
 func _on_zone_cleared() -> void:
 	zone_active = false
 	_unlock_zone()
+	_close_objective(zone_index)
 	var total := zones.size()
 	var last_zone := zone_index >= total - 1
 	if RunManager.run_active and total > 0:
@@ -599,8 +720,11 @@ func _start_wave() -> void:
 		if is_trial and is_last_wave and wave[i] == eon_bot:
 			e.is_champion = true
 		add_child(e)
-		if from_edge:
-			e.global_position = Vector2(c + ZONE_TRIGGER - 10.0 - float(i) * 34.0, 250.0)
+		if _is_flyer(e):
+			# voadores nascem NO ALTO da arena (verticalidade: use as plataformas)
+			e.global_position = Vector2(c + (float(i % 3) - 1.0) * 200.0, AIR_SPAWN_Y)
+		elif from_edge:
+			e.global_position = Vector2(_spawn_x(c + ZONE_TRIGGER - 10.0 - float(i) * 34.0, c), 250.0)
 		else:
 			var p: Node2D = points[i % points.size()]
 			e.global_position = p.global_position
@@ -722,9 +846,13 @@ func _cinematics_done() -> void:
 
 
 ## Fenda de saída no fim da travessia; ao entrar nela, avança de tela.
+## Telas "chegar ao topo" (layout exit_top): a fenda abre no ALTO da torre do fim.
 func _open_exit() -> void:
 	var portal := ExitPortal.new()
 	portal.position = Vector2(_end_x - 200.0, 300.0)
+	if _layout_res.has("exit_top"):
+		portal.position = _layout_res.exit_top
+		get_tree().call_group("hud", "toast", "A fenda abriu no alto: suba.")
 	add_child(portal)
 	portal.entered.connect(_advance_via_exit)
 	VfxLibrary.portal(self, portal.position, Color(0.8, 0.9, 1.0))
