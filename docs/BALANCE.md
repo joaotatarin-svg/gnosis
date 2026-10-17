@@ -76,3 +76,23 @@ conhecida do bot (fica parado na poça, ignora servos). r6→r7 não mudou nada
 (246→249): a partir daqui o número do bot é limitação do próprio bot, não dos
 valores. Um humano com esquiva e parry sofre bem menos — **playtest do João
 decide a r8**. Duração de uma run pelo bot: ~72 min de jogo (humano: 2–2,5 h).
+
+
+## Rodada 8 — bot corrigido (17/10/2026, Onda 2, nuvem)
+
+**O bot estava medindo errado desde a r4.** Em vel 8 a física rodava a 7,5 Hz (o Godot 4 não
+aumenta os passos de física com `time_scale`). Corrigido: o bot joga no passo de física e acelera
+subindo `physics_ticks_per_second`. Com `--fixed-fps 60` + semente por tela, duas rodadas dão as
+mesmas 67 telas (a 68 sorteia pelo RNG global — pedido à Encenação). Detalhe em `docs/onda2/BALANCE.md`.
+
+| Rodada | Bot | Tempo de jogo | Dano | Quase-mortes | Timeouts |
+|---|---|---|---|---|---|
+| r8 legado | vel 8, física grossa | 68,7 min | 17 527 | 214 | 4 |
+| **r8** | vel 1, física 60 Hz | **30,3 min** | **6 880** | **70** | **0** |
+| r8_gasta | idem + gasta sobra em +vida | 30,4 min | 7 079 | 2 (vida 2 680) | 0 |
+| r8_teto | idem + P1 simulada (preço 60×(n+1), 10 compras) | 30,3 min | 7 074 | 21 (vida 320) | 0 |
+
+Leitura: Torpor/Fome fáceis, subida na Corrente, pico em Belias (tela 55: 639, 376 de poça),
+antessala da Coroa (63: 358), Armupiel (432) e Mente (440). A economia sobra 11 mil faíscas: sem
+teto, comprar vida desliga a dificuldade. Propostas P1–P4 em `docs/onda2/BALANCE.md`.
+Achado grave: soft-lock possível na batalha final (`docs/pedidos/onda2_balance.md` §1).
