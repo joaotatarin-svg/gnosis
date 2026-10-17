@@ -75,7 +75,8 @@ troca de cena) — o mesmo teste passava em rodadas seguidas sem mudança; trate
 - Com Legendas "G" e barra de chefe no ar, a faixa da legenda chega a y≈252, perto dos pés (242).
 - O foco do controle PODE parar na opção bloqueada (de propósito, para ler o motivo); apertar nela não faz nada.
 - Na batalha final, se a forma caída nunca for achada no FinalBattle, a barra "refazendo-se" enche por 14 s fixos.
-- R22 sem som (falta `heartbeat` no catálogo — pedido ao Áudio).
+- R22 sem som (falta `heartbeat` no catálogo — pedido ao Áudio). A vinheta no α da recomendação (0,12–0,18) quase não
+  aparece na captura sobre o cenário escuro; se o João quiser mais leitura, subir para ~0,25.
 - A caixa com escolhas fica mais alta mesmo quando não há motivo de bloqueio (espaço vazio na tela 10).
 - A sonda (`hud_probe.gd`) depende de tempo real; sob xvfb lento os tempos absolutos variam.
 
