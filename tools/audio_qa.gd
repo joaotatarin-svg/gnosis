@@ -232,18 +232,95 @@ func _run() -> void:
 	Progression.restored_rings.clear()
 	Audio._play_run_context(RunManager.CENTER_FIRST)
 	var c0: String = Audio._playing_track
+	# Voltar da pausa (estado PLAYING de novo) no Centro sem cacos NÃO religa
+	# a música (pedido da Encenação): nem pelo contexto nem por track_for_screen.
+	Audio.play_music("centro", true, 1.0, 0.0)       # como se alguém tivesse religado
+	Audio._on_state_changed(GameManager.State.PLAYING)
+	await _wait_real(Audio.MUSIC_FADE * 2.0 + 0.3)
+	var paused_back: String = Audio._playing_track
+	var center_players := 0
+	for m in Audio._music:
+		if m.playing:
+			center_players += 1
+	var tfs0: String = Audio.track_for_screen(RunManager.CENTER_FIRST)
+	check(paused_back == "" and center_players == 0 and tfs0 == "",
+		"Centro sem cacos: voltar da pausa não religa ('%s', %d player; track_for_screen '%s')" % [paused_back, center_players, tfs0])
 	Progression.restored_rings.assign(["a", "b"])
 	Audio._update_center_music()
 	var c2: String = Audio._playing_track
+	var tfs2: String = Audio.track_for_screen(RunManager.CENTER_FIRST)
 	var l2: float = float(Audio._layer_db.get("centro", 99.0))
 	Progression.restored_rings.assign(["a", "b", "c", "d", "e", "f"])
 	Audio._update_center_music()
 	var l6: float = float(Audio._layer_db.get("centro", 99.0))
-	check(c0 == "" and c2 == "centro" and absf(l2 - lerpf(-18.0, 0.0, 0.35 + 0.65 * 2.0 / 6.0)) < 0.01 and is_equal_approx(l6, 0.0),
+	check(c0 == "" and c2 == "centro" and tfs2 == "centro" and absf(l2 - lerpf(-18.0, 0.0, 0.35 + 0.65 * 2.0 / 6.0)) < 0.01 and is_equal_approx(l6, 0.0),
 		"Centro: mudo sem cacos ('%s'), 'centro' entra no 1º caco e sobe por caco (2 → %.1f dB, 6 → %.1f dB)" % [c0, l2, l6])
 	Progression.restored_rings.assign(keep_restored)
 	RunManager.run_active = keep_run
 	RunManager.current_screen = keep_screen
+
+	# (b9b) Silêncio antes do chefe (R9): na tela do Arconte a faixa de chefe
+	#       espera o stinger; entra ~0,3 s depois dele; voltar da pausa no meio
+	#       da luta não refaz o silêncio; a morte do chefe tira a música ~2 s.
+	var keep_run3: bool = RunManager.run_active
+	var keep_screen3: int = RunManager.current_screen
+	var keep_codex3: bool = CodexSession.active
+	CodexSession.active = false
+	RunManager.run_active = true
+	var archon := -1
+	for sc in range(2, RunManager.MAX_SCREEN + 1):
+		if RunManager.is_archon_screen(sc):
+			archon = sc
+			break
+	var eon_before := -1
+	for sc in range(archon - 1, 0, -1):
+		if not RunManager.is_boss_screen(sc) and not RunManager.is_center(sc):
+			eon_before = sc
+			break
+	RunManager.current_screen = eon_before
+	Audio._on_screen_changed(eon_before)
+	await _wait_real(0.1)
+	var before_track: String = Audio._playing_track
+	RunManager.current_screen = archon
+	Audio._on_screen_changed(archon)
+	await _wait_real(Audio.PRE_BOSS_FADE + 0.3)
+	var hushed_players := 0
+	for m in Audio._music:
+		if m.playing:
+			hushed_players += 1
+	var pend: String = Audio.boss_pending
+	await _wait_real(0.1)
+	Audio.play_sfx("boss_appear")
+	var appear_ms := Time.get_ticks_msec()
+	var still_pending_early: String = Audio.boss_pending
+	while Audio._playing_track != Audio.boss_track(RunManager.eon_index(archon)) and Time.get_ticks_msec() - appear_ms < 2000:
+		await get_tree().process_frame
+	var entry_ms := Time.get_ticks_msec() - appear_ms
+	check(before_track.begins_with("eon_") and hushed_players == 0 and pend == "boss" and still_pending_early == "boss"
+		and Audio._playing_track == "boss" and entry_ms >= int(Audio.BOSS_ENTRY_DELAY * 1000.0) - 20 and entry_ms < 900,
+		"R9: tela do Arconte (%d) — '%s' sai, %d player tocando antes do stinger, faixa '%s' entra %d ms depois do boss_appear" % [archon, before_track, hushed_players, pend, entry_ms])
+	Audio._on_state_changed(GameManager.State.PLAYING)          # voltar da pausa no meio da luta
+	await _wait_real(0.1)
+	check(Audio.boss_pending == "" and Audio._playing_track == "boss", "R9: voltar da pausa depois do stinger mantém a faixa de chefe (pendente '%s')" % Audio.boss_pending)
+	await _wait_real(0.1)
+	var k0 := Audio._temp_duck_db
+	Audio.play_sfx("boss_die")
+	await _wait_real(0.25)
+	await get_tree().process_frame
+	var k1 := Audio._temp_duck_db
+	await _wait_real(Audio.BOSS_KILL_HOLD + Audio.BOSS_KILL_OUT + 0.3)
+	var k2 := Audio._temp_duck_db
+	check(absf(k0) < 0.05 and k1 < Audio.BOSS_KILL_DB + 1.0 and absf(k2) < 0.05,
+		"R9: morte do chefe — música %.1f → %.1f → %.1f dB (some em 150 ms, volta ~2,6 s)" % [k0, k1, k2])
+	# Rede de segurança e troca de tela: o recomeço da tela refaz o silêncio.
+	Audio._on_screen_changed(archon)
+	var re_pending: String = Audio.boss_pending
+	check(re_pending == "boss" and Audio.boss_track(0) == ("boss_torpor" if Audio.has_music("boss_torpor") else "boss"),
+		"R9: recomeçar a tela do Arconte volta a esperar o stinger; boss_track sem variação instalada = 'boss'")
+	Audio._on_state_changed(GameManager.State.MENU)
+	RunManager.run_active = keep_run3
+	RunManager.current_screen = keep_screen3
+	CodexSession.active = keep_codex3
 
 	# (b10) Menu desfaz o que as cenas deixaram (tom, camadas).
 	Audio.set_music_layer_volume(0.2, "theme")
@@ -457,6 +534,63 @@ func _run() -> void:
 	check(before == 0 and after_note == 1 and after_signal == 1 and plain_signal == 2,
 		"sinal de Anel não repete a gema que a cena tocou (%d → %d → %d); sem cena toca (%d)" % [before, after_note, after_signal, plain_signal])
 
+	# (b18) Avisos do combate (R5): tom FIXO, bus Tell fora do passa-baixas da
+	#       câmera lenta, com pan pela tela; os dois são sons diferentes.
+	var tell_ok: bool = Audio.has_sfx("tell_parry") and Audio.has_sfx("tell_unblock") \
+		and Audio.variants_of("tell_parry")[0] != Audio.variants_of("tell_unblock")[0]
+	var tb := AudioServer.get_bus_index(Audio.TELL_BUS)
+	var tell_lp := false
+	if tb >= 0:
+		for i in AudioServer.get_bus_effect_count(tb):
+			tell_lp = tell_lp or AudioServer.get_bus_effect(tb, i) is AudioEffectLowPassFilter
+	var tell_pitch := 0.0
+	var tell_bus := ""
+	Audio.play_sfx("tell_parry", -1.0, 0.0, right_pos)
+	for i in Audio._players.size():
+		if Audio._pl_name[i] == "tell_parry":
+			tell_pitch = Audio._players[i].pitch_scale
+			tell_bus = Audio._players[i].bus
+	Audio.play_sfx("tell_unblock")
+	var unb_bus := ""
+	for i in Audio._players.size():
+		if Audio._pl_name[i] == "tell_unblock":
+			unb_bus = Audio._players[i].bus
+	check(tell_ok and tb >= 0 and AudioServer.get_bus_send(tb) == "Master" and not tell_lp
+		and is_equal_approx(tell_pitch, 1.0) and tell_bus == "Tell_R2" and unb_bus == Audio.TELL_BUS
+		and AudioServer.get_bus_send(AudioServer.get_bus_index("Tell_R2")) == Audio.TELL_BUS,
+		"tell_parry/tell_unblock: tom fixo (%.3f), bus próprio sem passa-baixas, pan pela tela (%s / %s)" % [tell_pitch, tell_bus, unb_bus])
+	# Vida baixa (R22): UMA batida por pulso, volume do Áudio, sem metralhar.
+	#   (espera esvaziar a fila: o cue `heartbeat` do (b16) agendou uma 2ª batida)
+	var q_t0 := Time.get_ticks_msec()
+	while not Audio._later.is_empty() and Time.get_ticks_msec() - q_t0 < 3000:
+		await get_tree().process_frame
+	await _wait_real(0.7)
+	var td_was: bool = Audio._td_active
+	var p1 := Audio.low_health_pulse()
+	var p2 := Audio.low_health_pulse()
+	var dip_ok: bool = not td_was and Audio._td_active and is_equal_approx(Audio._td_db, Audio.HEART_DIP_DB)
+	var hb_db := 99.0
+	var hb_newest := -1
+	for i in Audio._players.size():
+		if Audio._pl_name[i] == "heartbeat" and (hb_newest < 0 or Audio._pl_start[i] > Audio._pl_start[hb_newest]):
+			hb_newest = i
+	if hb_newest >= 0:
+		hb_db = Audio._players[hb_newest].volume_db
+	var hb_len: float = Audio.variants_of("heartbeat")[0].get_length()
+	check(p1 and not p2 and dip_ok and is_equal_approx(hb_db, Audio.HEART_PULSE_DB) and hb_len < 1.0,
+		"low_health_pulse: 1 batida (%.2f s) a %.0f dB, música abre %.0f dB; 2ª chamada no mesmo instante barrada" % [hb_len, hb_db, Audio.HEART_DIP_DB])
+	# Intro: o cue `heartbeat` toca 2 batidas, a 2ª agendada por relógio real
+	# (mede o INÍCIO de cada disparo: a batida dura 0,75 s, menos que o intervalo).
+	await _wait_real(0.1)              # sai da janela do anti-spam do pulso acima
+	Audio.cue("heartbeat")
+	var hb_t0 := Time.get_ticks_msec()
+	var hb_first_ms: int = int(Audio._last_play_ms.get("heartbeat", -1))
+	while int(Audio._last_play_ms.get("heartbeat", -1)) == hb_first_ms and Time.get_ticks_msec() - hb_t0 < 2500:
+		await get_tree().process_frame
+	var hb_gap: int = int(Audio._last_play_ms.get("heartbeat", -1)) - hb_first_ms
+	check(absf(float(hb_first_ms - hb_t0)) < 50.0 and absf(float(hb_gap) - Audio.HEART_GAP * 1000.0) < 300.0 and Audio._later.is_empty(),
+		"cue heartbeat: 2 batidas, a 2ª %d ms depois da 1ª (alvo %d ms)" % [hb_gap, int(Audio.HEART_GAP * 1000.0)])
+
 	# (c) tocar SFX inexistente não gera erro (cache negativa) — e o pool aguenta rajada.
 	Audio.play_sfx("__nao_existe__")
 	Audio.play_sfx_at("__nao_existe__", Vector2(9999, 0))
@@ -477,11 +611,18 @@ func _run() -> void:
 	check(true, "crossfade e stop_music sem arquivos não travam")
 
 	# (e) toda faixa por contexto que o autoload escolhe existe no catálogo.
+	# Só o Centro pode devolver "" (silêncio antes do 1º caco); com caco, `centro`.
 	var bad_tracks: Array[String] = []
-	for s in range(1, RunManager.MAX_SCREEN + 1):
-		var t: String = Audio.track_for_screen(s)
-		if not music_names.has(t):
-			bad_tracks.append("tela %d → %s" % [s, t])
+	var keep_rr: Array[String] = Progression.restored_rings.duplicate()
+	for with_shard in [false, true]:
+		Progression.restored_rings.assign(["a"] if with_shard else [])
+		for s in range(1, RunManager.MAX_SCREEN + 1):
+			var t: String = Audio.track_for_screen(s)
+			var silent_ok: bool = t == "" and RunManager.is_center(s) and not with_shard
+			var optional_ok: bool = Audio.OPTIONAL_MUSIC.has(t) and Audio.has_music(t)
+			if not music_names.has(t) and not silent_ok and not optional_ok:
+				bad_tracks.append("tela %d (caco=%s) → '%s'" % [s, str(with_shard), t])
+	Progression.restored_rings.assign(keep_rr)
 	check(bad_tracks.is_empty(), "track_for_screen cobre todas as telas com faixa do catálogo (%s)" % str(bad_tracks))
 	var bad_amb: Array[String] = []
 	for s in range(1, RunManager.MAX_SCREEN + 1):

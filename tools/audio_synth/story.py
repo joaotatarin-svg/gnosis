@@ -12,8 +12,8 @@ SFX de roteiro (pedido do Roteiro, 17/10/2026) — cena "o Rei sai da névoa"
               (~1,5 s) — nenhuma voz real
 
 Onda 2 (sons ★ do ROTEIRO §2, 100 % síntese):
-  heartbeat     intro "coração batendo no escuro": 2 batidas lub-dub abafadas
-                (~2,2 s), como ouvidas de DENTRO (sem agudo nenhum)
+  heartbeat     UMA batida lub-dub abafada (~0,7 s), como ouvida de DENTRO (sem
+                agudo). Intro: o Audio toca 2 (cue `heartbeat`); HUD: 1 por pulso
   clap          cena B #4: duas palmas secas e lentas do Rei numa sala de pedra
                 (~1,6 s)
   child_breath  cena D #3: respiração pequena (inspira–expira, trato vocal
@@ -134,15 +134,18 @@ def _thump(f0, dur, seed):
 
 
 def heartbeat():
-	d = 2.3
+	"""UMA batida lub-dub (~0,7 s). Onda 2b: o HUD toca uma por pulso da vinheta
+	de vida baixa (R22, ~0,9 Hz) e a intro (cue `heartbeat`) toca duas, 1,1 s
+	uma da outra (o Audio agenda a 2ª) — antes o arquivo tinha as duas batidas
+	coladas e não servia ao HUD."""
+	d = 0.75
 	o = M.buf(d)
-	for k, at in enumerate([0.02, 1.12]):          # ~55 bpm, devagar: acordando
-		M.put(o, _thump(66, 0.32, 600 + k), at, 0)      # "lub"
-		M.put(o, _thump(80, 0.24, 610 + k), at + 0.26, -5)  # "dub", mais curto
+	M.put(o, _thump(66, 0.32, 600), 0.02, 0)        # "lub"
+	M.put(o, _thump(80, 0.24, 610), 0.28, -5)       # "dub", mais curto
 	# pressão/sangue: ruído grave pulsando junto, quase subsônico
 	n = len(o)
 	t = C.tvec(n)
-	puls = sum(np.exp(-((t - a - 0.12) / 0.12) ** 2) for a in [0.02, 1.12])
+	puls = np.exp(-((t - 0.14) / 0.12) ** 2)
 	M.put(o, C.lp(C.noise(n, 620), 90) * puls * 0.35, 0, -6)
 	return C.reverb(C.lp(o, 700), rt60=0.5, wet=0.12, seed=621, lp_hz=800, tail=False)
 
