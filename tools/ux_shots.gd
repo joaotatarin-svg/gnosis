@@ -398,6 +398,21 @@ class Worker extends Node:
 			hud_t.toast("Crônica desbloqueada: A Mônada, o Inefável  (1/18)")
 			await wait(0.6)
 			await shot("legenda_toast")
+			# Toast de conquista (Achievements.unlocked) entra na FILA atrás da Crônica.
+			var ach := get_node_or_null("/root/Achievements")
+			if ach != null and AchievementData.LIST.size() > 0:
+				var aid := String(AchievementData.LIST[0].id)
+				ach.emit_signal("unlocked", aid)
+				await wait(3.2)
+				await shot("toast_conquista")
+				_check(String(hud_t._toast_label.text).begins_with("Conquista"), "toast de conquista [%s]" % hud_t._toast_label.text)
+			# Vinheta de vida baixa + batimento (Audio.low_health_pulse)
+			var plv := get_tree().get_first_node_in_group("player")
+			if plv != null and plv.health != null:
+				plv.health.take_damage(int(plv.health.current_health - plv.health.max_health * 0.12))
+				await wait(1.4)
+				await shot("hud_vida_baixa")
+				_check(hud_t._low_beat >= 0, "vinheta de vida baixa bate o coração (pulso %d)" % hud_t._low_beat)
 		# 23. Provação: resultado final (vitória no 3º encontro)
 		CodexSession.start_demo()
 		await wait(2.5)

@@ -219,7 +219,7 @@ class StelaPanel extends CanvasLayer:
 
 		var panel := PanelContainer.new()
 		panel.theme = CodexStyle.theme()
-		panel.custom_minimum_size = Vector2(566, 0)
+		panel.custom_minimum_size = Vector2(600, 0)
 		center.add_child(panel)
 
 		# Afresco à esquerda, texto à direita (sem ilustração: só o texto, como antes).
@@ -230,10 +230,10 @@ class StelaPanel extends CanvasLayer:
 		if tex != null:
 			var art := Stela.ArtFrame.new()
 			art.texture = tex
-			art.custom_minimum_size = Vector2(142, 136)
+			art.custom_minimum_size = Vector2(132, 126)
 			art.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			row.add_child(art)
-		var text_w := 390.0 if tex != null else 540.0
+		var text_w := 424.0 if tex != null else 540.0
 
 		var vbox := VBoxContainer.new()
 		vbox.add_theme_constant_override("separation", 5)
@@ -266,7 +266,7 @@ class StelaPanel extends CanvasLayer:
 		body.custom_minimum_size = Vector2(text_w, 0)
 		body.add_theme_font_size_override("font_size", 11)
 		body.add_theme_color_override("font_color", CodexStyle.PAPER)
-		body.add_theme_constant_override("line_spacing", 2)
+		body.add_theme_constant_override("line_spacing", 0 if tex != null else 2)
 		vbox.add_child(body)
 
 		var src := Label.new()
