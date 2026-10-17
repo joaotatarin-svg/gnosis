@@ -848,10 +848,16 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 				Juice.slow_mo(0.22, 0.55)
 
 	health.take_damage(damage)
+	# Este golpe matou: o _on_died já pôs DEAD e cuidou da morte (inclusive a
+	# forma "caída" da batalha final, que precisa FICAR em DEAD para o revive).
+	# Daqui para baixo nada pode mexer no estado (antes virava HURT com vida 0 e
+	# a forma revivível nunca mais morria — bug bloqueante da tela 68).
+	var died_now: bool = estate == EState.DEAD
 	hurt_power = clampf(float(damage) / maxf(1.0, float(health.max_health)) * 4.0 + knockback / 600.0, 0.0, 1.0)
 	if visual:
 		visual.set_meta("hurt_power", hurt_power)
-	_flash(Color(3, 3, 3, 1), VIB_HEAVY if _last_hit_heavy else VIB_LIGHT)
+	if not (died_now and revivable):      # a forma caída: o tween de queda manda na cor
+		_flash(Color(3, 3, 3, 1), VIB_HEAVY if _last_hit_heavy else VIB_LIGHT)
 	# R4: a voz de dor cansa antes do impacto — no máximo 1 a cada 250 ms.
 	var now_ms := Time.get_ticks_msec()
 	if now_ms - _last_hurt_voice_ms >= HURT_VOICE_MS:
@@ -864,6 +870,8 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 	DamageNumber.spawn(get_parent(), global_position, damage, Color(1.0, 0.92, 0.6))
 	if visual:
 		visual.damage_ratio = 1.0 - float(health.current_health) / maxf(1.0, float(health.max_health))
+	if died_now or estate == EState.DEAD:
+		return
 
 	# Gigantes quase não recuam.
 	velocity.x = kb_dir * knockback / maxf(1.0, _art_scale)
