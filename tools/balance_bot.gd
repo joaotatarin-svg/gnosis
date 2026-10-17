@@ -12,6 +12,9 @@ extends Node
 ##          --fixed-fps 60, use vel <= 8 (8 passos de física por quadro).
 ##   seed = semente do sorteio global (padrão 1). É re-semeada a CADA tela
 ##          (hash de seed+tela): uma mudança na tela 10 não muda o sorteio da 11.
+##   loja=gasta = na loja pós-chefe, depois de arma e magias, gasta o resto em
+##          +20 de vida máx. (guarda 100). Padrão (loja=classica) = só arma e
+##          magias, igual às rodadas r1–r8 (comparável com o histórico).
 ##   out  = base dos arquivos de saída (gera <base>.txt e <base>.csv); padrão
 ##          user://balance. O .csv tem uma linha por tela e o dano por FONTE.
 ## DETERMINISMO (Onda 2): rode SEMPRE com --fixed-fps 60 — sem isso o delta
@@ -25,6 +28,8 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("seed="):
 			w.base_seed = int(a.substr(5))
+		elif a.begins_with("loja="):
+			w.shop_mode = a.substr(5)
 		elif a.begins_with("out="):
 			w.out_base = a.substr(4)
 		else:
@@ -44,6 +49,7 @@ class BalanceWorker extends Node:
 	var speed: float = 3.0
 	var base_seed: int = 1
 	var out_base: String = "user://balance"
+	var shop_mode: String = "classica"   # "classica" (r1–r8) ou "gasta" (+vida máx.)
 
 	const ZONE_TIMEOUT := 100.0        # s de jogo numa zona sem limpar = travada
 	const LOW_HP := 0.45               # abaixo disso: conta morte e cura cheia
@@ -79,6 +85,9 @@ class BalanceWorker extends Node:
 	var _boss: String = ""             # chefe/campeão visto na tela (relatório)
 	var _hits: int = 0                 # golpes que tiraram vida na tela
 	var _maxhit: int = 0               # maior golpe único na tela
+	var _mhp: int = 0                  # vida máxima ao entrar na tela
+	var _earned: int = 0               # faíscas ganhas na tela
+	var _orbs_seen: int = 0
 	var _projs: Array = []             # projéteis hostis vivos, marcados com quem atirou
 	# padrão de golpes do bot: mistura strings reais (LLL, LLH, HH, LLLH)
 	const PATTERN := ["light", "light", "light", "heavy", "light", "light", "heavy", "heavy", "heavy"]
@@ -98,6 +107,8 @@ class BalanceWorker extends Node:
 		_reseed(first_screen)
 		RunManager.screen_changed.connect(_reseed)
 		get_tree().node_added.connect(_on_node_added)
+		_orbs_seen = Progression.orbs
+		Progression.orbs_changed.connect(_on_orbs)
 		get_tree().change_scene_to_file.call_deferred("res://scenes/levels/Level01.tscn")
 
 	func _process(delta: float) -> void:
@@ -145,6 +156,7 @@ class BalanceWorker extends Node:
 		if RunManager.current_screen != _cur:
 			_flush_row()
 			_cur = RunManager.current_screen
+			_mhp = pl.health.max_health
 			_last_hp = pl.health.current_health
 			_zone_cur = -2
 			_zone_t = 0.0
@@ -251,6 +263,11 @@ class BalanceWorker extends Node:
 			Input.action_press(act)
 			_release_later(act)
 
+	func _on_orbs(total: int) -> void:
+		if total > _orbs_seen:
+			_earned += total - _orbs_seen
+		_orbs_seen = total
+
 	## Re-semeia o sorteio global a cada tela nova (chamado pelo screen_changed,
 	## antes da cena da tela nascer).
 	func _reseed(screen: int) -> void:
@@ -336,11 +353,18 @@ class BalanceWorker extends Node:
 				if Progression.is_skill_unlocked(sk.id) and Progression.skill_level(sk.id) < sk.max_level \
 						and Progression.orbs >= Progression.skill_upgrade_cost(sk.id) + 150:
 					Progression.upgrade_skill(sk)
+		if shop_mode == "gasta":
+			# Jogador "gastador": converte a sobra em vida máxima (preço fixo 60).
+			while Progression.orbs >= 60 + 100:
+				if not Progression.buy_max_health(20, 60):
+					break
 
 	func _flush_row() -> void:
 		if _cur > 0:
 			_rows.append({"screen": _cur, "time": _t, "dmg": _dmg, "deaths": _deaths, "timeout": _timeout, "zones": _zones,
-				"src": _src.duplicate(), "boss": _boss, "hits": _hits, "maxhit": _maxhit})
+				"src": _src.duplicate(), "boss": _boss, "hits": _hits, "maxhit": _maxhit,
+				"earned": _earned, "orbs": Progression.orbs, "maxhp": _mhp})
+		_earned = 0
 		_src = {}
 		_boss = ""
 		_hits = 0
@@ -378,7 +402,7 @@ class BalanceWorker extends Node:
 		for k in keys:
 			parts.append("%s=%d" % [k, int(_src_total[k])])
 		lines.append("FONTES: " + ", ".join(parts))
-		lines.append("seed=%d vel=%.1f telas %d-%d" % [base_seed, speed, first_screen, last_screen])
+		lines.append("seed=%d vel=%.1f telas %d-%d loja=%s" % [base_seed, speed, first_screen, last_screen, shop_mode])
 		var f := FileAccess.open(out_base + ".txt", FileAccess.WRITE)
 		for l in lines:
 			print("BAL ", l)
@@ -395,7 +419,7 @@ class BalanceWorker extends Node:
 		if f == null:
 			print("BAL (sem CSV: não abriu %s.csv)" % out_base)
 			return
-		f.store_line("screen,zones,time,dmg,deaths,timeout,hits,maxhit,boss,sources")
+		f.store_line("screen,zones,time,dmg,deaths,timeout,hits,maxhit,boss,earned,orbs,maxhp,sources")
 		for r in _rows:
 			var src: Dictionary = r.src
 			var ks: Array = src.keys()
@@ -403,6 +427,6 @@ class BalanceWorker extends Node:
 			var parts: Array[String] = []
 			for k in ks:
 				parts.append("%s:%d" % [k, int(src[k])])
-			f.store_line("%d,%d,%.1f,%d,%d,%d,%d,%d,%s,%s" % [r.screen, r.zones, r.time, r.dmg, r.deaths,
-				1 if r.timeout else 0, r.hits, r.maxhit, r.boss, ";".join(parts)])
+			f.store_line("%d,%d,%.1f,%d,%d,%d,%d,%d,%s,%d,%d,%d,%s" % [r.screen, r.zones, r.time, r.dmg, r.deaths,
+				1 if r.timeout else 0, r.hits, r.maxhit, r.boss, r.earned, r.orbs, r.maxhp, ";".join(parts)])
 		f.close()
