@@ -16,7 +16,7 @@ ca6dcdf Áudio dono único do som · bf35023 recuo 0,9.
 - `scripts/levels/level.gd` — desfecho único por tela (REVISAO #1, commit do
   anterior); `reset_mercy()` ao trancar zona; todas as falas encenadas abrem por
   `stage().play(falas, escolhas, "cena")`; santuário antes da loja; eco do Centro
-  (legenda + música `centro` por caco + slow-mo 0,3/0,6); fala de cada final;
+  (legenda + slow-mo 0,3/0,6; a música `centro` por caco é do Áudio); fala de cada final;
   posição do chefe caído (queda do Rei); `stage()` público (o `NpcEncounter` usa).
 - `scripts/levels/staging.gd` (NOVO) — a encenação por `cue` (via `line_shown`):
   - **intro (M1)**: preto 1,5 s sem música, batimento, a luz volta; `rei` baixa só depois da 1ª fala da Voz.
