@@ -191,8 +191,12 @@ func _tutor_hint(_e: Node, segs: Array, fallback: String) -> void:
 		hud.call("show_hint_now", segs)
 	elif hud != null and hud.has_method("show_hint") and "hints" in hud:
 		# Sem a API "agora": a dica fura a fila (as da tela 1 podem estar esperando).
+		# A dica que estiver na tela (ex.: "mover · pular") cede o lugar já.
 		var q: Array = hud.get("hints")
 		q.push_front(segs)
+		if "_hint" in hud and "_hint_gap" in hud:
+			hud.set("_hint", [])
+			hud.set("_hint_gap", 0.0)
 	elif hud != null and hud.has_method("toast"):
 		hud.call("toast", fallback)
 
