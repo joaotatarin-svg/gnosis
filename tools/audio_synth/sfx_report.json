@@ -1,0 +1,1018 @@
+[
+ {
+  "name": "blip_estela",
+  "cat": "blip",
+  "dur": 0.06,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -6.6
+ },
+ {
+  "name": "blip_estela_2",
+  "cat": "blip",
+  "dur": 0.06,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -6.4
+ },
+ {
+  "name": "blip_estela_3",
+  "cat": "blip",
+  "dur": 0.06,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -7.3
+ },
+ {
+  "name": "blip_estela_4",
+  "cat": "blip",
+  "dur": 0.06,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -7.4
+ },
+ {
+  "name": "blip_npc",
+  "cat": "blip",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -10.8
+ },
+ {
+  "name": "blip_npc_2",
+  "cat": "blip",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -8.8
+ },
+ {
+  "name": "blip_npc_3",
+  "cat": "blip",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -10.6
+ },
+ {
+  "name": "blip_npc_4",
+  "cat": "blip",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -11.3
+ },
+ {
+  "name": "blip_rei",
+  "cat": "blip",
+  "dur": 0.07,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -11.3
+ },
+ {
+  "name": "blip_rei_2",
+  "cat": "blip",
+  "dur": 0.07,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -8.6
+ },
+ {
+  "name": "blip_rei_3",
+  "cat": "blip",
+  "dur": 0.07,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -10.5
+ },
+ {
+  "name": "blip_rei_4",
+  "cat": "blip",
+  "dur": 0.07,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -9.8
+ },
+ {
+  "name": "blip_sophia",
+  "cat": "blip",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -9.1
+ },
+ {
+  "name": "blip_sophia_2",
+  "cat": "blip",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -11.5
+ },
+ {
+  "name": "blip_sophia_3",
+  "cat": "blip",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -10.3
+ },
+ {
+  "name": "blip_sophia_4",
+  "cat": "blip",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -11.0
+ },
+ {
+  "name": "blip_voz",
+  "cat": "blip",
+  "dur": 0.14,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -12.5
+ },
+ {
+  "name": "blip_voz_2",
+  "cat": "blip",
+  "dur": 0.14,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -12.9
+ },
+ {
+  "name": "blip_voz_3",
+  "cat": "blip",
+  "dur": 0.14,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -9.9
+ },
+ {
+  "name": "blip_voz_4",
+  "cat": "blip",
+  "dur": 0.14,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -12.5
+ },
+ {
+  "name": "block",
+  "cat": "defense",
+  "dur": 0.3,
+  "ch": 1,
+  "Mmax": -13.7,
+  "peak": -1.0
+ },
+ {
+  "name": "block_2",
+  "cat": "defense",
+  "dur": 0.3,
+  "ch": 1,
+  "Mmax": -13.6,
+  "peak": -1.0
+ },
+ {
+  "name": "block_3",
+  "cat": "defense",
+  "dur": 0.3,
+  "ch": 1,
+  "Mmax": -13.5,
+  "peak": -1.0
+ },
+ {
+  "name": "boss_appear",
+  "cat": "boss",
+  "dur": 2.58,
+  "ch": 2,
+  "Mmax": -10.2,
+  "peak": -1.0
+ },
+ {
+  "name": "boss_die",
+  "cat": "boss",
+  "dur": 2.4,
+  "ch": 2,
+  "Mmax": -10.3,
+  "peak": -1.0
+ },
+ {
+  "name": "boss_phase2",
+  "cat": "boss",
+  "dur": 1.6,
+  "ch": 1,
+  "Mmax": -10.0,
+  "peak": -1.1
+ },
+ {
+  "name": "boss_step",
+  "cat": "boss_step",
+  "dur": 0.9,
+  "ch": 1,
+  "Mmax": -14.2,
+  "peak": -1.0
+ },
+ {
+  "name": "boss_step_2",
+  "cat": "boss_step",
+  "dur": 0.9,
+  "ch": 1,
+  "Mmax": -14.2,
+  "peak": -1.0
+ },
+ {
+  "name": "boss_step_3",
+  "cat": "boss_step",
+  "dur": 0.9,
+  "ch": 1,
+  "Mmax": -14.2,
+  "peak": -1.0
+ },
+ {
+  "name": "cast_coroa",
+  "cat": "magic_big",
+  "dur": 2.35,
+  "ch": 2,
+  "Mmax": -11.0,
+  "peak": -1.5
+ },
+ {
+  "name": "cast_corrente",
+  "cat": "magic",
+  "dur": 1.28,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -2.0
+ },
+ {
+  "name": "cast_espelho",
+  "cat": "magic",
+  "dur": 1.57,
+  "ch": 2,
+  "Mmax": -13.3,
+  "peak": -1.0
+ },
+ {
+  "name": "cast_fail",
+  "cat": "fail",
+  "dur": 0.32,
+  "ch": 2,
+  "Mmax": -20.0,
+  "peak": -8.4
+ },
+ {
+  "name": "cast_fome",
+  "cat": "magic",
+  "dur": 0.97,
+  "ch": 2,
+  "Mmax": -13.2,
+  "peak": -1.0
+ },
+ {
+  "name": "cast_praga",
+  "cat": "magic",
+  "dur": 1.21,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -1.5
+ },
+ {
+  "name": "cast_silencio",
+  "cat": "magic",
+  "dur": 1.15,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -1.0
+ },
+ {
+  "name": "cast_solar",
+  "cat": "magic",
+  "dur": 1.07,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -2.0
+ },
+ {
+  "name": "cast_torpor",
+  "cat": "magic",
+  "dur": 1.68,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -3.7
+ },
+ {
+  "name": "champion_die",
+  "cat": "champion",
+  "dur": 1.09,
+  "ch": 1,
+  "Mmax": -12.0,
+  "peak": -2.8
+ },
+ {
+  "name": "chest_hit",
+  "cat": "object",
+  "dur": 0.3,
+  "ch": 1,
+  "Mmax": -18.1,
+  "peak": -1.0
+ },
+ {
+  "name": "chest_hit_2",
+  "cat": "object",
+  "dur": 0.3,
+  "ch": 1,
+  "Mmax": -17.9,
+  "peak": -1.0
+ },
+ {
+  "name": "chest_open",
+  "cat": "object",
+  "dur": 0.39,
+  "ch": 1,
+  "Mmax": -16.3,
+  "peak": -1.0
+ },
+ {
+  "name": "cloth",
+  "cat": "cloth",
+  "dur": 0.35,
+  "ch": 1,
+  "Mmax": -26.0,
+  "peak": -8.4
+ },
+ {
+  "name": "cloth_2",
+  "cat": "cloth",
+  "dur": 0.35,
+  "ch": 1,
+  "Mmax": -26.0,
+  "peak": -8.5
+ },
+ {
+  "name": "cloth_3",
+  "cat": "cloth",
+  "dur": 0.35,
+  "ch": 1,
+  "Mmax": -26.0,
+  "peak": -7.8
+ },
+ {
+  "name": "dive",
+  "cat": "swing_big",
+  "dur": 0.27,
+  "ch": 1,
+  "Mmax": -16.2,
+  "peak": -1.0
+ },
+ {
+  "name": "dodge",
+  "cat": "move",
+  "dur": 0.35,
+  "ch": 1,
+  "Mmax": -20.3,
+  "peak": -1.0
+ },
+ {
+  "name": "dodge_perfect",
+  "cat": "defense",
+  "dur": 0.7,
+  "ch": 1,
+  "Mmax": -13.9,
+  "peak": -1.0
+ },
+ {
+  "name": "elite_die",
+  "cat": "elite",
+  "dur": 0.96,
+  "ch": 1,
+  "Mmax": -13.0,
+  "peak": -2.7
+ },
+ {
+  "name": "enemy_die",
+  "cat": "creature_die",
+  "dur": 0.75,
+  "ch": 1,
+  "Mmax": -15.0,
+  "peak": -3.0
+ },
+ {
+  "name": "enemy_hurt",
+  "cat": "creature",
+  "dur": 0.35,
+  "ch": 1,
+  "Mmax": -17.0,
+  "peak": -2.3
+ },
+ {
+  "name": "enemy_hurt_2",
+  "cat": "creature",
+  "dur": 0.35,
+  "ch": 1,
+  "Mmax": -17.0,
+  "peak": -7.5
+ },
+ {
+  "name": "enemy_hurt_3",
+  "cat": "creature",
+  "dur": 0.35,
+  "ch": 1,
+  "Mmax": -17.0,
+  "peak": -4.5
+ },
+ {
+  "name": "fog_swell",
+  "cat": "story_soft",
+  "dur": 3.11,
+  "ch": 2,
+  "Mmax": -17.0,
+  "peak": -6.2
+ },
+ {
+  "name": "form_revive",
+  "cat": "boss_soft",
+  "dur": 1.6,
+  "ch": 1,
+  "Mmax": -14.0,
+  "peak": -8.7
+ },
+ {
+  "name": "gib_bounce",
+  "cat": "gib",
+  "dur": 0.14,
+  "ch": 1,
+  "Mmax": -26.2,
+  "peak": -1.0
+ },
+ {
+  "name": "hit",
+  "cat": "hit",
+  "dur": 0.25,
+  "ch": 1,
+  "Mmax": -13.9,
+  "peak": -1.0
+ },
+ {
+  "name": "hit_2",
+  "cat": "hit",
+  "dur": 0.25,
+  "ch": 1,
+  "Mmax": -14.0,
+  "peak": -1.0
+ },
+ {
+  "name": "hit_3",
+  "cat": "hit",
+  "dur": 0.25,
+  "ch": 1,
+  "Mmax": -13.5,
+  "peak": -1.0
+ },
+ {
+  "name": "hit_heavy",
+  "cat": "hit_heavy",
+  "dur": 0.46,
+  "ch": 1,
+  "Mmax": -11.9,
+  "peak": -1.0
+ },
+ {
+  "name": "hit_heavy_2",
+  "cat": "hit_heavy",
+  "dur": 0.46,
+  "ch": 1,
+  "Mmax": -11.0,
+  "peak": -1.0
+ },
+ {
+  "name": "hit_heavy_3",
+  "cat": "hit_heavy",
+  "dur": 0.44,
+  "ch": 1,
+  "Mmax": -11.5,
+  "peak": -1.0
+ },
+ {
+  "name": "jump",
+  "cat": "move",
+  "dur": 0.3,
+  "ch": 1,
+  "Mmax": -20.0,
+  "peak": -3.0
+ },
+ {
+  "name": "king_step",
+  "cat": "story",
+  "dur": 1.5,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -1.9
+ },
+ {
+  "name": "king_step_2",
+  "cat": "story",
+  "dur": 1.49,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -2.2
+ },
+ {
+  "name": "king_step_3",
+  "cat": "story",
+  "dur": 1.44,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -3.0
+ },
+ {
+  "name": "land",
+  "cat": "move",
+  "dur": 0.12,
+  "ch": 1,
+  "Mmax": -20.0,
+  "peak": -1.7
+ },
+ {
+  "name": "land_2",
+  "cat": "move",
+  "dur": 0.18,
+  "ch": 1,
+  "Mmax": -20.0,
+  "peak": -2.5
+ },
+ {
+  "name": "launcher",
+  "cat": "swing_big",
+  "dur": 0.36,
+  "ch": 1,
+  "Mmax": -16.2,
+  "peak": -1.0
+ },
+ {
+  "name": "level_clear",
+  "cat": "reward",
+  "dur": 1.8,
+  "ch": 2,
+  "Mmax": -13.2,
+  "peak": -1.0
+ },
+ {
+  "name": "mask_light",
+  "cat": "story_soft",
+  "dur": 2.14,
+  "ch": 2,
+  "Mmax": -17.0,
+  "peak": -8.7
+ },
+ {
+  "name": "nova",
+  "cat": "nova",
+  "dur": 0.98,
+  "ch": 2,
+  "Mmax": -12.2,
+  "peak": -1.0
+ },
+ {
+  "name": "parry",
+  "cat": "defense",
+  "dur": 0.6,
+  "ch": 1,
+  "Mmax": -13.1,
+  "peak": -1.0
+ },
+ {
+  "name": "player_die",
+  "cat": "die",
+  "dur": 1.6,
+  "ch": 1,
+  "Mmax": -13.0,
+  "peak": -3.0
+ },
+ {
+  "name": "player_hurt",
+  "cat": "hurt",
+  "dur": 0.44,
+  "ch": 1,
+  "Mmax": -15.2,
+  "peak": -1.0
+ },
+ {
+  "name": "portal_enter",
+  "cat": "object_big",
+  "dur": 1.0,
+  "ch": 1,
+  "Mmax": -14.0,
+  "peak": -4.5
+ },
+ {
+  "name": "portal_open",
+  "cat": "object_big",
+  "dur": 1.4,
+  "ch": 1,
+  "Mmax": -14.0,
+  "peak": -6.9
+ },
+ {
+  "name": "proj_fire",
+  "cat": "proj_fire",
+  "dur": 0.34,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -4.7
+ },
+ {
+  "name": "proj_fire_2",
+  "cat": "proj_fire",
+  "dur": 0.34,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -4.7
+ },
+ {
+  "name": "proj_fire_3",
+  "cat": "proj_fire",
+  "dur": 0.34,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -5.0
+ },
+ {
+  "name": "proj_hit",
+  "cat": "proj_hit",
+  "dur": 0.35,
+  "ch": 2,
+  "Mmax": -16.8,
+  "peak": -1.0
+ },
+ {
+  "name": "proj_hit_2",
+  "cat": "proj_hit",
+  "dur": 0.34,
+  "ch": 2,
+  "Mmax": -17.0,
+  "peak": -1.0
+ },
+ {
+  "name": "proj_hit_3",
+  "cat": "proj_hit",
+  "dur": 0.36,
+  "ch": 2,
+  "Mmax": -17.2,
+  "peak": -1.0
+ },
+ {
+  "name": "revive",
+  "cat": "revive",
+  "dur": 1.14,
+  "ch": 1,
+  "Mmax": -14.0,
+  "peak": -8.3
+ },
+ {
+  "name": "ring_gain",
+  "cat": "reward",
+  "dur": 1.8,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -2.4
+ },
+ {
+  "name": "ring_steal",
+  "cat": "reward",
+  "dur": 2.46,
+  "ch": 1,
+  "Mmax": -13.0,
+  "peak": -4.1
+ },
+ {
+  "name": "rooted",
+  "cat": "magic",
+  "dur": 0.43,
+  "ch": 1,
+  "Mmax": -13.0,
+  "peak": -2.0
+ },
+ {
+  "name": "seal_right",
+  "cat": "object",
+  "dur": 0.6,
+  "ch": 1,
+  "Mmax": -16.0,
+  "peak": -3.1
+ },
+ {
+  "name": "seal_solved",
+  "cat": "object_big",
+  "dur": 1.6,
+  "ch": 1,
+  "Mmax": -14.0,
+  "peak": -1.7
+ },
+ {
+  "name": "seal_wrong",
+  "cat": "object",
+  "dur": 0.11,
+  "ch": 1,
+  "Mmax": -21.7,
+  "peak": -1.0
+ },
+ {
+  "name": "shard",
+  "cat": "structure",
+  "dur": 0.12,
+  "ch": 1,
+  "Mmax": -20.9,
+  "peak": -1.0
+ },
+ {
+  "name": "shop_buy",
+  "cat": "shop",
+  "dur": 0.6,
+  "ch": 1,
+  "Mmax": -18.3,
+  "peak": -1.0
+ },
+ {
+  "name": "shop_fail",
+  "cat": "ui",
+  "dur": 0.2,
+  "ch": 1,
+  "Mmax": -22.0,
+  "peak": -5.0
+ },
+ {
+  "name": "sleeper_wake",
+  "cat": "object_big",
+  "dur": 1.16,
+  "ch": 1,
+  "Mmax": -14.0,
+  "peak": -7.9
+ },
+ {
+  "name": "spark",
+  "cat": "spark",
+  "dur": 0.41,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -11.1
+ },
+ {
+  "name": "spark_2",
+  "cat": "spark",
+  "dur": 0.4,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -13.8
+ },
+ {
+  "name": "spark_3",
+  "cat": "spark",
+  "dur": 0.4,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -15.3
+ },
+ {
+  "name": "spark_4",
+  "cat": "spark",
+  "dur": 0.4,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -13.7
+ },
+ {
+  "name": "spark_5",
+  "cat": "spark",
+  "dur": 0.4,
+  "ch": 2,
+  "Mmax": -25.0,
+  "peak": -14.6
+ },
+ {
+  "name": "stele_open",
+  "cat": "lore",
+  "dur": 0.68,
+  "ch": 1,
+  "Mmax": -18.8,
+  "peak": -1.0
+ },
+ {
+  "name": "stele_unlock",
+  "cat": "lore",
+  "dur": 1.0,
+  "ch": 1,
+  "Mmax": -18.0,
+  "peak": -5.7
+ },
+ {
+  "name": "step",
+  "cat": "step",
+  "dur": 0.11,
+  "ch": 1,
+  "Mmax": -24.2,
+  "peak": -1.0
+ },
+ {
+  "name": "step_2",
+  "cat": "step",
+  "dur": 0.11,
+  "ch": 1,
+  "Mmax": -24.5,
+  "peak": -1.0
+ },
+ {
+  "name": "step_3",
+  "cat": "step",
+  "dur": 0.11,
+  "ch": 1,
+  "Mmax": -25.0,
+  "peak": -1.0
+ },
+ {
+  "name": "step_heavy",
+  "cat": "step_heavy",
+  "dur": 0.26,
+  "ch": 1,
+  "Mmax": -22.0,
+  "peak": -2.9
+ },
+ {
+  "name": "step_heavy_2",
+  "cat": "step_heavy",
+  "dur": 0.26,
+  "ch": 1,
+  "Mmax": -22.0,
+  "peak": -2.1
+ },
+ {
+  "name": "step_heavy_3",
+  "cat": "step_heavy",
+  "dur": 0.26,
+  "ch": 1,
+  "Mmax": -22.0,
+  "peak": -3.9
+ },
+ {
+  "name": "subtitle_tick",
+  "cat": "tick",
+  "dur": 0.05,
+  "ch": 1,
+  "Mmax": -30.0,
+  "peak": -13.5
+ },
+ {
+  "name": "swing_air",
+  "cat": "swing",
+  "dur": 0.49,
+  "ch": 1,
+  "Mmax": -18.0,
+  "peak": -2.3
+ },
+ {
+  "name": "swing_heavy",
+  "cat": "swing",
+  "dur": 0.31,
+  "ch": 1,
+  "Mmax": -18.4,
+  "peak": -1.0
+ },
+ {
+  "name": "swing_heavy_2",
+  "cat": "swing",
+  "dur": 0.43,
+  "ch": 1,
+  "Mmax": -18.0,
+  "peak": -1.2
+ },
+ {
+  "name": "swing_heavy_3",
+  "cat": "swing",
+  "dur": 0.34,
+  "ch": 1,
+  "Mmax": -18.3,
+  "peak": -1.0
+ },
+ {
+  "name": "swing_light",
+  "cat": "swing",
+  "dur": 0.16,
+  "ch": 1,
+  "Mmax": -18.6,
+  "peak": -1.0
+ },
+ {
+  "name": "swing_light_2",
+  "cat": "swing",
+  "dur": 0.11,
+  "ch": 1,
+  "Mmax": -18.7,
+  "peak": -1.0
+ },
+ {
+  "name": "swing_light_3",
+  "cat": "swing",
+  "dur": 0.15,
+  "ch": 1,
+  "Mmax": -18.7,
+  "peak": -1.0
+ },
+ {
+  "name": "ui_advance",
+  "cat": "ui",
+  "dur": 0.15,
+  "ch": 1,
+  "Mmax": -22.0,
+  "peak": -5.5
+ },
+ {
+  "name": "ui_back",
+  "cat": "ui",
+  "dur": 0.06,
+  "ch": 1,
+  "Mmax": -24.4,
+  "peak": -1.0
+ },
+ {
+  "name": "ui_choice",
+  "cat": "ui_big",
+  "dur": 0.7,
+  "ch": 1,
+  "Mmax": -18.0,
+  "peak": -5.9
+ },
+ {
+  "name": "ui_click",
+  "cat": "ui",
+  "dur": 0.1,
+  "ch": 1,
+  "Mmax": -27.5,
+  "peak": -1.0
+ },
+ {
+  "name": "ui_confirm",
+  "cat": "ui",
+  "dur": 0.29,
+  "ch": 1,
+  "Mmax": -22.0,
+  "peak": -12.5
+ },
+ {
+  "name": "ui_move",
+  "cat": "ui_soft",
+  "dur": 0.06,
+  "ch": 1,
+  "Mmax": -27.8,
+  "peak": -1.0
+ },
+ {
+  "name": "ui_open",
+  "cat": "ui",
+  "dur": 0.43,
+  "ch": 1,
+  "Mmax": -22.0,
+  "peak": -11.3
+ },
+ {
+  "name": "voice_merge",
+  "cat": "story",
+  "dur": 2.18,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -5.4
+ },
+ {
+  "name": "weapon_upgrade",
+  "cat": "reward",
+  "dur": 1.2,
+  "ch": 1,
+  "Mmax": -13.0,
+  "peak": -4.6
+ },
+ {
+  "name": "whisper",
+  "cat": "story_whisper",
+  "dur": 1.55,
+  "ch": 2,
+  "Mmax": -21.0,
+  "peak": -8.7
+ },
+ {
+  "name": "zone_clear",
+  "cat": "structure",
+  "dur": 1.0,
+  "ch": 1,
+  "Mmax": -15.2,
+  "peak": -1.0
+ },
+ {
+  "name": "zone_lock",
+  "cat": "structure",
+  "dur": 0.72,
+  "ch": 1,
+  "Mmax": -15.1,
+  "peak": -1.0
+ }
+]
