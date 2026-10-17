@@ -54,6 +54,7 @@ class Jitter extends Node:
 	var snap_screens: Array[int] = []
 	var load_path: String = ""
 	var _last_pl: int = 0
+	var _fb_down: Dictionary = {}     # batalha final: forma -> estava caída no quadro anterior
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
@@ -115,6 +116,7 @@ class Jitter extends Node:
 		print("RUIDO: progressão carregada de %s (arma %d)" % [path, Progression.weapon_level])
 
 	func _physics_process(_delta: float) -> void:
+		_watch_final()
 		if ruido <= 0:
 			return
 		var pl := get_tree().get_first_node_in_group("player") as Node2D
@@ -124,3 +126,28 @@ class Jitter extends Node:
 		var rng := RandomNumberGenerator.new()
 		rng.seed = hash("gnosis-ruido-%d-%d" % [ruido, RunManager.current_screen])
 		pl.global_position += Vector2(rng.randf_range(-JIT_X, JIT_X), rng.randf_range(-JIT_Y, JIT_Y))
+
+
+	## Batalha final: registra no log cada QUEDA e cada RESSURREIÇÃO das formas
+	## (grep "RUIDO: final" no .log) — a cauda longa da tela 68 vem daí.
+	func _watch_final() -> void:
+		if RunManager.current_screen != RunManager.MAX_SCREEN:
+			return
+		var cs := get_tree().current_scene
+		var fb := cs.get_node_or_null("FinalBattle") as FinalBattle if cs != null else null
+		if fb == null:
+			return
+		for f in fb.forms:
+			if not is_instance_valid(f):
+				continue
+			var down: bool = fb.down_since.has(f)
+			var was: bool = _fb_down.get(f.get_instance_id(), false)
+			if down != was:
+				print("RUIDO: final %s %s t=%.1f hp_sophia=%d" % [f.type_id, "CAIU" if down else "VOLTOU", fb._t, _sophia_hp()])
+				_fb_down[f.get_instance_id()] = down
+
+	func _sophia_hp() -> int:
+		var pl := get_tree().get_first_node_in_group("player")
+		if pl != null and pl.get("health") != null:
+			return pl.health.current_health
+		return -1

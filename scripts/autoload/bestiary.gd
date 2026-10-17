@@ -329,7 +329,9 @@ func _build() -> void:
 		_wt("arconte_espelho", "Astaphaios, Arconte do Espelho", 5, 560, 20, 74.0, 150,
 			_profile(H, 76, Color(0.82, 0.84, 0.92), Color(0.6, 0.5, 0.85), Color(1, 0.35, 0.35), ["staff", "pauldrons", "mirror"]), "melee", "espelho"),
 		# Praga: gavinhas podres; a investida deixa poças de veneno.
-		_wt("arconte_praga", "Belias, Arconte da Praga", 5, 640, 21, 80.0, 160,
+		# Balance4: vida 640→600 — Belias era o pico isolado dos Arcontes (bot: 578 de
+		# dano × 338 do Armupiel, o seguinte); com 600, −14 % (24 pares, 18 caíram).
+		_wt("arconte_praga", "Belias, Arconte da Praga", 5, 600, 21, 80.0, 160,
 			_profile(A, 90, Color(0.4, 0.5, 0.34), Color(0.22, 0.3, 0.18), Color(0.75, 1, 0.55), ["claws", "tail", "spikes", "rot"]), "charge", "praga"),
 		# Coroa: coroa alta e halo; fase 2 chama servos e fica blindado até caírem.
 		_wt("arconte_coroa", "Armupiel, Arconte da Coroa", 5, 740, 23, 52.0, 180,
