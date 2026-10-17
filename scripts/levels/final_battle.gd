@@ -72,6 +72,7 @@ func _on_form_down(e: Enemy) -> void:
 		# (o relógio de 14 s corre). "Eu desci de propósito... para te buscar."
 		Juice.slow_mo(0.2, 1.2)
 		Gnosis.captions(Narrative.seventh_ring())
+		_coroa_returns()
 
 
 
@@ -84,6 +85,31 @@ func release_rings() -> Array:
 	_rings_free = true
 	queue_redraw()
 	return pts
+
+## M9: o Anel da Coroa sai da órbita e voa para a mão dela (tempo real: o
+## slow-mo da queda não o atrasa); clarão dourado na chegada.
+func _coroa_returns() -> void:
+	var pl := get_tree().get_first_node_in_group("player") as Node2D
+	if pl == null:
+		return
+	var gem := Node2D.new()
+	gem.z_index = 30
+	gem.draw.connect(func() -> void:
+		gem.draw_circle(Vector2.ZERO, 12.0, Color(1.0, 0.85, 0.45, 0.22))
+		gem.draw_arc(Vector2.ZERO, 7.0, 0, TAU, 16, Color(1.0, 0.9, 0.55), 2.5)
+		gem.draw_circle(Vector2.ZERO, 2.5, Color(1, 1, 0.9)))
+	get_parent().add_child(gem)
+	gem.global_position = _ring_pos(6)
+	var t := gem.create_tween().set_ignore_time_scale(true)
+	t.tween_method(func(k: float) -> void:
+		if is_instance_valid(pl):
+			var to := pl.global_position + Vector2(0, -20)
+			gem.global_position = _ring_pos(6).lerp(to, k) + Vector2(0, -sin(k * PI) * 50.0), 0.0, 1.0, 0.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	t.tween_callback(func() -> void:
+		Audio.play_sfx("ring_gain")
+		VfxLibrary.dodge_perfect(get_parent(), gem.global_position)
+		gem.queue_free())
+
 
 func _other(e: Enemy) -> Enemy:
 	for f in forms:

@@ -7,7 +7,8 @@ extends Node
 ## todos os vivos DE UMA VEZ (o chefe/as duas formas caem juntas).
 ## Uso (rodar com --fixed-fps 60 e --audio-driver Dummy):
 ##   godot --path . --resolution 1280x720 res://tools/encenacao/CenaShot.tscn -- \
-##     <tela> <prefixo_saida> [hold=150] [kill=90] [free=6] [max=4000]
+##     <tela> <prefixo_saida> [hold=150] [kill=90] [free=6] [max=4000] [fast=N]
+##   fast=N: as N primeiras caixas passam rápido e sem foto (chegar logo à cena).
 ## Tela 64: 6 Anéis no bolso (o 7º vem do Arconte). 65: Anéis roubados.
 ## 68: roubados + 6 cacos devolvidos (o 7º volta na 1ª queda).
 
@@ -17,6 +18,7 @@ var hold: int = 150
 var kill_after: int = 90
 var free_max: int = 6
 var max_frames: int = 4000
+var fast: int = 0
 
 
 func _ready() -> void:
@@ -34,6 +36,7 @@ func _ready() -> void:
 			"kill": kill_after = v
 			"free": free_max = v
 			"max": max_frames = v
+			"fast": fast = v
 	var w := _Worker.new()
 	w.screen = screen
 	w.prefix = prefix
@@ -41,6 +44,7 @@ func _ready() -> void:
 	w.kill_after = kill_after
 	w.free_max = free_max
 	w.max_frames = max_frames
+	w.fast = fast
 	get_tree().root.add_child.call_deferred(w)
 
 
@@ -51,6 +55,7 @@ class _Worker extends Node:
 	var kill_after: int = 90
 	var free_max: int = 6
 	var max_frames: int = 4000
+	var fast: int = 0
 	var _f: int = 0
 	var _box_id: int = 0
 	var _line_f: int = 0
@@ -154,6 +159,15 @@ class _Worker extends Node:
 			# Falas com efeito longo ficam mais tempo (o tempo de um jogador que olha).
 			_hold = hold * 2 if _cue in ["rings_fly", "rings_return", "colossus_shrinks", "sink", "fog_thickens", "king_emerges"] else hold
 		_line_f += 1
+		if _boxes <= fast:
+			if box.get("_in_choices"):
+				box._on_choice(0)
+			elif _line_f >= 8:
+				box.reveal_all()
+				box.idx += 1
+				box._show_line()
+				_line_f = 0
+			return
 		if box.get("_in_choices"):
 			if _line_f == 40:
 				_save("d%d_escolha" % _boxes)
