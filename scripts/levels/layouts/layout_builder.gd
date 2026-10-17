@@ -62,6 +62,12 @@ static func build(level: Level, plan: Dictionary) -> Dictionary:
 			var lx := float(it.get("x", 0.0))
 			var w := _item_width(t)
 			var wx := _avoid(x0 + lx, w, reserved, x0 + 20.0, x1 - 20.0)
+			if is_nan(wx) and t in ["mist", "beam"]:
+				# perigos de largura variável encolhem para caber entre Estela e Selos
+				w *= 0.6
+				wx = _avoid(x0 + lx, w, reserved, x0 + 20.0, x1 - 20.0)
+				it = it.duplicate()
+				it["w"] = w
 			if is_nan(wx):
 				continue
 			match t:
@@ -69,8 +75,14 @@ static func build(level: Level, plan: Dictionary) -> Dictionary:
 					_dj_cache(level, wx, res)
 				"tower_cache":
 					_tower_cache(level, wx, res)
+				"vault":
+					_vault(level, wx, res)
+				"altar":
+					var al := SanctuaryAltar.new()
+					level.add_child(al)
+					al.global_position = Vector2(wx, FLOOR)
 				"climb":
-					_climb(level, wx, String(it.get("hz", "")), String(it.get("live", "")), rng, res)
+					_climb(level, wx, String(it.get("hz", "")), String(it.get("live", "")), rng, res, reserved)
 				"perch":
 					_platform(level, Vector2(wx - 50.0, ScreenLayouts.Y1), 110.0, res)
 					_platform(level, Vector2(wx + 40.0, ScreenLayouts.Y2), 100.0, res)
@@ -135,6 +147,25 @@ static func _dj_cache(level: Level, x: float, res: Dictionary) -> void:
 	mark.global_position = Vector2(x, FLOOR)
 
 
+## SALA SECRETA (nó "secret" do mapa): saliência de PULO DUPLO em `x` e, logo
+## à direita, a câmara em Y3 (176 px acima do chão: sem o pulo duplo não se
+## chega) com dois baús secretos. Embaixo, a porta selada (só desenho).
+static func _vault(level: Level, x: float, res: Dictionary) -> void:
+	_platform(level, Vector2(x, ScreenLayouts.YDJ), 90.0, res)
+	var mark := SecretMark.new()
+	level.add_child(mark)
+	mark.global_position = Vector2(x, FLOOR)
+	var rx := x + 200.0
+	_platform(level, Vector2(rx, ScreenLayouts.Y3), 260.0, res)
+	_secret_chest(level, rx - 60.0, ScreenLayouts.Y3)
+	_secret_chest(level, rx + 60.0, ScreenLayouts.Y3)
+	var v := SecretVault.new()
+	v.room_w = 280.0
+	v.room_y = ScreenLayouts.Y3 - 6.0 - FLOOR
+	level.add_child(v)
+	v.global_position = Vector2(rx, FLOOR)
+
+
 ## Torre de um pulo por degrau, com baú secreto no topo (Y3).
 static func _tower_cache(level: Level, x: float, res: Dictionary) -> void:
 	_platform(level, Vector2(x, ScreenLayouts.Y1), 120.0, res)
@@ -146,7 +177,7 @@ static func _tower_cache(level: Level, x: float, res: Dictionary) -> void:
 ## ESCALADA sobre chão perigoso: Y1 → Y2 → ponte em Y3 → Y2 → Y1. Por cima é
 ## seguro (e tem baú); por baixo, dois perigos de chão do Éon (o bot passa
 ## por baixo e paga). Plataformas vivas do Éon na ponte (afundam/alternam).
-static func _climb(level: Level, x: float, floor_hz: String, live: String, rng: RandomNumberGenerator, res: Dictionary) -> void:
+static func _climb(level: Level, x: float, floor_hz: String, live: String, rng: RandomNumberGenerator, res: Dictionary, reserved: Array = []) -> void:
 	_platform(level, Vector2(x, ScreenLayouts.Y1), 120.0, res)
 	_platform(level, Vector2(x + 110.0, ScreenLayouts.Y2), 110.0, res)
 	var b1 := Vector2(x + 240.0, ScreenLayouts.Y3)
@@ -167,8 +198,12 @@ static func _climb(level: Level, x: float, floor_hz: String, live: String, rng: 
 	if live == "":
 		_secret_chest(level, x + 320.0, ScreenLayouts.Y3)
 	if floor_hz != "":
-		_hazard(level, floor_hz, x + 230.0, {}, rng)
-		_hazard(level, floor_hz, x + 420.0, {}, rng)
+		# perigos no chão embaixo da ponte (fora de Estela/baú/Selos)
+		var fw := minf(_item_width(floor_hz), 130.0)
+		for hx in [x + 230.0, x + 420.0]:
+			var ax := _avoid(hx, fw, reserved, x + 120.0, x + 560.0)
+			if not is_nan(ax):
+				_hazard(level, floor_hz, ax, {"w": fw}, rng)
 
 
 ## Um perigo do Éon no chão em `x`.
@@ -176,7 +211,9 @@ static func _hazard(level: Level, t: String, x: float, it: Dictionary, rng: Rand
 	var h: LevelHazard = null
 	match t:
 		"mist":
-			h = MistPatch.new()
+			var mp := MistPatch.new()
+			mp.width = float(it.get("w", 220.0))
+			h = mp
 		"maw":
 			h = Maw.new()
 		"pendulum", "bell":
@@ -187,7 +224,9 @@ static func _hazard(level: Level, t: String, x: float, it: Dictionary, rng: Rand
 				pd.period = 3.4
 			h = pd
 		"beam":
-			h = MirrorBeam.new()
+			var mb := MirrorBeam.new()
+			mb.width = float(it.get("w", 180.0))
+			h = mb
 		"spores":
 			h = SporePod.new()
 		"guillotine":
@@ -218,9 +257,13 @@ static func _item_width(t: String) -> float:
 		"tide": return 0.0
 		"tower_cache": return 220.0
 		"dj_cache": return 100.0
+		"vault": return 0.0
+		"altar": return 80.0
 		"perch": return 200.0
 		"mist": return 220.0
 		"pendulum", "bell": return 120.0
+		"maw": return 80.0
+		"spears", "shackles": return 120.0
 		"beam": return 180.0
 	return 90.0
 

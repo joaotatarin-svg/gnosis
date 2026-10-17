@@ -2,23 +2,30 @@ extends RefCounted
 class_name ScreenLayouts
 ## LAYOUT DE CADA TELA (level6, Onda 6) — "COMO a tela é".
 ##
-## O mapa (mapa6 / RunManager) diz QUE telas existem e o que nasce em cada zona;
-## aqui mora a FORMA da tela: tipo, comprimento das passagens, plataformas em
-## 2–4 alturas, perigos do Éon, segredos (alguns só com PULO DUPLO), objetivo
-## de cada zona e se a fenda de saída fica no ALTO. Tudo determinístico pela tela.
+## O mapa (mapa6 / RunManager) diz QUE telas existem, em que ordem/ramos e o
+## que nasce em cada zona; aqui mora a FORMA da tela: tipo, comprimento das
+## passagens, plataformas em 2–4 alturas, perigos do Éon, segredos (alguns só
+## com PULO DUPLO), objetivo de cada zona e se a fenda de saída fica no ALTO.
+## Tudo determinístico pelo NÓ (RunManager.node_rng: duas trilhas da mesma
+## camada têm cara diferente).
 ##
-## Até o mapa6 entregar o tipo de tela, o tipo vem da posição no Éon (offset):
-##   0 chegada   · arena baixa → passagem com 1 perigo (apresenta o Éon) → arena alta
-##   1 travessia · passagens LONGAS com perigos; a 2ª zona tem um TOTEM que invoca
-##   2 perigo    · escalada sobre chão perigoso (por cima é seguro, por baixo dói);
-##                 proteger a luz do Adormecido; saída no ALTO
-##   3 segredo   · começa ANTES (passagem 0 aberta): baú alto, pulo duplo, voadores
-##   4 desafio   · arena do Campeão: duas alturas nas bordas, centro limpo (duelo justo)
-##   5 fuga      · a escuridão persegue nas passagens (+ a regra do Éon, se houver)
-##   6 santuário · calmo, sem perigo; torre de luz com segredo de pulo duplo
-##   7 antessala · CORREDOR de perigos denso antes da arena (que tem guarda do Éon)
-##   8 Arconte   · arena limpa (é dos chefes)
-## Centro (65–67): cacos caindo; Rei (1) e Mente (68): limpas.
+## Layout por TIPO DE NÓ (RunManager.node_kind()):
+##   arrival     → chegada   · arena baixa → passagem com 1 perigo do Éon + saliência
+##                             de pulo duplo → arena alta
+##   combat      → por camada: travessia (perigos + TOTEM) · fuga (a escuridão
+##                             persegue) · segredo (começa antes; baú na torre)
+##   hazard      → perigo    · passagem aberta e passagem longa com 3 perigos do Éon
+##                             em ritmo; guarda do Éon nas duas arenas
+##   platform    → escalada  · torre no começo, ESCALADA sobre chão perigoso (pedras
+##                             vivas do Éon), arenas altas, voadores; saída no ALTO
+##   sanctuary   → santuário · calmo, sem perigo; ALTAR de repouso; torre de luz;
+##                             proteger a luz do Adormecido
+##   challenge   → arena     · fechada e pesada, sem perigo gratuito; TOTEM na 2ª zona
+##   secret      → sala secreta · a CÂMARA lá em cima só se alcança com PULO DUPLO
+##                             (porta selada embaixo): dois baús secretos
+##   trial → desafio (duelo limpo) · antechamber → antessala (corredor denso de
+##   perigos + guarda) · center → centro (cacos caindo) · rei/arconte/mente: limpas.
+## Sem mapa (node_kind ausente), o tipo vem do offset no Éon (tabela antiga).
 ##
 ## Coordenadas: plataformas de ZONA em dx a partir do centro da zona (±440);
 ## perigos/plataformas de PASSAGEM em px a partir do início da passagem (0..L).
@@ -80,93 +87,113 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 	if not RunManager.run_active:
 		_fill_default(out, n)
 		return out
-	var role := RunManager.screen_role(screen)
-	if role in ["king", "archon", "final"]:
+	if layout_kind(screen) == "chefe":
 		out.kind = "chefe"
 		_fill_default(out, n)
 		return out
 	var eon := RunManager.eon_index(screen)        # 0..6 Éons · 7 Centro
-	var off := RunManager.eon_offset(screen)       # -1 fora dos Éons
-	if role == "center":
-		off = 9
+	var off := RunManager.eon_offset(screen)       # camada no Éon; -1 fora
+	var kind := layout_kind(screen)
 	var hz: String = EON_HAZARD[clampi(eon, 0, EON_HAZARD.size() - 1)]
 	var floor_hz: String = EON_FLOOR[clampi(eon, 0, EON_FLOOR.size() - 1)]
 	var guard: String = EON_GUARD[clampi(eon, 0, EON_GUARD.size() - 1)]
 	var live: String = EON_LIVE_PLATFORM[clampi(eon, 0, EON_LIVE_PLATFORM.size() - 1)]
-	var r := RunManager.screen_rng(screen, 61)
+	var r := _rng(screen, 61)
+	var pick := r.randi()                          # variação por nó
 	for i in n:
 		out.passages.append({"items": []})
 		out.zones.append({"arena": "baixa", "plats": [], "guard": [], "objective": "ondas"})
 		if i >= 1:
 			out.gaps.append(PASS_SHORT)
 	var arenas := ARENAS.keys()
-	match off:
-		0:
-			out.kind = "chegada"
+	out.kind = kind
+	match kind:
+		"chegada":
 			_set_arena(out, 0, "baixa")
 			for i in range(1, n):
-				_set_arena(out, i, ["tres_alturas", "ponte"][screen % 2])
+				_set_arena(out, i, ["tres_alturas", "ponte"][pick % 2])
 				out.gaps[i - 1] = 700.0
 				_add(out, i, {"t": hz, "x": 230.0})
 				# Saliência de pulo duplo com baú (sem degrau por perto).
-				_add(out, i, {"t": "dj_cache", "x": 560.0})
-		1:
-			out.kind = "travessia"
+				_add(out, i, {"t": "dj_cache", "x": 480.0})
+		"travessia":
 			for i in n:
-				_set_arena(out, i, arenas[(screen + i * 2) % arenas.size()])
+				_set_arena(out, i, arenas[(pick + i * 2) % arenas.size()])
 				if i >= 1:
 					out.gaps[i - 1] = PASS_LONG
-					_add(out, i, {"t": hz, "x": 170.0})
-					_add(out, i, {"t": hz, "x": 690.0})
+					_add(out, i, {"t": hz, "x": 150.0})
+					_add(out, i, {"t": hz, "x": 720.0})
 			if n >= 2:
 				out.zones[1].objective = "totem"
-		2:
-			out.kind = "perigo"
-			out.exit_top = true
+		"perigo":
+			# A passagem perigosa: o CHÃO é o inimigo (o plano já vem mais leve).
+			out.spawn_x = -600.0
+			_add(out, 0, {"t": hz, "x": 400.0})
 			for i in n:
-				_set_arena(out, i, ["degraus", "torres"][(screen + i) % 2])
+				_set_arena(out, i, ["baixa", "degraus", "bordas"][(pick + i) % 3])
+				_guard(out, i, guard)
+				if i >= 1:
+					out.gaps[i - 1] = PASS_LONG
+					_add(out, i, {"t": hz, "x": 130.0})
+					_add(out, i, {"t": floor_hz, "x": 450.0})
+					_add(out, i, {"t": hz, "x": 770.0})
+		"escalada":
+			# Altura de verdade: torre logo no começo, escalada sobre chão perigoso,
+			# arenas de 3 alturas (voadores no alto) e a fenda no TOPO.
+			out.spawn_x = -600.0
+			out.exit_top = true
+			_add(out, 0, {"t": "tower_cache", "x": 330.0})
+			for i in n:
+				_set_arena(out, i, ["torres", "tres_alturas", "degraus"][(pick + i) % 3])
 				if i >= 1:
 					out.gaps[i - 1] = PASS_LONG
 					_add(out, i, {"t": "climb", "x": 90.0, "hz": floor_hz, "live": live})
-			out.zones[n - 1].objective = "proteger"
-			_guard(out, n - 1, guard)
-		3:
-			out.kind = "segredo"
+		"segredo":
 			out.spawn_x = -600.0
 			# Passagem 0 aberta: um baú no alto de uma torre logo no começo
 			# (quem olha pra cima acha) e o pulo duplo pra uma 2ª saliência.
-			_add(out, 0, {"t": "tower_cache", "x": 140.0})
-			_add(out, 0, {"t": hz, "x": 470.0})
+			_add(out, 0, {"t": "tower_cache", "x": 330.0})
+			_add(out, 0, {"t": hz, "x": 640.0})
 			for i in n:
-				_set_arena(out, i, ["ponte", "torres", "tres_alturas"][(screen + i) % 3])
+				_set_arena(out, i, ["ponte", "torres", "tres_alturas"][(pick + i) % 3])
 				if i >= 1:
 					out.gaps[i - 1] = 760.0
-					_add(out, i, {"t": "dj_cache", "x": 190.0})
+					_add(out, i, {"t": "dj_cache", "x": 500.0})
 			out.zones[n - 1].objective = "totem" if n >= 2 else "ondas"
-		4:
-			out.kind = "desafio"
-			_set_arena(out, 0, "bordas")
-		5:
-			out.kind = "fuga"
+		"secreta":
+			# A SALA SECRETA: a câmara fica lá em cima; só se entra com PULO DUPLO
+			# (saliência a 116 px do chão → câmara em Y3). Embaixo, a porta selada.
 			for i in n:
-				_set_arena(out, i, arenas[(screen * 3 + i) % arenas.size()])
+				_set_arena(out, i, ["ponte", "torres"][(pick + i) % 2])
+				if i >= 1:
+					out.gaps[i - 1] = PASS_LONG
+					_add(out, i, {"t": "vault", "x": 480.0})
+		"desafio":
+			_set_arena(out, 0, "bordas")
+		"fuga":
+			for i in n:
+				_set_arena(out, i, arenas[(pick * 3 + i) % arenas.size()])
 				if i >= 1:
 					out.gaps[i - 1] = PASS_LONG
 					_add(out, i, {"t": "tide", "x": 0.0})
-					_add(out, i, {"t": hz, "x": 520.0})
-		6:
-			out.kind = "santuario"
+					_add(out, i, {"t": hz, "x": 700.0})
+		"santuario":
+			# Calmo: nada fere. Um ALTAR de repouso, uma torre de luz e a luz a proteger.
 			for i in n:
-				_set_arena(out, i, ["baixa", "ponte", "degraus"][(screen + i) % 3])
+				_set_arena(out, i, ["baixa", "ponte", "degraus"][(pick + i) % 3])
 				if i >= 1:
-					out.gaps[i - 1] = 700.0
-					# Torre de luz calma (um pulo por degrau) + saliência de pulo duplo.
-					_add(out, i, {"t": "tower_cache", "x": 120.0, "calm": true})
-					_add(out, i, {"t": "dj_cache", "x": 560.0})
+					out.gaps[i - 1] = 760.0
+					_add(out, i, {"t": "altar", "x": 160.0})
+					_add(out, i, {"t": "tower_cache", "x": 520.0})
 			if n >= 2:
 				out.zones[1].objective = "proteger"
-		7:
-			out.kind = "antessala"
+		"arena":
+			# Arena pesada (opcional): fechada, sem perigo de cenário; totem na 2ª zona.
+			for i in n:
+				_set_arena(out, i, ["ponte", "bordas", "tres_alturas"][(pick + i) % 3])
+			if n >= 2:
+				out.zones[1].objective = "totem"
+		"antessala":
 			out.spawn_x = -600.0
 			# O corredor: três perigos do Éon em ritmo, um degrau alto pra respirar.
 			_add(out, 0, {"t": hz, "x": 230.0})
@@ -174,14 +201,14 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 			_add(out, 0, {"t": hz, "x": 610.0})
 			_set_arena(out, 0, "tres_alturas")
 			_guard(out, 0, guard)
-		9:
-			out.kind = "centro"
+		"centro":
 			_set_arena(out, 0, ["ponte", "degraus", "torres"][screen % 3])
 			_guard(out, 0, "shards")
 		_:
 			_fill_default(out, n)
-	# Silêncio: toda arena tem um campo que anula magia (num lado ou no meio).
-	if eon == 3 and off != 8:
+	# Silêncio: toda arena tem um campo que anula magia (num lado ou no meio) —
+	# menos no santuário e na Arena (sem regra de cenário gratuita).
+	if eon == 3 and off != 8 and not (kind in ["santuario", "arena"]):
 		for i in out.zones.size():
 			var has_field := false
 			for g in out.zones[i].guard:
@@ -196,6 +223,55 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 				mir.append([-float(p[0]), p[1], p[2]])
 			z.plats = mir
 	return out
+
+
+## Tipo de LAYOUT da tela (nome do level6) a partir do tipo do nó do mapa.
+static func layout_kind(screen: int) -> String:
+	if not RunManager.run_active:
+		return "arena"
+	var nk := ""
+	if RunManager.has_method("node_kind"):
+		nk = String(RunManager.call("node_kind", screen))
+	else:
+		nk = RunManager.screen_role(screen)
+	var layer := RunManager.eon_offset(screen)
+	match nk:
+		"king", "archon", "final":
+			return "chefe"
+		"center":
+			return "centro"
+		"arrival":
+			return "chegada"
+		"trial":
+			return "desafio"
+		"antechamber":
+			return "antessala"
+		"hazard":
+			return "perigo"
+		"platform":
+			return "escalada"
+		"sanctuary":
+			return "santuario"
+		"challenge":
+			return "arena"
+		"secret":
+			return "secreta"
+		"combat", "travel":
+			# Travessia comum: a forma muda com a camada (o mapa do meio = o
+			# caminho do bot; antes era sempre o mesmo corredor).
+			match layer:
+				2, 5: return "fuga"
+				3: return "segredo"
+			return "travessia"
+	return "travessia"
+
+
+## RNG do layout: por NÓ quando o mapa existe (trilhas diferentes, caras
+## diferentes); senão por tela.
+static func _rng(screen: int, salt: int) -> RandomNumberGenerator:
+	if RunManager.has_method("node_rng"):
+		return RunManager.call("node_rng", salt, screen)
+	return RunManager.screen_rng(screen, salt)
 
 
 static func _fill_default(out: Dictionary, n: int) -> void:
