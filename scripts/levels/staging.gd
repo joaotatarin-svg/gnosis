@@ -525,7 +525,7 @@ func _kneel() -> void:
 func _d_rings_return() -> void:
 	_music_stopped = true
 	# Recua para enquadrar os três (ela e as duas formas caídas).
-	_cam_to(0.8, Vector2(_frame_forms_dx(), D_LIFT), 0.8)
+	_cam_to(0.9, Vector2(_frame_forms_dx(), D_LIFT), 0.8)   # 0,8 mostrava o fim do chão
 	var pts: Array = []
 	if final_battle != null and is_instance_valid(final_battle) and final_battle.has_method("release_rings"):
 		pts = final_battle.call("release_rings")
