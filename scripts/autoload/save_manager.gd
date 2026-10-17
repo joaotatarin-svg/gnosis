@@ -48,6 +48,7 @@ func _ready() -> void:
 	# DEMO (#27): save separado — o progresso da demo não mistura com o do jogo.
 	if GameManager.demo and SAVE_PATH == "user://save.json":
 		SAVE_PATH = GameManager.DEMO_DIR + "save.json"
+		print("GNOSIS DEMO: campanha até a tela %d; save em %s" % [GameManager.DEMO_LAST_SCREEN, SAVE_PATH])
 	load_game()
 	# O Juice nasce DEPOIS deste autoload: reaplica no próximo frame pra que
 	# tremor/vibração salvos cheguem nele (apply_settings espelha se existir).
