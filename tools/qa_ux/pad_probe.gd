@@ -134,7 +134,8 @@ class P extends Node:
 				break
 			if d._in_choices:
 				print("PAD|tentacao_escolhas|foco=", focus())
-				get_viewport().get_texture().get_image().save_png(out_dir + "/pad_tentacao_escolha.png")
+				if DisplayServer.get_name() != "headless":
+					get_viewport().get_texture().get_image().save_png(out_dir + "/pad_tentacao_escolha.png")
 				await pad(JOY_BUTTON_A)
 				await wait(0.3)
 				var still := false
