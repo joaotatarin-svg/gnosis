@@ -80,9 +80,11 @@ class Worker extends Node:
 		check(ok and inc_ok, "export inclui LICENSES.md, OFL das fontes e assets/input/*.txt")
 		check(ok and exc_ok, "export exclui tools/artes/docs/_packs/shots")
 		var iss := FileAccess.get_file_as_string("res://installer/gnosis.iss")
+		# A versão do instalador acompanha a do projeto (config/version).
+		var ver := String(ProjectSettings.get_setting("application/config/version", ""))
 		check(FileAccess.file_exists("res://LICENSE_godot.txt") and FileAccess.get_file_as_string("res://LICENSE_godot.txt").contains("Permission is hereby granted")
-			and iss.contains("assets\\LICENSES.md") and iss.contains("LICENSE_godot.txt") and iss.contains("#define AppVersion \"1.1.0\""),
-			"instalador copia LICENSES.md e LICENSE_godot.txt (versão 1.1.0)")
+			and iss.contains("assets\\LICENSES.md") and iss.contains("LICENSE_godot.txt") and ver != "" and iss.contains("#define AppVersion \"%s\"" % ver),
+			"instalador copia LICENSES.md e LICENSE_godot.txt (versão %s = projeto)" % ver)
 		var refs: Array[String] = []
 		for root in ["res://scripts", "res://scenes", "res://assets"]:
 			_scan_dev_refs(root, refs)
