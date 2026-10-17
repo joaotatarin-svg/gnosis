@@ -7,7 +7,8 @@ class_name Staging
 ##
 ## Cenas: "intro" (M1, o batimento) · "rei" (A, o Rei sai da névoa, tela 1) ·
 ## "rei_queda" (a máscara racha) · "roubo" (B, tela 64) · "centro" (C, tela 65,
-## ver `descend()`) · "anagnorise" (D, tela 68) · "santuario" (o tema da Voz).
+## ver `descend()`) · "anagnorise" (D, tela 68) · "santuario" (o tema da Voz) ·
+## "tentacao" (M2, a janela) · "soter" (M3, "Senta.").
 ##
 ## Tudo roda com o mundo PAUSADO pela caixa (process ALWAYS; tweens ignoram o
 ## slow-mo). Se o jogador avançar antes de um efeito acabar, o efeito salta ao
@@ -65,8 +66,8 @@ func _rect(c: Color) -> ColorRect:
 	var r := ColorRect.new()
 	r.color = c
 	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_fx_layer.add_child(r)
+	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	return r
 
 
@@ -132,6 +133,9 @@ func _scene_open() -> void:
 			# O tema da Voz, baixo (plantio — o roubo colhe).
 			Audio.play_music("theme")
 			Audio.set_music_layer_volume(0.45, "theme")
+		"soter":
+			# M3: a música do Éon cai a −14 dB ao abrir o encontro ("Senta.").
+			Audio.set_music_layer_volume(0.22)
 
 
 func _on_line(index: int, line: Dictionary) -> void:
@@ -180,6 +184,10 @@ func _on_line(index: int, line: Dictionary) -> void:
 			elif text.contains("mais baixo"):
 				Audio.duck_music(9.0, -14.0)
 				_cam_to(1.2, Vector2(_side() * 50.0, 6.0), 1.6)
+		"tentacao":
+			# M2: o passado "quente" vira arma — a música do chefe recua.
+			if text.begins_with("(Como ele sabe"):
+				Audio.duck_music(5.0, -10.0)
 		"anagnorise":
 			if text.begins_with("Fui eu que fechei"):
 				_cam_to(1.32, Vector2(0, 16), 1.2)        # baixa à altura dela
@@ -207,6 +215,8 @@ func _on_finished(box: DialogueBox) -> void:
 			_unlock()
 		"anagnorise":
 			_cam_release(0.6)
+		"soter":
+			Audio.set_music_layer_volume(1.0)
 		"santuario":
 			if _music_stopped:
 				await get_tree().create_timer(1.0, true, false, true).timeout

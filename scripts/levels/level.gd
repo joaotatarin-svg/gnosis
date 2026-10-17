@@ -159,7 +159,7 @@ func _play_narrative_beats() -> void:
 		if Narrative.once("mente"):
 			await DialogueBox.play(Narrative.final_pre()).finished
 	elif RunManager.is_archon_screen(screen) and Narrative.once("tentacao_%d" % screen):
-		var d := DialogueBox.play(Narrative.temptation(RunManager.boss_id_for(screen)), ["Recusar", "Ceder"])
+		var d := stage().play(Narrative.temptation(RunManager.boss_id_for(screen)), ["Recusar", "Ceder"], "tentacao")
 		var choice: int = await d.choice_made
 		if choice == 0:
 			await DialogueBox.play(Narrative.refusal_response()).finished
