@@ -55,7 +55,7 @@ static func for_type(id: String) -> Dictionary:
 			])
 		"larva_ardente":
 			return _kit("melee", 0.0, 0.0, [
-				_m("rolar", "rush", 90, 190, 0.45, {"speed": 260.0, "dmg": 0.5, "cd": 2.0}),
+				_m("rolar", "rush", 80, 220, 0.45, {"speed": 260.0, "dmg": 0.5, "cd": 2.0, "w": 3.0}),
 				_m("estouro", "explode", 0, 46, 0.7, {"unb": true}),
 			])
 		# --- Tier 2 -----------------------------------------------------------
@@ -84,9 +84,9 @@ static func for_type(id: String) -> Dictionary:
 			])
 		"espectro":
 			return _kit("flyer", 0.0, 0.2, [
-				_m("mergulho", "dive", 40, 210, 0.75, {"dmg": 1.2, "w": 1.4, "air": true}),
-				_m("rasante", "glide", 70, 230, 0.6, {"cd": 3.0, "air": true}),
-				_m("uivo", "shot", 90, 300, 0.55, {"speed": 200.0, "dmg": 0.7, "cd": 2.5, "air": true}),
+				_m("mergulho", "dive", 40, 210, 0.75, {"dmg": 1.2, "w": 1.4, "cd": 2.2, "air": true}),
+				_m("rasante", "glide", 60, 230, 0.6, {"cd": 3.0, "w": 1.3, "air": true}),
+				_m("uivo", "shot", 60, 300, 0.55, {"speed": 200.0, "dmg": 0.7, "cd": 2.5, "air": true}),
 			], 70.0)
 		# --- Tier 3 -----------------------------------------------------------
 		"alado":
@@ -131,7 +131,7 @@ static func for_type(id: String) -> Dictionary:
 			return _kit("shooter", 0.0, 0.0, [
 				_m("bocejo", "shot", 90, 260, 0.5, {"status": "slow", "speed": 220.0}),
 				_m("nevoa", "lob", 70, 240, 0.6, {"zone": "sleep", "cd": 3.5, "dmg": 0.4}),
-				_m("empurrao", "swing", 0, 46, 0.45, {"dmg": 0.8}),
+				_m("empurrao", "swing", 0, 64, 0.4, {"dmg": 0.8, "reach": 1.4}),
 			])
 		"glutao":
 			return _kit("tank", 0.1, 0.0, [

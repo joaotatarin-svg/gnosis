@@ -46,21 +46,25 @@ func _draw() -> void:
 		_tele_line(to_local(tl), e.attack_hitbox.unblockable)
 
 
-## Asas: duas membranas de luz que batem (mais rápido quando sobe/mergulha).
+## Asas: leque de 4 penas de luz por lado (folha alongada, translúcida, mais
+## clara na borda) que BATEM juntas — lê como "voa" sem tapar a pintura.
 func _wings(s: float, col: Color) -> void:
-	var flap: float = sin(_t * (11.0 if int(enemy.estate) == Enemy.EState.STRIKE else 7.0))
-	var base := Vector2(0, -14.0 * s)
+	var fast: bool = int(enemy.estate) == Enemy.EState.STRIKE
+	var flap: float = sin(_t * (13.0 if fast else 7.5))
+	var base := Vector2(0, -16.0 * s)
+	var light := col.lightened(0.45)
 	for side in [-1.0, 1.0]:
-		var span: float = 30.0 * s
-		var tip := base + Vector2(side * span, -12.0 * s - flap * 14.0 * s)
-		var mid := base + Vector2(side * span * 0.6, 6.0 * s - flap * 6.0 * s)
-		var poly := PackedVector2Array([base + Vector2(side * 3.0 * s, -4.0 * s), tip, mid, base + Vector2(side * 4.0 * s, 6.0 * s)])
-		draw_colored_polygon(poly, Color(col.r, col.g, col.b, 0.28))
-		draw_polyline(PackedVector2Array([base, tip, mid]), Color(col.lightened(0.4), 0.75), 1.2, true)
-		# nervuras
-		for k in 3:
-			var f := 0.35 + 0.22 * k
-			draw_line(base, base.lerp(tip, 1.0).lerp(mid, f), Color(col.lightened(0.5), 0.35), 0.8, true)
+		for j in 4:
+			var ang: float = deg_to_rad(-62.0 + 17.0 * j) - flap * 0.42
+			var dir := Vector2(cos(ang) * side, sin(ang))
+			var length: float = (24.0 - 3.5 * j) * s
+			var w: float = (3.6 - 0.5 * j) * s
+			var tip := base + dir * length
+			var nrm := Vector2(-dir.y, dir.x) * w
+			var mid := base + dir * length * 0.45
+			var leaf := PackedVector2Array([base, mid + nrm, tip, mid - nrm])
+			draw_colored_polygon(leaf, Color(col.r, col.g, col.b, 0.22 + 0.05 * j))
+			draw_polyline(PackedVector2Array([base, mid + nrm, tip]), Color(light, 0.55), 0.9, true)
 
 
 ## Escudo de elite: bolha hexagonal azul; racha e afina conforme absorve.

@@ -1418,6 +1418,7 @@ func _tick_onda6(delta: float) -> void:
 	for k in _mv_cd.keys():
 		_mv_cd[k] = maxf(0.0, float(_mv_cd[k]) - delta)
 	_react_cd -= delta
+	_intent_t -= delta
 	_orbit_t += delta
 	if _downed > 0.0:
 		_downed -= delta
@@ -1445,9 +1446,11 @@ func _hover(_delta: float) -> void:
 		return
 	if estate == EState.STRIKE and String(_mv.get("kind", "")) in ["dive", "glide"]:
 		return
+	# referência = o chão DA SOPHIA (se ela pisa): sobre uma plataforma o voador
+	# não sobe junto com o chão debaixo dele (ficava fora de alcance)
 	var ref := _ground_origin
 	if player != null and is_instance_valid(player) and player.is_on_floor():
-		ref = minf(ref, player.global_position.y)
+		ref = player.global_position.y
 	var target := ref - fly_height + sin(_orbit_t * 2.2) * 5.0
 	velocity.y = clampf((target - global_position.y) * 5.0, -180.0, 180.0)
 
@@ -1489,7 +1492,7 @@ func _anim_style() -> String:
 func _chase_moves(delta: float) -> void:
 	if not _rng_ready:
 		_rng_ready = true
-		_rng.seed = hash("%s:%d:%d" % [type_id, GameManager.current_screen, int(global_position.x)])
+		_rng.seed = hash([type_id, GameManager.current_screen, int(global_position.x)])
 		cooldown_timer = _rng.randf_range(0.2, 0.9)   # a wave não ataca toda no mesmo quadro
 		_orbit_side = 1.0 if _rng.randf() < 0.5 else -1.0
 	var dx := player.global_position.x - global_position.x
@@ -1502,10 +1505,22 @@ func _chase_moves(delta: float) -> void:
 		return
 	if _react(dx, dyv):
 		return
+	# atirador com a Sophia colada: quase não espera — empurra/explode e foge
+	if role == "shooter" and adx < 70.0:
+		cooldown_timer = minf(cooldown_timer, 0.15)
 	if cooldown_timer <= 0.0 or _counter:
-		var mv := _pick_move(adx, dyv)
+		# INTENÇÃO: decide o golpe primeiro e só então chega na distância dele
+		# (antes ele soltava sempre o que coubesse onde estava — o de meia
+		# distância ganhava sempre e o combo de perto quase nunca saía).
+		if _intent.is_empty() or _intent_t <= 0.0 or float(_mv_cd.get(_intent.id, 0.0)) > 0.0:
+			_intent = _pick_move(adx, dyv, true)
+			_intent_t = 2.5
+		var mv: Dictionary = _intent if not _intent.is_empty() and _in_range(_intent, adx, dyv) else {}
+		if mv.is_empty() and _counter:
+			mv = _pick_move(adx, dyv)
 		if not mv.is_empty() and EnemyAggro.request(self, is_champion or _counter):
 			_counter = false
+			_intent = {}
 			_start_move(mv)
 			return
 	if rooted_timer > 0.0:
@@ -1537,6 +1552,8 @@ func _desired_x(dx: float, adx: float) -> float:
 			return global_position.x
 	var waiting: bool = cooldown_timer > 0.0 or (EnemyAggro.count() >= EnemyAggro.MAX_ATTACKERS and not EnemyAggro.holds(self))
 	var ring := 34.0 if role == "tank" else 40.0
+	if not _intent.is_empty():
+		ring = clampf((float(_intent.rmin) + float(_intent.rmax)) * 0.5, 22.0, 140.0)
 	if waiting:
 		ring = (54.0 if role == "tank" else 80.0) + sin(_orbit_t * 1.7 + float(get_instance_id() % 7)) * 14.0
 	if role == "skirm":
@@ -1551,8 +1568,20 @@ func _desired_x(dx: float, adx: float) -> float:
 	return px + side * ring
 
 
-## Golpe que serve agora (distância, altura, recarga), sorteado pelo peso.
-func _pick_move(adx: float, dyv: float) -> Dictionary:
+## Cabe agora? (faixa de distância e de altura do golpe)
+func _in_range(m: Dictionary, adx: float, dyv: float) -> bool:
+	if adx < float(m.rmin) or adx > float(m.rmax):
+		return false
+	if bool(m.air):
+		return _flying()
+	var vmax := 60.0 if String(m.kind) in ["swing", "combo", "grab", "rush", "slam", "nova", "explode", "leap"] else 200.0
+	return absf(dyv) <= vmax
+
+
+## Golpe sorteado pelo peso entre os prontos. `as_intent` = pode estar fora do
+## alcance agora (ele anda até lá) — menos para atirador/voador e para os golpes
+## de reação (nova/explosão), que só valem se já couberem.
+func _pick_move(adx: float, dyv: float, as_intent: bool = false) -> Dictionary:
 	var flying := _flying()
 	var pool: Array = []
 	var total := 0.0
@@ -1561,32 +1590,47 @@ func _pick_move(adx: float, dyv: float) -> Dictionary:
 			continue
 		if bool(m.air) and not flying:
 			continue
-		if adx < float(m.rmin) or adx > float(m.rmax):
-			continue
 		var kind := String(m.kind)
-		if not bool(m.air):
-			var vmax := 60.0 if kind in ["swing", "combo", "grab", "rush", "slam", "nova", "explode", "leap"] else 200.0
-			if absf(dyv) > vmax:
-				continue
+		var must_fit: bool = not as_intent or role in ["shooter", "flyer"] or kind in ["nova", "explode"]
+		if must_fit and not _in_range(m, adx, dyv):
+			continue
+		if as_intent and kind in ["nova", "explode"]:
+			return m                      # golpe de reação que já cabe: é ele
 		if kind == "summon":
 			_prune_minions()
 			if _minions.size() >= 3:
 				continue
 		pool.append(m)
-		total += float(m.w)
+		total += _move_weight(m)
 	if pool.is_empty():
 		return {}
 	var r := _rng.randf() * total
 	for m in pool:
-		r -= float(m.w)
+		r -= _move_weight(m)
 		if r <= 0.0:
 			return m
 	return pool[pool.size() - 1]
 
 
+## Peso no sorteio: o golpe que acabou de sair pesa 1/3 (não repete à toa —
+## "sempre a mesma coisa" era a queixa) e o que ainda não saiu nesta luta, 1,5×.
+func _move_weight(m: Dictionary) -> float:
+	var w := float(m.w)
+	if String(m.id) == _last_mv_id:
+		w *= 0.33
+	elif not used_moves.has(m.id):
+		w *= 1.5
+	return w
+
+
+var _last_mv_id: String = ""
+var _intent: Dictionary = {}          # golpe decidido, ainda chegando na distância
+var _intent_t: float = 0.0
+
 ## Começa o golpe: marca, arma a recarga, aviso (cor/linha) e o telegrafo.
 func _start_move(mv: Dictionary) -> void:
 	_mv = mv
+	_last_mv_id = String(mv.id)
 	used_moves[mv.id] = int(used_moves.get(mv.id, 0)) + 1
 	_mv_cd[mv.id] = float(mv.cd)
 	_combo_left = int(mv.hits) - 1
@@ -1903,7 +1947,7 @@ func _setup_layers() -> void:
 		return
 	var holder: Node = visual.get_parent()
 	_flash_layer = EnemyFlashLayer.new()
-	_flash_layer.name = "FlashLayer"
+	_flash_layer.name = &"FlashLayer"
 	_flash_layer.art = visual
 	holder.add_child(_flash_layer)
 	holder.move_child(_flash_layer, visual.get_index() + 1)
@@ -1911,13 +1955,13 @@ func _setup_layers() -> void:
 		return
 	var body: Node = holder if holder != self else visual
 	var back := EnemyOverlay.new()
-	back.name = "OverlayBack"
+	back.name = &"OverlayBack"
 	back.enemy = self
 	back.front = false
 	add_child(back)
 	move_child(back, body.get_index())
 	var front := EnemyOverlay.new()
-	front.name = "OverlayFront"
+	front.name = &"OverlayFront"
 	front.enemy = self
 	add_child(front)
 	if is_champion:
