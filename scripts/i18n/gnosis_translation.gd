@@ -90,6 +90,18 @@ func lookup(s: String, depth: int) -> String:
 	var p := _match_pattern(s, depth)
 	if p != "":
 		return p
+	# lista "a, b, c" (nomes de golpes juntados pelo código): TODOS precisam traduzir
+	if s.contains(", "):
+		var items := s.split(", ")
+		var ok := true
+		for i in items.size():
+			var t := lookup(items[i], depth + 1)
+			if t == "":
+				ok = false
+				break
+			items[i] = t
+		if ok:
+			return ", ".join(items)
 	# várias linhas: cada linha por si (pelo menos uma precisa traduzir)
 	if s.contains("\n"):
 		var parts := s.split("\n")
@@ -192,7 +204,8 @@ func _add_pattern(pt: String, en: String, upper: bool) -> void:
 		if c.to_lower() != c.to_upper():
 			letters += 1
 	# padrão só de separadores de espaço ("%s %s") é genérico demais
-	if letters == 0 and longest.strip_edges() == "":
+	# ("%02d  %s" vale: o número ancora; o pedaço %s ainda precisa traduzir)
+	if letters == 0 and longest.strip_edges() == "" and not kinds.has("d"):
 		return
 	var en_up := en
 	if upper:

@@ -138,11 +138,13 @@ def gd_str(s: str) -> str:
 def write_table(done: list[dict], extra: dict[str, str]) -> None:
 	"""Tabela que o JOGO lê (GnosisTranslation): pt → en. Gerada — não edite à mão."""
 	table: dict[str, str] = {}
+	# igual nos dois idiomas não precisa entrar — exceto FORMATOS ("%s — %s"):
+	# viram padrão no jogo e traduzem os pedaços (o nome, a descrição...).
 	for r in done:
-		if r["pt"] != r["en"]:
+		if r["pt"] != r["en"] or "%" in r["pt"]:
 			table[r["pt"]] = r["en"]
 	for k, v in extra.items():
-		if k != v:
+		if k != v or "%" in k:
 			table[k] = v
 	out = ["extends RefCounted",
 		"## GERADO por tools/i18n/build.py a partir de assets/i18n/en/*.tsv — NÃO EDITE.",

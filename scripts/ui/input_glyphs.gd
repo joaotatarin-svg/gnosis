@@ -302,7 +302,7 @@ static func hint(pairs: Array, dev: int = -1, sep: String = "  ·  ") -> String:
 				keys.append(label(String(a), dev))
 		else:
 			keys.append(label(String(acts), dev))
-		parts.append("%s %s" % ["/".join(keys), String(p[1])])
+		parts.append("%s %s" % ["/".join(keys), I18n.t(String(p[1]))])
 	return sep.join(parts)
 
 
@@ -317,7 +317,7 @@ static func icon_width(action: String, h: float, font: Font = null, dev: int = -
 		return h
 	var f: Font = font if font != null else CodexStyle.body_bold()
 	var fs := _icon_font_size(h)
-	var tw := f.get_string_size(_icon_text(ev, action, d), HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var tw := f.get_string_size(I18n.t(_icon_text(ev, action, d)), HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	return maxf(h, tw + h * 0.7)
 
 
@@ -448,6 +448,7 @@ static func _draw_ps_shape(ci: CanvasItem, c: Vector2, s: float, b: int, col: Co
 
 
 static func _text_centered(ci: CanvasItem, c: Vector2, text: String, f: Font, fs: int, col: Color) -> void:
+	text = I18n.t(text)
 	var sz := f.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs)
 	var base := c + Vector2(-sz.x * 0.5, (f.get_ascent(fs) - f.get_descent(fs)) * 0.5)
 	ci.draw_string(f, base.round(), text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, col)
@@ -488,7 +489,7 @@ class Hint extends Control:
 			var p: Array = pairs[i]
 			for a in _acts(p[0]):
 				w += InputGlyphs.icon_width(a, icon_h) + 2.0
-			w += 3.0 + f.get_string_size(String(p[1]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+			w += 3.0 + f.get_string_size(I18n.t(String(p[1])), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 			if i < pairs.size() - 1:
 				w += gap
 		return w
@@ -516,7 +517,7 @@ class Hint extends Control:
 				InputGlyphs.draw_icon(self, Vector2(x + iw * 0.5, cy), a, icon_h)
 				x += iw + 2.0
 			x += 3.0
-			var t := String(p[1])
+			var t := I18n.t(String(p[1]))
 			draw_string(f, Vector2(x, cy + (f.get_ascent(font_size) - f.get_descent(font_size)) * 0.5).round(), t, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
 			x += f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 			if i < pairs.size() - 1:

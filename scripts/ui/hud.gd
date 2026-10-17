@@ -321,7 +321,7 @@ func toast(msg: String) -> void:
 		CodexStyle.rule(_toast, Vector2(TOAST_RECT.size.x * 0.5 - 100.0, 22), 200, Color(CodexStyle.GOLD, 0.9))
 	var fs := 13
 	var font: Font = CodexStyle.display()
-	while fs > 9 and font.get_string_size(msg, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > TOAST_RECT.size.x - 8.0:
+	while fs > 9 and font.get_string_size(I18n.t(msg), HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > TOAST_RECT.size.x - 8.0:
 		fs -= 1
 	_toast_label.add_theme_font_size_override("font_size", fs)
 	_toast_label.text = msg
@@ -985,6 +985,7 @@ class _HudCanvas extends Control:
 
 	# --- texto com contorno -----------------------------------------------------------
 	func _txt(pos: Vector2, s: String, font: Font, size: int, col: Color, align: int = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0, outline: int = 4) -> void:
+		s = I18n.t(s)        # i18n (Onda 4): o HUD desenha à mão — sem tradução automática
 		if outline > 0:
 			draw_string_outline(font, pos, s, align, width, size, outline, Color(0.01, 0.03, 0.04, 0.85 * col.a))
 		draw_string(font, pos, s, align, width, size, col)
@@ -1316,9 +1317,9 @@ class _HudCanvas extends Control:
 				if gw > 0.0:
 					items.append(["icon", act, gw, used])
 					continue
-				var lab: String = hud.key_label(act)
+				var lab: String = I18n.t(hud.key_label(act))
 				items.append(["key", lab, font.get_string_size(lab, HORIZONTAL_ALIGNMENT_LEFT, -1, ks).x + 8.0, used])
-			var tx := String(seg.get("text", ""))
+			var tx := I18n.t(String(seg.get("text", "")))
 			if tx != "":
 				items.append(["txt", tx, tfont.get_string_size(tx, HORIZONTAL_ALIGNMENT_LEFT, -1, ts).x + 4.0])
 		var total := 0.0

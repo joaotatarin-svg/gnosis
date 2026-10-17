@@ -5476,7 +5476,7 @@ msgid "%s  —  %s  (%s)"
 msgstr "%s  —  %s  (%s)"
 
 #. dialogue_box._reason_text.d9cd37  [ui]
-#: scripts/ui/dialogue_box.gd:630
+#: scripts/ui/dialogue_box.gd:636
 msgid "%s: %s"
 msgstr "%s: %s"
 
@@ -5736,12 +5736,12 @@ msgid "Eixo %d"
 msgstr "Axis %d"
 
 #. hud._draw_counters.a602bb  [ui]
-#: scripts/ui/hud.gd:1103
+#: scripts/ui/hud.gd:1104
 msgid "Arma Nv. %d"
 msgstr "Weapon Lv. %d"
 
 #. hud._draw_one_boss.794201  [ui]
-#: scripts/ui/hud.gd:1284
+#: scripts/ui/hud.gd:1285
 msgid "FASE II"
 msgstr "PHASE II"
 
@@ -6251,142 +6251,147 @@ msgid "o Arconte"
 msgstr "the Archon"
 
 #. options_menu.CAPTION_NAMES.4f6fe2  [ui]
-#: scripts/ui/options_menu.gd:23
+#: scripts/ui/options_menu.gd:25
 msgid "Pequena"
 msgstr "Small"
 
 #. options_menu.CAPTION_NAMES.d8a313  [ui]
-#: scripts/ui/options_menu.gd:23
+#: scripts/ui/options_menu.gd:25
 msgid "Média"
 msgstr "Medium"
 
 #. options_menu.CAPTION_NAMES.0b6d3b  [ui]
-#: scripts/ui/options_menu.gd:23
+#: scripts/ui/options_menu.gd:25
 msgid "Grande"
 msgstr "Large"
 
 #. options_menu.WINDOW_NAMES.717700  [ui]
-#: scripts/ui/options_menu.gd:28
+#: scripts/ui/options_menu.gd:30
 msgid "Janela"
 msgstr "Windowed"
 
 #. options_menu.WINDOW_NAMES.e80112  [ui]
-#: scripts/ui/options_menu.gd:28
+#: scripts/ui/options_menu.gd:30
 msgid "Tela cheia"
 msgstr "Fullscreen"
 
 #. options_menu.WINDOW_NAMES.e90e25  [ui]
-#: scripts/ui/options_menu.gd:28
+#: scripts/ui/options_menu.gd:30
 msgid "Sem bordas"
 msgstr "Borderless"
 
 #. options_menu.TEXT_SPEED_NAMES.f777fc  [ui]
-#: scripts/ui/options_menu.gd:31
+#: scripts/ui/options_menu.gd:33
 msgid "0,5×"
 msgstr "0.5×"
 
 #. options_menu.TEXT_SPEED_NAMES.af7b38  [ui]
-#: scripts/ui/options_menu.gd:31
+#: scripts/ui/options_menu.gd:33
 msgid "1×"
 msgstr "1×"
 
 #. options_menu.TEXT_SPEED_NAMES.26abea  [ui]
-#: scripts/ui/options_menu.gd:31
+#: scripts/ui/options_menu.gd:33
 msgid "2×"
 msgstr "2×"
 
 #. options_menu.TEXT_SPEED_NAMES.43c5c6  [ui]
-#: scripts/ui/options_menu.gd:31
+#: scripts/ui/options_menu.gd:33
 msgid "Instantâneo"
 msgstr "Instant"
 
 #. options_menu._ready.03e7e1  [ui]
-#: scripts/ui/options_menu.gd:67
+#: scripts/ui/options_menu.gd:70
 msgid "Vídeo"
 msgstr "Video"
 
 #. options_menu._ready.21ed2a  [ui]
-#: scripts/ui/options_menu.gd:68
+#: scripts/ui/options_menu.gd:71
 msgid "Modo de janela"
 msgstr "Window mode"
 
 #. options_menu._ready.04688b  [ui]
-#: scripts/ui/options_menu.gd:72
+#: scripts/ui/options_menu.gd:75
 msgid "VSync"
 msgstr "VSync"
 
 #. options_menu._ready.5095c2  [ui]
-#: scripts/ui/options_menu.gd:73
+#: scripts/ui/options_menu.gd:76
 msgid "Tremor de câmera"
 msgstr "Camera shake"
 
 #. options_menu._ready.2c5c42  [ui]
-#: scripts/ui/options_menu.gd:76
+#: scripts/ui/options_menu.gd:79
 msgid "Reduzir flashes"
 msgstr "Reduce flashes"
 
 #. options_menu._ready.54a83d  [ui]
-#: scripts/ui/options_menu.gd:77
+#: scripts/ui/options_menu.gd:80
 msgid "Áudio"
 msgstr "Audio"
 
 #. options_menu._ready.c80011  [ui]
-#: scripts/ui/options_menu.gd:78
+#: scripts/ui/options_menu.gd:81
 msgid "Volume geral"
 msgstr "Master volume"
 
 #. options_menu._ready.fed262  [ui]
-#: scripts/ui/options_menu.gd:79
+#: scripts/ui/options_menu.gd:82
 msgid "Efeitos"
 msgstr "Effects"
 
 #. options_menu._ready.578afe  [ui]
-#: scripts/ui/options_menu.gd:80
+#: scripts/ui/options_menu.gd:83
 msgid "Música"
 msgstr "Music"
 
 #. options_menu._ready.4cc92d  [ui]
-#: scripts/ui/options_menu.gd:82
+#: scripts/ui/options_menu.gd:85
 msgid "Jogo"
 msgstr "Game"
 
+#. options_menu._ready.0a4f5c  [ui]
+#: scripts/ui/options_menu.gd:87
+msgid "Idioma · Language"
+msgstr "Language · Idioma"
+
 #. options_menu._ready.738111  [ui]
-#: scripts/ui/options_menu.gd:83
+#: scripts/ui/options_menu.gd:90
 msgid "Velocidade do texto"
 msgstr "Text speed"
 
 #. options_menu._ready.3f163c  [ui]
-#: scripts/ui/options_menu.gd:86
+#: scripts/ui/options_menu.gd:93
 msgid "Legendas"
 msgstr "Subtitles"
 
 #. options_menu._ready.30bf10  [ui]
-#: scripts/ui/options_menu.gd:90
+#: scripts/ui/options_menu.gd:97
 msgid "“Lembre-se do que arde.”"
 msgstr "“Remember what burns.”"
 
 #. options_menu._ready.a33fe8  [ui]
-#: scripts/ui/options_menu.gd:98
+#: scripts/ui/options_menu.gd:105
 msgid "Números de dano"
 msgstr "Damage numbers"
 
 #. options_menu._ready.36a9db  [ui]
-#: scripts/ui/options_menu.gd:99
+#: scripts/ui/options_menu.gd:106
 msgid "Vibração do controle"
 msgstr "Controller vibration"
 
 #. options_menu._ready.0d64f3  [ui]
-#: scripts/ui/options_menu.gd:101
+#: scripts/ui/options_menu.gd:108
 msgid "Teclas e botões"
 msgstr "Keys and buttons"
 
 #. options_menu._refresh_toggle.31d43c  [ui]
-#: scripts/ui/options_menu.gd:168
+#: scripts/ui/options_menu.gd:175
 msgid "Ligada"
 msgstr "On"
 
 #. options_menu._refresh_toggle.164bf4  [ui]
-#: scripts/ui/options_menu.gd:168
+#: scripts/ui/options_menu.gd:175
 msgid "Desligada"
 msgstr "Off"
 
@@ -6752,3 +6757,39 @@ msgstr "pause"
 #. composto (montado pelo código)
 msgid "selos abertos"
 msgstr "seals open"
+
+#. composto (montado pelo código)
+msgid "continuar"
+msgstr "continue"
+
+#. composto (montado pelo código)
+msgid "roubados"
+msgstr "stolen"
+
+#. composto (montado pelo código)
+msgid "refazendo-se"
+msgstr "re-forming"
+
+#. composto (montado pelo código)
+msgid "Crônica %d/%d      %s fechar"
+msgstr "Chronicle %d/%d      %s close"
+
+#. composto (montado pelo código)
+msgid "• nova Crônica  %d/%d      %s fechar"
+msgstr "• new Chronicle  %d/%d      %s close"
+
+#. composto (montado pelo código)
+msgid "Conceito → ilustração → poses"
+msgstr "Concept → illustration → poses"
+
+#. composto (montado pelo código)
+msgid "Conceito → ilustração → articulações"
+msgstr "Concept → illustration → joints"
+
+#. composto (montado pelo código)
+msgid "ARMA %d / 5   ·   PALETA %d / 3"
+msgstr "WEAPON %d / 5   ·   PALETTE %d / 3"
+
+#. composto (montado pelo código)
+msgid "ARCONTE   ·   PALETA %d / 3"
+msgstr "ARCHON   ·   PALETTE %d / 3"

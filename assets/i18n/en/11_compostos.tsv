@@ -43,3 +43,12 @@
 =queda	fall
 =pausa	pause
 =selos abertos	seals open
+=continuar	continue
+=roubados	stolen
+=refazendo-se	re-forming
+=Crônica %d/%d      %s fechar	Chronicle %d/%d      %s close
+=• nova Crônica  %d/%d      %s fechar	• new Chronicle  %d/%d      %s close
+=Conceito → ilustração → poses	Concept → illustration → poses
+=Conceito → ilustração → articulações	Concept → illustration → joints
+=ARMA %d / 5   ·   PALETA %d / 3	WEAPON %d / 5   ·   PALETTE %d / 3
+=ARCONTE   ·   PALETA %d / 3	ARCHON   ·   PALETTE %d / 3
