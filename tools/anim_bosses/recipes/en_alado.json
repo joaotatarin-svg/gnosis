@@ -1,0 +1,103 @@
+{
+ "_doc": "Fila 9: Vigia Alado (voador que atira de cima) = fly_sentinela_a (olho orbital da Coroa). Cacos soltos do hurt/death ficam com o quadro.",
+ "group": "creatures",
+ "sheet": "artes/gpt/fly_sentinela_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_hover",
+  "fly_0",
+  "fly_1",
+  "dive_windup",
+  "dive_strike",
+  "shot",
+  "hurt",
+  "death"
+ ],
+ "kind": "spirit",
+ "body_px": 220,
+ "ref": "idle_hover",
+ "fit_override": {
+  "body_frac": 0.85,
+  "foot_gap": 0.0,
+  "dx": 0.0
+ },
+ "anchors": {},
+ "anchor_fix": {},
+ "inbetween": {},
+ "flex": {
+  "cloth_top": 0.55,
+  "cloth_amp": 1.2
+ },
+ "hem_wave": 0.8,
+ "states": {
+  "idle": {
+   "frames": [
+    "idle_hover",
+    "fly_0"
+   ],
+   "loop": true,
+   "fps": 2.5
+  },
+  "walk": {
+   "frames": [
+    "fly_0",
+    "fly_1",
+    "idle_hover"
+   ],
+   "loop": true,
+   "fps": 5.0
+  },
+  "windup": {
+   "frames": [
+    "dive_windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "dive_strike"
+   ]
+  },
+  "charge": {
+   "frames": [
+    "dive_strike"
+   ]
+  },
+  "windup_cast": {
+   "frames": [
+    "dive_windup"
+   ]
+  },
+  "cast": {
+   "frames": [
+    "shot"
+   ]
+  },
+  "recover": {
+   "frames": [
+    "shot",
+    "idle_hover"
+   ],
+   "at": [
+    0.0,
+    0.5
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ }
+}
