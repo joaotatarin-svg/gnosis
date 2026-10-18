@@ -91,6 +91,7 @@ def main() -> int:
 	ap.add_argument("--out", default=r"C:\gnosis-wt\_caps\dublagem\amostras")
 	ap.add_argument("--refs", default=str(HERE / "out" / "refs"))
 	ap.add_argument("--device", default="cpu")
+	ap.add_argument("--force", action="store_true", help="refaz mesmo as que já existem")
 	a = ap.parse_args()
 	out, refs = Path(a.out), Path(a.refs)
 	out.mkdir(parents=True, exist_ok=True)
@@ -111,6 +112,8 @@ def main() -> int:
 				print("!! sem texto %s: %s" % (lang, l["text_pt"]))
 				continue
 			f = out / ("%s_%s_%d.ogg" % (slug(l["speaker"]), lang, l["n"]))
+			if f.exists() and f.name in results and not a.force:
+				continue
 			info = render(cb, l["speaker"], l["mood"], l["mode"], l["text_pt"], said, lang, refs, f)
 			info["id"] = l["id"]
 			info["text"] = l["text_" + lang]

@@ -287,6 +287,14 @@ class Chatterbox:
 
 	def gen(self, text: str, ref_wav: str, ex: float, cfg: float, temp: float, seed: int) -> np.ndarray:
 		self.torch.manual_seed(seed)
+		# Teto de tokens pela duração esperada (25 tokens/s; ~12 caracteres/s; 2×
+		# de folga): sem isto, uma geração que "perde" o fim roda até 1000 tokens
+		# (40 s de áudio, ~5 min de CPU) inventando sons.
+		cap = int((len(text) / 12.0 + 1.5) * 25 * 2)
+		t3 = self.m.t3
+		if not hasattr(t3, "_inf_orig"):
+			t3._inf_orig = t3.inference
+		t3.inference = lambda *a, **kw: t3._inf_orig(*a, **{**kw, "max_new_tokens": min(kw.get("max_new_tokens") or 1000, cap)})
 		if ref_wav != self._ref:
 			self.m.prepare_conditionals(ref_wav, exaggeration=ex)
 			self._ref = ref_wav
