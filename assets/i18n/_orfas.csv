@@ -87,4 +87,3 @@ Endings seen and options are kept.",ui,,,scripts/ui/codex_menu.gd:216,format str
 end_screen._build_demo.98a1ee,"Obrigado por jogar.
 A subida continua por mais seis Éons no jogo completo.","Thank you for playing.
 The climb goes on through six more Aeons in the full game.",ui,,,scripts/ui/end_screen.gd:147,
-upgrade_menu._rebuild.91ac76,+15 de Éter máx.,+15 max Aether,ui,,,scripts/ui/upgrade_menu.gd:133,
