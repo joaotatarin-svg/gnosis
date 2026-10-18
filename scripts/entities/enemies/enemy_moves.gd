@@ -7,8 +7,11 @@ class_name EnemyMoves
 ##
 ## Campos de um golpe (todos opcionais menos id/kind):
 ##   id      nome do golpe (a sonda confere que cada um sai)
-##   kind    swing · combo · rush · leap · slam · nova · shot · lob · pillar ·
-##           grab · dive · glide · blink · summon · explode
+##   kind    swing · combo · rush · leap · slam · nova · shot · burst · lob ·
+##           pillar · fissure · grab · dive · glide · blink · summon · explode ·
+##           retreat (salto de fuga do atirador: não fere)
+##   look    forma do tiro (Projectile.look): bolt · wisp · seed · spike · page
+##   homing  tiro teleguiado lento (rad/s de curva)
 ##   rmin/rmax  faixa de distância horizontal até a Sophia em que o golpe serve
 ##   wind    telegrafo (s) — a pose/a cor/o brilho avisam
 ##   dmg     multiplicador do dano base do tipo
@@ -53,6 +56,13 @@ static func for_type(id: String) -> Dictionary:
 				_m("tres_cortes", "combo", 0, 50, 0.5, {"hits": 3, "dmg": 0.75, "w": 1.3, "cd": 2.0}),
 				_m("estocada", "swing", 55, 105, 0.6, {"lunge": 260.0, "reach": 1.3, "dmg": 1.2, "cd": 2.5}),
 			])
+		"acolito":
+			# SÓ À DISTÂNCIA: rajada de setas, fogo-fátuo teleguiado e salto de fuga.
+			return _kit("shooter", 0.0, 0.0, [
+				_m("rajada", "burst", 90, 260, 0.5, {"count": 3, "speed": 280.0, "dmg": 0.5, "w": 1.3}),
+				_m("fogo_fatuo", "shot", 80, 300, 0.6, {"homing": 1.8, "speed": 115.0, "look": "wisp", "dmg": 0.9, "cd": 3.5}),
+				_m("recuo", "retreat", 0, 85, 0.1, {"cd": 2.2}),
+			])
 		"larva_ardente":
 			return _kit("melee", 0.0, 0.0, [
 				_m("rolar", "rush", 80, 220, 0.45, {"speed": 260.0, "dmg": 0.5, "cd": 2.0, "w": 3.0}),
@@ -81,17 +91,18 @@ static func for_type(id: String) -> Dictionary:
 			return _kit("tank", 0.45, 0.0, [
 				_m("escudada", "swing", 0, 48, 0.5, {"dmg": 0.9}),
 				_m("lanca", "swing", 50, 115, 0.62, {"lunge": 240.0, "reach": 1.5, "cd": 2.2}),
+				_m("fissura", "fissure", 90, 220, 0.6, {"cd": 3.0, "dmg": 0.8}),
 			])
 		"espectro":
 			return _kit("flyer", 0.0, 0.2, [
 				_m("mergulho", "dive", 40, 210, 0.75, {"dmg": 1.2, "w": 1.4, "cd": 2.2, "air": true}),
 				_m("rasante", "glide", 60, 230, 0.6, {"cd": 3.0, "w": 1.3, "air": true}),
-				_m("uivo", "shot", 60, 300, 0.55, {"speed": 200.0, "dmg": 0.7, "cd": 2.5, "air": true}),
+				_m("uivo", "shot", 60, 300, 0.55, {"speed": 120.0, "homing": 1.6, "look": "wisp", "dmg": 0.7, "cd": 3.0, "air": true}),
 			], 70.0)
 		# --- Tier 3 -----------------------------------------------------------
 		"alado":
 			return _kit("flyer", 0.0, 0.25, [
-				_m("rajada", "shot", 40, 300, 0.6, {"count": 3, "spread": 0.26, "speed": 250.0, "dmg": 0.6, "w": 1.3, "air": true}),
+				_m("rajada", "shot", 40, 300, 0.6, {"count": 3, "spread": 0.26, "speed": 250.0, "dmg": 0.6, "w": 1.3, "look": "bolt", "air": true}),
 				_m("lanca_de_luz", "pillar", 0, 320, 0.5, {"cd": 3.2, "dmg": 1.1, "air": true}),
 				_m("rasante", "glide", 60, 220, 0.6, {"cd": 3.5, "air": true}),
 			], 64.0)
@@ -118,6 +129,7 @@ static func for_type(id: String) -> Dictionary:
 				_m("orbe", "shot", 90, 260, 0.55),
 				_m("chamado", "summon", 0, 320, 0.6, {"cd": 6.0}),
 				_m("semente", "lob", 60, 240, 0.6, {"zone": "poison", "cd": 3.5, "dmg": 0.6}),
+				_m("recuo", "retreat", 0, 80, 0.1, {"cd": 2.5}),
 			])
 		# --- Tier 4 -----------------------------------------------------------
 		"aberracao":
@@ -131,7 +143,7 @@ static func for_type(id: String) -> Dictionary:
 			return _kit("shooter", 0.0, 0.0, [
 				_m("bocejo", "shot", 90, 260, 0.5, {"status": "slow", "speed": 220.0}),
 				_m("nevoa", "lob", 70, 240, 0.6, {"zone": "sleep", "cd": 3.5, "dmg": 0.4}),
-				_m("empurrao", "swing", 0, 64, 0.4, {"dmg": 0.8, "reach": 1.4}),
+				_m("recuo", "retreat", 0, 80, 0.1, {"cd": 2.4}),
 			])
 		"glutao":
 			return _kit("tank", 0.1, 0.0, [
@@ -141,13 +153,13 @@ static func for_type(id: String) -> Dictionary:
 			])
 		"carcereiro":
 			return _kit("shooter", 0.2, 0.0, [
-				_m("corrente", "shot", 90, 210, 0.55, {"status": "root", "speed": 260.0}),
+				_m("corrente", "shot", 90, 210, 0.55, {"status": "root", "speed": 260.0, "look": "bolt"}),
 				_m("chicote", "swing", 0, 90, 0.55, {"reach": 1.9, "dmg": 0.9}),
 				_m("arrastar", "rush", 60, 150, 0.6, {"cd": 3.0, "speed": 260.0}),
 			])
 		"mudo":
 			return _kit("melee", 0.15, 0.1, [
-				_m("paginas", "shot", 80, 240, 0.5, {"count": 3, "spread": 0.22, "dmg": 0.55}),
+				_m("paginas", "burst", 80, 240, 0.5, {"count": 3, "speed": 240.0, "look": "page", "dmg": 0.55}),
 				_m("golpes", "combo", 0, 50, 0.45, {"hits": 2, "dmg": 0.8}),
 				_m("selo", "pillar", 0, 260, 0.55, {"cd": 3.2}),
 			])

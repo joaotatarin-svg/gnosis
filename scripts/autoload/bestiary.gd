@@ -258,6 +258,10 @@ func _build() -> void:
 			_profile(W, 46, Color(0.28, 0.24, 0.36), Color(0.15, 0.12, 0.2), Color(0.72, 0.5, 1), [])),
 		_wt("servo", "Servo do Demiurgo", 1, 58, 9, 105.0, 6,
 			_profile(H, 48, Color(0.5, 0.5, 0.55), Color(0.3, 0.3, 0.34), Color(1, 0.8, 0.4), ["blade"])),
+		# SÓ À DISTÂNCIA (Onda 6): rajada de setas, fogo-fátuo teleguiado e foge
+		# quando você chega perto — ensina a fechar distância com esquiva.
+		_wt("acolito", "Acólito do Fogo-Fátuo", 1, 34, 7, 80.0, 6,
+			_profile(H, 48, Color(0.4, 0.62, 0.6), Color(0.2, 0.34, 0.33), Color(0.6, 1.0, 0.9), ["staff"]), "ranged"),
 		# Larva Ardente: corre até você e EXPLODE (imparável — ensina a esquivar).
 		_wt("larva_ardente", "Larva Ardente", 1, 26, 15, 82.0, 5,
 			_profile(W, 36, Color(0.85, 0.45, 0.25), Color(0.4, 0.15, 0.08), Color(1, 0.75, 0.4), []), "melee", "", "exploder"),
@@ -334,6 +338,7 @@ func _build() -> void:
 	_art_as("fantasma", "mudo", Color(0.82, 0.72, 1.15, 0.8))       # translúcido violeta
 	_art_as("cornudo", "ceifador", Color(1.12, 0.82, 0.82, 1.0))     # espadachim rubro
 	_art_as("espectro", "espectro", Color(0.72, 0.92, 1.15, 0.86))   # verme-espírito pálido
+	_art_as("acolito", "acolito", Color(0.74, 1.0, 0.94, 1.0))      # conjurador verde-água
 
 	# Os 7 Arcontes dos 7 Éons (ordem = ordem dos atos; ver docs/LORE.md).
 	# Cada um tem uma ASSINATURA visual (feature própria) e um KIT de mecânica.

@@ -12,6 +12,9 @@ class_name EnemyOverlay
 var enemy: Node2D
 var front: bool = true
 var _t: float = 0.0
+## SONDA DE CAIXAS (depuração/QA): desenha a Hurtbox (verde) e a caixa do golpe
+## (vermelha quando ativa) por cima do desenho. Liga com `EnemyOverlay.debug_boxes`.
+static var debug_boxes: bool = false
 
 
 func _process(delta: float) -> void:
@@ -27,6 +30,8 @@ func _draw() -> void:
 		return
 	var s: float = float(e._art_scale)
 	var col: Color = e.eye_color
+	if front and debug_boxes:
+		_debug_boxes()
 	if not front:
 		if float(e.fly_height) > 0.0 and not e.is_downed():
 			_wings(s, col)
@@ -157,3 +162,24 @@ func _tele_line(to: Vector2, unb: bool) -> void:
 		var b := from.lerp(to, float(i + 1) / n)
 		draw_line(a, b, Color(c, 0.7), 1.6, true)
 	draw_circle(to, 4.0 + 1.5 * sin(_t * 16.0), Color(c, 0.6))
+
+
+## Caixas reais (formas de colisão) no espaço local do inimigo.
+func _debug_boxes() -> void:
+	var hs: CollisionShape2D = enemy.get_node_or_null("Hurtbox/HurtShape")
+	if hs != null and hs.shape is RectangleShape2D:
+		var sz: Vector2 = (hs.shape as RectangleShape2D).size
+		var r := Rect2(-sz * 0.5, sz)
+		var xf: Transform2D = (enemy.get_node("Hurtbox") as Node2D).transform * hs.transform
+		_rect_outline(xf, r, Color(0.3, 1.0, 0.4, 0.9))
+	var ab: Area2D = enemy.get_node_or_null("AttackHitbox")
+	var ash: CollisionShape2D = enemy.get_node_or_null("AttackHitbox/AttackShape")
+	if ab != null and ash != null and ash.shape is RectangleShape2D:
+		var sz2: Vector2 = (ash.shape as RectangleShape2D).size
+		var on: bool = ab.monitoring
+		_rect_outline(ab.transform * ash.transform, Rect2(-sz2 * 0.5, sz2), Color(1.0, 0.25, 0.2, 0.95 if on else 0.18))
+
+
+func _rect_outline(xf: Transform2D, r: Rect2, c: Color) -> void:
+	var pts := PackedVector2Array([xf * r.position, xf * Vector2(r.end.x, r.position.y), xf * r.end, xf * Vector2(r.position.x, r.end.y), xf * r.position])
+	draw_polyline(pts, c, 1.2)

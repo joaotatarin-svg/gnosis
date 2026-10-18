@@ -275,7 +275,10 @@ func _ready() -> void:
 	contact_hitbox.team = "enemy"
 	contact_hitbox.damage = int(contact_damage * dmg_mult)
 	contact_hitbox.unblockable = false
-	contact_hitbox.monitoring = true
+	# Onda 6 (playtest 2 do João): SEM DANO DE CONTATO. A Sophia tomava dano só
+	# por encostar/acertar o inimigo — a dificuldade vinha disso, não dos golpes.
+	# Agora só fere o que tem telegrafo (golpes, investidas, mergulhos, zonas).
+	contact_hitbox.monitoring = false
 
 	attack_hitbox.team = "enemy"
 	attack_hitbox.damage = int(attack_damage * dmg_mult)
@@ -454,6 +457,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_pin_shadow()
 	_sync_anim()
+	_fit_hurtbox()
 	_animate_orb(delta)
 
 
@@ -967,7 +971,7 @@ func revive(ratio: float) -> void:
 	estate = EState.STAGGER
 	attack_timer = 1.0
 	phase = 1
-	contact_hitbox.monitoring = true
+	contact_hitbox.monitoring = false     # Onda 6: sem dano de contato
 	hurtbox.monitoring = true
 	_flash_t = -1.0
 	_tint_base = Color(1, 1, 1, 1)
@@ -1483,7 +1487,8 @@ func _anim_style() -> String:
 		return attack_style
 	match String(_mv.kind):
 		"slam", "nova": return "slam"
-		"shot", "lob", "pillar", "summon": return "ranged"
+		"shot", "burst", "lob", "pillar", "summon": return "ranged"
+		"fissure": return "slam"
 		"rush", "dive", "glide", "leap": return "charge"
 	return "melee"
 
@@ -1639,6 +1644,21 @@ func _start_move(mv: Dictionary) -> void:
 	attack_hitbox.unblockable = is_elite or bool(mv.unb) or behavior == "exploder"
 	tele_target = Vector2.INF
 	var kind := String(mv.kind)
+	if kind == "retreat":
+		# RECUO (atirador): salta pra trás, levanta poeira e volta a mirar — sem
+		# telegrafo porque não fere; devolve a vez na fila na hora.
+		var away := -1.0
+		if player != null and is_instance_valid(player):
+			away = -signf(player.global_position.x - global_position.x)
+		velocity.x = away * 310.0
+		if is_on_floor():
+			velocity.y = -170.0
+		_evade_t = 0.35
+		VfxLibrary.dust(get_parent(), global_position + Vector2(0, 22.0 * _art_scale))
+		EnemyAggro.release(self)
+		_mv = {}
+		cooldown_timer = 0.35
+		return
 	if kind == "blink" and player != null and is_instance_valid(player):
 		# aparece ATRÁS da Sophia (do lado oposto ao que ela olha) e golpeia
 		_blink_to(player.global_position.x - float(player.facing) * 52.0)
@@ -1723,6 +1743,15 @@ func _strike_move() -> void:
 		"shot":
 			_fire_shots()
 			strike_time = 0.18
+		"burst":
+			# RAJADA: N setas em sequência, cada uma mirada de novo
+			_burst_left = int(_mv.count)
+			_burst_t = 0.0
+			strike_time = float(_burst_left) * 0.14 + 0.1
+		"fissure":
+			# FISSURA: lâmina rasteira pelo chão na direção dela (pula-se)
+			_ground_spike(atk_dir)
+			strike_time = 0.2
 		"lob":
 			_lob()
 			strike_time = 0.2
@@ -1750,8 +1779,17 @@ func _strike_move() -> void:
 
 
 ## Enquanto o golpe dura (investidas, saltos, mergulho, agarrão).
+var _burst_left: int = 0
+var _burst_t: float = 0.0
+
 func _strike_tick(delta: float) -> void:
 	match String(_mv.kind):
+		"burst":
+			_burst_t -= delta
+			if _burst_left > 0 and _burst_t <= 0.0:
+				_burst_left -= 1
+				_burst_t = 0.14
+				_fire_shots(1)
 		"rush":
 			velocity.x = atk_dir * float(_mv.speed)
 		"glide":
@@ -1811,6 +1849,8 @@ func _recover_for(kind: String) -> float:
 		"combo", "rush", "nova", "grab": return 0.55
 		"slam": return 0.6
 		"shot": return 0.35
+		"burst": return 0.4
+		"fissure": return 0.45
 		"lob", "pillar", "glide", "summon": return 0.4
 		"leap": return 0.45
 		"dive": return 0.8
@@ -1971,11 +2011,11 @@ func _setup_layers() -> void:
 # --- golpes à distância ---------------------------------------------------
 
 ## Tiro: 1 ou leque. Voando, MIRA na Sophia (de cima, na diagonal).
-func _fire_shots() -> void:
-	var n := int(_mv.count)
+func _fire_shots(override_n: int = 0) -> void:
+	var n := int(_mv.count) if override_n <= 0 else override_n
 	var spread := float(_mv.spread)
 	var origin := global_position + Vector2(16.0 * atk_dir, -8.0 * _art_scale)
-	var aimed := _flying() or bool(_mv.air)
+	var aimed := _flying() or bool(_mv.air) or String(_mv.kind) == "burst"
 	var base_dir := Vector2(atk_dir, 0)
 	if aimed and player != null and is_instance_valid(player):
 		base_dir = (player.global_position + Vector2(0, -4) - origin).normalized()
@@ -1994,6 +2034,14 @@ func _fire_shots() -> void:
 			p.aim = base_dir.rotated(a)
 		if aimed:
 			p.ground_y = feet + 4.0
+		p.look = String(_mv.get("look", "bolt" if String(_mv.kind) == "burst" else ""))
+		var hom := float(_mv.get("homing", 0.0))
+		if hom > 0.0:
+			p.homing = hom
+			p.homing_target = player
+			p.lifetime = 3.6
+			if p.aim == Vector2.ZERO:
+				p.aim = base_dir
 		match String(_mv.status):
 			"slow":
 				p.slow_time = 1.6
@@ -2024,6 +2072,7 @@ func _lob() -> void:
 	p.land_kind = String(_mv.zone)
 	p.land_radius = 38.0
 	p.land_time = 2.6 if p.land_kind == "sleep" else 3.0
+	p.look = "seed"
 	p.pierce = false
 	p.target_team = "player"
 	p.color = Color(0.75, 1.0, 0.5) if p.land_kind == "poison" else Color(0.72, 0.78, 1.0)
@@ -2060,8 +2109,24 @@ func _wave_pair() -> void:
 		p.target_team = "player"
 		p.color = eye_color
 		p.lifetime = 1.3
+		p.look = "spike"
 		get_parent().add_child(p)
 		p.global_position = global_position + Vector2(30.0 * dir, 14.0 * _art_scale)
+
+
+## Uma lâmina rasteira só, na direção da Sophia (fissura).
+func _ground_spike(dir: int) -> void:
+	var p := Projectile.new()
+	p.direction = dir
+	p.damage = attack_hitbox.damage
+	p.speed = 250.0
+	p.pierce = false
+	p.target_team = "player"
+	p.color = eye_color
+	p.lifetime = 1.4
+	p.look = "spike"
+	get_parent().add_child(p)
+	p.global_position = global_position + Vector2(26.0 * dir, 14.0 * _art_scale)
 
 
 # --- agarrão (aparável: amarelo) -----------------------------------------------
@@ -2086,3 +2151,51 @@ func _grab_throw() -> void:
 	Juice.shake(0.35)
 	if behavior == "leech":
 		health.heal(int(dmg * 0.6))
+
+
+# --- caixa de dano = corpo DESENHADO (playtest 2: "o cajado atravessa") ---------
+
+## A Hurtbox segue o quadro pintado que está na tela: altura do topo da cabeça
+## ao pé (`top`/`foot_y` do JSON do quadro), centrada na pélvis (`pelvis_x`),
+## largura ~metade do recorte (sem a arma/o pano solto) — e acompanha a mola do
+## corpo (`_body_xform`), o vira-lado e o voo. Sem quadros (procedural/boneco
+## antigo): fica a caixa do _fit_body. Suaviza 35 %/quadro (sem tremer).
+## API usada (leitura) do CharacterArt: _boss_db.meta, _shown_key, _body_xform —
+## pedido à Arte uma função oficial `body_rect()` (docs/pedidos/onda6_inimigos6.md).
+var hurt_rect: Rect2 = Rect2()        # última caixa (local do inimigo) — sonda/depuração
+
+func _fit_hurtbox() -> void:
+	if visual == null or estate == EState.DEAD or not visual.has_boss_frames():
+		return
+	var key: String = visual._shown_key
+	var cut := key.rfind(":")
+	if cut <= 0:
+		return
+	var meta: Dictionary = visual._boss_db.meta
+	var seq: Dictionary = meta.states.get(key.substr(0, cut), {})
+	var i := int(key.substr(cut + 1))
+	if seq.is_empty() or i < 0 or i >= seq.frames.size():
+		return
+	var e: Dictionary = seq.frames[i]
+	var fr: Dictionary = meta.frames.get(e.f, {})
+	if fr.is_empty() or not fr.has("top"):
+		return
+	var rr: Array = fr.rect
+	var anchor := Vector2(e.anchor[0], e.anchor[1])
+	var h: float = float(fr.foot_y) - float(fr.top)
+	var w: float = clampf(float(rr[2]) * 0.5, h * 0.3, h * 1.0)
+	var cx: float = float(fr.get("pelvis_x", float(rr[2]) * 0.5))
+	var a: Vector2 = Vector2(cx - w * 0.5, float(fr.top)) - anchor
+	var b: Vector2 = Vector2(cx + w * 0.5, float(fr.foot_y)) - anchor
+	var xf: Transform2D = visual.transform * visual._body_xform
+	var p1 := xf * a
+	var p2 := xf * b
+	var r := Rect2(p1, Vector2.ZERO).expand(p2)
+	if r.size.x < 4.0 or r.size.y < 4.0:
+		return
+	hurt_rect = r
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	var base: Vector2 = (shp.shape as RectangleShape2D).size
+	var want_s := Vector2(r.size.x / base.x, r.size.y / base.y)
+	shp.position = shp.position.lerp(r.get_center(), 0.35)
+	shp.scale = shp.scale.lerp(want_s, 0.35)

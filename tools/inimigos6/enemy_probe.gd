@@ -14,7 +14,7 @@ extends Node
 
 const ENEMY_SCENE := "res://scenes/entities/Enemy.tscn"
 const BANDS := [190.0, 130.0, 75.0, 30.0, 250.0, 60.0, 160.0, 100.0]
-const MAX_T := 40.0               # s de jogo por tipo
+const MAX_T := 40.0               # s de jogo por tipo (Campeão: 1,6×)
 
 func _ready() -> void:
 	AudioServer.set_bus_mute(0, true)   # ferramenta NUNCA toca som
@@ -28,6 +28,8 @@ func _ready() -> void:
 			w.out = a.trim_prefix("out=")
 		elif a.begins_with("frames="):
 			w.cap_frames = int(a.trim_prefix("frames="))
+		elif a == "boxes":
+			EnemyOverlay.debug_boxes = true
 	get_tree().root.add_child.call_deferred(w)
 
 
@@ -170,7 +172,8 @@ class P extends Node:
 		if out != "" and DisplayServer.get_name() != "headless":
 			cap_dir = out.path_join(id + ("_campeao" if c.get("champion", false) else ("_elite" if c.get("elite", false) else "")))
 			DirAccess.make_dir_recursive_absolute(cap_dir)
-		while t < MAX_T:
+		var max_t: float = MAX_T * (1.6 if c.get("champion", false) else 1.0)
+		while t < max_t:
 			await get_tree().physics_frame
 			var dt := get_physics_process_delta_time()
 			t += dt
@@ -222,6 +225,10 @@ class P extends Node:
 		print("EPROBE|%s|%s|t=%.1fs" % [tag, " ".join(parts), t])
 		check(want.size() >= 2, "%s tem 2+ golpes (%d)" % [tag, want.size()])
 		check(missing.is_empty(), "%s usou todos os golpes (faltou: %s)" % [tag, ", ".join(missing)])
+		if is_instance_valid(e) and e.visual != null and e.visual.has_boss_frames():
+			var hr: Rect2 = e.hurt_rect
+			check(hr.size.y > 12.0 and hr.size.x > 6.0, "%s: Hurtbox segue o corpo desenhado (%.0fx%.0f px)" % [tag, hr.size.x, hr.size.y])
+			check(not e.contact_hitbox.monitoring, "%s: sem dano de contato" % tag)
 		var fh: float = float(EnemyMoves.for_type(id).get("fly", 0.0))
 		if fh > 40.0:
 			check(flew, "%s voou acima da Sophia" % tag)
