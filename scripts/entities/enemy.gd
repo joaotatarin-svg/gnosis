@@ -1274,7 +1274,8 @@ func _is_screen_end() -> bool:
 func stagger() -> void:
 	if estate == EState.DEAD:
 		return
-	attack_hitbox.deactivate()
+	# chamado dentro do sinal de acerto (aparo): monitoring só pode mudar adiado
+	attack_hitbox.set_deferred("monitoring", false)
 	_interrupt_move()
 	if fly_height > 0.0:
 		_downed = maxf(_downed, 1.6)     # aparar um voador o derruba

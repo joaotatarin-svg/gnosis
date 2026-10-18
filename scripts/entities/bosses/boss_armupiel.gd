@@ -80,6 +80,14 @@ func _pick(dist: float, high: float) -> Dictionary:
 	e._prune_minions()
 	if not e._minions.is_empty() or _court_cd > 0.0:
 		_cd["corte_real"] = maxf(float(_cd.get("corte_real", 0.0)), 1.0)
+	# CORTE DE PÉ: o rei recua e só COMANDA (Decreto, devagar) — a luta é com
+	# os Pretorianos; derrubados, a armadura cai e ele volta ao espadão.
+	if not e._minions.is_empty():
+		_gap_t = 1.6
+		if float(_cd.get("decreto", 0.0)) > 0.0:
+			return {}
+		var d := _find("decreto")
+		return d
 	return super._pick(dist, high)
 
 
@@ -115,7 +123,14 @@ func _on_windup(m: Dictionary) -> void:
 func _on_strike(m: Dictionary) -> void:
 	if m.id == "corte_real":
 		var n := 2 if phase == 2 else 1
+		var before: Array = e._minions.duplicate()
 		e._summon("pretoriano", n)
+		# a guarda tem vida de ~6 golpes cada (não um segundo chefe)
+		for m in e._minions:
+			if m in before or not is_instance_valid(m):
+				continue
+			m.health.setup(maxi(30, int(BossTuning.expected_hit(BossTuning.expected_weapon_level(screen)) * 6.0)))
+			m.spark_reward = 0
 		e.armored = true
 		_court_cd = 22.0
 		AoeNova.spawn(e.get_parent(), e.global_position, 0, 160.0, GOLD)
@@ -123,6 +138,7 @@ func _on_strike(m: Dictionary) -> void:
 
 func _signature(delta: float) -> void:
 	_court_cd = maxf(0.0, _court_cd - delta)
+	keep_dist = Vector2(170.0, 260.0) if e.armored else Vector2(40.0, 100.0)
 	if e.armored:
 		e._prune_minions()
 		if e._minions.is_empty():
