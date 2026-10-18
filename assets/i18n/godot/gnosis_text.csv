@@ -286,6 +286,7 @@ O Rei enfraquecido e o Colosso Oco  ·  as duas faces,Weakened King and Hollow C
 O CAMPEÃO,THE CHAMPION
 Guardião do santuário %s %s,Guardian of the shrine %s %s
 A Voz,The Voice
+O Cego,The Blind One
 primeiro,first
 segundo,second
 terceiro,third
@@ -938,7 +939,6 @@ Kenoma,Kenoma
 Fonte: %s,Source: %s
 • nova Crônica  %d/%d,• new Chronicle  %d/%d
 Crônica %d/%d,Chronicle %d/%d
-      %s fechar,      %s close
 "No princípio havia o Um. Dele emanaram os Éons, aos pares,
 como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
 like overflowing light. There nothing slept. Nothing forgot."
@@ -1001,6 +1001,34 @@ Ceder,Yield
 Siga em frente  →,Keep going  →
 Você caiu no Kenoma,You fell in the Kenoma
 Chegou até a Tela %d.,Reached Screen %d.
+Chegada,Arrival
+A porta do Éon. Checkpoint.,The gate of the Aeon. Checkpoint.
+Travessia,Crossing
+Zonas de combate cheias. Mais faíscas.,Packed combat zones. More sparks.
+Passagem perigosa,Perilous passage
+"Menos inimigos, chão traiçoeiro. Fortalece a vida.","Fewer enemies, treacherous ground. Strengthens life."
+Escalada,Ascent
+Plataformas e altura. Fortalece o Éter.,Platforms and heights. Strengthens the Aether.
+Santuário,Shrine
+Luta leve e um lugar de repouso. Cura inteira.,A light fight and a place of rest. Full healing.
+Arena,Arena
+Opcional e dura: ondas pesadas. Grande recompensa.,Optional and hard: heavy waves. Great reward.
+Sala secreta,Secret room
+Só se alcança com o pulo duplo. Um tesouro escondido.,Only the double jump reaches it. A hidden treasure.
+O Desafio,The Challenge
+O Campeão guarda o santuário do Éon. Checkpoint.,The Champion guards the shrine of the Aeon. Checkpoint.
+Antessala,Antechamber
+A última prova antes do trono. Checkpoint.,The last trial before the throne. Checkpoint.
+O Arconte,The Archon
+O senhor deste Éon.,The lord of this Aeon.
++%d faíscas,+%d sparks
++%d vida máx.,+%d max life
++%d Éter máx.,+%d max Aether
+cura inteira,full healing
+e%d.L%d,e%d.L%d
+Foreground,Foreground
+FgColumn%d,FgColumn%d
+%s:%d,%s:%d
 Repouso,Idle
 Caminhar,Walk
 Golpe leve,Light strike
@@ -1103,9 +1131,9 @@ Crônicas,Chronicles
 %02d   %s,%02d   %s
 "Estela ainda não lida.
 Onde: %s
-Chegue perto e aperte o golpe leve (J / X) para ler.","Stele not yet read.
+Chegue perto e aperte %s para ler.","Stele not yet read.
 Where: %s
-Get close and press light strike (J / X) to read."
+Get close and press %s to read."
 SOPHIA,SOPHIA
 a faísca que não se curva,the spark that does not bow
 O DESPERTAR   ·   v%s,THE AWAKENING   ·   v%s
@@ -1266,6 +1294,7 @@ Cruz,Cross
 Círculo,Circle
 Quadrado,Square
 Triângulo,Triangle
+avança,continue
 Saltar,Jump
 Aparar / bloquear,Parry / block
 Anel (magia),Ring (spell)
@@ -1377,6 +1406,14 @@ a vida já está cheia,health is already full
 só no santuário e depois do Arconte,only at the shrine and after the Archon
 Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short
 Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades
+escolhem o caminho,choose the path
+Prévia do mapa — o caminho do Éon,Map preview — the path of the Aeon
+O caminho se divide. Escolha por onde subir.,The path splits. Choose your way up.
+Recompensa: %s,Reward: %s
+Selado: exige o pulo duplo. Quem dá asas não luta.,Sealed: needs the double jump. The one who gives wings does not fight.
+O pulo duplo abre esta passagem.,The double jump opens this passage.
+"Há uma Estela nesta camada, em qualquer caminho.","There is a Stele on this layer, on any path."
+Estela,Stele
 Menu,Menu
 PAUSA,PAUSED
 Continuar,Continue
