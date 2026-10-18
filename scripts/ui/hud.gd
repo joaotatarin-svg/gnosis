@@ -49,6 +49,7 @@ const EON_RIGHT := 626.0
 const TOAST_RECT := Rect2(120, 88, 400, 30)
 const HINT_Y := 46.0              # centro vertical da faixa de dicas (topo central)
 const HINT_TIME := 4.2            # s visível (tempo de jogo, para na pausa)
+const HINT_NOW_TIME := 6.0        # s das dicas de ensino (show_hint_now)
 const TOAST_GAP := 0.35           # s entre um toast e o próximo (e depois de uma cena)
 const SPARK_POP := 0.12           # s do pop do contador (1,0→1,15→1,0)
 ## R21 (respiro): faíscas e arma recuam para α 0,6 após 4 s sem combate e
@@ -110,6 +111,8 @@ var _hint: Array = []               # dica atual
 var _hint_t: float = 0.0            # tempo da dica atual
 var _hint_gap: float = 1.2          # respiro antes da próxima
 var _hint_done: Dictionary = {}     # ações da dica atual já usadas
+var _hint_dur: float = HINT_TIME    # duração da dica atual (as "agora" ficam mais)
+var _hint_forced: bool = false      # dica atual veio de show_hint_now (ensino: não encurta)
 var use_pad: bool = false           # último InputEvent veio do controle?
 
 # chefes (até 2 barras; ver _BossBar)
@@ -127,6 +130,13 @@ var _low_beat: int = -1              # último pulso da vinheta que já bateu o 
 var _toast_queue: Array[String] = [] # avisos esperando a vez (conquista + Crônica juntas)
 var _toast_wait: float = 0.0         # respiro antes do próximo toast (fila / fim de cena)
 var _toast_ms: int = 0               # relógio real do último quadro (o respiro ignora câmera lenta)
+## Aviso "Selo aberto" esperando a vez: sobrevive à troca de tela (o Arconte cai
+## no fim da tela dele e o aviso sai na próxima, se não deu tempo nesta).
+static var _seal_pending: String = ""
+var _tier_seen: int = -1             # grau (Arcontes vencidos) já anunciado
+var _relic_pulse: float = 0.0        # 0..1 a relíquia agiu (faísca curou / deu Éter / trocou)
+var _obj_kind: String = ""           # objetivo da zona no ar ("totem", "proteger", "mare")
+var _obj_k: float = 0.0              # 0..1 entrada/saída do ícone do objetivo
 
 
 func _ready() -> void:
@@ -176,6 +186,12 @@ func _ready() -> void:
 	use_pad = bool(g.is_pad()) if g != null else Input.get_connected_joypads().size() > 0
 	_queue_screen_hints()
 	_check_ring_hints()
+	# Selos da loja (progressao6): o grau atual já é conhecido; só anuncia subida.
+	_tier_seen = _progress_tier()
+	if _seal_pending != "":
+		toast(_seal_pending)
+	if Progression.has_signal("relics_changed"):
+		Progression.connect("relics_changed", _on_relics_changed)
 	# Conquista liberada → toast (Achievements é autoload leve; compila sem ele).
 	var ach := get_node_or_null("/root/Achievements")
 	if ach != null and ach.has_signal("unlocked"):
@@ -230,6 +246,8 @@ func _process(delta: float) -> void:
 	for i in _ring_pop.size():
 		_ring_pop[i] = maxf(0.0, _ring_pop[i] - delta * 1.8)
 	_process_bosses(delta)
+	_process_objective(delta)
+	_relic_pulse = maxf(0.0, _relic_pulse - delta * 1.8)
 	_process_calm(delta)
 	_process_low_hp(delta)
 	_canvas.queue_redraw()
@@ -283,6 +301,12 @@ func _on_rings_changed() -> void:
 			_ring_pop[i] = 1.0
 	_detached.clear()
 	_check_ring_hints()
+	_check_seal()
+
+
+func _on_relics_changed() -> void:
+	_relic_pulse = 1.0
+	_calm = 0.0
 
 
 func _on_combo(count: int) -> void:
@@ -341,6 +365,8 @@ func _show_toast(msg: String) -> void:
 		fs -= 1
 	_toast_label.add_theme_font_size_override("font_size", fs)
 	_toast_label.text = msg
+	if msg == _seal_pending:
+		_seal_pending = ""
 	if _toast_tween != null and _toast_tween.is_valid():
 		_toast_tween.kill()
 	_toast.modulate = Color(1, 1, 1, 0)
@@ -440,7 +466,7 @@ func _process_calm(delta: float) -> void:
 			_calm = 0.0
 	_calm += delta
 	# Faíscas subindo / arma nova: mostra inteiro.
-	if _spark_pulse > 0.0 or _spark_pop > 0.0 or _weapon_flash > 0.0:
+	if _spark_pulse > 0.0 or _spark_pop > 0.0 or _weapon_flash > 0.0 or _relic_pulse > 0.5:
 		_calm = 0.0
 	var target := CALM_ALPHA if _calm >= CALM_AFTER else 1.0
 	var rate := (1.0 - CALM_ALPHA) / (0.15 if target > _calm_a else 0.6)
@@ -632,7 +658,7 @@ func boss_bars() -> Array:
 		if bb.leaving or not is_instance_valid(bb.node):
 			continue
 		out.append({"node": bb.node, "ratio": bb.ratio, "phase": bb.phase, "down": bb.down,
-			"name": String(bb.node.get("display_name"))})
+			"name": String(bb.node.get("display_name")), "marks": bb.marks.duplicate()})
 	return out
 
 
@@ -815,6 +841,80 @@ func spark_orb_arrived(amount: int = 1) -> void:
 		sparks_shown = minf(float(sparks), floorf(sparks_shown) + float(maxi(1, amount)))
 	_spark_pop = SPARK_POP
 	_spark_hold = 0.4               # mais orbes podem vir; o resto corre depois
+	# Brasa (cura) e Lâmpada (Éter) agem a cada faísca que chega: a relíquia acende.
+	var rid := RunLabels.relic_id()
+	if rid == "brasa" or rid == "lampada":
+		_relic_pulse = 1.0
+
+
+# --- selos, relíquia e objetivo (Onda 6) ---------------------------------------------
+
+## Grau atual (Arcontes vencidos) — Progression.progress_tier() da progressao6.
+func _progress_tier() -> int:
+	if not Progression.has_method("progress_tier"):
+		return 0
+	return int(Progression.call("progress_tier"))
+
+
+## Um Arconte caiu e o grau subiu: "Selo aberto · Arma Nv. 3 na loja" (o mais
+## notável que destravou). Fora do run/Provação nada (lá tudo já está aberto).
+func _check_seal() -> void:
+	var t := _progress_tier()
+	if not RunManager.run_active or CodexSession.active:
+		_tier_seen = t
+		return
+	if _tier_seen >= 0 and t > _tier_seen:
+		var msg := seal_text(t)
+		if msg != "":
+			_seal_pending = msg
+			toast(msg)
+	_tier_seen = t
+
+
+## Texto do aviso do selo do grau `t` (já no idioma ativo).
+static func seal_text(t: int) -> String:
+	var what := ""
+	var wt = Progression.get("WEAPON_TIER")
+	if wt is Array:
+		for lv in range(Progression.weapon_level + 1, (wt as Array).size()):
+			if int(wt[lv]) == t:
+				what = I18n.t("Arma Nv. %d na loja") % lv
+				break
+	var rel = GameContent.get("relics")
+	if what == "" and rel is Array and Progression.has_method("has_relic"):
+		for r in rel:
+			if int(r.get("tier", 0)) == t and not bool(Progression.call("has_relic", String(r.get("id", "")))):
+				what = I18n.t("%s na loja") % I18n.t(String(r.get("name", "")))
+				break
+	if what == "":
+		what = I18n.t("mais Vida e Éter na loja")
+	return "%s  ·  %s" % [I18n.t("Selo aberto"), what]
+
+
+## Objetivo da zona trancada agora ("" = só ondas/nenhuma) — Level.zone_objective (level6).
+func zone_objective_now() -> String:
+	var lv := get_tree().current_scene
+	if lv == null or not lv.has_method("zone_objective") or not ("zone_active" in lv):
+		return ""
+	if not bool(lv.get("zone_active")):
+		return ""
+	var zi = lv.get("zone_index")
+	if zi == null or int(zi) < 0:
+		return ""
+	var o := String(lv.call("zone_objective", int(zi)))
+	return o if RunLabels.objective_text(o) != "" else ""
+
+
+func _process_objective(delta: float) -> void:
+	var o := zone_objective_now()
+	if o != "":
+		_obj_kind = o
+	_obj_k = move_toward(_obj_k, 1.0 if o != "" else 0.0, delta * (4.0 if o != "" else 2.0))
+
+
+## Ícone do objetivo no ar? [tipo, alpha] — QA/sonda.
+func objective_state() -> Array:
+	return [_obj_kind if _obj_k > 0.0 else "", _obj_k * (1.0 - _scene_k) * (1.0 - _recede)]
 
 
 # --- dicas de controle -----------------------------------------------------------------
@@ -825,6 +925,37 @@ func show_hint(segs: Array) -> void:
 	if CodexSession.active or segs.is_empty():
 		return
 	hints.append(segs)
+
+
+## Dica de ENSINO que entra JÁ (narrativa: contra-ataque, pulo duplo): fura a
+## fila, ignora o "já aprendeu" e não encurta quando a jogadora aperta a tecla
+## (o ensino é a sequência/o momento, não a tecla). A dica que estava no ar volta
+## para a frente da fila. Aceita os segmentos ([{keys, text}]) ou (texto, teclas).
+func show_hint_now(segs_or_text: Variant, keys: Array = []) -> void:
+	if CodexSession.active:
+		return
+	var segs: Array = []
+	if segs_or_text is Array:
+		segs = segs_or_text
+	else:
+		segs = [{"keys": keys, "text": String(segs_or_text)}]
+	if segs.is_empty():
+		return
+	if not _hint.is_empty() and not _hint_forced and _hint_t < _hint_dur - 0.8:
+		hints.push_front(_hint)
+	_hint = segs
+	_hint_t = 0.0
+	_hint_done.clear()
+	_hint_forced = true
+	_hint_dur = HINT_NOW_TIME
+	_hint_gap = 0.0
+
+
+## Dica no ar agora (QA): {segs, forced, t, dur}; {} sem dica.
+func hint_state() -> Dictionary:
+	if _hint.is_empty():
+		return {}
+	return {"segs": _hint, "forced": _hint_forced, "t": _hint_t, "dur": _hint_dur}
 
 
 func _queue_screen_hints() -> void:
@@ -873,16 +1004,19 @@ func _process_hints(delta: float) -> void:
 		_hint = nxt
 		_hint_t = 0.0
 		_hint_done.clear()
+		_hint_forced = false
+		_hint_dur = HINT_TIME
 		return
 	_hint_t += delta
 	# Usou tudo o que a dica pede: encurta (a dica já cumpriu o papel).
 	var need := 0
 	for seg in _hint:
 		need += (seg.get("keys", []) as Array).size()
-	if need > 0 and _hint_done.size() >= _distinct_actions(_hint) and _hint_t < HINT_TIME - 0.8:
-		_hint_t = HINT_TIME - 0.8
-	if _hint_t >= HINT_TIME:
+	if not _hint_forced and need > 0 and _hint_done.size() >= _distinct_actions(_hint) and _hint_t < _hint_dur - 0.8:
+		_hint_t = _hint_dur - 0.8
+	if _hint_t >= _hint_dur:
 		_hint = []
+		_hint_forced = false
 		_hint_gap = 0.5
 
 
@@ -923,7 +1057,7 @@ func _distinct_actions(h: Array) -> int:
 func hint_alpha() -> float:
 	if _hint.is_empty():
 		return 0.0
-	return clampf(minf(_hint_t / 0.25, (HINT_TIME - _hint_t) / 0.4), 0.0, 1.0) * (1.0 - _scene_k)
+	return clampf(minf(_hint_t / 0.25, (_hint_dur - _hint_t) / 0.4), 0.0, 1.0) * (1.0 - _scene_k)
 
 
 func _input(event: InputEvent) -> void:
@@ -1060,11 +1194,9 @@ func _build_combo() -> void:
 	add_child(_combo_label)
 
 
-## Rótulo do papel da tela ("Fome · Travessia I") ou da Provação.
+## Rótulo do papel da tela ("Fome · Travessia I", "Fome · Arena") ou da Provação.
 func screen_title() -> String:
-	if CodexSession.active:
-		return "Provação"
-	return GameManager.screen_title(RunManager.current_screen)
+	return RunLabels.role_title(RunManager.current_screen)
 
 
 # =====================================================================================
@@ -1083,6 +1215,7 @@ class _HudCanvas extends Control:
 		_draw_bars()
 		_draw_rings()
 		_draw_eon()
+		_draw_objective()
 		_draw_boss()
 		_draw_combo_tag()
 		_draw_hint()
@@ -1202,10 +1335,93 @@ class _HudCanvas extends Control:
 				CodexStyle.draw_diamond(self, c, 3.4, CodexStyle.GOLD_HI.lerp(Color.WHITE, wf * 0.8), Color(0, 0, 0, 0.7))
 			else:
 				CodexStyle.draw_diamond(self, c, 3.0, Color(0.02, 0.05, 0.07, 0.75), Color(CodexStyle.GOLD, 0.5))
+		# relíquia em uso (progressao6): pequeno emblema depois dos losangos
+		var rid := RunLabels.relic_id()
+		var rx := x0 + 11.0 + Progression.MAX_WEAPON_LEVEL * 8.5 + 6.0
+		if rid != "":
+			var rd := RunLabels.relic_data(rid)
+			_draw_relic(Vector2(rx, y), rid, rd.get("color", CodexStyle.GOLD_HI), hud._relic_pulse)
+			rx += 9.0
 		# arma subiu: o rótulo aparece ao lado dos losangos e se apaga
 		if wf > 0.0:
-			var tx := x0 + 11.0 + Progression.MAX_WEAPON_LEVEL * 8.5 + 2.0
+			var tx := rx
 			_txt(Vector2(tx, y + 3.5), "Arma Nv. %d" % hud.weapon, CodexStyle.display(), 8, Color(CodexStyle.GOLD_HI, clampf(wf, 0.0, 1.0)), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 3)
+
+	## Emblema da relíquia: brasa (chama), lâmpada (candeia) ou pérola, num
+	## encaixe escuro com filete de ouro; acende quando ela age.
+	func _draw_relic(c: Vector2, id: String, col: Color, pulse: float) -> void:
+		if pulse > 0.0:
+			draw_circle(c, 6.0 + pulse * 3.0, Color(col, 0.28 * pulse))
+		draw_circle(c, 5.6, Color(0.01, 0.03, 0.04, 0.85))
+		draw_arc(c, 5.6, 0.0, TAU, 20, Color(CodexStyle.GOLD, 0.85), 0.7, true)
+		var lit := col.lerp(Color.WHITE, pulse * 0.6)
+		match id:
+			"brasa":
+				var fl := PackedVector2Array([c + Vector2(0, -4.2), c + Vector2(1.6, -1.6), c + Vector2(2.6, 0.6),
+					c + Vector2(1.8, 2.6), c + Vector2(0, 3.3), c + Vector2(-1.8, 2.6), c + Vector2(-2.6, 0.6), c + Vector2(-1.2, -1.2)])
+				draw_colored_polygon(fl, lit)
+				draw_circle(c + Vector2(0, 1.4), 1.2, Color(1, 0.95, 0.75, 0.9))
+			"lampada":
+				draw_colored_polygon(PackedVector2Array([c + Vector2(-3.4, 1.0), c + Vector2(3.4, 1.0), c + Vector2(2.0, 3.0), c + Vector2(-2.0, 3.0)]), CodexStyle.GOLD)
+				draw_colored_polygon(PackedVector2Array([c + Vector2(0, -3.6), c + Vector2(1.3, -0.8), c + Vector2(0, 0.6), c + Vector2(-1.3, -0.8)]), lit)
+			"perola":
+				draw_circle(c, 3.0, lit)
+				draw_circle(c + Vector2(-0.9, -1.0), 0.9, Color(1, 1, 1, 0.9))
+			_:
+				CodexStyle.draw_diamond(self, c, 3.0, lit)
+
+	# --- objetivo da zona (level6): ícone + 3 palavras sob o progresso do Éon ---------------
+	func _draw_objective() -> void:
+		var a: float = hud._obj_k * (1.0 - hud._scene_k)
+		if a <= 0.01 or CodexSession.active:
+			return
+		var kind: String = hud._obj_kind
+		var tx := RunLabels.objective_text(kind)
+		if tx == "":
+			return
+		var col := CodexStyle.ETHER_HI
+		if kind == "totem":
+			col = CodexStyle.EMBER
+		elif kind == "proteger":
+			col = CodexStyle.SPARK
+		var font: Font = CodexStyle.italic()
+		var fs := 10
+		var tw := font.get_string_size(I18n.t(tx), HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+		var y := 42.0
+		var right: float = EON_RIGHT
+		var ic := Vector2(right - tw - 10.0, y - 3.0)
+		var pl := 0.5 + 0.5 * sin(hud._t * 3.0)
+		# placa que se dissolve à esquerda (lê sobre cenário claro)
+		var pw := tw + 28.0
+		var px := right + 4.0 - pw
+		var c0 := Color(0.01, 0.025, 0.035, 0.0)
+		var c1 := Color(0.01, 0.025, 0.035, 0.7 * a)
+		draw_polygon(PackedVector2Array([Vector2(px, y - 10.0), Vector2(right + 4.0, y - 10.0), Vector2(right + 4.0, y + 4.0), Vector2(px, y + 4.0)]),
+			PackedColorArray([c0, c1, c1, c0]))
+		draw_circle(ic, 6.2, Color(0.01, 0.03, 0.04, 0.9 * a))
+		draw_arc(ic, 6.2, 0.0, TAU, 20, Color(col, (0.6 + 0.4 * pl) * a), 0.8, true)
+		var c2 := Color(col, a)
+		if kind == "totem":
+			# pilar com o olho que chama reforços
+			draw_rect(Rect2(ic + Vector2(-2.0, -4.2), Vector2(4.0, 8.4)), c2)
+			draw_line(ic + Vector2(-3.4, -4.2), ic + Vector2(3.4, -4.2), c2, 1.0)
+			draw_circle(ic + Vector2(0, -1.0), 1.1, Color(0.01, 0.03, 0.04, a))
+		elif kind == "proteger":
+			# a luz: chama pequena com raios
+			for k in 6:
+				var ang: float = k * TAU / 6.0 + hud._t * 0.6
+				draw_line(ic + Vector2(cos(ang), sin(ang)) * 3.4, ic + Vector2(cos(ang), sin(ang)) * 4.9, Color(col, 0.7 * a), 0.6, true)
+			draw_circle(ic, 2.4, c2)
+			draw_circle(ic, 1.1, Color(1, 1, 1, 0.9 * a))
+		else:
+			# a maré: duas ondas
+			for row in 2:
+				var pts := PackedVector2Array()
+				for i in 9:
+					var xx := -4.5 + i * 1.125
+					pts.append(ic + Vector2(xx, -1.5 + row * 3.2 + sin(xx * 1.4 + hud._t * 3.0) * 1.0))
+				draw_polyline(pts, c2, 0.9, true)
+		_txt(Vector2(right - tw, y + 0.5), tx, font, fs, Color(CodexStyle.PAPER.lerp(col, 0.35), a), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 3)
 
 	# --- os 7 Anéis -----------------------------------------------------------------------
 	func _draw_rings() -> void:
@@ -1346,7 +1562,14 @@ class _HudCanvas extends Control:
 		var main_name := parts[0].strip_edges() if parts.size() > 0 else name_full
 		var sub := parts[1].strip_edges() if parts.size() > 1 else ""
 		var phase2: bool = bb.phase >= 2
+		var phase3: bool = bb.phase >= 3
 		var pf: float = bb.flash
+		# Limiares de fase do chefe (chefes6: `phase_marks`, ex. [0.66, 0.33]);
+		# sem a propriedade, o marcador antigo em 50 %.
+		if is_instance_valid(bb.node):
+			var pm = bb.node.get("phase_marks")
+			if pm is Array and not (pm as Array).is_empty():
+				bb.marks = (pm as Array).duplicate()
 		var down: bool = bb.down
 		# placa escura atrás de nome + barra (contraste sobre qualquer cenário;
 		# Onda 3: mais densa — sobre chão claro/flash a barra sumia)
@@ -1369,20 +1592,32 @@ class _HudCanvas extends Control:
 			var pl := 0.6 + 0.4 * sin(hud._t * 4.0)
 			_txt(Vector2(x0, y + 18.0), "refazendo-se", CodexStyle.italic(), 9, Color(0.82, 0.78, 0.92, a * pl), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
 		else:
-			# Fase I ouro vivo; fase II carmim-brasa (a identidade vermelha do HUD).
-			var lo := Color("c43a2e") if phase2 else Color("e3aa48")
-			var hi := Color("ffb27a") if phase2 else Color("fff2c6")
+			# Fase I ouro vivo; fase II carmim-brasa (a identidade vermelha do HUD);
+			# fase III sangue escuro com o miolo em brasa, pulsando devagar.
+			var lo := Color("e3aa48")
+			var hi := Color("fff2c6")
+			if phase3:
+				var beat := 0.5 + 0.5 * sin(hud._t * 5.0)
+				lo = Color("8e1424")
+				hi = Color("ff5a48").lerp(Color("ff9a6a"), beat * 0.5)
+			elif phase2:
+				lo = Color("c43a2e")
+				hi = Color("ffb27a")
 			_bar(rect, bb.ratio, bb.ghost, lo, hi, pf * 0.5)
 			# trilho vazio com contorno interno escuro: o fim da vida lê de longe
 			var empty_x := rect.position.x + rect.size.x * clampf(bb.ghost, 0.0, 1.0)
 			if empty_x < rect.end.x - 6.0:
 				draw_line(Vector2(empty_x, rect.position.y + 1.5), Vector2(rect.end.x - 5.0, rect.position.y + 1.5), Color(1, 1, 1, 0.06 * a), 1.0)
-			# marcador de fase em 50 %
-			var mx := rect.position.x + w * 0.5
-			var mcol := CodexStyle.EMBER.lerp(Color.WHITE, pf) if phase2 else CodexStyle.GOLD_HI
-			draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), Color(0.01, 0.03, 0.04, 0.9), 1.4)
-			draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), mcol, 0.6)
-			CodexStyle.draw_diamond(self, Vector2(mx, rect.position.y - 4.0), 2.4 + pf * 1.5, mcol, Color(0, 0, 0, 0.7))
+			# um marcador por limiar de fase: o j-ésimo vira brasa quando a fase j+2 chega
+			for j in bb.marks.size():
+				var mk := clampf(float(bb.marks[j]), 0.02, 0.98)
+				var mx := rect.position.x + w * mk
+				var crossed: bool = bb.phase >= j + 2
+				var just: bool = bb.phase == j + 2
+				var mcol := CodexStyle.EMBER.lerp(Color.WHITE, pf if just else 0.0) if crossed else CodexStyle.GOLD_HI
+				draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), Color(0.01, 0.03, 0.04, 0.9), 1.4)
+				draw_line(Vector2(mx, rect.position.y - 1), Vector2(mx, rect.end.y + 1), mcol, 0.6)
+				CodexStyle.draw_diamond(self, Vector2(mx, rect.position.y - 4.0), 2.4 + (pf * 1.5 if just else 0.0), mcol, Color(0, 0, 0, 0.7))
 			# linha de baixo (y+18, a 8 px da borda da tela): subtítulo centrado e
 			# "FASE II" na MESMA linha, alinhado à ponta direita da barra (antes
 			# descia para y+28 e saía cortado na base da tela).
@@ -1390,16 +1625,22 @@ class _HudCanvas extends Control:
 				_txt(Vector2(x0, y + 18.0), sub, CodexStyle.display(), 8, Color(CodexStyle.PAPER, 0.8 * a), HORIZONTAL_ALIGNMENT_CENTER, w, 3)
 			if phase2:
 				var fx := (x0 + w - 74.0) if solo else (x0 + w * 0.5 - 37.0)
-				_txt(Vector2(fx, y + 18.0), "FASE II", CodexStyle.display_bold(), 8, Color(Color("ffb070").lerp(Color.WHITE, pf), a), HORIZONTAL_ALIGNMENT_RIGHT if solo else HORIZONTAL_ALIGNMENT_CENTER, 74.0, 3)
+				var ftxt := "FASE III" if phase3 else "FASE II"
+				var fcol := Color("ff7a5c") if phase3 else Color("ffb070")
+				_txt(Vector2(fx, y + 18.0), ftxt, CodexStyle.display_bold(), 8, Color(fcol.lerp(Color.WHITE, pf), a), HORIZONTAL_ALIGNMENT_RIGHT if solo else HORIZONTAL_ALIGNMENT_CENTER, 74.0, 3)
 		# medalhão da fase à ESQUERDA da barra (longe da borda e do terminal)
 		# (r 8,5 e algarismo de 7 px: o "II" respira dentro do anel, sem tocar a borda)
 		var mc := Vector2(rect.position.x - 17.0, rect.position.y + 4.0)
 		draw_circle(mc, 8.5, Color(0.01, 0.03, 0.04, 0.95 * a))
 		var ring_col := Color(0.6, 0.58, 0.7, a) if down else (Color(CodexStyle.EMBER.lerp(Color.WHITE, pf), a) if phase2 else Color(CodexStyle.GOLD, a))
+		if not down and phase3:
+			ring_col = Color(Color("ff5a48").lerp(Color.WHITE, pf), a)
 		draw_arc(mc, 8.5, 0.0, TAU, 24, ring_col, 1.0, true)
 		draw_arc(mc, 6.6, 0.0, TAU, 24, Color(ring_col, 0.3 * a), 0.5, true)
 		var mfont: Font = CodexStyle.display_bold()
-		var mtxt := "II" if phase2 and not down else "I"
+		var mtxt := "I"
+		if not down and phase2:
+			mtxt = "III" if phase3 else "II"
 		var asc := mfont.get_ascent(7) - mfont.get_descent(7)
 		_txt(mc + Vector2(-10.0, asc * 0.5 - 0.5), mtxt, mfont, 7, ring_col, HORIZONTAL_ALIGNMENT_CENTER, 20.0, 2)
 
@@ -1503,6 +1744,7 @@ class _BossBar extends RefCounted:
 	var ghost: float = 1.0
 	var hold: float = 0.0
 	var phase: int = 1
+	var marks: Array = [0.5]        # limiares de fase (fração da vida) — `phase_marks` do chefe
 	var flash: float = 0.0
 	var show: float = 0.0           # 0..1 (entrada/saída)
 	var down: bool = false          # caiu e vai se refazer (batalha final)

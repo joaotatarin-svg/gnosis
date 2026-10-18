@@ -7,6 +7,9 @@ class_name Player
 
 signal died()
 signal mana_changed(current: int, maximum: int)
+## Aparo perfeito abriu a janela do contra-ataque (RIPOSTE_WINDOW s). API pública
+## para a narrativa/UI ensinarem o contra-ataque (não leiam `_riposte_t`).
+signal riposte_window_opened()
 
 enum State { IDLE, RUN, JUMP, FALL, ATTACK, DODGE, BLOCK, HURT, DEAD }
 
@@ -14,7 +17,7 @@ enum State { IDLE, RUN, JUMP, FALL, ATTACK, DODGE, BLOCK, HURT, DEAD }
 
 const GRAVITY := 1200.0
 const COYOTE_TIME := 0.10
-const JUMP_BUFFER := 0.10
+# (buffer de pulo/ataque, curvas de movimento, ritmo e dano: SophiaTuning)
 const DODGE_TIME := 0.30
 const DODGE_IFRAMES := 0.24
 const PARRY_WINDOW := 0.18       # aparar = apertar bloqueio pouco antes do golpe
@@ -98,6 +101,21 @@ var _flash_layer: FlashLayer = null   # F1: camada aditiva por cima do corpo
 var _riposte_t: float = 0.0          # >0 = janela do contra-ataque aberta
 var _riposte_target: Node = null
 var riposting: bool = false          # o golpe atual é o contra-ataque
+
+# --- Combate 6: aéreo forte com regra, buffers, pulo duplo ---
+## Ferramentas/sondas: libera o pulo duplo sem a flag da progressão.
+var debug_double_jump: bool = false
+## Sondas: volta à caixa antiga (34×42 fixa a 20 px) para comparar.
+var debug_legacy_hitbox: bool = false
+var _air_heavy_used: bool = false    # Queda Estelar já saiu neste pulo
+var _air_heavy_cd: float = 0.0       # recarga da Queda (conta do pouso)
+var _air_lights: int = 0             # Giros Celestes neste pulo
+var _air_jumps_left: int = 0         # 2º pulo disponível neste pulo
+var _atk_buffer_btn: String = ""     # ataque apertado na recuperação
+var _atk_buffer_t: float = 0.0
+var _windup_total: float = 0.0       # preparo do golpe atual (s)
+var _dive_lock: bool = false         # Queda: presa no chão depois da onda
+var _spin_tween: Tween = null        # pirueta do pulo duplo
 
 @onready var visual: CharacterArt = $Visual
 @onready var hitbox: Hitbox = $Hitbox
@@ -205,7 +223,11 @@ func _sync_anim() -> void:
 			if current_move == null:
 				visual.set_anim("attack")
 			elif current_move.air:
-				visual.set_anim("attack_dive" if current_move.is_heavy() else "attack_air")
+				if current_move.is_heavy():
+					# Queda Estelar: carrega pairando (pose de preparo do pesado), depois mergulha
+					visual.set_anim("windup_heavy" if windup_timer > 0.0 else "attack_dive")
+				else:
+					visual.set_anim("attack_air")
 			elif current_move.launcher:
 				visual.set_anim("attack_up")
 			elif current_move.is_heavy():
@@ -265,10 +287,34 @@ func _tick_timers(delta: float) -> void:
 
 	if is_on_floor():
 		coyote = COYOTE_TIME
+		_air_lights = 0
+		_air_jumps_left = 1 if _double_jump_unlocked() else 0
+		if not (state == State.ATTACK and current_move != null and current_move.air and current_move.is_heavy()):
+			_air_heavy_used = false
+		if _spin_tween != null:
+			_stop_spin()
 	elif coyote > 0.0:
 		coyote -= delta
 	if jump_buffer > 0.0:
 		jump_buffer -= delta
+	# Buffer de pulo em QUALQUER estado (atacando, esquivando, tomando dano):
+	# sai no 1º quadro livre. Antes só contava parada/andando.
+	if Input.is_action_just_pressed("jump"):
+		jump_buffer = SophiaTuning.JUMP_BUFFER
+	# Buffer de ataque (ATTACK_BUFFER, em qualquer estado): o botão vale por
+	# 0,18 s — sai se a Sophia ficar livre nesse tempo; amassar antes não adianta.
+	if _atk_buffer_t > 0.0:
+		_atk_buffer_t -= delta
+		if _atk_buffer_t <= 0.0:
+			_atk_buffer_btn = ""
+	if Input.is_action_just_pressed("attack_light"):
+		_atk_buffer_btn = "light"
+		_atk_buffer_t = SophiaTuning.ATTACK_BUFFER
+	elif Input.is_action_just_pressed("attack_heavy"):
+		_atk_buffer_btn = "heavy"
+		_atk_buffer_t = SophiaTuning.ATTACK_BUFFER
+	if _air_heavy_cd > 0.0:
+		_air_heavy_cd -= delta
 
 	# Reseta o combo se ficar tempo demais sem encadear.
 	if combo_reset_timer > 0.0:
@@ -286,17 +332,17 @@ func _process_free(delta: float) -> void:
 
 	var dir := Input.get_axis("move_left", "move_right")
 	var spd := data.move_speed * (0.45 if status_slow > 0.0 else 1.0)
-	velocity.x = dir * spd
+	_move_curve(dir * spd, spd, delta)
 	if root_timer > 0.0:
 		velocity.x = 0.0            # acorrentado: não anda nem pula (esquiva quebra)
 
-	if Input.is_action_just_pressed("jump"):
-		jump_buffer = JUMP_BUFFER
 	if jump_buffer > 0.0 and coyote > 0.0 and root_timer <= 0.0:
 		velocity.y = data.jump_velocity
 		jump_buffer = 0.0
 		coyote = 0.0
 		Audio.play_sfx("jump")
+	elif jump_buffer > 0.0 and not is_on_floor() and coyote <= 0.0 and _air_jumps_left > 0 and root_timer <= 0.0:
+		_double_jump()
 
 	if Input.is_action_just_pressed("dodge"):
 		_start_dodge()
@@ -306,13 +352,14 @@ func _process_free(delta: float) -> void:
 	if Input.is_action_pressed("block"):
 		_enter_block()
 		return
-	# Só pode atacar se a recuperação do golpe anterior já passou.
-	if attack_cd <= 0.0:
-		if Input.is_action_just_pressed("attack_light"):
-			_attack_input("light")
-			return
-		if Input.is_action_just_pressed("attack_heavy"):
-			_attack_input("heavy")
+	# Só pode atacar se a recuperação do golpe anterior já passou. Apertou
+	# pouco antes (ATTACK_BUFFER)? Sai no 1º quadro livre — antes o botão
+	# apertado na recuperação "sumia" (sensação de travado).
+	if attack_cd <= 0.0 and _atk_buffer_btn != "":
+		var btn := _atk_buffer_btn
+		_atk_buffer_btn = ""
+		_atk_buffer_t = 0.0
+		if _attack_input(btn):
 			return
 	# Magias: U/X = o Anel equipado · O/Y = Esfera Solar (inata).
 	if Input.is_action_just_pressed("skill1"):
@@ -340,29 +387,114 @@ func _process_free(delta: float) -> void:
 	# (fase pela distância) — sem timer aqui, pra som e desenho baterem.
 
 
+# --- Movimento liso (Combate 6) ----------------------------------------
+
+## Curva de velocidade horizontal: arranca no 1º quadro mas sem degrau seco,
+## assenta na velocidade; freia em curva; ao virar, freia e acelera do outro
+## lado (o giro tem 2–3 quadros de deslize). No ar, controle um pouco menor.
+func _move_curve(target: float, spd: float, delta: float) -> void:
+	var t: float
+	var ground := is_on_floor()
+	if absf(target) < 0.01:
+		t = SophiaTuning.DECEL_TIME if ground else SophiaTuning.AIR_DECEL_TIME
+	elif velocity.x != 0.0 and signf(target) != signf(velocity.x):
+		t = SophiaTuning.TURN_TIME if ground else SophiaTuning.AIR_ACCEL_TIME
+	else:
+		t = SophiaTuning.ACCEL_TIME if ground else SophiaTuning.AIR_ACCEL_TIME
+	# acima da velocidade (saindo da esquiva/empurrão): assenta pela freada
+	if absf(velocity.x) > absf(target) and signf(velocity.x) == signf(target):
+		t = SophiaTuning.DECEL_TIME if ground else SophiaTuning.AIR_DECEL_TIME
+	velocity.x = SophiaTuning.approach(velocity.x, target, maxf(spd, 1.0), t, delta)
+
+
+# --- Pulo duplo (Combate 6) ---------------------------------------------
+
+## O 2º pulo só existe depois que o Soter o concede (Progression). Até a API
+## `has_double_jump()` existir, lê a propriedade `double_jump` (falso se não houver).
+func _double_jump_unlocked() -> bool:
+	if debug_double_jump:
+		return true
+	if Progression.has_method("has_double_jump"):
+		return bool(Progression.call("has_double_jump"))
+	var v = Progression.get("double_jump")
+	return v is bool and v
+
+
+## Segundo pulo no ar: mais baixo (DOUBLE_JUMP_MULT), cambalhota desenhada (S17) e um anel
+## de luz nos pés. Não devolve a Queda Estelar nem os Giros do pulo.
+func _double_jump() -> void:
+	_air_jumps_left -= 1
+	jump_buffer = 0.0
+	velocity.y = data.jump_velocity * SophiaTuning.DOUBLE_JUMP_MULT
+	var d := Input.get_axis("move_left", "move_right")
+	if d != 0.0:
+		velocity.x = d * data.move_speed * (0.45 if status_slow > 0.0 else 1.0)
+	Audio.play_sfx("jump")
+	var col := data.sprite_color.lerp(Color(1.0, 0.95, 0.75), 0.6)
+	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, 20), col, false)
+	_squash(Vector2(facing * 0.9, 1.12))
+	_stop_spin()
+	if visual == null:
+		return
+	# S17 (Arte): a cambalhota é DESENHADA — toca a ação e NÃO gira o cartão
+	# (girar por cima dos quadros daria duas cambalhotas). O anel de luz fica.
+	if visual.has_method("has_action") and visual.has_action("double_jump"):
+		visual.play_action("double_jump")
+		return
+	# reserva (sem os quadros): pirueta girando o corpo inteiro
+	_spin_tween = create_tween()
+	_spin_tween.tween_property(visual, "rotation", TAU * float(facing), SophiaTuning.DOUBLE_JUMP_SPIN).from(0.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_spin_tween.tween_callback(_stop_spin)
+
+
+## Interrompe a pirueta (golpe, esquiva, dano, pouso) e endireita o corpo.
+func _stop_spin() -> void:
+	if _spin_tween != null and _spin_tween.is_valid():
+		_spin_tween.kill()
+	_spin_tween = null
+	if visual:
+		visual.rotation = 0.0
+
+
 # --- Combo (leve/forte) ------------------------------------------------
 
-## Processa um botão de ataque, casando com a sequência de combo.
-## No AR, só existem os golpes aéreos (Giro Celeste / Queda Estelar).
-func _attack_input(btn: String) -> void:
+## Processa um botão de ataque, casando com a sequência de combo. Devolve se
+## um golpe saiu. `chaining` = veio da janela de encadear: aí só CONTINUA a
+## string (recomeçar do zero espera a recuperação — o fim do combo compromete).
+## No AR, só existem os golpes aéreos (Giro Celeste / Queda Estelar), com regra:
+## Queda Estelar 1 por pulo + recarga; Giro Celeste até 2 por pulo.
+func _attack_input(btn: String, chaining: bool = false) -> bool:
 	if not is_on_floor():
 		var am := _find_move([btn] as Array[String], true)
-		if am != null:
-			combo_sequence = [btn]
-			_do_move(am)
-		return
+		if am == null:
+			return false
+		if am.is_heavy():
+			if _air_heavy_used or _air_heavy_cd > 0.0:
+				return false
+			_air_heavy_used = true
+		else:
+			if _air_lights >= SophiaTuning.AIR_LIGHTS_PER_JUMP:
+				return false
+			_air_lights += 1
+		combo_sequence.clear()          # o aéreo não continua em combo de chão
+		_do_move(am)
+		return true
 	var trial := combo_sequence.duplicate()
 	trial.append(btn)
 	var move := _find_move(trial, false)
 	if move != null:
 		combo_sequence = trial
 		_do_move(move)
-		return
+		return true
+	if chaining:
+		return false
 	# Sequência não existe: recomeça o combo com o botão sozinho.
 	var single := _find_move([btn] as Array[String], false)
 	if single != null:
 		combo_sequence = [btn]
 		_do_move(single)
+		return true
+	return false
 
 
 func _find_move(seq: Array, air: bool) -> ComboData:
@@ -384,19 +516,32 @@ func _seq_equals(a: Array, b: Array) -> bool:
 func _do_move(move: ComboData) -> void:
 	current_move = move
 	riposting = false
+	_stop_spin()
+	# Golpe no chão sai para onde o direcional aponta (no deslize do giro a
+	# Sophia ainda olha para trás por 2–3 quadros — o golpe não pode sair errado).
+	if not move.air:
+		var d := Input.get_axis("move_left", "move_right")
+		if d != 0.0 and int(signf(d)) != facing:
+			facing = int(signf(d))
+			if visual:
+				visual.scale.x = facing * absf(visual.scale.x)
 	state = State.ATTACK
-	windup_timer = move.windup_time()      # carrega antes de conectar (pesado = mais)
+	_atk_buffer_btn = ""                   # o botão guardado virou este golpe
+	_atk_buffer_t = 0.0
+	windup_timer = SophiaTuning.windup(move)   # carrega antes de conectar (pesado = mais)
+	_windup_total = windup_timer
 	action_timer = move.duration
 	chain_open = false
 	hit_started = false
 	buffered_btn = ""
-	combo_reset_timer = move.windup_time() + move.duration + move.chain_time
+	_dive_lock = false
+	combo_reset_timer = windup_timer + move.duration + move.chain_time
 
 	var heavy := move.is_heavy()
 	if move.air:
 		Audio.play_sfx("dive" if heavy else "swing_air")   # golpes aéreos soam ao sair
 	velocity.x = facing * move.lunge * (1.35 if heavy else 1.0)
-	pending_dmg = move.damage + (Progression.weapon_level - 1) * 6   # r2: 3→6 (a arma tinha que valer)
+	pending_dmg = move_damage(move)
 	hitbox.position.x = 20.0 * facing
 	hitbox.knockback = move.knockback
 	hitbox.unblockable = false
@@ -406,34 +551,85 @@ func _do_move(move: ComboData) -> void:
 	dive_landed = false
 	if move.air:
 		if heavy:
-			velocity.y = 760.0             # Queda Estelar: mergulha
-			velocity.x = facing * 140.0
+			# Queda Estelar: primeiro PAIRA e carrega (o inimigo vê e reage),
+			# depois mergulha. Antes mergulhava no mesmo quadro.
+			velocity.y = minf(velocity.y, -40.0)
+			velocity.x = facing * 30.0
+			action_timer = 1.6             # dura até tocar o chão (teto de segurança)
 		else:
-			velocity.y = minf(velocity.y, -90.0)   # Giro Celeste: dá um sopro pra cima
+			# Giro Celeste: só o 1º do pulo dá o sopro pra cima e paira.
+			if _air_lights <= 1:
+				velocity.y = minf(velocity.y, -90.0)
 	elif move.launcher:
 		velocity.y = -120.0                # pequeno pulo junto com o lançador
 
 	_squash(Vector2(facing * (1.32 if heavy else 1.18), 0.8 if heavy else 0.86))
 
 
-func _process_attack(delta: float) -> void:
-	if not is_on_floor():
-		velocity.y += GRAVITY * delta
+## Dano do golpe no nível de arma atual (SophiaTuning: base × 0,65 × +17 %/nível).
+func move_damage(move: ComboData) -> int:
+	return SophiaTuning.move_damage(move.damage, Progression.weapon_level)
 
+
+## Queda Estelar: dano do contato no mergulho e da onda do pouso.
+func dive_contact_damage(dmg: int) -> int:
+	return maxi(1, roundi(dmg * SophiaTuning.DIVE_CONTACT))
+
+
+func dive_nova_damage(dmg: int) -> int:
+	return maxi(1, roundi(dmg * SophiaTuning.DIVE_NOVA))
+
+
+func _is_dive() -> bool:
+	return current_move != null and current_move.air and current_move.is_heavy()
+
+
+func _process_attack(delta: float) -> void:
 	var air_move := current_move != null and current_move.air
+	var dive := _is_dive()
+
+	if Input.is_action_just_pressed("attack_light"):
+		buffered_btn = "light"
+	elif Input.is_action_just_pressed("attack_heavy"):
+		buffered_btn = "heavy"
+
+	# Cancelar SÓ em janelas (esquiva; defesa/aparo na janela de encadear).
+	if Input.is_action_just_pressed("dodge") and _cancel_open():
+		_start_dodge()
+		return
+	if chain_open and not dive and Input.is_action_pressed("block") and is_on_floor():
+		hitbox.deactivate()
+		buffered_btn = ""
+		_enter_block()
+		# segurado desde antes da janela = só defesa (o aparo exige apertar na hora)
+		if not Input.is_action_just_pressed("block"):
+			block_time = PARRY_WINDOW + 0.01
+		return
 
 	# Fase de wind-up: "carregando" o golpe (freia mais no pesado).
 	if windup_timer > 0.0:
 		windup_timer -= delta
-		if not air_move:
-			velocity.x = move_toward(velocity.x, 0.0, 500.0 * delta)
+		if dive:
+			# paira: quase sem gravidade, freando a subida
+			velocity.y = move_toward(velocity.y, 25.0, 900.0 * delta)
+			velocity.x = move_toward(velocity.x, 0.0, 300.0 * delta)
+		else:
+			if not is_on_floor():
+				velocity.y += GRAVITY * delta
+			if not air_move:
+				velocity.x = move_toward(velocity.x, 0.0, 500.0 * delta)
 		if windup_timer <= 0.0:
-			hitbox.activate(pending_dmg)   # o golpe conecta agora
+			# o golpe conecta agora (a Queda só "raspa" no mergulho; a onda é o golpe)
+			hitbox.activate(dive_contact_damage(pending_dmg) if dive else pending_dmg)
 			hit_started = true
+			_sync_anim()                       # o Visual já mostra o quadro do golpe
+			_update_staff_hitbox()
 			if not air_move:
 				Audio.play_sfx(_swing_sfx())   # o corte sai do wind-up
-			if not air_move:
 				velocity.x = facing * current_move.lunge * (1.35 if current_move.is_heavy() else 1.0)
+			if dive:
+				velocity.y = 760.0
+				velocity.x = facing * 140.0
 			if riposting:
 				velocity.x = facing * _riposte_lunge()
 			# (R3: o tremor do pesado sai do Hitbox SÓ se acertar)
@@ -443,21 +639,31 @@ func _process_attack(delta: float) -> void:
 				AoeNova.spawn(get_parent(), global_position + Vector2(30.0 * facing, 0), int(pending_dmg * 0.8), current_move.aoe_radius, col)
 		return
 
+	if not is_on_floor():
+		velocity.y += GRAVITY * delta
+
 	# Golpes aéreos: o Giro flutua; a Queda mergulha e explode ao pousar.
-	if air_move:
-		if current_move.is_heavy():
+	if dive:
+		if not dive_landed:
 			velocity.y = 760.0
-			if is_on_floor() and not dive_landed:
+			if is_on_floor():
 				dive_landed = true
+				_dive_lock = true
+				hitbox.deactivate()
 				var col := data.sprite_color.lerp(Color(1.0, 0.95, 0.7), 0.55)
-				AoeNova.spawn(get_parent(), global_position + Vector2(0, 8), pending_dmg, current_move.aoe_radius, col)
+				AoeNova.spawn(get_parent(), global_position + Vector2(0, 8), dive_nova_damage(pending_dmg), current_move.aoe_radius, col)
 				Juice.shake(0.5)
 				Juice.hit_stop(Juice.HS_DIVE)
 				_squash(Vector2(facing * 1.4, 0.7))
-				action_timer = minf(action_timer, 0.18)
+				action_timer = SophiaTuning.DIVE_LAND_LOCK
+				_air_heavy_cd = SophiaTuning.AIR_HEAVY_CD
+				combo_sequence.clear()
 		else:
-			velocity.y = clampf(velocity.y, -90.0, 70.0)      # paira durante o giro
-			velocity.x = move_toward(velocity.x, facing * 60.0, 300.0 * delta)
+			velocity.x = move_toward(velocity.x, 0.0, 1400.0 * delta)
+	elif air_move:
+		if _air_lights <= 1:
+			velocity.y = clampf(velocity.y, -90.0, 70.0)      # paira durante o 1º giro
+		velocity.x = move_toward(velocity.x, facing * 60.0, 300.0 * delta)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
 
@@ -471,35 +677,70 @@ func _process_attack(delta: float) -> void:
 			hitbox.activate(pending_dmg)
 			_squash(Vector2(facing * 1.15, 0.9))
 
+	# A caixa segue o cajado DESENHADO no quadro atual (só nos quadros de impacto),
+	# até o golpe acabar (cada alvo toma o golpe 1 vez por ativação).
+	if hit_started:
+		_update_staff_hitbox()
+
 	action_timer -= delta
 
-	if Input.is_action_just_pressed("attack_light"):
-		buffered_btn = "light"
-	elif Input.is_action_just_pressed("attack_heavy"):
-		buffered_btn = "heavy"
-
-	if Input.is_action_just_pressed("dodge"):
-		_start_dodge()
-		return
-
-	# Metade final: desliga hitbox e abre a janela de encadeamento
-	# (multi-hit mantém a hitbox até o último toque).
-	if action_timer <= current_move.duration * 0.5 and not chain_open and hits_left <= 0:
-		hitbox.deactivate()
+	# Janela de encadear: abre depois de CHAIN_AT do golpe (leve 55 %, pesado
+	# 68 %); a Queda não encadeia. Multi-hit mantém a hitbox até o último toque.
+	if not dive and not chain_open and hits_left <= 0 \
+			and action_timer <= current_move.duration * (1.0 - SophiaTuning.chain_at(current_move)):
 		chain_open = true
 
 	if chain_open and buffered_btn != "":
 		var b := buffered_btn
 		buffered_btn = ""
-		_attack_input(b)
-		return
+		if _attack_input(b, true):
+			return
+		# não continua a string: só vale se apertar de novo perto do fim da
+		# recuperação (buffer de 0,18 s) — o final do combo compromete
 
 	if action_timer <= 0.0:
 		hitbox.deactivate()
 		state = State.IDLE
+		_dive_lock = false
 		# Recuperação: você fica comprometido antes de poder atacar de novo.
 		if current_move:
-			attack_cd = current_move.recovery_time()
+			attack_cd = SophiaTuning.recovery(current_move)
+		buffered_btn = ""
+
+
+## Pode cancelar o golpe numa esquiva agora? (só em janelas — Combate 6)
+##   leve (chão/ar): depois que o golpe saiu · pesado: no começo do preparo
+##   (finta) ou na janela de encadear · Queda: nunca no ar; presa no chão,
+##   só depois de DIVE_CANCEL_AFTER.
+func _cancel_open() -> bool:
+	if current_move == null:
+		return true
+	if _is_dive():
+		return _dive_lock and action_timer <= SophiaTuning.DIVE_LAND_LOCK - SophiaTuning.DIVE_CANCEL_AFTER
+	if current_move.is_heavy():
+		if windup_timer > 0.0:
+			return windup_timer >= _windup_total * (1.0 - SophiaTuning.HEAVY_FEINT)
+		return chain_open
+	return hit_started
+
+
+## Playtest 2 ("o cajado atravessa"): posiciona a caixa de acerto no cajado do
+## quadro desenhado agora (StaffReach) e só a deixa ligada em quadro de impacto.
+## Sem quadros desenhados (reserva procedural) → a caixa antiga (34×42 a 20 px).
+func _update_staff_hitbox() -> void:
+	var g: Dictionary = {} if debug_legacy_hitbox else StaffReach.current(visual)
+	if g.is_empty() or not g.has("rect"):
+		if g.is_empty():
+			hitbox.set_box(Vector2(20.0 * facing, 0.0), Vector2(34.0, 42.0))
+			# a caixa antiga desligava na janela de encadear (multi-hit: no último toque)
+			hitbox.set_live(not (chain_open and hits_left <= 0))
+		else:
+			hitbox.set_live(false)      # quadro sem cajado medido
+		return
+	var r: Rect2 = g.rect
+	var c: Vector2 = r.get_center()
+	hitbox.set_box(Vector2(c.x * float(facing), c.y), r.size)
+	hitbox.set_live(bool(g.impact))
 
 
 ## Contra-ataque: avança o bastante para alcançar quem foi aparado (o aparo
@@ -525,6 +766,7 @@ func register_hit() -> void:
 # --- Esquiva (i-frames) ------------------------------------------------
 
 func _start_dodge() -> void:
+	_stop_spin()
 	if root_timer > 0.0:
 		root_timer = 0.0            # arrebenta a corrente
 		_flash(Color(2, 2, 3, 1))
@@ -583,6 +825,12 @@ func _parry(attacker: Node) -> void:
 	# abre a janela do contra-ataque
 	_riposte_t = RIPOSTE_WINDOW
 	_riposte_target = attacker
+	riposte_window_opened.emit()
+
+
+## A janela do contra-ataque está aberta agora? (API pública)
+func is_riposte_window_open() -> bool:
+	return _riposte_t > 0.0
 
 
 ## Ataque apertado com a janela do contra-ataque aberta → contra-ataque.
@@ -822,6 +1070,7 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, u
 	state = State.HURT
 	action_timer = 0.3
 	hitbox.deactivate()
+	_stop_spin()
 	_flash(HURT_TINT, VIB_AMP)
 
 
@@ -862,6 +1111,7 @@ func _process_hurt(delta: float) -> void:
 
 
 func _on_died() -> void:
+	_stop_spin()
 	state = State.DEAD
 	velocity.x = 0.0                 # cai reto (A4); a gravidade cuida do y
 	velocity.y = maxf(velocity.y, 0.0)

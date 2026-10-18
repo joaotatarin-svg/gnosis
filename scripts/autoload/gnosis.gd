@@ -343,9 +343,16 @@ func setup_screen(level: Node2D, screen: int, rest_points: Array) -> void:
 		s.entry = e
 		level.add_child(s)
 		s.global_position = _stela_pos(screen, rest_points)
+		# A pedra é cenário do chão: ATRÁS dos lutadores (como os props, z -1).
+		# Com z 1 ela cobria a Sophia nas cenas das telas 64 e 68 (QA da Encenação 5).
+		s.z_index = -1
 	# Legenda de chegada: uma vez por run (com checkpoint a tela recarrega).
 	if Narrative.once("walk_a_%d" % screen):
 		_caption.say_lines(Narrative.walk_arrival(screen))
+	# Nó especial do mapa (santuário, Arena, segredo, perigo, escalada): uma fala
+	# curta que diz o que o lugar é (Onda 6, pedido do mapa6). Na fila, na calma.
+	if RunManager.has_method("node_kind") and Narrative.has_method("node_arrival") 			and Narrative.once("node_a_%d" % screen):
+		_caption.say_lines(Narrative.node_arrival(String(RunManager.call("node_kind", screen))))
 
 
 ## Onde a Estela fica: num descanso ENTRE zonas quando há (o jogador passa por

@@ -17,7 +17,10 @@ signal minion_spawned(minion)
 ## chefe acertar o estalo no impacto (pedido da Animação-Chefes).
 signal attack_impact()
 
-enum EState { CHASE, WINDUP, STRIKE, RECOVER, HURT, STAGGER, DEAD }
+## GUARD (Onda 6): o comum ergue a guarda por um instante (leve pela frente
+## quase não passa; pesado QUEBRA; magia ignora). Fica no fim: os números antigos
+## não mudam.
+enum EState { CHASE, WINDUP, STRIKE, RECOVER, HURT, STAGGER, DEAD, GUARD }
 
 @export var type_id: String = "servo"     # id no Bestiary
 @export var is_elite: bool = false
@@ -53,6 +56,7 @@ const GLINT_LEAD := 0.18          # R5: brilho de aviso 180 ms antes do golpe (=
 const GLINT_BOOST := 0.35         # o brilho clareia o tingimento por um instante
 const GLINT_TIME := 0.12          # duração do brilho no corpo (s de jogo)
 const FLASH_FADE := 0.11          # R1: o flash some em 110 ms REAIS depois do hitstop
+const FLASH_ADD := 0.55           # Onda 6: brilho somado no pico do flash aditivo (× força do Juice)
 const TELEGRAPH_RIM_A := 0.9      # contorno do telegrafo nos chefes por quadros (Pedido 2 da Arte)
 const DEATH_POSE_TIME := 0.4      # chefe: segura o quadro "death" antes de se partir (s REAIS; Pedido 4 da Arte)
 const VIB_LIGHT := 1.5            # R1: vibração da vítima (px), golpe leve
@@ -68,6 +72,17 @@ const PRAGA_POOL_R2 := 40.0       # Balance P3: raio na fase 2 (era 48; fase 1 =
 ## Onda 3: Belias (arconte_praga) SAIU — com 1,15× o bot piorou a tela 55
 ## (1062 → 1319 de dano): o corpo maior cobre mais chão junto com as poças.
 const BOSS_PRESENCE := {"arconte_sono": 1.08}
+## Onda 6: cor do CAMPEÃO por Éon [giro de matiz (rad), saturação, tinta] — o
+## oposto da cor-assinatura do Arconte daquele Éon (o bot é da família dele).
+const CHAMPION_GRADE := [
+	[2.6, 0.95, Color(1.05, 1.0, 0.9)],     # Torpor: anil de Athoth → âmbar
+	[2.4, 0.85, Color(1.0, 1.0, 1.0)],      # Fome: vermelho de Harmas → verde-água
+	[0.0, 0.55, Color(1.15, 0.85, 0.6)],    # Corrente: cinza de Galila → bronze
+	[2.8, 0.9, Color(1.0, 1.0, 1.0)],       # Silêncio: anil de Yabel → ocre
+	[0.0, 0.3, Color(0.6, 0.52, 0.66)],     # Espelho: prata de Astaphaios → obsidiana
+	[2.2, 0.95, Color(1.0, 1.0, 1.0)],      # Praga: verde de Belias → violeta
+	[3.0, 0.7, Color(0.85, 0.92, 1.1)],     # Coroa: ouro de Armupiel → prata-azul
+]
 # R18 — leitura (contorno + sombra de contato); ver _setup_readability().
 const RIM_ENABLED := true
 const RIM_ALPHA := 0.5
@@ -125,6 +140,40 @@ const ORB_HOME := Vector2(78.0, -168.0)   # repouso do orbe (px, local ao chefe)
 var _orb: Sprite2D = null
 var _orb_t: float = 0.0
 
+# --- Onda 6 (inimigos6): repertório, voo, reflexos, elite e fila de agressão ---
+## Repertório (EnemyMoves.for_type): vazio = comportamento antigo por `style`
+## (chefes, ecos e a Sombra da Sophia seguem nele).
+var moves: Array = []
+var role: String = "melee"            # tank / melee / skirm / shooter / flyer
+var guard_chance: float = 0.0         # chance de erguer a guarda quando a Sophia golpeia perto
+var evade_chance: float = 0.0         # chance de saltar pra trás no mesmo instante
+var fly_height: float = 0.0           # >0 = VOADOR: paira essa altura acima do chão
+var elite_mod: String = ""            # Elite: escudo / furia / regen (visível na EnemyOverlay)
+var barrier: int = 0                  # escudo de elite: absorve antes da vida
+var barrier_max: int = 0
+var guard_dir: int = 1
+var tele_target: Vector2 = Vector2.INF   # alvo do mergulho/investida (linha de aviso)
+var used_moves: Dictionary = {}       # id do golpe → vezes (a sonda confere)
+var _mv: Dictionary = {}              # golpe em curso
+var _mv_cd: Dictionary = {}           # recarga própria por golpe
+var _combo_left: int = 0
+var _hit_dmg: int = 0                 # dano-base da caixa já escalado pela tela
+var _rng := RandomNumberGenerator.new()
+var _rng_ready: bool = false
+var _react_cd: float = 0.6
+var _guard_t: float = 0.0
+var _counter: bool = false            # bloqueou um golpe: contra-ataca em seguida
+var _downed: float = 0.0              # voador derrubado (cai e fica vulnerável)
+var _perched: float = 0.0             # voador pousado depois do mergulho
+var _grab_hold: float = -1.0          # agarrão: segurando a Sophia (s até o arremesso)
+var _regen_idle: float = 0.0
+var _regen_acc: float = 0.0
+var _orbit_side: float = 1.0
+var _orbit_t: float = 0.0
+var _champ_fury: bool = false
+var _ground_origin: float = NAN       # y do corpo se estivesse no chão logo abaixo
+var _flash_layer: EnemyFlashLayer = null
+
 @onready var visual: CharacterArt = $Visual
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var contact_hitbox: Hitbox = $ContactHitbox
@@ -150,6 +199,14 @@ func _ready() -> void:
 	_charge_speed = CHARGE_SPEED * (1.4 if is_boss_enemy else 1.0)
 	if profile != null:
 		eye_color = profile.eye
+	# Onda 6: repertório próprio dos comuns (chefes ficam no `style`/`kit`).
+	var kitdef: Dictionary = {} if is_boss_enemy else EnemyMoves.for_type(type_id)
+	if not kitdef.is_empty():
+		moves = (kitdef.moves as Array).duplicate(true)
+		role = kitdef.role
+		guard_chance = kitdef.guard
+		evade_chance = kitdef.evade
+		fly_height = kitdef.fly
 
 	# Alcance e timing por estilo de ataque.
 	match attack_style:
@@ -196,7 +253,16 @@ func _ready() -> void:
 		base_health = int(base_health * 1.7)
 		attack_damage = int(attack_damage * 1.15)
 		spark_reward *= 2
-		scale = Vector2(1.25, 1.25)
+		scale = Vector2(1.35, 1.35)
+		# Onda 6: repertório de elite (o do bot + brado e onda dupla), lê e
+		# reage mais — mini-chefe com a cara do BOT, nunca a do Arconte.
+		if not moves.is_empty():
+			moves.append_array(EnemyMoves.champion_extras())
+			guard_chance = minf(0.6, guard_chance + 0.15)
+			evade_chance = minf(0.5, evade_chance + 0.1)
+	elif is_elite and not moves.is_empty():
+		guard_chance = minf(0.6, guard_chance + 0.1)
+		elite_mod = _pick_elite_mod()
 	# Presença dos Arcontes (#42): só os que ficavam abaixo de ~2× a Sophia.
 	if BOSS_PRESENCE.has(type_id):
 		var k: float = BOSS_PRESENCE[type_id]
@@ -220,16 +286,23 @@ func _ready() -> void:
 	contact_hitbox.team = "enemy"
 	contact_hitbox.damage = int(contact_damage * dmg_mult)
 	contact_hitbox.unblockable = false
-	contact_hitbox.monitoring = true
+	# Onda 6 (playtest 2 do João): SEM DANO DE CONTATO. A Sophia tomava dano só
+	# por encostar/acertar o inimigo — a dificuldade vinha disso, não dos golpes.
+	# Agora só fere o que tem telegrafo (golpes, investidas, mergulhos, zonas).
+	contact_hitbox.monitoring = false
 
 	attack_hitbox.team = "enemy"
 	attack_hitbox.damage = int(attack_damage * dmg_mult)
+	_hit_dmg = attack_hitbox.damage
+	_apply_elite_mod()
 	attack_hitbox.unblockable = is_elite or behavior == "exploder"
 	attack_hitbox.monitoring = false
 
 	if visual and profile != null:
 		visual.set_profile(profile)
 		_fit_body(profile.height / 44.0)
+		if def.has("tint"):
+			visual.self_modulate = def.tint               # Onda 6: tinta própria do tipo
 		if type_id.begins_with("eco_"):
 			visual.self_modulate = Color(1, 1, 1, 0.72)   # eco: translúcido
 
@@ -237,6 +310,7 @@ func _ready() -> void:
 	# (senão mantém o desenho procedural — fallback, sem erro).
 	_apply_illustrated_art()
 	_setup_readability()
+	_setup_layers()
 	# Pedido da Encenação: o chefe que nasce junto com o CARD DE CHEFE (mundo
 	# pausado no mesmo quadro) não aparecia, porque o CharacterArt só monta a
 	# pose no _process. Monta UMA pose agora (desenho não depende de pausa).
@@ -245,6 +319,7 @@ func _ready() -> void:
 		visual._process(0.0)
 
 	player = get_tree().get_first_node_in_group("player")
+	_boss_setup()   # chefes6: cérebro de chefe (scripts/entities/bosses/)
 	if is_boss_enemy or is_champion:
 		get_tree().call_group("hud", "show_boss", self)
 		_boss_intro_fx.call_deferred()
@@ -296,6 +371,12 @@ func _setup_readability() -> void:
 		var m := ShaderMaterial.new()
 		m.shader = VfxLibrary.rim_shader()
 		var eon := RunManager.eon_index(GameManager.current_screen)
+		var grade: Array = _body_grade(eon)
+		if not grade.is_empty():
+			m.shader = load(GRADE_SHADER)
+			m.set_shader_parameter("grade_hue", float(grade[0]))
+			m.set_shader_parameter("grade_sat", float(grade[1]))
+			m.set_shader_parameter("grade_tint", grade[2])
 		var rc: Color = VfxLibrary.eon_rim_color(eon)
 		m.set_shader_parameter("rim_color", Color(rc.r, rc.g, rc.b, RIM_ALPHA))
 		m.set_shader_parameter("rim_px", 1.0)
@@ -313,6 +394,22 @@ func _setup_readability() -> void:
 		_shadow_scale = sh.scale
 
 
+const GRADE_SHADER := "res://scripts/entities/enemies/enemy_grade.gdshader"
+
+## Graduação de cor do corpo: Campeão (por Éon) > a do tipo (bots, alado…) > nada.
+func _body_grade(eon: int) -> Array:
+	if is_boss_enemy:
+		return []
+	if is_champion:
+		var bot := Bestiary.EON_BOTS.find(type_id)
+		var i: int = bot if bot >= 0 else clampi(eon, 0, CHAMPION_GRADE.size() - 1)
+		return CHAMPION_GRADE[clampi(i, 0, CHAMPION_GRADE.size() - 1)]
+	var def := Bestiary.get_type(type_id)
+	if String(def.get("id", "")) == type_id and def.has("grade"):
+		return def.grade
+	return []
+
+
 ## Sombra de contato presa ao chão: no ar, fica no piso e encolhe com a altura.
 func _pin_shadow() -> void:
 	if not has_node("Shadow"):
@@ -324,6 +421,8 @@ func _pin_shadow() -> void:
 		sh.scale = _shadow_scale
 		sh.modulate.a = 1.0
 		return
+	if fly_height > 0.0 and not is_nan(_ground_origin):
+		_floor_y = _ground_origin
 	if is_nan(_floor_y):
 		return
 	var up: float = maxf(0.0, _floor_y - global_position.y)
@@ -350,8 +449,9 @@ func _apply_illustrated_art() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not is_on_floor():
+	if not is_on_floor() and not _flying():
 		velocity.y += GRAVITY * delta
+	_tick_onda6(delta)
 	if slow_timer > 0.0:
 		slow_timer -= delta
 	if rooted_timer > 0.0:
@@ -384,17 +484,24 @@ func _physics_process(delta: float) -> void:
 		EState.HURT:    _process_stun(delta)
 		EState.STAGGER: _process_stun(delta)
 		EState.DEAD:    velocity.x = move_toward(velocity.x, 0.0, 400.0 * delta)
+		EState.GUARD:   _process_guard(delta)
 
+	_hover(delta)
 	_kit_passive(delta)
 	move_and_slide()
 	_pin_shadow()
 	_sync_anim()
+	_fit_hurtbox()
 	_animate_orb(delta)
 
 
-## Efeitos contínuos das assinaturas de chefe.
+## Efeitos contínuos das assinaturas de chefe. Com cérebro (chefes6), a
+## assinatura mora no script do chefe; o `match` abaixo é o legado (sem cérebro).
 func _kit_passive(delta: float) -> void:
 	if player == null or not is_instance_valid(player) or estate == EState.DEAD:
+		return
+	if brain != null:
+		brain.passive(delta)
 		return
 	match kit:
 		"silencio":
@@ -434,14 +541,14 @@ func _sync_anim() -> void:
 			visual.pose_progress = clampf(1.0-attack_timer/maxf(wind_up,0.01),0,1)
 			# O telegrafo é a pose: braço puxado (melee), arma erguida (slam),
 			# cajado carregando (atirador), corpo agachado (investida).
-			match attack_style:
+			match _anim_style():
 				"slam": visual.set_anim("windup_heavy")
 				"ranged": visual.set_anim("windup_cast")
 				"charge": visual.set_anim("windup_heavy" if profile_is_beast() else "windup")
 				_: visual.set_anim("windup")
 		EState.STRIKE:
 			visual.pose_progress = clampf(1.0-attack_timer/maxf(strike_time,0.01),0,1)
-			match attack_style:
+			match _anim_style():
 				"slam": visual.set_anim("attack_heavy")
 				"ranged": visual.set_anim("cast")
 				"charge": visual.set_anim("charge")
@@ -450,6 +557,9 @@ func _sync_anim() -> void:
 			visual.pose_progress = clampf(1.0-attack_timer/maxf(recover_time,0.01),0,1)
 			visual.set_anim("recover")
 		EState.HURT, EState.STAGGER: visual.set_anim("hurt")
+		EState.GUARD:
+			visual.pose_progress = 0.35
+			visual.set_anim("windup")
 		EState.DEAD: visual.set_anim("dead")
 		EState.CHASE: visual.set_anim("walk" if absf(velocity.x) > 5.0 else "idle")
 		_: visual.set_anim("idle")
@@ -460,11 +570,17 @@ func profile_is_beast() -> bool:
 
 
 func _process_chase(delta: float) -> void:
+	if brain != null and brain.chase(delta):   # chefes6: o chefe decide
+		return
 	if cooldown_timer > 0.0:
 		cooldown_timer -= delta
 
 	if player == null or not is_instance_valid(player):
 		velocity.x = move_toward(velocity.x, 0.0, 300.0 * delta)
+		return
+
+	if not moves.is_empty():
+		_chase_moves(delta)
 		return
 
 	var dx := player.global_position.x - global_position.x
@@ -553,7 +669,7 @@ func _begin_windup() -> void:
 	attack_timer = wind_up
 	velocity.x = 0.0
 	# Silêncio, fase 2: pisca pra trás da Sophia antes de atacar.
-	if kit == "silencio" and phase == 2 and player != null and is_instance_valid(player):
+	if kit == "silencio" and phase == 2 and brain == null and player != null and is_instance_valid(player):
 		_blink_to(player.global_position.x - float(player.facing) * 44.0)
 	atk_dir = 1
 	if player != null and is_instance_valid(player):
@@ -579,6 +695,8 @@ func _begin_windup() -> void:
 func _process_windup(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0.0, 400.0 * delta)
 	attack_timer -= delta
+	if not _mv.is_empty():
+		_windup_track()
 	# R5: brilho de aviso quando a janela de parry abre (180 ms antes do golpe).
 	if not _glint_done and attack_timer <= GLINT_LEAD:
 		_glint_done = true
@@ -626,6 +744,11 @@ func _begin_strike() -> void:
 	if visual:
 		visual.set_meta("impact_at", impact_at)
 	attack_impact.emit()
+	if brain != null and brain.strike():   # chefes6: golpe do chefe
+		return
+	if not _mv.is_empty():   # inimigos6: golpe do repertório (chefes não têm `moves`)
+		_strike_move()
+		return
 	if behavior == "exploder":
 		_explode()
 		return
@@ -755,7 +878,12 @@ func _explode() -> void:
 
 
 func _process_strike(delta: float) -> void:
-	if attack_style == "charge":
+	if brain != null:
+		brain.strike_tick(delta)   # chefes6
+	elif not _mv.is_empty():   # inimigos6 (chefes não têm `moves`)
+		_strike_tick(delta)
+		return
+	elif attack_style == "charge":
 		velocity.x = atk_dir * _charge_speed     # mantém a arrancada
 		if kit == "praga":
 			# Praga: a investida deixa poças de veneno pelo caminho.
@@ -780,13 +908,15 @@ func _process_recover(delta: float) -> void:
 	if attack_timer <= 0.0:
 		estate = EState.CHASE
 		cooldown_timer = attack_cooldown
+		if not moves.is_empty():
+			_end_move()
 
 
 func _process_stun(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0.0, 300.0 * delta)
 	attack_timer -= delta
 	# No ar (lançado), só volta a agir depois de pousar.
-	if attack_timer <= 0.0 and is_on_floor():
+	if attack_timer <= 0.0 and (is_on_floor() or _flying()):
 		estate = EState.CHASE
 
 
@@ -816,36 +946,93 @@ func _prune_minions() -> void:
 	_minions = alive
 
 
-# --- fases de chefe --------------------------------------------------------
+# --- fases de chefe (chefes6) ----------------------------------------------
 
-## A 50% de vida: fúria (mais rápido) + a assinatura do kit sobe de nível.
+## Cérebro do chefe (scripts/entities/bosses/*): decide golpes, fases e arena.
+## null = inimigo comum (ou chefe sem script: cai no legado de 2 fases).
+var brain: BossBrain = null
+## Sequência de morte de chefe, passo a passo (para a arte/encenação ouvir):
+## 0 impacto (hitstop + câmera lenta) · 1 cambaleia (quadro hurt) · 2 colapso
+## (quadros de morte) · 3 pausa (silêncio) · 4 desintegração (defeated + gibs).
+signal boss_dying(step: int)
+## Limiares de fase (fração da vida) — o HUD pode desenhar os marcadores.
+var phase_marks: Array = [0.5]
+
+
+## Monta o cérebro do chefe (se houver script para ele). A vida passa a vir de
+## BossTuning (golpes-alvo × golpe médio da Sophia na tela).
+func _boss_setup() -> void:
+	if not is_boss_enemy or type_id.begins_with("eco_"):
+		return
+	var path := BossBrain.script_for(type_id, kit)
+	if path == "":
+		return
+	var scr = load(path)
+	if scr == null:
+		return
+	var b = scr.new()
+	if not (b is BossBrain):
+		return
+	brain = b
+	add_child(brain)
+	brain.setup(self)
+	phase_marks = brain.marks.duplicate()
+
+
+## Confere se o dano levou o chefe à próxima fase. true = mudou de fase.
+func _boss_phase_check() -> bool:
+	if brain != null:
+		return brain.check_phase()
+	if phase == 1 and health.current_health <= health.max_health / 2:
+		_enter_phase2()
+		return true
+	return false
+
+
+## Legado (chefe sem cérebro): fase 2 a 50 %.
 func _enter_phase2() -> void:
-	phase = 2
-	move_speed *= 1.25
-	attack_cooldown *= 0.7
-	wind_up *= 0.85
+	_enter_phase(2)
+
+
+## Nova FASE: rugido (atordoado e intocável ~1,3 s), tremor, clarão, nova,
+## a barra do HUD pisca e a fala da fase entra como legenda (sem pausar).
+## Com cérebro, o resto (golpes novos, arena) é do script do chefe.
+func _enter_phase(n: int) -> void:
+	phase = n
 	estate = EState.STAGGER
-	attack_timer = 0.9
-	attack_hitbox.deactivate()
+	attack_timer = 0.9 if brain == null else BossBrain.PHASE_ROAR
+	attack_hitbox.set_deferred("monitoring", false)   # chamado dentro do sinal de acerto
+	attack_hitbox.scale = Vector2.ONE
 	_tint_base = Color(1, 1, 1, 1)
-	Juice.shake(0.7)
+	Juice.shake(0.7 + 0.15 * float(n - 2))
 	Juice.hit_stop(0.15)
 	Audio.play_sfx("boss_phase2")
-	AoeNova.spawn(get_parent(), global_position, 0, 140.0, eye_color)
+	Audio.duck_music(0.8, -8.0)
+	AoeNova.spawn(get_parent(), global_position, 0, 140.0 + 40.0 * float(n - 2), eye_color)
 	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
 	_flash(Color(3, 2.5, 2, 1))
-	match kit:
-		"coroa":
-			# A Coroa chama a corte: blindada enquanto os servos viverem.
-			_summon("servo", 2)
-			armored = true
-		"espelho":
-			# O Espelho devolve a Sophia contra ela mesma.
-			_summon("sombra_sophia", 1)
-	get_tree().call_group("hud", "boss_phase", 2)
-	# Gancho do Roteiro: legendas da fase 2 (sem pausar a luta).
-	if is_boss_enemy and RunManager.run_active and Gnosis.has_method("captions") and Narrative.has_method("archon_phase2"):
-		Gnosis.captions(Narrative.archon_phase2(type_id))
+	if brain == null:
+		move_speed *= 1.25
+		attack_cooldown *= 0.7
+		wind_up *= 0.85
+		match kit:
+			"coroa":
+				# A Coroa chama a corte: blindada enquanto os servos viverem.
+				_summon("servo", 2)
+				armored = true
+			"espelho":
+				# O Espelho devolve a Sophia contra ela mesma.
+				_summon("sombra_sophia", 1)
+	else:
+		move_speed *= 1.1
+	get_tree().call_group("hud", "boss_phase", n)
+	# Gancho do Roteiro: legendas da fase (sem pausar a luta). Fase 3 só se a
+	# Narrativa tiver as falas (pedido em docs/pedidos/onda6_chefes6.md).
+	if is_boss_enemy and RunManager.run_active and Gnosis.has_method("captions"):
+		if n == 2 and Narrative.has_method("archon_phase2"):
+			Gnosis.captions(Narrative.archon_phase2(type_id))
+		elif n == 3 and Narrative.has_method("archon_phase3"):
+			Gnosis.captions(Narrative.call("archon_phase3", type_id))
 
 
 # --- dano ------------------------------------------------------------------
@@ -868,6 +1055,9 @@ func apply_root(t: float) -> void:
 
 ## Glutão: cada golpe que acerta cura uma parte do dano.
 func on_hit_landed(dmg: int) -> void:
+	# Onda 6: o agarrão pegou (ela tomou o golpe — não aparou/bloqueou/esquivou).
+	if not _mv.is_empty() and String(_mv.kind) == "grab" and _grab_hold < 0.0 			and player is Player and player.state == Player.State.HURT:
+		_grab_start()
 	if behavior == "leech" and estate != EState.DEAD:
 		health.heal(int(dmg * 0.6))
 		_flash(Color(1.2, 2.2, 1.2, 1))
@@ -882,7 +1072,7 @@ func revive(ratio: float) -> void:
 	estate = EState.STAGGER
 	attack_timer = 1.0
 	phase = 1
-	contact_hitbox.monitoring = true
+	contact_hitbox.monitoring = false     # Onda 6: sem dano de contato
 	hurtbox.monitoring = true
 	_flash_t = -1.0
 	_tint_base = Color(1, 1, 1, 1)
@@ -905,6 +1095,37 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 	if kb_dir == 0.0:
 		kb_dir = 1.0
 
+	# Onda 6 — GUARDA: leve pela frente quase não passa; pesado QUEBRA a guarda
+	# (atordoa); magia/nova (sem atacante) ignora. Depois de bloquear, contra-ataca.
+	var guarded := false
+	if estate == EState.GUARD and attacker is Player:
+		var mvg: ComboData = attacker.current_move
+		var front_g: bool = signf(source_position.x - global_position.x) == float(guard_dir)
+		if front_g:
+			if mvg != null and (mvg.is_heavy() or mvg.launcher):
+				_guard_break()
+			else:
+				guarded = true
+				damage = maxi(1, int(damage * 0.15))
+				_counter = true
+				ImpactBurst.spawn(get_parent(), global_position + Vector2(14.0 * guard_dir, -14.0 * _art_scale), Color(0.75, 0.88, 1.0))
+				Audio.play_sfx_at("block", global_position)
+	# Onda 6 — ESCUDO de elite: a bolha absorve antes da vida; ao zerar, estoura
+	# e o elite fica atordoado (a recompensa de insistir).
+	if barrier > 0 and damage > 0:
+		var absorb: int = mini(barrier, damage)
+		barrier -= absorb
+		damage -= absorb
+		_regen_idle = 0.0
+		if barrier <= 0:
+			_barrier_break()
+		if damage <= 0:
+			_flash(Color(1.6, 1.9, 2.6, 1))
+			ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -16.0 * _art_scale), Color(0.6, 0.8, 1.0))
+			DamageNumber.spawn(get_parent(), global_position, absorb, Color(0.6, 0.8, 1.0))
+			return
+	_regen_idle = 0.0
+
 	# Escudeiro: golpe LEVE bate no escudo. Só pesado ou magia passam.
 	if behavior == "shield" and attacker is Player and estate != EState.HURT and estate != EState.STAGGER:
 		var mv: ComboData = attacker.current_move
@@ -922,6 +1143,11 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 			damage = maxi(1, damage / 2)
 			_flash(Color(2.0, 1.9, 1.4, 1))
 
+	if brain != null:
+		damage = brain.filter_damage(damage, attacker)   # chefes6
+		if damage <= 0:
+			_flash(Color(1.6, 1.6, 2.0, 1))
+			return
 	# Coroa: enquanto os servos vivem, o Arconte é blindado.
 	if armored:
 		_prune_minions()
@@ -964,7 +1190,9 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 	hurt_power = clampf(float(damage) / maxf(1.0, float(health.max_health)) * 4.0 + knockback / 600.0, 0.0, 1.0)
 	if visual:
 		visual.set_meta("hurt_power", hurt_power)
-	if not (died_now and revivable):      # a forma caída: o tween de queda manda na cor
+	if guarded:
+		_flash(Color(1.6, 1.8, 2.6, 1), VIB_LIGHT)
+	elif not (died_now and revivable):      # a forma caída: o tween de queda manda na cor
 		_flash(Color(3, 3, 3, 1), VIB_HEAVY if _last_hit_heavy else VIB_LIGHT)
 	# R4: a voz de dor cansa antes do impacto — no máximo 1 a cada 250 ms.
 	var now_ms := Time.get_ticks_msec()
@@ -984,16 +1212,29 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 	# Gigantes quase não recuam.
 	velocity.x = kb_dir * knockback / maxf(1.0, _art_scale)
 	velocity.y = -120.0 / maxf(1.0, _art_scale)
+	if guarded:
+		velocity.x *= 0.35
+		velocity.y = 0.0
+		return
+	# Voador atingido no ar: DERRUBADO — cai (gravidade liga) e fica vulnerável.
+	if fly_height > 0.0 and not is_on_floor():
+		_downed = maxf(_downed, 1.4)
+	_champion_fury_check()
 
-	if is_boss_enemy and phase == 1 and not health.is_dead() and health.current_health <= health.max_health / 2:
-		_enter_phase2()
+	if is_boss_enemy and not health.is_dead() and _boss_phase_check():   # chefes6
+		return
+	if brain != null and not brain.flinch(damage, launcher_hit):   # chefes6: postura
 		return
 	# Elite e chefe têm armadura durante o telegrafo (não são interrompidos).
 	if estate == EState.WINDUP and (is_elite or is_boss_enemy):
 		return
+	if estate == EState.STRIKE and is_champion:
+		return                            # Campeão: o golpe que saiu não é cortado
 	attack_hitbox.deactivate()
+	_interrupt_move()
 	estate = EState.HURT
-	attack_timer = 0.25
+	attack_timer = 0.25 + _stun_extra
+	_stun_extra = 0.0
 	if health.is_dead():
 		return
 	# LANÇADOR: joga o inimigo pro alto (chefes não sobem; gigantes sobem pouco).
@@ -1034,6 +1275,9 @@ func stagger() -> void:
 	if estate == EState.DEAD:
 		return
 	attack_hitbox.deactivate()
+	_interrupt_move()
+	if fly_height > 0.0:
+		_downed = maxf(_downed, 1.6)     # aparar um voador o derruba
 	estate = EState.STAGGER
 	attack_timer = 0.7
 	_tint_base = Color(1, 1, 1, 1)
@@ -1050,11 +1294,17 @@ func stagger() -> void:
 
 
 func _on_died() -> void:
+	# chefes6: a morte de chefe vira um MOMENTO (BossBrain.death_sequence); no fim
+	# ela chama _on_died de novo e o caminho normal (recompensa, defeated, gibs) segue.
+	if brain != null and not revivable and brain.hold_death():
+		return
 	if estate == EState.DEAD:
 		return
 	estate = EState.DEAD
 	_tint_base = Color(1, 1, 1, 1)
 	_set_rim(0.0)
+	EnemyAggro.release(self)
+	tele_target = Vector2.INF
 	contact_hitbox.monitoring = false
 	attack_hitbox.monitoring = false
 	# som e explosão de morte por porte
@@ -1181,10 +1431,20 @@ func _flash(color: Color, vibrate: float = 0.0) -> void:
 	if visual == null:
 		return
 	var k: float = Juice.flash_strength(self, is_boss_enemy)
-	_flash_col = Color(1, 1, 1, 1).lerp(color, k)
-	_flash_col.a = 1.0
-	_flash_t = 0.0
-	visual.modulate = Color(_flash_col.r, _flash_col.g, _flash_col.b, visual.modulate.a)
+	var peak: float = maxf(color.r, maxf(color.g, color.b))
+	# Onda 6 (QA2 #8): flash CLARO = camada ADITIVA curta por cima da pintura
+	# (como o da Sophia) — o corpo não vira mais silhueta branca chapada.
+	if peak > 1.0 and _flash_layer != null and is_instance_valid(_flash_layer) and _flash_layer.usable():
+		var hue := Color(color.r / peak, color.g / peak, color.b / peak, 1.0)
+		_flash_layer.fire(hue, FLASH_ADD * k * clampf((peak - 1.0) / 2.0, 0.35, 1.0))
+	else:
+		if peak > 1.0:
+			# sem malha pintada (procedural/boneco): clareia pouco, não estoura
+			color = Color(1, 1, 1, 1).lerp(color, 0.3)
+		_flash_col = Color(1, 1, 1, 1).lerp(color, k)
+		_flash_col.a = 1.0
+		_flash_t = 0.0
+		visual.modulate = Color(_flash_col.r, _flash_col.g, _flash_col.b, visual.modulate.a)
 	if vibrate > 0.0:
 		_vib_amp = vibrate / maxf(1.0, _art_scale * 0.7)   # gigante treme menos
 		_vib_until_ms = Time.get_ticks_msec() + 250
@@ -1235,6 +1495,9 @@ func _process(delta: float) -> void:
 		elif _vib_seen or now > _vib_until_ms:
 			_vib_amp = 0.0
 			_vib_offset(Vector2.ZERO)
+	# a camada do flash copia o corpo já tremido
+	if _flash_layer != null and is_instance_valid(_flash_layer):
+		_flash_layer.tick(real_dt)
 
 
 ## Desloca só o desenho (hurtbox e colisão ficam paradas). O y-base do visual
@@ -1242,3 +1505,812 @@ func _process(delta: float) -> void:
 func _vib_offset(o: Vector2) -> void:
 	visual.position += o - _vib_cur
 	_vib_cur = o
+
+
+# =============================================================================
+# ONDA 6 (inimigos6) — repertório por tipo, voadores, reflexos, elite, fila.
+# Os chefes NÃO passam por aqui (moves vazio): seguem no `style`/`kit` acima.
+# =============================================================================
+
+var _evade_t: float = 0.0
+var _stun_extra: float = 0.0
+
+
+## Voando agora? (derrubado ou pousado = não; aí a gravidade volta)
+func _flying() -> bool:
+	return fly_height > 0.0 and estate != EState.DEAD and _downed <= 0.0 and _perched <= 0.0
+
+
+## Contrato com o level6 (Level._is_flyer): voador de verdade (paira alto) nasce
+## no ALTO da arena. O Fantasma (flutua a ~24 px) nasce no chão.
+func is_flyer() -> bool:
+	return fly_height > 40.0
+
+
+## Voador no chão (derrubado/pousado) — a EnemyOverlay esconde as asas.
+func is_downed() -> bool:
+	return _downed > 0.0 or _perched > 0.0
+
+
+## Relógios do repertório, regeneração de elite.
+func _tick_onda6(delta: float) -> void:
+	if moves.is_empty() or estate == EState.DEAD:
+		return
+	for k in _mv_cd.keys():
+		_mv_cd[k] = maxf(0.0, float(_mv_cd[k]) - delta)
+	_react_cd -= delta
+	_intent_t -= delta
+	_orbit_t += delta
+	if _downed > 0.0:
+		_downed -= delta
+	if _perched > 0.0:
+		_perched -= delta
+	if elite_mod == "regen" and health != null:
+		_regen_idle += delta
+		if _regen_idle > 1.5 and health.current_health < health.max_health:
+			_regen_acc += float(health.max_health) * 0.03 * delta
+			var n := int(_regen_acc)
+			if n > 0:
+				_regen_acc -= float(n)
+				health.heal(n)
+				if visual:
+					visual.damage_ratio = 1.0 - float(health.current_health) / maxf(1.0, float(health.max_health))
+
+
+## Voador: paira `fly_height` acima do chão (ou da Sophia, se ela estiver num
+## plano mais alto), com um balanço leve. No mergulho/rasante quem manda é o golpe.
+func _hover(_delta: float) -> void:
+	if fly_height <= 0.0:
+		return
+	_ground_origin = _ray_floor(global_position)
+	if not _flying():
+		return
+	if estate == EState.STRIKE and String(_mv.get("kind", "")) in ["dive", "glide"]:
+		return
+	# referência = o chão DA SOPHIA (se ela pisa): sobre uma plataforma o voador
+	# não sobe junto com o chão debaixo dele (ficava fora de alcance)
+	var ref := _ground_origin
+	if player != null and is_instance_valid(player) and player.is_on_floor():
+		ref = player.global_position.y
+	var target := ref - fly_height + sin(_orbit_t * 2.2) * 5.0
+	velocity.y = clampf((target - global_position.y) * 5.0, -180.0, 180.0)
+
+
+## y que o corpo teria apoiado no chão logo abaixo de `from` (raio no mundo).
+func _ray_floor(from: Vector2) -> float:
+	var space := get_world_2d().direct_space_state
+	var q := PhysicsRayQueryParameters2D.create(from, from + Vector2(0, 700), 1, [get_rid()])
+	var hit := space.intersect_ray(q)
+	if hit.is_empty():
+		return from.y + fly_height
+	return float(hit.position.y) - 24.0 * scale.y
+
+
+## Altura dos pés da Sophia (para zonas, pilares e tiros que caem no chão).
+func _player_feet_y() -> float:
+	if player == null or not is_instance_valid(player):
+		return global_position.y + 24.0
+	if player.is_on_floor():
+		return player.global_position.y + 24.0
+	var space := get_world_2d().direct_space_state
+	var q := PhysicsRayQueryParameters2D.create(player.global_position, player.global_position + Vector2(0, 700), 1)
+	var hit := space.intersect_ray(q)
+	return float(hit.position.y) if not hit.is_empty() else player.global_position.y + 24.0
+
+
+## Estilo de animação do golpe em curso (a pose de cada tipo de ataque).
+func _anim_style() -> String:
+	if _mv.is_empty():
+		return attack_style
+	match String(_mv.kind):
+		"slam", "nova": return "slam"
+		"shot", "burst", "lob", "pillar", "summon": return "ranged"
+		"fissure": return "slam"
+		"rush", "dive", "glide", "leap": return "charge"
+	return "melee"
+
+
+## CHASE com repertório: reflexo → escolhe golpe (se a fila deixar) → move pelo papel.
+func _chase_moves(delta: float) -> void:
+	if not _rng_ready:
+		_rng_ready = true
+		_rng.seed = hash([type_id, GameManager.current_screen, int(global_position.x)])
+		cooldown_timer = _rng.randf_range(0.2, 0.9)   # a wave não ataca toda no mesmo quadro
+		_orbit_side = 1.0 if _rng.randf() < 0.5 else -1.0
+	var dx := player.global_position.x - global_position.x
+	var adx := absf(dx)
+	var dyv := player.global_position.y - global_position.y
+	if visual and dx != 0.0:
+		visual.scale.x = absf(visual.scale.x) * signf(dx)
+	if _evade_t > 0.0:
+		_evade_t -= delta
+		return
+	if _react(dx, dyv):
+		return
+	# atirador com a Sophia colada: quase não espera — empurra/explode e foge
+	if role == "shooter" and adx < 70.0:
+		cooldown_timer = minf(cooldown_timer, 0.15)
+	if cooldown_timer <= 0.0 or _counter:
+		# INTENÇÃO: decide o golpe primeiro e só então chega na distância dele
+		# (antes ele soltava sempre o que coubesse onde estava — o de meia
+		# distância ganhava sempre e o combo de perto quase nunca saía).
+		if _intent.is_empty() or _intent_t <= 0.0 or float(_mv_cd.get(_intent.id, 0.0)) > 0.0:
+			_intent = _pick_move(adx, dyv, true)
+			_intent_t = 2.5
+		var mv: Dictionary = _intent if not _intent.is_empty() and _in_range(_intent, adx, dyv) else {}
+		if mv.is_empty() and _counter:
+			mv = _pick_move(adx, dyv)
+		if not mv.is_empty() and EnemyAggro.request(self, is_champion or _counter):
+			_counter = false
+			_intent = {}
+			_start_move(mv)
+			return
+	if rooted_timer > 0.0:
+		velocity.x = 0.0
+		return
+	var spd := move_speed * (0.5 if slow_timer > 0.0 else 1.0)
+	var tx := _desired_x(dx, adx)
+	velocity.x = clampf((tx - global_position.x) * 4.0, -spd, spd)
+	if fly_height <= 0.0:
+		velocity.x += _separation()
+
+
+## Para onde andar, pelo PAPEL: tanque cola na frente, atirador fica atrás,
+## flanqueador dá a volta, voador orbita por cima; quem está sem a vez (fila)
+## espera numa "roda" a ~80 px, balançando — e não empilha em cima da Sophia.
+func _desired_x(dx: float, adx: float) -> float:
+	var px := player.global_position.x
+	var side := -signf(dx) if dx != 0.0 else _orbit_side
+	match role:
+		"flyer":
+			if fmod(_orbit_t, 5.5) < get_physics_process_delta_time():
+				_orbit_side = -_orbit_side          # troca de lado: passa por cima dela
+			return px + _orbit_side * (100.0 + 25.0 * sin(_orbit_t * 0.8))
+		"shooter":
+			if adx < 120.0:
+				return px + side * 175.0
+			if adx > 240.0:
+				return px + side * 200.0
+			return global_position.x
+	var waiting: bool = cooldown_timer > 0.0 or (EnemyAggro.count() >= EnemyAggro.MAX_ATTACKERS and not EnemyAggro.holds(self))
+	var ring := 34.0 if role == "tank" else 40.0
+	if not _intent.is_empty():
+		ring = clampf((float(_intent.rmin) + float(_intent.rmax)) * 0.5, 22.0, 140.0)
+	if waiting:
+		ring = (54.0 if role == "tank" else 80.0) + sin(_orbit_t * 1.7 + float(get_instance_id() % 7)) * 14.0
+	if role == "skirm":
+		# flanco: se um aliado já ocupa o meu lado, vou pelo outro
+		for e in get_tree().get_nodes_in_group("enemy"):
+			if e == self or not (e is Enemy) or e.estate == EState.DEAD or e.fly_height > 0.0:
+				continue
+			var ex: float = e.global_position.x - px
+			if signf(ex) == side and absf(ex) < adx and absf(ex) < 90.0:
+				side = -side
+				break
+	return px + side * ring
+
+
+## Cabe agora? (faixa de distância e de altura do golpe)
+func _in_range(m: Dictionary, adx: float, dyv: float) -> bool:
+	if adx < float(m.rmin) or adx > float(m.rmax):
+		return false
+	if bool(m.air):
+		return _flying()
+	var vmax := 60.0 if String(m.kind) in ["swing", "combo", "grab", "rush", "slam", "nova", "explode", "leap"] else 200.0
+	return absf(dyv) <= vmax
+
+
+## Golpe sorteado pelo peso entre os prontos. `as_intent` = pode estar fora do
+## alcance agora (ele anda até lá) — menos para atirador/voador e para os golpes
+## de reação (nova/explosão), que só valem se já couberem.
+func _pick_move(adx: float, dyv: float, as_intent: bool = false) -> Dictionary:
+	var flying := _flying()
+	var pool: Array = []
+	var total := 0.0
+	for m in moves:
+		if float(_mv_cd.get(m.id, 0.0)) > 0.0:
+			continue
+		if bool(m.air) and not flying:
+			continue
+		var kind := String(m.kind)
+		var must_fit: bool = not as_intent or role in ["shooter", "flyer"] or kind in ["nova", "explode"]
+		if must_fit and not _in_range(m, adx, dyv):
+			continue
+		if as_intent and kind in ["nova", "explode"]:
+			return m                      # golpe de reação que já cabe: é ele
+		if kind == "summon":
+			_prune_minions()
+			if _minions.size() >= 3:
+				continue
+		pool.append(m)
+		total += _move_weight(m)
+	if pool.is_empty():
+		return {}
+	var r := _rng.randf() * total
+	for m in pool:
+		r -= _move_weight(m)
+		if r <= 0.0:
+			return m
+	return pool[pool.size() - 1]
+
+
+## Peso no sorteio: o golpe que acabou de sair pesa 1/3 (não repete à toa —
+## "sempre a mesma coisa" era a queixa) e o que ainda não saiu nesta luta, 1,5×.
+func _move_weight(m: Dictionary) -> float:
+	var w := float(m.w)
+	if String(m.id) == _last_mv_id:
+		w *= 0.33
+	elif not used_moves.has(m.id):
+		w *= 1.5
+	return w
+
+
+var _last_mv_id: String = ""
+var _intent: Dictionary = {}          # golpe decidido, ainda chegando na distância
+var _intent_t: float = 0.0
+
+## Começa o golpe: marca, arma a recarga, aviso (cor/linha) e o telegrafo.
+func _start_move(mv: Dictionary) -> void:
+	_mv = mv
+	_last_mv_id = String(mv.id)
+	used_moves[mv.id] = int(used_moves.get(mv.id, 0)) + 1
+	_mv_cd[mv.id] = float(mv.cd)
+	_combo_left = int(mv.hits) - 1
+	var fast: bool = elite_mod == "furia" or _champ_fury
+	wind_up = float(mv.wind) * (0.85 if fast else 1.0)
+	attack_hitbox.unblockable = is_elite or bool(mv.unb) or behavior == "exploder"
+	tele_target = Vector2.INF
+	var kind := String(mv.kind)
+	if kind == "retreat":
+		# RECUO (atirador): salta pra trás, levanta poeira e volta a mirar — sem
+		# telegrafo porque não fere; devolve a vez na fila na hora.
+		var away := -1.0
+		if player != null and is_instance_valid(player):
+			away = -signf(player.global_position.x - global_position.x)
+		velocity.x = away * 310.0
+		if is_on_floor():
+			velocity.y = -170.0
+		_evade_t = 0.35
+		VfxLibrary.dust(get_parent(), global_position + Vector2(0, 22.0 * _art_scale))
+		EnemyAggro.release(self)
+		_mv = {}
+		cooldown_timer = 0.35
+		return
+	if kind == "blink" and player != null and is_instance_valid(player):
+		# aparece ATRÁS da Sophia (do lado oposto ao que ela olha) e golpeia
+		_blink_to(player.global_position.x - float(player.facing) * 52.0)
+	_begin_windup()
+	_windup_track(true)
+
+
+## No telegrafo: vira pra Sophia e reajusta o alvo ATÉ abrir a janela de aparo
+## (GLINT_LEAD); dali em diante o alvo fica travado — dá pra ler e sair.
+func _windup_track(force: bool = false) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	if not force and attack_timer <= GLINT_LEAD:
+		return
+	var d := signf(player.global_position.x - global_position.x)
+	if d != 0.0:
+		atk_dir = int(d)
+		if visual:
+			visual.scale.x = absf(visual.scale.x) * d
+	match String(_mv.kind):
+		"dive", "leap":
+			tele_target = player.global_position + Vector2(0, 6)
+		"rush":
+			tele_target = global_position + Vector2(atk_dir * float(_mv.speed) * 0.42, 0)
+		"glide":
+			tele_target = Vector2(player.global_position.x + atk_dir * 90.0, player.global_position.y)
+
+
+## O golpe sai.
+func _strike_move() -> void:
+	var kind := String(_mv.kind)
+	attack_hitbox.damage = maxi(1, int(_hit_dmg * float(_mv.dmg)))
+	attack_hitbox.scale = Vector2.ONE
+	attack_hitbox.position = Vector2.ZERO
+	var hs := clampf(_art_scale, 0.7, 2.6)
+	strike_time = 0.16
+	match kind:
+		"swing", "combo", "blink":
+			var reach := float(_mv.reach)
+			attack_hitbox.scale = Vector2(reach, 1.0)
+			attack_hitbox.position.x = (18.0 + 12.0 * reach) * atk_dir * maxf(1.0, hs * 0.8)
+			attack_hitbox.activate()
+			var lunge := float(_mv.lunge)
+			if lunge <= 0.0 and kind == "combo":
+				lunge = 70.0
+			velocity.x = atk_dir * lunge
+			strike_time = 0.22 if lunge > 100.0 else (0.13 if kind == "combo" else 0.16)
+		"grab":
+			attack_hitbox.position.x = 22.0 * atk_dir * maxf(1.0, hs * 0.8)
+			attack_hitbox.activate()
+			velocity.x = atk_dir * 170.0
+			strike_time = 0.24
+		"rush":
+			attack_hitbox.activate()
+			velocity.x = atk_dir * float(_mv.speed)
+			strike_time = 0.42
+		"leap":
+			var ldx: float = atk_dir * 100.0
+			if tele_target != Vector2.INF:
+				ldx = tele_target.x - global_position.x
+			ldx = clampf(ldx, -190.0, 190.0)
+			velocity = Vector2(ldx / 0.5, -330.0)
+			attack_hitbox.activate()
+			strike_time = 0.9
+		"slam":
+			var rad := 70.0 * maxf(1.0, hs * 0.8)
+			AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, rad, eye_color)
+			Juice.shake(0.35)
+			attack_hitbox.scale = Vector2(2.6, 1.0)
+			attack_hitbox.activate()
+			if bool(_mv.get("waves", false)):
+				_wave_pair()
+			strike_time = 0.18
+		"nova":
+			var nr := float(_mv.get("radius", 64.0)) * maxf(1.0, hs * 0.7)
+			var np := global_position + Vector2(0, -8.0 * _art_scale)
+			AoeNova.spawn(get_parent(), np, 0, nr, eye_color)
+			Juice.shake(0.3)
+			if player != null and is_instance_valid(player) and absf(player.global_position.x - np.x) <= nr and absf(player.global_position.y - global_position.y) < 70.0:
+				player._on_hit_received(attack_hitbox.damage, np, 260.0, attack_hitbox.unblockable, self)
+			strike_time = 0.2
+		"shot":
+			_fire_shots()
+			strike_time = 0.18
+		"burst":
+			# RAJADA: N setas em sequência, cada uma mirada de novo
+			_burst_left = int(_mv.count)
+			_burst_t = 0.0
+			strike_time = float(_burst_left) * 0.14 + 0.1
+		"fissure":
+			# FISSURA: lâmina rasteira pelo chão na direção dela (pula-se)
+			_ground_spike(atk_dir)
+			strike_time = 0.2
+		"lob":
+			_lob()
+			strike_time = 0.2
+		"pillar":
+			_pillars()
+			strike_time = 0.25
+		"dive":
+			var to := global_position + Vector2(atk_dir * 120.0, 120.0)
+			if tele_target != Vector2.INF:
+				to = tele_target
+			velocity = (to - global_position).normalized() * 440.0
+			attack_hitbox.scale = Vector2(1.2, 1.3)
+			attack_hitbox.activate()
+			strike_time = 0.9
+		"glide":
+			attack_hitbox.scale = Vector2(1.4, 1.0)
+			attack_hitbox.activate()
+			velocity.x = atk_dir * 330.0
+			strike_time = 0.8
+		"summon":
+			_summon("larva", 2)
+			strike_time = 0.25
+		"explode":
+			_explode()
+
+
+## Enquanto o golpe dura (investidas, saltos, mergulho, agarrão).
+var _burst_left: int = 0
+var _burst_t: float = 0.0
+
+func _strike_tick(delta: float) -> void:
+	match String(_mv.kind):
+		"burst":
+			_burst_t -= delta
+			if _burst_left > 0 and _burst_t <= 0.0:
+				_burst_left -= 1
+				_burst_t = 0.14
+				_fire_shots(1)
+		"rush":
+			velocity.x = atk_dir * float(_mv.speed)
+		"glide":
+			velocity.x = atk_dir * 330.0
+			var gy: float = global_position.y
+			if tele_target != Vector2.INF:
+				gy = tele_target.y
+			velocity.y = clampf((gy - global_position.y) * 6.0, -300.0, 300.0)
+		"dive":
+			if is_on_floor() or (attack_timer < strike_time - 0.05 and get_slide_collision_count() > 0):
+				# POUSO: poeira de choque e fica no chão (janela de castigo)
+				_perched = 1.0
+				AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, 44.0, eye_color)
+				Juice.shake(0.25)
+				_finish_strike(1.0)
+				return
+		"leap":
+			if attack_timer < strike_time - 0.12 and is_on_floor():
+				if bool(_mv.get("slam", false)):
+					AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, 56.0, eye_color)
+					Juice.shake(0.3)
+					if player != null and is_instance_valid(player) and absf(player.global_position.x - global_position.x) < 56.0 and absf(player.global_position.y - global_position.y) < 50.0:
+						player._on_hit_received(attack_hitbox.damage, global_position, 220.0, attack_hitbox.unblockable, self)
+				_finish_strike(0.45)
+				return
+		"grab":
+			if _grab_hold >= 0.0:
+				velocity.x = 0.0
+				_grab_hold -= delta
+				if _grab_hold <= 0.0:
+					_grab_throw()
+					_finish_strike(0.5)
+				return
+	attack_timer -= delta
+	if attack_timer <= 0.0:
+		_finish_strike(_recover_for(String(_mv.kind)))
+
+
+## Fim do golpe: próximo do combo (telegrafo curto) ou recuperação.
+func _finish_strike(rec: float) -> void:
+	attack_hitbox.deactivate()
+	attack_hitbox.scale = Vector2.ONE
+	if estate == EState.DEAD:
+		return
+	if _combo_left > 0:
+		_combo_left -= 1
+		wind_up = 0.24
+		_begin_windup()
+		return
+	estate = EState.RECOVER
+	attack_timer = rec * (0.8 if is_elite else 1.0)
+
+
+## Recuperação por tipo de golpe (a janela de castigo da Sophia).
+func _recover_for(kind: String) -> float:
+	match kind:
+		"combo", "rush", "nova", "grab": return 0.55
+		"slam": return 0.6
+		"shot": return 0.35
+		"burst": return 0.4
+		"fissure": return 0.45
+		"lob", "pillar", "glide", "summon": return 0.4
+		"leap": return 0.45
+		"dive": return 0.8
+	return 0.45
+
+
+## Fim do golpe: devolve a vez na fila e arma a espera pelo papel.
+func _end_move() -> void:
+	EnemyAggro.release(self)
+	_mv = {}
+	tele_target = Vector2.INF
+	_grab_hold = -1.0
+	var cd := 0.85
+	match role:
+		"shooter": cd = 1.15
+		"tank": cd = 1.0
+		"flyer": cd = 0.95
+		"skirm": cd = 0.7
+	if elite_mod == "furia" or _champ_fury:
+		cd *= 0.6
+	cooldown_timer = cd
+
+
+## Golpe cortado (tomou dano, aparado): solta a vez e a Sophia (se agarrava).
+func _interrupt_move() -> void:
+	if moves.is_empty():
+		return
+	EnemyAggro.release(self)
+	if _grab_hold >= 0.0 and player is Player:
+		player.root_timer = 0.0
+	_mv = {}
+	_combo_left = 0
+	_grab_hold = -1.0
+	tele_target = Vector2.INF
+	_guard_t = 0.0
+
+
+## REFLEXOS: a Sophia golpeia perto e de frente → às vezes ergue a guarda,
+## às vezes salta pra trás. Recarga de 1,5 s (não é parede: é leitura).
+func _react(dx: float, dyv: float) -> bool:
+	if guard_chance + evade_chance <= 0.0 or _react_cd > 0.0:
+		return false
+	if not (player is Player) or player.state != Player.State.ATTACK:
+		return false
+	if absf(dx) > 90.0 or absf(dyv) > 50.0 or _flying():
+		return false
+	if float(player.facing) != signf(-dx):
+		return false
+	_react_cd = 1.5
+	var r := _rng.randf()
+	if r < guard_chance:
+		estate = EState.GUARD
+		_guard_t = 0.6
+		guard_dir = int(signf(dx)) if dx != 0.0 else 1
+		velocity.x = 0.0
+		EnemyAggro.release(self)
+		used_moves["_guarda"] = int(used_moves.get("_guarda", 0)) + 1
+		return true
+	if r < guard_chance + evade_chance:
+		velocity.x = -signf(dx) * 300.0
+		if is_on_floor():
+			velocity.y = -150.0
+		_evade_t = 0.28
+		VfxLibrary.dust(get_parent(), global_position + Vector2(0, 22.0 * _art_scale))
+		used_moves["_esquiva"] = int(used_moves.get("_esquiva", 0)) + 1
+		return true
+	return false
+
+
+func _process_guard(delta: float) -> void:
+	velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
+	_guard_t -= delta
+	if _guard_t <= 0.0:
+		estate = EState.CHASE
+		if _counter:
+			cooldown_timer = 0.0
+
+
+## Golpe pesado na guarda: ela quebra (atordoa mais que um golpe comum).
+func _guard_break() -> void:
+	_guard_t = 0.0
+	_counter = false
+	_stun_extra = 0.6
+	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -14.0 * _art_scale), Color(0.75, 0.88, 1.0), true)
+	Juice.shake(0.25)
+
+
+## A bolha do elite estourou: atordoa (recompensa de insistir).
+func _barrier_break() -> void:
+	attack_hitbox.deactivate()
+	_interrupt_move()
+	estate = EState.STAGGER
+	attack_timer = 0.9
+	_stun_extra = 0.6
+	AoeNova.spawn(get_parent(), global_position + Vector2(0, -16.0 * _art_scale), 0, 50.0, Color(0.6, 0.8, 1.0))
+	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -16.0 * _art_scale), Color(0.6, 0.8, 1.0), true)
+	Juice.shake(0.3)
+	Audio.play_sfx_at("block", global_position)
+
+
+## Campeão a 50%: SEGUNDO FÔLEGO — fúria (mais rápido, menos espera).
+func _champion_fury_check() -> void:
+	if not is_champion or _champ_fury or moves.is_empty():
+		return
+	if health.current_health <= 0 or health.current_health > health.max_health / 2:
+		return
+	_champ_fury = true
+	elite_mod = "furia"
+	move_speed *= 1.2
+	Juice.shake(0.4)
+	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
+	_flash(Color(3.0, 2.0, 1.5, 1))
+
+
+## Modificador do Elite, fixo pela tela e pelo tipo (determinístico).
+func _pick_elite_mod() -> String:
+	var mods := ["escudo", "furia", "regen"]
+	return mods[(GameManager.current_screen + absi(type_id.hash())) % mods.size()]
+
+
+func _apply_elite_mod() -> void:
+	match elite_mod:
+		"escudo":
+			barrier_max = int(health.max_health * 0.4)
+			barrier = barrier_max
+		"furia":
+			move_speed *= 1.25
+
+
+## Camadas da Onda 6: flash aditivo (todo inimigo, inclusive chefes) e a
+## EnemyOverlay (asas/aura atrás, modificador/guarda/aviso na frente).
+func _setup_layers() -> void:
+	if visual == null:
+		return
+	var holder: Node = visual.get_parent()
+	_flash_layer = EnemyFlashLayer.new()
+	_flash_layer.name = &"FlashLayer"
+	_flash_layer.art = visual
+	holder.add_child(_flash_layer)
+	holder.move_child(_flash_layer, visual.get_index() + 1)
+	if moves.is_empty() and not is_elite and not is_champion:
+		return
+	var body: Node = holder if holder != self else visual
+	var back := EnemyOverlay.new()
+	back.name = &"OverlayBack"
+	back.enemy = self
+	back.front = false
+	add_child(back)
+	move_child(back, body.get_index())
+	var front := EnemyOverlay.new()
+	front.name = &"OverlayFront"
+	front.enemy = self
+	add_child(front)
+
+
+# --- golpes à distância ---------------------------------------------------
+
+## Tiro: 1 ou leque. Voando, MIRA na Sophia (de cima, na diagonal).
+func _fire_shots(override_n: int = 0) -> void:
+	var n := int(_mv.count) if override_n <= 0 else override_n
+	var spread := float(_mv.spread)
+	var origin := global_position + Vector2(16.0 * atk_dir, -8.0 * _art_scale)
+	var aimed := _flying() or bool(_mv.air) or String(_mv.kind) == "burst"
+	var base_dir := Vector2(atk_dir, 0)
+	if aimed and player != null and is_instance_valid(player):
+		base_dir = (player.global_position + Vector2(0, -4) - origin).normalized()
+	var feet := _player_feet_y()
+	for i in n:
+		var a := (float(i) - float(n - 1) * 0.5) * spread
+		var p := Projectile.new()
+		p.direction = atk_dir
+		p.damage = attack_hitbox.damage
+		p.speed = float(_mv.speed)
+		p.pierce = false
+		p.target_team = "player"
+		p.color = eye_color
+		p.lifetime = 1.8
+		if aimed or spread > 0.0:
+			p.aim = base_dir.rotated(a)
+		if aimed:
+			p.ground_y = feet + 4.0
+		p.look = String(_mv.get("look", "bolt" if String(_mv.kind) == "burst" else ""))
+		var hom := float(_mv.get("homing", 0.0))
+		if hom > 0.0:
+			p.homing = hom
+			p.homing_target = player
+			p.lifetime = 3.6
+			if p.aim == Vector2.ZERO:
+				p.aim = base_dir
+		match String(_mv.status):
+			"slow":
+				p.slow_time = 1.6
+				p.color = Color(0.75, 0.8, 1.0)
+			"root":
+				p.root_time = 0.8
+				p.color = Color(0.8, 0.8, 0.88)
+		get_parent().add_child(p)
+		p.global_position = origin
+
+
+## Arremesso em arco: cai onde a Sophia está e deixa a zona (veneno/sono).
+func _lob() -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	var g := 700.0
+	var t := 0.85
+	var origin := global_position + Vector2(10.0 * atk_dir, -14.0 * _art_scale)
+	var target := Vector2(player.global_position.x, _player_feet_y())
+	var v := Vector2((target.x - origin.x) / t, (target.y - origin.y - 0.5 * g * t * t) / t)
+	var p := Projectile.new()
+	p.direction = atk_dir
+	p.damage = attack_hitbox.damage
+	p.aim = v
+	p.speed = v.length()
+	p.arc_gravity = g
+	p.ground_y = target.y
+	p.land_kind = String(_mv.zone)
+	p.land_radius = 38.0
+	p.land_time = 2.6 if p.land_kind == "sleep" else 3.0
+	p.look = "seed"
+	p.pierce = false
+	p.target_team = "player"
+	p.color = Color(0.75, 1.0, 0.5) if p.land_kind == "poison" else Color(0.72, 0.78, 1.0)
+	p.lifetime = 2.2
+	get_parent().add_child(p)
+	p.global_position = origin
+
+
+## Colunas de luz: uma onde a Sophia está (e, com count 2, outra onde ela vai).
+func _pillars() -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	var feet := _player_feet_y()
+	var xs: Array = [player.global_position.x]
+	if int(_mv.count) >= 2:
+		xs.append(player.global_position.x + float(player.facing) * 72.0)
+	var lv := get_parent()
+	for x in xs:
+		var px: float = x
+		if lv != null and lv.has_method("arena_bounds"):
+			var b: Vector2 = lv.arena_bounds()
+			px = clampf(px, b.x + 20.0, b.y - 20.0)
+		HazardZone.pillar(get_parent(), Vector2(px, feet), 30.0, 0.72, attack_hitbox.damage, eye_color.lerp(Color.WHITE, 0.3))
+
+
+## Ondas rasteiras pros DOIS lados (pancadas de tanque/Campeão).
+func _wave_pair() -> void:
+	for dir in [1, -1]:
+		var p := Projectile.new()
+		p.direction = dir
+		p.damage = int(attack_hitbox.damage * 0.6)
+		p.speed = 230.0
+		p.pierce = false
+		p.target_team = "player"
+		p.color = eye_color
+		p.lifetime = 1.3
+		p.look = "spike"
+		get_parent().add_child(p)
+		p.global_position = global_position + Vector2(30.0 * dir, 14.0 * _art_scale)
+
+
+## Uma lâmina rasteira só, na direção da Sophia (fissura).
+func _ground_spike(dir: int) -> void:
+	var p := Projectile.new()
+	p.direction = dir
+	p.damage = attack_hitbox.damage
+	p.speed = 250.0
+	p.pierce = false
+	p.target_team = "player"
+	p.color = eye_color
+	p.lifetime = 1.4
+	p.look = "spike"
+	get_parent().add_child(p)
+	p.global_position = global_position + Vector2(26.0 * dir, 14.0 * _art_scale)
+
+
+# --- agarrão (aparável: amarelo) -----------------------------------------------
+
+## Pegou: a Sophia fica presa e, em 0,7 s, é arremessada. ESQUIVAR solta
+## (a esquiva quebra o agarrão e os i-frames dela anulam o arremesso).
+func _grab_start() -> void:
+	_grab_hold = 0.7
+	if player is Player:
+		player.root_timer = maxf(player.root_timer, 0.8)
+	Audio.play_sfx_at("rooted", global_position)
+	ImpactBurst.spawn(get_parent(), player.global_position + Vector2(0, -10), eye_color)
+
+
+func _grab_throw() -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	if absf(player.global_position.x - global_position.x) > 70.0:
+		return                     # ela escapou (esquiva)
+	var dmg := int(_hit_dmg * 0.9)
+	player._on_hit_received(dmg, global_position, 340.0, true, self)
+	Juice.shake(0.35)
+	if behavior == "leech":
+		health.heal(int(dmg * 0.6))
+
+
+# --- caixa de dano = corpo DESENHADO (playtest 2: "o cajado atravessa") ---------
+
+## A Hurtbox segue o quadro pintado que está na tela: altura do topo da cabeça
+## ao pé (`top`/`foot_y` do JSON do quadro), centrada na pélvis (`pelvis_x`),
+## largura ~metade do recorte (sem a arma/o pano solto) — e acompanha a mola do
+## corpo (`_body_xform`), o vira-lado e o voo. Sem quadros (procedural/boneco
+## antigo): fica a caixa do _fit_body. Suaviza 35 %/quadro (sem tremer).
+## API usada (leitura) do CharacterArt: _boss_db.meta, _shown_key, _body_xform —
+## pedido à Arte uma função oficial `body_rect()` (docs/pedidos/onda6_inimigos6.md).
+var hurt_rect: Rect2 = Rect2()        # última caixa (local do inimigo) — sonda/depuração
+
+func _fit_hurtbox() -> void:
+	if visual == null or estate == EState.DEAD or not visual.has_boss_frames():
+		return
+	var key: String = visual._shown_key
+	var cut := key.rfind(":")
+	if cut <= 0:
+		return
+	var meta: Dictionary = visual._boss_db.meta
+	var seq: Dictionary = meta.states.get(key.substr(0, cut), {})
+	var i := int(key.substr(cut + 1))
+	if seq.is_empty() or i < 0 or i >= seq.frames.size():
+		return
+	var e: Dictionary = seq.frames[i]
+	var fr: Dictionary = meta.frames.get(e.f, {})
+	if fr.is_empty() or not fr.has("top"):
+		return
+	var rr: Array = fr.rect
+	var anchor := Vector2(e.anchor[0], e.anchor[1])
+	var h: float = float(fr.foot_y) - float(fr.top)
+	var w: float = clampf(float(rr[2]) * 0.5, h * 0.3, h * 1.0)
+	var cx: float = float(fr.get("pelvis_x", float(rr[2]) * 0.5))
+	var a: Vector2 = Vector2(cx - w * 0.5, float(fr.top)) - anchor
+	var b: Vector2 = Vector2(cx + w * 0.5, float(fr.foot_y)) - anchor
+	var xf: Transform2D = visual.transform * visual._body_xform
+	var p1 := xf * a
+	var p2 := xf * b
+	var r := Rect2(p1, Vector2.ZERO).expand(p2)
+	if r.size.x < 4.0 or r.size.y < 4.0:
+		return
+	hurt_rect = r
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	var base: Vector2 = (shp.shape as RectangleShape2D).size
+	var want_s := Vector2(r.size.x / base.x, r.size.y / base.y)
+	shp.position = shp.position.lerp(r.get_center(), 0.35)
+	shp.scale = shp.scale.lerp(want_s, 0.35)
