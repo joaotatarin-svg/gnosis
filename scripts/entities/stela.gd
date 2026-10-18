@@ -194,6 +194,16 @@ func _draw() -> void:
 	draw_line(Vector2(0, -14), Vector2(0, -10), ink, 1.0, false)
 
 
+## Corpo da Estela para exibir: cada linha traduzida (i18n) e unidas por "\n".
+## O bloco inteiro não casa com a tabela (a chave é a linha) — no inglês o painel
+## e as Crônicas mostravam o corpo em português (achado da UI5).
+static func body_text(lines: Array) -> String:
+	var shown := PackedStringArray()
+	for ln in lines:
+		shown.append(I18n.t(String(ln)))
+	return "\n".join(shown)
+
+
 ## Painel de leitura da Estela: pausa o mundo, mostra título + linhas + fonte
 ## histórica; fecha com golpe leve / pulo / Enter / Esc.
 class StelaPanel extends CanvasLayer:
@@ -261,7 +271,8 @@ class StelaPanel extends CanvasLayer:
 
 		var body := Label.new()
 		var lines: Array = entry.get("lines", [])
-		body.text = "\n".join(PackedStringArray(lines))
+		body.text = Stela.body_text(lines)
+		body.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED   # já traduzido linha a linha
 		body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		body.custom_minimum_size = Vector2(text_w, 0)
 		body.add_theme_font_size_override("font_size", 11)
@@ -277,15 +288,30 @@ class StelaPanel extends CanvasLayer:
 		src.add_theme_color_override("font_color", CodexStyle.MUTED)
 		vbox.add_child(src)
 
+		# Rodapé: contagem das Crônicas + "fechar" com o ÍCONE do dispositivo em uso
+		# (Esc no teclado, B/Círculo no controle — QA2 #13); troca sozinho se ela
+		# mudar de teclado para controle com o painel aberto.
+		var foot_row := HBoxContainer.new()
+		foot_row.alignment = BoxContainer.ALIGNMENT_END
+		foot_row.add_theme_constant_override("separation", 18)
+		vbox.add_child(foot_row)
 		var foot := Label.new()
 		var n: int = Gnosis.chronicles_count()
 		var total: int = Gnosis.chronicles_total()
 		foot.text = ("• nova Crônica  %d/%d" % [n, total]) if fresh else ("Crônica %d/%d" % [n, total])
-		foot.text += "      %s fechar" % InputGlyphs.label("ui_cancel")
 		foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		foot.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		foot.add_theme_font_size_override("font_size", 9)
 		foot.add_theme_color_override("font_color", CodexStyle.GOLD if fresh else CodexStyle.MUTED)
-		vbox.add_child(foot)
+		foot_row.add_child(foot)
+		var close_hint := InputGlyphs.Hint.new()
+		close_hint.pairs = [["ui_cancel", "fechar"]]
+		close_hint.font_size = 9
+		close_hint.icon_h = 11.0
+		close_hint.align = 2
+		close_hint.color = CodexStyle.MUTED
+		close_hint.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		foot_row.add_child(close_hint)
 
 	func _process(delta: float) -> void:
 		if _guard > 0.0:

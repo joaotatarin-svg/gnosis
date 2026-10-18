@@ -1,0 +1,4 @@
+# Lote 13 — chefe (17/10/2026): nomes INTERNOS de nós do cenário (não visíveis); tradução idêntica.
+scenery.build_foreground.f7745e	Foreground
+scenery._add_column.cce016	FgColumn%d
+scenery._crop_x.90b7b7	%s:%d
