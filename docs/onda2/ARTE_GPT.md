@@ -290,3 +290,19 @@ era RGBA) — mesma escala/cor no recorte. GIFs: `gifs/harmas_andar_golpe_antes.
 ## Onda 6 — Rei revelado e retratos
 
 Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `extra_sheets` do Rei (escala auto 0,953 pela pose `revealed` × `idle_0`): estados `mask_crack`, `revealed`, `triumph`, `dominion`, `sinking` (`gifs/rei_revelado_estados.png`). Busto → `portraits/rei_revelado.png`. `retrato_cego_pequeno_a` (aprovada; a `_x` foi descartada pelo produtor) → 4 bustos `portraits/cego_pequeno_<humor>.png` (`gifs/retratos_rei_cego.png`). Ressalvas: fios finos de cabelo do Cego e o brilho do orbe/anéis do Rei guardam um tom rosado leve (despill forte já aplicado). Ligação: Pedidos 8 e 9.
+
+## Morte de chefe com peso + máscara presa ao quadro (Onda 6, feedback do João)
+
+- `CharacterArt.play_boss_death(cor)` (~1,9 s, só a PRÓPRIA pintura): cambaleio (quadro de dano, tremor, 2 lampejos)
+  → queda (quadro de morte, impacto, `Juice.shake`) → pausa dramática (luz do Éon vazando pela borda, contorno sobe a
+  2,2) → estilhaça em ~80 cacos TRIANGULARES do atlas com física, brilho que esquenta na cor do Éon, clarão radial e
+  faíscas (`ShatterLayer`) → sinal `death_finished`. Sem escala/"murcha" (PuppetQA confere: escala do corpo > 0,9 e
+  estilhaça + termina em todos os chefes). Ligação no `enemy.gd`: docs/pedidos/onda6_chefes6.md.
+- GIFs: `gifs/morte_chefes_antes.gif` (desmembra na hora em 3×3) × `gifs/morte_chefes_depois.gif` (Harmas, Armupiel, Rei).
+- Pedido à Produção: `C:\gnosis-wt\_gpt\out\PEDIDO_MORTE_CHEFES.md` (folha 2×2 por chefe: stagger_0, stagger_1, kneel,
+  collapse) — hoje cada chefe tem só 2 quadros para morrer.
+- **Máscara "solta"**: no jogo era o `_orb` (Sprite2D da pintura antiga flutuando ao lado do Rei, `enemy.gd`) →
+  pedido em docs/pedidos/onda6_inimigos6.md; na encenação, o rosto/rachadura/máscara do `_King` desenhados em ponto
+  FIXO sobre quadros que mudam → pedido em docs/pedidos/onda6_narrativa6.md (usar os estados pintados, ou
+  `art.head_point()`). Cada quadro de todo atlas de chefe/criatura agora tem `head` medido (JSON) e
+  `CharacterArt.head_point()` devolve a cabeça do quadro atual em coordenadas locais.
