@@ -1,0 +1,92 @@
+{
+ "_doc": "Fila 9: Acólito (atirador que foge) = en_alado_a (guardião alado com bastão-besta: rajada de dardos). Andarilho, não voa.",
+ "group": "creatures",
+ "sheet": "artes/gpt/en_alado_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_0",
+  "walk_0",
+  "walk_1",
+  "walk_2",
+  "windup",
+  "strike",
+  "hurt",
+  "death"
+ ],
+ "kind": "biped",
+ "body_px": 220,
+ "fit_override": {
+  "body_frac": 0.95,
+  "foot_gap": 0.0,
+  "dx": 0.0
+ },
+ "anchors": {
+  "death": "lying"
+ },
+ "anchor_fix": {},
+ "inbetween": {},
+ "flex": {},
+ "hem_wave": 0.0,
+ "states": {
+  "idle": {
+   "frames": [
+    "idle_0"
+   ]
+  },
+  "walk": {
+   "frames": [
+    "walk_0",
+    "walk_1",
+    "walk_2"
+   ],
+   "cycle_bodies": 0.9
+  },
+  "windup": {
+   "frames": [
+    "windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "windup_cast": {
+   "frames": [
+    "windup"
+   ]
+  },
+  "cast": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "recover": {
+   "frames": [
+    "strike",
+    "idle_0"
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ }
+}

@@ -44,6 +44,7 @@ func _ready() -> void:
 		"rim_board": await _rim_board()
 		"weapon_board": await _weapon_board()
 		"bot_board": await _bot_board()
+		"own_board": await _own_board(args.size() >= 3 and args[2] == "champ")
 		"film_walk": _film_walk(args.slice(2))
 		"film_death": _film_death(args.slice(2), false)
 		"film_death_old": _film_death(args.slice(2), true)
@@ -575,6 +576,59 @@ func _bot_board() -> void:
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://bot_board.png")
+	get_tree().quit()
+
+
+## Dono falso do desenho (o CharacterArt lê `type_id`/`is_champion` do pai).
+class FakeHost extends Node2D:
+	var type_id: String = ""
+	var is_champion: bool = false
+
+
+## Fila 9: inimigos com ARTE PRÓPRIA. Coluna por tipo; linhas: ANTES (o
+## interino de hoje: pintura de outra criatura + tinta do tipo) e DEPOIS
+## (parado, preparo, golpe/tiro, morte). `champ` = os 7 Campeões de Éon.
+func _own_board(champ: bool) -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	RenderingServer.set_default_clear_color(Color("3a4450"))
+	var ids: Array = Bestiary.EON_BOTS if champ else ["espectro", "alado", "acolito", "cornudo", "fantasma"]
+	var rows := [["antes", "idle"], ["parado", "idle"], ["preparo", "windup"], ["golpe", "attack"], ["tiro", "cast"], ["morte", "dead"]]
+	var colw: float = 1240.0 / ids.size()
+	for b in ids.size():
+		var id: String = String(ids[b])
+		var def: Dictionary = Bestiary.get_type(id)
+		var cx: float = 40.0 + colw * (b + 0.5)
+		for i in rows.size():
+			var host := FakeHost.new()
+			host.type_id = id
+			host.is_champion = champ
+			add_child(host)
+			var art := CharacterArt.new()
+			if i == 0:
+				add_child(art)       # sem dono = o interino (pintura trocada pelo Bestiary)
+			else:
+				host.add_child(art)
+			art.set_profile(def.profile)
+			if i == 0 and def.has("tint"):
+				art.self_modulate = def.tint
+			var sc: float = 1.15 * (1.35 if champ else 1.0)
+			art.scale = Vector2(sc, sc)
+			var gy: float = 100.0 + i * 118.0
+			host.position = Vector2(cx, gy) - Vector2(0, CharacterArt.GROUND_Y * art.profile.height / 44.0 * sc)
+			if i == 0:
+				art.position = host.position
+			art.set_process(false)
+			art.set_anim(String(rows[i][1]))
+			art.pose_progress = 0.8 if rows[i][1] in ["windup", "attack", "cast"] else -1.0
+			for f in (6 if rows[i][1] == "dead" else 40):
+				art._process(1.0 / 60.0)
+			if b == 0:
+				_label(String(rows[i][0]), Vector2(4, gy - 60))
+		_label(("Campeão " if champ else "") + id, Vector2(cx - 50, 4))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://own_board.png")
 	get_tree().quit()
 
 

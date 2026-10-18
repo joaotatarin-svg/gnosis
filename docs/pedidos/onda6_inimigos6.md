@@ -83,3 +83,25 @@ estados idle · walk(4) · windup · attack · recover · hurt · dead). Uma cri
 ## → Estab5 (QA)
 1. Incluir `res://tools/inimigos6/EnemyProbe.tscn` no `validate.ps1` (headless, `--fixed-fps 60`, ~90 s, sai 0/1).
 2. BalanceBot: rodar r9 com a vida nova; o bot não pula — contra voadores depende do mergulho/rasante.
+
+## Arte PRÓPRIA dos inimigos novos e dos Campeões — de: arte (Fila 9, 18/10/2026, branch dir2/arte-gpt)
+Ligado no `PaintedLibrary.character(p, ctx)`: o `CharacterArt` lê `type_id`/`is_champion` do Enemy dono (pai ou avô)
+e escolhe o atlas `creatures/<x>` quando ele existe (senão, o interino de hoje continua):
+| tipo do Bestiary | folha do GPT | atlas |
+|---|---|---|
+| espectro (Espectro Mergulhador, voador) | fly_mariposa_a (pó do sono apagado → partícula no `cast`) | creatures/en_espectro |
+| alado (Vigia Alado, voador que atira de cima) | fly_sentinela_a (olho orbital, raio dourado no `cast`) | creatures/en_alado |
+| acolito (atirador que foge) | en_alado_a (guardião alado com bastão-besta, rajada de dardos; anda) | creatures/en_acolito |
+| cornudo | en_cornudo_a | creatures/en_cornudo |
+| fantasma | en_fantasma_b (fundo verde; `dodge` = some/aparece) | creatures/en_fantasma |
+| Campeão do Éon (is_champion) | champ_<n>_<bot>_a | creatures/champ_<bot> |
+OBS: a folha `en_alado_a` (andarilho) foi para o ACÓLITO porque o Vigia Alado de vocês VOA e atira de cima — a sentinela
+faz isso. Se preferirem outra troca, é uma linha em `PaintedLibrary.OWN_ART`.
+Estados usados: idle, walk, windup, attack, charge (mergulho/rasante), windup_cast, cast (tiro), recover, hurt, dead
+(+ dodge no fantasma). Pedidos:
+1. **Tinta/graduação do interino**: com arte própria elas desbotam/tingem a pintura certa. Hoje o `CharacterArt` desfaz
+   sozinho no 1º quadro (`self_modulate` volta a branco mantendo o alfa; `grade_*` do Rim neutros) — mas o certo é o
+   Enemy pular: `if visual.has_method("has_own_art") and visual.has_own_art(): (não aplica def.tint nem _body_grade)`.
+   E podem tirar os `_art_as`/`_grade` de espectro/alado/acolito/cornudo/fantasma no bestiary quando integrarem.
+2. Campeão: o diadema/aura de vocês continua por cima (a arte é o campeão inteiro, mais ornado que o bot).
+Prova: `C:\gnosis-wt\_caps\arte-gpt\fila9\own_board.png` e `own_board_champ.png` (AnimQA `-- own_board x [champ]`).

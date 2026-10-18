@@ -66,7 +66,13 @@ def key_array(c: np.ndarray):
 	border = np.concatenate([c[:4].reshape(-1, 3), c[-4:].reshape(-1, 3), c[:, :4].reshape(-1, 3), c[:, -4:].reshape(-1, 3)])
 	K = np.median(border, 0)
 	r, g, b = c[..., 0], c[..., 1], c[..., 2]
-	s = np.minimum((r - g) / max(1.0, K[0] - K[1]), (b - g) / max(1.0, K[2] - K[1]))
+	# FUNDO VERDE (Fila 9: en_fantasma_b ≈ 2,250,1 — a fumaça violeta some no
+	# magenta): a "cor de fundo" é o verde acima do maior entre r e b
+	green = K[1] > K[0] + 60 and K[1] > K[2] + 60
+	if green:
+		s = (g - np.maximum(r, b)) / max(1.0, K[1] - max(K[0], K[2]))
+	else:
+		s = np.minimum((r - g) / max(1.0, K[0] - K[1]), (b - g) / max(1.0, K[2] - K[1]))
 	a = np.clip((S_BG - s) / (S_BG - S_OPAQUE), 0.0, 1.0)
 	# ruído do fundo: componentes minúsculas com alfa baixo somem
 	a[a < 0.04] = 0.0
@@ -81,12 +87,20 @@ def key_array(c: np.ndarray):
 	a = np.where(touch, np.minimum(a, 0.5 * a + 0.5 * a_min) * 0.85, a)
 	# despill residual na borda: tira o tom magenta (r e b acima do g)
 	edge = (a < 0.999) | ndimage.binary_dilation(touch, iterations=2)
-	m = np.minimum(F[..., 0], F[..., 2]) - F[..., 1]
-	spill = np.clip(m - 18.0, 0.0, None) * edge
-	F[..., 0] -= spill
-	F[..., 2] -= spill
-	# a desmistura não pode inventar verde (r,b caíram demais): g <= max(r,b)
-	F[..., 1] = np.where(edge, np.minimum(F[..., 1], np.maximum(F[..., 0], F[..., 2]) + 4.0), F[..., 1])
+	if green:
+		# despill do verde: na borda e no translúcido (fumaça) g não passa da
+		# MÉDIA de r e b — o verde que vazou vira cinza/violeta, não verde-água
+		# (e em QUALQUER pixel onde o verde passa do vermelho: o GPT pinta o
+		# reflexo do fundo verde na fumaça; dourado tem r > g e fica intacto)
+		cap = 0.5 * (F[..., 0] + F[..., 2]) + 4.0
+		F[..., 1] = np.where(edge | (F[..., 1] > F[..., 0]), np.minimum(F[..., 1], cap), F[..., 1])
+	else:
+		m = np.minimum(F[..., 0], F[..., 2]) - F[..., 1]
+		spill = np.clip(m - 18.0, 0.0, None) * edge
+		F[..., 0] -= spill
+		F[..., 2] -= spill
+		# a desmistura não pode inventar verde (r,b caíram demais): g <= max(r,b)
+		F[..., 1] = np.where(edge, np.minimum(F[..., 1], np.maximum(F[..., 0], F[..., 2]) + 4.0), F[..., 1])
 	F = np.clip(F, 0.0, 255.0)
 	# pixel muito transparente tem cor desmisturada ruidosa: puxa pra cor do
 	# vizinho sólido mais próximo (fio de cabelo continua da cor do cabelo)
