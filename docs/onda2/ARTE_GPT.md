@@ -107,6 +107,22 @@ mostra o nome do Colosso desde o início. Não é arte → Pedido 4.
    mão → erguido → aninhado (quando já está na mão dela, escala < 0,8). Para travar uma pose:
    `_little.set_anim("curled"|"trembling"|"look_up"|"reach"|"lifted"|"nestled")`. Prova:
    `gifs/cego_pequeno_prancha.png` (AnimQA `-- cego_board`).
+8. **ENCENAÇÃO (narrativa6, `staging.gd`, roubo/tela 64 — o "disco preto")**: o rosto revelado hoje é o `_blind`
+   (oval preto + olho branco desenhados por cima, `_King._draw_over`, ~linha 1135). O atlas do Rei agora tem
+   os estados pintados, mesma escala e lugar do Rei: `mask_crack` (mão no rosto, máscara rachando), `revealed`
+   (vazio escuro com UM olho âmbar), `triumph` (orbe-olho ao alto), `dominion` (mão puxando os 7 anéis),
+   `sinking` (afundando em rachaduras de luz). Uso, no `_King`:
+   - `drop_mask(t)`: `art.set_anim("mask_crack")` e, ~0,3 s depois, `art.set_anim("revealed")`; **não desenhar
+     mais o bloco `if _blind > 0.0:`** quando `art.has_boss_frames()` (é ele o disco preto); a máscara caindo
+     (`_mask_off`) pode ficar.
+   - durante o roubo dos anéis (gemas indo para `hand()`): `art.set_anim("dominion")`; triunfo: `"triumph"`
+     (esconder o `orb` Sprite2D nesse estado — o orbe já está pintado no quadro).
+   - `collapse(t)`: `art.set_anim("sinking")` no lugar do `scale:y` 0,2 (ou junto, mais curto).
+   - Fala "…mãe?" (cena D, tela 68): retrato `res://assets/painted/derived/portraits/cego_pequeno_olhando.png`.
+9. **UI (retratos do diálogo)**: novos bustos RGBA em `res://assets/painted/derived/portraits/`:
+   `rei_revelado.png` (Rei sem máscara, olho âmbar — falas depois do roubo) e `cego_pequeno_assustado.png`,
+   `cego_pequeno_olhando.png`, `cego_pequeno_sereno.png`, `cego_pequeno_aninhado.png` (o "pequeno" da cena D,
+   por humor). Gerador: `tools/anim_bosses/portraits.py`.
 ## Criaturas (bloco extra, mesmo pipeline)
 
 Folhas `cri_<n>_<nome>` do produtor (2×4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt,
@@ -270,3 +286,7 @@ era RGBA) — mesma escala/cor no recorte. GIFs: `gifs/harmas_andar_golpe_antes.
 
 **Bloco 8: chefes Armupiel, Colosso, Rei (padrão C; Rei com fundo rosa).** Escalas 1,000 / 0,998 / 1,002. Quadros `gifs/chefes_motion_3.png`; GIFs `gifs/arconte_coroa_andar_golpe_depois.gif`, `gifs/rei_final_andar_golpe_depois.gif`. **FILA 7 completa:** 9 chefes, 6 criaturas, 7 bots e a Sophia (S15/S16) com intermediários desenhados; nenhuma folha foi para o REFAZER.
 
+
+## Onda 6 — Rei revelado e retratos
+
+Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `extra_sheets` do Rei (escala auto 0,953 pela pose `revealed` × `idle_0`): estados `mask_crack`, `revealed`, `triumph`, `dominion`, `sinking` (`gifs/rei_revelado_estados.png`). Busto → `portraits/rei_revelado.png`. `retrato_cego_pequeno_a` (aprovada; a `_x` foi descartada pelo produtor) → 4 bustos `portraits/cego_pequeno_<humor>.png` (`gifs/retratos_rei_cego.png`). Ressalvas: fios finos de cabelo do Cego e o brilho do orbe/anéis do Rei guardam um tom rosado leve (despill forte já aplicado). Ligação: Pedidos 8 e 9.

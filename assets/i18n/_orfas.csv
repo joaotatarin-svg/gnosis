@@ -1,13 +1,13 @@
 id,pt,en,kind,speaker,limit,where,note
 narrative.apply_ending.48b169,"Toda faísca voltou à Fonte. O Kenoma se desfez como um sonho ao acordar.
 Verdade inteira. Mundo nenhum.","Each spark returned to the Source. The Kenoma faded like dreams at dawn.
-The whole truth. No world at all.",card_cinema,,240,scripts/autoload/narrative.gd:661,
+The whole truth. No world at all.",card_cinema,,240,scripts/autoload/narrative.gd:665,
 narrative.apply_ending.994a4b,"Sophia sentou-se no trono ainda morno. A coroa serviu.
 Ninguém mais seria abandonado. Ninguém mais sairia.","Sophia sat on the still-warm throne. The crown fit.
-No one would be abandoned again. No one would ever leave.",card_cinema,,240,scripts/autoload/narrative.gd:665,
+No one would be abandoned again. No one would ever leave.",card_cinema,,240,scripts/autoload/narrative.gd:669,
 narrative.apply_ending.5cccea,"Sophia recusou o trono e a porta. Desceu de volta, de faísca em faísca.
 Sem apocalipse e sem prisão: liberdade lenta, a única que dura.","Sophia refused throne and door. She went back down, spark by spark.
-No apocalypse and no prison: a slow freedom, the only kind that lasts.",card_cinema,,240,scripts/autoload/narrative.gd:669,
+No apocalypse and no prison: a slow freedom, the only kind that lasts.",card_cinema,,240,scripts/autoload/narrative.gd:673,
 cinematic.prologue.56bd6b,"No princípio havia o Um. Dele emanaram os Éons, aos pares,
 como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
 like overflowing light. There nothing slept. Nothing forgot.",card_cinema,,240,scripts/fx/cinematic.gd:151,
@@ -76,11 +76,11 @@ Coroa alta, massa e hierarquia.
 Servos sustentam sua armadura.","A throne made of obedience.
 Tall crown, bulk and hierarchy.
 Servants hold up its armor.",ui,,,scripts/ui/character_atelier.gd:19,
-chronicles._refresh.74ade2,"Estela ainda não lida.
+chronicles._refresh.9e8a61,"Estela ainda não lida.
 Onde: %s
-Chegue perto e aperte o golpe leve (J / X) para ler.","Stele not yet read.
+Chegue perto e aperte %s para ler.","Stele not yet read.
 Where: %s
-Get close and press light strike (J / X) to read.",ui,,,scripts/ui/chronicles.gd:195,format string: manter os %
+Get close and press %s to read.",ui,,,scripts/ui/chronicles.gd:197,format string: manter os %
 codex_menu._on_new_campaign.b88117,"Isso apaga o progresso salvo — %s — e as faíscas e melhorias desta jornada.
 Finais vistos e opções ficam.","This erases your saved progress — %s — and this journey's sparks and upgrades.
 Endings seen and options are kept.",ui,,,scripts/ui/codex_menu.gd:216,format string: manter os %

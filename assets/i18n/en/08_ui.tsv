@@ -60,7 +60,6 @@ character_atelier._refresh.c5f770	   ·   PALETTE %d / 3
 chronicles._ready.d6356f	Chronicles
 chronicles._refresh.30a149	%d of %d Stelae read — the teaching of the ancients, stone by stone
 chronicles._refresh.36ff38	%02d   %s
-chronicles._refresh.74ade2	Stele not yet read.\nWhere: %s\nGet close and press light strike (J / X) to read.
 codex_menu._build_title.479019	THE AWAKENING   ·   v%s
 codex_menu._build_title.662951	THE AWAKENING OF THE SPARK
 codex_menu._build_title.dcaf64	Seven Aeons. Seven Archons. One spark that still remembers.

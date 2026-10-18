@@ -105,6 +105,10 @@ func _ready() -> void:
 	_build_platforms()
 	_build_walls()
 	_spawn_extras()
+	# A encenação nasce já: ela vigia TODA caixa de diálogo da tela (a Sophia para
+	# em pé e a câmera sobe o quadro acima da caixa — QA2 #1/#9).
+	if player != null:
+		stage()
 	await _play_narrative_beats()
 	if not is_inside_tree():
 		return
