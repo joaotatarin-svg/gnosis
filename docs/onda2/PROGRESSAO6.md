@@ -1,6 +1,6 @@
 # PROGRESSÃO 6 — economia, selos por Arconte, relíquias e pulo duplo (Onda 6)
 
-Branch `dir6/progressao6` (base 37ea6f5 + merge de `origin/dir6/mapa6`).
+Branch `dir6/progressao6` (base 37ea6f5 + merges de `origin/dir6/mapa6` e `origin/integracao/onda1`).
 Queixa do João: *"antes do 2º chefe já tinha upgrades no nível máximo"*.
 
 ## 1. Diagnóstico medido (bot, antes)
@@ -102,7 +102,10 @@ custo)`/`buy_max_mana` continuam (presentes e bot).
   quebrado.
 - MapQA 22 PASS · SaveQA 0 falhas · LangQA 12 ok · EnFit 0 falhas · i18n
   `build.py --strict` 1361/1361 (lote `12_progressao6.tsv`).
-- `validate.ps1`: ver o relatório ao chefe.
+- `validate.ps1 -Repeat 2` (após merge de `origin/integracao/onda1`, 18/10): **TUDO VERDE, 11 etapas, 2/2**
+  (Scripts, ScriptCheck, CodexQA 53, AudioQA 54, GnoseQA 20, SaveQA 49, PuppetQA, HeroQA, WaveQA,
+  TecnicoQA 43, LangQA). Obs.: numa rodada anterior com o PC carregado e prioridade baixa,
+  GnoseQA/AudioQA falharam por tempo (card de chefe); em prioridade normal passaram.
 - `econ_sim.py --checa`: as constantes do simulador batem com o `.gd`.
 - Capturas (fora do git): `C:\gnosis-wt\_caps\progressao6\loja_antes_grau1_arma3.png` ×
   `loja_depois_grau1_arma3.png` (mesmo estado: após Athoth, 900 faíscas, arma Nv.3 — antes
