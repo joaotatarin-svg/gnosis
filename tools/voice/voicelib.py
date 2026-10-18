@@ -268,6 +268,11 @@ class Chatterbox:
 		base = next((hub / "models--ResembleAI--chatterbox/snapshots").iterdir())
 		ptbr = next((hub / "models--ResembleAI--Chatterbox-Multilingual-pt-br/snapshots").iterdir())
 		torch.set_num_threads(int(os.environ.get("VOICE_THREADS", "6")))
+		if device != "cpu":
+			# GPU AMD (ROCm no Windows, venv-rocm): o MIOpen recompila as convoluções
+			# do S3Gen a cada tamanho de áudio e dá "Invalid elapsed time" — desligar
+			# deixa ~3x mais rápido que a CPU (medido: RTF 3,6 PT / 4,3 EN).
+			torch.backends.cudnn.enabled = False
 		self.torch = torch
 		self.lang = lang
 		ve = VoiceEncoder()
@@ -331,7 +336,7 @@ def make_ref(char: str, lang: str, root: Path) -> Path:
 	return p
 
 
-def params_for(char: str, mood: str, text_pt: str) -> dict:
+def params_for(char: str, mood: str, text_pt: str, lang: str = "en") -> dict:
 	c = CAST["characters"][char]["cb"]
 	ex, cfg, temp = c["ex"], c["cfg"], c["temp"]
 	moods = [mood] if mood else []
@@ -342,7 +347,10 @@ def params_for(char: str, mood: str, text_pt: str) -> dict:
 		if d:
 			ex += d["ex"]
 			cfg += d["cfg"]
-	return {"ex": float(np.clip(ex, 0.2, 1.0)), "cfg": float(np.clip(cfg, 0.2, 0.8)), "temp": temp}
+	# O finetune pt-br desanda (troca palavras) com exaggeration alto + cfg baixo:
+	# medido nas amostras (Yaldabaoth 0,85/0,25 → CER 0,3). Teto/piso só em PT.
+	hi, lo = (0.75, 0.3) if lang == "pt" else (1.0, 0.2)
+	return {"ex": float(np.clip(ex, 0.2, hi)), "cfg": float(np.clip(cfg, lo, 0.8)), "temp": temp}
 
 
 def fx_for(char: str, mode: str) -> list:

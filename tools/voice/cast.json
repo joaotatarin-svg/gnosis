@@ -37,11 +37,11 @@
    "fx": [["hpf", 60], ["reverb", "hall", 0.22]]
   },
   "Yaldabaoth": {
-   "desc": "a Voz sem o veludo: MESMA referência da Voz, mais grave, desprezo; camada uma oitava abaixo, distorção leve, catedral",
+   "desc": "a Voz sem o veludo: MESMA referência da Voz, mais grave (tom −2 st e formantes no pós), desprezo; camada uma oitava abaixo, distorção leve, catedral",
    "ref_from": "A Voz",
-   "ref": {"pitch": -4, "formant": "shifted"},
-   "cb": {"ex": 0.65, "cfg": 0.35, "temp": 0.75},
-   "fx": [["octave", -12, 0.28], ["drive", 2.2, 0.35], ["hpf", 45], ["reverb", "cathedral", 0.3]]
+   "ref": {"pitch": -2, "formant": "preserved"},
+   "cb": {"ex": 0.55, "cfg": 0.4, "temp": 0.7},
+   "fx": [["pitch", -2, "shifted"], ["octave", -12, 0.28], ["drive", 2.2, 0.35], ["hpf", 45], ["reverb", "cathedral", 0.3]]
   },
   "O Cego": {
    "desc": "a criança cega dentro do Colosso: a voz da Voz encolhida (tom e formantes para cima), frágil",
@@ -52,7 +52,7 @@
   },
   "Athoth": {
    "desc": "Torpor: sonolento, sussurrado, quase canção de ninar",
-   "ref": {"pt": {"voice": "af_nicole", "speed": 0.8}, "en": {"voice": "af_nicole", "speed": 0.8}, "pitch": -3, "formant": "preserved"},
+   "ref": {"pt": {"voice": "af_bella", "speed": 0.95}, "en": {"voice": "af_nicole", "speed": 0.8}, "pitch": -3, "formant": "preserved"},
    "cb": {"ex": 0.3, "cfg": 0.5, "temp": 0.65},
    "fx": [["tempo", 0.9], ["lpf", 5500], ["whisper", 0.35], ["reverb", "hall", 0.3]]
   },

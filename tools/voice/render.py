@@ -61,7 +61,7 @@ def cut_tail(x: np.ndarray, words: list, expected: str) -> tuple[np.ndarray, str
 def render(cb: "V.Chatterbox", char: str, mood: str, mode: str, text_pt: str, said: str,
 		lang: str, refs: Path, out_ogg: Path, seed0: int = 1, log=print) -> dict:
 	ref = str(V.make_ref(char, lang, refs))
-	p = V.params_for(char, mood, text_pt)
+	p = V.params_for(char, mood, text_pt, lang)
 	best = None
 	t0 = time.time()
 	for k in range(MAX_TRIES):
