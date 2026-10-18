@@ -102,6 +102,8 @@ var riposting: bool = false          # o golpe atual é o contra-ataque
 # --- Combate 6: aéreo forte com regra, buffers, pulo duplo ---
 ## Ferramentas/sondas: libera o pulo duplo sem a flag da progressão.
 var debug_double_jump: bool = false
+## Sondas: volta à caixa antiga (34×42 fixa a 20 px) para comparar.
+var debug_legacy_hitbox: bool = false
 var _air_heavy_used: bool = false    # Queda Estelar já saiu neste pulo
 var _air_heavy_cd: float = 0.0       # recarga da Queda (conta do pouso)
 var _air_lights: int = 0             # Giros Celestes neste pulo
@@ -610,6 +612,8 @@ func _process_attack(delta: float) -> void:
 			# o golpe conecta agora (a Queda só "raspa" no mergulho; a onda é o golpe)
 			hitbox.activate(dive_contact_damage(pending_dmg) if dive else pending_dmg)
 			hit_started = true
+			_sync_anim()                       # o Visual já mostra o quadro do golpe
+			_update_staff_hitbox()
 			if not air_move:
 				Audio.play_sfx(_swing_sfx())   # o corte sai do wind-up
 				velocity.x = facing * current_move.lunge * (1.35 if current_move.is_heavy() else 1.0)
@@ -663,13 +667,17 @@ func _process_attack(delta: float) -> void:
 			hitbox.activate(pending_dmg)
 			_squash(Vector2(facing * 1.15, 0.9))
 
+	# A caixa segue o cajado DESENHADO no quadro atual (só nos quadros de impacto),
+	# até o golpe acabar (cada alvo toma o golpe 1 vez por ativação).
+	if hit_started:
+		_update_staff_hitbox()
+
 	action_timer -= delta
 
 	# Janela de encadear: abre depois de CHAIN_AT do golpe (leve 55 %, pesado
 	# 68 %); a Queda não encadeia. Multi-hit mantém a hitbox até o último toque.
 	if not dive and not chain_open and hits_left <= 0 \
 			and action_timer <= current_move.duration * (1.0 - SophiaTuning.chain_at(current_move)):
-		hitbox.deactivate()
 		chain_open = true
 
 	if chain_open and buffered_btn != "":
@@ -704,6 +712,25 @@ func _cancel_open() -> bool:
 			return windup_timer >= _windup_total * (1.0 - SophiaTuning.HEAVY_FEINT)
 		return chain_open
 	return hit_started
+
+
+## Playtest 2 ("o cajado atravessa"): posiciona a caixa de acerto no cajado do
+## quadro desenhado agora (StaffReach) e só a deixa ligada em quadro de impacto.
+## Sem quadros desenhados (reserva procedural) → a caixa antiga (34×42 a 20 px).
+func _update_staff_hitbox() -> void:
+	var g: Dictionary = {} if debug_legacy_hitbox else StaffReach.current(visual)
+	if g.is_empty() or not g.has("rect"):
+		if g.is_empty():
+			hitbox.set_box(Vector2(20.0 * facing, 0.0), Vector2(34.0, 42.0))
+			# a caixa antiga desligava na janela de encadear (multi-hit: no último toque)
+			hitbox.set_live(not (chain_open and hits_left <= 0))
+		else:
+			hitbox.set_live(false)      # quadro sem cajado medido
+		return
+	var r: Rect2 = g.rect
+	var c: Vector2 = r.get_center()
+	hitbox.set_box(Vector2(c.x * float(facing), c.y), r.size)
+	hitbox.set_live(bool(g.impact))
 
 
 ## Contra-ataque: avança o bastante para alcançar quem foi aparado (o aparo
