@@ -9,8 +9,8 @@ class_name FinalBattle
 signal won
 
 const REVIVE_AFTER := 14.0
-const RING_SPAWN_EVERY := 6.0
-const MAX_LARVAS := 3
+const RING_SPAWN_EVERY := 9.0
+const MAX_LARVAS := 2
 # Onde as formas nascem (px a partir da parede esquerda da arena trancada da
 # Mente — Level._lock_final_arena). A vista (zoom 1,2) cobre ~533 px de mundo:
 # Sophia a 70, Rei (~85 px de largura) a 215, Colosso (~160 px) a 420.

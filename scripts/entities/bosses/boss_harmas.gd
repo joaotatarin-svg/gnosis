@@ -21,7 +21,7 @@ var _edges: Array = []
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.65
+	dmg_scale = 0.55
 	keep_dist = Vector2(30.0, 80.0)
 	gap_by_phase = [0.85, 0.75, 0.65]
 	escape_hits = 3

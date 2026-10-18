@@ -18,7 +18,7 @@ var _clones: Array = []
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.65
+	dmg_scale = 0.5
 	keep_dist = Vector2(50.0, 110.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 4
@@ -74,7 +74,7 @@ func no_touch() -> bool:
 func _filter(dmg: int, attacker: Node) -> int:
 	if _guarding():
 		if attacker != null and is_instance_valid(attacker) and attacker.has_method("_on_hit_received"):
-			attacker._on_hit_received(maxi(1, int(dmg * REFLECT_K)), e.global_position, 200.0, true, e)
+			attacker._on_hit_received.call_deferred(maxi(1, int(dmg * REFLECT_K)), e.global_position, 200.0, true, e)   # fora do sinal de acerto
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -20.0 * e._art_scale), GLASS)
 		sfx("glass", e.global_position)
 		return 0
@@ -130,7 +130,7 @@ func _on_clone_broken(c) -> void:
 	var pl := _player()
 	ImpactBurst.spawn(e.get_parent(), c.global_position + Vector2(0, -16), GLASS)
 	if pl != null and pl.global_position.distance_to(c.global_position) < 70.0:
-		pl._on_hit_received(int(_base_dmg * 0.35), c.global_position, 160.0, true, e)
+		pl._on_hit_received.call_deferred(int(_base_dmg * 0.35), c.global_position, 160.0, true, e)
 
 
 func _swap_with_clone() -> void:

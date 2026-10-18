@@ -131,6 +131,8 @@ func _on_strike(m: Dictionary) -> void:
 				continue
 			m.health.setup(maxi(30, int(BossTuning.expected_hit(BossTuning.expected_weapon_level(screen)) * 6.0)))
 			m.spark_reward = 0
+			m.attack_hitbox.damage = maxi(1, m.attack_hitbox.damage / 2)   # guarda que segura, não que mata
+			m.contact_hitbox.damage = maxi(1, m.contact_hitbox.damage / 2)
 		e.armored = true
 		_court_cd = 22.0
 		AoeNova.spawn(e.get_parent(), e.global_position, 0, 160.0, GOLD)
