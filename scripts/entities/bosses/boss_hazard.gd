@@ -33,6 +33,8 @@ var silent: bool = false           # sem som de aviso (perigos contínuos)
 var hit_air: bool = true           # false = só fere quem está no chão (onda rasteira)
 var safe: bool = false             # true = é ABRIGO (zona muda), não fere
 var vel_x: float = 0.0             # px/s: a área ANDA enquanto ativa (onda de névoa)
+var look: String = ""              # "saw" = Anel girando como serra (desenho próprio)
+var bounce: bool = false           # bate na parede e volta (serra de Anel)
 var grow: float = 0.0              # px/s: o raio CRESCE enquanto ativa (poça que se espalha)
 var max_w: float = INF
 var min_x: float = -INF            # para de andar nas paredes da arena
@@ -83,8 +85,12 @@ func _physics_process(delta: float) -> void:
 	if vel_x != 0.0:
 		global_position.x += vel_x * delta
 		if global_position.x < min_x or global_position.x > max_x:
-			queue_free()
-			return
+			if bounce:
+				vel_x = -vel_x
+				global_position.x = clampf(global_position.x, min_x, max_x)
+			else:
+				queue_free()
+				return
 	queue_redraw()
 	if safe:
 		return
@@ -209,6 +215,9 @@ func _tell_sound(snd: String) -> void:
 
 
 func _draw() -> void:
+	if look == "saw":
+		_draw_saw()
+		return
 	var warn: bool = _t < delay
 	var k: float = clampf(_t / maxf(delay, 0.01), 0.0, 1.0)
 	var pulse: float = 0.5 + 0.5 * sin(_t * TAU * 2.0)
@@ -258,3 +267,21 @@ func _ellipse(rx: float, ry: float) -> PackedVector2Array:
 		var a := TAU * float(i) / 28.0
 		pts.append(Vector2(cos(a) * rx, sin(a) * ry))
 	return pts
+
+
+## Anel-serra: aro dourado girando com dentes, rente ao chão (pule por cima).
+func _draw_saw() -> void:
+	var warn: bool = _t < delay
+	var r: float = half_w
+	var c := Vector2(0, -r)
+	var a0: float = _t * 9.0 * signf(vel_x if vel_x != 0.0 else 1.0)
+	var al: float = 0.45 if warn else 1.0
+	draw_circle(c, r + 4.0, Color(color.r, color.g, color.b, 0.15 * al))
+	draw_arc(c, r, 0, TAU, 28, Color(color, al), 3.0, true)
+	draw_arc(c, r * 0.55, 0, TAU, 20, Color(1, 1, 1, 0.6 * al), 1.5, true)
+	for k in 8:
+		var a := a0 + TAU * float(k) / 8.0
+		var d := Vector2(cos(a), sin(a))
+		draw_colored_polygon(PackedVector2Array([c + d * r, c + d.rotated(0.25) * (r + 6.0), c + d.rotated(0.4) * r]), Color(color, al))
+	if warn:
+		draw_line(Vector2(-r, 4), Vector2(r, 4), Color(1.0, 0.3, 0.3, 0.8), 2.0)

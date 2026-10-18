@@ -49,6 +49,9 @@ var window_mult := {
 }
 ## Escala do dano de TODOS os golpes deste chefe (balance por chefe).
 var dmg_scale: float = 1.0
+## Golpe com `expose`: na recuperação ele fica EXPOSTO (ajoelha, o ponto fraco
+## desce) e sente muito mais.
+const EXPOSED_MULT := 1.35
 var escape_hits: int = 4
 var escape_window: float = 2.5
 var escape_id: String = "repelir"
@@ -263,6 +266,8 @@ func filter_damage(dmg: int, attacker: Node) -> int:
 	# JANELAS: armado (preparando/golpeando) ele aguenta; aberto (recuperando,
 	# atordoado) ele sente. O jogo recompensa ESPERAR a hora e punir.
 	var k: float = float(window_mult.get(e.estate, 1.0))
+	if e.estate == Enemy.EState.RECOVER and bool(mv.get("expose", false)):
+		k = EXPOSED_MULT
 	if k < 1.0:
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -18.0 * e._art_scale), Color(0.85, 0.9, 1.0))
 	return maxi(1, int(round(float(dmg) * k)))
@@ -327,6 +332,10 @@ func passive(delta: float) -> void:
 	if e.estate == Enemy.EState.CHASE and _prev_estate != Enemy.EState.CHASE:
 		mv = {}
 	_prev_estate = e.estate
+	# SEM DANO DE CONTATO no corpo: só nas investidas (golpe explícito)
+	var touch: bool = e.estate == Enemy.EState.STRIKE and String(mv.get("kind", "")) == "charge"
+	if e.contact_hitbox.monitoring != touch:
+		e.contact_hitbox.set_deferred("monitoring", touch)
 	_signature(delta)
 
 
@@ -526,9 +535,8 @@ func _fire(dir: int, oy: float) -> void:
 	p.slow_time = float(mv.get("slow", 0.0))
 	p.root_time = float(mv.get("root", 0.0))
 	e.get_parent().add_child(p)
-	p.global_position = e.global_position + Vector2(24.0 * dir * e._art_scale, -10.0 * e._art_scale + oy)
-	if e._orb != null:
-		p.global_position = e._orb.global_position + Vector2(0, oy)
+	# sai na ALTURA DO PEITO da Sophia (nunca do olho lá no alto — fora do alcance)
+	p.global_position = Vector2(e.global_position.x + 24.0 * dir * e._art_scale, ground_y() - 34.0 + oy)
 
 
 ## Onda rasteira pelo chão (projétil baixo: pular por cima).

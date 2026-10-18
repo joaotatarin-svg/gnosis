@@ -9,7 +9,7 @@ class_name BossTuning
 
 ## Golpes-alvo por chefe (jogador médio, sem magia). Sobe ao longo do run.
 const TARGET_HITS := {
-	"rei": 26,                 # tutorial: ~1:15 de luta
+	"rei": 36,                 # tutorial: ~1:15 de luta
 	"arconte_sono": 28,
 	"arconte_fome": 34,
 	"arconte_corrente": 32,
@@ -17,8 +17,8 @@ const TARGET_HITS := {
 	"arconte_espelho": 36,
 	"arconte_praga": 38,
 	"arconte_coroa": 40,
-	"rei_final": 24,           # batalha dupla: cada forma (e elas se refazem)
-	"colosso": 30,
+	"rei_final": 30,           # batalha dupla: cada forma (e elas se refazem)
+	"colosso": 36,
 }
 
 ## Nível de arma ESPERADO ao chegar em cada chefe (economia da Onda 6 — o
