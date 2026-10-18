@@ -88,6 +88,8 @@ def speech_text(speaker: str, text: str) -> tuple[str, str]:
 	# CAIXA ALTA (grito): vira palavra normal; a ênfase vai pelo mood "grito".
 	if RE_CAPS.search(t):
 		t = RE_CAPS.sub(lambda mm: mm.group(1).capitalize(), t)
+	if not re.search(r"\w", t):
+		return "", "rubrica"   # "..." sozinho: silêncio encenado, não se dubla
 	return t.strip(), modo
 
 
@@ -100,15 +102,18 @@ def extract(root: Path) -> list[dict]:
 	out: list[dict] = []
 	seen: set[str] = set()
 
-	def add(speaker: str, text: str, mood: str, source: str, cue: str = ""):
-		lid = line_id(speaker, text)
+	def add(speaker: str, text: str, mood: str, source: str, cue: str = "", key_spk: str | None = None):
+		# id com o falante COMO O JOGO O VÊ ("" = narrador na caixa; "card" =
+		# prólogo/epílogo; "estela" = pedras) — o mesmo cálculo roda em GDScript.
+		gspk = speaker if key_spk is None else key_spk
+		lid = line_id(gspk, text)
 		if lid in seen:
 			return
 		seen.add(lid)
 		dyn = "%" in text
 		said, modo = speech_text(speaker, text)
 		out.append({
-			"id": lid, "speaker": speaker, "mood": mood, "cue": cue,
+			"id": lid, "key_speaker": gspk, "speaker": speaker, "mood": mood, "cue": cue,
 			"source": source, "text_pt": text, "said_pt": said, "mode": modo,
 			"dynamic": dyn,
 		})
@@ -120,22 +125,23 @@ def extract(root: Path) -> list[dict]:
 	for m in RE_LINE.finditer(src):
 		kind, spk_const, spk_lit, text, cue, mood_const = m.groups()
 		speaker = consts.get(spk_const, spk_const) if spk_const else unescape(spk_lit)
+		key_spk = speaker
 		if speaker == "":
 			speaker = NARRADOR
 		mood = consts.get(mood_const, "") if mood_const else ""
-		add(speaker, unescape(text), mood, "narrative.%s" % func_at(src, m.start()), unescape(cue or ""))
+		add(speaker, unescape(text), mood, "narrative.%s" % func_at(src, m.start()), unescape(cue or ""), key_spk)
 	# epilogue_cards: strings soltas dentro da função
 	ep = src[src.find("func epilogue_cards"):]
 	for s in re.findall(r'^\s*(?:var r := \[\s*)?' + STR + r'\s*,?\s*$', ep, re.M):
-		add(NARRADOR, unescape(s), "", "narrative.epilogue_cards")
+		add(NARRADOR, unescape(s), "", "narrative.epilogue_cards", key_spk="card")
 	for s in re.findall(r'r\.append\(' + STR + r'\)', ep):
-		add(NARRADOR, unescape(s), "", "narrative.epilogue_cards")
+		add(NARRADOR, unescape(s), "", "narrative.epilogue_cards", key_spk="card")
 
 	# 2) prólogo (cinematic.gd)
 	c = (root / "scripts/fx/cinematic.gd").read_text(encoding="utf-8")
 	pro = c[c.find("static func prologue"):c.find("static func boss_card")]
 	for s in re.findall(r'"text"\s*:\s*' + STR, pro):
-		add(NARRADOR, unescape(s), "", "cinematic.prologue")
+		add(NARRADOR, unescape(s), "", "cinematic.prologue", key_spk="card")
 
 	# 3) Estelas (gnosis.gd)
 	g = (root / "scripts/autoload/gnosis.gd").read_text(encoding="utf-8")
@@ -143,7 +149,7 @@ def extract(root: Path) -> list[dict]:
 	for sm in re.finditer(r'\{"id"\s*:\s*' + STR + r'.*?"lines"\s*:\s*\[(.*?)\]', blk, re.S):
 		sid = sm.group(1)
 		for s in re.findall(STR, sm.group(2)):
-			add("Estela", unescape(s), "", "gnosis.stela.%s" % sid)
+			add("Estela", unescape(s), "", "gnosis.stela.%s" % sid, key_spk="estela")
 
 	# Tradução EN
 	en = load_en(root)
