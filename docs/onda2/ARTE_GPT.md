@@ -332,8 +332,29 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
 - Ressalvas: champ_6 fica com resto de névoa amarelada no strike; champ_3 (como o bot) franja rosada na capa
   translúcida; champ_5 morre estilhaçando em pé; espectro pequeno no chão é normal (voa).
 
-## BILHETE PARA O SUCESSOR (18/10/2026, integrador de arte, branch `dir2/arte-gpt`)
+## BILHETE PARA O SUCESSOR (18/10/2026, 2º integrador de arte, branch `dir2/arte-gpt`)
 
+**Estado:** Fila 9 blocos 1–3 FEITOS e validados (b618400, 7163c12; integração ec64161 mesclada em f51f6bf).
+Bloco 4 (Soter abençoando) em WIP (último commit "WIP: bloco 4"): folha `artes/gpt/npc_soter_blessing_a.png`
+(3×2 células 512, Soter à esquerda + Sophia à direita) cortada como grade 6×2:
+- Soter (`tools/anim_bosses/recipes/soter.json`, `extra_sheets` com `strip_glow`): estados novos `lift` (mãos
+  erguidas, laço), `offer`, `rest` — atlas gerado (prancha `_caps/arte-gpt/soter_contact.png`, OK).
+- Sophia (`sophia_recipe.json` fonte `s19`, `strip_glow`): ações `soter_look`, `soter_land`, `soter_bow` com
+  `"hold": true` no JSON. As células com a coluna de luz (rise/float) ficaram FORA (a luz pintada mistura no corpo).
+**Falta no bloco 4:** (1) `CharacterArt._tick_action`: ação com `hold` não corta por tempo — só quando
+`anim_state != "idle"` — e `stop_action()` público; (2) HeroQA/validate -Repeat 2; (3) pedido à narrativa6 em
+`docs/pedidos/onda6_narrativa6.md`: em `npc_encounter._do_soter/_soter_lightness` usar Soter `lift` (fala 0),
+`offer` (fala 4), `rest` (antes do fade) e na Sophia `visual.play_action("soter_look"/"soter_land"/"soter_bow")`
+(o mundo fica pausado na caixa: o visual dela precisa processar, ou a pose não troca); a coluna de luz e a subida
+continuam por FX/tween deles; (4) prancha antes/depois + commit + aviso ao chefe.
+**Depois:** mortes de chefe em 4 etapas (`C:\gnosis-wt\_gpt\outoss_<n>_<nome>_death_a.png`, 2×2: cambaleio,
+cambaleio 2, joelhos, colapso; Rei fundo ROSA ≈248,2,192 → o `key_array` NÃO trata: precisa chave própria como a
+verde; Galila tem _b) → `extra_sheets` nas receitas dos chefes e `_death_seq` tocando as 4 antes do estilhaço.
+**Armadilhas:** estado da Sophia não pode começar com "run"; andar de criatura SEM meios do RIFE (PuppetQA);
+depois de atlas novo, `--editor --quit` e conferir `mipmaps/generate=true`; AnimQA com erro de script trava
+(use Start-Process com WaitForExit e mate pelo PID). Pranchas da Fila 9: `_caps/arte-gpt/fila9/`.
+
+### Bilhete anterior (1º integrador)
 **Estado:** tudo abaixo está commitado e com push; `tools/validate.ps1 -Repeat 2` VERDE (11 etapas) no último commit.
 Feito na Onda 6: Rei revelado + retratos (Pedidos 8/9), morte de chefe com peso (`play_boss_death`, pedido ao chefes6),
 cabeça por quadro (`head_point`, pedidos ao inimigos6/narrativa6 sobre o orbe solto e a máscara do `_King`),

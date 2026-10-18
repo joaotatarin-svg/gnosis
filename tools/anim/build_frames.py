@@ -120,13 +120,16 @@ def scale_meas(m: dict, s: float, ox: float = 0.0, oy: float = 0.0) -> dict:
 
 
 # ---------------------------------------------------------------- fatiar
-def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, erase=()):
+def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, erase=(), strip_glow=False):
 	"""`raw_alpha_cells`: células cujo alfa da folha é mantido como veio
 	(translúcido DE PROPÓSITO, ex.: o "fade" do Soter).
 	`grid_only`: cada célula é recortada SÓ dentro da sua caixa da grade (folhas
 	em que um quadro encosta no outro: o cutelo/alabarda dos campeões 2 e 7).
 	`erase`: retângulos [x0, y0, x1, y1] (px da folha) apagados antes do recorte
-	(efeito translúcido pintado junto — pó do sono, coluna de luz — vira FX)."""
+	(efeito translúcido pintado junto — pó do sono, coluna de luz — vira FX).
+	`strip_glow`: apaga a LUZ DOURADA translúcida pintada (coluna/halo do Soter):
+	pixel semitransparente (α < 0,85) amarelado (b < 0,8·r) some; o corpo opaco
+	e o cabelo prateado (b ≈ r) ficam. A luz é refeita por FX no jogo."""
 	img = Image.open(path)
 	a_raw = None
 	if img.mode == "RGBA" and np.asarray(img)[..., 3].min() < 250:
@@ -142,6 +145,11 @@ def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, era
 		a[a < 0.05] = 0.0
 	else:
 		F, a, _ = key_array(np.asarray(img.convert("RGB")).astype(np.float32))
+	if strip_glow:
+		yel = (F[..., 2] < 0.8 * F[..., 0]) & (F[..., 0] > 120.0)
+		a = np.where((a < 0.85) & yel, 0.0, a)
+		# brilho opaco solto (faíscas, espirais) longe do corpo também some:
+		# o recorte por componente descarta o que ficou pequeno e isolado
 	for x0e, y0e, x1e, y1e in erase:
 		a[int(y0e):int(y1e), int(x0e):int(x1e)] = 0.0
 		if a_raw is not None:
@@ -298,7 +306,7 @@ def main() -> None:
 		side_path = path.replace(".png", ".json")
 		if os.path.exists(side_path):
 			side = json.load(open(side_path, encoding="utf-8")).get("anchors", {})
-		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"]).items():
+		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"], (), src.get("grid_only", False), src.get("erase", []), src.get("strip_glow", False)).items():
 			raw[sid + "." + name] = [rgba, src.get("scale", 1.0)]
 			if name in side:
 				# âncora fixa (px da folha) → px locais do recorte
@@ -430,7 +438,7 @@ def main() -> None:
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
 			print("  %s: avanço por quadro %s -> ciclo %.2f alturas" % (sname, adv, sum(adv) / body_px))
-		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support"]:
+		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support", "hold"]:
 			if key in st and key not in entry:
 				entry[key] = st[key]
 		out_states[sname] = entry
