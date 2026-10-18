@@ -1,0 +1,17 @@
+# Lote 15 — UI Onda 6 (18/10/2026): barra de chefe com 3 fases, selo aberto, relíquia,
+# objetivo da zona, tipo do nó do mapa, botão Mapa da pausa (modo leitura).
+hud.seal_text.c9c856	Weapon Lv. %d in the shop
+hud.seal_text.117cdc	%s in the shop
+hud.seal_text.3e2d6c	more Life and Ether in the shop
+hud.seal_text.3e9499	Seal opened
+hud._draw_one_boss.dbb588	PHASE III
+pause_menu._ready.6867e6	Relic
+pause_menu._open_map.412f13	The Aeon's path so far. Just for looking.
+pause_menu._open_map.8b07a2	browse the exits
+run_labels.role_title.c59a93	%s · %s
+run_labels.relic_line.989ca2	Relic in use
+run_labels.objective_text.3a7e16	break the totem
+run_labels.objective_text.bb5ced	protect the light
+run_labels.objective_text.88a020	tide
+run_labels.objective_text.8a0415	flee the tide
+PauseMenu.Map.b74e0f	Map

@@ -292,12 +292,22 @@ class Worker extends Node:
 		check(not is_instance_valid(shop) or shop.is_queued_for_deletion(), "loja: B fecha")
 		await wait(0.1)
 		check(not get_tree().paused, "loja: ao fechar (sem pausa por baixo) o mundo despausa")
-		# Balance P1/P2: vida máx. 60×(n+1) até 10; Restauração só no santuário/pós-chefe.
+		# Progressão 6: vida máx. 90×(n+1), teto 3 + Arcontes vencidos (10 no total);
+		# Restauração só no santuário/pós-chefe. Os números vêm da Progression
+		# (fonte única) — a sonda confere a loja contra eles, não contra constantes.
 		var U = load("res://scripts/ui/upgrade_menu.gd")
-		check(U.hp_cost_for(0) == 60 and U.hp_cost_for(1) == 120 and U.hp_cost_for(9) == 600, "loja P1: preço 60/120/…/600")
+		var c0: int = Progression.hp_cost_for(0)
+		check(U.hp_cost_for(0) == c0 and U.hp_cost_for(1) == 2 * c0 and U.hp_cost_for(9) == 10 * c0, "loja P1: preço %d/%d/…/%d (cresce linear)" % [U.hp_cost_for(0), U.hp_cost_for(1), U.hp_cost_for(9)])
 		check(U.hp_buys_from_bonus(0) == 0 and U.hp_buys_from_bonus(25) == 0 and U.hp_buys_from_bonus(45) == 1 and U.hp_buys_from_bonus(75 + 60) == 3, "loja P1: compras deduzidas do bônus (com dons do Soter)")
 		Progression.orbs = 99999
 		Progression.bonus_max_health = 0
+		if Progression.has_method("_flag_set"):
+			Progression.call("_flag_set", "vida", "0")     # contador de compras do run zerado
+		var n0: int = Progression.hp_buys()
+		var cap: int = Progression.hp_buy_cap()
+		var want_paid := 0
+		for k in range(n0, cap):
+			want_paid += Progression.hp_cost_for(k)
 		RunManager.pending_advance = false
 		shop = SceneManager.instance_overlay("res://scenes/ui/UpgradeMenu.tscn")
 		await wait(0.5)
@@ -322,8 +332,8 @@ class Worker extends Node:
 			for b in shop.list.get_children():
 				if String(b.text).begins_with("+20 de vida") and not b.is_queued_for_deletion():
 					hp_row = b
-		check(bought == 10 and Progression.bonus_max_health == 200, "loja P1: no máximo 10 compras (%d, bônus %d)" % [bought, Progression.bonus_max_health])
-		check(99999 - Progression.orbs == 60 * 55, "loja P1: total pago 60×(1+…+10) = 3300 (%d)" % (99999 - Progression.orbs))
+		check(bought == cap - n0 and Progression.bonus_max_health == 20 * bought, "loja P1: teto do grau = %d compras (%d, bônus %d)" % [cap - n0, bought, Progression.bonus_max_health])
+		check(99999 - Progression.orbs == want_paid, "loja P1: total pago = soma dos preços %d (%d)" % [want_paid, 99999 - Progression.orbs])
 		await shot("loja_teto")
 		shop.queue_free()
 		PauseStack.clear()

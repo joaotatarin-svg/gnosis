@@ -1409,7 +1409,7 @@ class _HudCanvas extends Control:
 		elif kind == "proteger":
 			# a luz: chama pequena com raios
 			for k in 6:
-				var ang := k * TAU / 6.0 + hud._t * 0.6
+				var ang: float = k * TAU / 6.0 + hud._t * 0.6
 				draw_line(ic + Vector2(cos(ang), sin(ang)) * 3.4, ic + Vector2(cos(ang), sin(ang)) * 4.9, Color(col, 0.7 * a), 0.6, true)
 			draw_circle(ic, 2.4, c2)
 			draw_circle(ic, 1.1, Color(1, 1, 1, 0.9 * a))
