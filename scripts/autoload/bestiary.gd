@@ -104,6 +104,11 @@ func damage_multiplier(screen: int) -> float:
 	return 1.0 + run_progress(screen) * 0.4   # r7: 0.588 → 0.5 → 0.45 → 0.4 (travessias mais longas)
 
 
+## Voador (paira alto)? Mesmo critério do Enemy.is_flyer() — Onda 6.
+func is_flyer(id: String) -> bool:
+	return float(EnemyMoves.for_type(id).get("fly", 0.0)) > 40.0
+
+
 func is_boss_id(id: String) -> bool:
 	for b in bosses:
 		if b.id == id:
@@ -208,6 +213,25 @@ func player_profile(character: CharacterData, weapon_level: int, owned_items: Ar
 
 # --- construção do conteúdo -------------------------------------------
 
+## Graduação de cor do corpo (giro de matiz em rad, saturação, tinta) — vai no
+## shader do contorno (scripts/entities/enemies/enemy_grade.gdshader).
+func _grade(id: String, hue: float, sat: float, tint: Color) -> void:
+	var t: Dictionary = get_type(id)
+	if String(t.get("id", "")) != id:
+		return
+	t["grade"] = [hue, sat, tint]
+
+
+## Troca a pintura usada por um tipo (id do PaintedLibrary) e dá a tinta própria
+## (`tint` vai no self_modulate do desenho — Enemy._ready).
+func _art_as(id: String, painted: String, tint: Color) -> void:
+	var t: Dictionary = get_type(id)
+	if String(t.get("id", "")) != id:
+		return
+	(t.profile as ArtProfile).painted_id = painted
+	t["tint"] = tint
+
+
 func _profile(body: int, height: float, primary: Color, secondary: Color, eye: Color, features: Array) -> ArtProfile:
 	var p := ArtProfile.new()
 	p.body = body
@@ -242,63 +266,73 @@ func _build() -> void:
 
 	wave_types = [
 		# Tier 1 (Éon 0 / telas 1–12 fora de run)
-		_wt("larva", "Larva do Kenoma", 1, 18, 5, 55.0, 4,
+		_wt("larva", "Larva do Kenoma", 1, 40, 6, 55.0, 4,
 			_profile(W, 38, Color(0.55, 0.75, 0.55), Color(0.2, 0.3, 0.22), Color(0.7, 1, 0.7), [])),
-		_wt("sombra", "Sombra Errante", 1, 22, 6, 95.0, 5,
+		_wt("sombra", "Sombra Errante", 1, 44, 7, 95.0, 5,
 			_profile(W, 46, Color(0.28, 0.24, 0.36), Color(0.15, 0.12, 0.2), Color(0.72, 0.5, 1), [])),
-		_wt("servo", "Servo do Demiurgo", 1, 30, 8, 105.0, 6,
+		_wt("servo", "Servo do Demiurgo", 1, 58, 9, 105.0, 6,
 			_profile(H, 48, Color(0.5, 0.5, 0.55), Color(0.3, 0.3, 0.34), Color(1, 0.8, 0.4), ["blade"])),
+		# SÓ À DISTÂNCIA (Onda 6): rajada de setas, fogo-fátuo teleguiado e foge
+		# quando você chega perto — ensina a fechar distância com esquiva.
+		_wt("acolito", "Acólito do Fogo-Fátuo", 1, 34, 7, 80.0, 6,
+			_profile(H, 48, Color(0.4, 0.62, 0.6), Color(0.2, 0.34, 0.33), Color(0.6, 1.0, 0.9), ["staff"]), "ranged"),
 		# Larva Ardente: corre até você e EXPLODE (imparável — ensina a esquivar).
-		_wt("larva_ardente", "Larva Ardente", 1, 16, 14, 82.0, 5,
+		_wt("larva_ardente", "Larva Ardente", 1, 26, 15, 82.0, 5,
 			_profile(W, 36, Color(0.85, 0.45, 0.25), Color(0.4, 0.15, 0.08), Color(1, 0.75, 0.4), []), "melee", "", "exploder"),
 		# Tier 2 (Éons 1–2)
-		_wt("espinho", "Guardião Espinhoso", 2, 55, 10, 60.0, 10,
+		_wt("espinho", "Guardião Espinhoso", 2, 95, 11, 60.0, 10,
 			_profile(B, 56, Color(0.7, 0.28, 0.26), Color(0.35, 0.14, 0.13), Color(1, 0.7, 0.3), ["spikes"]), "slam"),
-		_wt("canino", "Besta Canina", 2, 45, 9, 110.0, 9,
+		_wt("canino", "Besta Canina", 2, 78, 10, 110.0, 9,
 			_profile(A, 40, Color(0.55, 0.4, 0.28), Color(0.3, 0.2, 0.14), Color(1, 0.85, 0.4), ["claws", "tail"]), "charge"),
-		_wt("cornudo", "Ceifador Cornudo", 2, 48, 10, 85.0, 10,
+		_wt("cornudo", "Ceifador Cornudo", 2, 85, 11, 85.0, 10,
 			_profile(H, 50, Color(0.72, 0.3, 0.4), Color(0.3, 0.12, 0.16), Color(1, 0.6, 0.5), ["horns", "blade"])),
 		# Escudeiro: golpe leve bate no escudo; só pesado ou magia ferem.
-		_wt("escudeiro", "Escudeiro do Selo", 2, 60, 10, 70.0, 11,
+		_wt("escudeiro", "Escudeiro do Selo", 2, 95, 11, 70.0, 11,
 			_profile(H, 50, Color(0.42, 0.45, 0.58), Color(0.7, 0.62, 0.4), Color(1, 0.85, 0.5), ["shield", "helmet"]), "melee", "", "shield"),
+		# VOADOR (Onda 6): paira alto, avisa com uma linha e MERGULHA na diagonal;
+		# pousa e fica 1 s no chão (castigo por terra) — ou derrube no ar.
+		_wt("espectro", "Espectro Mergulhador", 2, 50, 10, 95.0, 11,
+			_profile(W, 44, Color(0.55, 0.7, 0.85), Color(0.3, 0.4, 0.55), Color(0.7, 0.95, 1.0), ["wings"])),
 		# Tier 3 (Éons 3–4)
-		_wt("alado", "Vigia Alado", 3, 52, 11, 95.0, 12,
+		# VOADOR (Onda 6): orbita por cima, atira em leque na diagonal, chama
+		# colunas de luz e dá rasantes. Só aéreos/magia o alcançam lá em cima.
+		_wt("alado", "Vigia Alado", 3, 62, 11, 95.0, 12,
 			_profile(W, 50, Color(0.32, 0.3, 0.5), Color(0.2, 0.18, 0.32), Color(0.6, 0.7, 1), ["wings"]), "ranged"),
-		_wt("bruto", "Bruto de Ferro", 3, 90, 13, 55.0, 16,
+		_wt("bruto", "Bruto de Ferro", 3, 120, 14, 55.0, 16,
 			_profile(B, 64, Color(0.5, 0.34, 0.6), Color(0.28, 0.18, 0.34), Color(1, 0.8, 0.5), ["pauldrons"]), "slam"),
-		_wt("arauto", "Arauto do Silêncio", 3, 70, 12, 75.0, 15,
+		_wt("arauto", "Arauto do Silêncio", 3, 100, 12, 75.0, 15,
 			_profile(H, 52, Color(0.6, 0.55, 0.32), Color(0.4, 0.34, 0.16), Color(1, 0.9, 0.5), ["crown", "staff"]), "ranged"),
-		# Fantasma: some e reaparece atrás de você.
-		_wt("fantasma", "Fantasma do Vazio", 3, 50, 11, 90.0, 13,
+		# Fantasma (Onda 6): flutua baixo, aparece ATRÁS de você e agarra.
+		_wt("fantasma", "Fantasma do Vazio", 3, 80, 12, 90.0, 13,
 			_profile(W, 50, Color(0.5, 0.42, 0.66), Color(0.3, 0.24, 0.4), Color(0.85, 0.7, 1), ["aura"]), "melee", "", "teleport"),
 		# Invocador: mantém distância, atira e chama larvas.
-		_wt("invocador", "Invocador de Larvas", 3, 65, 10, 60.0, 16,
+		_wt("invocador", "Invocador de Larvas", 3, 95, 10, 60.0, 16,
 			_profile(H, 52, Color(0.36, 0.5, 0.4), Color(0.2, 0.3, 0.22), Color(0.7, 1, 0.6), ["staff", "horns"]), "ranged", "", "summoner"),
 		# Tier 4 (Éons 5–6)
-		_wt("aberracao", "Aberração do Vazio", 4, 80, 13, 100.0, 18,
+		_wt("aberracao", "Aberração do Vazio", 4, 125, 14, 100.0, 18,
 			_profile(A, 48, Color(0.4, 0.5, 0.4), Color(0.2, 0.28, 0.2), Color(0.7, 1, 0.6), ["spikes", "tail", "claws"]), "charge"),
 
 		# --- OS BOTS DE CADA ÉON (tier 9 = só entram pelo Éon, ver types_for_screen) ---
 		# Torpor: Sonâmbulo — atira bocejos que deixam a Sophia LENTA.
-		_wt("sonambulo", "Sonâmbulo", 9, 34, 7, 45.0, 8,
+		_wt("sonambulo", "Sonâmbulo", 9, 60, 8, 45.0, 8,
 			_profile(H, 48, Color(0.5, 0.52, 0.62), Color(0.3, 0.3, 0.4), Color(0.75, 0.8, 1.0), ["eyelid"]), "ranged", "", "slowshot"),
 		# Fome: Glutão — cada mordida que acerta CURA ele.
-		_wt("glutao", "Glutão", 9, 70, 11, 60.0, 12,
+		_wt("glutao", "Glutão", 9, 110, 12, 60.0, 12,
 			_profile(B, 58, Color(0.65, 0.3, 0.25), Color(0.35, 0.14, 0.1), Color(1, 0.6, 0.3), ["maw"]), "melee", "", "leech"),
 		# Corrente: Carcereiro — corrente curta que PRENDE no lugar.
-		_wt("carcereiro", "Carcereiro", 9, 62, 12, 70.0, 12,
+		_wt("carcereiro", "Carcereiro", 9, 100, 12, 70.0, 12,
 			_profile(H, 52, Color(0.42, 0.4, 0.5), Color(0.26, 0.24, 0.32), Color(1, 0.8, 0.5), ["chains", "helmet", "blade"]), "ranged", "", "chainshot"),
 		# Silêncio: Bibliotecário Mudo — aura curta que CALA as magias.
-		_wt("mudo", "Bibliotecário Mudo", 9, 58, 12, 80.0, 13,
+		_wt("mudo", "Bibliotecário Mudo", 9, 95, 12, 80.0, 13,
 			_profile(W, 50, Color(0.32, 0.3, 0.44), Color(0.18, 0.18, 0.28), Color(0.7, 0.8, 1), ["sewn"]), "melee", "", "silencer"),
 		# Espelho: Reflexo — recua no instante em que você golpeia.
-		_wt("reflexo", "Reflexo", 9, 56, 12, 120.0, 14,
+		_wt("reflexo", "Reflexo", 9, 90, 13, 120.0, 14,
 			_profile(H, 48, Color(0.8, 0.82, 0.9), Color(0.55, 0.5, 0.8), Color(1, 0.4, 0.4), ["mirror", "blade"]), "melee", "", "dodger"),
 		# Praga: Portador de Esporos — ao morrer deixa uma poça de veneno.
-		_wt("esporos", "Portador de Esporos", 9, 60, 12, 85.0, 13,
+		_wt("esporos", "Portador de Esporos", 9, 100, 12, 85.0, 13,
 			_profile(A, 44, Color(0.42, 0.5, 0.32), Color(0.24, 0.3, 0.16), Color(0.75, 1, 0.55), ["rot", "claws"]), "charge", "", "spores"),
 		# Coroa: Pretoriano — só toma dano cheio por trás ou de golpe pesado.
-		_wt("pretoriano", "Pretoriano da Coroa", 9, 95, 14, 65.0, 18,
+		_wt("pretoriano", "Pretoriano da Coroa", 9, 130, 15, 65.0, 18,
 			_profile(H, 54, Color(0.6, 0.48, 0.24), Color(0.36, 0.28, 0.12), Color(1, 0.88, 0.45), ["crown", "pauldrons", "shield", "blade"]), "melee", "", "guard"),
 
 		# Só invocada por Astaphaios (tier 9 = nunca entra nas waves).
@@ -309,6 +343,24 @@ func _build() -> void:
 	var sombra: ArtProfile = wave_types[wave_types.size() - 1].profile
 	sombra.skin = Color(0.55, 0.5, 0.58)
 	sombra.hair = Color(0.12, 0.08, 0.16)
+
+	# Onda 6 — alado, fantasma e cornudo NÃO são mais miniaturas de Arconte
+	# (o PaintedLibrary os mapeava para Yabel, Athoth e Galila: "mini-chefe com a
+	# cara do chefe"). Enquanto a arte própria não chega (docs/pedidos/
+	# onda6_inimigos6.md), usam uma pintura de criatura de OUTRO Éon + tinta.
+	_art_as("alado", "sonambulo", Color(1.12, 1.0, 0.72, 1.0))      # sentinela dourada
+	_art_as("fantasma", "mudo", Color(0.82, 0.72, 1.15, 0.8))       # translúcido violeta
+	_art_as("cornudo", "ceifador", Color(1.12, 0.82, 0.82, 1.0))     # espadachim rubro
+	_art_as("espectro", "espectro", Color(0.72, 0.92, 1.15, 0.86))   # verme-espírito pálido
+	_art_as("acolito", "acolito", Color(0.74, 1.0, 0.94, 1.0))      # conjurador verde-água
+	# GRADUAÇÃO de cor (Onda 6 — "mini-chefe com a cara do chefe"): a pintura dos
+	# bots é da FAMÍLIA do Arconte do Éon (sonâmbulo ≈ Athoth, glutão ≈ Harmas…).
+	# Sem arte nova, a cor separa: o Arconte guarda a cor-assinatura e os servos
+	# ficam cinzentos (escala de servo). O Campeão ganha a sua (Enemy.CHAMPION_GRADE).
+	for bot in EON_BOTS:
+		_grade(bot, 0.0, 0.38, Color(0.94, 0.92, 0.98))
+	_grade("alado", 2.6, 0.85, Color(1.05, 1.0, 0.92))      # pintura do sonâmbulo → âmbar (não o anil de Athoth)
+	_grade("fantasma", -1.4, 0.7, Color(0.9, 1.05, 1.05))    # pintura do mudo → verde-espectro (não o anil de Yabel)
 
 	# Os 7 Arcontes dos 7 Éons (ordem = ordem dos atos; ver docs/LORE.md).
 	# Cada um tem uma ASSINATURA visual (feature própria) e um KIT de mecânica.

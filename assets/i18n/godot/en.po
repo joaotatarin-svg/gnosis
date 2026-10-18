@@ -6,192 +6,202 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. bestiary._build.c70469  [bestiario]
-#: scripts/autoload/bestiary.gd:245
+#: scripts/autoload/bestiary.gd:269
 msgid "Larva do Kenoma"
 msgstr "Kenoma Larva"
 
 #. bestiary._build.041a5a  [bestiario]
-#: scripts/autoload/bestiary.gd:247
+#: scripts/autoload/bestiary.gd:271
 msgid "Sombra Errante"
 msgstr "Wandering Shade"
 
 #. bestiary._build.565fa2  [bestiario]
-#: scripts/autoload/bestiary.gd:249
+#: scripts/autoload/bestiary.gd:273
 msgid "Servo do Demiurgo"
 msgstr "Demiurge's Servant"
 
+#. bestiary._build.bce192  [bestiario]
+#: scripts/autoload/bestiary.gd:277
+msgid "Acólito do Fogo-Fátuo"
+msgstr "Wisp Acolyte"
+
 #. bestiary._build.acf0b4  [bestiario]
-#: scripts/autoload/bestiary.gd:252
+#: scripts/autoload/bestiary.gd:280
 msgid "Larva Ardente"
 msgstr "Burning Larva"
 
 #. bestiary._build.d4861d  [bestiario]
-#: scripts/autoload/bestiary.gd:255
+#: scripts/autoload/bestiary.gd:283
 msgid "Guardião Espinhoso"
 msgstr "Thorned Guardian"
 
 #. bestiary._build.5df56c  [bestiario]
-#: scripts/autoload/bestiary.gd:257
+#: scripts/autoload/bestiary.gd:285
 msgid "Besta Canina"
 msgstr "Hound Beast"
 
 #. bestiary._build.3861c4  [bestiario]
-#: scripts/autoload/bestiary.gd:259
+#: scripts/autoload/bestiary.gd:287
 msgid "Ceifador Cornudo"
 msgstr "Horned Reaper"
 
 #. bestiary._build.9bbbd2  [bestiario]
-#: scripts/autoload/bestiary.gd:262
+#: scripts/autoload/bestiary.gd:290
 msgid "Escudeiro do Selo"
 msgstr "Seal Squire"
 
+#. bestiary._build.257c58  [bestiario]
+#: scripts/autoload/bestiary.gd:294
+msgid "Espectro Mergulhador"
+msgstr "Plunging Specter"
+
 #. bestiary._build.f3ab88  [bestiario]
-#: scripts/autoload/bestiary.gd:265
+#: scripts/autoload/bestiary.gd:299
 msgid "Vigia Alado"
 msgstr "Winged Sentinel"
 
 #. bestiary._build.9bf35e  [bestiario]
-#: scripts/autoload/bestiary.gd:267
+#: scripts/autoload/bestiary.gd:301
 msgid "Bruto de Ferro"
 msgstr "Iron Brute"
 
 #. bestiary._build.0af239  [bestiario]
-#: scripts/autoload/bestiary.gd:269
+#: scripts/autoload/bestiary.gd:303
 msgid "Arauto do Silêncio"
 msgstr "Herald of Silence"
 
 #. bestiary._build.3cff43  [bestiario]
-#: scripts/autoload/bestiary.gd:272
+#: scripts/autoload/bestiary.gd:306
 msgid "Fantasma do Vazio"
 msgstr "Void Phantom"
 
 #. bestiary._build.87688f  [bestiario]
-#: scripts/autoload/bestiary.gd:275
+#: scripts/autoload/bestiary.gd:309
 msgid "Invocador de Larvas"
 msgstr "Larva Summoner"
 
 #. bestiary._build.beb9c7  [bestiario]
-#: scripts/autoload/bestiary.gd:278
+#: scripts/autoload/bestiary.gd:312
 msgid "Aberração do Vazio"
 msgstr "Void Aberration"
 
 #. bestiary._build.ab02a5  [bestiario]
-#: scripts/autoload/bestiary.gd:283
+#: scripts/autoload/bestiary.gd:317
 msgid "Sonâmbulo"
 msgstr "Sleepwalker"
 
 #. bestiary._build.2b9c1a  [bestiario]
-#: scripts/autoload/bestiary.gd:286
+#: scripts/autoload/bestiary.gd:320
 msgid "Glutão"
 msgstr "Glutton"
 
 #. bestiary._build.07ed98  [bestiario]
-#: scripts/autoload/bestiary.gd:289
+#: scripts/autoload/bestiary.gd:323
 msgid "Carcereiro"
 msgstr "Jailer"
 
 #. bestiary._build.b15c1a  [bestiario]
-#: scripts/autoload/bestiary.gd:292
+#: scripts/autoload/bestiary.gd:326
 msgid "Bibliotecário Mudo"
 msgstr "Mute Librarian"
 
 #. bestiary._build.02158a  [bestiario]
-#: scripts/autoload/bestiary.gd:295
+#: scripts/autoload/bestiary.gd:329
 msgid "Reflexo"
 msgstr "Reflection"
 
 #. bestiary._build.529dff  [bestiario]
-#: scripts/autoload/bestiary.gd:298
+#: scripts/autoload/bestiary.gd:332
 msgid "Portador de Esporos"
 msgstr "Spore-Bearer"
 
 #. bestiary._build.94d379  [bestiario]
-#: scripts/autoload/bestiary.gd:301
+#: scripts/autoload/bestiary.gd:335
 msgid "Pretoriano da Coroa"
 msgstr "Crown Praetorian"
 
 #. bestiary._build.9a8e21  [bestiario]
-#: scripts/autoload/bestiary.gd:305
+#: scripts/autoload/bestiary.gd:339
 msgid "Sombra da Sophia"
 msgstr "Sophia's Shadow"
 
 #. bestiary._build.cd9f88  [bestiario]
-#: scripts/autoload/bestiary.gd:317
+#: scripts/autoload/bestiary.gd:369
 msgid "Athoth, Arconte do Torpor"
 msgstr "Athoth, Archon of Torpor"
 
 #. bestiary._build.7f99d0  [bestiario]
-#: scripts/autoload/bestiary.gd:320
+#: scripts/autoload/bestiary.gd:372
 msgid "Harmas, Arconte da Fome"
 msgstr "Harmas, Archon of Hunger"
 
 #. bestiary._build.1cf359  [bestiario]
-#: scripts/autoload/bestiary.gd:323
+#: scripts/autoload/bestiary.gd:375
 msgid "Galila, Arconte da Corrente"
 msgstr "Galila, Archon of the Chain"
 
 #. bestiary._build.e9b247  [bestiario]
-#: scripts/autoload/bestiary.gd:326
+#: scripts/autoload/bestiary.gd:378
 msgid "Yabel, Arconte do Silêncio"
 msgstr "Yabel, Archon of Silence"
 
 #. bestiary._build.1d1aa8  [bestiario]
-#: scripts/autoload/bestiary.gd:329
+#: scripts/autoload/bestiary.gd:381
 msgid "Astaphaios, Arconte do Espelho"
 msgstr "Astaphaios, Archon of the Mirror"
 
 #. bestiary._build.0d91f6  [bestiario]
-#: scripts/autoload/bestiary.gd:332
+#: scripts/autoload/bestiary.gd:384
 msgid "Belias, Arconte da Praga"
 msgstr "Belias, Archon of Blight"
 
 #. bestiary._build.43457b  [bestiario]
-#: scripts/autoload/bestiary.gd:335
+#: scripts/autoload/bestiary.gd:387
 msgid "Armupiel, Arconte da Coroa"
 msgstr "Armupiel, Archon of the Crown"
 
 #. bestiary._build.d82541  [bestiario]
-#: scripts/autoload/bestiary.gd:342
+#: scripts/autoload/bestiary.gd:394
 msgid "O Rei"
 msgstr "The King"
 
 #. bestiary._build.14730e  [bestiario]
-#: scripts/autoload/bestiary.gd:346
+#: scripts/autoload/bestiary.gd:398
 msgid "O Rei — a Mentira"
 msgstr "The King — the Lie"
 
 #. bestiary._build.8a39d6  [bestiario]
-#: scripts/autoload/bestiary.gd:350
+#: scripts/autoload/bestiary.gd:402
 msgid "O Colosso Oco — a Verdade"
 msgstr "Hollow Colossus — the Truth"
 
 #. bestiary._build.c293d3  [bestiario]
-#: scripts/autoload/bestiary.gd:354
+#: scripts/autoload/bestiary.gd:406
 msgid "Yaldabaoth"
 msgstr "Yaldabaoth"
 
 #. bestiary._build.740cc1  [bestiario]
-#: scripts/autoload/bestiary.gd:362
+#: scripts/autoload/bestiary.gd:414
 msgid "Eco de "
 msgstr "Echo of "
 
 #. bestiary._build.dcccff  [nome]
-#: scripts/autoload/bestiary.gd:367
+#: scripts/autoload/bestiary.gd:419
 msgid "Ombreiras do Éon"
 msgstr "Aeon Pauldrons"
 
 #. bestiary._build.a4b38a  [nome]
-#: scripts/autoload/bestiary.gd:368
+#: scripts/autoload/bestiary.gd:420
 msgid "Elmo do Guardião"
 msgstr "Guardian's Helm"
 
 #. bestiary._build.d4a343  [nome]
-#: scripts/autoload/bestiary.gd:369
+#: scripts/autoload/bestiary.gd:421
 msgid "Braceletes do Éon"
 msgstr "Aeon Bracers"
 
 #. bestiary._build.4c2b27  [nome]
-#: scripts/autoload/bestiary.gd:370
+#: scripts/autoload/bestiary.gd:422
 msgid "Diadema da Fonte"
 msgstr "Diadem of the Source"
 
@@ -4791,27 +4801,27 @@ msgid "Segredo encontrado"
 msgstr "Secret found"
 
 #. enemy.display_name.cef7da  [ui]
-#: scripts/entities/enemy.gd:29
+#: scripts/entities/enemy.gd:32
 msgid "Arconte"
 msgstr "Archon"
 
 #. enemy._ready.93c65e  [ui]
-#: scripts/entities/enemy.gd:186
+#: scripts/entities/enemy.gd:243
 msgid "%s (Elite)"
 msgstr "%s (Elite)"
 
 #. enemy._ready.5fbd7f  [ui]
-#: scripts/entities/enemy.gd:195
+#: scripts/entities/enemy.gd:252
 msgid "Campeão %s"
 msgstr "Champion %s"
 
 #. enemy._eon_title.5101be  [ui]
-#: scripts/entities/enemy.gd:267
+#: scripts/entities/enemy.gd:341
 msgid "da "
 msgstr "of "
 
 #. enemy._eon_title.ce4410  [ui]
-#: scripts/entities/enemy.gd:267
+#: scripts/entities/enemy.gd:341
 msgid "do "
 msgstr "of "
 
