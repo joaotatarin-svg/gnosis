@@ -34,6 +34,10 @@ var dummy_hb: Hurtbox
 var _times: Array[float] = []
 var _last_us: int = 0
 var _perf_flip: int = 0
+var _perf_noimpact: bool = false
+var _draws: float = 0.0
+var _gpu: float = 0.0
+var _rcpu: float = 0.0
 
 const SOPHIA_POS := Vector2(170, 286)
 const DUMMY_POS := Vector2(400, 286)
@@ -50,6 +54,7 @@ func _ready() -> void:
 		queue = ATTACKS.duplicate() if which == "all" else [which]
 	elif mode == "perf" and args.size() >= 3:
 		perf_n = int(args[2])
+		_perf_noimpact = args.size() >= 4 and args[3] == "noimpact"
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	Engine.max_fps = 0
 	vp = SubViewport.new()
@@ -58,6 +63,7 @@ func _ready() -> void:
 	vp.size_2d_override_stretch = true
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	add_child(vp)
+	RenderingServer.viewport_set_measure_render_time(vp.get_viewport_rid(), true)
 	_build_world()
 	if mode == "gif":
 		_next_attack()
@@ -262,6 +268,12 @@ func _perf_step() -> void:
 	var now := Time.get_ticks_usec()
 	if frame > PERF_WARM and _last_us > 0:
 		_times.append(float(now - _last_us) / 1000.0)
+		_draws += Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+		_gpu += RenderingServer.viewport_get_measured_render_time_gpu(vp.get_viewport_rid())
+		_rcpu += RenderingServer.viewport_get_measured_render_time_cpu(vp.get_viewport_rid())
+	if frame == 2 and _perf_noimpact:
+		sophia_hb.monitorable = false
+		dummy_hb.monitorable = false
 	_last_us = now
 	var live := 0
 	for n in world.get_children():
@@ -286,7 +298,8 @@ func _perf_step() -> void:
 			sum += t
 		var avg := sum / float(_times.size())
 		var p95: float = _times[int(_times.size() * 0.95)]
-		var line := "perf n=%d quadros=%d media_ms=%.3f p95_ms=%.3f fps_medio=%.1f vfx_vivos=%d" % [perf_n, _times.size(), avg, p95, 1000.0 / avg, get_tree().get_nodes_in_group(VfxLibrary.GROUP).size()]
+		var nf := float(_times.size())
+		var line := "perf n=%d%s quadros=%d media_ms=%.3f p95_ms=%.3f fps_medio=%.1f gpu_ms=%.3f render_cpu_ms=%.3f draw_calls=%.0f vfx_vivos=%d" % [perf_n, " sem_impacto" if _perf_noimpact else "", _times.size(), avg, p95, 1000.0 / avg, _gpu / nf, _rcpu / nf, _draws / nf, get_tree().get_nodes_in_group(VfxLibrary.GROUP).size()]
 		print("VFX7 ", line)
 		var f := FileAccess.open(out, FileAccess.WRITE)
 		if f != null:
