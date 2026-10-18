@@ -5,7 +5,10 @@ class_name SparkOrb
 ## o orbe é a "entrega" sensorial (R6, NEURO_SATISFACAO):
 ##  - as chegadas saem espaçadas (~55 ms, ordem do índice), formando um arpejo;
 ##  - ao CHEGAR, toca "spark" (o Áudio sobe a escala pentatônica em sequência)
-##    e avisa o HUD (`spark_orb_arrived`) para o contador subir 1 a 1.
+##    e avisa o HUD (`spark_orb_arrived`) para o contador subir 1 a 1;
+##  - com uma relíquia de faísca em uso (Brasa/Lâmpada), cura ou devolve Éter.
+## TAXAS: quantas faíscas cada inimigo vale mora no Bestiário/enemy.gd; a
+## economia (preços e selos) mora no Progression (docs/onda2/PROGRESSAO6.md).
 
 const ARRIVAL_STEP := 0.055      # s entre chegadas (40–70 ms; o anti-spam do Áudio é 40)
 const HOMING_RATE := 3.2         # quão rápido a atração cresce (1/s)
@@ -92,10 +95,33 @@ func _arrive() -> void:
 	delivered = true
 	ImpactBurst.spawn(get_parent(), global_position, color)
 	Audio.play_sfx("spark")
+	_relic_touch(get_tree().get_first_node_in_group("player"))
 	for h in get_tree().get_nodes_in_group("hud"):
 		if h.has_method("spark_orb_arrived"):
 			h.spark_orb_arrived()
 	queue_free()
+
+
+## Relíquia em uso (Onda 6): a faísca que CHEGA alimenta a Sophia — a Brasa
+## Viva cura, a Lâmpada de Óleo devolve Éter. Só na chegada (o orbe que se
+## perde sem Sophia não conta) e nunca num corpo caído.
+func _relic_touch(player: Node) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	var hc = player.get("health")
+	if hc == null or hc.is_dead():
+		return
+	match Progression.equipped_relic():
+		"brasa":
+			hc.heal(Progression.RELIC_HEAL_PER_SPARK)
+		"lampada":
+			if "mana" in player and "max_mana_total" in player:
+				var top := float(player.get("max_mana_total"))
+				var cur := float(player.get("mana"))
+				if cur < top:
+					player.set("mana", minf(top, cur + float(Progression.RELIC_ETHER_PER_SPARK)))
+					if player.has_signal("mana_changed"):
+						player.emit_signal("mana_changed", int(player.get("mana")), int(top))
 
 
 func _draw() -> void:

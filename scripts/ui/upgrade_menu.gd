@@ -7,15 +7,19 @@ extends CanvasLayer
 ## item; setas/D-pad andam, Enter/A compra, Esc/B fecha. Depois de comprar, o
 ## foco fica no mesmo item (dá para comprar em série no controle).
 ## Pausa o mundo pela `PauseStack` (por cima da pausa, fechar volta para ela).
-## Economia (Balance P1/P2): +20 de vida máx. custa 60 × (n+1) e vende no
-## máximo 10 vezes; a Restauração (cura cheia) só no santuário e no pós-chefe
-## (`RunManager.pending_advance`) — aberta pela pausa, ela aparece trancada.
+## Economia (Onda 6 — números e regras no Progression, docs/onda2/PROGRESSAO6.md):
+## preços crescentes; o nível máximo de cada trilha é SELADO pelo progresso
+## (Arcontes vencidos no run) — a linha selada aparece apagada com "selado ·
+## vença <Arconte>"; relíquias (uma em uso, troca de graça); a Restauração (cura
+## cheia) só no santuário e no pós-chefe (`RunManager.pending_advance`).
 
-const HP_STEP := 20
-const HP_BASE_COST := 60
-const HP_MAX_BUYS := 10
-const HEAL_COST := 50
-const SOTER_HP := 25                 # dom de vida do Soter (npc_encounter.gd)
+## Atalhos para quem lia daqui (QA/ferramentas): a fonte é o Progression.
+const _PROG := preload("res://scripts/autoload/progression_manager.gd")
+const HP_STEP := _PROG.HP_STEP
+const HP_BASE_COST := _PROG.HP_BASE_COST
+const HP_MAX_BUYS := _PROG.HP_MAX_BUYS
+const HEAL_COST := _PROG.HEAL_BASE_COST
+const SOTER_HP := _PROG.SOTER_HP
 
 @onready var spark_label: Label = $Center/Panel/VBox/SparkLabel
 @onready var list: VBoxContainer = $Center/Panel/VBox/List
@@ -104,8 +108,11 @@ func _rebuild() -> void:
 				if c.required_weapon_level == Progression.weapon_level + 1:
 					opens.append(c.display_name)
 		var sub := ("abre: " + ", ".join(opens)) if not opens.is_empty() else ""
-		_add("Arma Nv. %d → %d" % [Progression.weapon_level, Progression.weapon_level + 1], sub, cost,
-			Progression.can_upgrade_weapon(), _buy_weapon)
+		var title := "Arma Nv. %d → %d" % [Progression.weapon_level, Progression.weapon_level + 1]
+		if Progression.weapon_sealed():
+			_add_sealed(title, Progression.weapon_next_tier(), cost)
+		else:
+			_add(title, sub, cost, Progression.can_upgrade_weapon(), _buy_weapon)
 	else:
 		_add("Arma no nível máximo", "", -1, false, Callable())
 
@@ -120,21 +127,55 @@ func _rebuild() -> void:
 				_add("%s  ·  Nv. %d (máx.)" % [skill.display_name, lvl], "", -1, false, Callable(), skill.color)
 			else:
 				var cost := Progression.skill_upgrade_cost(skill.id)
-				_add("%s  ·  Nv. %d → %d" % [skill.display_name, lvl, lvl + 1], "", cost,
-					Progression.orbs >= cost, _buy_skill.bind(skill), skill.color)
+				var title := "%s  ·  Nv. %d → %d" % [skill.display_name, lvl, lvl + 1]
+				if Progression.skill_sealed(skill.id):
+					_add_sealed(title, Progression.skill_next_tier(skill.id), cost, skill.color)
+				else:
+					_add(title, "", cost, Progression.orbs >= cost, _buy_skill.bind(skill), skill.color)
 
-	# Vida / Éter máximos e cura.
+	# Vida / Éter máximos: preço crescente; o teto sobe com os Arcontes.
 	var n := hp_buys()
+	var hp_title := "+20 de vida máx.  ·  %d / %d" % [n, HP_MAX_BUYS]
 	if n >= HP_MAX_BUYS:
-		_add("+20 de vida máx.  ·  %d / %d" % [n, HP_MAX_BUYS], "no máximo", -1, false, Callable(), CodexStyle.LIFE_HI)
+		_add(hp_title, "no máximo", -1, false, Callable(), CodexStyle.LIFE_HI)
+	elif n >= Progression.hp_buy_cap():
+		_add_sealed(hp_title, n - Progression.HP_FREE_BUYS + 1, hp_cost_for(n), CodexStyle.LIFE_HI)
 	else:
 		var hp_cost := hp_cost_for(n)
-		_add("+20 de vida máx.  ·  %d / %d" % [n, HP_MAX_BUYS], "", hp_cost, Progression.orbs >= hp_cost, _buy_hp, CodexStyle.LIFE_HI)
-	_add("+15 de Éter máx.", "", 60, Progression.orbs >= 60, _buy_mp, CodexStyle.ETHER_HI)
+		_add(hp_title, "", hp_cost, Progression.orbs >= hp_cost, _buy_hp, CodexStyle.LIFE_HI)
+	var m := Progression.mp_buys()
+	var mp_title := "+15 de Éter máx.  ·  %d / %d" % [m, Progression.MP_MAX_BUYS]
+	if m >= Progression.MP_MAX_BUYS:
+		_add(mp_title, "no máximo", -1, false, Callable(), CodexStyle.ETHER_HI)
+	elif m >= Progression.mp_buy_cap():
+		_add_sealed(mp_title, m - Progression.MP_FREE_BUYS + 1, Progression.mp_cost_for(m), CodexStyle.ETHER_HI)
+	else:
+		var mp_cost := Progression.mp_cost_for(m)
+		_add(mp_title, "", mp_cost, Progression.orbs >= mp_cost, _buy_mp, CodexStyle.ETHER_HI)
+
+	# Relíquias: compra = já põe em uso; as compradas trocam de graça.
+	var worn := Progression.equipped_relic()
+	for r in GameContent.relics:
+		var rid: String = r.get("id", "")
+		var rname: String = r.get("name", "")
+		var rcol: Color = r.get("color", CodexStyle.GOLD)
+		var rdesc: String = r.get("desc", "")
+		if Progression.has_relic(rid):
+			if rid == worn:
+				_add("%s  ·  em uso" % rname, rdesc, -1, false, Callable(), rcol)
+			else:
+				_add("%s  ·  usar" % rname, rdesc, -1, true, _equip_relic.bind(rid), rcol)
+		elif Progression.relic_sealed(rid):
+			_add_sealed("Relíquia  ·  %s" % rname, int(r.get("tier", 0)), int(r.get("cost", 0)), rcol)
+		else:
+			var rcost: int = int(r.get("cost", 0))
+			_add("Relíquia  ·  %s" % rname, rdesc, rcost, Progression.orbs >= rcost, _buy_relic.bind(rid), rcol)
+
 	var pl := get_tree().get_first_node_in_group("player")
 	var hurt: bool = pl != null and pl.health != null and pl.health.current_health < pl.health.max_health
+	var heal_cost := Progression.heal_cost()
 	if heal_allowed():
-		_add("Restauração  ·  cura completa", "" if hurt else "a vida já está cheia", HEAL_COST, hurt and Progression.orbs >= HEAL_COST, _buy_heal)
+		_add("Restauração  ·  cura completa", "" if hurt else "a vida já está cheia", heal_cost, hurt and Progression.orbs >= heal_cost, _buy_heal)
 	else:
 		_add("Restauração  ·  cura completa", "só no santuário e depois do Arconte", -1, false, Callable())
 
@@ -156,7 +197,10 @@ func _update_status(row: Button) -> void:
 	if _status == null:
 		return
 	var text := ""
-	if row != null and row.has_meta("cost"):
+	if row != null and row.has_meta("seal"):
+		# Selado pelo progresso: diz QUEM abre (o preço já aparece apagado).
+		text = "Selado  ·  vença %s para abrir" % Progression.tier_gate_name(int(row.get_meta("seal")))
+	elif row != null and row.has_meta("cost"):
 		var cost: int = row.get_meta("cost")
 		if cost >= 0 and Progression.orbs < cost:
 			text = "Faíscas insuficientes  ·  faltam %d" % (cost - Progression.orbs)
@@ -167,6 +211,8 @@ func _update_status(row: Button) -> void:
 			if r.is_queued_for_deletion() or not r.has_meta("cost"):
 				continue
 			var c: int = r.get_meta("cost")
+			if r.has_meta("seal"):
+				continue
 			if not r.disabled:
 				any_ok = true
 			elif c >= 0 and Progression.orbs < c:
@@ -174,6 +220,15 @@ func _update_status(row: Button) -> void:
 		if any_short and not any_ok:
 			text = "Faíscas insuficientes para as melhorias"
 	_status.text = text
+
+
+## Linha SELADA pelo progresso: apagada, preço visível, subtítulo "selado ·
+## vença <Arconte>" e, no foco, a faixa diz quem abre.
+func _add_sealed(text: String, tier: int, cost: int, accent: Color = CodexStyle.GOLD) -> void:
+	_add(text, "selado  ·  vença %s" % Progression.tier_gate_name(tier), cost, false, Callable(), accent)
+	var rows := list.get_children()
+	if not rows.is_empty():
+		rows[rows.size() - 1].set_meta("seal", tier)
 
 
 ## Uma linha da loja: nome (+ subtítulo), preço com faísca à direita.
@@ -226,35 +281,23 @@ func _buy_skill(skill: SkillData) -> void:
 
 
 func _buy_hp() -> void:
-	var n := hp_buys()
-	if n >= HP_MAX_BUYS:
-		Audio.play_sfx("shop_fail")
-		return
-	_buy_sfx(Progression.buy_max_health(HP_STEP, hp_cost_for(n)))
+	_buy_sfx(Progression.buy_health_upgrade())
 	_rebuild()
 
 
-## Preço da (n+1)-ésima compra de vida: 60, 120, 180...
+## Preço da (n+1)-ésima compra de vida (fonte: Progression).
 static func hp_cost_for(n: int) -> int:
-	return HP_BASE_COST * (n + 1)
+	return Progression.hp_cost_for(n)
 
 
-## Quantas vezes a vida máx. já foi comprada NESTE run. Deduzida do bônus
-## (já salvo no run e zerado no reset): bônus = 20·n + 25·k, onde k (0–3) são
-## os dons de vida do Soter — 25·k mod 20 é diferente para cada k, então a
-## conta é exata. Usa `Progression.hp_buys` se o Técnico criar o contador.
+## Quantas vezes a vida máx. já foi comprada NESTE run (fonte: Progression,
+## que guarda o contador no run e deduz do bônus em save antigo).
 static func hp_buys() -> int:
-	if "hp_buys" in Progression:
-		return maxi(0, int(Progression.get("hp_buys")))
-	return hp_buys_from_bonus(Progression.bonus_max_health)
+	return Progression.hp_buys()
 
 
 static func hp_buys_from_bonus(bonus: int) -> int:
-	for k in 4:
-		var rest := bonus - SOTER_HP * k
-		if rest >= 0 and rest % HP_STEP == 0:
-			return rest / HP_STEP
-	return maxi(0, bonus / HP_STEP)
+	return Progression.hp_buys_from_bonus(bonus)
 
 
 ## A cura cheia só é vendida fora da luta: santuário/pós-chefe (loja que avança
@@ -264,12 +307,23 @@ static func heal_allowed() -> bool:
 
 
 func _buy_mp() -> void:
-	_buy_sfx(Progression.buy_max_mana(15, 60))
+	_buy_sfx(Progression.buy_mana_upgrade())
+	_rebuild()
+
+
+func _buy_relic(id: String) -> void:
+	_buy_sfx(Progression.buy_relic(id))
+	_rebuild()
+
+
+func _equip_relic(id: String) -> void:
+	Progression.equip_relic(id)
+	Audio.play_sfx("shop_buy")
 	_rebuild()
 
 
 func _buy_heal() -> void:
-	if not heal_allowed() or not Progression.spend_orbs(HEAL_COST):
+	if not heal_allowed() or not Progression.spend_orbs(Progression.heal_cost()):
 		Audio.play_sfx("shop_fail")
 		return
 	Audio.play_sfx("shop_buy")

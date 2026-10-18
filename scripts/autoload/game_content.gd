@@ -4,10 +4,28 @@ extends Node
 ## Autoload acessível como `GameContent`.
 
 var characters: Array[CharacterData] = []
+## RELÍQUIAS (Onda 6): uma em uso por vez — a troca é de graça em qualquer loja,
+## então a escolha é de estilo (lutar perto, conjurar, ou juntar faísca), não
+## só +número. Selo = Arcontes vencidos no run (Progression.progress_tier).
+## Efeitos: brasa/lampada em spark_orb.gd (na CHEGADA de cada faísca);
+## perola em Progression.add_orbs.
+var relics: Array[Dictionary] = []
 
 
 func _ready() -> void:
 	_build_characters()
+	_build_relics()
+
+
+func _build_relics() -> void:
+	relics = [
+		{"id": "brasa", "name": "Brasa Viva", "cost": 350, "tier": 1, "color": Color(1.0, 0.55, 0.35),
+			"desc": "Cada faísca que te alcança cura 2 de vida."},
+		{"id": "lampada", "name": "Lâmpada de Óleo", "cost": 350, "tier": 2, "color": Color(0.55, 0.85, 1.0),
+			"desc": "Cada faísca que te alcança devolve 3 de Éter."},
+		{"id": "perola", "name": "Pérola do Hino", "cost": 500, "tier": 3, "color": Color(0.95, 0.92, 0.8),
+			"desc": "Toda faísca ganha rende um quarto a mais."},
+	]
 
 
 func get_character(id: String) -> CharacterData:
