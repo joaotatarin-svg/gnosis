@@ -5841,7 +5841,7 @@ msgid "%s  —  %s  (%s)"
 msgstr "%s  —  %s  (%s)"
 
 #. dialogue_box._reason_text.d9cd37  [ui]
-#: scripts/ui/dialogue_box.gd:636
+#: scripts/ui/dialogue_box.gd:645
 msgid "%s: %s"
 msgstr "%s: %s"
 
@@ -5911,202 +5911,227 @@ msgid "AINDA NÃO ENCONTRADO"
 msgstr "NOT YET FOUND"
 
 #. hud._on_weapon.3b2ee9  [ui]
-#: scripts/ui/hud.gd:273
+#: scripts/ui/hud.gd:291
 msgid "lança o inimigo para o alto"
 msgstr "launches the enemy into the air"
 
 #. hud._on_weapon.d40c9a  [ui]
-#: scripts/ui/hud.gd:275
+#: scripts/ui/hud.gd:293
 msgid "golpe no ar"
 msgstr "air strike"
 
 #. hud._on_achievement.87fa2b  [toast]
-#: scripts/ui/hud.gd:412
+#: scripts/ui/hud.gd:438
 msgid "Conquista  ·  %s"
 msgstr "Achievement  ·  %s"
 
+#. hud.seal_text.c9c856  [ui]
+#: scripts/ui/hud.gd:881
+msgid "Arma Nv. %d na loja"
+msgstr "Weapon Lv. %d in the shop"
+
+#. hud.seal_text.117cdc  [ui]
+#: scripts/ui/hud.gd:887
+msgid "%s na loja"
+msgstr "%s in the shop"
+
+#. hud.seal_text.3e2d6c  [ui]
+#: scripts/ui/hud.gd:890
+msgid "mais Vida e Éter na loja"
+msgstr "more Life and Aether in the shop"
+
+#. hud.seal_text.3e9499  [ui]
+#: scripts/ui/hud.gd:891
+msgid "Selo aberto"
+msgstr "Seal opened"
+
 #. hud._queue_screen_hints.97ec4f  [ui]
-#: scripts/ui/hud.gd:839
+#: scripts/ui/hud.gd:970
 msgid "golpe leve"
 msgstr "light strike"
 
 #. hud._queue_screen_hints.df3f2e  [ui]
-#: scripts/ui/hud.gd:839
+#: scripts/ui/hud.gd:970
 msgid "golpe forte"
 msgstr "heavy strike"
 
 #. hud._queue_screen_hints.3c90a7  [ui]
-#: scripts/ui/hud.gd:840
+#: scripts/ui/hud.gd:971
 msgid "bloquear · no tempo, apara"
 msgstr "block · on time, parries"
 
 #. hud._queue_screen_hints.6b344d  [ui]
-#: scripts/ui/hud.gd:842
+#: scripts/ui/hud.gd:973
 msgid "sequência do cajado"
 msgstr "staff combo"
 
 #. hud._queue_screen_hints.61dfe8  [ui]
-#: scripts/ui/hud.gd:843
+#: scripts/ui/hud.gd:974
 msgid "Esfera Solar (gasta Éter)"
 msgstr "Sun Orb (costs Aether)"
 
 #. hud._queue_screen_hints.f4f473  [ui]
-#: scripts/ui/hud.gd:845
+#: scripts/ui/hud.gd:976
 msgid "telegrafo amarelo:"
 msgstr "yellow tell:"
 
 #. hud._queue_screen_hints.e9b353  [ui]
-#: scripts/ui/hud.gd:845
+#: scripts/ui/hud.gd:976
 msgid "vermelho:"
 msgstr "red:"
 
 #. hud._queue_screen_hints.bd84ff  [ui]
-#: scripts/ui/hud.gd:846
+#: scripts/ui/hud.gd:977
 msgid "pausa · Golpes & Controles"
 msgstr "pause · Moves & Controls"
 
 #. hud._check_ring_hints.385e09  [ui]
-#: scripts/ui/hud.gd:858
+#: scripts/ui/hud.gd:989
 msgid "usar o Anel equipado (gasta Éter)"
 msgstr "use the equipped Ring (costs Aether)"
 
 #. hud._check_ring_hints.beab08  [ui]
-#: scripts/ui/hud.gd:860
+#: scripts/ui/hud.gd:991
 msgid "trocar de Anel"
 msgstr "switch Ring"
 
 #. hud.key_label.84c4c5  [ui]
-#: scripts/ui/hud.gd:965
+#: scripts/ui/hud.gd:1099
 msgid "Analógico"
 msgstr "Stick"
 
 #. hud.key_label.f999e2  [ui]
-#: scripts/ui/hud.gd:965
+#: scripts/ui/hud.gd:1099
 msgid "%s  %s"
 msgstr "%s  %s"
 
 #. hud._key_name.f61d6e  [ui]
-#: scripts/ui/hud.gd:1010
+#: scripts/ui/hud.gd:1144
 msgid "Espaço"
 msgstr "Space"
 
 #. hud._key_name.1f7a4f  [ui]
-#: scripts/ui/hud.gd:1011
+#: scripts/ui/hud.gd:1145
 msgid "Esc"
 msgstr "Esc"
 
 #. hud._key_name.469d5b  [ui]
-#: scripts/ui/hud.gd:1012
+#: scripts/ui/hud.gd:1146
 msgid "Shift"
 msgstr "Shift"
 
 #. hud._key_name.2b9ece  [ui]
-#: scripts/ui/hud.gd:1013
+#: scripts/ui/hud.gd:1147
 msgid "Enter"
 msgstr "Enter"
 
 #. hud._key_name.71815f  [ui]
-#: scripts/ui/hud.gd:1014
+#: scripts/ui/hud.gd:1148
 msgid "Esq."
 msgstr "Left"
 
 #. hud._key_name.72acb3  [ui]
-#: scripts/ui/hud.gd:1015
+#: scripts/ui/hud.gd:1149
 msgid "Dir."
 msgstr "Right"
 
 #. hud._key_name.4effab  [ui]
-#: scripts/ui/hud.gd:1016
+#: scripts/ui/hud.gd:1150
 msgid "Cima"
 msgstr "Up"
 
 #. hud._key_name.74fd00  [ui]
-#: scripts/ui/hud.gd:1017
+#: scripts/ui/hud.gd:1151
 msgid "Baixo"
 msgstr "Down"
 
 #. hud._pad_button_name.6dcd4c  [ui]
-#: scripts/ui/hud.gd:1023
+#: scripts/ui/hud.gd:1157
 msgid "A"
 msgstr "A"
 
 #. hud._pad_button_name.ae4f28  [ui]
-#: scripts/ui/hud.gd:1024
+#: scripts/ui/hud.gd:1158
 msgid "B"
 msgstr "B"
 
 #. hud._pad_button_name.c032ad  [ui]
-#: scripts/ui/hud.gd:1025
+#: scripts/ui/hud.gd:1159
 msgid "X"
 msgstr "X"
 
 #. hud._pad_button_name.23eb4d  [ui]
-#: scripts/ui/hud.gd:1026
+#: scripts/ui/hud.gd:1160
 msgid "Y"
 msgstr "Y"
 
 #. hud._pad_button_name.2d1958  [ui]
-#: scripts/ui/hud.gd:1027
+#: scripts/ui/hud.gd:1161
 msgid "LB"
 msgstr "LB"
 
 #. hud._pad_button_name.38026d  [ui]
-#: scripts/ui/hud.gd:1028
+#: scripts/ui/hud.gd:1162
 msgid "RB"
 msgstr "RB"
 
 #. hud._pad_button_name.952f37  [ui]
-#: scripts/ui/hud.gd:1030
+#: scripts/ui/hud.gd:1164
 msgid "Start"
 msgstr "Start"
 
 #. hud._pad_button_name.53157e  [ui]
-#: scripts/ui/hud.gd:1031
+#: scripts/ui/hud.gd:1165
 msgid "D-pad Esq."
 msgstr "D-pad Left"
 
 #. hud._pad_button_name.b7d05d  [ui]
-#: scripts/ui/hud.gd:1032
+#: scripts/ui/hud.gd:1166
 msgid "D-pad Dir."
 msgstr "D-pad Right"
 
 #. hud._pad_button_name.442f4a  [ui]
-#: scripts/ui/hud.gd:1033
+#: scripts/ui/hud.gd:1167
 msgid "D-pad Cima"
 msgstr "D-pad Up"
 
 #. hud._pad_button_name.237b1b  [ui]
-#: scripts/ui/hud.gd:1034
+#: scripts/ui/hud.gd:1168
 msgid "D-pad Baixo"
 msgstr "D-pad Down"
 
 #. hud._pad_button_name.67c850  [ui]
-#: scripts/ui/hud.gd:1035
+#: scripts/ui/hud.gd:1169
 msgid "Botão %d"
 msgstr "Button %d"
 
 #. hud._pad_axis_name.6c62fb  [ui]
-#: scripts/ui/hud.gd:1040
+#: scripts/ui/hud.gd:1174
 msgid "LT"
 msgstr "LT"
 
 #. hud._pad_axis_name.bc410c  [ui]
-#: scripts/ui/hud.gd:1041
+#: scripts/ui/hud.gd:1175
 msgid "RT"
 msgstr "RT"
 
 #. hud._pad_axis_name.e39ae1  [ui]
-#: scripts/ui/hud.gd:1043
+#: scripts/ui/hud.gd:1177
 msgid "Eixo %d"
 msgstr "Axis %d"
 
 #. hud._draw_counters.a602bb  [ui]
-#: scripts/ui/hud.gd:1208
+#: scripts/ui/hud.gd:1348
 msgid "Arma Nv. %d"
 msgstr "Weapon Lv. %d"
 
+#. hud._draw_one_boss.dbb588  [ui]
+#: scripts/ui/hud.gd:1628
+msgid "FASE III"
+msgstr "PHASE III"
+
 #. hud._draw_one_boss.794201  [ui]
-#: scripts/ui/hud.gd:1393
+#: scripts/ui/hud.gd:1628
 msgid "FASE II"
 msgstr "PHASE II"
 
@@ -6765,33 +6790,48 @@ msgstr "On"
 msgid "Desligada"
 msgstr "Off"
 
+#. pause_menu._ready.6867e6  [ui]
+#: scripts/ui/pause_menu.gd:44
+msgid "Relic"
+msgstr "Relic"
+
 #. pause_menu._role_text.352f78  [ui]
-#: scripts/ui/pause_menu.gd:52
+#: scripts/ui/pause_menu.gd:74
 msgid "Provação  ·  encontro %d / 3"
 msgstr "Trial  ·  encounter %d / 3"
 
+#. pause_menu._open_map.412f13  [ui]
+#: scripts/ui/pause_menu.gd:120
+msgid "O caminho do Éon até aqui. Só para olhar."
+msgstr "The Aeon's path so far. Just for looking."
+
+#. pause_menu._open_map.8b07a2  [ui]
+#: scripts/ui/pause_menu.gd:123
+msgid "passeiam pelas saídas"
+msgstr "browse the exits"
+
 #. pause_menu._lock_upgrades_in_combat.da279d  [ui]
-#: scripts/ui/pause_menu.gd:62
+#: scripts/ui/pause_menu.gd:161
 msgid "Disponível fora de combate"
 msgstr "Available outside combat"
 
 #. pause_menu._ask_quit.0c5877  [ui]
-#: scripts/ui/pause_menu.gd:153
+#: scripts/ui/pause_menu.gd:252
 msgid "Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d."
 msgstr "You'll return to the menu. Your saved return point remains: %s, screen %d."
 
 #. pause_menu._ask_quit.9e31c8  [ui]
-#: scripts/ui/pause_menu.gd:155
+#: scripts/ui/pause_menu.gd:254
 msgid "Você volta ao menu. A Provação não grava progresso."
 msgstr "You'll return to the menu. The Trial doesn't save progress."
 
 #. pause_menu._ask_quit.d7932f  [ui]
-#: scripts/ui/pause_menu.gd:156
+#: scripts/ui/pause_menu.gd:255
 msgid "Abandonar a jornada?"
 msgstr "Abandon the journey?"
 
 #. pause_menu._ask_quit.a2f17f  [ui]
-#: scripts/ui/pause_menu.gd:156
+#: scripts/ui/pause_menu.gd:255
 msgid "Abandonar"
 msgstr "Abandon"
 
@@ -6834,6 +6874,36 @@ msgstr "Demo  ·  the Threshold and Torpor  ·  ~20 minutes"
 #: scripts/ui/pregame.gd:73
 msgid "Sete Éons  ·  Sete Arcontes  ·  ~2–3 horas"
 msgstr "Seven Aeons  ·  Seven Archons  ·  ~2–3 hours"
+
+#. run_labels.role_title.c59a93  [ui]
+#: scripts/ui/run_labels.gd:24
+msgid "%s · %s"
+msgstr "%s · %s"
+
+#. run_labels.relic_line.989ca2  [ui]
+#: scripts/ui/run_labels.gd:46
+msgid "Relíquia em uso"
+msgstr "Relic in use"
+
+#. run_labels.objective_text.3a7e16  [ui]
+#: scripts/ui/run_labels.gd:53
+msgid "quebre o totem"
+msgstr "break the totem"
+
+#. run_labels.objective_text.bb5ced  [ui]
+#: scripts/ui/run_labels.gd:55
+msgid "proteja a luz"
+msgstr "protect the light"
+
+#. run_labels.objective_text.88a020  [ui]
+#: scripts/ui/run_labels.gd:56
+msgid "maré"
+msgstr "tide"
+
+#. run_labels.objective_text.8a0415  [ui]
+#: scripts/ui/run_labels.gd:57
+msgid "fuja da maré"
+msgstr "flee the tide"
 
 #. upgrade_menu._ready.ef0a9f  [ui]
 #: scripts/ui/upgrade_menu.gd:43
@@ -7000,8 +7070,13 @@ msgstr "Continue"
 msgid "Melhorias"
 msgstr "Upgrades"
 
+#. PauseMenu.Map.b74e0f  [ui_cena]
+#: scenes/ui/PauseMenu.tscn:52
+msgid "Mapa"
+msgstr "Map"
+
 #. PauseMenu.Quit.847330  [ui_cena]
-#: scenes/ui/PauseMenu.tscn:56
+#: scenes/ui/PauseMenu.tscn:60
 msgid "Abandonar a jornada"
 msgstr "Abandon the journey"
 

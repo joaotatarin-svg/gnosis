@@ -1253,6 +1253,10 @@ AINDA NÃO ENCONTRADO,NOT YET FOUND
 lança o inimigo para o alto,launches the enemy into the air
 golpe no ar,air strike
 Conquista  ·  %s,Achievement  ·  %s
+Arma Nv. %d na loja,Weapon Lv. %d in the shop
+%s na loja,%s in the shop
+mais Vida e Éter na loja,more Life and Aether in the shop
+Selo aberto,Seal opened
 golpe leve,light strike
 golpe forte,heavy strike
 "bloquear · no tempo, apara","block · on time, parries"
@@ -1289,6 +1293,7 @@ LT,LT
 RT,RT
 Eixo %d,Axis %d
 Arma Nv. %d,Weapon Lv. %d
+FASE III,PHASE III
 FASE II,PHASE II
 Teclado,Keyboard
 Xbox,Xbox
@@ -1421,7 +1426,10 @@ Vibração do controle,Controller vibration
 Teclas e botões,Keys and buttons
 Ligada,On
 Desligada,Off
+Relic,Relic
 Provação  ·  encontro %d / 3,Trial  ·  encounter %d / 3
+O caminho do Éon até aqui. Só para olhar.,The Aeon's path so far. Just for looking.
+passeiam pelas saídas,browse the exits
 Disponível fora de combate,Available outside combat
 "Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d.","You'll return to the menu. Your saved return point remains: %s, screen %d."
 Você volta ao menu. A Provação não grava progresso.,You'll return to the menu. The Trial doesn't save progress.
@@ -1435,6 +1443,12 @@ Mais que o dobro. Para quem já lê o vermelho e o amarelo.,More than double. Fo
 DIFICULDADE,DIFFICULTY
 Demo  ·  o Limiar e o Torpor  ·  ~20 minutos,Demo  ·  the Threshold and Torpor  ·  ~20 minutes
 Sete Éons  ·  Sete Arcontes  ·  ~2–3 horas,Seven Aeons  ·  Seven Archons  ·  ~2–3 hours
+%s · %s,%s · %s
+Relíquia em uso,Relic in use
+quebre o totem,break the totem
+proteja a luz,protect the light
+maré,tide
+fuja da maré,flee the tide
 Santuário de Ascensão,Shrine of Ascension
 Voltar ao jogo,Back to game
 Seguir caminho,Move on
@@ -1468,6 +1482,7 @@ Menu,Menu
 PAUSA,PAUSED
 Continuar,Continue
 Melhorias,Upgrades
+Mapa,Map
 Abandonar a jornada,Abandon the journey
 Dificuldade,Difficulty
 Começar a travessia,Begin the crossing
