@@ -33,7 +33,11 @@
    "bottom": 237.67,
    "pelvis_x": 77.64,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    105.36,
+    32.51
+   ]
   },
   "walk_contact_A": {
    "rect": [
@@ -47,7 +51,11 @@
    "bottom": 237.28,
    "pelvis_x": 90.15,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    120.71,
+    31.11
+   ]
   },
   "walk_down_A": {
    "rect": [
@@ -61,7 +69,11 @@
    "bottom": 230.51,
    "pelvis_x": 92.64,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    129.63,
+    30.59
+   ]
   },
   "walk_pass_A": {
    "rect": [
@@ -75,7 +87,11 @@
    "bottom": 239.54,
    "pelvis_x": 84.84,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    116.86,
+    32.84
+   ]
   },
   "walk_up_A": {
    "rect": [
@@ -89,7 +105,11 @@
    "bottom": 254.21,
    "pelvis_x": 84.6,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    120.95,
+    33.34
+   ]
   },
   "walk_contact_B": {
    "rect": [
@@ -103,7 +123,11 @@
    "bottom": 231.64,
    "pelvis_x": 83.79,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    124.46,
+    30.71
+   ]
   },
   "walk_pass_B": {
    "rect": [
@@ -117,7 +141,11 @@
    "bottom": 230.51,
    "pelvis_x": 83.68,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    124.32,
+    30.63
+   ]
   },
   "windup": {
    "rect": [
@@ -131,7 +159,11 @@
    "bottom": 247.67,
    "pelvis_x": 84.33,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    60.45,
+    62.7
+   ]
   },
   "strike": {
    "rect": [
@@ -145,7 +177,11 @@
    "bottom": 193.78,
    "pelvis_x": 103.21,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    129.19,
+    27.93
+   ]
   },
   "recover_0": {
    "rect": [
@@ -159,7 +195,11 @@
    "bottom": 220.36,
    "pelvis_x": 88.81,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    124.84,
+    30.45
+   ]
   },
   "recover_1": {
    "rect": [
@@ -173,7 +213,11 @@
    "bottom": 235.03,
    "pelvis_x": 84.65,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    119.53,
+    30.43
+   ]
   },
   "hurt": {
    "rect": [
@@ -187,7 +231,11 @@
    "bottom": 195.44,
    "pelvis_x": 89.61,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    55.38,
+    20.29
+   ]
   },
   "death": {
    "rect": [
@@ -201,7 +249,11 @@
    "bottom": 141.56,
    "pelvis_x": 100.67,
    "mid": false,
-   "translucent": false
+   "translucent": false,
+   "head": [
+    131.42,
+    16.61
+   ]
   }
  },
  "states": {

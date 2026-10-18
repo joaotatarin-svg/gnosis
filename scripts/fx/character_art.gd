@@ -353,6 +353,8 @@ func _draw() -> void:
 		return
 	if is_instance_valid(boss_puppet) and texture == null and not has_boss_frames():
 		return
+	if _shattered:
+		return                                # morte encenada: o corpo virou cacos
 	var s := profile.height / 44.0
 	_compute_pose()
 
@@ -1575,11 +1577,13 @@ func _draw_painted(s: float) -> void:
 		if key != _shown_key:
 			_on_boss_frame_changed(seq, i)
 			_shown_key = key
-		m = _boss_m.duplicate()
+		m = _boss_m.duplicate() if _death_t < 0.0 else _death_motion()
 		# pé e centro do corpo onde estavam na pintura antiga (unidades do corpo)
 		m[0] = float(m[0]) + float(meta.fit.dx) * hw / s
 		m[4] = float(m[4]) - float(meta.fit.foot_gap) * hw / s
 		_boss_shown = {"rect": rect, "anchor": anchor, "k": k, "tex": tex}
+		if fr.has("head"):
+			_boss_shown["head"] = Vector2(fr.head[0], fr.head[1])
 		# criaturas comuns: mesma tinta leve por tipo da pintura única
 		if painted.get("sheet", "") == "inhabitants" and not painted.get("bot", false) and not profile.painted_id in ["soter", "velkar", "sleeper"]:
 			tint = Color.WHITE.lerp(profile.primary.lightened(0.3), 0.22)
@@ -1632,9 +1636,12 @@ func _draw_painted(s: float) -> void:
 		var rim: float = 0.0
 		if rim_enabled and String(_boss_db.meta.get("kind", "")) != "npc":
 			rim = RIM_BASE * (2.0 if anim_state.begins_with("windup") else 1.0)
+		if _death_t >= 0.0:
+			rim = _death_rim()                  # a luz vaza pela borda antes de quebrar
+			tint = tint * _death_tint()
 		mat.set_shader_parameter("rim_amt", rim)
-		mat.set_shader_parameter("rim_color", eon_light())
-		mat.set_shader_parameter("rim_px", 4.0)
+		mat.set_shader_parameter("rim_color", _death_col if _death_t >= 0.0 else eon_light())
+		mat.set_shader_parameter("rim_px", 6.0 if _death_t >= DEATH_FALL else 4.0)
 		# família do Arconte SEM arte própria (interino #7): dessatura + tinta da criatura
 		var family: bool = painted.get("family", false)
 		mat.set_shader_parameter("sat_mul", 0.45 if family else 1.0)
@@ -1811,7 +1818,7 @@ func _draw_smear() -> void:
 ## Dissolução: criaturas comuns (sem boneco) e a Sophia morta não usam;
 ## a forma das criaturas se desfaz em ruído com borda luminosa.
 func _dissolve_amount() -> float:
-	if anim_state != "dead" or painted.get("hero", false):
+	if anim_state != "dead" or painted.get("hero", false) or _death_t >= 0.0:
 		return 0.0
 	return clampf((anim_time - 0.12) / 0.75, 0.0, 1.0) * dissolve_max
 
@@ -1823,6 +1830,7 @@ func _tick_visual(delta: float) -> void:
 	_impact = move_toward(_impact, 0.0, delta * 6.0)
 	if has_boss_frames():
 		_tick_boss(delta)
+	_tick_death(delta)
 	if _npc_wake_t >= 0.0:
 		_npc_wake_t += delta
 	_tick_action(delta)
@@ -2124,6 +2132,8 @@ func _boss_world_h() -> float:
 ## Estado de animação → sequência do atlas do chefe (com reserva).
 func _boss_seq(states: Dictionary) -> String:
 	var st: String = anim_state
+	if _death_t >= 0.0:
+		return _death_seq(states)
 	if _npc_asleep and states.has("asleep"):
 		return "asleep"
 	if _npc_wake_t >= 0.0 and states.has("wake") and st == "idle":
@@ -2150,6 +2160,10 @@ func _boss_seq(states: Dictionary) -> String:
 func _boss_index(seq: Dictionary) -> int:
 	var n: int = seq.frames.size()
 	if n <= 1:
+		return 0
+	if _death_t >= DEATH_STAGGER:
+		return n - 1                          # morte encenada: o quadro de queda
+	if _death_t >= 0.0:
 		return 0
 	if seq.has("cycle_bodies"):
 		var cyc: float = float(seq.cycle_bodies) * _boss_world_h() * float(_boss_db.meta.fit.body_frac)
@@ -2268,6 +2282,182 @@ func _tick_boss(delta: float) -> void:
 		telegraph_color.a = move_toward(telegraph_color.a, 0.0, delta * 8.0)
 
 
+# -------------------------------------------------------------------------
+# MORTE DE CHEFE COM PESO (Onda 6, pedido do João: "acaba só murcha")
+# -------------------------------------------------------------------------
+# play_boss_death(): ~1,9 s, tudo com a PRÓPRIA pintura:
+#   0,00–0,34  cambaleio: quadro de dano, tremor forte decaindo, 2 lampejos
+#   0,34–0,62  queda: quadro de morte (joelhos/colapso) com impacto e tremor de tela
+#   0,62–1,08  pausa dramática: luz do Éon vazando pela borda (contorno sobe), tremor fino
+#   1,08       ESTILHAÇA: o quadro vira ~40 cacos do atlas com física, brilho na cor
+#              do Éon, clarão e faíscas (ShatterLayer); o corpo some
+#   1,90       sinal `death_finished` (quem chamou libera o nó)
+signal death_finished
+const DEATH_STAGGER := 0.34
+const DEATH_FALL := 0.62
+const DEATH_BREAK := 1.08
+const DEATH_END := 1.9
+var _death_t: float = -1.0
+var _death_col := Color.WHITE
+var _shattered: bool = false
+static var _atlas_images: Dictionary = {}     # atlas → Image (cobertura dos cacos)
+
+
+## Morte encenada do chefe/criatura por quadros. `col` = cor do brilho (padrão:
+## luz do Éon). Sem quadros desenhados, só emite o sinal no fim (quem chama
+## mantém a morte antiga).
+func play_boss_death(col: Color = Color(0, 0, 0, 0)) -> void:
+	_death_col = col if col.a > 0.0 else eon_light()
+	_death_t = 0.0
+	_shattered = false
+	anim_state = "dead"
+	anim_time = 0.0
+	_bsv += Vector2(-70.0, -90.0)          # tranco do golpe final
+	if not has_boss_frames():
+		get_tree().create_timer(DEATH_END).timeout.connect(func() -> void: death_finished.emit())
+
+
+func is_dying() -> bool:
+	return _death_t >= 0.0
+
+
+func _tick_death(delta: float) -> void:
+	if _death_t < 0.0:
+		return
+	var before: float = _death_t
+	_death_t += delta
+	if before < DEATH_STAGGER and _death_t >= DEATH_STAGGER:
+		_impact = 1.0                       # cai de joelhos
+		if is_inside_tree():
+			Juice.shake(0.7)
+	if before < DEATH_BREAK and _death_t >= DEATH_BREAK:
+		_shatter()
+	if before < DEATH_END and _death_t >= DEATH_END:
+		death_finished.emit()
+
+
+## Sequência e quadro durante a morte encenada.
+func _death_seq(states: Dictionary) -> String:
+	if _death_t < DEATH_STAGGER and states.has("hurt"):
+		return "hurt"
+	return "dead" if states.has("dead") else "hurt"
+
+
+## Movimento de corpo inteiro durante a morte (substitui o da mola normal).
+func _death_motion() -> Array:
+	var t: float = _death_t
+	var ox: float = 0.0
+	var bend: float = 0.0
+	var sx: float = 1.0
+	var sy: float = 1.0
+	if t < DEATH_STAGGER:
+		var k: float = 1.0 - t / DEATH_STAGGER
+		ox = sin(t * 55.0) * 3.0 * k - 2.0 * (1.0 - k)
+		bend = -6.0 * k
+		sx = 1.0 - 0.04 * k
+		sy = 1.0 + 0.04 * k
+	elif t < DEATH_FALL:
+		var k2: float = (t - DEATH_STAGGER) / (DEATH_FALL - DEATH_STAGGER)
+		ox = -2.0 * (1.0 - k2)
+		sy = 1.0 - 0.05 * (1.0 - k2)
+		sx = 1.0 + 0.05 * (1.0 - k2)
+	else:
+		# pausa: tremor fino crescendo (a luz quer sair)
+		var k3: float = clampf((t - DEATH_FALL) / (DEATH_BREAK - DEATH_FALL), 0.0, 1.0)
+		ox = sin(t * 61.0) * 0.6 * k3
+	return [ox, 0.0, sx, sy, 0.0, bend]
+
+
+## Brilho do contorno e tinta do corpo durante a morte.
+func _death_rim() -> float:
+	if _death_t < DEATH_FALL:
+		return RIM_BASE
+	return lerpf(RIM_BASE, 2.2, clampf((_death_t - DEATH_FALL) / (DEATH_BREAK - DEATH_FALL), 0.0, 1.0))
+
+
+func _death_tint() -> Color:
+	# dois lampejos brancos no cambaleio
+	var f: float = 0.0
+	for at in [0.0, 0.16]:
+		f = maxf(f, 1.0 - absf(_death_t - at) / 0.06)
+	return Color(1, 1, 1).lerp(Color(2.2, 2.2, 2.2), clampf(f, 0.0, 1.0))
+
+
+## Quebra o quadro desenhado atual em cacos do próprio atlas.
+func _shatter() -> void:
+	_shattered = true
+	if _boss_shown.is_empty() or not is_inside_tree() or get_parent() == null:
+		return
+	var tex: Texture2D = _boss_shown.tex
+	if not _atlas_images.has(tex):
+		var img: Image = tex.get_image()
+		if img != null:
+			if img.is_compressed():
+				img.decompress()
+			if img.has_mipmaps():
+				img.clear_mipmaps()
+		_atlas_images[tex] = img
+	var img2: Image = _atlas_images[tex]
+	var rect: Rect2 = _boss_shown.rect
+	var an: Vector2 = _boss_shown.anchor
+	var xf: Transform2D = get_global_transform() * _body_xform
+	var layer := ShatterLayer.new()
+	get_parent().add_child(layer)
+	var cols: int = 6
+	var rows: int = 8
+	var centre: Vector2 = xf * (rect.size * 0.5 - an + Vector2.ZERO)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7331
+	for r in rows:
+		for c in cols:
+			var tile := Rect2(rect.position + Vector2(c * rect.size.x / cols, r * rect.size.y / rows), rect.size / Vector2(cols, rows))
+			# só cacos com pintura (amostra a cobertura no atlas)
+			var cover: int = 0
+			if img2 != null:
+				for sy2 in 4:
+					for sx2 in 4:
+						var px := Vector2i(tile.position + tile.size * Vector2((sx2 + 0.5) / 4.0, (sy2 + 0.5) / 4.0))
+						if px.x >= 0 and px.y >= 0 and px.x < img2.get_width() and px.y < img2.get_height() and img2.get_pixelv(px).a > 0.5:
+							cover += 1
+			else:
+				cover = 16
+			if cover < 3:
+				continue
+			# canto do caco em px do atlas relativos à âncora → mundo
+			var loc: Array = []
+			var uvs := PackedVector2Array()
+			var jit := Vector2(rng.randf_range(-0.12, 0.12), rng.randf_range(-0.12, 0.12)) * tile.size
+			var corners := [tile.position, tile.position + Vector2(tile.size.x, 0), tile.end, tile.position + Vector2(0, tile.size.y)]
+			for k in 4:
+				var cp: Vector2 = corners[k] + (jit if k == 2 else Vector2.ZERO)
+				loc.append(xf * (cp - rect.position - an))
+				uvs.append(cp / Vector2(tex.get_width(), tex.get_height()))
+			# cada célula vira 2 CACOS triangulares (diagonal alternada): lê como
+			# pintura que trinca, não como confete quadrado
+			var tris: Array = [[0, 1, 2], [0, 2, 3]] if (r + c) % 2 == 0 else [[0, 1, 3], [1, 2, 3]]
+			for tri in tris:
+				var tp: Array = [loc[tri[0]], loc[tri[1]], loc[tri[2]]]
+				var mid: Vector2 = (tp[0] + tp[1] + tp[2]) / 3.0
+				var dir: Vector2 = (mid - centre).normalized() if mid.distance_to(centre) > 0.5 else Vector2.UP
+				var vel: Vector2 = dir * rng.randf_range(50.0, 160.0) + Vector2(0, rng.randf_range(-220.0, -80.0))
+				var pts := PackedVector2Array()
+				var tuv := PackedVector2Array()
+				for q in 3:
+					pts.append(tp[q] - mid)
+					tuv.append(uvs[tri[q]])
+				layer.add_piece(mid, pts, tuv, tex, vel, rng.randf_range(-8.0, 8.0), rng.randf_range(0.7, 1.05))
+	layer.burst(centre, _death_col, absf(xf.get_scale().y) * rect.size.y)
+
+
+## Ponto da CABEÇA no quadro desenhado atual (coordenadas locais deste nó):
+## para presos por quadro (máscara, rachadura, olho) seguirem a pintura.
+## Vector2.INF se o atlas não tiver a medida.
+func head_point() -> Vector2:
+	if _boss_shown.is_empty() or not _boss_shown.has("head"):
+		return Vector2.INF
+	return _body_xform * (_boss_shown.head - _boss_shown.anchor)
+
+
 ## Gibs do chefe por quadros: 3×3 pedaços do ÚLTIMO quadro desenhado.
 func _frame_gibs() -> Array:
 	var parts: Array = []
@@ -2305,6 +2495,103 @@ func _painted_gibs(s: float) -> Array:
 			var points := PackedVector2Array([Vector2(x,y),Vector2(x+w/3*flip,y),Vector2(x+w/3*flip,y+h/3),Vector2(x,y+h/3)])
 			parts.append({"pts":points,"col":Color.WHITE,"kind":"painted","tex":PaintedLibrary.region(painted.sheet,tile),"size":Vector2(w/3,h/3),"flip":flip})
 	return parts
+
+
+## Cacos da pintura (morte de chefe): física simples, giro, brilho na cor do
+## Éon que esquenta e some; clarão e faíscas aditivos por cima. Fica no MUNDO.
+class ShatterLayer extends Node2D:
+	var pieces: Array = []      # {p, pts, uvs, tex, v, w, a, life, t}
+	var sparks: Array = []      # {p, v, life, t}
+	var flash_p := Vector2.ZERO
+	var flash_r: float = 0.0
+	var flash_t: float = 9.0
+	var col := Color.WHITE
+	var glow: Node2D
+	const GRAV := 520.0
+
+	func _ready() -> void:
+		top_level = true
+		global_transform = Transform2D.IDENTITY
+		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		z_index = 2
+		glow = Node2D.new()
+		var m := CanvasItemMaterial.new()
+		m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		glow.material = m
+		add_child(glow)
+		glow.draw.connect(_draw_glow)
+
+	func add_piece(p: Vector2, pts: PackedVector2Array, uvs: PackedVector2Array, tex: Texture2D, v: Vector2, w: float, life: float) -> void:
+		pieces.append({"p": p, "pts": pts, "uvs": uvs, "tex": tex, "v": v, "w": w, "a": 0.0, "life": life, "t": 0.0})
+
+	func burst(c: Vector2, color: Color, body_h: float) -> void:
+		col = color
+		flash_p = c
+		flash_r = body_h * 0.55
+		flash_t = 0.0
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 4242
+		for i in 46:
+			var a: float = rng.randf() * TAU
+			sparks.append({"p": c + Vector2.from_angle(a) * rng.randf() * body_h * 0.25, "v": Vector2.from_angle(a) * rng.randf_range(80.0, 260.0) + Vector2(0, -80), "life": rng.randf_range(0.35, 0.8), "t": 0.0})
+
+	func _process(delta: float) -> void:
+		flash_t += delta
+		for it in pieces:
+			it.t += delta
+			it.v.y += GRAV * delta
+			it.v *= 1.0 - 0.6 * delta
+			it.p += it.v * delta
+			it.a += it.w * delta
+		for s in sparks:
+			s.t += delta
+			s.v *= 1.0 - 2.2 * delta
+			s.v.y += 120.0 * delta
+			s.p += s.v * delta
+		pieces = pieces.filter(func(it): return it.t < it.life)
+		sparks = sparks.filter(func(s): return s.t < s.life)
+		queue_redraw()
+		glow.queue_redraw()
+		if pieces.is_empty() and sparks.is_empty() and flash_t > 0.4:
+			queue_free()
+
+	func _xf_pts(it: Dictionary, grow: float = 1.0) -> PackedVector2Array:
+		var out := PackedVector2Array()
+		var r := Transform2D(float(it.a), Vector2.ONE * grow, 0.0, it.p)
+		for v in it.pts:
+			out.append(r * v)
+		return out
+
+	func _draw() -> void:
+		for it in pieces:
+			var u: float = float(it.t) / float(it.life)
+			# a pintura esquenta na cor do Éon e some
+			var c := Color(1, 1, 1).lerp(Color(col.r * 1.6, col.g * 1.6, col.b * 1.6), clampf(u * 1.4, 0.0, 1.0))
+			c.a = 1.0 - smoothstep(0.55, 1.0, u)
+			var cs := PackedColorArray()
+			for _q in it.pts.size():
+				cs.append(c)
+			draw_polygon(_xf_pts(it), cs, it.uvs, it.tex)
+
+	func _draw_glow() -> void:
+		if flash_t < 0.4:
+			# clarão com queda radial (anéis concêntricos), na cor do Éon
+			var k: float = 1.0 - flash_t / 0.4
+			var rad: float = flash_r * (0.5 + 0.7 * (1.0 - k))
+			for ring in 6:
+				var f: float = 1.0 - float(ring) / 6.0
+				glow.draw_circle(flash_p, rad * f, Color(col, 0.12 * k))
+			glow.draw_circle(flash_p, flash_r * 0.18 * (0.5 + k), Color(1, 1, 1, 0.7 * k))
+		for it in pieces:
+			var u: float = float(it.t) / float(it.life)
+			var a: float = 0.5 * (1.0 - u)
+			var cs := PackedColorArray()
+			for _q in it.pts.size():
+				cs.append(Color(col, a))
+			glow.draw_polygon(_xf_pts(it, 1.15), cs, it.uvs, it.tex)
+		for s in sparks:
+			var u2: float = float(s.t) / float(s.life)
+			glow.draw_circle(s.p, 1.6 * (1.0 - u2) + 0.4, Color(col.lerp(Color.WHITE, 0.5), 1.0 - u2))
 
 
 ## Camada de afterimages: cópias do corpo paradas no MUNDO (top_level) que

@@ -44,6 +44,8 @@ func _ready() -> void:
 		"weapon_board": await _weapon_board()
 		"bot_board": await _bot_board()
 		"film_walk": _film_walk(args.slice(2))
+		"film_death": _film_death(args.slice(2), false)
+		"film_death_old": _film_death(args.slice(2), true)
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -395,6 +397,34 @@ func _rim_board() -> void:
 		await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://rim_board.png")
 	CharacterArt.rim_override = -1
+	get_tree().quit()
+
+
+## MORTE DE CHEFE: até 3 chefes lado a lado; parados 0,8 s, levam o golpe final.
+## `old` = como era (estado "dead" + desmembramento imediato em 3×3 pedaços);
+## senão = play_boss_death (cambaleio, joelhos, pausa, cacos de luz).
+func _film_death(ids: Array, old: bool) -> void:
+	RenderingServer.set_default_clear_color(Color("2b3440"))
+	if ids.is_empty():
+		ids = ["arconte_fome", "arconte_coroa", "rei_final"]
+	var arts: Array = []
+	for k in ids.size():
+		var art := _boss(String(ids[k]), Vector2(110 + k * 210, GROUND), 0.62)
+		art.scale.x = -art.scale.x
+		art.set_anim("idle")
+		arts.append(art)
+		_label(String(ids[k]), Vector2(70 + k * 210, GROUND + 8))
+	_label("MORTE DE CHEFE — " + ("antes (desmembra na hora)" if old else "depois (peso + cacos de luz)"), Vector2(6, 6))
+	await get_tree().create_timer(0.8).timeout
+	for art in arts:
+		if old:
+			art.set_anim("dead")
+			var parts: Array = art.gib_parts()
+			Gib.burst(self, art.global_position, parts, -1.0, art.global_position.y + 30.0, Vector2(120, -160), art.profile.eye, art._ink())
+			art.visible = false
+		else:
+			art.play_boss_death()
+	await get_tree().create_timer(2.4).timeout
 	get_tree().quit()
 
 
