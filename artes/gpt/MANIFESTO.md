@@ -449,3 +449,26 @@ Chefes (padrão C) `boss_<n>_<nome>_motion_a.png` 2×4: 0 walk_c0 (contato) · 1
 
 # LOJA
 Chat da key art: https://chatgpt.com/c/6ad32ebc-f810-83e9-826e-765ea8ed5729
+- `keyart_pan_left_a.png` + `keyart_pan_right_a.png` — laterais 1536x1024 para montar o panorama 3:1 (L | keyart_wide_a | R = 4608x1024).
+  Nota 6.5 como panorama: estilo, paleta, horizonte e ponte batem, mas as emendas NÃO são contínuas (o ChatGPT só gera 3:2, não faz
+  outpainting real): na emenda esquerda a lateral tem cachoeiras claras e um anel onde a key art tem céu escuro. Precisa crossfade de
+  ~150–250 px nas duas emendas (ou cortar ~200 px de cada lateral). A direita é quase um espelho da esquerda (mesma arcada com estandartes).
+  Não montei o `keyart_panorama_a.png` (é trabalho de composição — pedido ao chefe/Técnico).
+- `keyart_capsule_b.png` — APROVADA. 1536x1024. Nota 8.5. Sophia de corpo inteiro à direita (~60% da altura), 3/4 virada p/ esquerda,
+  cristal aceso, cabelo ao vento, tudo dentro da margem; Rei colossal com orbe-olho ao fundo à esquerda-centro, 7 anéis, terço esquerdo escuro p/ título. Sem texto.
+- `keyart_capsule_a.png` — rejeitada (Sophia grande demais, pernas cortadas pela borda de baixo).
+- `keyart_capsule_b.png` — APROVADA. Nota 8.5. Sophia de corpo inteiro à direita (~60% da altura, 3/4 virada p/ esquerda, cristal aceso),
+  Rei colossal com orbe-olho ao fundo à esquerda-centro, 7 anéis, terço esquerdo de céu escuro p/ título, margens ok. Sem texto.
+  Rejeitada: `keyart_capsule_a.png` (Sophia grande demais, pernas cortadas na borda de baixo).
+
+# FILA 8 — Rei revelado + retratos do Cego pequeno
+- `rei_revelado_a.png` — 2×3 (células 512×512). Chat do Rei: https://chatgpt.com/c/6ad32602-4348-83e8-a85a-0befbca24e16
+  Células: 0 mask_crack (mão no rosto, máscara rachando) · 1 revealed (vazio escuro com UM olho âmbar) · 2 triumph (orbe-olho ao alto) ·
+  3 dominion (mão puxando 7 anéis pequenos) · 4 sinking (afundando em rachaduras de luz) · 5 portrait (busto 3/4, rosto revelado).
+  Nota 8.5. Fiel ao Rei, perfil p/ direita, sem gore. Fundo ROSA ≈(252,2,186) como as outras folhas do Rei — chavear por cor.
+- `retrato_cego_pequeno_x.png` — 2×2 bustos (assustado · olhando p/ cima cego · sereno · aninhado). Gerado por ENGANO no chat do Rei
+  (sem a folha do Cego como referência visual, só pela descrição); ficou bonito mas o rosto é mais infantil/"fofo" que o cego_pequeno_a.
+  Alternativa; a versão oficial é a do chat das cenas (abaixo).
+- `retrato_cego_pequeno_a.png` — APROVADA. 2×2 bustos 3/4 p/ direita (células 768×512): 0 assustado · 1 olhando p/ cima, cego · 2 sereno · 3 aninhado.
+  Chat das cenas (https://chatgpt.com/c/6ad3341a-5d64-83e9-9381-c9f54cf7857d). Nota 8.5. Coerente com cego_pequeno_a (cabelo grisalho longo,
+  olhos leitosos/vendados, manto marfim/ouro rasgado). Fios de cabelo finos soltos nas bordas — despill.

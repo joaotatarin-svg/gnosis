@@ -85,6 +85,31 @@
    "dur": [
     0.14
    ]
+  },
+  "mask_crack": {
+   "frames": [
+    "mask_crack"
+   ]
+  },
+  "revealed": {
+   "frames": [
+    "revealed"
+   ]
+  },
+  "triumph": {
+   "frames": [
+    "triumph"
+   ]
+  },
+  "dominion": {
+   "frames": [
+    "dominion"
+   ]
+  },
+  "sinking": {
+   "frames": [
+    "sinking"
+   ]
   }
  },
  "extra_sheets": [
@@ -106,6 +131,24 @@
    ],
    "scale": "auto",
    "ref": "walk_p0",
+   "main_ref": "idle_0"
+  },
+  {
+   "sheet": "artes/gpt/rei_revelado_a.png",
+   "grid": [
+    3,
+    2
+   ],
+   "cells": [
+    "mask_crack",
+    "revealed",
+    "triumph",
+    "dominion",
+    "sinking",
+    "-"
+   ],
+   "scale": "auto",
+   "ref": "revealed",
    "main_ref": "idle_0"
   }
  ]

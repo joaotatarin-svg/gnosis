@@ -23,8 +23,48 @@ class Worker extends Node:
 			errors += 1
 			push_error("QA FAIL: " + msg)
 
-	func wait(seconds: float = 0.6) -> void:
-		await get_tree().create_timer(seconds, true, false, true).timeout
+	## Espera `n` quadros processados (o mundo pode estar pausado: o Worker é ALWAYS).
+	func frames(n: int) -> void:
+		for _i in n:
+			await get_tree().process_frame
+
+	## ESTABILIDADE (Onda 5): espera `cond` virar verdade quadro a quadro. Só
+	## desiste quando passaram AO MESMO TEMPO `min_frames` quadros E `min_secs`
+	## de relógio: sem carga (quadros voam) vale o relógio; com a máquina
+	## engasgada (quadros de 300 ms) vale a contagem de quadros. O relógio só
+	## serve de TETO para desistir — nunca decide se passou.
+	func until(cond: Callable, min_frames: int = 600, min_secs: float = 20.0) -> bool:
+		var n: int = 0
+		var t0: int = Time.get_ticks_msec()
+		while not cond.call():
+			if n >= min_frames and Time.get_ticks_msec() - t0 >= int(min_secs * 1000.0):
+				return false
+			n += 1
+			await get_tree().process_frame
+		return true
+
+	## Há caixa de diálogo ou cinemática aberta na raiz?
+	func overlay_open() -> bool:
+		for c in get_tree().root.get_children():
+			if (c is DialogueBox or c is Cinematic) and not c.is_queued_for_deletion():
+				return true
+		return false
+
+	## O card de chefe na raiz (Cinematic em modo chefe), ou null.
+	func boss_card_node() -> Cinematic:
+		for c in get_tree().root.get_children():
+			if c is Cinematic and not (c as Cinematic).boss.is_empty() and c.is_inside_tree():
+				return c
+		return null
+
+	## Estado do nível para o log quando uma espera estoura.
+	func level_state(lv) -> String:
+		if lv == null or not is_instance_valid(lv):
+			return "nível=nulo"
+		return "tela=%d ready_done=%s zone_active=%s zona=%d state=%d paused=%s pausas=%d sobreposição=%s px=%.0f" % [
+			int(lv.screen), str(lv._ready_done), str(lv.zone_active), int(lv.zone_index), int(GameManager.state),
+			str(get_tree().paused), PauseStack.count(), str(overlay_open()),
+			lv.player.global_position.x if lv.player != null else -1.0]
 
 	func shot(name: String) -> void:
 		if DisplayServer.get_name() == "headless":
@@ -33,32 +73,51 @@ class Worker extends Node:
 		get_viewport().get_texture().get_image().save_png("res://shots/" + name + ".png")
 		print("SHOT salvo: shots/" + name + ".png")
 
-	## Fecha diálogos abertos (escolha padrão) e cinemáticas (pula).
+	## Fecha diálogos abertos (escolha padrão) e cinemáticas (pula) até não
+	## sobrar nenhum — por estado, quadro a quadro (a cinemática pulada ainda
+	## faz o fade de saída antes de sair da árvore).
 	func skip_all() -> void:
-		for _i in 30:
-			var had := false
-			for c in get_tree().root.get_children():
-				if c is DialogueBox:
-					if c.choices.size() > 0:
-						c._on_choice(0)
-					else:
-						c._finish()
-					had = true
-				elif c is Cinematic:
-					c._skip_all = true
-					c._advance = true
-					had = true
-			if not had:
-				return
-			await wait(0.15)
+		await until(func() -> bool:
+			_close_overlays()
+			return not overlay_open())
 
-	func goto_screen(s: int) -> void:
+	## Troca para a tela `s` e espera, POR ESTADO, o nível ficar jogável: o
+	## Level novo terminou os bicos narrativos (`_ready_done` só vira true depois
+	## da intro do Éon / tentação / recusa), nada de caixa ou cinemática aberta,
+	## mundo solto e estado PLAYING. Vai fechando os diálogos que aparecerem.
+	## (Antes: 0,5 s + skip_all + 0,3 s de relógio. Sob carga o timer criado no
+	## quadro da carga disparava NESSE quadro; skip_all não via caixa nenhuma e
+	## saía, a tentação da tela 10 abria DEPOIS e segurava o gatilho do chefe.)
+	func goto_screen(s: int) -> Level:
+		var old: Node = get_tree().current_scene
 		RunManager.current_screen = s
 		GameManager.current_screen = s
 		get_tree().change_scene_to_file("res://scenes/levels/Level01.tscn")
-		await wait(0.5)
-		await skip_all()
-		await wait(0.3)
+		var ready := func() -> bool:
+			_close_overlays()
+			var cs: Node = get_tree().current_scene
+			return cs is Level and cs != old and (cs as Level).screen == s and (cs as Level)._ready_done \
+				and not overlay_open() and not get_tree().paused and GameManager.state == GameManager.State.PLAYING
+		var ok: bool = await until(ready, 1800, 60.0)
+		var lv = get_tree().current_scene
+		if not ok:
+			push_error("QA FAIL: tela %d não ficou jogável (%s)" % [s, level_state(lv if lv is Level else null)])
+			errors += 1
+		# Dois quadros de folga: o player e a câmera assentam.
+		await frames(2)
+		return lv if lv is Level else null
+
+	## Fecha, num quadro, o que houver de diálogo (escolha 0) e cinemática (pula).
+	func _close_overlays() -> void:
+		for c in get_tree().root.get_children():
+			if c is DialogueBox and not c.is_queued_for_deletion() and c.is_inside_tree():
+				if c.choices.size() > 0:
+					c._on_choice(0)
+				else:
+					c._finish()
+			elif c is Cinematic and not c._done:
+				c._skip_all = true
+				c._advance = true
 
 	func find_child_of(node: Node, type) -> Node:
 		for c in node.get_children():
@@ -175,7 +234,8 @@ class Worker extends Node:
 			GameManager.settings["caption_size"] = opt
 			var size: int = GameManager.caption_font_size()
 			var d := DialogueBox.play([{"speaker": "QA", "text": "..."}])
-			await wait(0.2)
+			await until(func() -> bool: return d.is_inside_tree())
+			await frames(2)
 			var lim: int = 2 if opt == 1 else 3
 			for l in dialog:
 				d._text.text = String(l.text)
@@ -187,17 +247,18 @@ class Worker extends Node:
 			d._text.text = "palavra ".repeat(25)
 			print("  autoteste %d px: 200 caracteres = %d linhas (largura %d px)" % [size, d._text.get_line_count(), int(d._text.size.x)])
 			d._finish()
-			await wait(0.1)
+			await frames(2)
 		GameManager.settings["caption_size"] = old_cap
 		# Os 3 botões do final e os 3 de Soter cabem numa linha da caixa?
 		for ch in [Narrative.final_choices(4), Narrative.soter_blessings(), Narrative.velkar_choices()]:
 			var dc := DialogueBox.play([], ch)
-			await wait(0.2)
+			await until(func() -> bool: return dc.is_inside_tree())
+			await frames(2)
 			var w: float = dc._choice_box.get_combined_minimum_size().x
 			if w > 500.0:
 				bad.append("botões com %d px: %s" % [int(w), str(ch).left(60)])
 			dc._finish()
-			await wait(0.1)
+			await frames(2)
 		print("  maior fala: ", max_lines.get(13, 0), " linhas a 13 px · ", max_lines.get(16, 0), " a 16 px")
 		for b in bad.slice(0, 12):
 			print("  CAIXA: ", b)
@@ -273,7 +334,9 @@ class Worker extends Node:
 		for b in cards_bad:
 			print("  CARD LONGO: ", b)
 		check(cards_bad.is_empty(), "cards de prólogo/epílogo cabem (≤ 6 linhas)")
-		await wait(0.6)
+		# O prólogo avulso medido acima foi pulado: espera ele sair de verdade.
+		await until(func() -> bool: return not is_instance_valid(pro) or pro._done)
+		await frames(2)
 
 		# (e) glossário, respeito e regra de ouro
 		var forbidden := ["Sabaoth", "Adonai", "Adonaios", "Eloai", "Sofia", "centelha", "…"]
@@ -341,20 +404,20 @@ class Worker extends Node:
 
 		# 1. Estela + legenda de chegada (tela 15, uma zona: Estela à direita do descanso 0)
 		Narrative.once("prologue")
-		await goto_screen(15)
-		await wait(1.0)
-		var lv = get_tree().current_scene
-		var stela: Stela = find_child_of(lv, Stela)
+		var lv = await goto_screen(15)
+		var stela: Stela = find_child_of(lv, Stela) if lv != null else null
 		check(stela != null, "Estela instanciada na tela 15")
 		if stela != null:
 			print("Estela em ", stela.global_position, " · player em ", lv.player.global_position)
 			lv.player.global_position = stela.global_position + Vector2(44, -30)
-			await wait(0.7)
+			await until(func() -> bool: return stela._near)
 			check(stela._near, "prompt de leitura ao chegar perto")
 			await shot("gnose_stela")
 			var before: int = Gnosis.chronicles_count()
 			stela.open()
-			await wait(0.6)
+			var panel_up := func() -> bool:
+				return get_tree().paused and find_child_of(get_tree().root, Stela.StelaPanel) != null
+			await until(panel_up)
 			check(get_tree().paused, "painel da Estela pausa o mundo")
 			check(Gnosis.chronicles_count() == before + 1, "Crônica desbloqueada ao ler")
 			await shot("gnose_stela_panel")
@@ -363,46 +426,76 @@ class Worker extends Node:
 					get_tree().paused = false
 					c.finished.emit()
 					c.queue_free()
-			await wait(0.5)
+			await until(func() -> bool: return not get_tree().paused and find_child_of(get_tree().root, Stela.StelaPanel) == null)
 			check(not get_tree().paused, "painel fechou e o jogo voltou")
 
 		# 2. Card de chefe (tela 10: o jogador cruza o gatilho e Athoth nasce)
-		await goto_screen(10)
-		lv = get_tree().current_scene
-		lv.player.global_position = Vector2(lv.zone_center(0) - Level.ZONE_TRIGGER + 8.0, 250.0)
-		await wait(0.5)
-		var cin: Cinematic = find_child_of(get_tree().root, Cinematic)
-		check(cin != null and get_tree().paused, "card de chefe congela ao nascer o Arconte")
+		#    ESTABILIDADE (Onda 5): tudo por ESTADO. Espera o card NASCER
+		#    (Cinematic de chefe na árvore), confere a pausa, e espera o card
+		#    TERMINAR (`_done`/fora da árvore) para conferir que soltou. O relógio
+		#    só é teto para desistir (until) e piso da duração: carga só alonga
+		#    o card, nunca o encurta.
+		lv = await goto_screen(10)
+		var cin: Cinematic = null
+		var card_seen := false
+		if lv != null:
+			lv.player.global_position = Vector2(lv.zone_center(0) - Level.ZONE_TRIGGER + 8.0, 250.0)
+			var f0: int = Engine.get_process_frames()
+			await until(func() -> bool: return boss_card_node() != null)
+			cin = boss_card_node()
+			card_seen = cin != null
+			if cin == null:
+				print("  card não nasceu em %d quadros: %s" % [Engine.get_process_frames() - f0, level_state(lv)])
+			else:
+				print("  card nasceu %d quadro(s) depois do gatilho" % (Engine.get_process_frames() - f0))
+		var t_card: int = Time.get_ticks_msec()
+		check(card_seen and get_tree().paused, "card de chefe congela ao nascer o Arconte")
 		await shot("gnose_boss_card")
-		await wait(2.6)
-		check(not get_tree().paused, "card de chefe liberou o jogo")
+		if card_seen:
+			var held := [true]
+			var gone := func() -> bool:
+				if not get_tree().paused and is_instance_valid(cin) and not cin._done:
+					held[0] = false       # soltou o mundo com o card ainda na tela
+				return not is_instance_valid(cin) or cin._done
+			await until(gone, 1800, 60.0)
+			var card_ms: int = Time.get_ticks_msec() - t_card
+			check(held[0], "card de chefe segura a pausa até acabar")
+			check(card_ms >= 1500, "card de chefe dura ~1,8 s (%d ms; carga só alonga)" % card_ms)
+		await frames(3)
+		# (cin já foi liberado aqui: objeto liberado compara igual a null — usa card_seen.)
+		check(card_seen and not get_tree().paused and not overlay_open(), "card de chefe liberou o jogo")
+		if get_tree().paused or overlay_open():
+			print("  depois do card: ", level_state(lv))
 
 		# 3. Prólogo (avulso) e epílogo (avulso)
 		var pro := Cinematic.prologue()
-		await wait(1.2)
+		await until(func() -> bool: return is_instance_valid(pro) and pro.is_inside_tree() and get_tree().paused)
 		check(is_instance_valid(pro) and get_tree().paused, "prólogo pausa e mostra o card")
 		await shot("gnose_prologue")
 		await skip_all()
-		await wait(0.8)
+		await until(func() -> bool: return not get_tree().paused and not overlay_open())
 		check(not get_tree().paused, "prólogo pulável")
 		GameManager.end_title = "SEMENTE"
 		GameManager.end_subtitle = "Recusaste o trono e a porta. Desceste de volta, de faísca em faísca."
 		var epi := Cinematic.epilogue("semente", Gnosis.chronicles_count(), Gnosis.chronicles_total())
-		await wait(1.2)
+		await until(func() -> bool: return is_instance_valid(epi) and epi.is_inside_tree() and get_tree().paused)
 		check(is_instance_valid(epi) and get_tree().paused, "epílogo pausa e mostra o card")
 		await shot("gnose_epilogue")
 		await skip_all()
-		await wait(0.8)
+		await until(func() -> bool: return not overlay_open())
 
 		# 4. Crônicas
 		get_tree().paused = false
 		get_tree().change_scene_to_file("res://scenes/ui/Chronicles.tscn")
-		await wait(0.7)
+		await until(func() -> bool:
+			var cs: Node = get_tree().current_scene
+			return cs != null and cs.scene_file_path == "res://scenes/ui/Chronicles.tscn" and cs.is_node_ready())
+		await frames(2)
 		var ch = get_tree().current_scene
 		check(ch != null and ch.get_script() != null and ch._entries.size() == 18, "Crônicas lista 18 entradas")
 		ch._move(1)
-		await wait(0.2)
+		await frames(3)
 		await shot("gnose_chronicles")
 
-		print("QA RESULT: ", errors, " falhas")
+		print("QA RESULT: ", errors, " falhas (", Engine.get_process_frames(), " quadros)")
 		get_tree().quit(0 if errors == 0 else 1)

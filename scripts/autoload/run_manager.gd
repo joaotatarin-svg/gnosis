@@ -11,8 +11,17 @@ extends Node
 ## Cada tela é uma TRAVESSIA com 1–3 ZONAS de combate (ver Level): o jogador
 ## anda, a zona tranca, as waves nascem, limpou → segue. O HP do herói é
 ## carregado entre telas. Autoload acessível como `RunManager`.
+##
+## MAPA (Onda 6): cada Éon é um GRAFO por camadas (scripts/levels/map/eon_map.gd).
+## A tela (2..64) continua sendo a CAMADA do Éon — todo caminho passa por um nó
+## por camada —, mas a camada pode ter 2–3 nós à escolha (combate, perigo,
+## escalada, santuário, Arena, segredo). `current_node` diz QUAL nó da camada é
+## a tela atual; a escolha acontece na tela de mapa (scenes/ui/WorldMap.tscn),
+## aberta pelo advance_and_reload quando há mais de uma saída.
 
 signal screen_changed(screen: int)
+## Entrou num nó do mapa (id do EonMap; "" fora dos Éons).
+signal node_entered(node_id: String)
 
 const KING_SCREEN := 1
 const EON_LEN := 9            # telas por Éon
@@ -33,6 +42,19 @@ var endings_seen: Array = []      # finais já alcançados ("ascensao"/"ruptura"
 var deaths_this_run: int = 0      # quedas (a Voz te recompõe — checkpoint)
 var saved_run: Dictionary = {}    # run salvo em disco (menu "Continuar")
 
+# --- mapa (Onda 6) ---
+const WORLD_MAP_SCENE := "res://scenes/ui/WorldMap.tscn"
+const MAP_VERSION := 1            # versão do bloco de mapa no save (migração)
+var current_node: String = ""     # nó do mapa da tela atual ("" = padrão da camada)
+var path: Array[String] = []      # nós visitados no run, em ordem
+var choosing: bool = false        # a tela de mapa está esperando a escolha
+var last_reward: Dictionary = {}  # recompensa do último nó vencido (o mapa mostra)
+var last_node: String = ""        # o nó que acabou de ser vencido
+## Rota automática (bot de balance / QAs): -1 = o jogador escolhe na tela de
+## mapa · 0 = sempre o nó padrão (trilha do meio — compara com o histórico) ·
+## N>0 = escolha sorteada, determinística pela semente N e pelo nó de origem.
+var map_route_seed: int = -1
+
 
 func begin() -> void:
 	run_active = true
@@ -41,6 +63,11 @@ func begin() -> void:
 	pending_advance = false
 	deaths_this_run = 0
 	saved_run = {}                 # run novo substitui o "Continuar" antigo
+	current_node = ""
+	path.clear()
+	choosing = false
+	last_reward = {}
+	last_node = ""
 	GameManager.current_screen = 1
 	Narrative.reset()
 	screen_changed.emit(current_screen)
@@ -87,6 +114,7 @@ func is_checkpoint(screen: int) -> bool:
 ## Morte com run ativo: volta pro checkpoint com a progressão intacta.
 func respawn_at_checkpoint() -> void:
 	current_screen = checkpoint_for(current_screen)
+	_settle_on_checkpoint()
 	GameManager.current_screen = current_screen
 	carry_health = -1              # recomposta inteira
 	pending_advance = false
@@ -115,6 +143,11 @@ func run_snapshot() -> Dictionary:
 		"restored": Progression.restored_rings,
 		"selected_ring": Progression.selected_ring,
 		"seen": Narrative.seen.keys(),
+		# Mapa (Onda 6): a rota até o checkpoint. Saves antigos não têm estas
+		# chaves — o continue_run migra (nó padrão da camada, rota vazia).
+		"map_v": MAP_VERSION,
+		"node": _node_at_checkpoint(checkpoint_for(current_screen)),
+		"path": _path_until(checkpoint_for(current_screen)),
 	}
 
 
@@ -154,6 +187,7 @@ func continue_run() -> void:
 	current_screen = clampi(SaveCoerce.as_int(d.get("screen", 1), 1), 1, MAX_SCREEN)
 	carry_health = -1
 	pending_advance = false
+	_restore_map(d)
 	GameManager.current_screen = current_screen
 	Progression.rings_changed.emit()
 	Progression.orbs_changed.emit(Progression.orbs)
@@ -262,6 +296,10 @@ func screen_role(screen: int) -> String:
 ## Quantas ZONAS de combate a tela tem (cada zona = um bolsão de waves).
 ## Travessia alterna 3 e 2 pela paridade da tela (par = 3).
 func zone_count(screen: int) -> int:
+	# Nós de mapa com tipo próprio têm sempre 2 zonas: as legendas de zona
+	# (Z0/Z1 do ROTEIRO) tocam em qualquer rota.
+	if node_kind(screen) in ["hazard", "platform", "sanctuary", "challenge", "secret"]:
+		return 2
 	match screen_role(screen):
 		"arrival": return 2
 		"travel": return 3 if screen % 2 == 0 else 2
@@ -335,6 +373,11 @@ func zone_plan(screen: int) -> Array:
 				wave.append(allies[(w * 3 + i + screen) % allies.size()])
 			zone.append(wave)
 		return [zone]
+	# MAPA (Onda 6): telas de escolha com tipo próprio. "combat" (o nó padrão)
+	# segue o plano legado abaixo — a rota do meio é o jogo de antes.
+	var kind := node_kind(screen)
+	if kind in ["hazard", "platform", "sanctuary", "challenge", "secret"]:
+		return _kind_plan(kind, screen, eon, bot, ids, allies)
 	# arrival / travel — r5 (18/09): o bot media 300–800 de dano por tela com
 	# 2 waves × 3 inimigos em cada zona. Agora a densidade sobe com o Éon:
 	# Éons 0–1 = waves de 2 · Éons 2+ = waves de 3; zonas de 1 wave até o
@@ -361,6 +404,42 @@ func zone_plan(screen: int) -> Array:
 	return zones
 
 
+## Plano das telas de MAPA com tipo próprio (sempre 2 zonas). Determinístico
+## pela tela e pelo tipo. O LAYOUT (perigos, plataformas, altura, sala do
+## segredo) é do level6 via RunManager.node_kind(); aqui só a densidade:
+##  - hazard:    o chão é o inimigo — 1 wave por zona, uma criatura a menos.
+##  - platform:  1 wave por zona, densidade normal (espaço p/ voadores).
+##  - sanctuary: luta leve (2 por zona) — o prêmio é a cura inteira.
+##  - challenge: a ARENA — 2 waves na 1ª zona e 3 na 2ª, com o bot do Éon e
+##               uma criatura a mais por wave (o último vira Elite, como sempre).
+##  - secret:    guardiões poucos (2 por zona) — o desafio é chegar.
+func _kind_plan(kind: String, screen: int, eon: int, bot: String, ids: Array, _allies: Array) -> Array:
+	var per_wave := 2 if eon <= 1 else 3
+	var waves_by_zone: Array = [1, 1]
+	var size := per_wave
+	match kind:
+		"hazard":
+			size = maxi(2, per_wave - 1)
+		"sanctuary", "secret":
+			size = 2
+		"challenge":
+			waves_by_zone = [2, 3]
+			size = per_wave + 1
+	var zones: Array = []
+	for z in 2:
+		var zone: Array = []
+		for w in int(waves_by_zone[z]):
+			var wave: Array = []
+			for i in size:
+				wave.append(ids[(z * 5 + w * 3 + i + screen + kind.length()) % ids.size()])
+			# A Arena traz o bot do Éon na última wave de cada zona.
+			if kind == "challenge" and w == int(waves_by_zone[z]) - 1 and not wave.has(bot):
+				wave[0] = bot
+			zone.append(wave)
+		zones.append(zone)
+	return zones
+
+
 ## Guarda o HP com uma cura entre telas (+25% do máximo — r5: as travessias
 ## são mais longas que as arenas antigas, a recomposição acompanha).
 func store_health(hp: int, max_hp: int) -> void:
@@ -382,8 +461,247 @@ func advance_and_reload() -> void:
 		clear_saved_run()
 		GameManager.finish_demo()
 		return
+	# Mapa: o nó que acabou de ser vencido paga a recompensa dele.
+	var prev := node_id_at(current_screen)
+	last_node = prev
+	last_reward = _grant_reward(prev) if run_active else {}
 	current_screen += 1
 	GameManager.current_screen = current_screen
+	var opts := options_after(prev, current_screen)
+	if opts.size() > 1 and run_active:
+		var auto := _auto_choice(prev, opts)
+		if auto == "":
+			# Há escolha: a tela de mapa decide (ela chama choose_node).
+			current_node = ""
+			choosing = true
+			SaveManager.save_game()
+			SceneManager.change_scene(WORLD_MAP_SCENE)
+			return
+		_enter_node(auto)
+	else:
+		_enter_node(String(opts[0]) if opts.size() == 1 else "")
+		_toast_reward_later()
 	SaveManager.save_game()        # o "Continuar" acompanha o checkpoint
 	screen_changed.emit(current_screen)
 	SceneManager.change_scene("res://scenes/levels/Level01.tscn")
+
+
+# --- mapa: nós, escolha, recompensas (Onda 6) ---------------------------------
+
+## A tela de mapa escolheu: entra no nó e carrega a tela. Ignora id inválido
+## (devolve false) — só vale um nó entre as saídas atuais.
+func choose_node(id: String) -> bool:
+	var opts := options_after(last_node, current_screen)
+	if not opts.has(id) or not node_available(id):
+		return false
+	choosing = false
+	_enter_node(id)
+	SaveManager.save_game()
+	screen_changed.emit(current_screen)
+	SceneManager.change_scene("res://scenes/levels/Level01.tscn")
+	return true
+
+
+## Saídas possíveis ao chegar na tela `screen` vindo do nó `from_id` (ids do
+## EonMap; inclui nós TRANCADOS — a tela de mapa os mostra selados). Fora dos
+## Éons: [] (tela linear).
+func options_after(from_id: String, screen: int) -> Array:
+	if screen < FIRST_EON_SCREEN or screen > LAST_ARCHON_SCREEN:
+		return []
+	var eon := eon_index(screen)
+	var layer := eon_offset(screen)
+	var from := EonMap.find(from_id)
+	if not from.is_empty() and int(from.eon) == eon and int(from.layer) == layer - 1:
+		return (from.next as Array).duplicate()
+	return EonMap.layer_ids(eon, layer).duplicate()
+
+
+## Saídas que o jogador PODE tomar agora (sem as trancadas).
+func available_options(from_id: String, screen: int) -> Array:
+	return options_after(from_id, screen).filter(func(id): return node_available(String(id)))
+
+
+## O nó pode ser escolhido? (segredo = exige o pulo duplo, dado por Soter).
+func node_available(id: String) -> bool:
+	var n := EonMap.find(id)
+	if n.is_empty():
+		return false
+	match String(n.requires):
+		"double_jump":
+			return has_double_jump()
+	return true
+
+
+## Contrato com a Progressão/Combate (Onda 6): Progression.has_double_jump().
+## Sem o método (branch sem a mecânica ainda), ninguém tem o pulo duplo.
+func has_double_jump() -> bool:
+	if Progression.has_method("has_double_jump"):
+		return bool(Progression.call("has_double_jump"))
+	return false
+
+
+## Id do nó da tela `screen` (a escolha registrada se for a tela atual; senão o
+## nó padrão da camada). "" fora dos Éons.
+func node_id_at(screen: int) -> String:
+	if screen < FIRST_EON_SCREEN or screen > LAST_ARCHON_SCREEN:
+		return ""
+	if screen == current_screen and current_node != "":
+		var n := EonMap.find(current_node)
+		if not n.is_empty() and int(n.screen) == screen:
+			return current_node
+	return EonMap.default_id(eon_index(screen), eon_offset(screen))
+
+
+## Dados do nó da tela (ver EonMap._make); {} fora dos Éons.
+func node_at(screen: int) -> Dictionary:
+	return EonMap.find(node_id_at(screen))
+
+
+## TIPO da tela para o layout (level6) e a narrativa: "king" · "arrival" ·
+## "combat" · "hazard" · "platform" · "sanctuary" · "challenge" · "secret" ·
+## "trial" · "antechamber" · "archon" · "center" · "final". Sem argumento = tela atual.
+func node_kind(screen: int = -1) -> String:
+	if screen < 0:
+		screen = current_screen
+	var n := node_at(screen)
+	if not n.is_empty():
+		return String(n.kind)
+	return screen_role(screen)
+
+
+## Nome legível do tipo da tela ("Passagem perigosa", "Arena"...).
+func node_title(screen: int = -1) -> String:
+	return EonMap.kind_name(node_kind(screen))
+
+
+## A tela é um nó OPCIONAL (Arena ou segredo)? Útil pra HUD/narrativa.
+func is_optional_node(screen: int = -1) -> bool:
+	return node_kind(screen) in ["challenge", "secret"]
+
+
+## Slot de compatibilidade dos beats ("e1.L6" = tela 17). Fora dos Éons: "s<tela>".
+func beat_slot(screen: int) -> String:
+	if screen < FIRST_EON_SCREEN or screen > LAST_ARCHON_SCREEN:
+		return "s%d" % screen
+	return EonMap.slot(eon_index(screen), eon_offset(screen))
+
+
+## Tela legada de um slot de beat (inverso de beat_slot); -1 se inválido.
+func screen_for_slot(slot_id: String) -> int:
+	if slot_id.begins_with("s"):
+		return slot_id.substr(1).to_int()
+	var m := slot_id.split(".L")
+	if m.size() != 2 or not m[0].begins_with("e"):
+		return -1
+	return EonMap.screen_of(m[0].substr(1).to_int(), m[1].to_int())
+
+
+## RNG próprio do NÓ (duas trilhas da mesma camada sorteiam diferente).
+func node_rng(salt: int = 0, screen: int = -1) -> RandomNumberGenerator:
+	if screen < 0:
+		screen = current_screen
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("gnosis/node/%s/%d/%d" % [node_id_at(screen), screen, salt])
+	return rng
+
+
+func _enter_node(id: String) -> void:
+	current_node = id
+	choosing = false
+	if id != "":
+		path.append(id)
+	node_entered.emit(id)
+
+
+## Paga a recompensa do nó vencido; devolve o que foi dado (vazio se nada).
+func _grant_reward(id: String) -> Dictionary:
+	var n := EonMap.find(id)
+	if n.is_empty() or CodexSession.active:
+		return {}
+	var rw: Dictionary = n.reward
+	if int(rw.get("orbs", 0)) > 0:
+		Progression.add_orbs(int(rw.orbs))
+	if int(rw.get("hp", 0)) > 0:
+		Progression.buy_max_health(int(rw.hp), 0)
+	if int(rw.get("mp", 0)) > 0:
+		Progression.buy_max_mana(int(rw.mp), 0)
+	if bool(rw.get("heal", false)):
+		carry_health = -1          # a próxima tela começa com a vida cheia
+	return rw.duplicate()
+
+
+## Sem tela de mapa no meio (saída única): a recompensa vira um aviso no HUD
+## da próxima tela (autoload sobrevive à troca de cena).
+func _toast_reward_later() -> void:
+	if last_reward.is_empty() or not is_inside_tree():
+		return
+	var kind := String(EonMap.find(last_node).get("kind", ""))
+	var text := I18n.t(EonMap.kind_name(kind)) + " — " + EonMap.reward_text(last_reward)
+	get_tree().create_timer(1.8, false).timeout.connect(func():
+		get_tree().call_group("hud", "toast", text))
+
+
+## Rota automática (map_route_seed >= 0): escolhe sem a tela de mapa.
+func _auto_choice(from_id: String, opts: Array) -> String:
+	if map_route_seed < 0:
+		return ""
+	var free: Array = opts.filter(func(id): return node_available(String(id)))
+	if free.is_empty():
+		return String(opts[0])
+	if map_route_seed == 0:
+		for id in free:
+			if int(EonMap.find(String(id)).row) == 1:
+				return String(id)
+		return String(free[0])
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("gnosis/rota/%d/%s/%d" % [map_route_seed, from_id, current_screen])
+	return String(free[rng.randi() % free.size()])
+
+
+## Morte/continuar: o checkpoint é sempre um nó ÚNICO da camada (chegada,
+## Desafio, antessala) — a rota é cortada até ele.
+func _settle_on_checkpoint() -> void:
+	choosing = false
+	var id := _node_at_checkpoint(current_screen)
+	path.assign(_path_until(current_screen))
+	if id != "" and (path.is_empty() or path[path.size() - 1] != id):
+		path.append(id)
+	current_node = id
+
+
+func _node_at_checkpoint(screen: int) -> String:
+	if screen < FIRST_EON_SCREEN or screen > LAST_ARCHON_SCREEN:
+		return ""
+	return EonMap.default_id(eon_index(screen), eon_offset(screen))
+
+
+## A rota até a tela `screen` (inclusive), sem os nós depois dela.
+func _path_until(screen: int) -> Array[String]:
+	var out: Array[String] = []
+	for id in path:
+		var n := EonMap.find(id)
+		if not n.is_empty() and int(n.screen) <= screen:
+			out.append(id)
+	return out
+
+
+## Continuar: lê o bloco de mapa do save com tolerância. Save antigo (sem
+## "map_v"/"path") ou rota inválida → rota vazia e o nó padrão do checkpoint.
+func _restore_map(d: Dictionary) -> void:
+	path.clear()
+	var last_screen := 0
+	for id in SaveCoerce.as_str_array(d.get("path", [])):
+		var n := EonMap.find(id)
+		# Só ids válidos, em ordem crescente de tela e até o checkpoint.
+		if n.is_empty() or int(n.screen) <= last_screen or int(n.screen) > current_screen:
+			continue
+		path.append(id)
+		last_screen = int(n.screen)
+	last_reward = {}
+	last_node = ""
+	_settle_on_checkpoint()
+
+
+## Rota do Éon (para a tela de mapa): ids visitados naquele Éon, em ordem.
+func path_in_eon(eon: int) -> Array:
+	return path.filter(func(id): return int(EonMap.find(String(id)).get("eon", -1)) == eon)
