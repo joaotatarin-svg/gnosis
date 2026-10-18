@@ -86,6 +86,14 @@ func _m(line: Dictionary, mood: String) -> Dictionary:
 	return line
 
 
+## LEGENDA URGENTE (Onda 6): a CaptionBar segura toda legenda enquanto há
+## combate por perto e só solta na calma. As falas DA PRÓPRIA LUTA (fase de
+## chefe, 7º Anel) levam `urgent` e passam — por isso são curtas (1 linha).
+func _u(line: Dictionary) -> Dictionary:
+	line["urgent"] = true
+	return line
+
+
 ## "Uma faísca escorre" / "37 faíscas escorrem" — a fala nunca diz "0 faíscas".
 ## Começa frase (vem depois de um ponto): maiúscula.
 func _faiscas(n: int) -> String:
@@ -228,36 +236,43 @@ func eon_intro(eon: int) -> Array:
 			_l(VOZ, "O Éon do Torpor. Aqui os mortos não sabem que morreram; a cidade sonha por eles."),
 			_l(VOZ, "Não odeies os que dormem. Ontem tu dormias."),
 			_l(SOPHIA, "Eu também queria deitar. ...Não vou."),
+			_l(SOPHIA, "(Dormir é esquecer de onde se veio. Acordar dói: é lembrar.)"),
 		]
 		1: return [
 			_l(VOZ, "O Éon da Fome. Estes mercados devoram quem compra. Tudo aqui tem preço, até a saudade."),
 			_l(VOZ, "O Arconte daqui vai oferecer-te o que perdeste. Lembra: cópia não é volta."),
 			_l(SOPHIA, "Eu nem sei o que perdi. Como vou recusar o que ele me oferecer?"),
+			_l(SOPHIA, "(Kenoma: um mundo cheio de coisas e vazio de sentido. Nada aqui mata a fome de verdade.)"),
 		]
 		2: return [
 			_l(VOZ, "O Éon da Corrente. A lei deste lugar não protege: prende. Cada selo é um cadeado."),
 			_l(SOPHIA, "Eu sigo uma voz que não vejo. Isso também é corrente?"),
 			_l(VOZ, "É confiança. É diferente. Quebra os selos, e sobe."),
+			_l(SOPHIA, "(Os Arcontes mandam pelo destino: selos, leis, correntes. Quem sabe que está presa já começou a sair.)"),
 		]
 		3: return [
 			_l(VOZ, "O Éon do Silêncio. Uma biblioteca de livros em branco: aqui calaram a verdade página por página."),
 			_l(VOZ, "Escuta o que não é dito. É assim que se lê este lugar."),
 			_l(SOPHIA, "Tem uma voz por baixo da tua. Aqui, no silêncio, eu vou ouvi-la."),
+			_l(SOPHIA, "(Antes de tudo havia o Silêncio. A verdade não grita: espera ser ouvida.)"),
 		]
 		4: return [
 			_l(VOZ, "O Éon do Espelho. Cuidado, Portadora: aqui o inimigo és tu."),
 			_l(VOZ, "O reflexo luta com a tua força e com a tua fúria. Vence quem se conhece."),
 			_l(SOPHIA, "Eu quero ver o meu rosto. Mesmo que ele me ataque."),
+			_l(SOPHIA, "(Conhecer-se é lembrar de onde veio a luz. O reflexo copia; não sabe quem é.)"),
 		]
 		5: return [
 			_l(VOZ, "O Éon da Praga. As faíscas aqui se apagam devagar, como velas num pântano."),
 			_l(VOZ, "O desespero é a última arma deles. Não é a tua."),
 			_l(SOPHIA, "Estou cansada. Pela primeira vez eu digo em voz alta: cansada."),
+			_l(SOPHIA, "(O corpo cansa e apodrece. A faísca, não: ela só pode ser esquecida.)"),
 		]
 		6: return [
 			_l(VOZ, "O Éon da Coroa. O último degrau. O Arconte daqui quase tocou o trono do Cego."),
 			_l(VOZ, "Ele vai oferecer-te poder: a mais velha das mentiras, e a mais doce."),
 			_l(SOPHIA, "Último degrau. Depois eu descubro quem sou. Tu prometeste."),
+			_l(SOPHIA, "(Todo poder que exige joelhos tem medo. A Luz de verdade não pede adoração.)"),
 		]
 	return []
 
@@ -338,16 +353,30 @@ func champion_card(eon: int) -> Dictionary:
 ## Gancho (Onda 2): enemy._enter_phase2 → Gnosis.captions(Narrative.archon_phase2(type_id)).
 func archon_phase2(boss_id: String) -> Array:
 	match boss_id:
-		"arconte_sono": return [_l("Athoth", "Por que acordar? Lá fora só tem a falta!")]
-		"arconte_fome": return [_l("Harmas", "Dá-me uma! Uma lembrança que seja minha!")]
-		"arconte_corrente": return [_l("Galila", "Se eu soltar, eu caio! Todos caem!")]
-		"arconte_silencio": return [_l("Yabel", "(os pontos da boca dele esticam; alguma coisa lá dentro quer sair)")]
+		"arconte_sono": return [_u(_l("Athoth", "Por que acordar? Lá fora só tem a falta!"))]
+		"arconte_fome": return [_u(_l("Harmas", "Dá-me uma! Uma lembrança que seja minha!"))]
+		"arconte_corrente": return [_u(_l("Galila", "Se eu soltar, eu caio! Todos caem!"))]
+		"arconte_silencio": return [_u(_l("Yabel", "(os pontos da boca dele esticam; alguma coisa quer sair)"))]
 		"arconte_espelho": return [
-			_l(SOPHIA, "(O vidro racha. No lugar do rio, por um instante: uma nuvem branca. Alguém pequeno chorando.)"),
-			_l("Astaphaios", "Esse não! Esse reflexo não é para ti!"),
+			_u(_l(SOPHIA, "(O vidro racha: uma nuvem branca. Alguém pequeno chorando.)")),
+			_u(_l("Astaphaios", "Esse não! Esse reflexo não é para ti!")),
 		]
-		"arconte_praga": return [_l("Belias", "Por que insistes? Eu só quero que pare de doer!")]
-		"arconte_coroa": return [_l("Armupiel", "Corte! Ao rei! ...Ninguém vem. Nunca ninguém vem.")]
+		"arconte_praga": return [_u(_l("Belias", "Por que insistes? Eu só quero que pare de doer!"))]
+		"arconte_coroa": return [_u(_l("Armupiel", "Corte! Ao rei! ...Ninguém vem. Nunca ninguém vem."))]
+	return []
+
+
+## FASE 3 dos Arconte (Onda 6, pedido do chefes6: `enemy._enter_phase(3)` chama
+## se existir). Uma linha, tom de filho ferido, urgente (é da luta).
+func archon_phase3(boss_id: String) -> Array:
+	match boss_id:
+		"arconte_sono": return [_u(_l("Athoth", "Só mais um pouco... deixa eu dormir só mais um pouco."))]
+		"arconte_fome": return [_u(_l("Harmas", "Ainda tenho fome. Sempre."))]
+		"arconte_corrente": return [_u(_l("Galila", "Se eu soltar... quem me segura?"))]
+		"arconte_silencio": return [_u(_l("Yabel", "(um fio arrebenta; um som, quase uma palavra)"))]
+		"arconte_espelho": return [_u(_l("Astaphaios", "Qual de nós é o reflexo?"))]
+		"arconte_praga": return [_u(_l("Belias", "Está bem. Está bem. Só mais uma vez, então."))]
+		"arconte_coroa": return [_u(_l("Armupiel", "De pé, corte! ...De pé..."))]
 	return []
 
 
@@ -381,7 +410,7 @@ func ring_gained(boss_id: String, skill_name: String, count: int) -> Array:
 	match who:
 		"sono":
 			lines.append(_l(SOPHIA, "(Ao tocar o Anel: uma nuvem branca, e um trono pequeno dentro dela.)"))
-			lines.append(_l(VOZ, "Sonhos do Torpor. Passam. Sobe."))
+			lines.append(_l(VOZ, "Sonhos do Torpor. Passam. Experimenta-o: o Éter que juntas vira a magia dele."))
 		"fome": lines.append(_l(VOZ, "Faltam cinco. E a tua janela continua tua. Sobe."))
 		"corrente": lines.append(_l(VOZ, "Galila classificou-te e perdeu. Faltam quatro."))
 		"silencio": lines.append(_l(VOZ, "Ouve: as tuas magias voltaram a falar. Faltam três."))
@@ -461,6 +490,47 @@ func soter_meeting(n: int) -> Array:
 			_l("Soter", "Eram de todos. Por isso também são teus. Lembra-te disso quando te disserem outra coisa."),
 			_m(_l("Soter", "E quando ficares sozinha, não temas o silêncio. Ele também é teu. Escolhe."), M_TRISTE),
 		]
+	return []
+
+
+## SOTER CONCEDE A LEVEZA (Onda 6: o pulo duplo, 1º encontro, tela 17). Depois
+## da bênção escolhida: as mãos dele nos ombros dela, luz, o chão pesa menos.
+## Fala 0: as mãos (a luz sobe); fala 1 (rubrica, `chime`): ela fica leve e o
+## pulo duplo é concedido. Gancho: npc_encounter._soter_lightness.
+func soter_lightness() -> Array:
+	return [
+		_l("Soter", "Mais uma coisa. Fica quieta: isto não dói."),
+		_c(NARRADOR, "(As mãos dele pousam nos teus ombros. Um calor sobe dos pés, e o chão, de repente, pesa menos.)", "chime"),
+		_l("Soter", "Há passagens que só se alcançam com asas. Asas não dou. Dou leveza: no ar, pisa outra vez."),
+		_l(SOPHIA, "(Leve. Como antes de cair.)"),
+		_l("Soter", "Vê aquela luz no alto? Sobe até ela. Eu espero."),
+	]
+
+
+## Ela alcançou o degrau de luz (mini-desafio do pulo duplo): Soter parte.
+func soter_lightness_done() -> Array:
+	return [_l("Soter", "Assim. Quem dá asas não luta: só lembra que tu sabias voar.")]
+
+
+## Prompt curto do pulo duplo (HUD), logo depois da leveza.
+func hint_double_jump() -> String:
+	return "no ar, pule outra vez"
+
+
+## Prompt curto do CONTRA-ATAQUE (HUD), no 1º aparo do run.
+func hint_riposte() -> String:
+	return "contra-ataque: golpeie agora"
+
+
+## Ao entrar num nó especial do mapa (Onda 6, mapa6: `RunManager.node_kind()`):
+## uma fala curta (legenda, na calma) que diz o que o lugar é.
+func node_arrival(kind: String) -> Array:
+	match kind:
+		"sanctuary": return [_l(SOPHIA, "(Um altar apagado. Aqui ninguém me persegue. Respiro.)")]
+		"challenge": return [_l(VOZ, "Uma arena. Eles vêm em ondas, e pagam bem quem fica de pé.")]
+		"secret": return [_l(SOPHIA, "(Lá no alto, uma câmara. Só se chega pisando no ar.)")]
+		"hazard": return [_l(VOZ, "O chão daqui morde. Olha onde pisas.")]
+		"platform": return [_l(SOPHIA, "(O caminho sobe. Degrau por degrau.)")]
 	return []
 
 
@@ -594,8 +664,8 @@ func final_pre() -> Array:
 ## o relógio de 14 s corre). Gancho: final_battle, bloco da primeira queda.
 func seventh_ring() -> Array:
 	return [
-		_m(_l(SOPHIA, "A Coroa voltou. E com ela, o porquê: eu desci de propósito."), M_DETERMINADA),
-		_m(_l(SOPHIA, "Para desfazer o que tu fazias. E para te buscar."), M_TERNURA),
+		_u(_m(_l(SOPHIA, "A Coroa voltou. E com ela, o porquê: eu desci de propósito."), M_DETERMINADA)),
+		_u(_m(_l(SOPHIA, "Para desfazer o que tu fazias. E para te buscar."), M_TERNURA)),
 	]
 
 

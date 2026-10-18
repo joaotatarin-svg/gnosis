@@ -49,6 +49,17 @@ var _blips: int = 0
 var _height: float = 48.0
 var _fight_armed: bool = true     # a próxima luta de chefe da tela ainda corta a chegada
 var _in_fight: bool = false
+# CALMA (Onda 6, playtest do João: "a história passa por cima do jogo durante a
+# ação"): nenhuma legenda nova começa com combate por perto; a fila espera a
+# zona ficar calma por CALM_NEED s. Fala marcada `urgent` (fase de chefe, 7º
+# Anel: curtas, da própria luta) passa. Uma fala comum que estava na tela
+# quando a luta começou sai e volta para a frente da fila (uma vez).
+const CALM_NEED := 1.0
+const HOT_RANGE := 380.0           # inimigo vivo a esta distância da Sophia = combate
+var _calm_t: float = 0.0
+var _hot: bool = false
+var _current: Dictionary = {}      # fala na tela (para devolver à fila)
+var _shown_t: float = 0.0
 var _lines_shown: int = 0
 const MIN_FS := 11                # menor corpo aceito ao apertar para 1 linha
 
@@ -147,10 +158,21 @@ func _process(delta: float) -> void:
 			_root.modulate.a = 0.0     # sem fade: a morte vem com câmera lenta
 		return
 	_check_fight()
+	_check_calm(delta)
 	_layout(delta)
 	if _showing:
+		# A luta começou com uma fala comum no ar: ela sai e espera a calma
+		# (volta à frente da fila uma vez; se já voltou, fica até o fim).
+		if _hot and not bool(_current.get("urgent", false)) and not bool(_current.get("_requeued", false)) \
+				and _shown_t < 0.6 * (_shown_t + maxf(_time_left, 0.0)):
+			var again := _current.duplicate()
+			again["_requeued"] = true
+			_queue.push_front(again)
+			_hide()
+			return
 		_type(delta)
 		_time_left -= delta
+		_shown_t += delta
 		if _time_left <= 0.0:
 			_hide()
 		return
@@ -159,7 +181,42 @@ func _process(delta: float) -> void:
 		return
 	if _queue.is_empty():
 		return
+	# Com combate por perto, só a fala urgente da luta passa à frente.
+	if _calm_t < CALM_NEED:
+		for i in _queue.size():
+			if bool((_queue[i] as Dictionary).get("urgent", false)):
+				_show(_queue.pop_at(i))
+				return
+		return
 	_show(_queue.pop_front())
+
+
+## Combate por perto? (inimigo vivo e visível a HOT_RANGE px da Sophia, ou luta
+## de chefe com barra). `_calm_t` conta o tempo desde que tudo acalmou.
+func _check_calm(delta: float) -> void:
+	_hot = _in_fight or _enemy_near()
+	_calm_t = 0.0 if _hot else _calm_t + delta
+
+
+func _enemy_near() -> bool:
+	var pl := get_tree().get_first_node_in_group("player") as Node2D
+	if pl == null:
+		return false
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if not (e is Enemy) or not (e as Node2D).is_visible_in_tree():
+			continue
+		if "estate" in e and int(e.get("estate")) == Enemy.EState.DEAD:
+			continue
+		if e.process_mode == Node.PROCESS_MODE_DISABLED:
+			continue                   # Arconte parado à espera do gatilho (tentação)
+		if absf((e as Node2D).global_position.x - pl.global_position.x) < HOT_RANGE:
+			return true
+	return false
+
+
+## Há combate por perto agora (a fila de legendas está esperando)? QA/sonda.
+func is_holding() -> bool:
+	return _calm_t < CALM_NEED and not _queue.is_empty()
 
 
 func _type(delta: float) -> void:
@@ -186,6 +243,8 @@ func _type(delta: float) -> void:
 
 func _show(l: Dictionary) -> void:
 	_showing = true
+	_current = l
+	_shown_t = 0.0
 	# i18n (Onda 4): exibe traduzido; o falante pt segue como chave de retrato/blip.
 	var text := I18n.t(String(l.get("text", "")))
 	var who := String(l.get("speaker", ""))

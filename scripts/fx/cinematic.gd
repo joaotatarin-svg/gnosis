@@ -38,7 +38,7 @@ var _black: ColorRect
 var _bg: TextureRect
 var _title: Label
 var _text: Label
-var _hint: Label
+var _hint: Control
 var _bar_top: ColorRect
 var _bar_bottom: ColorRect
 var _boss_name: Label
@@ -285,16 +285,15 @@ func _build_cards() -> void:
 	_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_text)
 
-	_hint = Label.new()
-	_hint.text = "qualquer tecla avança  ·  Esc pula"
+	# Rodapé com os ícones do dispositivo em uso (teclado ↔ controle, traduzido):
+	# "[Enter] avança · [Esc] pula" / "[A] avança · [≡] pula" (QA2 #13, UI5).
+	# Qualquer tecla/botão continua avançando.
+	_hint = InputGlyphs.card_hint()
 	_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	_hint.offset_left = -240.0
-	_hint.offset_top = -22.0
+	_hint.offset_top = -24.0
 	_hint.offset_right = -14.0
 	_hint.offset_bottom = -8.0
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_hint.add_theme_font_size_override("font_size", 9)
-	_hint.add_theme_color_override("font_color", CodexStyle.MUTED)
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_hint)
 	_set_alpha(0.0)

@@ -3,9 +3,13 @@ class_name Chest
 ## Baú de faíscas: acerte com um golpe pra abrir. Desenhado por código.
 ## Recompensa determinística por tela: faíscas, e em telas certas uma peça
 ## de gear (item que muda a aparência do herói).
+## BAÚ SECRETO (level6, Onda 6): `secret = true` — fica no ALTO (torre, saliência
+## de pulo duplo). Brilha dourado de longe (a recompensa se anuncia), paga o
+## dobro, cura 20 % e marca "Segredo encontrado". Nunca é obrigatório.
 
 var screen: int = 1
 var opened: bool = false
+var secret: bool = false
 var _hurt: Hurtbox
 var _wobble: float = 0.0
 var painted_chest: Sprite2D
@@ -45,6 +49,13 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	if secret and not opened:
+		# brilho dourado que se vê de longe (a recompensa se anuncia)
+		var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.004)
+		draw_circle(Vector2(0, -8), 26.0 + 4.0 * pulse, Color(1.0, 0.85, 0.4, 0.07 + 0.06 * pulse))
+		for i in 3:
+			var ph := fposmod(Time.get_ticks_msec() * 0.0005 + float(i) * 0.33, 1.0)
+			draw_circle(Vector2(sin(float(i) * 2.4) * 12.0, -6.0 - ph * 30.0), 1.4, Color(1.0, 0.9, 0.55, (1.0 - ph) * 0.8))
 	draw_set_transform(Vector2(0,12),0,Vector2(1,0.22))
 	draw_circle(Vector2.ZERO,21,Color(0,0,0,0.3))
 	draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
@@ -84,8 +95,13 @@ func _give_reward() -> void:
 	var sparks := 15 + screen * 2
 	if gave_item:
 		sparks = int(sparks * 0.5)
+	if secret:
+		sparks *= 2
 	Progression.add_orbs(sparks)
-	# cura leve de bônus
+	# cura leve de bônus (o secreto cura 20 % da vida)
 	var p := get_tree().get_first_node_in_group("player")
 	if p != null and p.health != null:
-		p.health.heal(10)
+		p.health.heal(int(p.health.max_health * 0.2) if secret else 10)
+	if secret:
+		AoeNova.spawn(get_parent(), global_position + Vector2(0, -10), 0, 60.0, Color(1.0, 0.85, 0.4))
+		get_tree().call_group("hud", "toast", "Segredo encontrado")

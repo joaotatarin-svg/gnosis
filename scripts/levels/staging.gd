@@ -99,6 +99,11 @@ var _framed: bool = false                      # a cena já mexeu na câmera nes
 var _tall_seen: bool = false
 var _boxes: Array = []                         # caixas abertas (DialogueBox) que vigio
 var _vis_mode: int = -1                        # process_mode do Visual da Sophia (idle na conversa)
+# ENSINO NA HORA (Onda 6): o 1º APARO do run abre a janela do contra-ataque —
+# câmera lenta curta + prompt "contra-ataque: golpeie agora" (uma vez por run).
+const RIPOSTE_SLOW := 0.35
+const RIPOSTE_SLOW_TIME := 0.55
+var _riposte_taught: bool = false
 
 
 func _ready() -> void:
@@ -250,9 +255,11 @@ func _partner() -> Node2D:
 func _mid_shift(x: float) -> float:
 	_cam_take()
 	var mid := (player.global_position.x + x) * 0.5
-	var unshifted := _view_center().x
-	if "base_offset" in _cam:
-		unshifted -= Vector2(_cam.get("base_offset")).x - Vector2(_cam_saved.base_offset).x
+	# O alvo normal da câmera (corpo + enquadramento salvo + antecipação), e não
+	# onde ela ESTÁ: logo depois de um teleporte/corrida a câmera ainda vem
+	# atrasada e o meio sairia torto (Sophia fora do quadro).
+	var look = _cam.get("_look_ahead")
+	var unshifted := player.global_position.x + Vector2(_cam_saved.base_offset).x + (float(look) if look != null else 0.0)
 	return mid - unshifted
 
 
@@ -740,21 +747,24 @@ func _b_sink() -> void:
 	var feet := Vector2(_king.global_position.x, _ground_y())
 	var crack := _crack_ground(feet)
 	var t := _tw()
-	t.tween_interval(1.8)
-	t.tween_property(_king, "global_position:y", _king.global_position.y + 140.0, 1.6).set_ease(Tween.EASE_IN)
+	t.tween_interval(1.0)
+	t.tween_property(_king, "global_position:y", _king.global_position.y + 220.0, 1.9).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	for g in _gems:
 		if is_instance_valid(g):
 			t.parallel().tween_property(g, "modulate:a", 0.0, 0.45)
 	t.tween_property(_black, "color:a", 1.0, 0.8)
 	var opening := _tw()
-	opening.tween_interval(0.25)
-	opening.tween_property(crack, "open", 1.0, 2.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	opening.tween_interval(0.15)
+	opening.tween_property(crack, "open", 1.0, 1.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# O momento é épico: luz âmbar forte saindo do chão, tremor crescente, poeira.
 	var quake := _tw()
-	for k in 4:
-		quake.tween_callback(Juice.shake.bind(0.18 + 0.06 * float(k)))
-		quake.tween_callback(VfxLibrary.dust.bind(self, feet + Vector2((float(k) - 1.5) * 34.0, -2.0)))
-		quake.tween_interval(0.55)
-	_cam_to(1.0, Vector2(_side() * 60.0, 40.0), 1.8)
+	for k in 6:
+		quake.tween_callback(Juice.shake.bind(0.3 + 0.05 * float(k)))
+		quake.tween_callback(VfxLibrary.dust.bind(self, feet + Vector2((float(k) - 2.5) * 30.0, -2.0)))
+		quake.tween_callback(VfxLibrary._flash_sprite.bind(self, feet + Vector2(0, -10), "halo", Color(1.0, 0.72, 0.3, 0.75), 0.6, 2.2 + 0.3 * float(k), 0.5))
+		quake.tween_interval(0.45)
+	# O quadro abre e SOBE o chão bem acima da caixa: o abismo fica à vista.
+	_cam_to(0.9, Vector2(_side() * 60.0, 100.0), 1.0)
 
 
 # --- cena C: a descida ao Centro (tela 65) -----------------------------------
@@ -1076,7 +1086,11 @@ func _clear_fog(dur: float) -> void:
 ## toca no lugar do desenho. A cena anima `open` 0→1.
 func _crack_ground(at: Vector2) -> Node2D:
 	var c := _FloorCrack.new()
-	c.z_index = -1                             # abaixo do Rei (irmãos na Staging)
+	# No chão: atrás dos lutadores e à frente do piso (como os props, z -1
+	# absoluto) — o decalque não cobre os pés da Sophia; o Rei (na Staging) fica
+	# por cima.
+	c.z_as_relative = false
+	c.z_index = -1
 	c.seed_value = 64
 	add_child(c)
 	c.global_position = at
@@ -1140,6 +1154,41 @@ func _cam_release(dur: float) -> void:
 	t.tween_callback(func() -> void:
 		if is_instance_valid(_cam):
 			_cam.process_mode = saved.process_mode)
+
+
+## O 1º aparo do run: o jogador acabou de aparar e a janela do contra-ataque
+## está aberta (`_riposte_t` do player do combate6) — ensina NA HORA, com a
+## câmera lenta dando tempo de apertar. Sem o campo (outro player), nada.
+func _tutor_riposte() -> void:
+	if _riposte_taught or player == null or not is_instance_valid(player) or get_tree().paused:
+		return
+	var rt = player.get("_riposte_t")
+	if not (rt is float) or float(rt) <= 0.0:
+		return
+	_riposte_taught = true
+	if not Narrative.once("dica_contra"):
+		return
+	Juice.slow_mo(RIPOSTE_SLOW, RIPOSTE_SLOW_TIME)
+	Staging.hint_now([{"keys": ["attack_light"], "text": Narrative.hint_riposte()}])
+
+
+## Dica de controle AGORA no HUD (fura a fila; a que estiver na tela cede):
+## `show_hint_now` se a UI tiver; senão a mesma manobra do level._tutor_hint.
+static func hint_now(segs: Array) -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	var hud := tree.get_first_node_in_group("hud") if tree != null else null
+	if hud == null:
+		return
+	if hud.has_method("show_hint_now"):
+		hud.call("show_hint_now", segs)
+	elif "hints" in hud:
+		var q: Array = hud.get("hints")
+		q.push_front(segs)
+		if "_hint" in hud and "_hint_gap" in hud:
+			hud.set("_hint", [])
+			hud.set("_hint_gap", 0.0)
+	elif hud.has_method("show_hint"):
+		hud.call("show_hint", segs)
 
 
 ## O HUD roda durante a cena do roubo (as gemas do HUD voam com a caixa aberta).
@@ -1209,6 +1258,7 @@ static func _ground() -> float:
 
 func _process(delta: float) -> void:
 	_orbit_t += delta
+	_tutor_riposte()
 	# A caixa cresceu para as escolhas (ou voltou): o quadro sobe mais um pouco.
 	if not _cam_saved.is_empty() and _box_open() and _box_tall() != _tall_seen:
 		_cam_to(_cur_k, _cur_shift, 0.35)
@@ -1489,12 +1539,12 @@ class _King extends Node2D:
 		# abaixo dela pelo recorte `clip`).
 		var sunk := global_position.y - Staging._ground()
 		if sunk > 1.0:
-			var w := 70.0
+			var w := 90.0
 			var gy := -sunk
-			var ga := clampf(sunk / 30.0, 0.0, 1.0)
+			var ga := clampf(sunk / 20.0, 0.0, 1.0)
 			over.draw_set_transform(Vector2(0, gy), 0.0, Vector2(1.0, 0.22))
-			over.draw_circle(Vector2.ZERO, w, Color(1.0, 0.78, 0.4, 0.18 * ga))
-			over.draw_circle(Vector2.ZERO, w * 0.62, Color(1.0, 0.88, 0.6, 0.32 * ga))
+			over.draw_circle(Vector2.ZERO, w, Color(1.0, 0.78, 0.4, 0.3 * ga))
+			over.draw_circle(Vector2.ZERO, w * 0.62, Color(1.0, 0.88, 0.6, 0.5 * ga))
 			over.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 			over.draw_line(Vector2(-w * 0.8, gy), Vector2(w * 0.8, gy), Color(1.0, 0.95, 0.8, 0.85 * ga), 1.5, true)
 
@@ -1534,10 +1584,15 @@ class _Clip extends Node2D:
 ## achatados na perspectiva do piso, com largura variável (afina na ponta),
 ## borda escura suave e um núcleo de luz âmbar com brilho aditivo. `open` 0→1
 ## cresce o comprimento e a largura; faíscas sobem das pontas enquanto abre.
-## Sequência pintada (pedida à Produção: `fx_floor_crack_a.png`, quadros lado a
-## lado, quadrados, fundo transparente): se existir, toca como decalque no lugar.
+## DECALQUE PINTADO (Produção, `artes/gpt/fx/fx_floor_crack_a.png` →
+## tools/encenacao/fx_floor_crack.py → tira de DECAL_FRAMES quadros: fissura →
+## ramifica → luz âmbar → placas caindo → abismo → poeira): é o efeito PRINCIPAL,
+## grande, sob o Rei; os fachos de luz, o poço e as faíscas ficam de apoio por
+## cima. Sem o arquivo, as fendas desenhadas fazem o papel.
 class _FloorCrack extends Node2D:
 	const DECALS := ["res://assets/cinematic/fx_floor_crack_a.png", "res://assets/painted/fx/fx_floor_crack_a.png"]
+	const DECAL_FRAMES := 6
+	const DECAL_W := 330.0                     # largura do decalque (px de mundo)
 	const CORE := Color(1.0, 0.78, 0.38)
 	const EDGE := Color(0.05, 0.03, 0.04)
 	var open: float = 0.0:
@@ -1548,6 +1603,7 @@ class _FloorCrack extends Node2D:
 				_glow.queue_redraw()
 			if _decal != null:
 				_decal.frame = clampi(int(v * float(_decal.hframes)), 0, _decal.hframes - 1)
+				_decal.modulate.a = clampf(v * 8.0, 0.0, 1.0)
 	var seed_value: int = 64
 	var _branches: Array = []                  # [{pts: PackedVector2Array, w: float}]
 	var _glow: Node2D
@@ -1561,16 +1617,21 @@ class _FloorCrack extends Node2D:
 				var tex: Texture2D = load(path)
 				_decal = Sprite2D.new()
 				_decal.texture = tex
-				_decal.hframes = maxi(1, int(round(float(tex.get_width()) / float(tex.get_height()))))
-				_decal.scale = Vector2(1.0, 0.35) * 260.0 / float(tex.get_height())
+				_decal.hframes = DECAL_FRAMES
+				var fw := float(tex.get_width()) / float(DECAL_FRAMES)
+				# o tampo do bloco achatado um pouco para caber na faixa do chão; o
+				# centro fica logo abaixo dos pés (ele está no meio do tampo)
+				_decal.scale = Vector2(1.0, 0.8) * DECAL_W / fw
+				_decal.position = Vector2(0.0, 8.0)
+				_decal.modulate.a = 0.0
 				add_child(_decal)
-				return
+				break
 		var rng := RandomNumberGenerator.new()
 		rng.seed = seed_value
 		var dirs := [PI + 0.1, -0.1, PI * 0.7, PI * 0.3, PI * 1.25, PI * 1.82]
 		for k in dirs.size():
 			var a: float = float(dirs[k]) + rng.randf_range(-0.12, 0.12)
-			var length: float = rng.randf_range(90.0, 150.0) * (1.0 if k < 2 else 0.6)
+			var length: float = rng.randf_range(150.0, 220.0) * (1.0 if k < 2 else 0.6)
 			var pts := PackedVector2Array([Vector2.ZERO])
 			var p := Vector2.ZERO
 			var n := 9
@@ -1578,15 +1639,17 @@ class _FloorCrack extends Node2D:
 				a += rng.randf_range(-0.45, 0.45)
 				p += Vector2(cos(a), sin(a)) * (length / float(n))
 				pts.append(p)
-			_branches.append({"pts": pts, "w": rng.randf_range(2.6, 3.6) * (1.0 if k < 2 else 0.7)})
+			_branches.append({"pts": pts, "w": rng.randf_range(4.0, 5.5) * (1.0 if k < 2 else 0.7)})
 		_glow = Node2D.new()
 		_glow.material = VfxLibrary._additive()
 		add_child(_glow)
 		_glow.draw.connect(_draw_glow)
 
 	func _process(delta: float) -> void:
+		if _glow != null and open > 0.0:
+			_glow.queue_redraw()               # os fachos tremulam
 		# Faíscas sobem das pontas enquanto a fenda abre (uma ponta por vez).
-		if _decal != null or open <= 0.0 or open >= 1.0 or _branches.is_empty():
+		if open <= 0.0 or open >= 1.0 or _branches.is_empty():
 			return
 		_spark_t += delta
 		if _spark_t < 0.1:
@@ -1667,11 +1730,34 @@ class _FloorCrack extends Node2D:
 
 	func _draw_glow() -> void:
 		var a := clampf(open * 2.0, 0.0, 1.0)
-		for b in _branches:
-			_poly(_glow, _strip(b, 1.8), Color(CORE.r, CORE.g * 0.9, CORE.b * 0.7, 0.28 * a))
-			_poly(_glow, _strip(b, 0.35), Color(1.0, 0.95, 0.8, 0.7 * a))
-		# brilho no ponto de origem (o "poço" sob os pés dele)
-		_glow.draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.25))
-		_glow.draw_circle(Vector2.ZERO, 22.0 * a, Color(CORE, 0.16 * a))
-		_glow.draw_circle(Vector2.ZERO, 9.0 * a, Color(1.0, 0.92, 0.7, 0.35 * a))
+		if _decal == null:                     # com o decalque, as fendas são as dele
+			for b in _branches:
+				_poly(_glow, _strip(b, 1.8), Color(CORE.r, CORE.g * 0.9, CORE.b * 0.7, 0.28 * a))
+				_poly(_glow, _strip(b, 0.35), Color(1.0, 0.95, 0.8, 0.7 * a))
+		# Luz SUBINDO das fendas: fachos aditivos que nascem nos ramos e somem
+		# para cima (degradê por vértice), tremulando.
+		var tt := float(Time.get_ticks_msec()) * 0.001
+		for bi in _branches.size():
+			var b: Dictionary = _branches[bi]
+			var pts: PackedVector2Array = b.pts
+			for j in range(1, pts.size(), 2):
+				if float(j) > open * float(pts.size() - 1):
+					break
+				var base := Vector2(pts[j].x, pts[j].y * 0.3)
+				var flick := 0.75 + 0.25 * sin(tt * 9.0 + float(j) * 1.7 + float(bi))
+				var hgt := (70.0 + 50.0 * flick) * a * (1.0 - float(j) / float(pts.size()))
+				var half := 5.0 + 3.0 * flick
+				_glow.draw_polygon(PackedVector2Array([base + Vector2(-half, 0), base + Vector2(half, 0),
+					base + Vector2(half * 0.4, -hgt), base + Vector2(-half * 0.4, -hgt)]),
+					PackedColorArray([Color(CORE, 0.55 * a * flick), Color(CORE, 0.55 * a * flick),
+					Color(CORE, 0.0), Color(CORE, 0.0)]))
+		# o "poço" de luz sob os pés dele
+		_glow.draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.3))
+		_glow.draw_circle(Vector2.ZERO, 70.0 * a, Color(CORE, 0.14 * a))
+		_glow.draw_circle(Vector2.ZERO, 38.0 * a, Color(CORE, 0.3 * a))
+		_glow.draw_circle(Vector2.ZERO, 16.0 * a, Color(1.0, 0.95, 0.8, 0.6 * a))
 		_glow.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		# coluna de luz larga no centro (o chão "se abre" para o motor)
+		var ch := 160.0 * a
+		_glow.draw_polygon(PackedVector2Array([Vector2(-34, 0), Vector2(34, 0), Vector2(18, -ch), Vector2(-18, -ch)]),
+			PackedColorArray([Color(1.0, 0.8, 0.45, 0.45 * a), Color(1.0, 0.8, 0.45, 0.45 * a), Color(CORE, 0.0), Color(CORE, 0.0)]))

@@ -37,6 +37,7 @@ var _first_fall_done: bool = false
 var _rings_free: bool = false       # a anagnórise levou os Anéis (não desenha mais)
 var _stack_t: float = 0.0           # há quanto tempo as formas estão empilhadas
 var _blink_cd: float = 0.0
+var _revives: int = 0               # quantas vezes uma forma se refez (fases da batalha)
 # Sorteio PRÓPRIO da batalha (Balance): o randi() global também é consumido
 # pelo Áudio/gibs em quantidades que dependem do relógio real — a tela 68 dava
 # dano diferente em duas rodadas iguais do bot. Semeado pela tela.
@@ -56,6 +57,10 @@ func start(parent: Node, scene: PackedScene, spawn_points: Array) -> void:
 	for f in forms:
 		f.revivable = true
 		f.defeated.connect(_on_form_down)
+	# chefes6: um ataca de cada vez (nunca dois telegrafos juntos)
+	if rei.brain != null and col.brain != null:
+		rei.brain.partner = col.brain
+		col.brain.partner = rei.brain
 	get_tree().call_group("hud", "toast", "As duas formas precisam cair juntas.")
 	# Card das duas faces (letterbox), como todo chefe ao nascer.
 	Gnosis.boss_card("demiurgo", RunManager.MAX_SCREEN)
@@ -142,6 +147,9 @@ func _on_form_down(e: Enemy) -> void:
 	# A primeira queda devolve o 7º Anel (a Coroa): pico de poder no clímax.
 	if not _first_fall_done:
 		_first_fall_done = true
+		# chefes6: FASE 2 da batalha dupla — a forma que ficou de pé se enfurece
+		if other != null and is_instance_valid(other) and other.brain != null and other.brain.phase < 2:
+			other.brain.set_phase(2)
 		var last := Progression.next_stolen_ring()
 		if last != "":
 			Progression.restore_ring(last)
@@ -208,6 +216,11 @@ func _process(delta: float) -> void:
 		if down_since[e] >= REVIVE_AFTER:
 			down_since.erase(e)
 			e.revive(0.45)
+			# chefes6: a 1ª forma que se refaz leva as DUAS à fase 3
+			_revives += 1
+			for f in forms:
+				if is_instance_valid(f) and f.brain != null:
+					f.brain.revived(3 if _revives >= 1 else 2, f == e)
 			get_tree().call_group("hud", "toast", Narrative.final_revive(e.display_name))
 			Juice.shake(0.6)
 			break
