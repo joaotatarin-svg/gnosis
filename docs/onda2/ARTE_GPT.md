@@ -347,7 +347,7 @@ Bloco 4 (Soter abençoando) em WIP (último commit "WIP: bloco 4"): folha `artes
 `offer` (fala 4), `rest` (antes do fade) e na Sophia `visual.play_action("soter_look"/"soter_land"/"soter_bow")`
 (o mundo fica pausado na caixa: o visual dela precisa processar, ou a pose não troca); a coluna de luz e a subida
 continuam por FX/tween deles; (4) prancha antes/depois + commit + aviso ao chefe.
-**Depois:** mortes de chefe em 4 etapas (`C:\gnosis-wt\_gpt\outoss_<n>_<nome>_death_a.png`, 2×2: cambaleio,
+**Depois:** mortes de chefe em 4 etapas (`C:\gnosis-wt\_gpt\out\boss_<n>_<nome>_death_a.png`, 2×2: cambaleio,
 cambaleio 2, joelhos, colapso; Rei fundo ROSA ≈248,2,192 → o `key_array` NÃO trata: precisa chave própria como a
 verde; Galila tem _b) → `extra_sheets` nas receitas dos chefes e `_death_seq` tocando as 4 antes do estilhaço.
 **Armadilhas:** estado da Sophia não pode começar com "run"; andar de criatura SEM meios do RIFE (PuppetQA);
