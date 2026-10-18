@@ -22,6 +22,8 @@ var _map_view: Control = null    # WorldMap aberto em modo leitura
 func _ready() -> void:
 	CodexStyle.apply_existing(self)
 	_vbox.custom_minimum_size.x = 260
+	# 6 botões + relíquia + aviso de combate: o painel precisa caber nos 360 px.
+	_vbox.add_theme_constant_override("separation", 6)
 	$Dim.color = Color(0.01, 0.03, 0.045, 0.7)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	PauseStack.push(self)
