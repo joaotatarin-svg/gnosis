@@ -126,16 +126,21 @@ func _on_strike(m: Dictionary) -> void:
 		var before: Array = e._minions.duplicate()
 		e._summon("pretoriano", n)
 		# a guarda tem vida de ~6 golpes cada (não um segundo chefe)
-		for m in e._minions:
-			if m in before or not is_instance_valid(m):
+		for g in e._minions:
+			if g in before or not is_instance_valid(g):
 				continue
-			m.health.setup(maxi(30, int(BossTuning.expected_hit(BossTuning.expected_weapon_level(screen)) * 6.0)))
-			m.spark_reward = 0
-			m.attack_hitbox.damage = maxi(1, m.attack_hitbox.damage / 2)   # guarda que segura, não que mata
-			m.contact_hitbox.damage = maxi(1, m.contact_hitbox.damage / 2)
+			g.health.setup(maxi(30, int(BossTuning.expected_hit(BossTuning.expected_weapon_level(screen)) * 6.0)))
+			g.spark_reward = 0
+			g.attack_hitbox.damage = maxi(1, g.attack_hitbox.damage / 2)   # guarda que segura, não que mata
+			g.contact_hitbox.damage = maxi(1, g.contact_hitbox.damage / 2)
 		e.armored = true
-		_court_cd = 22.0
+		_court_cd = 9999.0          # a corte vem UMA vez por fase (a fase 3 rearma)
 		AoeNova.spawn(e.get_parent(), e.global_position, 0, 160.0, GOLD)
+
+
+func _on_phase(_n: int) -> void:
+	_court_cd = 0.0
+	_cd["corte_real"] = 0.0
 
 
 func _signature(delta: float) -> void:

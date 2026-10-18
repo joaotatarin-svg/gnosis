@@ -309,6 +309,9 @@ class ProbeWorker extends Node:
 			if d < best:
 				best = d
 				target = b
+		# chefe BLINDADO (corte de pé): o jogador lê e vai na guarda primeiro
+		if target != null and bool(target.get("armored")):
+			best = INF
 		# ajudantes vivos perto (servos, ecos, larvas) também apanham
 		for e in get_tree().get_nodes_in_group("enemy"):
 			if e is Enemy and not e.is_boss_enemy and e.estate != Enemy.EState.DEAD:
