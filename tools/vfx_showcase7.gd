@@ -13,7 +13,7 @@ extends Node2D
 ## A janela fica minúscula e fora da tela; a imagem sai do SubViewport.
 
 const ATTACKS := ["solar", "corrente", "coroa", "rei", "salva", "galila"]
-const GIF_FRAMES := 84            # 1,4 s por ataque
+const GIF_FRAMES := 110           # 1,8 s por ataque
 const FIRE_AT := 22               # quadro do disparo (antes disso: antecipação)
 const PERF_WARM := 90
 const PERF_FRAMES := 360
@@ -36,7 +36,7 @@ var _last_us: int = 0
 var _perf_flip: int = 0
 
 const SOPHIA_POS := Vector2(170, 286)
-const DUMMY_POS := Vector2(470, 286)
+const DUMMY_POS := Vector2(400, 286)
 
 
 func _ready() -> void:
@@ -143,9 +143,8 @@ func _process(_delta: float) -> void:
 				_next_attack()
 		"still":
 			if frame == 4:
-				for a in ATTACKS:
-					_fire_still(a)
-			if frame == 4 + 14:
+				_fire_still()
+			if frame == 4 + 24:
 				vp.get_texture().get_image().save_png(out)
 				print("VFX7 STILL ", out)
 				get_tree().quit()
@@ -230,23 +229,29 @@ func _launch(p: Projectile, at: Vector2) -> void:
 	p.global_position = at
 
 
-## Foto com todas as famílias no ar (sem alvos no caminho).
-func _fire_still(a: String) -> void:
+## Foto de catálogo: as 8 famílias voando em fileira (zoom 2,4 da câmera:
+## cada px da base vira ~5 px na foto), para inspecionar núcleo/rastro/coroa.
+const FAMILIES := {"light": Color(1.0, 0.95, 0.7), "solar": Color(1.0, 0.85, 0.5), "chain_light": Color(0.85, 0.85, 0.95),
+	"dark": Color(1.0, 0.55, 0.3), "king": Color(1.0, 0.85, 0.5), "chain": Color(0.78, 0.78, 0.85),
+	"sleep": Color(0.75, 0.8, 1.0), "wave": Color(0.62, 1.0, 0.5)}
+
+
+func _fire_still() -> void:
+	sophia.visible = false
+	dummy.visible = false
 	sophia_hb.monitorable = false
 	dummy_hb.monitorable = false
-	var y := 90.0 + float(ATTACKS.find(a)) * 34.0
-	var cols := {"solar": Color(1.0, 0.85, 0.5), "corrente": Color(0.85, 0.85, 0.95), "coroa": Color(1.0, 0.9, 0.5),
-		"rei": Color(1.0, 0.85, 0.5), "salva": Color(1.0, 0.55, 0.3), "galila": Color(0.78, 0.78, 0.85)}
-	var team := "enemy" if a in ["solar", "corrente", "coroa"] else "player"
-	var p := _proj(1 if team == "enemy" else -1, 10, cols[a], team, 0.0)
-	p.lifetime = 9.0
-	if a == "corrente" or a == "galila":
-		p.root_time = 1.0
-	if a == "coroa":
-		p.explode_radius = 0.0
-	if a == "rei":
-		p.lifetime = 9.4
-	_launch(p, Vector2(320, y))
+	for c in world.get_children():
+		if c is Camera2D:
+			c.zoom = Vector2(2.4, 2.4)
+			c.position = Vector2(330, 214)
+	var i := 0
+	for k in FAMILIES:
+		var p := _proj(1, 1, FAMILIES[k], "player", 150.0)
+		p.lifetime = 9.0
+		p.set_meta("vfx_kind", k)
+		_launch(p, Vector2(268, 156 + i * 16))
+		i += 1
 
 
 # ---------------------------------------------------------------------------

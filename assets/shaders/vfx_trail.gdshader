@@ -20,15 +20,21 @@ float noise(vec2 p) {
 		mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 
+varying vec4 vcol;   // cor do vértice (modulate/gradiente) sem a textura
+
+void vertex() {
+	vcol = COLOR;
+}
+
 void fragment() {
-	vec4 m = COLOR;
+	vec4 m = vcol;
 	float x = UV.x;
 	float y = abs(UV.y * 2.0 - 1.0);
 	float soft = 1.0 - smoothstep(0.3, 1.0, y);
 	float core = 1.0 - smoothstep(0.0, core_w, y);
 	float n = noise(vec2(x * 8.0 + TIME * scroll, UV.y * 2.5 - TIME * 1.3));
 	float cut = mix(1.0, smoothstep(0.2, 0.8, n + (1.0 - x) * 0.55), breakup);
-	vec3 rgb = m.rgb * soft * cut + vec3(1.0) * core * (1.0 - x) * (1.0 - x) * 0.8 * cut;
+	vec3 rgb = mix(m.rgb * m.rgb, m.rgb, 0.5) * soft * cut + vec3(1.0) * core * (1.0 - x) * (1.0 - x) * 0.45 * cut;
 	float alpha = 0.0;
 	if (links > 0.0) {
 		// elos ovais encadeados (alternando de frente e de perfil)

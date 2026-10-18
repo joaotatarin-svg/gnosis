@@ -17,6 +17,7 @@ class_name ProjectileFX
 ## ImpactBurst pergunta `ProjectileFX.find_at(pos)` e, se for deste projétil,
 ## delega o impacto premium (um acerto = um evento, R4).
 
+const TRAIL_STEP := 4.0            # px entre pontos do rastro
 static var live: Array = []          # projéteis com visual premium vivos (busca do impacto)
 
 var kind: String = "light"
@@ -111,7 +112,7 @@ func _build() -> void:
 	wc.add_point(Vector2(1.0, 0.0))
 	_trail.width_curve = wc
 	var g := Gradient.new()
-	var head: Color = color.lightened(0.55) if light else color.lightened(0.2)
+	var head: Color = color.lightened(0.2) if light else color
 	g.set_color(0, Color(head.r, head.g, head.b, 1.0))
 	g.set_color(1, Color(color.r, color.g, color.b, 0.0))
 	g.add_point(0.35, Color(color.r, color.g, color.b, 0.85))
@@ -192,12 +193,16 @@ func _process(delta: float) -> void:
 	var dirx: float = signf(_vel.x) if absf(_vel.x) > 1.0 else float(host.get("direction") if host.get("direction") != null else 1)
 	# rastro: cabeça no projétil; pontos novos a cada ~3 px
 	if not _done:
-		if _trail.get_point_count() == 0 or _trail.get_point_position(0).distance_to(pos) > 3.0:
+		# ponto 0 = cabeça (segue o projétil todo quadro); um ponto novo fica
+		# para trás a cada TRAIL_STEP px percorridos
+		if _trail.get_point_count() < 2:
 			_trail.add_point(pos, 0)
-			while _trail.get_point_count() > int(st.trail_n):
-				_trail.remove_point(_trail.get_point_count() - 1)
 		else:
 			_trail.set_point_position(0, pos)
+			if pos.distance_to(_trail.get_point_position(1)) > TRAIL_STEP:
+				_trail.add_point(pos, 0)
+				while _trail.get_point_count() > int(st.trail_n):
+					_trail.remove_point(_trail.get_point_count() - 1)
 		if kind == "sleep" and _trail.get_point_count() > 1:
 			# fita ondulante (sono): a cabeça sobe e desce
 			_trail.set_point_position(0, pos + Vector2(0, sin(_t * 9.0 + _seed) * 3.0))
@@ -225,7 +230,7 @@ func _muzzle(pos: Vector2) -> void:
 		return
 	var s: float = 0.22 + st.core * 0.8
 	VfxLibrary._flash_sprite(par, pos, "light", Color(color.r, color.g, color.b, 0.75), s * 0.3, s, 0.14)
-	VfxLibrary.shock_ring(par, pos, 6.0 + st.core * 40.0, color, 0.18, not AttackStyle.is_light(kind))
+	VfxLibrary.shock_ring(par, pos, 4.0 + st.core * 28.0, Color(color.r, color.g, color.b, 0.55), 0.16, not AttackStyle.is_light(kind), 1.0, 0.08)
 
 
 ## Acertou (o ImpactBurst delegou): impacto premium da família.

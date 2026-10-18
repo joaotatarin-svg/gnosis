@@ -563,7 +563,6 @@ static func _ring_signature(parent: Node, pos: Vector2, col: Color) -> void:
 		"r_corrente":
 			# Corrente da Lei: o elo se forma — estrela fria e faíscas de forja.
 			_flash_sprite(parent, pos, "star", Color(1, 1, 1, 0.9), 0.08, 0.36, 0.18, true, 6.0)
-			shock_ring(parent, pos, 18.0, col, 0.2, false, 1.0, 0.1)
 			_spray(parent, pos, col, 8, -1.0, "spark2", 0.6)
 		"r_silencio":
 			# Grito Mudo: o som é ENGOLIDO — anéis que se fecham para dentro.
@@ -636,8 +635,8 @@ static func nova_ring(parent: Node, pos: Vector2, radius: float, col: Color = Co
 	# escorre pelo chão e, nas novas enormes, um pilar de luz.
 	var big := radius >= 140.0
 	var fb := flash_budget() if big else 1.0
-	shock_ring(parent, pos, radius, Color(1, 0.98, 0.92), 0.3, false, 1.0, 0.05)
-	shock_ring(parent, pos, radius * 0.94, col, 0.5, false, 1.0, 0.2)
+	shock_ring(parent, pos, radius, Color(1, 0.98, 0.92, 0.6), 0.3, false, 1.0, 0.05)
+	shock_ring(parent, pos, radius * 0.94, Color(col.r, col.g, col.b, 0.8), 0.5, false, 1.0, 0.2)
 	_flash_sprite(parent, pos, "glow", Color(1, 1, 1, 0.7 * fb), 0.1, radius * 2.0 / 128.0 * 0.35, 0.25)
 	ground_decal(parent, pos + Vector2(0, minf(radius * 0.12, 18.0)), col, radius * 2.2, true, 0.55)
 	if big:
@@ -756,7 +755,7 @@ static func shock_ring(parent: Node, pos: Vector2, radius: float, col: Color, du
 	var s := Sprite2D.new()
 	s.texture = tex("circle")
 	s.material = AttackStyle.ring_material(dark, thickness)
-	s.modulate = Color(col.r, col.g, col.b, 1.0)
+	s.modulate = col                            # o alfa da cor = força do anel
 	s.z_index = Z
 	s.add_to_group(GROUP)
 	parent.add_child(s)

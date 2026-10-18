@@ -28,7 +28,8 @@ const SND_FALLBACK := "proj_fire"
 
 
 func _ready() -> void:
-	z_index = 3
+	z_index = VfxLibrary.Z
+	z_as_relative = false
 	var light := style == "light"
 	var big := style == "king"
 	_glow = Sprite2D.new()
@@ -44,18 +45,18 @@ func _ready() -> void:
 	_motes = CPUParticles2D.new()
 	_motes.texture = VfxLibrary.tex("spark2" if light else "spark")
 	_motes.material = VfxLibrary._additive()
-	_motes.amount = 14 if big else 10
+	_motes.amount = 18 if big else 14
 	_motes.lifetime = 0.3
 	_motes.local_coords = true
 	_motes.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE_SURFACE
-	_motes.emission_sphere_radius = 30.0 if big else 20.0
+	_motes.emission_sphere_radius = 40.0 if big else 30.0
 	_motes.gravity = Vector2.ZERO
-	_motes.radial_accel_min = -420.0 if big else -300.0
-	_motes.radial_accel_max = -260.0 if big else -200.0
+	_motes.radial_accel_min = -620.0 if big else -480.0
+	_motes.radial_accel_max = -420.0 if big else -320.0
 	_motes.initial_velocity_min = 0.0
 	_motes.initial_velocity_max = 10.0
-	_motes.scale_amount_min = 0.03
-	_motes.scale_amount_max = 0.07
+	_motes.scale_amount_min = 0.05
+	_motes.scale_amount_max = 0.1
 	_motes.scale_amount_curve = VfxLibrary._grow_curve()
 	_motes.color_ramp = VfxLibrary._ramp(Color(color.r, color.g, color.b, 0.0), Color(1, 1, 1, 1))
 	add_child(_motes)
@@ -88,15 +89,15 @@ func _process(delta: float) -> void:
 	var k := clampf(_t / maxf(duration, 0.01), 0.0, 1.0)
 	var e := k * k                          # brilho cresce acelerando
 	var big := style == "king"
-	var core_s := (0.16 if big else 0.1) * (0.2 + 0.8 * e)
+	var core_s := (0.3 if big else 0.2) * (0.25 + 0.75 * e)
 	_core.scale = Vector2.ONE * core_s * (1.0 + sin(_t * 40.0) * 0.06 * k)
 	_core.modulate.a = minf(1.0, 0.3 + k)
-	_glow.scale = Vector2.ONE * (0.18 + 0.32 * e) * (1.6 if big else 1.0)
-	_glow.modulate.a = 0.15 + 0.5 * e
+	_glow.scale = Vector2.ONE * (0.25 + 0.45 * e) * (1.5 if big else 1.0)
+	_glow.modulate.a = 0.2 + 0.55 * e
 	# o círculo fecha sobre o ponto e gira cada vez mais rápido
-	_circle.scale = Vector2.ONE * lerpf(0.42, 0.16, k) * (1.5 if big else 1.0)
+	_circle.scale = Vector2.ONE * lerpf(0.62, 0.22, k) * (1.4 if big else 1.0)
 	_circle.rotation += delta * (2.0 + 10.0 * k) * (1.0 if style == "light" else -1.0)
-	_circle.modulate.a = 0.75 * sin(k * PI * 0.5 + 0.2)
+	_circle.modulate.a = minf(1.0, 0.35 + 0.8 * k)
 	if k >= 1.0:
 		release()
 
@@ -111,7 +112,7 @@ func release() -> void:
 		var at := global_position
 		var world := par.get_parent()
 		VfxLibrary._flash_sprite(world, at, "light", Color(color.r, color.g, color.b, 0.9), 0.1, 0.45 if style == "king" else 0.3, 0.12)
-		VfxLibrary.shock_ring(world, at, 26.0 if style == "king" else 16.0, color, 0.2, style != "light")
+		VfxLibrary.shock_ring(world, at, 22.0 if style == "king" else 13.0, Color(color.r, color.g, color.b, 0.5), 0.18, style != "light", 1.0, 0.08)
 	queue_free()
 
 

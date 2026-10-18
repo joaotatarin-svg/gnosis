@@ -9,8 +9,10 @@ uniform float spikes = 0.0;      // pontas da coroa (0 = redondo = luz da Sophia
 uniform float core_size = 0.34;  // raio do miolo branco (0..1)
 uniform float flicker = 0.12;    // tremor do brilho
 varying float phase;
+varying vec4 vcol;   // cor do vértice (modulate) sem a textura do quad
 
 void vertex() {
+	vcol = COLOR;
 	// fase por posição no mundo: orbes vizinhos não giram em uníssono
 	phase = MODEL_MATRIX[3].x * 0.013 + MODEL_MATRIX[3].y * 0.031;
 }
@@ -28,7 +30,7 @@ float noise(vec2 p) {
 }
 
 void fragment() {
-	vec4 m = COLOR;
+	vec4 m = vcol;
 	vec2 p = UV * 2.0 - 1.0;
 	float d = length(p);
 	float a = atan(p.y, p.x);
@@ -54,7 +56,9 @@ void fragment() {
 		rgb = voidc * inner + col * (rim * 1.7 + glow * 1.1) * fl + vec3(1.0) * rim * rim * 0.4;
 		alpha = inner * 0.9;
 	} else {
-		rgb = col * (body * (0.75 + n * 0.6) + glow * 1.2) * fl + vec3(1.0) * (core * 1.25 + body * 0.18);
+		// cor SATURADA no corpo (col²), branco só no miolo: não estoura em bolha branca
+		vec3 deep = mix(col * col, col, 0.45);
+		rgb = deep * (body * (0.3 + n * 0.65) + glow * 0.45) * fl + vec3(1.0) * core * 1.0;
 		alpha = 0.0;
 	}
 	COLOR = vec4(rgb * m.a, alpha * m.a);
