@@ -4770,6 +4770,21 @@ msgstr "Archon  ·  Mirror"
 msgid "Criatura do Kenoma"
 msgstr "Creature of the Kenoma"
 
+#. boss_athoth._draw.395df8  [ui]
+#: scripts/entities/bosses/boss_athoth.gd:264
+msgid "z"
+msgstr "z"
+
+#. boss_brain.setup.392d87  [ui]
+#: scripts/entities/bosses/boss_brain.gd:100
+msgid "BossBrain"
+msgstr "BossBrain"
+
+#. boss_rei._setup_eye.185f11  [ui]
+#: scripts/entities/bosses/boss_rei.gd:87
+msgid "OrbRig"
+msgstr "OrbRig"
+
 #. chest._give_reward.0b11f5  [toast]
 #: scripts/entities/chest.gd:107
 msgid "Segredo encontrado"
@@ -4791,12 +4806,12 @@ msgid "Campeão %s"
 msgstr "Champion %s"
 
 #. enemy._eon_title.5101be  [ui]
-#: scripts/entities/enemy.gd:266
+#: scripts/entities/enemy.gd:267
 msgid "da "
 msgstr "of "
 
 #. enemy._eon_title.ce4410  [ui]
-#: scripts/entities/enemy.gd:266
+#: scripts/entities/enemy.gd:267
 msgid "do "
 msgstr "of "
 
@@ -4996,7 +5011,7 @@ msgid "Voltar ao menu"
 msgstr "Back to menu"
 
 #. final_battle.start.abc7e4  [toast]
-#: scripts/levels/final_battle.gd:59
+#: scripts/levels/final_battle.gd:64
 msgid "As duas formas precisam cair juntas."
 msgstr "Both forms must fall together."
 
