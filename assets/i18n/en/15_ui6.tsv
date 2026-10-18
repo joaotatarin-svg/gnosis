@@ -2,7 +2,7 @@
 # objetivo da zona, tipo do nó do mapa, botão Mapa da pausa (modo leitura).
 hud.seal_text.c9c856	Weapon Lv. %d in the shop
 hud.seal_text.117cdc	%s in the shop
-hud.seal_text.3e2d6c	more Life and Ether in the shop
+hud.seal_text.3e2d6c	more Life and Aether in the shop
 hud.seal_text.3e9499	Seal opened
 hud._draw_one_boss.dbb588	PHASE III
 pause_menu._ready.6867e6	Relic

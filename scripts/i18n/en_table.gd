@@ -1267,7 +1267,7 @@ const EXACT := {
 	"lança o inimigo para o alto": "launches the enemy into the air",
 	"lançador": "launcher",
 	"lâmina": "blade",
-	"mais Vida e Éter na loja": "more Life and Ether in the shop",
+	"mais Vida e Éter na loja": "more Life and Aether in the shop",
 	"maré": "tide",
 	"mover": "move",
 	"navegar": "navigate",

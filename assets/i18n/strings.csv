@@ -1216,7 +1216,7 @@ hud._on_weapon.d40c9a,golpe no ar,air strike,ui,,,scripts/ui/hud.gd:293,
 hud._on_achievement.87fa2b,Conquista  ·  %s,Achievement  ·  %s,toast,,60,scripts/ui/hud.gd:438,format string: manter os %
 hud.seal_text.c9c856,Arma Nv. %d na loja,Weapon Lv. %d in the shop,ui,,,scripts/ui/hud.gd:881,format string: manter os %
 hud.seal_text.117cdc,%s na loja,%s in the shop,ui,,,scripts/ui/hud.gd:887,format string: manter os %
-hud.seal_text.3e2d6c,mais Vida e Éter na loja,more Life and Ether in the shop,ui,,,scripts/ui/hud.gd:890,
+hud.seal_text.3e2d6c,mais Vida e Éter na loja,more Life and Aether in the shop,ui,,,scripts/ui/hud.gd:890,
 hud.seal_text.3e9499,Selo aberto,Seal opened,ui,,,scripts/ui/hud.gd:891,
 hud._queue_screen_hints.97ec4f,golpe leve,light strike,ui,,,scripts/ui/hud.gd:970,
 hud._queue_screen_hints.df3f2e,golpe forte,heavy strike,ui,,,scripts/ui/hud.gd:970,

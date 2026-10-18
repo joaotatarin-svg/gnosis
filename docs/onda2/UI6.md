@@ -58,3 +58,11 @@ Antes (arquivos da base): `3 ok, 9 falha(s)`.
   Normalize `assets/i18n/strings.csv` para LF antes do `extract.py`.
 - Arquivos-chave: `scripts/ui/hud.gd`, `scripts/ui/run_labels.gd`, `scripts/ui/pause_menu.gd`,
   `scripts/ui/dialogue_box.gd`, `assets/ui/build_derived_portraits.py`, `tools/ux_shots6.gd`.
+
+## Validação final
+- `validate.ps1 -Repeat 2`: **TUDO VERDE (11 etapas)** (Scripts, ScriptCheck, CodexQA 53, AudioQA 54,
+  GnoseQA 20, SaveQA 49, Puppet, Hero, Wave, TecnicoQA 43, LangQA) — 2/2 verdes cada.
+- i18n: `build.py --strict` 1380/1380, 0 alertas; EnFit `0 falha(s), 67 aviso(s)` (os da UI6 são
+  avisos de largura: "Weapon Lv. %d in the shop", "%s in the shop", "more Life and Aether in the shop",
+  "protect the light" — todos cabem: toast encolhe a fonte, objetivo alinha à direita).
+- `UxShots6` headless pt: 29 ok, 0 falha; en: textos saem em inglês ("Seal opened · Oil Lamp in the shop").

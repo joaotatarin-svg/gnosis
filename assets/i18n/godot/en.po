@@ -5743,7 +5743,7 @@ msgstr "%s in the shop"
 #. hud.seal_text.3e2d6c  [ui]
 #: scripts/ui/hud.gd:890
 msgid "mais Vida e Éter na loja"
-msgstr "more Life and Ether in the shop"
+msgstr "more Life and Aether in the shop"
 
 #. hud.seal_text.3e9499  [ui]
 #: scripts/ui/hud.gd:891
