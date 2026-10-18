@@ -35,7 +35,7 @@ e ainda encadeava em HH → HHH no chão sem recuperação).
    larva/sombra/larva ardente **3**, servo 4, sonâmbulo 5, canino 6–7, escudeiro 8–9, carcereiro 8–9,
    bruto/pretoriano **12–13**. Sugestão: **larva 18→26, sombra 22→30, larva_ardente 16→24** (passam a 4);
    bruto/pretoriano podem ficar (tanques) **se** tiverem leitura de armadura/atordoamento; senão −20 % de vida.
-2. Voadores: o que a Sophia tem contra o ar — pulo 81 px, **pulo duplo +55 px** (depois do Soter), Giro Celeste
+2. Voadores: o que a Sophia tem contra o ar — pulo 81 px, **pulo duplo +66 px** (depois do Soter), Giro Celeste
    (2 por pulo, o 1º paira), lançadores (LH, LLH, HHL), Esfera Solar. A Queda Estelar NÃO serve contra voador
    (desce). Voador que fica acima de ~90 px do chão o tempo todo, antes do Soter, só cai com magia — evitem.
 
@@ -53,8 +53,10 @@ e ainda encadeava em HH → HHH no chão sem recuperação).
    meu lado. Ensino sugerido (texto curto, logo depois): "No ar, pule outra vez." — e uma plataforma alta à vista.
 
 ## level6 (layouts)
-1. Alturas (centro do corpo, tela 3, `--fixed-fps 60`): **pulo 81 px**; **2º pulo sobe mais 55 px** a partir de
-   onde foi apertado (no ápice: ~136 px no total). Velocidade 185 px/s; o arco do pulo NÃO mudou nesta onda
+1. Alturas (centro do corpo, tela 3, `--fixed-fps 60`): **pulo 81 px**; **2º pulo sobe mais 66 px** a partir de
+   onde foi apertado (`DOUBLE_JUMP_MULT` 0,82 → **0,9** pelo pedido de vocês; no ápice: **~147 px** no total —
+   saliência a 116 px com folga de ~30 px; apertando cedo, a 60 px do chão, ainda dá ~126 px). Sala secreta
+   (176 px = saliência + 60): da saliência, o pulo simples (81) alcança. Velocidade 185 px/s; o arco do pulo NÃO mudou nesta onda
    (gravidade e velocidade iguais) — plataformas antigas continuam alcançáveis.
 2. Pulo duplo = caminhos/segredos **opcionais**; nada obrigatório acima de 81 px antes do Soter.
 
@@ -69,7 +71,36 @@ e ainda encadeava em HH → HHH no chão sem recuperação).
    do chão), **pouso pesado preso** (0,40 s; hoje segura `attack_dive`), **pirueta do pulo duplo** (hoje o corpo
    inteiro gira 360° em 0,34 s com a pose `jump` — funciona, mas 3–4 quadros de cambalhota ficariam melhores).
 
-## estab5 / técnico (`game_manager.gd`)
+## Playtest 2 (18/10) — hitbox, contato, contra-ataque
+
+### inimigos6 / chefes6 — hurtbox × corpo desenhado (o resto do "cajado atravessa")
+A `tools/combate/HitboxProbe.tscn` (headless) mede a largura do corpo DESENHADO (AABB da malha pintada) × a
+hurtbox: **larva 22 × 33 px, servo 28 × 45, canino 24 × 52, bruto 38 × 68**. Com a caixa nova da Sophia, o
+cajado não atravessa nenhuma hurtbox (0 de 127), mas encosta no DESENHO sem dano em 8 de 141 casos (6 %) —
+sempre na metade de fora do corpo, que a hurtbox não cobre. Pedido: hurtbox ≈ 75–85 % da largura desenhada
+(canino/bruto principalmente). A sonda já imprime as duas larguras por tipo.
+### inimigos6 — dano de contato
+`Hitbox` (meu) agora ignora o `ContactHitbox` do inimigo contra a Sophia: encostar/acertar colado não fere.
+Se algum inimigo DEVE ferir por contato (espinhos, investida pelo corpo), ponham `var contact_hurts := true`
+nele (pode ligar/desligar durante a investida). Ataques explícitos (`AttackHitbox`, projéteis, perigos) seguem iguais.
+Prova: sonda, Sophia colada num bruto 1,5 s → vida 120 → 120 (sem o filtro: 120 → 114).
+### narrativa / encenacao5 — contra-ataque (API pública)
+`Player.riposte_window_opened` (sinal, no aparo perfeito) e `Player.is_riposte_window_open() -> bool`.
+Parem de ler `_riposte_t`. Janela: `Player.RIPOSTE_WINDOW` (0,4 s).
+### arte — getters
+`StaffReach` (meu) lê `CharacterArt._hero_seq()`, `_seq_index()` e `_int_list()`; a `FlashLayer` lê `_body_mesh`,
+`_body_xform`, `_body_tex`. Pedido: getters públicos (ex.: `current_hero_frame() -> {seq, i}`), para não
+dependermos de nomes privados. Achado do atlas: no **2º leve** (`s4.light2_hit`) o orbe bate ATRÁS do pé da
+frente (−6 px) — a caixa usa uma varredura mínima de 10 px à frente do pé (`StaffReach.MIN_SWEEP`) para o
+golpe não errar tudo; um quadro com o cajado varrendo à frente resolveria de verdade.
+### level6 — contrato dos perigos
+Mantido sem mudança: `player.hurtbox.receive_hit(dmg, pos, kb, unblockable, atacante)` (o filtro de contato só
+vale para o `ContactHitbox` de inimigo), `apply_root`, `status_slow`, `mana` + `mana_changed`, `invuln_timer`,
+`Player.State.DODGE`.
+
+## estab5 / técnico (`game_manager.gd`, `validate.ps1`)
+0. Incluir `res://tools/combate/HitboxProbe.tscn` e `res://tools/combate/FeelProbe.tscn` no `validate.ps1`
+   (headless, `--fixed-fps 60`, ~1 min e ~20 s, saem com QA PASS/FAIL).
 1. **VSync desligado + `Engine.max_fps` = taxa do monitor (144)** dá ritmo de quadro irregular e rasgo de tela sem
    VSync — parte do "travado" pode ser isso, não o movimento. A física (60 Hz) está com interpolação ligada e a
    câmera segue por física (interpolada): esses dois estão certos. Sugestão: testar no PC do João VSync ligado

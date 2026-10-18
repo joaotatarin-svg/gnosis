@@ -7,6 +7,9 @@ class_name Player
 
 signal died()
 signal mana_changed(current: int, maximum: int)
+## Aparo perfeito abriu a janela do contra-ataque (RIPOSTE_WINDOW s). API pública
+## para a narrativa/UI ensinarem o contra-ataque (não leiam `_riposte_t`).
+signal riposte_window_opened()
 
 enum State { IDLE, RUN, JUMP, FALL, ATTACK, DODGE, BLOCK, HURT, DEAD }
 
@@ -815,6 +818,12 @@ func _parry(attacker: Node) -> void:
 	# abre a janela do contra-ataque
 	_riposte_t = RIPOSTE_WINDOW
 	_riposte_target = attacker
+	riposte_window_opened.emit()
+
+
+## A janela do contra-ataque está aberta agora? (API pública)
+func is_riposte_window_open() -> bool:
+	return _riposte_t > 0.0
 
 
 ## Ataque apertado com a janela do contra-ataque aberta → contra-ataque.

@@ -63,7 +63,7 @@ const CURVE_START := 1.45            # ritmo no começo da curva (× a média)
 const CURVE_END := 0.55              # ritmo no fim
 
 # --- PULO DUPLO -----------------------------------------------------------------
-const DOUBLE_JUMP_MULT := 0.82       # ×velocidade do pulo (altura ≈ 0,67×)
+const DOUBLE_JUMP_MULT := 0.9        # ×velocidade do pulo (altura ≈ 0,81×; level6: saliências a 116 px)
 const DOUBLE_JUMP_SPIN := 0.34       # s da pirueta
 
 

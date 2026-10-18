@@ -39,7 +39,7 @@ O golpe de chão sai para onde o direcional aponta (no deslize da virada ela ain
 virada 0,09 s; no ar 0,16/0,22 s. Arco do pulo **igual** (gravidade/velocidade intocadas: plataformas valem).
 **Câmera** — o lado do look-ahead só troca quando ela FICA virada 0,35 s (ou corre de verdade para o outro
 lado por 0,12 s); velocidade de virada 480 → 320 px/s. `CombatCamProbe` telas 3 e 22: fora=0, borda=0.
-**Pulo duplo** — 2º pulo no ar (coyote vencido) com 0,82 × a velocidade do pulo (altura ≈ 0,67×), pirueta de
+**Pulo duplo** — 2º pulo no ar (coyote vencido) com 0,9 × a velocidade do pulo (altura ≈ 0,81×; era 0,82 — pedido do level6), pirueta de
 360° em 0,34 s (para em golpe/esquiva/dano/pouso), anel de luz nos pés. **Desligado** até
 `Progression.has_double_jump()` (ou a propriedade `double_jump`) ser verdadeiro. `debug_double_jump` só para
 ferramentas.
@@ -55,7 +55,7 @@ ferramentas.
 | Queda Estelar: preparo | 1–4 quadros | 17 quadros desde o aperto (0,24 s pairando) |
 | Queda Estelar: depois do pouso | 1 quadro e já encadeia HH→HHH | 29 quadros presa + 0,25 s de recuperação |
 | Quedas em 4 pulos × 2 apertos | (o 2º aperto vira combo de chão) | 2 (1 por pulo + recarga 1 s) |
-| altura do pulo / 2º pulo | 81 / — | 81 / +55 px (no ápice: ~136 px) |
+| altura do pulo / 2º pulo | 81 / — | 81 / +66 px (no ápice: ~147 px; saliência do level6 a 116) |
 
 Dano por golpe (nível de arma 1 / 3 / 5):
 | golpe | antes | depois |
@@ -101,17 +101,20 @@ Golpes LEVES para matar (vida no meio de cada Éon × nível de arma da curva su
   pulo e o preparo da Queda (recorte ampliado).
 - Logs: `feel_antes.log`, `feel_depois.log`; bot: `balance\base_1_10.*` × `balance\c6_1_10.*`.
 
-## 6. Validação
-- `tools/validate.ps1 -Path C:\gnosis-wt\combate6`: 9 de 10 verdes na 1ª rodada; o **AudioQA** reprovou no
-  teste de câmera lenta (corte 1500 Hz, música −4,4 → −8,4 dB) com a máquina carregada por outros agentes e
-  **passou sozinho em seguida (54 PASS)** — não mexi em áudio nem no `Juice`. Rodada final: ver o relatório ao chefe.
-- `tools/CombatTest.tscn` (agora com QA PASS/FAIL, Sophia invulnerável para os inimigos não cortarem o roteiro):
-  nv5 `QA PASS` — todas as strings, `a_H` 2× (1 por pulo; o 2º aperto do mesmo pulo não sai), 2 pulos duplos;
-  nv1 `QA PASS`.
-- `tools/combate/FeelProbe.tscn`: `QA PASS` (aéreo 1/pulo, pulo duplo travado sem a flag, 2º pulo mais baixo).
-- Bot de balance, telas 1–10 (Rei + Torpor), seed 1, `--fixed-fps 60`: **2,8 → 3,7 min**, dano tomado
-  **304 → 443 (+46 %)**, quase-mortes 0 → 2 (telas 3 e 6), **0 timeouts**, Athoth 7,0 s → 14,9 s.
-  O run não quebrou. Obs.: o bot chega ao **nível 4 de arma ainda no Torpor** (economia — progressao6).
+## 6. Validação (18/10, depois do merge de `integracao/onda1` 06feb8b)
+- `tools/validate.ps1 -Path C:\gnosis-wt\combate6 -Repeat 2`: **TUDO VERDE (11 etapas, 2/2 em cada)** —
+  CodexQA 53, AudioQA 54, GnoseQA 20, SaveQA 49, TecnicoQA 43, LangQA 1, Puppet/Hero/Wave OK. (Na 1ª sessão o
+  AudioQA e o GnoseQA reprovaram uma vez cada com a máquina carregada; passaram sozinhos e passam no merge.)
+- `tools/CombatTest.tscn` nv5 e nv1: `QA PASS` (todas as strings, `a_H` 1 por pulo, 2 pulos duplos).
+- `tools/combate/FeelProbe.tscn`: `QA PASS`. `tools/combate/HitboxProbe.tscn`: `QA PASS` (§8).
+- Bot de balance, telas 1–10, seed 1, `--fixed-fps 60`:
+  | | base 37ea6f5 | Onda 6 (dano/ritmo) | + hitbox/contato |
+  |---|---|---|---|
+  | tempo | 2,8 min | 3,7 min | 3,7 min |
+  | dano tomado | 304 | 443 | 378 |
+  | quase-mortes | 0 | 2 | 1 |
+  | timeouts | 0 | 0 | 0 |
+  O run não quebrou. O bot chega ao **nível 4 de arma ainda no Torpor** (economia — progressao6).
 
 ## 7. O que NÃO ficou bom / não testei
 - **Feel é do João**: curvas (100/83 ms), janelas e preparo da Queda são números de partida; a régua é um
@@ -121,3 +124,38 @@ Golpes LEVES para matar (vida no meio de cada Éon × nível de arma da curva su
 - Balance completo (68 telas) não rodei — só a faixa curta, como pedido. Com o corte de dano, Éons do meio em
   diante vão ficar bem mais longos para o bot até inimigos6/chefes6/progressao6 fecharem os números juntos.
 - `ComboData.windup_time()/recovery_time()` ficaram sem uso pela Sophia (arquivo não é meu).
+- Hitbox: a sonda testa inimigo parado, no chão e na mesma altura; inimigo no ar/voador e chefes grandes não
+  entraram na bateria (próximo passo: chefes6/inimigos6 rodarem a sonda com os tipos deles).
+
+## 8. Playtest 2 (18/10): "o cajado atravessa", dano de contato, sonda de hitbox
+- **Caixa do cajado** (`scripts/combat/staff_reach.gd` + `player._update_staff_hitbox`): a cada passo de física,
+  lê o quadro que o Visual está desenhando (mesma conta do CharacterArt) e a ponta do cajado medida no atlas;
+  a caixa cobre mão → ponta (+ o arco do quadro anterior nos quadros de arrasto) com folga de 4×9 px. Ligada
+  só em **quadro de impacto** (arrasto marcado no atlas, mergulho, ou cajado ≥ 4 px à frente do pé); fica viva até
+  o fim do golpe (antes desligava na metade) mas cada alvo toma **1 acerto por golpe** (o multi-hit religa).
+  Varredura mínima de 10 px à frente do pé (o 2º leve desenhado bate atrás do pé). Sem quadros desenhados →
+  caixa antiga.
+- **Contato**: `Hitbox` ignora o `ContactHitbox` de inimigo contra a Sophia (salvo `contact_hurts = true`).
+- **Sonda** `tools/combate/HitboxProbe.tscn` (headless): 5 golpes (L, LLL, H, LH, HHH) × 4 tipos (larva, servo,
+  canino, bruto) × 8 distâncias (8–64 px), com a caixa nova e com a antiga:
+  | | esperados (cajado desenhado encosta na hurtbox) | acertos | atravessa | apelão (acerta sem encostar) |
+  |---|---|---|---|---|
+  | caixa ANTIGA 34×42 | 127 | 155 | 0 | **28** |
+  | caixa NOVA (cajado) | 127 | 136 | 0 | **9** (bordas: folga + avanço) |
+  Contra o CORPO DESENHADO: o cajado encosta no desenho 141 vezes; sem dano em **8 (6 %)** com a caixa nova —
+  é a hurtbox mais estreita que o desenho (canino 24 × 52 px, bruto 38 × 68): pedido ao inimigos6/chefes6.
+  Contato: Sophia colada num bruto 1,5 s → 120 → 120 (sem o filtro: 120 → 114).
+- **Prancha** (headless, PIL): `python tools/combate/hitbox_overlay.py <geo.json> <saida.png>` desenha, sobre o
+  quadro do atlas, o cajado (amarelo), a caixa (vermelha ligada / cinza desligada) e a hurtbox (azul / verde se
+  encostou). `C:\gnosis-wt\_caps\combate6\hitbox_overlay.png` (200 quadros, servo a 24 px) e `_top.png`.
+- **API do contra-ataque**: `riposte_window_opened` + `is_riposte_window_open()` (pedido da encenação).
+
+## BILHETE PARA O SUCESSOR (18/10)
+- Estado: tudo da Onda 6 + playtest 2 feito, validado (`validate.ps1 -Repeat 2` verde) e no `dir6/combate6`.
+- Régua única: `scripts/combat/sophia_tuning.gd` (dano, ritmo, movimento, pulo duplo); caixa do cajado:
+  `scripts/combat/staff_reach.gd`; contato: `Hitbox._is_harmless_contact`.
+- Sondas (headless, `--fixed-fps 60`): `tools/combate/FeelProbe.tscn`, `tools/combate/HitboxProbe.tscn`,
+  `tools/CombatTest.tscn -- 3 user://c.png 5`; filmagem: `tools/combate/ActShot.tscn` (janela mínima 320×180 em
+  4000,4000 — regra do João); bot curto: `tools/BalanceBot.tscn -- 1 10 1 seed=1 out=...`.
+- Pendências: feel no playtest do João (curvas, preparo da Queda, recuperação); hurtboxes dos inimigos (pedido);
+  getters públicos da Arte; FeelProbe/HitboxProbe no `validate.ps1` (pedido ao estab5); magias sem retoque.
