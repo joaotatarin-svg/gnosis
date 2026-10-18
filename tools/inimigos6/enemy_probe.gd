@@ -28,6 +28,8 @@ func _ready() -> void:
 			w.out = a.trim_prefix("out=")
 		elif a.begins_with("frames="):
 			w.cap_frames = int(a.trim_prefix("frames="))
+		elif a == "lineup":
+			w.lineup = true
 		elif a == "boxes":
 			EnemyOverlay.debug_boxes = true
 	get_tree().root.add_child.call_deferred(w)
@@ -42,6 +44,7 @@ class P extends Node:
 	var level: Node = null
 	var player: Node2D = null
 	var max_attackers: int = 0
+	var lineup: bool = false
 
 	func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_ALWAYS
@@ -101,6 +104,10 @@ class P extends Node:
 		level.set_process(false)
 		_clear_enemies()
 		_art_checks()
+		if lineup:
+			await _lineup()
+			_finish()
+			return
 		var ids: Array = []
 		for t in Bestiary.wave_types:
 			if String(t.id) == "sombra_sophia":
@@ -300,3 +307,53 @@ class P extends Node:
 		await RenderingServer.frame_post_draw
 		var img := _sv.get_texture().get_image()
 		img.get_region(Rect2i(0, 0, 960, 540)).save_png(path)
+
+
+	## ARCONTE × BOT × CAMPEÃO de cada Éon lado a lado (prova de que o servo e o
+	## mini-chefe não têm mais a cara do chefe). Salva <out>/lineup_<i>.png.
+	func _lineup() -> void:
+		if out == "":
+			return
+		DirAccess.make_dir_recursive_absolute(out)
+		var scn: PackedScene = load(ENEMY_SCENE)
+		for i in Bestiary.bosses.size():
+			_clear_enemies()
+			var px: float = 640.0
+			player.global_position.x = px - 400.0
+			var row: Array = []
+			var ids: Array = [String(Bestiary.bosses[i].id), String(Bestiary.EON_BOTS[i]), String(Bestiary.EON_BOTS[i])]
+			var xs: Array = [px - 90.0, px + 40.0, px + 130.0]
+			for j in 3:
+				var e: Enemy = scn.instantiate()
+				e.type_id = ids[j]
+				e.is_champion = j == 2
+				level.add_child(e)
+				e.global_position = Vector2(xs[j], player.global_position.y - 10.0)
+				e.reset_physics_interpolation()
+				row.append(e)
+			for f in 40:
+				await get_tree().physics_frame
+				for e in row:
+					if is_instance_valid(e):
+						e.velocity.x = 0.0
+						e.estate = Enemy.EState.RECOVER
+						e.attack_timer = 9.0
+						e.player = null
+						if e.visual:
+							e.visual.scale.x = -absf(e.visual.scale.x)
+			if _sv == null:
+				_sv = SubViewport.new()
+				_sv.size = Vector2i(960, 540)
+				_sv.world_2d = get_viewport().world_2d
+				_sv.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+				add_child(_sv)
+			var mid := Vector2(px + 10.0, player.global_position.y - 70.0)
+			_sv.canvas_transform = Transform2D(0.0, Vector2(2.0, 2.0), 0.0, Vector2(480, 270) - mid * 2.0)
+			await RenderingServer.frame_post_draw
+			await RenderingServer.frame_post_draw
+			_sv.get_texture().get_image().save_png(out.path_join("lineup_%d.png" % i))
+			for e in row:
+				if is_instance_valid(e):
+					e.queue_free()
+			get_tree().call_group("hud", "hide_boss")
+			await wait(0.1)

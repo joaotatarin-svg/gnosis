@@ -208,6 +208,15 @@ func player_profile(character: CharacterData, weapon_level: int, owned_items: Ar
 
 # --- construção do conteúdo -------------------------------------------
 
+## Graduação de cor do corpo (giro de matiz em rad, saturação, tinta) — vai no
+## shader do contorno (scripts/entities/enemies/enemy_grade.gdshader).
+func _grade(id: String, hue: float, sat: float, tint: Color) -> void:
+	var t: Dictionary = get_type(id)
+	if String(t.get("id", "")) != id:
+		return
+	t["grade"] = [hue, sat, tint]
+
+
 ## Troca a pintura usada por um tipo (id do PaintedLibrary) e dá a tinta própria
 ## (`tint` vai no self_modulate do desenho — Enemy._ready).
 func _art_as(id: String, painted: String, tint: Color) -> void:
@@ -339,6 +348,14 @@ func _build() -> void:
 	_art_as("cornudo", "ceifador", Color(1.12, 0.82, 0.82, 1.0))     # espadachim rubro
 	_art_as("espectro", "espectro", Color(0.72, 0.92, 1.15, 0.86))   # verme-espírito pálido
 	_art_as("acolito", "acolito", Color(0.74, 1.0, 0.94, 1.0))      # conjurador verde-água
+	# GRADUAÇÃO de cor (Onda 6 — "mini-chefe com a cara do chefe"): a pintura dos
+	# bots é da FAMÍLIA do Arconte do Éon (sonâmbulo ≈ Athoth, glutão ≈ Harmas…).
+	# Sem arte nova, a cor separa: o Arconte guarda a cor-assinatura e os servos
+	# ficam cinzentos (escala de servo). O Campeão ganha a sua (Enemy.CHAMPION_GRADE).
+	for bot in EON_BOTS:
+		_grade(bot, 0.0, 0.38, Color(0.94, 0.92, 0.98))
+	_grade("alado", 2.6, 0.85, Color(1.05, 1.0, 0.92))      # pintura do sonâmbulo → âmbar (não o anil de Athoth)
+	_grade("fantasma", -1.4, 0.7, Color(0.9, 1.05, 1.05))    # pintura do mudo → verde-espectro (não o anil de Yabel)
 
 	# Os 7 Arcontes dos 7 Éons (ordem = ordem dos atos; ver docs/LORE.md).
 	# Cada um tem uma ASSINATURA visual (feature própria) e um KIT de mecânica.

@@ -72,6 +72,17 @@ const PRAGA_POOL_R2 := 40.0       # Balance P3: raio na fase 2 (era 48; fase 1 =
 ## Onda 3: Belias (arconte_praga) SAIU — com 1,15× o bot piorou a tela 55
 ## (1062 → 1319 de dano): o corpo maior cobre mais chão junto com as poças.
 const BOSS_PRESENCE := {"arconte_sono": 1.08}
+## Onda 6: cor do CAMPEÃO por Éon [giro de matiz (rad), saturação, tinta] — o
+## oposto da cor-assinatura do Arconte daquele Éon (o bot é da família dele).
+const CHAMPION_GRADE := [
+	[2.6, 0.95, Color(1.05, 1.0, 0.9)],     # Torpor: anil de Athoth → âmbar
+	[2.4, 0.85, Color(1.0, 1.0, 1.0)],      # Fome: vermelho de Harmas → verde-água
+	[0.0, 0.55, Color(1.15, 0.85, 0.6)],    # Corrente: cinza de Galila → bronze
+	[2.8, 0.9, Color(1.0, 1.0, 1.0)],       # Silêncio: anil de Yabel → ocre
+	[0.0, 0.3, Color(0.6, 0.52, 0.66)],     # Espelho: prata de Astaphaios → obsidiana
+	[2.2, 0.95, Color(1.0, 1.0, 1.0)],      # Praga: verde de Belias → violeta
+	[3.0, 0.7, Color(0.85, 0.92, 1.1)],     # Coroa: ouro de Armupiel → prata-azul
+]
 # R18 — leitura (contorno + sombra de contato); ver _setup_readability().
 const RIM_ENABLED := true
 const RIM_ALPHA := 0.5
@@ -359,6 +370,12 @@ func _setup_readability() -> void:
 		var m := ShaderMaterial.new()
 		m.shader = VfxLibrary.rim_shader()
 		var eon := RunManager.eon_index(GameManager.current_screen)
+		var grade: Array = _body_grade(eon)
+		if not grade.is_empty():
+			m.shader = load(GRADE_SHADER)
+			m.set_shader_parameter("grade_hue", float(grade[0]))
+			m.set_shader_parameter("grade_sat", float(grade[1]))
+			m.set_shader_parameter("grade_tint", grade[2])
 		var rc: Color = VfxLibrary.eon_rim_color(eon)
 		m.set_shader_parameter("rim_color", Color(rc.r, rc.g, rc.b, RIM_ALPHA))
 		m.set_shader_parameter("rim_px", 1.0)
@@ -374,6 +391,22 @@ func _setup_readability() -> void:
 		sh.scale = sh.scale * Vector2(SHADOW_WIDEN, 1.0)
 		_shadow_base = sh.position
 		_shadow_scale = sh.scale
+
+
+const GRADE_SHADER := "res://scripts/entities/enemies/enemy_grade.gdshader"
+
+## Graduação de cor do corpo: Campeão (por Éon) > a do tipo (bots, alado…) > nada.
+func _body_grade(eon: int) -> Array:
+	if is_boss_enemy:
+		return []
+	if is_champion:
+		var bot := Bestiary.EON_BOTS.find(type_id)
+		var i: int = bot if bot >= 0 else clampi(eon, 0, CHAMPION_GRADE.size() - 1)
+		return CHAMPION_GRADE[clampi(i, 0, CHAMPION_GRADE.size() - 1)]
+	var def := Bestiary.get_type(type_id)
+	if String(def.get("id", "")) == type_id and def.has("grade"):
+		return def.grade
+	return []
 
 
 ## Sombra de contato presa ao chão: no ar, fica no piso e encolhe com a altura.
@@ -2004,8 +2037,6 @@ func _setup_layers() -> void:
 	front.name = &"OverlayFront"
 	front.enemy = self
 	add_child(front)
-	if is_champion:
-		visual.self_modulate = Color(1.0, 0.95, 0.84, visual.self_modulate.a)
 
 
 # --- golpes à distância ---------------------------------------------------
