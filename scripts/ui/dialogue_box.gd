@@ -69,9 +69,12 @@ const MOODS := {
 	"rei": ["regio", "ironico", "revelado", "quebrado"],
 	"soter": ["sereno", "triste"],
 	"velkar": ["elmo", "arrependido"],
+	# "O Cego" pequeno (cena D, tela 68 — Onda 6): bustos derivados da arte
+	# (assets/ui/build_derived_portraits.py → assets/ui/portraits/cego_<humor>.png).
+	"cego": ["olhando", "assustado", "sereno", "aninhado"],
 }
 ## Sem `mood` (ou desconhecido): o neutro de cada um.
-const MOOD_DEFAULT := {"sophia": "neutra", "rei": "regio", "soter": "sereno", "velkar": "elmo"}
+const MOOD_DEFAULT := {"sophia": "neutra", "rei": "regio", "soter": "sereno", "velkar": "elmo", "cego": "olhando"}
 ## Sinônimos aceitos (inglês do manifesto do GPT e variações comuns).
 const MOOD_ALIAS := {
 	"neutral": "neutra", "determined": "determinada", "decidida": "determinada", "sad": "triste",
@@ -80,6 +83,7 @@ const MOOD_ALIAS := {
 	"shock": "choque", "shocked": "choque", "chocada": "choque", "serene": "serena", "paz": "serena",
 	"regal": "regio", "ironic": "ironico", "ironia": "ironico", "revealed": "revelado",
 	"broken": "quebrado", "helm": "elmo", "repentant": "arrependido",
+	"looking": "olhando", "scared": "assustado", "curled": "aninhado", "nestled": "aninhado",
 }
 
 var lines: Array = []
@@ -152,6 +156,9 @@ static func portrait_for(speaker: String, mood: String = "") -> Texture2D:
 ## Id do retrato pelo nome do falante ("" = sem retrato).
 static func speaker_id(speaker: String) -> String:
 	var s := speaker.to_lower()
+	# O Cego (a criança que o Rei foi) antes do teste do Rei/Yaldabaoth.
+	if s.contains("cego") or s.contains("blind"):
+		return "cego"
 	for k in ["sophia", "athoth", "harmas", "galila", "yabel", "astaphaios", "belias", "armupiel", "soter", "velkar"]:
 		if s.contains(k):
 			return k
@@ -169,6 +176,8 @@ static func mood_for(id: String, mood: String) -> String:
 	var m := _plain(mood.strip_edges().to_lower())
 	if m == "":
 		return def
+	if list.has(m):
+		return m              # nome exato do falante vence o sinônimo ("assustado" do Cego ≠ "medo")
 	m = String(MOOD_ALIAS.get(m, m))
 	if list.has(m):
 		return m
