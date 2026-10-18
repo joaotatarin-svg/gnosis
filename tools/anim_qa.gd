@@ -46,6 +46,7 @@ func _ready() -> void:
 		"film_walk": _film_walk(args.slice(2))
 		"film_death": _film_death(args.slice(2), false)
 		"film_death_old": _film_death(args.slice(2), true)
+		"geo_board": await _geo_board()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -397,6 +398,58 @@ func _rim_board() -> void:
 		await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://rim_board.png")
 	CharacterArt.rim_override = -1
+	get_tree().quit()
+
+
+## GEOMETRIA POR QUADRO (Onda 6): a Sophia em golpes e 3 inimigos, com
+## CharacterArt.frame_geometry(true) desenhada por cima do quadro renderizado:
+## verde = caixa do corpo, amarelo = contorno, vermelho = eixo do cajado.
+func _geo_board() -> void:
+	RenderingServer.set_default_clear_color(Color("2b3440"))
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	var arts: Array = []
+	var cells := [["idle", 0.4], ["attack", 0.25, 1], ["attack", 0.25, 2], ["attack", 0.3, 3], ["attack_heavy", 0.2], ["cast", 0.25], ["dodge", 0.15]]
+	for i in cells.size():
+		var art := _sophia(Vector2(80 + i * 165, 300), 2.2)
+		art.set_process(false)
+		if cells[i].size() > 2:
+			art.combo_step = int(cells[i][2])
+		art.set_anim(String(cells[i][0]))
+		art.anim_time = float(cells[i][1])
+		art.queue_redraw()
+		arts.append(art)
+	var ids := ["arconte_fome", "arconte_coroa", "escudeiro", "cao", "rei_final"]
+	for k in ids.size():
+		var b := _boss(ids[k], Vector2(130 + k * 250, 650), 1.3)
+		b.scale.x = -b.scale.x
+		b.set_process(false)
+		b.set_anim("attack" if k % 2 == 0 else "idle")
+		b.pose_progress = 0.3
+		b.queue_redraw()
+		arts.append(b)
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var over := Node2D.new()
+	over.z_index = 50
+	add_child(over)
+	over.draw.connect(func() -> void:
+		for a in arts:
+			var g: Dictionary = a.frame_geometry(true)
+			if g.is_empty():
+				continue
+			over.draw_rect(g.body, Color(0.2, 1.0, 0.3, 0.9), false, 1.5)
+			if g.has("body_poly"):
+				var pl: PackedVector2Array = g.body_poly
+				pl.append(pl[0])
+				over.draw_polyline(pl, Color(1.0, 0.9, 0.2, 0.9), 1.0)
+			if g.has("staff"):
+				over.draw_line(g.staff[0], g.staff[1], Color(1.0, 0.2, 0.2, 0.95), 3.0)
+				over.draw_circle(g.tip, 3.0, Color(1, 1, 1)))
+	over.queue_redraw()
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://geo_board.png")
 	get_tree().quit()
 
 

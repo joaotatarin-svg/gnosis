@@ -306,3 +306,8 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   FIXO sobre quadros que mudam → pedido em docs/pedidos/onda6_narrativa6.md (usar os estados pintados, ou
   `art.head_point()`). Cada quadro de todo atlas de chefe/criatura agora tem `head` medido (JSON) e
   `CharacterArt.head_point()` devolve a cabeça do quadro atual em coordenadas locais.
+
+## Geometria por quadro (Onda 6, PLAYTEST 2)
+
+`tools/anim/geometry.py` mede em cada quadro de TODO atlas: caixa e contorno do corpo e, na Sophia, o eixo visível do cajado (cabo→ponta; estimado quando cruza o corpo). `CharacterArt.frame_geometry(global)` devolve isso no transform do corpo. HeroQA confere que todo quadro tem corpo, todo quadro com ponta tem cajado e que, na estocada, a ponta cai no cristal e fora do corpo; PuppetQA confere a caixa do corpo de todos os chefes. Prova: `gifs/geometria_quadros.png`. Pedidos ao combate6/inimigos6/chefes6 em `docs/pedidos/onda6_*.md`.
+

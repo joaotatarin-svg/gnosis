@@ -1545,6 +1545,8 @@ func _draw_painted(s: float) -> void:
 		flex_tex = db.get("flex", null)
 		# âncora e ponta do cajado vêm em px LOCAIS do quadro; a grade usa px do atlas
 		mesh = grid_mesh("sophia:%s@%s" % [e.f, anchor], rect, rect.position + anchor, Vector2(tex.get_width(), tex.get_height()))
+		_geo_fr = fr
+		_geo_anchor = anchor
 		body_h = float(meta.body_px)
 		k = profile.height * 1.19 / body_h
 		if fr.tip != null:
@@ -1582,6 +1584,8 @@ func _draw_painted(s: float) -> void:
 		m[0] = float(m[0]) + float(meta.fit.dx) * hw / s
 		m[4] = float(m[4]) - float(meta.fit.foot_gap) * hw / s
 		_boss_shown = {"rect": rect, "anchor": anchor, "k": k, "tex": tex}
+		_geo_fr = fr
+		_geo_anchor = anchor
 		if fr.has("head"):
 			_boss_shown["head"] = Vector2(fr.head[0], fr.head[1])
 		# criaturas comuns: mesma tinta leve por tipo da pintura única
@@ -1696,6 +1700,46 @@ func _draw_painted(s: float) -> void:
 
 
 var _body_xform := Transform2D.IDENTITY   # último transform do corpo (afterimage)
+var _geo_fr: Dictionary = {}               # quadro desenhado agora (geometria medida no atlas)
+var _geo_anchor := Vector2.ZERO
+
+
+## GEOMETRIA DO QUADRO DESENHADO AGORA (Onda 6, "o cajado atravessa"): medida
+## offline na silhueta de cada quadro (tools/anim/geometry.py) e levada pelo
+## mesmo transform do corpo (âncora, escala, tranco, flip do pai). Coordenadas
+## LOCAIS deste nó (use `to_global` / `global=true` para o mundo). Chaves:
+##   body: Rect2        caixa do corpo (sem cajado/arma fina nem fios soltos)
+##   body_poly: PackedVector2Array   contorno convexo do corpo (≤ 10 pontos)
+##   staff: PackedVector2Array [cabo, ponta]   eixo do cajado (só a Sophia)
+##   staff_estimated: bool   cajado cruzando o corpo (eixo estimado da ponta)
+##   tip: Vector2       ponta de cristal do cajado (só a Sophia)
+## Vazio se o personagem não toca quadros desenhados (boneco/pintura única).
+func frame_geometry(global: bool = false) -> Dictionary:
+	if _geo_fr.is_empty() or not _geo_fr.has("body"):
+		return {}
+	var xf: Transform2D = _body_xform
+	if global:
+		xf = get_global_transform() * xf
+	var out: Dictionary = {}
+	var b: Array = _geo_fr.body
+	var corners := PackedVector2Array()
+	for cc in [Vector2(b[0], b[1]), Vector2(b[0] + b[2], b[1]), Vector2(b[0] + b[2], b[1] + b[3]), Vector2(b[0], b[1] + b[3])]:
+		corners.append(xf * (cc - _geo_anchor))
+	var r := Rect2(corners[0], Vector2.ZERO)
+	for cc in corners:
+		r = r.expand(cc)
+	out["body"] = r
+	if _geo_fr.has("body_poly"):
+		var poly := PackedVector2Array()
+		for p in _geo_fr.body_poly:
+			poly.append(xf * (Vector2(p[0], p[1]) - _geo_anchor))
+		out["body_poly"] = poly
+	if _geo_fr.has("staff"):
+		var s: Array = _geo_fr.staff
+		out["staff"] = PackedVector2Array([xf * (Vector2(s[0], s[1]) - _geo_anchor), xf * (Vector2(s[2], s[3]) - _geo_anchor)])
+		out["staff_estimated"] = bool(_geo_fr.get("staff_est", false))
+		out["tip"] = out.staff[1]
+	return out
 var _body_mesh: Dictionary = {}
 var _body_tex: Texture2D
 var _body_tip := Vector2.INF

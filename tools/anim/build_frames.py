@@ -35,6 +35,7 @@ from scipy import ndimage
 
 sys.path.insert(0, os.path.dirname(__file__))
 from clean_sheets import fill_transparent_rgb, key_array  # noqa: E402
+from geometry import measure_geometry  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DER = os.path.join(ROOT, "assets", "painted", "derived")
@@ -327,6 +328,8 @@ def main() -> None:
 			"tip": [round(m["tip"][0], 2), round(m["tip"][1], 2)] if m["tip"] else None,
 			"scale": round(frames[n]["scale"], 5),
 		}
+		# geometria por quadro (corpo e eixo do cajado) — hitbox/hurtbox no jogo
+		out_frames[n].update(measure_geometry(img, m["tip"]))
 		if "fixed" in frames[n]:
 			out_frames[n]["fixed_anchor"] = [round(v, 2) for v in frames[n]["fixed"]]
 	# 4) estados → sequências com âncora por quadro
