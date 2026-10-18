@@ -1,0 +1,145 @@
+{
+ "_doc": "ELENCO de GNOSIS. Cada personagem: referência de timbre gerada pelo Kokoro (voz sintética Apache-2.0, nunca pessoa real) por idioma, ajuste de tom da referência, parâmetros do Chatterbox e cadeia de pós-processamento (voicelib.FX). 'engine': chatterbox|kokoro. Ver docs/onda2/DUBLAGEM.md §3.",
+ "_moods": {
+  "medo": {"ex": 0.15, "cfg": -0.1},
+  "choque": {"ex": 0.2, "cfg": -0.1},
+  "raiva": {"ex": 0.25, "cfg": -0.15},
+  "grito": {"ex": 0.25, "cfg": -0.15},
+  "triste": {"ex": -0.1, "cfg": 0.0},
+  "ternura": {"ex": -0.05, "cfg": 0.0},
+  "serena": {"ex": -0.15, "cfg": 0.05},
+  "determinada": {"ex": 0.1, "cfg": 0.0},
+  "revelado": {"ex": 0.2, "cfg": -0.1},
+  "quebrado": {"ex": -0.1, "cfg": 0.0},
+  "ironico": {"ex": 0.05, "cfg": 0.0},
+  "regio": {"ex": 0.0, "cfg": 0.05},
+  "arrependido": {"ex": -0.1, "cfg": 0.0},
+  "olhando": {"ex": -0.1, "cfg": 0.0}
+ },
+ "characters": {
+  "Sophia": {
+   "desc": "a faísca sem memória: jovem, sóbria, perguntas curtas; a dúvida cresce",
+   "ref": {"pt": {"voice": "pf_dora", "speed": 0.95}, "en": {"voice": "af_heart", "speed": 0.95}, "pitch": 0, "formant": "preserved"},
+   "cb": {"ex": 0.5, "cfg": 0.4, "temp": 0.75},
+   "fx": [["hpf", 70], ["reverb", "room", 0.08]],
+   "fx_pensamento": [["hpf", 120], ["lpf", 7000], ["gain", -2], ["reverb", "room", 0.18]]
+  },
+  "A Voz": {
+   "desc": "o guia sem corpo: caloroso, possessivo, arcaizante; soa DENTRO da cabeça (dobra suave)",
+   "ref": {"pt": {"voice": "pm_alex", "speed": 0.92}, "en": {"voice": "am_michael", "speed": 0.92}, "pitch": -2, "formant": "preserved"},
+   "cb": {"ex": 0.45, "cfg": 0.4, "temp": 0.7},
+   "fx": [["hpf", 60], ["doubler", 2, 7, 14, 0.35], ["reverb", "plate", 0.16]]
+  },
+  "O Rei": {
+   "desc": "sacerdote branco, régio, gentil demais; cerimonial (mesma cadência da Voz, outro timbre)",
+   "ref": {"pt": {"voice": "pm_santa", "speed": 0.9}, "en": {"voice": "bm_george", "speed": 0.9}, "pitch": -1, "formant": "preserved"},
+   "cb": {"ex": 0.4, "cfg": 0.45, "temp": 0.7},
+   "fx": [["hpf", 60], ["reverb", "hall", 0.22]]
+  },
+  "Yaldabaoth": {
+   "desc": "a Voz sem o veludo: MESMA referência da Voz, mais grave, desprezo; camada uma oitava abaixo, distorção leve, catedral",
+   "ref_from": "A Voz",
+   "ref": {"pitch": -4, "formant": "shifted"},
+   "cb": {"ex": 0.65, "cfg": 0.35, "temp": 0.75},
+   "fx": [["octave", -12, 0.28], ["drive", 2.2, 0.35], ["hpf", 45], ["reverb", "cathedral", 0.3]]
+  },
+  "O Cego": {
+   "desc": "a criança cega dentro do Colosso: a voz da Voz encolhida (tom e formantes para cima), frágil",
+   "ref_from": "A Voz",
+   "ref": {"pitch": 6, "formant": "shifted"},
+   "cb": {"ex": 0.35, "cfg": 0.45, "temp": 0.7},
+   "fx": [["hpf", 150], ["gain", -2], ["reverb", "room", 0.2]]
+  },
+  "Athoth": {
+   "desc": "Torpor: sonolento, sussurrado, quase canção de ninar",
+   "ref": {"pt": {"voice": "af_nicole", "speed": 0.8}, "en": {"voice": "af_nicole", "speed": 0.8}, "pitch": -3, "formant": "preserved"},
+   "cb": {"ex": 0.3, "cfg": 0.5, "temp": 0.65},
+   "fx": [["tempo", 0.9], ["lpf", 5500], ["whisper", 0.35], ["reverb", "hall", 0.3]]
+  },
+  "Harmas": {
+   "desc": "Fome: gutural, mercador, guloso",
+   "ref": {"pt": {"voice": "am_onyx", "speed": 1.0}, "en": {"voice": "am_onyx", "speed": 1.0}, "pitch": -3, "formant": "shifted"},
+   "cb": {"ex": 0.7, "cfg": 0.3, "temp": 0.8},
+   "fx": [["drive", 3.0, 0.4], ["lowshelf", 180, 4], ["reverb", "room", 0.12]]
+  },
+  "Galila": {
+   "desc": "Corrente: seco, legalista, frio; quase sem reverberação, brilho metálico de elo",
+   "ref": {"pt": {"voice": "bm_daniel", "speed": 1.0}, "en": {"voice": "bm_daniel", "speed": 1.0}, "pitch": -1, "formant": "preserved"},
+   "cb": {"ex": 0.3, "cfg": 0.6, "temp": 0.6},
+   "fx": [["hpf", 90], ["metal", 0.18], ["reverb", "room", 0.05]]
+  },
+  "Yabel": {
+   "desc": "Silêncio: não fala (rubricas). Só a fala da morte: sussurro de quem não usa a voz há eras",
+   "ref": {"pt": {"voice": "am_echo", "speed": 0.85}, "en": {"voice": "am_echo", "speed": 0.85}, "pitch": -1, "formant": "preserved"},
+   "cb": {"ex": 0.3, "cfg": 0.5, "temp": 0.6},
+   "fx": [["whisper", 0.9], ["hpf", 200], ["reverb", "cathedral", 0.25]]
+  },
+  "Astaphaios": {
+   "desc": "Espelho: a voz DELA devolvida — referência da Sophia, mais grave, dobrada com um eco que chega antes",
+   "ref_from": "Sophia",
+   "ref": {"pitch": -3, "formant": "shifted"},
+   "cb": {"ex": 0.5, "cfg": 0.4, "temp": 0.75},
+   "fx": [["mirror", 0.55], ["reverb", "hall", 0.18]]
+  },
+  "Belias": {
+   "desc": "Praga: úmido, cansado, lento, fatalista",
+   "ref": {"pt": {"voice": "am_eric", "speed": 0.82}, "en": {"voice": "am_eric", "speed": 0.82}, "pitch": -2, "formant": "shifted"},
+   "cb": {"ex": 0.25, "cfg": 0.5, "temp": 0.7},
+   "fx": [["tempo", 0.93], ["lpf", 4200], ["wobble", 0.004, 0.7], ["reverb", "swamp", 0.25]]
+  },
+  "Armupiel": {
+   "desc": "Coroa: grave, majestoso, pomposo; salão de trono",
+   "ref": {"pt": {"voice": "am_fenrir", "speed": 0.9}, "en": {"voice": "am_fenrir", "speed": 0.9}, "pitch": -4, "formant": "shifted"},
+   "cb": {"ex": 0.55, "cfg": 0.4, "temp": 0.7},
+   "fx": [["octave", -12, 0.15], ["lowshelf", 150, 3], ["reverb", "hall", 0.28]]
+  },
+  "Soter": {
+   "desc": "o Ungido: sereno, caloroso, proverbial; capela pequena",
+   "ref": {"pt": {"voice": "bm_fable", "speed": 0.9}, "en": {"voice": "bm_fable", "speed": 0.9}, "pitch": -1, "formant": "preserved"},
+   "cb": {"ex": 0.35, "cfg": 0.5, "temp": 0.65},
+   "fx": [["hpf", 60], ["reverb", "chapel", 0.15]]
+  },
+  "Velkar": {
+   "desc": "o Arconte arrependido: cansado, rouco, frases quebradas",
+   "ref": {"pt": {"voice": "am_puck", "speed": 0.88}, "en": {"voice": "am_puck", "speed": 0.88}, "pitch": -2, "formant": "shifted"},
+   "cb": {"ex": 0.35, "cfg": 0.45, "temp": 0.75},
+   "fx": [["drive", 1.6, 0.25], ["hpf", 70], ["reverb", "room", 0.1]]
+  },
+  "Narrador": {
+   "desc": "prólogo/epílogo e rubricas do Narrador: impessoal, ensaio claro (mesma voz das Estelas)",
+   "ref": {"pt": {"voice": "bf_emma", "speed": 0.9}, "en": {"voice": "bf_emma", "speed": 0.9}, "pitch": 0, "formant": "preserved"},
+   "cb": {"ex": 0.3, "cfg": 0.5, "temp": 0.6},
+   "fx": [["hpf", 70], ["reverb", "chapel", 0.12]]
+  },
+  "Estela": {
+   "desc": "inscrição das pedras: a voz do Narrador, um pouco mais distante (catedral)",
+   "ref_from": "Narrador",
+   "ref": {"pitch": 0, "formant": "preserved"},
+   "cb": {"ex": 0.3, "cfg": 0.5, "temp": 0.6},
+   "fx": [["hpf", 80], ["reverb", "cathedral", 0.16]]
+  },
+  "Adormecida": {
+   "desc": "quem acorda: voz comum, sonolenta",
+   "ref": {"pt": {"voice": "af_sky", "speed": 0.9}, "en": {"voice": "af_sky", "speed": 0.9}, "pitch": 0, "formant": "preserved"},
+   "cb": {"ex": 0.4, "cfg": 0.5, "temp": 0.7},
+   "fx": [["hpf", 90], ["reverb", "room", 0.1]]
+  },
+  "Adormecido": {
+   "desc": "quem acorda: voz comum, sonolenta",
+   "ref": {"pt": {"voice": "am_liam", "speed": 0.9}, "en": {"voice": "am_liam", "speed": 0.9}, "pitch": 0, "formant": "preserved"},
+   "cb": {"ex": 0.4, "cfg": 0.5, "temp": 0.7},
+   "fx": [["hpf", 90], ["reverb", "room", 0.1]]
+  },
+  "Uma voz nos Anéis": {
+   "desc": "a Sophia antiga, de dentro dos Anéis: fraca, distante",
+   "ref_from": "Sophia",
+   "ref": {"pitch": 0, "formant": "preserved"},
+   "cb": {"ex": 0.3, "cfg": 0.5, "temp": 0.7},
+   "fx": [["whisper", 0.4], ["hpf", 250], ["lpf", 5000], ["gain", -4], ["reverb", "cathedral", 0.35]]
+  }
+ },
+ "ref_text": {
+  "pt": "Há coisas que só se dizem devagar. Escuta: o vento passa pelas pedras, e as pedras guardam tudo o que ouviram, por muito tempo.",
+  "en": "Some things can only be said slowly. Listen: the wind moves through the stones, and the stones keep everything they have heard, for a very long time."
+ }
+}
