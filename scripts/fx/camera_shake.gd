@@ -18,7 +18,14 @@ extends Camera2D
 const ZOOM := 1.2                 # presença da Sophia (1.0 = antigo). Faixa testada: 1,15–1,25.
 const LOOK_AHEAD := 64.0          # px de mundo à frente de onde ela olha
 const LOOK_SPEED := 160.0         # px/s mudando o look-ahead na mesma direção
-const LOOK_TURN_SPEED := 480.0    # px/s quando ela VIRA (volta rápido para o lado certo)
+const LOOK_TURN_SPEED := 320.0    # px/s quando ela VIRA (Combate 6: 480 → 320, sem chicote)
+## Combate 6 ("movimento travado"): no meio da luta a Sophia vira o tempo todo
+## (golpe pra lá, esquiva pra cá) e o look-ahead dava um chicote de 128 px a cada
+## virada. Agora a câmera só troca de lado quando ela FICA virada (LOOK_FLIP_DELAY)
+## ou quando corre de verdade para o outro lado (LOOK_FLIP_RUN).
+const LOOK_FLIP_DELAY := 0.35
+const LOOK_FLIP_RUN := 0.12
+const LOOK_RUN_SPEED := 120.0     # px/s: acima disto, "correndo de verdade"
 const FOLLOW_SPEED := 7.0         # suavização exponencial (1/s); maior = mais colado
 const LIMIT_GLIDE := 5.0          # suavização dos limites novos (zona trancou/destrancou)
 const SAFE_MARGIN := 72.0         # px de MUNDO: distância mínima da Sophia à borda da vista
@@ -35,6 +42,9 @@ const KICK_RETURN := 0.11         # R3: o chute direcional volta em ~110 ms
 
 var trauma := 0.0
 var _look_ahead: float = 0.0
+var _aim_dir: float = 1.0          # lado do look-ahead (com histerese)
+var _pend_dir: float = 1.0
+var _pend_t: float = 0.0
 var _cam_pos: Vector2 = Vector2.ZERO
 var _smooth: bool = true
 var _noise := FastNoiseLite.new()
@@ -142,7 +152,8 @@ func _physics_process(delta: float) -> void:
 	# 1) Look-ahead: vira rápido, anda devagar. Provação (vista fixa) não usa.
 	var aim: float = 0.0
 	if not CodexSession.active and b is Player:
-		aim = float(b.facing) * LOOK_AHEAD
+		_update_aim_dir(b as Player, delta)
+		aim = _aim_dir * LOOK_AHEAD
 	var turning: bool = signf(aim) != signf(_look_ahead) and absf(_look_ahead) > 1.0
 	_look_ahead = move_toward(_look_ahead, aim, delta * (LOOK_TURN_SPEED if turning else LOOK_SPEED))
 	# 2) Segue o alvo (suave), com trava: a Sophia nunca sai da faixa segura.
@@ -156,6 +167,22 @@ func _physics_process(delta: float) -> void:
 	_cam_pos.x = clampf(_cam_pos.x, b.global_position.x - reach, b.global_position.x + reach)
 	_cam_pos = _clamp_to_limits(_cam_pos)
 	global_position = _cam_pos
+
+
+## Histerese do lado do look-ahead: virar rápido (golpe/esquiva) não move a câmera.
+func _update_aim_dir(p: Player, delta: float) -> void:
+	var want: float = float(p.facing)
+	if want == _aim_dir:
+		_pend_t = 0.0
+		return
+	if want != _pend_dir:
+		_pend_dir = want
+		_pend_t = 0.0
+	_pend_t += delta
+	var running: bool = absf(p.velocity.x) > LOOK_RUN_SPEED and signf(p.velocity.x) == want
+	if _pend_t >= LOOK_FLIP_DELAY or (running and _pend_t >= LOOK_FLIP_RUN):
+		_aim_dir = want
+		_pend_t = 0.0
 
 
 func _process(delta: float) -> void:
@@ -180,6 +207,10 @@ func _process(delta: float) -> void:
 ## Teleporte do corpo (renascer, resgate do vazio, Provação): a câmera pula junto.
 func snap() -> void:
 	var b := _body()
+	if b is Player:
+		_aim_dir = float(b.facing)
+		_pend_dir = _aim_dir
+		_pend_t = 0.0
 	_look_ahead = float(b.facing) * LOOK_AHEAD if b is Player and not CodexSession.active else 0.0
 	_sync_limits(true)
 	_cam_pos = _target()

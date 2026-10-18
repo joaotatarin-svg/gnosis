@@ -18,21 +18,79 @@ var _frame_hits: int = 0          # alvos que tomaram dano neste quadro
 var _frame_kill: bool = false
 var _frame_contacts: int = 0      # alvos tocados (inclui aparado/esquivado)
 var _flush_queued: bool = false
+# Combate 6 (playtest 2: "o cajado atravessa"): o golpe da Sophia segue o cajado
+# DESENHADO quadro a quadro (o Player chama set_box/set_live). `_active` = o
+# golpe está na fase de acerto; `_live` = o quadro atual é de impacto. Cada alvo
+# toma o golpe UMA vez por ativação (a caixa anda e não pode acertar 2x).
+var _active: bool = false
+var _live: bool = true
+var _hit_ids: Dictionary = {}
+var _own_shape: bool = false
 
 
 func _ready() -> void:
 	monitoring = active_by_default
+	_active = active_by_default
 	area_entered.connect(_on_area_entered)
 
 
 func activate(new_damage: int = -1) -> void:
 	if new_damage >= 0:
 		damage = new_damage
-	monitoring = true
+	_active = true
+	_hit_ids.clear()
+	monitoring = _active and _live
 
 
 func deactivate() -> void:
+	_active = false
 	monitoring = false
+
+
+## Liga/desliga a caixa sem encerrar o golpe (quadro de impacto ou não).
+func set_live(on: bool) -> void:
+	_live = on
+	if monitoring != (_active and _live):
+		monitoring = _active and _live
+
+
+## Reposiciona/redimensiona a caixa (coords locais do dono). A forma vira única
+## na 1ª chamada (o recurso da cena não é compartilhado com ninguém).
+func set_box(center: Vector2, size: Vector2) -> void:
+	position = center
+	var cs := _shape_node()
+	if cs == null:
+		return
+	if not _own_shape:
+		_own_shape = true
+		cs.shape = RectangleShape2D.new()
+		cs.position = Vector2.ZERO
+	(cs.shape as RectangleShape2D).size = size
+
+
+func box_size() -> Vector2:
+	var cs := _shape_node()
+	if cs != null and cs.shape is RectangleShape2D:
+		return (cs.shape as RectangleShape2D).size * cs.scale
+	return Vector2.ZERO
+
+
+func _shape_node() -> CollisionShape2D:
+	for c in get_children():
+		if c is CollisionShape2D:
+			return c
+	return null
+
+
+## Dano de CONTATO (encostar no inimigo) não fere a Sophia — playtest 2 do João:
+## "a dificuldade vinha de tomar dano ao ACERTAR os inimigos". Só fere se o dono
+## pedir explicitamente (`contact_hurts = true`, ex.: espinhos, investida).
+func _is_harmless_contact(victim: Node) -> bool:
+	if team != "enemy" or not (victim is Player) or owner == null or not is_instance_valid(owner):
+		return false
+	if owner.get("contact_hitbox") != self:
+		return false
+	return owner.get("contact_hurts") != true
 
 
 ## O golpe atual do dono (só a Sophia tem `current_move`).
@@ -47,6 +105,13 @@ func _on_area_entered(area: Area2D) -> void:
 	if not (area is Hurtbox and area.team != team):
 		return
 	var victim: Node = area.owner if area.owner != null else area.get_parent()
+	if _is_harmless_contact(victim):
+		return
+	if team == "player":
+		var vid: int = area.get_instance_id()
+		if _hit_ids.has(vid):
+			return
+		_hit_ids[vid] = true
 	var hc = victim.get("health") if victim != null else null
 	var hp_before: int = hc.current_health if hc is HealthComponent else -1
 	area.receive_hit(damage, global_position, knockback, unblockable, owner)

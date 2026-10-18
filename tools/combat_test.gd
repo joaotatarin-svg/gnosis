@@ -29,20 +29,26 @@ class Bot extends Node:
 	var _last_move: String = ""
 	var _last_state: int = -1
 
-	# [tempo, ação, "press"/"release"/"tap"]
+	# [tempo, ação, "press"/"release"/"tap"] — ritmo do Combate 6: cada string
+	# espera a recuperação do final (o fim do combo compromete).
 	var actions: Array = [
 		[0.3, "move_right", "press"],
 		[1.6, "move_right", "release"],
 		[1.7, "attack_light", "tap"], [1.95, "attack_light", "tap"], [2.2, "attack_light", "tap"],   # L L L
-		[3.0, "attack_light", "tap"], [3.25, "attack_light", "tap"], [3.5, "attack_heavy", "tap"],   # L L H (lançador)
-		[4.0, "attack_light", "tap"], [4.3, "attack_heavy", "tap"],                                  # L H (corte ascendente)
-		[4.9, "jump", "tap"], [5.15, "attack_light", "tap"],                                         # aéreo: giro
-		[5.9, "jump", "tap"], [6.15, "attack_heavy", "tap"],                                         # aéreo: queda
-		[7.0, "attack_heavy", "tap"], [7.5, "attack_heavy", "tap"], [8.0, "attack_heavy", "tap"],    # H H H
-		[8.9, "attack_light", "tap"], [9.15, "attack_light", "tap"], [9.4, "attack_light", "tap"], [9.65, "attack_heavy", "tap"],  # L L L H (fúria)
-		[10.4, "dodge", "tap"],
-		[10.9, "attack_light", "tap"], [11.15, "attack_light", "tap"], [11.4, "attack_light", "tap"], [11.65, "attack_light", "tap"], # L L L L
+		[3.4, "attack_light", "tap"], [3.65, "attack_light", "tap"], [3.9, "attack_heavy", "tap"],   # L L H (lançador)
+		[5.3, "attack_light", "tap"], [5.55, "attack_heavy", "tap"],                                 # L H (corte ascendente)
+		[6.6, "jump", "tap"], [6.85, "attack_light", "tap"],                                         # aéreo: giro
+		[7.8, "jump", "tap"], [8.0, "attack_heavy", "tap"], [8.1, "attack_heavy", "tap"],            # aéreo: queda (2º aperto NÃO sai)
+		[9.6, "attack_heavy", "tap"], [10.2, "attack_heavy", "tap"], [10.8, "attack_heavy", "tap"],  # H H H
+		[12.4, "attack_light", "tap"], [12.65, "attack_light", "tap"], [12.9, "attack_light", "tap"], [13.15, "attack_heavy", "tap"],  # L L L H (fúria)
+		[14.6, "dodge", "tap"],
+		[15.2, "attack_light", "tap"], [15.45, "attack_light", "tap"], [15.7, "attack_light", "tap"], [15.95, "attack_light", "tap"], # L L L L
+		[17.0, "jump", "tap"], [17.3, "jump", "tap"], [17.5, "attack_heavy", "tap"],                 # pulo duplo (flag forçada) + queda
+		[18.4, "jump", "tap"], [18.7, "jump", "tap"],                                                # pulo duplo de novo, sem golpe
 	]
+	var _started_moves: Dictionary = {}    # id -> quantas vezes começou
+	var _double_jumps: int = 0
+	var _air_left_prev: int = -1
 
 
 	func _ready() -> void:
@@ -76,6 +82,16 @@ class Bot extends Node:
 			_started = true
 			_say("Golpes liberados (arma nv.%d): %s" % [weapon_level, ", ".join(Progression.unlocked_combos(pl.data).map(func(m): return m.id))])
 		_t += delta
+		# os inimigos apanham mas não interrompem o roteiro (dano = ruído no teste)
+		pl.invuln_timer = maxf(pl.invuln_timer, 0.1)
+		if _t >= 16.9:
+			pl.set("debug_double_jump", true)
+		var al = pl.get("_air_jumps_left")
+		if al != null:
+			if _air_left_prev == 1 and int(al) == 0 and not pl.is_on_floor():
+				_double_jumps += 1
+				_say("t=%.2f PULO DUPLO" % _t)
+			_air_left_prev = int(al)
 		while _step < actions.size() and _t >= float(actions[_step][0]):
 			var a: String = actions[_step][1]
 			var kind: String = actions[_step][2]
@@ -88,12 +104,14 @@ class Bot extends Node:
 			_step += 1
 		# observa o herói
 		var mv := pl.current_move.id if pl.current_move != null else "-"
+		if pl.state == Player.State.ATTACK and (mv != _last_move or _last_state != Player.State.ATTACK):
+			_started_moves[mv] = int(_started_moves.get(mv, 0)) + 1
 		if mv != _last_move or pl.state != _last_state:
 			_last_move = mv
 			_last_state = pl.state
 			var airborne := "" if pl.is_on_floor() else " (NO AR)"
 			_say("t=%.2f estado=%s golpe=%s%s" % [_t, Player.State.keys()[pl.state], mv, airborne])
-		if _t > 12.6:
+		if _t > 19.8:
 			_finish(pl)
 
 
@@ -116,8 +134,22 @@ class Bot extends Node:
 				alive += 1
 				if not e.is_on_floor():
 					airborne += 1
+		_say("golpes: %s · pulos duplos: %d" % [str(_started_moves), _double_jumps])
+		var fails: Array[String] = []
+		for need in ["m_LLL", "m_LLH", "m_LH", "a_L", "a_H", "m_HHH", "m_LLLH", "m_LLLL"]:
+			if weapon_level >= 5 and not _started_moves.has(need):
+				fails.append("faltou " + need)
+		if int(_started_moves.get("a_H", 0)) > 2:
+			fails.append("Queda Estelar saiu %d vezes (máx. 2: 1 por pulo)" % int(_started_moves.get("a_H", 0)))
+		if pl.get("_air_jumps_left") != null and _double_jumps < 2:
+			fails.append("pulo duplo saiu %d vezes (esperado 2)" % _double_jumps)
+		if fails.is_empty():
+			print("QA PASS: CombatTest (strings, aéreos 1 por pulo, pulo duplo)")
+		else:
+			print("QA FAIL: CombatTest — " + "; ".join(fails))
 		_say("FIM: vida=%d/%d éter=%d inimigos vivos=%d no ar=%d faíscas=%d" % [pl.health.current_health, pl.health.max_health, int(pl.mana), alive, airborne, Progression.orbs])
-		var img := get_viewport().get_texture().get_image()
-		img.save_png(out)
-		print("SHOT salvo: ", out)
+		var img := get_viewport().get_texture().get_image() if DisplayServer.get_name() != "headless" else null
+		if img != null:
+			img.save_png(out)
+			print("SHOT salvo: ", out)
 		get_tree().quit()
