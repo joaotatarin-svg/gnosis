@@ -104,6 +104,11 @@ func damage_multiplier(screen: int) -> float:
 	return 1.0 + run_progress(screen) * 0.4   # r7: 0.588 → 0.5 → 0.45 → 0.4 (travessias mais longas)
 
 
+## Voador (paira alto)? Mesmo critério do Enemy.is_flyer() — Onda 6.
+func is_flyer(id: String) -> bool:
+	return float(EnemyMoves.for_type(id).get("fly", 0.0)) > 40.0
+
+
 func is_boss_id(id: String) -> bool:
 	for b in bosses:
 		if b.id == id:

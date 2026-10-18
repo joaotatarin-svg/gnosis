@@ -1443,6 +1443,12 @@ func _flying() -> bool:
 	return fly_height > 0.0 and estate != EState.DEAD and _downed <= 0.0 and _perched <= 0.0
 
 
+## Contrato com o level6 (Level._is_flyer): voador de verdade (paira alto) nasce
+## no ALTO da arena. O Fantasma (flutua a ~24 px) nasce no chão.
+func is_flyer() -> bool:
+	return fly_height > 40.0
+
+
 ## Voador no chão (derrubado/pousado) — a EnemyOverlay esconde as asas.
 func is_downed() -> bool:
 	return _downed > 0.0 or _perched > 0.0
