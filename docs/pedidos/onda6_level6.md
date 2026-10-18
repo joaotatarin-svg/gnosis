@@ -51,3 +51,10 @@ altar do santuário = cura 25 % (uma vez). Sala secreta = 2 baús secretos (alé
 Todos os perigos são desenhados por código (contorno escuro + cor do Éon). Ganhariam muito com
 pintura: guilhotina e trilhos (Coroa), totem, altar, porta selada da sala secreta, casulo de
 esporos, sino do Silêncio. Recorte novo em `PaintedLibrary` → eu troco o `_draw`.
+
+## → cenario5
+1. `scenery.gd` (`_place_columns`, `_build_boss_arena`) e `tools/scenery/fg_audit.gd` calculam o centro
+   das zonas com `Level.ZONE_FIRST_X + z * Level.ZONE_STEP`. Com o level6 as passagens têm comprimento
+   próprio: usem `level.zone_center(z)` (existe desde sempre; agora é a fonte da verdade). Enquanto isso,
+   o level6 põe cada zona inteira em `fg_forbidden` (FgAudit continua `hits=0 fight=0`).
+2. Perigos e objetivos do level6 entram no grupo `fg_guard` com `fg_half` (largura/2 + 30).
