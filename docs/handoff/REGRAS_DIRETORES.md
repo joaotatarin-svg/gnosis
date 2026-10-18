@@ -24,6 +24,8 @@ versão final vendável. João NÃO comprará créditos de IA: só ferramentas g
 - Capturas e GIFs: salve em `C:\gnosis-wt\_caps\<cargo>\` (fora do git). Faça ANTES e DEPOIS.
 
 ## SILÊNCIO OBRIGATÓRIO (pedido do dono)
+JANELAS (ATUALIZADO — o João está JOGANDO): NENHUMA janela visível. Use `--headless` para tudo que não precisa de pixels. Capturas que exigem renderer: janela mínima `--resolution 320x180 --position 4000,4000` (o Godot pode recolocar no canto — aceite) e só quando indispensável; prefira acumular e capturar depois. Prioridade NORMAL (o João mandou: a prioridade é fazer o jogo); só não sufoque a máquina (carga artificial ≤4 workers, curta).
+
 TODA execução do Godot que abre janela ou roda cena (Shot, QAs, bot, jogo) deve levar
 `--audio-driver Dummy` (ex.: `& $godot --audio-driver Dummy --path <wt> ...`). Só o diretor de
 Áudio pode ouvir algo, e mesmo ele analisa arquivos offline (ffmpeg/Python), não tocando no PC.

@@ -301,13 +301,32 @@ func _build_notice() -> void:
 	var msg := SaveManager.take_notice()
 	if msg.is_empty():
 		return
-	var l := CodexStyle.wrap_label(CodexStyle.label(self, msg, Vector2(330, 8), 10, CodexStyle.GOLD_HI, 296), 296)
+	# Placa escura atrás do aviso (QA2: o texto amarelo ficava direto sobre a
+	# pintura do menu) — some junto com ele.
+	var holder := Control.new()
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(holder)
+	var plate := Panel.new()
+	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.01, 0.025, 0.035, 0.78)
+	sb.border_color = Color(CodexStyle.GOLD, 0.45)
+	sb.border_width_right = 1
+	sb.set_corner_radius_all(2)
+	plate.add_theme_stylebox_override("panel", sb)
+	holder.add_child(plate)
+	var l := CodexStyle.wrap_label(CodexStyle.label(holder, msg, Vector2(330, 8), 10, CodexStyle.GOLD_HI, 296), 296)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
 	l.add_theme_constant_override("outline_size", 3)
+	var font: Font = l.get_theme_font("font")
+	var tsz := font.get_multiline_string_size(I18n.t(l.text), HORIZONTAL_ALIGNMENT_RIGHT, 296.0, 10)   # i18n: mede o texto exibido
+	var pw := minf(296.0, tsz.x) + 14.0
+	plate.position = Vector2(330.0 + 296.0 - pw + 7.0, 4.0)
+	plate.size = Vector2(pw, tsz.y + 8.0)
 	var t := create_tween()
 	t.tween_interval(8.0)
-	t.tween_property(l, "modulate:a", 0.0, 1.0)
+	t.tween_property(holder, "modulate:a", 0.0, 1.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
