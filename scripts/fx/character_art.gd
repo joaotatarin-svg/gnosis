@@ -21,6 +21,7 @@ const GROUND_Y := 24.0            # linha do chão em unidades do corpo (pés)
 
 var anim_state: String = "idle"
 var anim_time: float = 0.0
+var drawn_gait: bool = true       # Sophia: largada/freada desenhadas (S18) ao começar/parar de correr
 var damage_ratio: float = 0.0     # 0 = inteiro · 1 = quase morto (rachaduras)
 var _rig_draws: Array = []        # buffer de desenho do rig (tinta em 2 passes)
 var painted: Dictionary = {}
@@ -151,10 +152,20 @@ func set_anim(state: String) -> void:
 				"attack_air", "attack_dive", "fall": rec = "rec_air"
 				"dodge": rec = "rec_dodge"
 				"hurt": rec = "rec_hurt"
+		# ARRANCADA / FREADA desenhadas (S18): parado → correndo toca a largada;
+		# correndo (mais que um toque) → parado toca a derrapagem
+		var gait: String = ""
+		if drawn_gait and painted.get("hero", false) and rec == "":
+			if anim_state in ["idle", "recover"] and state == "walk":
+				gait = "start_run"
+			elif anim_state == "walk" and state == "idle" and anim_time > 0.3:
+				gait = "stop_run"
 		anim_state = state
 		anim_time = 0.0
 		if rec != "":
 			play_action(rec)
+		elif gait != "":
+			play_action(gait)
 		# giro do manto na esquiva (contrato com o Áudio: some se não houver arquivo)
 		if state == "dodge" and painted.get("hero", false) and is_visible_in_tree():
 			Audio.play_sfx("cloth", 0.1, -4.0)
@@ -1921,11 +1932,17 @@ var _action: String = ""
 var _action_t: float = 0.0
 
 
-func play_action(action_name: String) -> void:
+## A Sophia tem essa ação DESENHADA? (ex.: "double_jump" — o player usa isto
+## para trocar a pirueta por código pela cambalhota pintada da S17)
+func has_action(action_name: String) -> bool:
 	if not painted.get("hero", false):
-		return
+		return false
 	var db: Dictionary = frame_db("sophia")
-	if db.is_empty() or not db.meta.states.has(action_name):
+	return not db.is_empty() and db.meta.states.has(action_name)
+
+
+func play_action(action_name: String) -> void:
+	if not has_action(action_name):
 		return
 	_action = action_name
 	_action_t = 0.0
@@ -1947,8 +1964,13 @@ func _tick_action(delta: float) -> void:
 	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
 	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):
 		_action = ""
-	# recuperação só vale enquanto ela está parada (andou/atacou = corta)
-	elif _action.begins_with("rec_") and anim_state != "idle":
+	# recuperação e freada só valem enquanto ela está parada (andou/atacou = corta)
+	elif (_action.begins_with("rec_") or _action == "stop_run") and anim_state != "idle":
+		_action = ""
+	# largada só enquanto corre; pulo duplo só no ar (golpe/esquiva/pouso = corta)
+	elif _action == "start_run" and anim_state != "walk":
+		_action = ""
+	elif _action == "double_jump" and not anim_state in ["jump", "fall"]:
 		_action = ""
 
 

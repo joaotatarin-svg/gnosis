@@ -71,11 +71,19 @@ func _ready() -> void:
 				check(seq.frames.size() >= 5, "Morte sem a transição antes do deitado (%d quadros)" % seq.frames.size())
 			if state == "walk":
 				# corrida = ciclo todo DESENHADO (sem os meios borrados do RIFE)
+				# a largada desenhada (S18) toca antes do ciclo: confere o ciclo de verdade
+				var cyc_name: String = seq_name
+				if seq_name == "start_run":
+					cyc_name = "rund" if meta.states.has("rund") else "run"
+				var cyc: Dictionary = meta.states[cyc_name]
 				var drawn: bool = true
-				for fe in seq.frames:
+				for fe in cyc.frames:
 					if String(fe.f).begins_with("rinb."):
 						drawn = false
-				check(drawn and seq.frames.size() >= 8, "Corrida com quadros do RIFE ou ciclo curto: " + seq_name)
+				check(drawn and cyc.frames.size() >= 8, "Corrida com quadros do RIFE ou ciclo curto: " + cyc_name)
+				# Fila 9: largada, freada e pulo duplo desenhados
+				for act in ["start_run", "stop_run", "double_jump"]:
+					check(art.has_action(act), "Sem a ação desenhada: " + act)
 			if state == "dodge_back":
 				check(seq_name == "dodge_back", "Esquiva pra trás sem quadro próprio")
 		if state == "dodge":

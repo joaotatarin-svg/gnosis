@@ -34,6 +34,7 @@ func _ready() -> void:
 	_floor()
 	match mode:
 		"film_sophia": _film_sophia()
+		"film_gait": _film_gait(args.size() >= 3 and args[2] == "old")
 		"film_criaturas": _film_creatures()
 		"film_boss": _film_boss(args[2] if args.size() >= 3 else "arconte_sono")
 		"boss_board": await _boss_board(args[2] if args.size() >= 3 else "")
@@ -140,6 +141,28 @@ func _film_sophia() -> void:
 	_label("SOPHIA — filme de animação (AnimQA)", Vector2(6, 6))
 
 
+## Fila 9 (S17/S18): parada → arranca → corre → freia → pulo → PULO DUPLO → pouso.
+## `old` = como era antes: sem largada/freada e o 2º pulo com a pirueta por código.
+var gait_old: bool = false
+
+
+func _film_gait(old: bool) -> void:
+	gait_old = old
+	var art := _sophia(Vector2(160, GROUND), 2.6)
+	art.drawn_gait = not old
+	var cam := Camera2D.new()
+	cam.position = Vector2(320, 180)
+	add_child(cam)
+	cam.make_current()
+	camera = cam
+	follow = art
+	var tl := [["idle", 0.6, 0.0], ["walk", 0.9, 250.0], ["idle", 0.6, 0.0], ["walk", 0.5, 250.0], ["idle", 0.5, 0.0],
+		["jump", 0.30, 0.0, false, -1.0], ["fall", 0.12, 0.0, false, 0.2], ["double_jump", 0.34, 40.0, false, -0.8],
+		["fall", 0.35, 40.0, false, 1.0], ["idle", 0.6, 0.0]]
+	actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
+	_label("SOPHIA — arrancada, freada e pulo duplo (%s)" % ("ANTES" if old else "DEPOIS"), Vector2(6, 6))
+
+
 func _film_creatures() -> void:
 	RenderingServer.set_default_clear_color(Color("56636e"))   # fundo claro: bichos são escuros
 	var ids := ["servo", "canino", "larva"]
@@ -175,6 +198,16 @@ func _process(delta: float) -> void:
 				"riposte":
 					art.set_anim("idle")
 					art.play_action("riposte")
+				"double_jump":
+					# o que o player faz no 2º pulo: quadros desenhados (S17) ou,
+					# antes deles, a pirueta inteira girando o cartão
+					art.set_anim("jump")
+					if not gait_old and art.has_action("double_jump"):
+						art.play_action("double_jump")
+					else:
+						var tw := art.create_tween()
+						tw.tween_property(art, "rotation", TAU, 0.3).from(0.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+						tw.tween_callback(func() -> void: art.rotation = 0.0)
 				_:
 					art.set_anim(String(step[0]))
 		if a.i >= a.tl.size():
@@ -188,8 +221,16 @@ func _process(delta: float) -> void:
 		art.pose_progress = clampf(a.t / float(st[1]), 0.0, 1.0) if (s0.begins_with("windup") or s0.begins_with("attack") or s0 == "recover") and not art.painted.get("hero", false) else -1.0
 		if st.size() > 4:
 			# arco do pulo: sobe e desce
+			# |st[4]| = fração: subida de 70 px × f a partir de onde está; queda de f da altura
 			var u: float = a.t / float(st[1])
-			art.position.y = a.y0 - (sin((u * 0.5) * PI) * 70.0 if float(st[4]) < 0.0 else cos((u * 0.5) * PI) * 70.0)
+			if a.t <= delta:
+				a["ys"] = art.position.y
+			var ys: float = float(a.get("ys", a.y0))
+			var f: float = absf(float(st[4]))
+			if float(st[4]) < 0.0:
+				art.position.y = ys - sin((u * 0.5) * PI) * 70.0 * f
+			else:
+				art.position.y = ys + (a.y0 - ys) * f * (1.0 - cos((u * 0.5) * PI))
 		else:
 			art.position.y = a.y0
 	if camera != null and follow != null:
