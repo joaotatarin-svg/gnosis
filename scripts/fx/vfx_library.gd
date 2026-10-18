@@ -636,7 +636,7 @@ static func nova_ring(parent: Node, pos: Vector2, radius: float, col: Color = Co
 	var big := radius >= 140.0
 	var fb := flash_budget() if big else 1.0
 	shock_ring(parent, pos, radius, Color(1, 0.98, 0.92, 0.6), 0.3, false, 1.0, 0.05)
-	shock_ring(parent, pos, radius * 0.94, Color(col.r, col.g, col.b, 0.8), 0.5, false, 1.0, 0.2)
+	shock_ring(parent, pos, radius * 0.94, Color(col.r, col.g, col.b, 0.8), 0.5, false, 1.0, 0.13)
 	_flash_sprite(parent, pos, "glow", Color(1, 1, 1, 0.7 * fb), 0.1, radius * 2.0 / 128.0 * 0.35, 0.25)
 	ground_decal(parent, pos + Vector2(0, minf(radius * 0.12, 18.0)), col, radius * 2.2, true, 0.55)
 	if big:
