@@ -52,8 +52,8 @@ void fragment() {
 	if (dark > 0.5) {
 		float rim = smoothstep(edge - 0.3, edge - 0.04, d) * body;
 		float inner = body * (1.0 - rim);
-		vec3 voidc = mix(vec3(0.06, 0.0, 0.09), col * 0.3, n * 0.55);
-		rgb = voidc * inner + col * (rim * 1.7 + glow * 1.1) * fl + vec3(1.0) * rim * rim * 0.4;
+		vec3 voidc = mix(vec3(0.03, 0.0, 0.05), col * 0.2, n * 0.5);
+		rgb = voidc * inner + col * (rim * 2.0 + glow * 1.1) * fl + vec3(1.0) * rim * rim * 0.5;
 		alpha = inner * 0.9;
 	} else {
 		// cor SATURADA no corpo (col²), branco só no miolo: não estoura em bolha branca

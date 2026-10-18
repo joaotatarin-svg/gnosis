@@ -53,8 +53,8 @@ const STYLES := {
 		"part": "spark2", "part_n": 7, "part_add": true, "part_up": false, "ground": 30.0,
 		"impact": "chain", "charge": "light"},
 	# --- Arcontes / criaturas ------------------------------------------------
-	"dark": {"core": 0.17, "dark": 1.0, "spikes": 5.0, "swirl": 1.4, "halo": 0.26, "halo_a": 0.285,
-		"rays": "star", "rays_s": 0.2, "rays_spin": -3.0, "squash": Vector2(1.1, 1.0),
+	"dark": {"core": 0.2, "dark": 1.0, "spikes": 6.0, "swirl": 1.4, "halo": 0.26, "halo_a": 0.42,
+		"rays": "", "rays_s": 0.0, "rays_spin": 0.0, "squash": Vector2(1.1, 1.0),
 		"trail_w": 9.0, "trail_n": 11, "trail_links": 0.0, "trail_dark": 1.0, "trail_break": 0.5,
 		"part": "spark2", "part_n": 8, "part_add": true, "part_up": false, "ground": 24.0,
 		"impact": "dark", "charge": "dark"},
