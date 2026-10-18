@@ -234,6 +234,8 @@ static func screen_flash(parent: Node, col: Color = Color(1, 1, 1, 0.55), dur: f
 static func hit(parent: Node, pos: Vector2, heavy: bool = false, col: Color = Color(1.0, 0.9, 0.55)) -> void:
 	if not _ok(parent, heavy):
 		return
+	if _claimed(pos):
+		return                 # VFX7: o impacto premium deste ponto já tocou (R4)
 	var n := 16 if heavy else 9
 	var p := _burst(parent, pos, "spark", n, 0.38 if heavy else 0.28)
 	p.direction = Vector2(0, -1)
@@ -515,15 +517,143 @@ static func cast(parent: Node, pos: Vector2, ring_color: Color = Color(1.0, 0.95
 	p.angular_velocity_min = -200.0
 	p.angular_velocity_max = 200.0
 	p.color = ring_color
+	_ring_signature(parent, pos, ring_color)
+
+
+## VFX7: a ASSINATURA de cada magia no instante da conjuração (reconhecida pela
+## cor do Anel = skill.color). Cada Anel é a paixão de um Arconte virada luz.
+static func _ring_signature(parent: Node, pos: Vector2, col: Color) -> void:
+	match AttackStyle.ring_of_color(col):
+		"m_s1":
+			# Esfera Solar: um disco de sol se abre na mão.
+			_flash_sprite(parent, pos, "flare", Color(col.r, col.g, col.b, 0.9), 0.1, 0.5, 0.3, true, 3.0)
+			_flash_sprite(parent, pos, "light", Color(1, 1, 1, 0.8), 0.08, 0.32, 0.14)
+		"r_torpor":
+			# Névoa do Sono: bafejo de névoa azul e bolhas lentas.
+			var m := _burst(parent, pos, "smoke2", 6, 0.9)
+			m.direction = Vector2(0, -1)
+			m.spread = 120.0
+			m.initial_velocity_min = 10.0
+			m.initial_velocity_max = 35.0
+			m.scale_amount_min = 0.1
+			m.scale_amount_max = 0.2
+			m.scale_amount_curve = _grow_curve()
+			m.color_ramp = _ramp(Color(col.r, col.g, col.b, 0.45))
+			var b := _burst(parent, pos, "circle", 8, 1.0)
+			b.spread = 180.0
+			b.gravity = Vector2(0, -40.0)
+			b.initial_velocity_min = 10.0
+			b.initial_velocity_max = 40.0
+			b.scale_amount_min = 0.02
+			b.scale_amount_max = 0.05
+			b.scale_amount_curve = _scale_curve(0.3)
+			b.color = col.lightened(0.3)
+		"r_fome":
+			# Boca Voraz: um redemoinho que SUGA (grande → pequeno).
+			_flash_sprite(parent, pos, "twirl", Color(col.r, col.g, col.b, 0.9), 0.9, 0.08, 0.38, true, -9.0)
+			var v := _burst(parent, pos, "spark", 14, 0.35)
+			v.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE_SURFACE
+			v.emission_sphere_radius = 46.0
+			v.gravity = Vector2.ZERO
+			v.radial_accel_min = -700.0
+			v.radial_accel_max = -500.0
+			v.scale_amount_min = 0.04
+			v.scale_amount_max = 0.08
+			v.color = col.lightened(0.2)
+		"r_corrente":
+			# Corrente da Lei: o elo se forma — estrela fria e faíscas de forja.
+			_flash_sprite(parent, pos, "star", Color(1, 1, 1, 0.9), 0.08, 0.36, 0.18, true, 6.0)
+			shock_ring(parent, pos, 18.0, col, 0.2, false, 1.0, 0.1)
+			_spray(parent, pos, col, 8, -1.0, "spark2", 0.6)
+		"r_silencio":
+			# Grito Mudo: o som é ENGOLIDO — anéis que se fecham para dentro.
+			_flash_sprite(parent, pos, "halo", Color(col.r, col.g, col.b, 0.85), 1.1, 0.05, 0.32)
+			_flash_sprite(parent, pos, "halo", Color(1, 1, 1, 0.6), 0.7, 0.03, 0.24)
+		"r_espelho":
+			# Reflexo: cacos de espelho se espalham e orbitam a Sophia por 5 s.
+			_flash_sprite(parent, pos, "star", Color(1, 1, 1, 0.95), 0.1, 0.5, 0.22, true, 5.0)
+			var c := _burst(parent, pos, "star", 10, 0.5)
+			c.spread = 180.0
+			c.gravity = Vector2(0, 120.0)
+			c.initial_velocity_min = 60.0
+			c.initial_velocity_max = 150.0
+			c.scale_amount_min = 0.03
+			c.scale_amount_max = 0.07
+			c.angular_velocity_min = -400.0
+			c.angular_velocity_max = 400.0
+			c.color = col
+			var pl := parent.get_tree().get_first_node_in_group("player") if parent.get_tree() != null else null
+			if pl is Node2D and (pl as Node2D).global_position.distance_to(pos) < 80.0:
+				aura(pl, col, 5.0)
+		"r_praga":
+			# Flor Podre: esporos verdes sobem da mão.
+			var e := _burst(parent, pos, "circle", 12, 0.9)
+			e.direction = Vector2(0, -1)
+			e.spread = 70.0
+			e.gravity = Vector2(0, -30.0)
+			e.initial_velocity_min = 20.0
+			e.initial_velocity_max = 70.0
+			e.scale_amount_min = 0.02
+			e.scale_amount_max = 0.06
+			e.scale_amount_curve = _scale_curve(0.3)
+			e.color = col
+			var g := _burst(parent, pos, "smoke", 4, 0.8, false)
+			g.spread = 180.0
+			g.initial_velocity_min = 8.0
+			g.initial_velocity_max = 25.0
+			g.scale_amount_min = 0.08
+			g.scale_amount_max = 0.14
+			g.scale_amount_curve = _grow_curve()
+			g.color_ramp = _ramp(Color(0.35, 0.5, 0.2, 0.45))
+		"r_coroa":
+			# Coroa Partida: uma coroa de raios se ergue antes da nova.
+			var fb := flash_budget()
+			_flash_sprite(parent, pos, "flare", Color(col.r, col.g, col.b, 0.95 * fb), 0.2, 0.9, 0.4, true, 2.0)
+			for i in 5:
+				var ray := Sprite2D.new()
+				ray.texture = tex("light")
+				ray.material = _additive()
+				ray.modulate = Color(col.r, col.g, col.b, 0.8)
+				ray.z_index = Z
+				ray.add_to_group(GROUP)
+				parent.add_child(ray)
+				ray.global_position = pos
+				ray.rotation = (float(i) - 2.0) * 0.35
+				ray.offset = Vector2(0, -64)
+				ray.scale = Vector2(0.08, 0.1)
+				var tw := ray.create_tween().set_parallel(true)
+				tw.tween_property(ray, "scale", Vector2(0.12, 0.9), 0.3).set_ease(Tween.EASE_OUT)
+				tw.tween_property(ray, "modulate:a", 0.0, 0.45).set_ease(Tween.EASE_IN)
+				tw.chain().tween_callback(ray.queue_free)
 
 
 ## Anel de choque: halo que cresce até `radius` + fagulhas na borda.
 static func nova_ring(parent: Node, pos: Vector2, radius: float, col: Color = Color(0.6, 0.8, 1.0)) -> void:
 	if not _ok(parent, true):
 		return
-	var target := radius * 2.0 / 128.0        # o halo tem 128 px; escala = diâmetro
-	_flash_sprite(parent, pos, "halo", Color(col.r, col.g, col.b, 1.0), target * 0.15, target, 0.45)
-	_flash_sprite(parent, pos, "glow", Color(1, 1, 1, 0.7), 0.1, target * 0.35, 0.25)
+	# VFX7: frente quente fina (branca) correndo na frente do corpo colorido,
+	# clarão no centro (no orçamento de flashes se a nova é grande), luz que
+	# escorre pelo chão e, nas novas enormes, um pilar de luz.
+	var big := radius >= 140.0
+	var fb := flash_budget() if big else 1.0
+	shock_ring(parent, pos, radius, Color(1, 0.98, 0.92), 0.3, false, 1.0, 0.05)
+	shock_ring(parent, pos, radius * 0.94, col, 0.5, false, 1.0, 0.2)
+	_flash_sprite(parent, pos, "glow", Color(1, 1, 1, 0.7 * fb), 0.1, radius * 2.0 / 128.0 * 0.35, 0.25)
+	ground_decal(parent, pos + Vector2(0, minf(radius * 0.12, 18.0)), col, radius * 2.2, true, 0.55)
+	if big:
+		var pil := Sprite2D.new()
+		pil.texture = tex("light")
+		pil.material = _additive()
+		pil.modulate = Color(col.r, col.g, col.b, 0.85 * fb)
+		pil.z_index = Z
+		pil.add_to_group(GROUP)
+		parent.add_child(pil)
+		pil.global_position = pos + Vector2(0, -40)
+		pil.scale = Vector2(0.5, 0.4)
+		var tw := pil.create_tween().set_parallel(true)
+		tw.tween_property(pil, "scale", Vector2(0.18, 2.6), 0.4).set_ease(Tween.EASE_OUT)
+		tw.tween_property(pil, "modulate:a", 0.0, 0.45).set_ease(Tween.EASE_IN)
+		tw.chain().tween_callback(pil.queue_free)
 	var p := _burst(parent, pos, "spark", int(clampf(radius / 6.0, 10.0, 30.0)), 0.5)
 	p.spread = 180.0
 	p.gravity = Vector2(0, 120.0)
@@ -535,27 +665,346 @@ static func nova_ring(parent: Node, pos: Vector2, radius: float, col: Color = Co
 	p.scale_amount_max = 0.1
 	p.scale_amount_curve = _shrink_curve()
 	p.color = col.lightened(0.3)
+	# motes subindo do chão varrido
+	var m := _burst(parent, pos, "magic2", int(clampf(radius / 12.0, 6.0, 16.0)), 0.8)
+	m.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	m.emission_rect_extents = Vector2(radius * 0.8, 6.0)
+	m.direction = Vector2(0, -1)
+	m.spread = 20.0
+	m.gravity = Vector2(0, -80.0)
+	m.initial_velocity_min = 20.0
+	m.initial_velocity_max = 70.0
+	m.scale_amount_min = 0.04
+	m.scale_amount_max = 0.08
+	m.scale_amount_curve = _scale_curve(0.2)
+	m.color = col.lightened(0.2)
 
 
-## Rastro contínuo pra um projétil (filho do próprio projétil, morre com ele).
-static func projectile_trail(proj: Node2D, col: Color) -> CPUParticles2D:
-	var p := CPUParticles2D.new()
-	p.texture = tex("glow")
-	p.amount = 14
-	p.lifetime = 0.35
-	p.local_coords = false
-	p.material = _additive()
-	p.gravity = Vector2.ZERO
-	p.initial_velocity_min = 0.0
-	p.initial_velocity_max = 10.0
-	p.spread = 180.0
-	p.scale_amount_min = 0.08
-	p.scale_amount_max = 0.14
+## Rastro de projétil — desde o VFX7 pendura o visual PREMIUM inteiro
+## (ProjectileFX: núcleo de plasma, halo, coroa, fita, partículas, impacto e
+## dissipação). O Projectile chama isto no _ready; a família vem das
+## propriedades dele (AttackStyle.kind_for) ou da meta "vfx_kind".
+static func projectile_trail(proj: Node2D, col: Color) -> Node2D:
+	return ProjectileFX.attach(proj, "", col)
+
+
+## API dos donos de ataque (VFX7): visual premium de projétil por família.
+## kind: "light" · "solar" · "chain_light" (Sophia) · "dark" · "king" · "chain"
+## · "sleep" · "wave" (Arcontes/criaturas) · "" = deduz. Idempotente.
+static func projectile_look(proj: Node2D, kind: String = "", col = null) -> ProjectileFX:
+	return ProjectileFX.attach(proj, kind, col)
+
+
+## API (VFX7): ANTECIPAÇÃO — a luz se junta em `host` + `offset` por `duration`
+## segundos e estala no fim (chame no início do wind-up/conjuração).
+## style: "light" (Sophia) · "dark" (Arcontes/criaturas) · "king" (Rei/Demiurgo).
+static func charge_up(host: Node2D, offset: Vector2, col: Color, duration: float = 0.3, style: String = "dark") -> ChargeFX:
+	if host == null or not is_instance_valid(host) or not host.is_inside_tree():
+		return null
+	var c := ChargeFX.new()
+	c.color = col
+	c.duration = duration
+	c.style = style
+	c.position = offset
+	host.add_child(c)
+	return c
+
+
+# --- VFX7: orçamento de clarões (R10: ≤ 3 por segundo, WCAG 2.3.1) ----------
+const FLASHES_PER_SEC := 3
+static var _flash_log: Array[int] = []
+
+
+## Fator de força de um clarão FORTE: os 3 primeiros do último segundo saem
+## inteiros; os seguintes saem a 30 % (não contam como flash). "Reduzir flashes"
+## corta tudo pela metade.
+static func flash_budget() -> float:
+	var now := Time.get_ticks_msec()
+	while not _flash_log.is_empty() and now - _flash_log[0] > 1000:
+		_flash_log.pop_front()
+	var k := 1.0
+	if _flash_log.size() >= FLASHES_PER_SEC:
+		k = 0.3
+	else:
+		_flash_log.append(now)
+	if Juice.reduce_flashes:
+		k *= 0.5
+	return k
+
+
+# --- VFX7: um acerto = um evento (R4) ---------------------------------------
+static var _claim_pos: Vector2 = Vector2.INF
+static var _claim_ms: int = -1000
+
+
+## O impacto premium "reserva" o ponto: o `hit` genérico do mesmo quadro e do
+## mesmo lugar (ex.: explosão da Esfera) não empilha outro clarão por cima.
+static func _claim(pos: Vector2) -> void:
+	_claim_pos = pos
+	_claim_ms = Time.get_ticks_msec()
+
+
+static func _claimed(pos: Vector2) -> bool:
+	return Time.get_ticks_msec() - _claim_ms < 34 and pos.distance_squared_to(_claim_pos) < 4.0
+
+
+## Anel de choque macio (shader vfx_ring) que cresce até `radius` e apaga.
+## `squash` < 1 achata (anel deitado no chão).
+static func shock_ring(parent: Node, pos: Vector2, radius: float, col: Color, dur: float = 0.3, dark: bool = false, squash: float = 1.0, thickness: float = 0.14) -> Sprite2D:
+	if not _ok(parent, true):
+		return null
+	var s := Sprite2D.new()
+	s.texture = tex("circle")
+	s.material = AttackStyle.ring_material(dark, thickness)
+	s.modulate = Color(col.r, col.g, col.b, 1.0)
+	s.z_index = Z
+	s.add_to_group(GROUP)
+	parent.add_child(s)
+	s.global_position = pos
+	var to := radius / 64.0                    # quad de 128 px: escala = raio/64
+	s.scale = Vector2(1.0, squash) * to * 0.2
+	var tw := s.create_tween().set_parallel(true)
+	tw.tween_property(s, "scale", Vector2(1.0, squash) * to, dur).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUART)
+	tw.tween_property(s, "modulate:a", 0.0, dur).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.chain().tween_callback(s.queue_free)
+	return s
+
+
+## Decalque breve no chão (elipse em perspectiva): luz que escorre (aditiva) ou
+## chamuscado escuro. Some em `dur`.
+static func ground_decal(parent: Node, pos: Vector2, col: Color, width: float, light: bool = true, dur: float = 0.6) -> void:
+	if not _ok(parent, false):
+		return
+	var s := Sprite2D.new()
+	s.texture = tex("light" if light else "scorch")
+	if light:
+		s.material = _additive()
+		s.modulate = Color(col.r, col.g, col.b, 0.75)
+	else:
+		s.modulate = Color(0.08, 0.05, 0.08, 0.55)
+	s.z_index = 2                              # no chão: atrás dos personagens
+	s.add_to_group(GROUP)
+	parent.add_child(s)
+	s.global_position = pos
+	var w := width / 128.0
+	s.scale = Vector2(w * 0.6, w * 0.16)
+	var tw := s.create_tween().set_parallel(true)
+	tw.tween_property(s, "scale", Vector2(w, w * 0.22), dur * 0.35).set_ease(Tween.EASE_OUT)
+	tw.tween_property(s, "modulate:a", 0.0, dur).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.chain().tween_callback(s.queue_free)
+
+
+## Faíscas DIRECIONAIS (R15): saem para trás do golpe (contra `dirx`) e para cima.
+static func _spray(parent: Node, pos: Vector2, col: Color, n: int, dirx: float, texture: String = "spark", speed: float = 1.0) -> CPUParticles2D:
+	var p := _burst(parent, pos, texture, n, 0.42)
+	p.direction = Vector2(-dirx, -0.55).normalized()
+	p.spread = 62.0
+	p.gravity = Vector2(0, 480.0)
+	p.initial_velocity_min = 110.0 * speed
+	p.initial_velocity_max = 270.0 * speed
+	p.scale_amount_min = 0.04
+	p.scale_amount_max = 0.1
 	p.scale_amount_curve = _shrink_curve()
-	p.color_ramp = _ramp(Color(col.r, col.g, col.b, 0.7), Color(col.r, col.g, col.b, 0.0))
-	p.z_index = -1
-	proj.add_child(p)
+	p.color_ramp = _ramp(Color(1, 1, 1, 1), Color(col.r, col.g, col.b, 0.0))
+	p.color = col.lightened(0.3)
+	p.angle_min = 0.0
+	p.angle_max = 360.0
 	return p
+
+
+## IMPACTO PREMIUM de ataque à distância (VFX7): clarão (no orçamento de
+## flashes), anel de choque, faíscas direcionais, decalque no chão e o tempero
+## da família. `style` = AttackStyle.STYLES[*].impact.
+static func attack_impact(parent: Node, pos: Vector2, col: Color, style: String = "light", dirx: float = 1.0, ground_y: float = NAN) -> void:
+	if not _ok(parent, true):
+		return
+	_claim(pos)
+	if is_nan(ground_y):
+		ground_y = pos.y + 26.0
+	var fb := flash_budget()
+	var ground := Vector2(pos.x, ground_y)
+	match style:
+		"explosion":
+			# Esfera Solar: o sol estoura. (O AoeNova do projétil desenha a onda.)
+			_flash_sprite(parent, pos, "light", Color(1, 1, 1, 0.95 * fb), 0.2, 0.95, 0.16)
+			_flash_sprite(parent, pos, "flare", Color(col.r, col.g, col.b, 0.9 * fb), 0.2, 0.8, 0.28, true, 2.5)
+			shock_ring(parent, pos, 34.0, Color(1, 0.97, 0.85), 0.2, false, 1.0, 0.1)
+			var f := _burst(parent, pos, "flame", 16, 0.55)
+			f.spread = 180.0
+			f.gravity = Vector2(0, -160.0)
+			f.initial_velocity_min = 60.0
+			f.initial_velocity_max = 190.0
+			f.damping_min = 120.0
+			f.damping_max = 220.0
+			f.scale_amount_min = 0.12
+			f.scale_amount_max = 0.26
+			f.scale_amount_curve = _scale_curve(0.12)
+			f.angle_min = 0.0
+			f.angle_max = 360.0
+			f.color_ramp = _ramp(Color(1, 0.95, 0.8, 1), Color(col.r, col.g * 0.6, col.b * 0.3, 0.0))
+			_spray(parent, pos, col, 14, dirx, "spark", 1.3)
+			var k := _burst(parent, pos, "smoke2", 6, 0.9, false)
+			k.direction = Vector2(0, -1)
+			k.spread = 90.0
+			k.gravity = Vector2(0, -50.0)
+			k.initial_velocity_min = 20.0
+			k.initial_velocity_max = 60.0
+			k.scale_amount_min = 0.14
+			k.scale_amount_max = 0.26
+			k.scale_amount_curve = _grow_curve()
+			k.color_ramp = _ramp(Color(0.3, 0.22, 0.2, 0.5))
+			ground_decal(parent, ground, col, 120.0, true, 0.7)
+			ground_decal(parent, ground, col, 80.0, false, 1.1)
+		"king":
+			# Orbe do Rei: clarão dourado com coroa de raios + estrelas.
+			_flash_sprite(parent, pos, "light", Color(1, 0.97, 0.85, 0.9 * fb), 0.2, 0.85, 0.14)
+			_flash_sprite(parent, pos, "flare", Color(col.r, col.g, col.b, 0.85 * fb), 0.3, 0.9, 0.3, true, -2.0)
+			shock_ring(parent, pos, 46.0, col, 0.3, false, 1.0, 0.12)
+			shock_ring(parent, pos, 30.0, Color(0.5, 0.15, 0.1), 0.36, true, 1.0, 0.2)
+			_spray(parent, pos, col, 12, dirx, "star", 1.1)
+			ground_decal(parent, ground, col, 110.0, true, 0.6)
+			ground_decal(parent, ground, col, 70.0, false, 1.0)
+		"chain":
+			# Corrente: estalo metálico — estrela fria + elos de luz voando.
+			_flash_sprite(parent, pos, "star", Color(1, 1, 1, 0.95 * fb), 0.1, 0.42, 0.14, true, 4.0)
+			shock_ring(parent, pos, 22.0, col.lightened(0.3), 0.22, false, 1.0, 0.1)
+			_spray(parent, pos, Color(0.9, 0.92, 1.0), 12, dirx, "spark2", 1.2)
+			var l := _burst(parent, pos, "trace", 5, 0.5)
+			l.spread = 180.0
+			l.gravity = Vector2(0, 420.0)
+			l.initial_velocity_min = 80.0
+			l.initial_velocity_max = 170.0
+			l.scale_amount_min = 0.05
+			l.scale_amount_max = 0.08
+			l.angular_velocity_min = -500.0
+			l.angular_velocity_max = 500.0
+			l.color = col.lightened(0.3)
+			ground_decal(parent, ground, col, 50.0, true, 0.4)
+		"dark":
+			# Luz corrompida: espinho de luz na cor do Arconte + borrifo escuro.
+			_flash_sprite(parent, pos, "star", Color(col.r, col.g, col.b, 0.95 * fb), 0.12, 0.5, 0.16, true, -3.0)
+			_flash_sprite(parent, pos, "light", Color(1, 1, 1, 0.6 * fb), 0.1, 0.4, 0.1)
+			shock_ring(parent, pos, 26.0, col, 0.24, true, 1.0, 0.16)
+			_spray(parent, pos, col, 10, dirx, "spark", 1.0)
+			var k2 := _burst(parent, pos, "smoke2", 5, 0.55, false)
+			k2.spread = 180.0
+			k2.gravity = Vector2(0, -30.0)
+			k2.initial_velocity_min = 20.0
+			k2.initial_velocity_max = 60.0
+			k2.scale_amount_min = 0.08
+			k2.scale_amount_max = 0.15
+			k2.scale_amount_curve = _grow_curve()
+			k2.color_ramp = _ramp(Color(0.12, 0.04, 0.14, 0.7))
+			ground_decal(parent, ground, col, 60.0, false, 0.8)
+		"sleep":
+			# Sono: bolhas estourando e uma névoa que se desfaz (sem clarão forte).
+			_flash_sprite(parent, pos, "glow", Color(col.r, col.g, col.b, 0.7), 0.2, 0.6, 0.3)
+			shock_ring(parent, pos, 28.0, col, 0.4, false, 1.0, 0.22)
+			var b := _burst(parent, pos, "circle", 12, 0.7)
+			b.spread = 180.0
+			b.gravity = Vector2(0, -70.0)
+			b.initial_velocity_min = 30.0
+			b.initial_velocity_max = 90.0
+			b.scale_amount_min = 0.03
+			b.scale_amount_max = 0.08
+			b.scale_amount_curve = _scale_curve(0.3)
+			b.color = col.lightened(0.3)
+			var m := _burst(parent, pos, "smoke2", 5, 0.9)
+			m.spread = 180.0
+			m.initial_velocity_min = 10.0
+			m.initial_velocity_max = 40.0
+			m.scale_amount_min = 0.12
+			m.scale_amount_max = 0.22
+			m.scale_amount_curve = _grow_curve()
+			m.color_ramp = _ramp(Color(col.r, col.g, col.b, 0.35))
+		"wave":
+			# Onda rasteira: estoura no chão — poeira, terra e faíscas subindo.
+			_flash_sprite(parent, pos, "light", Color(col.r, col.g, col.b, 0.8 * fb), 0.15, 0.5, 0.14)
+			shock_ring(parent, Vector2(pos.x, ground_y - 2.0), 40.0, col, 0.3, true, 0.32, 0.16)
+			var u := _spray(parent, pos, col, 10, dirx, "spark", 0.9)
+			u.direction = Vector2(0, -1)
+			var d := _burst(parent, pos, "smoke", 8, 0.7, false)
+			d.direction = Vector2(0, -1)
+			d.spread = 70.0
+			d.initial_velocity_min = 30.0
+			d.initial_velocity_max = 90.0
+			d.scale_amount_min = 0.1
+			d.scale_amount_max = 0.2
+			d.scale_amount_curve = _grow_curve()
+			d.color_ramp = _ramp(Color(0.32, 0.27, 0.27, 0.6))
+			ground_decal(parent, Vector2(pos.x, ground_y), col, 70.0, false, 0.9)
+		_:
+			# Luz da Sophia: estrela branca curta, anel e faíscas na cor do Anel.
+			_flash_sprite(parent, pos, "light", Color(1, 1, 1, 0.9 * fb), 0.12, 0.5, 0.12)
+			_flash_sprite(parent, pos, "glow", Color(col.r, col.g, col.b, 0.7), 0.15, 0.45, 0.22)
+			shock_ring(parent, pos, 22.0, col.lightened(0.2), 0.22, false, 1.0, 0.12)
+			_spray(parent, pos, col, 10, dirx, "spark", 1.0)
+			ground_decal(parent, ground, col, 56.0, true, 0.45)
+
+
+## A vida do projétil acabou no ar: o núcleo implode, motes se desfazem.
+static func attack_fizzle(parent: Node, pos: Vector2, col: Color, kind: String = "light") -> void:
+	if not _ok(parent, false):
+		return
+	var dark := not AttackStyle.is_light(kind) and kind != "king"
+	_flash_sprite(parent, pos, "glow", Color(col.r, col.g, col.b, 0.8), 0.35, 0.02, 0.22)
+	shock_ring(parent, pos, 14.0, col, 0.2, dark, 1.0, 0.18)
+	var p := _burst(parent, pos, "magic2" if not dark else "spark2", 6, 0.5)
+	p.spread = 180.0
+	p.gravity = Vector2(0, -40.0)
+	p.initial_velocity_min = 15.0
+	p.initial_velocity_max = 50.0
+	p.scale_amount_min = 0.04
+	p.scale_amount_max = 0.08
+	p.scale_amount_curve = _shrink_curve()
+	p.color = col.lightened(0.2)
+
+
+## Aura de magia que segue `host` por `dur` s (ex.: Reflexo do Espelho):
+## cacos de luz orbitando + brilho pulsando. Devolve o nó.
+static func aura(host: Node2D, col: Color, dur: float, offset: Vector2 = Vector2(0, -22)) -> Node2D:
+	if host == null or not is_instance_valid(host) or not host.is_inside_tree():
+		return null
+	var old := host.get_node_or_null("VfxAura")
+	if old != null:
+		old.queue_free()
+	var root := Node2D.new()
+	root.name = "VfxAura"
+	root.position = offset
+	root.z_index = 2
+	host.add_child(root)
+	var g := Sprite2D.new()
+	g.texture = tex("glow")
+	g.material = _additive()
+	g.modulate = Color(col.r, col.g, col.b, 0.35)
+	g.scale = Vector2(0.45, 0.7)
+	root.add_child(g)
+	var tw := g.create_tween().set_loops()
+	tw.tween_property(g, "modulate:a", 0.15, 0.35)
+	tw.tween_property(g, "modulate:a", 0.4, 0.35)
+	var p := CPUParticles2D.new()
+	p.texture = tex("star")
+	p.material = _additive()
+	p.amount = 10
+	p.lifetime = 0.9
+	p.local_coords = true
+	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE_SURFACE
+	p.emission_sphere_radius = 24.0
+	p.gravity = Vector2.ZERO
+	p.tangential_accel_min = 120.0
+	p.tangential_accel_max = 160.0
+	p.radial_accel_min = -20.0
+	p.radial_accel_max = -10.0
+	p.scale_amount_min = 0.03
+	p.scale_amount_max = 0.06
+	p.scale_amount_curve = _scale_curve(0.3)
+	p.angular_velocity_min = -300.0
+	p.angular_velocity_max = 300.0
+	p.color = col
+	root.add_child(p)
+	p.emitting = true
+	host.get_tree().create_timer(dur, false).timeout.connect(root.queue_free)
+	return root
 
 
 ## Poeira pequena (pedaço quicando, pouso). Pulada quando o teto está cheio.
@@ -872,9 +1321,25 @@ static func prewarm(level: Node) -> void:
 	tell_glint(stage, at, false)
 	tell_glint(stage, at, true)
 	portal(stage, at, Color(0.8, 0.9, 1.0), 0.1)
-	var trail_host := Node2D.new()
-	stage.add_child(trail_host)
-	projectile_trail(trail_host, col)
+	# VFX7: as famílias de projétil (núcleo/rastro/anel = shaders próprios), os
+	# impactos, a dissipação, a antecipação e a aura — compilam agora.
+	for k in AttackStyle.STYLES:
+		var h := Node2D.new()
+		stage.add_child(h)
+		ProjectileFX.attach(h, k, col)
+	for imp in ["light", "explosion", "chain", "dark", "king", "sleep", "wave"]:
+		attack_impact(stage, at, col, imp, 1.0, at.y + 20.0)
+	attack_fizzle(stage, at, col, "dark")
+	shock_ring(stage, at, 10.0, col, 0.1, true)
+	ground_decal(stage, at, col, 20.0, false, 0.1)
+	for cs in ["light", "dark", "king"]:
+		var ch := ChargeFX.new()
+		ch.silent = true
+		ch.style = cs
+		ch.duration = 0.1
+		stage.add_child(ch)
+	aura(stage, col, 0.1)
+	_flash_log.clear()                 # o pré-aquecimento não gasta o orçamento de flashes
 	ImpactBurst.spawn(stage, at, col)
 	DamageNumber.spawn(stage, at, 1234567890, col, true)   # todos os glifos 0–9 da fonte (ignora a opção)
 	# 3) Some depois de PREWARM_FRAMES quadros DESENHADOS (compila no desenho).

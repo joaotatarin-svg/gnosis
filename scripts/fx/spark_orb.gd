@@ -23,6 +23,7 @@ var _delay: float = 0.0          # atraso da atração (espaça as chegadas)
 var color := Color(1.0, 0.9, 0.5)
 var _group: _Burst                # fila de chegada compartilhada pelo burst
 var delivered: bool = false       # chegou na Sophia (as sondas leem)
+var _hist: Array[Vector2] = []    # VFX7: rastro curto (posições anteriores)
 
 
 ## Fila de chegadas de um burst: nenhum orbe "entrega" antes de ARRIVAL_STEP
@@ -49,8 +50,15 @@ static func burst(parent: Node, pos: Vector2, n: int) -> void:
 		o.z_index = 40
 
 
+func _ready() -> void:
+	material = VfxLibrary._additive()   # VFX7: a faísca é LUZ (soma)
+
+
 func _process(delta: float) -> void:
 	_time += delta
+	_hist.push_front(global_position)
+	if _hist.size() > 7:
+		_hist.pop_back()
 	var player := get_tree().get_first_node_in_group("player")
 	if player != null and is_instance_valid(player):
 		# primeiro espalha, depois é "sugada" pelo herói com força crescente
@@ -99,7 +107,12 @@ func _arrive() -> void:
 
 
 func _draw() -> void:
+	# VFX7: cauda de luz afinando + halo + miolo branco
+	for i in range(_hist.size() - 1, 0, -1):
+		var k := 1.0 - float(i) / 7.0
+		draw_circle(to_local(_hist[i]), 2.6 * k, Color(color.r, color.g, color.b, 0.45 * k))
 	var pulse := 1.0 + sin(_time * 20.0) * 0.2
-	draw_circle(Vector2.ZERO, 5.0 * pulse, Color(color.r, color.g, color.b, 0.25))
+	draw_circle(Vector2.ZERO, 7.0 * pulse, Color(color.r, color.g, color.b, 0.18))
+	draw_circle(Vector2.ZERO, 4.0 * pulse, Color(color.r, color.g, color.b, 0.35))
 	draw_circle(Vector2.ZERO, 2.6, color)
-	draw_circle(Vector2.ZERO, 1.1, Color(1, 1, 1, 0.95))
+	draw_circle(Vector2.ZERO, 1.3, Color(1, 1, 1, 1))
