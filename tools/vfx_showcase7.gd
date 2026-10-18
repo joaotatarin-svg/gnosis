@@ -215,7 +215,8 @@ func _fire(a: String) -> void:
 			g.lifetime = 1.4
 			_launch(g, DUMMY_POS + Vector2(-20, -20))
 			var w := _proj(-1, 10, Color(0.8, 0.85, 1.0), "player", 220.0)
-			w.lifetime = 1.8
+			w.lifetime = 2.2
+			w.look = "spike"                    # contrato: onda rasteira = forma "spike"
 			_launch(w, DUMMY_POS + Vector2(-30, 12))
 
 
@@ -237,9 +238,13 @@ func _launch(p: Projectile, at: Vector2) -> void:
 
 ## Foto de catálogo: as 8 famílias voando em fileira (zoom 2,4 da câmera:
 ## cada px da base vira ~5 px na foto), para inspecionar núcleo/rastro/coroa.
-const FAMILIES := {"light": Color(1.0, 0.95, 0.7), "solar": Color(1.0, 0.85, 0.5), "chain_light": Color(0.85, 0.85, 0.95),
-	"dark": Color(1.0, 0.55, 0.3), "king": Color(1.0, 0.85, 0.5), "chain": Color(0.78, 0.78, 0.85),
-	"sleep": Color(0.75, 0.8, 1.0), "wave": Color(0.62, 1.0, 0.5)}
+const FAMILIES := [
+	["light", "", Color(1.0, 0.95, 0.7)], ["solar", "", Color(1.0, 0.85, 0.5)],
+	["chain_light", "", Color(0.85, 0.85, 0.95)], ["dark", "", Color(1.0, 0.55, 0.3)],
+	["king", "", Color(1.0, 0.85, 0.5)], ["chain", "", Color(0.78, 0.78, 0.85)],
+	["sleep", "", Color(0.75, 0.8, 1.0)], ["wave", "spike", Color(0.62, 1.0, 0.5)],
+	["", "bolt", Color(0.9, 0.4, 1.0)], ["", "wisp", Color(0.4, 0.9, 1.0)],
+	["", "seed", Color(0.7, 1.0, 0.4)], ["", "page", Color(1.0, 0.9, 0.75)]]
 
 
 func _fire_still() -> void:
@@ -252,11 +257,15 @@ func _fire_still() -> void:
 			c.zoom = Vector2(2.4, 2.4)
 			c.position = Vector2(330, 214)
 	var i := 0
-	for k in FAMILIES:
-		var p := _proj(1, 1, FAMILIES[k], "player", 150.0)
+	for f in FAMILIES:
+		var p := _proj(1, 1, f[2], "player", 150.0)
 		p.lifetime = 9.0
-		p.set_meta("vfx_kind", k)
-		_launch(p, Vector2(268, 156 + i * 16))
+		p.look = f[1]
+		if f[0] != "":
+			p.set_meta("vfx_kind", f[0])
+		var col_x := 268.0 if i < 8 else 330.0
+		var row := i if i < 8 else i - 8
+		_launch(p, Vector2(col_x, 156 + row * 16))
 		i += 1
 
 

@@ -38,6 +38,8 @@ var _last: Vector2 = Vector2.ZERO
 var _vel: Vector2 = Vector2.ZERO
 var _ground_y: float = 0.0
 var _seed: float = 0.0
+var look: String = ""               # forma do Projectile (bolt/wisp/seed/page/spike…)
+var _explicit: bool = false         # família dada por quem criou (não re-deduz)
 
 
 ## Pendura (ou reaproveita) o visual premium num projétil. `kind` "" = deduz.
@@ -59,7 +61,16 @@ static func attach(proj: Node2D, p_kind: String = "", col = null) -> ProjectileF
 		fx.color = col
 	elif proj.get("color") is Color:
 		fx.color = proj.get("color")
-	fx.set_kind(p_kind if p_kind != "" else AttackStyle.kind_for(proj))
+	# `p_kind` pode ser uma FAMÍLIA ("king", "chain"…) ou uma FORMA do
+	# Projectile ("orb", "bolt", "wisp", "seed", "page", "spike")
+	var fam := p_kind
+	if AttackStyle.LOOKS.has(p_kind):
+		fx.look = p_kind
+		fam = ""
+	elif proj.get("look") is String:
+		fx.look = String(proj.get("look"))
+	fx._explicit = AttackStyle.STYLES.has(fam)
+	fx.set_kind(fam if fx._explicit else AttackStyle.kind_for(proj))
 	return fx
 
 
@@ -83,7 +94,7 @@ func _exit_tree() -> void:
 
 func set_kind(k: String) -> void:
 	kind = k
-	st = AttackStyle.get_style(k)
+	st = AttackStyle.get_style(k, look)
 	_build()
 
 
@@ -183,6 +194,15 @@ func _process(delta: float) -> void:
 	var pos := host.global_position
 	if not _started:
 		_started = true
+		# quem criou pode ter mudado cor/forma/status DEPOIS do add_child: deduz de novo
+		if not _explicit:
+			if host.get("look") is String and String(host.get("look")) != "":
+				look = String(host.get("look"))
+			if host.get("color") is Color:
+				color = host.get("color")
+			var k2 := AttackStyle.kind_for(host)
+			if k2 != kind or AttackStyle.get_style(k2, look) != st:
+				set_kind(k2)
 		_last = pos
 		_ground_y = float(host.get_meta("ground_y")) if host.has_meta("ground_y") else pos.y + float(st.ground)
 		_muzzle(pos)
@@ -191,6 +211,7 @@ func _process(delta: float) -> void:
 		_vel = _vel.lerp((pos - _last) / delta, 0.5)
 	_last = pos
 	var dirx: float = signf(_vel.x) if absf(_vel.x) > 1.0 else float(host.get("direction") if host.get("direction") != null else 1)
+	var fly: Vector2 = _vel.normalized() if _vel.length() > 1.0 else Vector2(dirx, 0.0)
 	# rastro: cabeça no projétil; pontos novos a cada ~3 px
 	if not _done:
 		# ponto 0 = cabeça (segue o projétil todo quadro); um ponto novo fica
@@ -203,14 +224,20 @@ func _process(delta: float) -> void:
 				_trail.add_point(pos, 0)
 				while _trail.get_point_count() > int(st.trail_n):
 					_trail.remove_point(_trail.get_point_count() - 1)
-		if kind == "sleep" and _trail.get_point_count() > 1:
-			# fita ondulante (sono): a cabeça sobe e desce
-			_trail.set_point_position(0, pos + Vector2(0, sin(_t * 9.0 + _seed) * 3.0))
-		_parts.direction = Vector2(-dirx, -0.3 if not st.part_up else -1.0)
+		if (kind == "sleep" or st.get("wobble", false)) and _trail.get_point_count() > 1:
+			# fita ondulante (sono, chama): a cabeça oscila de lado
+			_trail.set_point_position(0, pos + fly.orthogonal() * sin(_t * 9.0 + _seed) * 3.0)
+		_parts.direction = Vector2(0, -1) if st.part_up else (-fly + Vector2(0, -0.3)).normalized()
 	# vida: pulso do núcleo e do halo, raios girando
 	var pulse := 1.0 + sin(_t * 16.0 + _seed) * 0.08
 	_core.scale = Vector2(st.squash.x, st.squash.y) * st.core * pulse
-	_core.flip_h = dirx < 0.0
+	if st.get("orient", false):
+		_core.rotation = fly.angle()           # seta: aponta para onde voa
+		_halo.rotation = _core.rotation
+	elif st.has("spin"):
+		_core.rotation += float(st.spin) * delta
+	else:
+		_core.flip_h = dirx < 0.0
 	_halo.scale = Vector2(st.squash.x, st.squash.y) * st.halo * (1.0 + sin(_t * 9.0 + _seed) * 0.12)
 	if _rays != null:
 		_rays.rotation += float(st.rays_spin) * delta

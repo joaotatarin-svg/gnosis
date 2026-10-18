@@ -690,8 +690,12 @@ static func projectile_trail(proj: Node2D, col: Color) -> Node2D:
 ## API dos donos de ataque (VFX7): visual premium de projétil por família.
 ## kind: "light" · "solar" · "chain_light" (Sophia) · "dark" · "king" · "chain"
 ## · "sleep" · "wave" (Arcontes/criaturas) · "" = deduz. Idempotente.
-static func projectile_look(proj: Node2D, kind: String = "", col = null) -> ProjectileFX:
-	return ProjectileFX.attach(proj, kind, col)
+## Devolve true se o visual premium foi pendurado (o projectile.gd compara o
+## retorno com `false`, por isso bool — quem quiser o NÓ usa ProjectileFX.attach).
+## `kind` aceita a FORMA do Projectile ("orb", "bolt", "wisp", "seed", "page",
+## "spike") ou a FAMÍLIA; a família vem de AttackStyle.kind_for quando não dada.
+static func projectile_look(proj: Node2D, kind: String = "", col = null) -> bool:
+	return ProjectileFX.attach(proj, kind, col) != null
 
 
 ## API (VFX7): ANTECIPAÇÃO — a luz se junta em `host` + `offset` por `duration`

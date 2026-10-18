@@ -81,8 +81,34 @@ const STYLES := {
 }
 
 
-static func get_style(kind: String) -> Dictionary:
-	return STYLES.get(kind, STYLES["light"])
+## FORMAS (campo `look` do Projectile, onda 6 — inimigos6/chefes6): mudam a
+## SILHUETA por cima da família (a família continua dizendo "luz da Sophia" ×
+## "luz corrompida"). "kind" força a família; "orient" = aponta para onde voa;
+## "spin" = gira (rad/s); "wobble" = a fita ondula (chama/sono).
+const LOOKS := {
+	"orb": {},
+	"bolt": {"core": 0.13, "squash": Vector2(2.3, 0.55), "orient": true, "halo": 0.2,
+		"trail_w": 6.0, "trail_n": 10, "part_n": 5, "rays": ""},
+	"wisp": {"core": 0.17, "squash": Vector2(1.0, 1.3), "swirl": 3.0, "wobble": true, "rays": "",
+		"trail_w": 11.0, "trail_n": 16, "trail_break": 0.85, "part": "flame", "part_up": true, "part_n": 9},
+	"seed": {"core": 0.13, "squash": Vector2(1.5, 0.8), "spin": 9.0, "rays": "",
+		"trail_w": 5.0, "trail_n": 8, "part": "circle", "part_n": 5},
+	"page": {"core": 0.14, "squash": Vector2(0.75, 1.05), "spin": 5.0, "rays": "symbol", "rays_s": 0.15,
+		"rays_spin": 3.0, "part": "magic2", "part_n": 6},
+	"spike": {"kind": "wave"},
+	"king": {"kind": "king"},
+}
+
+
+static func get_style(kind: String, look: String = "") -> Dictionary:
+	var base: Dictionary = STYLES.get(kind, STYLES["light"])
+	if look == "" or not LOOKS.has(look) or (LOOKS[look] as Dictionary).is_empty():
+		return base
+	var st := base.duplicate()
+	for k in LOOKS[look]:
+		if k != "kind":
+			st[k] = LOOKS[look][k]
+	return st
 
 
 ## A família do ataque a partir das propriedades do projétil (sem mexer em
@@ -104,15 +130,18 @@ static func kind_for(proj: Node) -> String:
 		if root_t > 0.0:
 			return "chain_light"
 		return "light"
+	var look: String = String(proj.get("look")) if proj.get("look") != null else ""
+	if LOOKS.has(look) and (LOOKS[look] as Dictionary).has("kind"):
+		return String(LOOKS[look]["kind"])
 	if root_t > 0.0:
 		return "chain"
 	if slow_t > 0.0:
 		return "sleep"
-	# o orbe do Rei/Demiurgo: dourado e de vida longa (enemy.gd, kit "rei")
-	if life >= 2.3 and _near(col, Color(1.0, 0.85, 0.5)):
+	# o orbe do Rei/Demiurgo: a luz DOURADA do Rei (boss_rei.gd LIGHT, enemy.gd kit "rei")
+	if _near(col, Color(1.0, 0.85, 0.5)):
 		return "king"
-	# onda rasteira (enemy.gd `_ground_wave`: vida 1,8 s)
-	if absf(life - 1.8) < 0.01:
+	# onda rasteira antiga (enemy.gd `_ground_wave`: vida 1,8 s, sem forma)
+	if look == "" and absf(life - 1.8) < 0.01:
 		return "wave"
 	return "dark"
 
