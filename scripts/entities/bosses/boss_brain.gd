@@ -311,7 +311,7 @@ func set_phase(n: int) -> void:
 	_self_stagger = true
 	e.attack_timer = PHASE_ROAR
 	Audio.set_music_pitch(1.0 + 0.035 * float(n - 1), 1.2)
-	_on_phase(n)
+	_on_phase.call_deferred(n)   # fora do sinal de física (plataformas, nós novos)
 
 
 func passive(delta: float) -> void:

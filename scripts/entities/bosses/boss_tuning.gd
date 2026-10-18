@@ -11,14 +11,14 @@ class_name BossTuning
 const TARGET_HITS := {
 	"rei": 36,                 # tutorial: ~1:15 de luta
 	"arconte_sono": 28,
-	"arconte_fome": 34,
-	"arconte_corrente": 32,
+	"arconte_fome": 40,
+	"arconte_corrente": 38,
 	"arconte_silencio": 34,
-	"arconte_espelho": 36,
+	"arconte_espelho": 42,
 	"arconte_praga": 38,
-	"arconte_coroa": 40,
-	"rei_final": 30,           # batalha dupla: cada forma (e elas se refazem)
-	"colosso": 36,
+	"arconte_coroa": 48,
+	"rei_final": 34,           # batalha dupla: cada forma (e elas se refazem)
+	"colosso": 42,
 }
 
 ## Nível de arma ESPERADO ao chegar em cada chefe (economia da Onda 6 — o

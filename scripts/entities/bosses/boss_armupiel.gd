@@ -17,9 +17,9 @@ var _court_cd: float = 0.0
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.6
+	dmg_scale = 0.5
 	keep_dist = Vector2(40.0, 100.0)
-	gap_by_phase = [0.95, 0.8, 0.7]
+	gap_by_phase = [0.8, 0.7, 0.6]
 	escape_hits = 4
 
 
