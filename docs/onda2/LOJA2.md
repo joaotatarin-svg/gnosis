@@ -53,3 +53,58 @@ Só o título nas cápsulas (sem frases, notas, "em breve").
 - A key art tem a mesma composição em todas as peças — é a prática da Steam, mas não há variedade.
 - Não regerei as capturas (screenshot_*), nem 1x antigos (460×215 etc.): a Steam hoje pede os 2x.
 - Não testei upload no Steamworks.
+
+---
+
+# v3 — retomada (cápsulas com a Sophia grande e inteira + hero panorâmico)
+
+**Prancha: `assets/store/board3.png`** (2600×5457). Por peça: v3 ouro | v3 marfim | v2 marfim | v1 anterior (A).
+Embaixo: o hero (v3, v2, v1), as emendas do panorama em 100% (recortes 1:1), logo, fundo e ícones (iguais aos da v2)
+e o teste no tamanho REAL da vitrine (231×87, 292×136, 308×176, 150×225).
+
+Regerar: `python tools/store/build_store3.py` (~1 min; determinístico, MD5 iguais em 2 rodadas).
+
+## Fontes novas (copiadas de `_gpt/out` para `artes/gpt/steam/`)
+- `keyart_capsule_b.png` (aprovada): Sophia de corpo inteiro à direita, terço esquerdo escuro. Base de TODAS as cápsulas v3.
+- `keyart_pan_left_a.png` / `keyart_pan_right_a.png`: laterais do panorama do hero.
+- `*_x4.jpg` das três: Real-ESRGAN `realesrgan-x4plus` (6144×4096). O script trabalha em 3072×2048.
+
+## Peças v3 (`assets/store/v3/`)
+| Peça | Arquivos |
+|---|---|
+| Main 1232×706 | `capsule_main_1232x706_{ouro,marfim}.png` |
+| Header 920×430 | `capsule_header_920x430_{ouro,marfim}.png` |
+| Small 462×174 | `capsule_small_462x174_{ouro,marfim}.png` |
+| Vertical 748×896 | `capsule_vertical_748x896_{ouro,marfim}.png` |
+| Library 600×900 | `library_capsule_600x900_{ouro,marfim}.png` |
+| Hero 3840×1240 | `hero_3840x1240.png` (sem texto/logo) |
+| (prova, não subir) | `_seam_left.png`, `_seam_right.png` |
+Logo 1280×720, page background e ícone 184: os da v2 (`assets/store/v2/`).
+
+Sophia aparece INTEIRA (cabeça às botas) em todas as cápsulas. Para caber no aspecto, o céu escuro/nuvens da
+esquerda (header, small) e o céu do topo (vertical, library) foram ESTENDIDOS por espelho borrado e escurecido —
+só em área de céu/nuvem; o título fica nessa área.
+
+## Hero: como foi montado
+Panorama L | wide_a | R com 300 px de sobreposição em cada emenda, correção de cor/luz da lateral (média e desvio
+por canal casados com a faixa do centro), costura de custo mínimo (programação dinâmica sobre a diferença das
+imagens) e mistura em 2 bandas: cor/luz com degradê largo (~220 px), detalhe com degradê curto (~12 px) — assim
+não há "fantasmas" (o degradê simples de 200 px deixava torres e anéis transparentes duplicados). Na emenda direita
+a costura é proibida de passar sobre o 7º anel do centro (na 1ª tentativa ele sumia e sobravam 6 anéis).
+Resultado: nos recortes 1:1 as emendas não se veem; decidi USAR o panorama (não cortar as laterais).
+
+## Recomendação
+- Cápsulas: **v3** em todas (a Sophia é a protagonista e agora aparece grande, de rosto visível; a v1 a mostrava
+  como recorte voando e a v2 de costas e pequena).
+- Título: **marfim** nas cápsulas pequenas (small/header) — é o mais legível em 231×87; **ouro** fica mais bonito
+  em main/vertical/library. Se quiser uma regra só: marfim em tudo.
+- Hero: **v3 panorama**.
+
+## Limites (honesto)
+- Small 462×174: a Sophia inteira num formato 2,65:1 fica pequena (~80% da altura) e o Rei aparece cortado; o título domina.
+- As laterais do panorama se parecem entre si (a direita quase espelha a esquerda: lua e torres dos dois lados).
+  No hero inteiro isso lê como simetria; olhando com atenção, nota-se.
+- No hero a Sophia está a ~40% da largura, embaixo; se o logo da biblioteca for posto grande embaixo à esquerda,
+  pode encostar nela (o Steamworks deixa posicionar o logo — sugiro centro-esquerda, acima dela).
+- Extensões de céu nas cápsulas vertical/library: de perto, o topo é espelho borrado (só céu escuro).
+- Não testei upload no Steamworks.
