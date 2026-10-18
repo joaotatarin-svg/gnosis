@@ -91,3 +91,16 @@ e folhas `..._sheet.png`.
 - Hurtbox dos chefes não foi refeita por quadro (a sonda de hitbox ficou com combate6/inimigos6).
 - Projéteis ainda usam o `Projectile` padrão; quando sair a API do VFX7 (dir7/vfx7), trocar o visual em
   `BossBrain._fire` / `ground_wave` (um ponto só).
+
+## BILHETE PARA O SUCESSOR (pausa 18/10, retomada pós-integração ec64161)
+- Feito nesta retomada: merge de integracao/onda1 (ec64161); `BossTuning.expected_hit` agora usa
+  `SophiaTuning.move_damage` (o dano real ×0,65 +17 %/nível) — era por isso que a vida não acompanhava;
+  `enemy.stagger()` usa set_deferred; reflexo/cacos do Espelho com call_deferred (0 erros de monitoring);
+  Armupiel tinha ERRO DE PARSE (rodava sem cérebro nas rodadas r5/r6) — corrigido; corte vem 1× por fase,
+  Pretorianos com vida de ~6 golpes e meio dano; larvas da final a cada 9 s, máx. 2.
+- Sonda r6 (3 grupos em paralelo, `_caps/chefes6/r6?.txt`) e r7 (`r7?.txt`). Ainda FORA da meta (r7):
+  Armupiel 219 s / 10 quase-mortes (dano "outro" 371 = Pretorianos + dupla_b 204), Astaphaios 196 s / 5,
+  final 292 s / 14. Rei 80 s ok; Athoth 177 s; Harmas 127; Galila 122; Yabel 105; Belias 131 (r6).
+- PRÓXIMO PASSO: baixar dano do Armupiel (dmg_scale 0,5→0,4; dupla mais lenta), Pretorianos 1 por fase ou
+  vida 4 golpes; Astaphaios 34→28 golpes e dmg 0,5→0,42; final 22/26 → 18/20 e dmg 0,45→0,38; re-sondar
+  (3 instâncias), validate -Repeat 2, commit/push, relatório com tabela antes (bossprobe_ec64161.log) /depois.
