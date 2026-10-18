@@ -349,6 +349,10 @@ func setup_screen(level: Node2D, screen: int, rest_points: Array) -> void:
 	# Legenda de chegada: uma vez por run (com checkpoint a tela recarrega).
 	if Narrative.once("walk_a_%d" % screen):
 		_caption.say_lines(Narrative.walk_arrival(screen))
+	# Nó especial do mapa (santuário, Arena, segredo, perigo, escalada): uma fala
+	# curta que diz o que o lugar é (Onda 6, pedido do mapa6). Na fila, na calma.
+	if RunManager.has_method("node_kind") and Narrative.has_method("node_arrival") 			and Narrative.once("node_a_%d" % screen):
+		_caption.say_lines(Narrative.node_arrival(String(RunManager.call("node_kind", screen))))
 
 
 ## Onde a Estela fica: num descanso ENTRE zonas quando há (o jogador passa por

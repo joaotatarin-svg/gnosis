@@ -99,6 +99,11 @@ var _framed: bool = false                      # a cena já mexeu na câmera nes
 var _tall_seen: bool = false
 var _boxes: Array = []                         # caixas abertas (DialogueBox) que vigio
 var _vis_mode: int = -1                        # process_mode do Visual da Sophia (idle na conversa)
+# ENSINO NA HORA (Onda 6): o 1º APARO do run abre a janela do contra-ataque —
+# câmera lenta curta + prompt "contra-ataque: golpeie agora" (uma vez por run).
+const RIPOSTE_SLOW := 0.35
+const RIPOSTE_SLOW_TIME := 0.55
+var _riposte_taught: bool = false
 
 
 func _ready() -> void:
@@ -250,9 +255,11 @@ func _partner() -> Node2D:
 func _mid_shift(x: float) -> float:
 	_cam_take()
 	var mid := (player.global_position.x + x) * 0.5
-	var unshifted := _view_center().x
-	if "base_offset" in _cam:
-		unshifted -= Vector2(_cam.get("base_offset")).x - Vector2(_cam_saved.base_offset).x
+	# O alvo normal da câmera (corpo + enquadramento salvo + antecipação), e não
+	# onde ela ESTÁ: logo depois de um teleporte/corrida a câmera ainda vem
+	# atrasada e o meio sairia torto (Sophia fora do quadro).
+	var look = _cam.get("_look_ahead")
+	var unshifted := player.global_position.x + Vector2(_cam_saved.base_offset).x + (float(look) if look != null else 0.0)
 	return mid - unshifted
 
 
@@ -1149,6 +1156,41 @@ func _cam_release(dur: float) -> void:
 			_cam.process_mode = saved.process_mode)
 
 
+## O 1º aparo do run: o jogador acabou de aparar e a janela do contra-ataque
+## está aberta (`_riposte_t` do player do combate6) — ensina NA HORA, com a
+## câmera lenta dando tempo de apertar. Sem o campo (outro player), nada.
+func _tutor_riposte() -> void:
+	if _riposte_taught or player == null or not is_instance_valid(player) or get_tree().paused:
+		return
+	var rt = player.get("_riposte_t")
+	if not (rt is float) or float(rt) <= 0.0:
+		return
+	_riposte_taught = true
+	if not Narrative.once("dica_contra"):
+		return
+	Juice.slow_mo(RIPOSTE_SLOW, RIPOSTE_SLOW_TIME)
+	Staging.hint_now([{"keys": ["attack_light"], "text": Narrative.hint_riposte()}])
+
+
+## Dica de controle AGORA no HUD (fura a fila; a que estiver na tela cede):
+## `show_hint_now` se a UI tiver; senão a mesma manobra do level._tutor_hint.
+static func hint_now(segs: Array) -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	var hud := tree.get_first_node_in_group("hud") if tree != null else null
+	if hud == null:
+		return
+	if hud.has_method("show_hint_now"):
+		hud.call("show_hint_now", segs)
+	elif "hints" in hud:
+		var q: Array = hud.get("hints")
+		q.push_front(segs)
+		if "_hint" in hud and "_hint_gap" in hud:
+			hud.set("_hint", [])
+			hud.set("_hint_gap", 0.0)
+	elif hud.has_method("show_hint"):
+		hud.call("show_hint", segs)
+
+
 ## O HUD roda durante a cena do roubo (as gemas do HUD voam com a caixa aberta).
 func _hud_take() -> void:
 	if _hud == null or _hud_mode >= 0:
@@ -1216,6 +1258,7 @@ static func _ground() -> float:
 
 func _process(delta: float) -> void:
 	_orbit_t += delta
+	_tutor_riposte()
 	# A caixa cresceu para as escolhas (ou voltou): o quadro sobe mais um pouco.
 	if not _cam_saved.is_empty() and _box_open() and _box_tall() != _tall_seen:
 		_cam_to(_cur_k, _cur_shift, 0.35)
