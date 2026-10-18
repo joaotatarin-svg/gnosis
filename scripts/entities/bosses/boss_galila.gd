@@ -122,7 +122,7 @@ func _on_phase(n: int) -> void:
 
 
 func _pendulum(anchor: Vector2, ph: float, period: float) -> Node2D:
-	var p := Pendulum.new()
+	var p := GalilaPendulum.new()
 	p.anchor = anchor
 	p.length = 222.0           # a gaiola passa a ~28 px do chão (altura do corpo)
 	p.phase = ph
@@ -137,7 +137,7 @@ func _pendulum(anchor: Vector2, ph: float, period: float) -> Node2D:
 
 ## Gaiola-pêndulo: balança numa corrente presa no alto. Fere ao tocar (imparável,
 ## 1 vez por passagem). Aparece descendo (1,2 s) antes de ferir.
-class Pendulum extends Node2D:
+class GalilaPendulum extends Node2D:
 	var anchor := Vector2.ZERO
 	var length := 220.0
 	var amp := 0.95            # rad
