@@ -17,7 +17,7 @@ bestiary._build.ab02a5,Sonâmbulo,Sleepwalker,bestiario,,,scripts/autoload/besti
 bestiary._build.2b9c1a,Glutão,Glutton,bestiario,,,scripts/autoload/bestiary.gd:286,
 bestiary._build.07ed98,Carcereiro,Jailer,bestiario,,,scripts/autoload/bestiary.gd:289,
 bestiary._build.b15c1a,Bibliotecário Mudo,Mute Librarian,bestiario,,,scripts/autoload/bestiary.gd:292,
-bestiary._build.02158a,Reflexo,Reflection,bestiario,,,scripts/autoload/bestiary.gd:295 scripts/autoload/game_content.gd:96,
+bestiary._build.02158a,Reflexo,Reflection,bestiario,,,scripts/autoload/bestiary.gd:295 scripts/autoload/game_content.gd:114,
 bestiary._build.529dff,Portador de Esporos,Spore-Bearer,bestiario,,,scripts/autoload/bestiary.gd:298,
 bestiary._build.94d379,Pretoriano da Coroa,Crown Praetorian,bestiario,,,scripts/autoload/bestiary.gd:301,
 bestiary._build.9a8e21,Sombra da Sophia,Sophia's Shadow,bestiario,,,scripts/autoload/bestiary.gd:305,
@@ -37,37 +37,43 @@ bestiary._build.dcccff,Ombreiras do Éon,Aeon Pauldrons,nome,,24,scripts/autoloa
 bestiary._build.a4b38a,Elmo do Guardião,Guardian's Helm,nome,,24,scripts/autoload/bestiary.gd:368,
 bestiary._build.d4a343,Braceletes do Éon,Aeon Bracers,nome,,24,scripts/autoload/bestiary.gd:369,
 bestiary._build.4c2b27,Diadema da Fonte,Diadem of the Source,nome,,24,scripts/autoload/bestiary.gd:370,
-game_content._build_characters.b0fb6f,Sophia,Sophia,golpe_magia,,24,scripts/autoload/game_content.gd:57 scripts/autoload/narrative.gd:23 scripts/ui/character_atelier.gd:58 scripts/ui/character_atelier.gd:143 scripts/ui/gallery.gd:56,
-game_content._build_characters.2cc339,"Uma faísca sem memória, desperta nas cinzas do Kenoma. Luta com o cajado e com a luz que ainda lembra.","A spark without memory, woken in the ashes of the Kenoma. She fights with her staff and the light that still remembers.",golpe_magia,,,scripts/autoload/game_content.gd:58,
-game_content._build_characters.d3e408,Golpe de Cajado,Staff Strike,golpe_magia,,,scripts/autoload/game_content.gd:68,
-game_content._build_characters.827ea1,Cajado Duplo,Double Staff,golpe_magia,,,scripts/autoload/game_content.gd:69,
-game_content._build_characters.18f0fa,Sopro Arcano,Arcane Breath,golpe_magia,,,scripts/autoload/game_content.gd:70,
-game_content._build_characters.ebdc7f,Impacto Arcano,Arcane Impact,golpe_magia,,,scripts/autoload/game_content.gd:71,
-game_content._build_characters.18f304,Fenda Arcana,Arcane Rift,golpe_magia,,,scripts/autoload/game_content.gd:73,
-game_content._build_characters.848bd2,Ascensão Arcana,Arcane Ascent,golpe_magia,,,scripts/autoload/game_content.gd:74,
-game_content._build_characters.cf85da,Explosão Arcana,Arcane Burst,golpe_magia,,,scripts/autoload/game_content.gd:76,
-game_content._build_characters.8e2928,Corte Ascendente,Rising Cut,golpe_magia,,,scripts/autoload/game_content.gd:77,
-game_content._build_characters.fe5782,Giro Celeste,Celestial Spin,golpe_magia,,,scripts/autoload/game_content.gd:78,
-game_content._build_characters.d0f780,Queda Estelar,Starfall,golpe_magia,,,scripts/autoload/game_content.gd:79,
-game_content._build_characters.986674,Tempestade de Cajado,Staff Tempest,golpe_magia,,,scripts/autoload/game_content.gd:81,
-game_content._build_characters.602a01,Rasgo Duplo,Twin Rend,golpe_magia,,,scripts/autoload/game_content.gd:82,
-game_content._build_characters.328647,Fúria da Mônada,Fury of the Monad,golpe_magia,,,scripts/autoload/game_content.gd:84,
-game_content._build_characters.93c06b,Colapso Arcano,Arcane Collapse,golpe_magia,,,scripts/autoload/game_content.gd:85,
-game_content._build_characters.5b6f4c,Esfera Solar,Sun Orb,golpe_magia,,,scripts/autoload/game_content.gd:91 scripts/ui/input_rebind.gd:25 scripts/ui/moves_screen.gd:152,
-game_content._build_characters.27e4a0,Explode ao acertar.,Explodes on impact.,golpe_magia,,,scripts/autoload/game_content.gd:91,
-game_content._build_characters.7360e7,Névoa do Sono,Sleep Mist,golpe_magia,,,scripts/autoload/game_content.gd:92,
-game_content._build_characters.c6c58e,Nuvem que adormece: inimigos dentro ficam lentos.,A drowsy cloud: enemies inside it slow down.,golpe_magia,,,scripts/autoload/game_content.gd:92,
-game_content._build_characters.bb39dc,Boca Voraz,Ravenous Maw,golpe_magia,,,scripts/autoload/game_content.gd:93,
-game_content._build_characters.b72ec1,Suga os inimigos para perto e morde.,Sucks enemies in close and bites.,golpe_magia,,,scripts/autoload/game_content.gd:93,
-game_content._build_characters.dd6df2,Corrente da Lei,Chain of the Law,golpe_magia,,,scripts/autoload/game_content.gd:94,
-game_content._build_characters.f4e9d0,Corrente que prende o alvo no lugar.,A chain that pins the target in place.,golpe_magia,,,scripts/autoload/game_content.gd:94,
-game_content._build_characters.cfbb2d,Grito Mudo,Mute Scream,golpe_magia,,,scripts/autoload/game_content.gd:95,
-game_content._build_characters.febc50,Cala todo golpe em preparo ao redor (atordoa).,Silences all nearby wind-ups (stuns).,golpe_magia,,,scripts/autoload/game_content.gd:95,
-game_content._build_characters.c48f73,"Por 5 s, todo golpe recebido volta para quem o deu.","For 5 s, every hit you take returns to whoever dealt it.",golpe_magia,,,scripts/autoload/game_content.gd:96,
-game_content._build_characters.9922e5,Flor Podre,Rotten Bloom,golpe_magia,,,scripts/autoload/game_content.gd:97,
-game_content._build_characters.36846d,Planta um canteiro de veneno que fere quem pisa.,Plants a poison patch that hurts whoever steps in.,golpe_magia,,,scripts/autoload/game_content.gd:97,
-game_content._build_characters.64af3e,Coroa Partida,Broken Crown,golpe_magia,,,scripts/autoload/game_content.gd:98,
-game_content._build_characters.ac2791,A coroa do Arconte se parte em luz: dano enorme em área.,The Archon's crown shatters into light: huge area damage.,golpe_magia,,,scripts/autoload/game_content.gd:98,
+game_content._build_relics.4ace25,Brasa Viva,Living Ember,golpe_magia,,,scripts/autoload/game_content.gd:22,
+game_content._build_relics.3a0d93,Cada faísca que te alcança cura 2 de vida.,Each spark that reaches you heals 2 health.,golpe_magia,,,scripts/autoload/game_content.gd:23,
+game_content._build_relics.d8250f,Lâmpada de Óleo,Oil Lamp,golpe_magia,,,scripts/autoload/game_content.gd:24,
+game_content._build_relics.77c5be,Cada faísca que te alcança devolve 3 de Éter.,Each spark that reaches you restores 3 Aether.,golpe_magia,,,scripts/autoload/game_content.gd:25,
+game_content._build_relics.1e005f,Pérola do Hino,Pearl of the Hymn,golpe_magia,,,scripts/autoload/game_content.gd:26,
+game_content._build_relics.68f07d,Toda faísca ganha rende um quarto a mais.,Every spark you earn yields a quarter more.,golpe_magia,,,scripts/autoload/game_content.gd:27,
+game_content._build_characters.b0fb6f,Sophia,Sophia,golpe_magia,,24,scripts/autoload/game_content.gd:75 scripts/autoload/narrative.gd:23 scripts/ui/character_atelier.gd:58 scripts/ui/character_atelier.gd:143 scripts/ui/gallery.gd:56,
+game_content._build_characters.2cc339,"Uma faísca sem memória, desperta nas cinzas do Kenoma. Luta com o cajado e com a luz que ainda lembra.","A spark without memory, woken in the ashes of the Kenoma. She fights with her staff and the light that still remembers.",golpe_magia,,,scripts/autoload/game_content.gd:76,
+game_content._build_characters.d3e408,Golpe de Cajado,Staff Strike,golpe_magia,,,scripts/autoload/game_content.gd:86,
+game_content._build_characters.827ea1,Cajado Duplo,Double Staff,golpe_magia,,,scripts/autoload/game_content.gd:87,
+game_content._build_characters.18f0fa,Sopro Arcano,Arcane Breath,golpe_magia,,,scripts/autoload/game_content.gd:88,
+game_content._build_characters.ebdc7f,Impacto Arcano,Arcane Impact,golpe_magia,,,scripts/autoload/game_content.gd:89,
+game_content._build_characters.18f304,Fenda Arcana,Arcane Rift,golpe_magia,,,scripts/autoload/game_content.gd:91,
+game_content._build_characters.848bd2,Ascensão Arcana,Arcane Ascent,golpe_magia,,,scripts/autoload/game_content.gd:92,
+game_content._build_characters.cf85da,Explosão Arcana,Arcane Burst,golpe_magia,,,scripts/autoload/game_content.gd:94,
+game_content._build_characters.8e2928,Corte Ascendente,Rising Cut,golpe_magia,,,scripts/autoload/game_content.gd:95,
+game_content._build_characters.fe5782,Giro Celeste,Celestial Spin,golpe_magia,,,scripts/autoload/game_content.gd:96,
+game_content._build_characters.d0f780,Queda Estelar,Starfall,golpe_magia,,,scripts/autoload/game_content.gd:97,
+game_content._build_characters.986674,Tempestade de Cajado,Staff Tempest,golpe_magia,,,scripts/autoload/game_content.gd:99,
+game_content._build_characters.602a01,Rasgo Duplo,Twin Rend,golpe_magia,,,scripts/autoload/game_content.gd:100,
+game_content._build_characters.328647,Fúria da Mônada,Fury of the Monad,golpe_magia,,,scripts/autoload/game_content.gd:102,
+game_content._build_characters.93c06b,Colapso Arcano,Arcane Collapse,golpe_magia,,,scripts/autoload/game_content.gd:103,
+game_content._build_characters.5b6f4c,Esfera Solar,Sun Orb,golpe_magia,,,scripts/autoload/game_content.gd:109 scripts/ui/input_rebind.gd:25 scripts/ui/moves_screen.gd:152,
+game_content._build_characters.27e4a0,Explode ao acertar.,Explodes on impact.,golpe_magia,,,scripts/autoload/game_content.gd:109,
+game_content._build_characters.7360e7,Névoa do Sono,Sleep Mist,golpe_magia,,,scripts/autoload/game_content.gd:110,
+game_content._build_characters.c6c58e,Nuvem que adormece: inimigos dentro ficam lentos.,A drowsy cloud: enemies inside it slow down.,golpe_magia,,,scripts/autoload/game_content.gd:110,
+game_content._build_characters.bb39dc,Boca Voraz,Ravenous Maw,golpe_magia,,,scripts/autoload/game_content.gd:111,
+game_content._build_characters.b72ec1,Suga os inimigos para perto e morde.,Sucks enemies in close and bites.,golpe_magia,,,scripts/autoload/game_content.gd:111,
+game_content._build_characters.dd6df2,Corrente da Lei,Chain of the Law,golpe_magia,,,scripts/autoload/game_content.gd:112,
+game_content._build_characters.f4e9d0,Corrente que prende o alvo no lugar.,A chain that pins the target in place.,golpe_magia,,,scripts/autoload/game_content.gd:112,
+game_content._build_characters.cfbb2d,Grito Mudo,Mute Scream,golpe_magia,,,scripts/autoload/game_content.gd:113,
+game_content._build_characters.febc50,Cala todo golpe em preparo ao redor (atordoa).,Silences all nearby wind-ups (stuns).,golpe_magia,,,scripts/autoload/game_content.gd:113,
+game_content._build_characters.c48f73,"Por 5 s, todo golpe recebido volta para quem o deu.","For 5 s, every hit you take returns to whoever dealt it.",golpe_magia,,,scripts/autoload/game_content.gd:114,
+game_content._build_characters.9922e5,Flor Podre,Rotten Bloom,golpe_magia,,,scripts/autoload/game_content.gd:115,
+game_content._build_characters.36846d,Planta um canteiro de veneno que fere quem pisa.,Plants a poison patch that hurts whoever steps in.,golpe_magia,,,scripts/autoload/game_content.gd:115,
+game_content._build_characters.64af3e,Coroa Partida,Broken Crown,golpe_magia,,,scripts/autoload/game_content.gd:116,
+game_content._build_characters.ac2791,A coroa do Arconte se parte em luz: dano enorme em área.,The Archon's crown shatters into light: huge area damage.,golpe_magia,,,scripts/autoload/game_content.gd:116,
 game_manager.finish_demo.c408cf,Fim da demo,End of the demo,ui,,,scripts/autoload/game_manager.gd:249 scripts/ui/end_screen.gd:137,
 game_manager.finish_demo.02a6f8,Obrigado por jogar. O resto da subida continua no jogo completo.,Thank you for playing. The rest of the climb continues in the full game.,ui,,,scripts/autoload/game_manager.gd:250,
 game_manager.screen_title.f0f1c5,Limiar — O Rei,Threshold — The King,ui,,,scripts/autoload/game_manager.gd:287,
@@ -1021,11 +1027,11 @@ eon_map.KINDS.7c4ddf,Antessala,Antechamber,ui,,,scripts/levels/map/eon_map.gd:96
 eon_map.KINDS.6976d8,A última prova antes do trono. Checkpoint.,The last trial before the throne. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:96,
 eon_map.KINDS.cd8ae5,O Arconte,The Archon,ui,,,scripts/levels/map/eon_map.gd:97,
 eon_map.KINDS.72079d,O senhor deste Éon.,The lord of this Aeon.,ui,,,scripts/levels/map/eon_map.gd:97,
-eon_map.reward_text.b23cae,+%d faíscas,+%d sparks,ui,,,scripts/levels/map/eon_map.gd:165,format string: manter os %
-eon_map.reward_text.dcf4ab,+%d vida máx.,+%d max life,ui,,,scripts/levels/map/eon_map.gd:167,format string: manter os %
-eon_map.reward_text.2d5b9d,+%d Éter máx.,+%d max Aether,ui,,,scripts/levels/map/eon_map.gd:169,format string: manter os %
-eon_map.reward_text.cf629f,cura inteira,full healing,ui,,,scripts/levels/map/eon_map.gd:171,
-eon_map.slot.ad28c6,e%d.L%d,e%d.L%d,ui,,,scripts/levels/map/eon_map.gd:277,format string: manter os %
+eon_map.reward_text.b23cae,+%d faíscas,+%d sparks,ui,,,scripts/levels/map/eon_map.gd:169,format string: manter os %
+eon_map.reward_text.dcf4ab,+%d vida máx.,+%d max life,ui,,,scripts/levels/map/eon_map.gd:171,format string: manter os %
+eon_map.reward_text.2d5b9d,+%d Éter máx.,+%d max Aether,ui,,,scripts/levels/map/eon_map.gd:173,format string: manter os %
+eon_map.reward_text.cf629f,cura inteira,full healing,ui,,,scripts/levels/map/eon_map.gd:175,
+eon_map.slot.ad28c6,e%d.L%d,e%d.L%d,ui,,,scripts/levels/map/eon_map.gd:281,format string: manter os %
 scenery.build_foreground.f7745e,Foreground,Foreground,ui,,,scripts/levels/scenery.gd:879,
 scenery._add_column.cce016,FgColumn%d,FgColumn%d,ui,,,scripts/levels/scenery.gd:1094,format string: manter os %
 scenery._crop_x.90b7b7,%s:%d,%s:%d,ui,,,scripts/levels/scenery.gd:1104,format string: manter os %
@@ -1390,22 +1396,27 @@ pregame._ready.964803,%s — %s,%s — %s,ui,,,scripts/ui/pregame.gd:33,format s
 pregame._ready.ed5f7a,DIFICULDADE,DIFFICULTY,ui,,,scripts/ui/pregame.gd:38,
 pregame.info_text.b0bc62,Demo  ·  o Limiar e o Torpor  ·  ~20 minutos,Demo  ·  the Threshold and Torpor  ·  ~20 minutes,ui,,,scripts/ui/pregame.gd:72,
 pregame.info_text.c3cdd0,Sete Éons  ·  Sete Arcontes  ·  ~2–3 horas,Seven Aeons  ·  Seven Archons  ·  ~2–3 hours,ui,,,scripts/ui/pregame.gd:73,
-upgrade_menu._ready.ef0a9f,Santuário de Ascensão,Shrine of Ascension,ui,,,scripts/ui/upgrade_menu.gd:39,
-upgrade_menu._ready.87090a,Voltar ao jogo,Back to game,ui,,,scripts/ui/upgrade_menu.gd:77,
-upgrade_menu._ready.fc9a7c,Seguir caminho,Move on,ui,,,scripts/ui/upgrade_menu.gd:77,
-upgrade_menu._rebuild.8a9815,abre: ,opens: ,ui,,,scripts/ui/upgrade_menu.gd:106,
-upgrade_menu._rebuild.782524,Arma Nv. %d → %d,Weapon Lv. %d → %d,ui,,,scripts/ui/upgrade_menu.gd:107,format string: manter os %
-upgrade_menu._rebuild.ac6d4d,Arma no nível máximo,Weapon at max level,ui,,,scripts/ui/upgrade_menu.gd:110,
-upgrade_menu._rebuild.3efade,%s  ·  Nv. %d (máx.),%s  ·  Lv. %d (max.),ui,,,scripts/ui/upgrade_menu.gd:120,format string: manter os %
-upgrade_menu._rebuild.25f367,%s  ·  Nv. %d → %d,%s  ·  Lv. %d → %d,ui,,,scripts/ui/upgrade_menu.gd:123,format string: manter os %
-upgrade_menu._rebuild.c03253,+20 de vida máx.  ·  %d / %d,+20 max health  ·  %d / %d,ui,,,scripts/ui/upgrade_menu.gd:129 scripts/ui/upgrade_menu.gd:132,format string: manter os %
-upgrade_menu._rebuild.29a2f3,no máximo,maxed out,ui,,,scripts/ui/upgrade_menu.gd:129,
-upgrade_menu._rebuild.91ac76,+15 de Éter máx.,+15 max Aether,ui,,,scripts/ui/upgrade_menu.gd:133,
-upgrade_menu._rebuild.df1a37,Restauração  ·  cura completa,Restoration  ·  full heal,ui,,,scripts/ui/upgrade_menu.gd:137 scripts/ui/upgrade_menu.gd:139,
-upgrade_menu._rebuild.3c4a13,a vida já está cheia,health is already full,ui,,,scripts/ui/upgrade_menu.gd:137,
-upgrade_menu._rebuild.8ac00e,só no santuário e depois do Arconte,only at the shrine and after the Archon,ui,,,scripts/ui/upgrade_menu.gd:139,
-upgrade_menu._update_status.deb328,Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short,ui,,,scripts/ui/upgrade_menu.gd:162,format string: manter os %
-upgrade_menu._update_status.cdab2e,Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades,ui,,,scripts/ui/upgrade_menu.gd:175,
+upgrade_menu._ready.ef0a9f,Santuário de Ascensão,Shrine of Ascension,ui,,,scripts/ui/upgrade_menu.gd:43,
+upgrade_menu._ready.87090a,Voltar ao jogo,Back to game,ui,,,scripts/ui/upgrade_menu.gd:81,
+upgrade_menu._ready.fc9a7c,Seguir caminho,Move on,ui,,,scripts/ui/upgrade_menu.gd:81,
+upgrade_menu._rebuild.8a9815,abre: ,opens: ,ui,,,scripts/ui/upgrade_menu.gd:110,
+upgrade_menu._rebuild.782524,Arma Nv. %d → %d,Weapon Lv. %d → %d,ui,,,scripts/ui/upgrade_menu.gd:111,format string: manter os %
+upgrade_menu._rebuild.ac6d4d,Arma no nível máximo,Weapon at max level,ui,,,scripts/ui/upgrade_menu.gd:117,
+upgrade_menu._rebuild.3efade,%s  ·  Nv. %d (máx.),%s  ·  Lv. %d (max.),ui,,,scripts/ui/upgrade_menu.gd:127,format string: manter os %
+upgrade_menu._rebuild.25f367,%s  ·  Nv. %d → %d,%s  ·  Lv. %d → %d,ui,,,scripts/ui/upgrade_menu.gd:130,format string: manter os %
+upgrade_menu._rebuild.c03253,+20 de vida máx.  ·  %d / %d,+20 max health  ·  %d / %d,ui,,,scripts/ui/upgrade_menu.gd:138,format string: manter os %
+upgrade_menu._rebuild.29a2f3,no máximo,maxed out,ui,,,scripts/ui/upgrade_menu.gd:140 scripts/ui/upgrade_menu.gd:149,
+upgrade_menu._rebuild.591292,+15 de Éter máx.  ·  %d / %d,+15 max Aether  ·  %d / %d,ui,,,scripts/ui/upgrade_menu.gd:147,format string: manter os %
+upgrade_menu._rebuild.8ffaef,%s  ·  em uso,%s  ·  in use,ui,,,scripts/ui/upgrade_menu.gd:165,format string: manter os %
+upgrade_menu._rebuild.fe513f,%s  ·  usar,%s  ·  use,ui,,,scripts/ui/upgrade_menu.gd:167,format string: manter os %
+upgrade_menu._rebuild.58c64b,Relíquia  ·  %s,Relic  ·  %s,ui,,,scripts/ui/upgrade_menu.gd:169 scripts/ui/upgrade_menu.gd:172,format string: manter os %
+upgrade_menu._rebuild.df1a37,Restauração  ·  cura completa,Restoration  ·  full heal,ui,,,scripts/ui/upgrade_menu.gd:178 scripts/ui/upgrade_menu.gd:180,
+upgrade_menu._rebuild.3c4a13,a vida já está cheia,health is already full,ui,,,scripts/ui/upgrade_menu.gd:178,
+upgrade_menu._rebuild.8ac00e,só no santuário e depois do Arconte,only at the shrine and after the Archon,ui,,,scripts/ui/upgrade_menu.gd:180,
+upgrade_menu._update_status.74cd2e,Selado  ·  vença %s para abrir,Sealed  ·  defeat %s to open,ui,,,scripts/ui/upgrade_menu.gd:202,format string: manter os %
+upgrade_menu._update_status.deb328,Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short,ui,,,scripts/ui/upgrade_menu.gd:206,format string: manter os %
+upgrade_menu._update_status.cdab2e,Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades,ui,,,scripts/ui/upgrade_menu.gd:221,
+upgrade_menu._add_sealed.3e1bec,selado  ·  vença %s,sealed  ·  defeat %s,ui,,,scripts/ui/upgrade_menu.gd:228,format string: manter os %
 world_map._build_ui.1d8158,escolhem o caminho,choose the path,ui,,,scripts/ui/world_map.gd:136,
 world_map._subtitle.4d3e17,Prévia do mapa — o caminho do Éon,Map preview — the path of the Aeon,ui,,,scripts/ui/world_map.gd:145,
 world_map._subtitle.b71987,O caminho se divide. Escolha por onde subir.,The path splits. Choose your way up.,ui,,,scripts/ui/world_map.gd:146,

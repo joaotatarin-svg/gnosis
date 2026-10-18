@@ -235,11 +235,13 @@ class Flow extends Node:
 		check(on_lv and lv != null and lv.screen == 3 and RunManager.node_kind() == "hazard" and lv.zones.size() == 2,
 			"a tela 3 carrega como PERIGO (kind=%s zonas=%d)" % [RunManager.node_kind(), lv.zones.size() if lv else -1])
 		check(RunManager.screen_role(3) == "travel" and RunManager.beat_slot(3) == "e0.L1", "papel legado e slot de beat preservados")
-		# Recompensa do perigo: +5 vida máx. ao vencer.
+		# Recompensa do perigo: a vida máx. da tabela (EonMap.REWARDS, calibrada
+		# pela Progressão) ao vencer.
+		var hp_rw := int(EonMap.REWARDS["hazard"].get("hp", 0))
 		var hp0 := Progression.bonus_max_health
 		RunManager.advance_and_reload()
 		await scene_is("WorldMap.tscn")
-		check(Progression.bonus_max_health == hp0 + 5 and int(RunManager.last_reward.get("hp", 0)) == 5,
+		check(hp_rw > 0 and Progression.bonus_max_health == hp0 + hp_rw and int(RunManager.last_reward.get("hp", 0)) == hp_rw,
 			"recompensa do perigo paga (+%d vida máx.)" % (Progression.bonus_max_health - hp0))
 		# A trilha alta da camada 2 (escalada) e o cruzamento.
 		var o2 := RunManager.options_after(RunManager.last_node, 4)
