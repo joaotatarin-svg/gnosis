@@ -420,7 +420,7 @@ func _double_jump_unlocked() -> bool:
 	return v is bool and v
 
 
-## Segundo pulo no ar: mais baixo (DOUBLE_JUMP_MULT), pirueta curta e um anel
+## Segundo pulo no ar: mais baixo (DOUBLE_JUMP_MULT), cambalhota desenhada (S17) e um anel
 ## de luz nos pés. Não devolve a Queda Estelar nem os Giros do pulo.
 func _double_jump() -> void:
 	_air_jumps_left -= 1
@@ -434,10 +434,17 @@ func _double_jump() -> void:
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, 20), col, false)
 	_squash(Vector2(facing * 0.9, 1.12))
 	_stop_spin()
-	if visual:
-		_spin_tween = create_tween()
-		_spin_tween.tween_property(visual, "rotation", TAU * float(facing), SophiaTuning.DOUBLE_JUMP_SPIN) 				.from(0.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		_spin_tween.tween_callback(_stop_spin)
+	if visual == null:
+		return
+	# S17 (Arte): a cambalhota é DESENHADA — toca a ação e NÃO gira o cartão
+	# (girar por cima dos quadros daria duas cambalhotas). O anel de luz fica.
+	if visual.has_method("has_action") and visual.has_action("double_jump"):
+		visual.play_action("double_jump")
+		return
+	# reserva (sem os quadros): pirueta girando o corpo inteiro
+	_spin_tween = create_tween()
+	_spin_tween.tween_property(visual, "rotation", TAU * float(facing), SophiaTuning.DOUBLE_JUMP_SPIN).from(0.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_spin_tween.tween_callback(_stop_spin)
 
 
 ## Interrompe a pirueta (golpe, esquiva, dano, pouso) e endireita o corpo.

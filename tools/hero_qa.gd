@@ -71,11 +71,19 @@ func _ready() -> void:
 				check(seq.frames.size() >= 5, "Morte sem a transição antes do deitado (%d quadros)" % seq.frames.size())
 			if state == "walk":
 				# corrida = ciclo todo DESENHADO (sem os meios borrados do RIFE)
+				# a largada desenhada (S18) toca antes do ciclo: confere o ciclo de verdade
+				var cyc_name: String = seq_name
+				if seq_name == "start_run":
+					cyc_name = "rund" if meta.states.has("rund") else "run"
+				var cyc: Dictionary = meta.states[cyc_name]
 				var drawn: bool = true
-				for fe in seq.frames:
+				for fe in cyc.frames:
 					if String(fe.f).begins_with("rinb."):
 						drawn = false
-				check(drawn and seq.frames.size() >= 8, "Corrida com quadros do RIFE ou ciclo curto: " + seq_name)
+				check(drawn and cyc.frames.size() >= 8, "Corrida com quadros do RIFE ou ciclo curto: " + cyc_name)
+				# Fila 9: largada, freada e pulo duplo desenhados
+				for act in ["start_run", "stop_run", "double_jump"]:
+					check(art.has_action(act), "Sem a ação desenhada: " + act)
 			if state == "dodge_back":
 				check(seq_name == "dodge_back", "Esquiva pra trás sem quadro próprio")
 		if state == "dodge":
@@ -139,6 +147,35 @@ func _ready() -> void:
 			rc.set_anim("idle")
 			check(rc._hero_seq(db.meta.states) != "rec_light1", "rec_light1 (descartada) voltou a tocar")
 			rc.visible = false
+		# GEOMETRIA POR QUADRO (Onda 6): todo quadro tem caixa do corpo; quadro com
+		# ponta de cristal tem eixo do cajado; frame_geometry leva tudo pelo
+		# transform do corpo (a ponta cai no cristal e fora da caixa no golpe esticado)
+		var no_body: int = 0
+		var no_staff: int = 0
+		for fname in db.meta.frames:
+			var ff: Dictionary = db.meta.frames[fname]
+			if not ff.has("body"):
+				no_body += 1
+			if ff.get("tip") != null and not ff.has("staff"):
+				no_staff += 1
+		check(no_body == 0 and no_staff == 0, "Geometria faltando no atlas: %d sem corpo, %d sem cajado" % [no_body, no_staff])
+		var g := CharacterArt.new()
+		add_child(g)
+		g.set_profile(p)
+		g.set_process(false)
+		var hit: Dictionary = db.meta.states.attack3.frames[-1]
+		g._geo_fr = db.meta.frames[hit.f]
+		g._geo_anchor = Vector2(hit.anchor[0], hit.anchor[1])
+		g._body_xform = Transform2D(0.0, Vector2(0.5, 0.5), 0.0, Vector2(0, 30))
+		var geo: Dictionary = g.frame_geometry()
+		check(geo.has("body") and geo.has("staff"), "frame_geometry sem corpo/cajado na estocada")
+		if geo.has("staff"):
+			var ff2: Dictionary = db.meta.frames[hit.f]
+			var tip_exp: Vector2 = g._body_xform * (Vector2(ff2.tip[0], ff2.tip[1]) - g._geo_anchor)
+			check(geo.tip.distance_to(tip_exp) < 1.0, "Ponta do cajado fora do cristal")
+			check(not geo.body.has_point(geo.tip), "Na estocada a ponta deveria estar FORA do corpo")
+			check(geo.staff[0].distance_to(geo.staff[1]) > geo.body.size.y * 0.3, "Cajado curto demais na estocada")
+		g.visible = false
 	await get_tree().process_frame
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
