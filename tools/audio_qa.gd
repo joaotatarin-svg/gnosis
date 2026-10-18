@@ -189,8 +189,15 @@ func _run() -> void:
 	await _wait_real(1.0)
 	var b0 := AudioServer.get_bus_volume_db(music_bus)
 	Audio.duck_music(0.3, -12.0)
-	await _wait_real(0.35)
+	# ESTABILIDADE (Onda 5): antes era UMA amostra aos 0,35 s — sob carga um
+	# quadro longo jogava a amostra para depois da janela (0,55 s + saída) e
+	# a música já voltava. Agora amostra TODO quadro até o fim do "hold" e
+	# guarda a mais funda: a abaixada tem de aparecer em algum quadro.
+	var dm_t0 := Time.get_ticks_msec()
 	var b1 := AudioServer.get_bus_volume_db(music_bus)
+	while Time.get_ticks_msec() - dm_t0 < int((Audio.DUCK_IN + 0.3) * 1000.0):
+		await get_tree().process_frame
+		b1 = minf(b1, AudioServer.get_bus_volume_db(music_bus))
 	await _wait_real(1.2)
 	var b2 := AudioServer.get_bus_volume_db(music_bus)
 	check(b1 < b0 - 8.0 and absf(b2 - b0) < 0.5, "duck_music(0,3 s, -12): %.1f → %.1f → %.1f dB" % [b0, b1, b2])
@@ -293,11 +300,14 @@ func _run() -> void:
 	Audio.play_sfx("boss_appear")
 	var appear_ms := Time.get_ticks_msec()
 	var still_pending_early: String = Audio.boss_pending
-	while Audio._playing_track != Audio.boss_track(RunManager.eon_index(archon)) and Time.get_ticks_msec() - appear_ms < 2000:
-		await get_tree().process_frame
+	# O Audio dispara no 1º quadro depois do prazo (relógio real) e a QA vê no
+	# quadro seguinte: o teto ganha 2× o maior intervalo entre quadros medido
+	# na espera (carga só atrasa; o PISO continua exato — nunca entra cedo).
+	var boss_want := Audio.boss_track(RunManager.eon_index(archon))
+	var entry_gap: int = await _poll_until(func() -> bool: return Audio._playing_track == boss_want, 4000)
 	var entry_ms := Time.get_ticks_msec() - appear_ms
 	check(before_track.begins_with("eon_") and hushed_players == 0 and pend == "boss" and still_pending_early == "boss"
-		and Audio._playing_track == "boss" and entry_ms >= int(Audio.BOSS_ENTRY_DELAY * 1000.0) - 20 and entry_ms < 900,
+		and Audio._playing_track == "boss" and entry_ms >= int(Audio.BOSS_ENTRY_DELAY * 1000.0) - 20 and entry_ms < 900 + 2 * entry_gap,
 		"R9: tela do Arconte (%d) — '%s' sai, %d player tocando antes do stinger, faixa '%s' entra %d ms depois do boss_appear" % [archon, before_track, hushed_players, pend, entry_ms])
 	Audio._on_state_changed(GameManager.State.PLAYING)          # voltar da pausa no meio da luta
 	await _wait_real(0.1)
@@ -431,16 +441,19 @@ func _run() -> void:
 	var t_roubo := Time.get_ticks_msec()
 	await _wait_real(Audio.VOICE_STOLEN_SECS - 0.4)
 	var early: String = Audio._playing_track
-	while Audio._playing_track != "roubo" and Time.get_ticks_msec() - t_roubo < int(Audio.VOICE_STOLEN_SECS * 1000.0) + 900:
-		await get_tree().process_frame
+	# Sob carga a amostra "cedo" pode cair DEPOIS do prazo (quadro longo): aí
+	# ela não prova nada — quem garante "não cortou cedo" é o piso de cut_ms.
+	var early_ms := Time.get_ticks_msec() - t_roubo
+	var early_ok: bool = early == "theme" or early_ms >= int(Audio.VOICE_STOLEN_SECS * 1000.0) - 20
+	var cut_gap: int = await _poll_until(func() -> bool: return Audio._playing_track == "roubo", int(Audio.VOICE_STOLEN_SECS * 1000.0) + 3000, t_roubo)
 	var cut_ms := Time.get_ticks_msec() - t_roubo
 	var n_roubo := 0
 	for m in Audio._music:
 		if m.playing:
 			n_roubo += 1
-	check(sanct_ok and stolen_ok and early == "theme" and Audio._playing_track == "roubo" and n_roubo == 1
+	check(sanct_ok and stolen_ok and early_ok and Audio._playing_track == "roubo" and n_roubo == 1
 		and is_equal_approx(Audio._music_pitch, 1.0) and cut_ms >= int(Audio.VOICE_STOLEN_SECS * 1000.0) - 20
-		and cut_ms <= int(Audio.VOICE_STOLEN_SECS * 1000.0) + 800,
+		and cut_ms <= int(Audio.VOICE_STOLEN_SECS * 1000.0) + 800 + 2 * cut_gap,
 		"tema da Voz: santuário (−3 dB) → roubo a 0,75 → corte seco para 'roubo' em %d ms (%d player)" % [cut_ms, n_roubo])
 	# Uma troca de cena no meio cancela o corte agendado.
 	Audio.voice_theme("roubo")
@@ -582,13 +595,18 @@ func _run() -> void:
 	# Intro: o cue `heartbeat` toca 2 batidas, a 2ª agendada por relógio real
 	# (mede o INÍCIO de cada disparo: a batida dura 0,75 s, menos que o intervalo).
 	await _wait_real(0.1)              # sai da janela do anti-spam do pulso acima
-	Audio.cue("heartbeat")
+	# A 1ª batida sai NA chamada (síncrona): o registro muda dentro do cue e
+	# com carimbo ≥ o relógio de antes da chamada (antes: |Δ| < 50 ms, que uma
+	# preempção da thread sob carga estourava). A 2ª: piso exato, teto +2×
+	# o maior intervalo entre quadros medido na espera.
+	var hb_prev: int = int(Audio._last_play_ms.get("heartbeat", -1))
 	var hb_t0 := Time.get_ticks_msec()
+	Audio.cue("heartbeat")
 	var hb_first_ms: int = int(Audio._last_play_ms.get("heartbeat", -1))
-	while int(Audio._last_play_ms.get("heartbeat", -1)) == hb_first_ms and Time.get_ticks_msec() - hb_t0 < 2500:
-		await get_tree().process_frame
+	var hb_sync: bool = hb_first_ms != hb_prev and hb_first_ms >= hb_t0
+	var hb_wait: int = await _poll_until(func() -> bool: return int(Audio._last_play_ms.get("heartbeat", -1)) != hb_first_ms, 4000)
 	var hb_gap: int = int(Audio._last_play_ms.get("heartbeat", -1)) - hb_first_ms
-	check(absf(float(hb_first_ms - hb_t0)) < 50.0 and absf(float(hb_gap) - Audio.HEART_GAP * 1000.0) < 300.0 and Audio._later.is_empty(),
+	check(hb_sync and hb_gap > int(Audio.HEART_GAP * 1000.0) - 300 and hb_gap < int(Audio.HEART_GAP * 1000.0) + 300 + 2 * hb_wait and Audio._later.is_empty(),
 		"cue heartbeat: 2 batidas, a 2ª %d ms depois da 1ª (alvo %d ms)" % [hb_gap, int(Audio.HEART_GAP * 1000.0)])
 
 	# (c) tocar SFX inexistente não gera erro (cache negativa) — e o pool aguenta rajada.
@@ -683,11 +701,32 @@ func _run() -> void:
 
 ## Espera `sec` segundos de relógio REAL, atravessando quadros (não um timer
 ## que pode disparar no mesmo quadro em que nasceu).
+## ESTABILIDADE (Onda 5): + 1 quadro no fim. O `process_frame` acorda a QA
+## ANTES do `_process` do Audio daquele quadro; sem o quadro extra a QA lia o
+## envelope do quadro ANTERIOR — sob carga (quadros de 100+ ms) esse quadro
+## era antes do prazo e o slow-mo aparecia pela metade (1890 Hz em vez de 1500).
 func _wait_real(sec: float) -> void:
 	var t0 := Time.get_ticks_msec()
 	await get_tree().process_frame
 	while Time.get_ticks_msec() - t0 < int(sec * 1000.0):
 		await get_tree().process_frame
+	await get_tree().process_frame
+
+
+## ESTABILIDADE (Onda 5): espera `cond` quadro a quadro (teto `max_ms` de
+## relógio contado de `t0`, ou de agora) e devolve o MAIOR intervalo entre
+## quadros visto na espera (ms) — a folga honesta de medição: o Audio só
+## dispara no 1º quadro depois do prazo e a QA só vê no seguinte.
+func _poll_until(cond: Callable, max_ms: int, t0: int = -1) -> int:
+	var start := Time.get_ticks_msec() if t0 < 0 else t0
+	var last := Time.get_ticks_msec()
+	var gap := 0
+	while not cond.call() and Time.get_ticks_msec() - start < max_ms:
+		await get_tree().process_frame
+		var now := Time.get_ticks_msec()
+		gap = maxi(gap, now - last)
+		last = now
+	return gap
 
 
 func _collect_gd(path: String, out: Array[String]) -> void:

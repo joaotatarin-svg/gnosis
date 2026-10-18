@@ -31,6 +31,20 @@ func _write(txt: String, path: String = "") -> void:
 	f.close()
 
 
+## ESTABILIDADE (Onda 5): espera `cond` quadro a quadro. Desiste só quando
+## passaram `min_frames` quadros E `min_secs` de relógio (o relógio é só teto:
+## máquina carregada alonga a espera, nunca reprova sozinha).
+func _until(cond: Callable, min_frames: int = 600, min_secs: float = 20.0) -> bool:
+	var n: int = 0
+	var t0: int = Time.get_ticks_msec()
+	while not cond.call():
+		if n >= min_frames and Time.get_ticks_msec() - t0 >= int(min_secs * 1000.0):
+			return false
+		n += 1
+		await get_tree().process_frame
+	return true
+
+
 func _read(path: String) -> String:
 	if not FileAccess.file_exists(path):
 		return ""
@@ -274,7 +288,7 @@ func _cases_types() -> void:
 	check(Gnosis.unlocked == [valid_id], "Crônicas unlocked:[3,\"x\",…] → só o id válido fica (%s)" % [Gnosis.unlocked])
 	Gnosis.unlocked.clear()
 	# Continuar: só os campos ruins voltam ao padrão; o resto vale e a cena troca.
-	await get_tree().create_timer(0.8).timeout   # nenhum fade em andamento
+	await _until(func() -> bool: return not SceneManager.is_busy())   # nenhum fade em andamento
 	RunManager.continue_run()
 	check(RunManager.run_active and RunManager.current_screen == 20, "continue_run chega ao fim (tela 20)")
 	check(Progression.skill_levels.is_empty(), "skill_levels:[1,2] → vazio")
@@ -283,7 +297,10 @@ func _cases_types() -> void:
 	check(Progression.orbs == 0, "orbs:[5] → 0")
 	check(Progression.items.is_empty() and Progression.selected_ring == 0 and RunManager.deaths_this_run == 0, "items/selected_ring/deaths inválidos → padrão")
 	check(Progression.weapon_level == 3 and Progression.bonus_max_health == 40 and Progression.rings == ["arconte_sono"] and GameManager.difficulty == 1, "campos bons preservados (arma 3, +40 HP, anel, dificuldade)")
-	await get_tree().create_timer(1.2).timeout
+	# Por ESTADO (antes: 1,2 s de relógio): o véu fechou, trocou e abriu.
+	await _until(func() -> bool:
+		var cs: Node = get_tree().current_scene
+		return not SceneManager.is_busy() and cs != null and cs.scene_file_path == "res://scenes/levels/Level01.tscn")
 	var cur := get_tree().current_scene
 	check(cur != null and cur.scene_file_path == "res://scenes/levels/Level01.tscn", "'Continuar' troca para a fase")
 	RunManager.end_run()
