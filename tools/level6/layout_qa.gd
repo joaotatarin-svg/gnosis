@@ -113,6 +113,20 @@ func _check_screen(scene: PackedScene, screen: int, node_id: String) -> void:
 				if float(s[2]) < 309.0 and float(s[2]) > 230.0 and x > float(s[0]) - 12.0 and x < float(s[1]) + 12.0:
 					under = true
 			_check(not under, "%s: spawn em x=%.0f embaixo de plataforma baixa (zona %d)" % [tag, x, zi])
+	# --- Estela, encontro (Soter/Velkar) e Selos separados (a tela 17 empilhava os três) ---
+	var marks: Array = []          # [rótulo, x, meia-largura]
+	if lv.rest_points.size() >= 1 and Gnosis.has_method("_stela_pos") and not (Gnosis.stela_for_screen(screen) as Dictionary).is_empty():
+		var sp: Vector2 = Gnosis.call("_stela_pos", screen, lv.rest_points)
+		marks.append(["Estela", sp.x, 25.0])
+	for c in lv.get_children():
+		if c is NpcEncounter:
+			marks.append(["NPC", (c as Node2D).global_position.x, 30.0])
+		elif c is SealPuzzle:
+			marks.append(["Selos", (c as Node2D).global_position.x, 105.0])
+	for a in marks.size():
+		for b in range(a + 1, marks.size()):
+			var gap := absf(float(marks[a][1]) - float(marks[b][1])) - float(marks[a][2]) - float(marks[b][2])
+			_check(gap >= 80.0, "%s: %s e %s colados (folga %.0f px)" % [tag, marks[a][0], marks[b][0], gap])
 	# --- perigos em cima do conteúdo reservado ---
 	var reserved: Array = lv.reserved_spans()
 	var n_hz := 0

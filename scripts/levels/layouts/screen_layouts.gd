@@ -44,6 +44,7 @@ const YDJ := 200.0
 const PASS_SHORT := 560.0    # passagem padrão (passo de zona antigo = 1500)
 const PASS_LONG := 900.0     # travessia/perigo/fuga
 const PASS_ZERO := 870.0     # passagem 0 aberta: a Sophia nasce em x = -600
+const PASS_NPC := 1000.0     # passagem com encontro (Estela + NPC + Selos separados)
 
 # --- arenas (plataformas da zona: [dx, y, largura]) ---------------------------
 const ARENAS := {
@@ -143,12 +144,19 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 			# arenas de 3 alturas (voadores no alto) e a fenda no TOPO.
 			out.spawn_x = -600.0
 			out.exit_top = true
-			_add(out, 0, {"t": "tower_cache", "x": 330.0})
+			var npc := npc_on_screen(screen)
+			if npc:
+				# Tela de encontro (Soter/Velkar): a escalada vai para a passagem 0 e a
+				# passagem do encontro fica CALMA (a conversa não divide espaço com perigo).
+				_add(out, 0, {"t": "climb", "x": 60.0, "hz": floor_hz, "live": live})
+			else:
+				_add(out, 0, {"t": "tower_cache", "x": 330.0})
 			for i in n:
 				_set_arena(out, i, ["torres", "tres_alturas", "degraus"][(pick + i) % 3])
 				if i >= 1:
 					out.gaps[i - 1] = PASS_LONG
-					_add(out, i, {"t": "climb", "x": 90.0, "hz": floor_hz, "live": live})
+					if not npc:
+						_add(out, i, {"t": "climb", "x": 90.0, "hz": floor_hz, "live": live})
 		"segredo":
 			out.spawn_x = -600.0
 			# Passagem 0 aberta: um baú no alto de uma torre logo no começo
@@ -207,6 +215,11 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 			_guard(out, 0, "shards")
 		_:
 			_fill_default(out, n)
+	# ENCONTRO (Soter/Velkar) na passagem 1: Estela (descanso − 200), o NPC (no
+	# descanso) e os Selos (descanso + 300) precisam de espaço — a passagem
+	# cresce para ≥ 1000 px (a tela 17 tinha os três empilhados).
+	if npc_on_screen(screen) and out.gaps.size() >= 1:
+		out.gaps[0] = maxf(float(out.gaps[0]), PASS_NPC)
 	# Silêncio: toda arena tem um campo que anula magia (num lado ou no meio) —
 	# menos no santuário e na Arena (sem regra de cenário gratuita).
 	if eon == 3 and off != 8 and not (kind in ["santuario", "arena"]):
@@ -224,6 +237,17 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 				mir.append([-float(p[0]), p[1], p[2]])
 			z.plats = mir
 	return out
+
+
+## A tela tem ENCONTRO da história (Soter nos Éons 1/3/5 camada 6; Velkar no
+## Éon 6 camada 5)? Mesma regra do Level._spawn_extras. O NPC fica no descanso
+## do meio (passagem 1).
+static func npc_on_screen(screen: int) -> bool:
+	if not RunManager.run_active:
+		return false
+	var eon := RunManager.eon_index(screen)
+	var off := RunManager.eon_offset(screen)
+	return (off == 6 and eon in [1, 3, 5]) or (off == 5 and eon == 6)
 
 
 ## Tipo de LAYOUT da tela (nome do level6) a partir do tipo do nó do mapa.

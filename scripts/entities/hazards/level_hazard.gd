@@ -23,6 +23,16 @@ var _t: float = 0.0
 
 func _enter_tree() -> void:
 	add_to_group("lv6_hazard")
+	# CENARIO5: perigo precisa ser LIDO — coluna de primeiro plano não o cobre.
+	add_to_group("fg_guard")
+	if not has_meta("fg_half"):
+		set_meta("fg_half", guard_half())
+
+
+## Meia-largura protegida do primeiro plano (sobrescreva se o perigo for largo).
+func guard_half() -> float:
+	var w = get("width")
+	return (float(w) * 0.5 + 30.0) if w != null else 80.0
 
 
 ## Dano base do cenário: leve no começo, cresce devagar com o run (a vida da

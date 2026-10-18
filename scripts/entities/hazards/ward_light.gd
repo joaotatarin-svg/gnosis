@@ -20,6 +20,8 @@ var _drain_now: bool = false
 
 func _enter_tree() -> void:
 	add_to_group("lv6_objective")
+	add_to_group("fg_guard")          # CENARIO5: o objetivo não fica atrás de coluna
+	set_meta("fg_half", 90.0)
 
 
 func arm() -> void:

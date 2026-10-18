@@ -12,7 +12,7 @@ const CHEST_LIFT := 12.0      # o baú no chão fica com a origem 12 px acima do
 
 ## Monta tudo. Devolve {objectives: {zona: nó}, spans: [[x0, x1, y], ...]}.
 static func build(level: Level, plan: Dictionary) -> Dictionary:
-	var res := {"objectives": {}, "spans": []}
+	var res := {"objectives": {}, "spans": [], "bands": []}
 	if String(plan.get("kind", "")) == "chefe":
 		return res
 	var reserved: Array = level.reserved_spans()
@@ -73,16 +73,20 @@ static func build(level: Level, plan: Dictionary) -> Dictionary:
 			match t:
 				"dj_cache":
 					_dj_cache(level, wx, res)
+					res.bands.append(Vector2(wx - 60.0, wx + 60.0))
 				"tower_cache":
 					_tower_cache(level, wx, res)
+					res.bands.append(Vector2(wx - 70.0, wx + 170.0))
 				"vault":
 					_vault(level, wx, res)
+					res.bands.append(Vector2(wx - 60.0, wx + 350.0))
 				"altar":
 					var al := SanctuaryAltar.new()
 					level.add_child(al)
 					al.global_position = Vector2(wx, FLOOR)
 				"climb":
 					_climb(level, wx, String(it.get("hz", "")), String(it.get("live", "")), rng, res, reserved)
+					res.bands.append(Vector2(wx - 70.0, wx + 710.0))
 				"perch":
 					_platform(level, Vector2(wx - 50.0, ScreenLayouts.Y1), 110.0, res)
 					_platform(level, Vector2(wx + 40.0, ScreenLayouts.Y2), 100.0, res)
@@ -101,6 +105,7 @@ static func build(level: Level, plan: Dictionary) -> Dictionary:
 		_platform(level, Vector2(cl + Level.ZONE_HALF + 150.0, ScreenLayouts.Y2), 110.0, res)
 		_platform(level, Vector2(cl + Level.ZONE_HALF + 95.0, ScreenLayouts.Y3), 180.0, res)
 		res["exit_top"] = Vector2(cl + Level.ZONE_HALF + 150.0, ScreenLayouts.Y3 - 6.0)
+		res.bands.append(Vector2(cl + Level.ZONE_HALF, cl + Level.ZONE_HALF + 240.0))
 	return res
 
 

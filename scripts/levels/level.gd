@@ -49,6 +49,10 @@ var layout: Dictionary = {}
 var _zone_x: Array = []           # centro de cada zona (passagens têm comprimento próprio)
 var _layout_res: Dictionary = {}  # o que o builder montou (objetivos, vãos de plataforma)
 const AIR_SPAWN_Y := 150.0        # voadores nascem no alto da arena
+## CONTRATO com o cenário (CENARIO5): faixas Vector2(x0, x1) onde coluna de
+## primeiro plano não cobre nada — as zonas de luta (as passagens têm
+## comprimento próprio) e as estruturas de pulo (escalada, torre, sala secreta).
+var fg_forbidden: Array = []
 
 # ABERTURA (backlog #6): na tela 1 a Sophia acorda à ESQUERDA, com a Estela
 # "logo adiante"; o resto da intro vira legenda enquanto ela anda, e a Cena A
@@ -425,6 +429,11 @@ func _build_platforms() -> void:
 	if layout.is_empty():
 		layout = ScreenLayouts.plan(screen, maxi(1, zones.size()))
 	_layout_res = LayoutBuilder.build(self, layout)
+	fg_forbidden.clear()
+	for zi in maxi(1, zones.size()):
+		fg_forbidden.append(Vector2(zone_center(zi) - ZONE_HALF, zone_center(zi) + ZONE_HALF))
+	for b in _layout_res.get("bands", []):
+		fg_forbidden.append(b)
 
 
 ## Plataforma one-way comum (pública: o LayoutBuilder usa).
@@ -451,7 +460,7 @@ func reserved_spans() -> Array:
 		var sx: float = _sleeper_x()
 		out.append([sx - 40.0, sx + 40.0])
 	if screen % 7 == 3:
-		var px: float = rest_points[last].x + 170.0
+		var px: float = _seal_x()
 		out.append([px - 125.0, px + 125.0])
 	if RunManager.run_active:
 		var eon := RunManager.eon_index(screen)
@@ -460,6 +469,20 @@ func reserved_spans() -> Array:
 			var mx: float = rest_points[rest_points.size() / 2].x
 			out.append([mx - 60.0, mx + 60.0])
 	return out
+
+
+## Onde ficam os Selos: no último descanso + 170; se o encontro (Soter/Velkar)
+## está no MESMO descanso, + 300 (a passagem já cresceu: Estela, NPC e Selos
+## lado a lado com folga — a tela 17 tinha os três empilhados).
+func _seal_x() -> float:
+	var last: int = rest_points.size() - 1
+	var x: float = rest_points[last].x + 170.0
+	if last == rest_points.size() / 2 and ScreenLayouts.npc_on_screen(screen):
+		x = rest_points[last].x + 300.0
+	elif last == 0 and is_nan(float(layout.get("spawn_x", NAN))) and RunManager.run_active 			and not (Gnosis.stela_for_screen(screen) as Dictionary).is_empty():
+		# tela de uma zona com Estela (descanso + 150): os Selos vão para trás do começo
+		x = rest_points[0].x - 220.0
+	return x
 
 
 ## Onde dorme o Adormecido: no descanso 0 (atrás do começo) ou, se a Sophia
@@ -532,7 +555,7 @@ func _spawn_extras() -> void:
 		var puz := SealPuzzle.new()
 		puz.screen = screen
 		add_child(puz)
-		puz.global_position = rest_points[last] + Vector2(170.0, 0.0)
+		puz.global_position = Vector2(_seal_x(), rest_points[last].y)
 	# Encontros da história: Soter nos Éons 1, 3 e 5 (offset 6, no descanso do
 	# meio) e Velkar no Éon 6 (offset 5), perto do fim.
 	if not RunManager.run_active:
