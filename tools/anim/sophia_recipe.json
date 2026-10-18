@@ -321,11 +321,51 @@
     "breath_6",
     "breath_7"
    ]
+  },
+  "s17": {
+   "file": "assets/painted/src/sophia_s17.png",
+   "grid": [
+    3,
+    2
+   ],
+   "scale": 1.0,
+   "cells": [
+    "dj_top",
+    "dj_kick",
+    "dj_tuck",
+    "dj_flip",
+    "dj_unroll",
+    "dj_open"
+   ]
+  },
+  "s18": {
+   "file": "assets/painted/src/sophia_s18.png",
+   "grid": [
+    4,
+    2
+   ],
+   "scale": 1.03,
+   "cells": [
+    "start_0",
+    "start_1",
+    "start_2",
+    "stop_0",
+    "stop_1",
+    "stop_2",
+    "-",
+    "-"
+   ]
   }
  },
  "frame_fix": {
   "s0.prep": {
    "scale": 1.06
+  },
+  "s18.stop_1": {
+   "scale": 1.05
+  },
+  "s18.stop_2": {
+   "scale": 1.1
   }
  },
  "states": {
@@ -719,7 +759,50 @@
     0.16
    ],
    "anchor": "front"
+  },
+  "double_jump": {
+   "frames": [
+    "s17.dj_kick",
+    "s17.dj_tuck",
+    "s17.dj_flip",
+    "s17.dj_unroll",
+    "s17.dj_open"
+   ],
+   "dur": [
+    0.06,
+    0.06,
+    0.07,
+    0.08
+   ],
+   "anchor": "air"
+  },
+  "start_run": {
+   "frames": [
+    "s18.start_0",
+    "s18.start_1",
+    "s18.start_2"
+   ],
+   "dur": [
+    0.06,
+    0.06,
+    0.07
+   ],
+   "anchor": "pelvis"
+  },
+  "stop_run": {
+   "frames": [
+    "s18.stop_0",
+    "s18.stop_1",
+    "s18.stop_2"
+   ],
+   "dur": [
+    0.06,
+    0.08,
+    0.1
+   ],
+   "anchor": "front"
   }
  },
- "_doc_s15": "S15: rec_light1, rec_light2 e rec_heavy FORA — o cajado troca de lado/altura em relação ao fim do golpe e à prontidão (pulo visível). Usadas: rec_light3, rec_cast, rec_air, rec_dodge, rec_hurt."
+ "_doc_s15": "S15: rec_light1, rec_light2 e rec_heavy FORA — o cajado troca de lado/altura em relação ao fim do golpe e à prontidão (pulo visível). Usadas: rec_light3, rec_cast, rec_air, rec_dodge, rec_hurt.",
+ "_doc_s17": "S17/S18 (Fila 9): double_jump = ação tocada pelo player no 2º pulo (play_action); start_run/stop_run (nome NÃO pode começar com \"run\": run* = índice pela distância) = ações automáticas do CharacterArt (parado→corre / corre→parado). Virada (s18 q6-7) fora: não lê como giro."
 }

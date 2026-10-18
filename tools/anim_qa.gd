@@ -34,6 +34,7 @@ func _ready() -> void:
 	_floor()
 	match mode:
 		"film_sophia": _film_sophia()
+		"film_gait": _film_gait(args.size() >= 3 and args[2] == "old")
 		"film_criaturas": _film_creatures()
 		"film_boss": _film_boss(args[2] if args.size() >= 3 else "arconte_sono")
 		"boss_board": await _boss_board(args[2] if args.size() >= 3 else "")
@@ -46,6 +47,7 @@ func _ready() -> void:
 		"film_walk": _film_walk(args.slice(2))
 		"film_death": _film_death(args.slice(2), false)
 		"film_death_old": _film_death(args.slice(2), true)
+		"geo_board": await _geo_board()
 		"run_drift": await _run_drift()
 		_: await _board()
 
@@ -139,6 +141,28 @@ func _film_sophia() -> void:
 	_label("SOPHIA — filme de animação (AnimQA)", Vector2(6, 6))
 
 
+## Fila 9 (S17/S18): parada → arranca → corre → freia → pulo → PULO DUPLO → pouso.
+## `old` = como era antes: sem largada/freada e o 2º pulo com a pirueta por código.
+var gait_old: bool = false
+
+
+func _film_gait(old: bool) -> void:
+	gait_old = old
+	var art := _sophia(Vector2(160, GROUND), 2.6)
+	art.drawn_gait = not old
+	var cam := Camera2D.new()
+	cam.position = Vector2(320, 180)
+	add_child(cam)
+	cam.make_current()
+	camera = cam
+	follow = art
+	var tl := [["idle", 0.6, 0.0], ["walk", 0.9, 250.0], ["idle", 0.6, 0.0], ["walk", 0.5, 250.0], ["idle", 0.5, 0.0],
+		["jump", 0.30, 0.0, false, -1.0], ["fall", 0.12, 0.0, false, 0.2], ["double_jump", 0.34, 40.0, false, -0.8],
+		["fall", 0.35, 40.0, false, 1.0], ["idle", 0.6, 0.0]]
+	actors.append({"art": art, "tl": tl, "i": -1, "t": 0.0, "y0": art.position.y})
+	_label("SOPHIA — arrancada, freada e pulo duplo (%s)" % ("ANTES" if old else "DEPOIS"), Vector2(6, 6))
+
+
 func _film_creatures() -> void:
 	RenderingServer.set_default_clear_color(Color("56636e"))   # fundo claro: bichos são escuros
 	var ids := ["servo", "canino", "larva"]
@@ -174,6 +198,16 @@ func _process(delta: float) -> void:
 				"riposte":
 					art.set_anim("idle")
 					art.play_action("riposte")
+				"double_jump":
+					# o que o player faz no 2º pulo: quadros desenhados (S17) ou,
+					# antes deles, a pirueta inteira girando o cartão
+					art.set_anim("jump")
+					if not gait_old and art.has_action("double_jump"):
+						art.play_action("double_jump")
+					else:
+						var tw := art.create_tween()
+						tw.tween_property(art, "rotation", TAU, 0.3).from(0.0).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+						tw.tween_callback(func() -> void: art.rotation = 0.0)
 				_:
 					art.set_anim(String(step[0]))
 		if a.i >= a.tl.size():
@@ -187,8 +221,16 @@ func _process(delta: float) -> void:
 		art.pose_progress = clampf(a.t / float(st[1]), 0.0, 1.0) if (s0.begins_with("windup") or s0.begins_with("attack") or s0 == "recover") and not art.painted.get("hero", false) else -1.0
 		if st.size() > 4:
 			# arco do pulo: sobe e desce
+			# |st[4]| = fração: subida de 70 px × f a partir de onde está; queda de f da altura
 			var u: float = a.t / float(st[1])
-			art.position.y = a.y0 - (sin((u * 0.5) * PI) * 70.0 if float(st[4]) < 0.0 else cos((u * 0.5) * PI) * 70.0)
+			if a.t <= delta:
+				a["ys"] = art.position.y
+			var ys: float = float(a.get("ys", a.y0))
+			var f: float = absf(float(st[4]))
+			if float(st[4]) < 0.0:
+				art.position.y = ys - sin((u * 0.5) * PI) * 70.0 * f
+			else:
+				art.position.y = ys + (a.y0 - ys) * f * (1.0 - cos((u * 0.5) * PI))
 		else:
 			art.position.y = a.y0
 	if camera != null and follow != null:
@@ -397,6 +439,58 @@ func _rim_board() -> void:
 		await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://rim_board.png")
 	CharacterArt.rim_override = -1
+	get_tree().quit()
+
+
+## GEOMETRIA POR QUADRO (Onda 6): a Sophia em golpes e 3 inimigos, com
+## CharacterArt.frame_geometry(true) desenhada por cima do quadro renderizado:
+## verde = caixa do corpo, amarelo = contorno, vermelho = eixo do cajado.
+func _geo_board() -> void:
+	RenderingServer.set_default_clear_color(Color("2b3440"))
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	var arts: Array = []
+	var cells := [["idle", 0.4], ["attack", 0.25, 1], ["attack", 0.25, 2], ["attack", 0.3, 3], ["attack_heavy", 0.2], ["cast", 0.25], ["dodge", 0.15]]
+	for i in cells.size():
+		var art := _sophia(Vector2(80 + i * 165, 300), 2.2)
+		art.set_process(false)
+		if cells[i].size() > 2:
+			art.combo_step = int(cells[i][2])
+		art.set_anim(String(cells[i][0]))
+		art.anim_time = float(cells[i][1])
+		art.queue_redraw()
+		arts.append(art)
+	var ids := ["arconte_fome", "arconte_coroa", "escudeiro", "cao", "rei_final"]
+	for k in ids.size():
+		var b := _boss(ids[k], Vector2(130 + k * 250, 650), 1.3)
+		b.scale.x = -b.scale.x
+		b.set_process(false)
+		b.set_anim("attack" if k % 2 == 0 else "idle")
+		b.pose_progress = 0.3
+		b.queue_redraw()
+		arts.append(b)
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var over := Node2D.new()
+	over.z_index = 50
+	add_child(over)
+	over.draw.connect(func() -> void:
+		for a in arts:
+			var g: Dictionary = a.frame_geometry(true)
+			if g.is_empty():
+				continue
+			over.draw_rect(g.body, Color(0.2, 1.0, 0.3, 0.9), false, 1.5)
+			if g.has("body_poly"):
+				var pl: PackedVector2Array = g.body_poly
+				pl.append(pl[0])
+				over.draw_polyline(pl, Color(1.0, 0.9, 0.2, 0.9), 1.0)
+			if g.has("staff"):
+				over.draw_line(g.staff[0], g.staff[1], Color(1.0, 0.2, 0.2, 0.95), 3.0)
+				over.draw_circle(g.tip, 3.0, Color(1, 1, 1)))
+	over.queue_redraw()
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://geo_board.png")
 	get_tree().quit()
 
 

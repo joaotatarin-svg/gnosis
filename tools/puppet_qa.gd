@@ -219,6 +219,18 @@ func _check_frames() -> void:
 			if art._death_t < CharacterArt.DEATH_BREAK:
 				min_sy = minf(min_sy, float(art._death_motion()[3]))
 		check(art._shattered and done[0], "Morte de chefe não estilhaça/termina: " + entry.name)
+		# geometria por quadro: todo quadro com caixa do corpo dentro do retângulo do quadro
+		var bad_geo: int = 0
+		for fname in meta.frames:
+			var fg: Dictionary = meta.frames[fname]
+			if not fg.has("body"):
+				bad_geo += 1
+				continue
+			var bb: Array = fg.body
+			var rr2: Array = fg.rect
+			if float(bb[2]) < 4.0 or float(bb[3]) < 4.0 or float(bb[0]) + float(bb[2]) > float(rr2[2]) + 1.0 or float(bb[1]) + float(bb[3]) > float(rr2[3]) + 1.0:
+				bad_geo += 1
+		check(bad_geo == 0, "Geometria do corpo ausente/inválida em %d quadros: %s" % [bad_geo, entry.name])
 		check(min_sy > 0.9, "Morte de chefe 'murcha' o corpo (escala %.2f): %s" % [min_sy, entry.name])
 		lines.append("%-24s QUADROS: %d quadros, %d estados, corpo %.1f px (boneco %.1f), atlas %dx%d" % [entry.name,meta.frames.size(),meta.states.size(),body_world,old_world,atlas.get_width(),atlas.get_height()])
 		art.queue_free()

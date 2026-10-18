@@ -306,3 +306,42 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   FIXO sobre quadros que mudam → pedido em docs/pedidos/onda6_narrativa6.md (usar os estados pintados, ou
   `art.head_point()`). Cada quadro de todo atlas de chefe/criatura agora tem `head` medido (JSON) e
   `CharacterArt.head_point()` devolve a cabeça do quadro atual em coordenadas locais.
+
+## Geometria por quadro (Onda 6, PLAYTEST 2)
+
+`tools/anim/geometry.py` mede em cada quadro de TODO atlas: caixa e contorno do corpo e, na Sophia, o eixo visível do cajado (cabo→ponta; estimado quando cruza o corpo). `CharacterArt.frame_geometry(global)` devolve isso no transform do corpo. HeroQA confere que todo quadro tem corpo, todo quadro com ponta tem cajado e que, na estocada, a ponta cai no cristal e fora do corpo; PuppetQA confere a caixa do corpo de todos os chefes. Prova: `gifs/geometria_quadros.png`. Pedidos ao combate6/inimigos6/chefes6 em `docs/pedidos/onda6_*.md`.
+
+
+## BILHETE PARA O SUCESSOR (18/10/2026, integrador de arte, branch `dir2/arte-gpt`)
+
+**Estado:** tudo abaixo está commitado e com push; `tools/validate.ps1 -Repeat 2` VERDE (11 etapas) no último commit.
+Feito na Onda 6: Rei revelado + retratos (Pedidos 8/9), morte de chefe com peso (`play_boss_death`, pedido ao chefes6),
+cabeça por quadro (`head_point`, pedidos ao inimigos6/narrativa6 sobre o orbe solto e a máscara do `_King`),
+geometria por quadro (`frame_geometry`, pedidos ao combate6/inimigos6/chefes6). Pedido à Produção de morte em etapas:
+`C:\gnosis-wt\_gpt\out\PEDIDO_MORTE_CHEFES.md` (quando chegarem `boss_<n>_<nome>_death_a.png` 2×2 stagger_0, stagger_1,
+kneel, collapse: `extra_sheets` na receita do chefe e trocar `_death_seq`/`_boss_index` para tocar as 4 etapas — hoje
+usa hurt → death).
+
+**FILA 9 — falta integrar TUDO** (folhas em `C:\gnosis-wt\_gpt\out\`, notas na seção FILA 9 do MANIFESTO; copie as usadas
+para `artes/gpt/`):
+- `s17_doublejump_a` (Sophia, pulo duplo) e `s18_runstart_stop_a` (arrancada/freada; a VIRADA não lê como giro — pode
+  ficar de fora): fontes novas em `tools/anim/sophia_recipe.json` (copiar para `assets/painted/src/sophia_s17.png`/`s18`),
+  estados novos (ex.: `jump2`, `run_start`, `run_stop`), seleção em `CharacterArt._hero_seq` e contrato com o combate6
+  (qual estado o player.gd manda: pedir em `docs/pedidos/onda6_combate6.md`). Atlas da Sophia já está 2048×4096.
+- Voadores `fly_mariposa_a` (pó do sono rosado translúcido → apagar no recorte, refazer por FX) e `fly_sentinela_a`;
+  campeões `champ_1..7_*_a` (champ_2 e champ_7: recortar pela GRADE FIXA 384×512 — hoje `slice_sheet` agrupa por
+  componente; dá para forçar com uma opção nova "grid_only"); `en_alado_a`, `en_cornudo_a`, `en_fantasma_b` (FUNDO VERDE
+  ≈2,250,1 — o `key_array` estima a cor pela moldura e usa o canal verde? CONFERIR: a fórmula atual assume r,b > g
+  (magenta); para fundo verde precisa de uma chave própria); `npc_soter_blessing_a` (coluna de luz → apagar no recorte).
+  Receita = grupo `creatures` como os bots (`tools/anim_bosses/mk_bot_recipes.py` é o modelo; sem `old_body`: use
+  `size_fix`/escala pela altura em tela desejada). IDs dos inimigos novos: combinar com o inimigos6 em
+  `docs/pedidos/onda6_inimigos6.md` e ligar em `PaintedLibrary.character()` (hoje: alado/fantasma/cornudo caem na família
+  do Arconte com dessaturação — trocar por `creatures/en_<id>` quando houver atlas, como os bots).
+- `fx_floor_crack_a`: perguntar ao chefe se a encenação já usa antes de integrar.
+
+**Ferramentas:** `tools/anim_bosses/boss_frames.py <receita>` (atlas+JSON+geometria; `--no-rife`), `add_motion.py`,
+`portraits.py`, `tools/anim/build_frames.py` (Sophia), `tools/anim/sophia_motion.py`, AnimQA (`boss_board`, `film_boss`,
+`film_walk`, `film_death[_old]`, `geo_board`, `npc_board`, `cego_board`, `rim_board`, `weapon_board`, `bot_board`).
+Depois de gerar atlas novo: `godot --headless --editor --quit` e conferir `mipmaps/generate=true` no `.import` novo
+(trocar e reimportar). PuppetQA trava fantasma/RIFE no andar e confere geometria; HeroQA confere Sophia.
+**Regras atuais:** nenhuma janela visível (capturas `--position 4000,4000`), `--audio-driver Dummy`, validate `-Repeat 2`.

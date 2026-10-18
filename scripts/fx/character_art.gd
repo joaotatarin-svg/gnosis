@@ -21,6 +21,7 @@ const GROUND_Y := 24.0            # linha do chão em unidades do corpo (pés)
 
 var anim_state: String = "idle"
 var anim_time: float = 0.0
+var drawn_gait: bool = true       # Sophia: largada/freada desenhadas (S18) ao começar/parar de correr
 var damage_ratio: float = 0.0     # 0 = inteiro · 1 = quase morto (rachaduras)
 var _rig_draws: Array = []        # buffer de desenho do rig (tinta em 2 passes)
 var painted: Dictionary = {}
@@ -151,10 +152,20 @@ func set_anim(state: String) -> void:
 				"attack_air", "attack_dive", "fall": rec = "rec_air"
 				"dodge": rec = "rec_dodge"
 				"hurt": rec = "rec_hurt"
+		# ARRANCADA / FREADA desenhadas (S18): parado → correndo toca a largada;
+		# correndo (mais que um toque) → parado toca a derrapagem
+		var gait: String = ""
+		if drawn_gait and painted.get("hero", false) and rec == "":
+			if anim_state in ["idle", "recover"] and state == "walk":
+				gait = "start_run"
+			elif anim_state == "walk" and state == "idle" and anim_time > 0.3:
+				gait = "stop_run"
 		anim_state = state
 		anim_time = 0.0
 		if rec != "":
 			play_action(rec)
+		elif gait != "":
+			play_action(gait)
 		# giro do manto na esquiva (contrato com o Áudio: some se não houver arquivo)
 		if state == "dodge" and painted.get("hero", false) and is_visible_in_tree():
 			Audio.play_sfx("cloth", 0.1, -4.0)
@@ -1545,6 +1556,8 @@ func _draw_painted(s: float) -> void:
 		flex_tex = db.get("flex", null)
 		# âncora e ponta do cajado vêm em px LOCAIS do quadro; a grade usa px do atlas
 		mesh = grid_mesh("sophia:%s@%s" % [e.f, anchor], rect, rect.position + anchor, Vector2(tex.get_width(), tex.get_height()))
+		_geo_fr = fr
+		_geo_anchor = anchor
 		body_h = float(meta.body_px)
 		k = profile.height * 1.19 / body_h
 		if fr.tip != null:
@@ -1582,6 +1595,8 @@ func _draw_painted(s: float) -> void:
 		m[0] = float(m[0]) + float(meta.fit.dx) * hw / s
 		m[4] = float(m[4]) - float(meta.fit.foot_gap) * hw / s
 		_boss_shown = {"rect": rect, "anchor": anchor, "k": k, "tex": tex}
+		_geo_fr = fr
+		_geo_anchor = anchor
 		if fr.has("head"):
 			_boss_shown["head"] = Vector2(fr.head[0], fr.head[1])
 		# criaturas comuns: mesma tinta leve por tipo da pintura única
@@ -1696,6 +1711,46 @@ func _draw_painted(s: float) -> void:
 
 
 var _body_xform := Transform2D.IDENTITY   # último transform do corpo (afterimage)
+var _geo_fr: Dictionary = {}               # quadro desenhado agora (geometria medida no atlas)
+var _geo_anchor := Vector2.ZERO
+
+
+## GEOMETRIA DO QUADRO DESENHADO AGORA (Onda 6, "o cajado atravessa"): medida
+## offline na silhueta de cada quadro (tools/anim/geometry.py) e levada pelo
+## mesmo transform do corpo (âncora, escala, tranco, flip do pai). Coordenadas
+## LOCAIS deste nó (use `to_global` / `global=true` para o mundo). Chaves:
+##   body: Rect2        caixa do corpo (sem cajado/arma fina nem fios soltos)
+##   body_poly: PackedVector2Array   contorno convexo do corpo (≤ 10 pontos)
+##   staff: PackedVector2Array [cabo, ponta]   eixo do cajado (só a Sophia)
+##   staff_estimated: bool   cajado cruzando o corpo (eixo estimado da ponta)
+##   tip: Vector2       ponta de cristal do cajado (só a Sophia)
+## Vazio se o personagem não toca quadros desenhados (boneco/pintura única).
+func frame_geometry(global: bool = false) -> Dictionary:
+	if _geo_fr.is_empty() or not _geo_fr.has("body"):
+		return {}
+	var xf: Transform2D = _body_xform
+	if global:
+		xf = get_global_transform() * xf
+	var out: Dictionary = {}
+	var b: Array = _geo_fr.body
+	var corners := PackedVector2Array()
+	for cc in [Vector2(b[0], b[1]), Vector2(b[0] + b[2], b[1]), Vector2(b[0] + b[2], b[1] + b[3]), Vector2(b[0], b[1] + b[3])]:
+		corners.append(xf * (cc - _geo_anchor))
+	var r := Rect2(corners[0], Vector2.ZERO)
+	for cc in corners:
+		r = r.expand(cc)
+	out["body"] = r
+	if _geo_fr.has("body_poly"):
+		var poly := PackedVector2Array()
+		for p in _geo_fr.body_poly:
+			poly.append(xf * (Vector2(p[0], p[1]) - _geo_anchor))
+		out["body_poly"] = poly
+	if _geo_fr.has("staff"):
+		var s: Array = _geo_fr.staff
+		out["staff"] = PackedVector2Array([xf * (Vector2(s[0], s[1]) - _geo_anchor), xf * (Vector2(s[2], s[3]) - _geo_anchor)])
+		out["staff_estimated"] = bool(_geo_fr.get("staff_est", false))
+		out["tip"] = out.staff[1]
+	return out
 var _body_mesh: Dictionary = {}
 var _body_tex: Texture2D
 var _body_tip := Vector2.INF
@@ -1877,11 +1932,17 @@ var _action: String = ""
 var _action_t: float = 0.0
 
 
-func play_action(action_name: String) -> void:
+## A Sophia tem essa ação DESENHADA? (ex.: "double_jump" — o player usa isto
+## para trocar a pirueta por código pela cambalhota pintada da S17)
+func has_action(action_name: String) -> bool:
 	if not painted.get("hero", false):
-		return
+		return false
 	var db: Dictionary = frame_db("sophia")
-	if db.is_empty() or not db.meta.states.has(action_name):
+	return not db.is_empty() and db.meta.states.has(action_name)
+
+
+func play_action(action_name: String) -> void:
+	if not has_action(action_name):
 		return
 	_action = action_name
 	_action_t = 0.0
@@ -1903,8 +1964,13 @@ func _tick_action(delta: float) -> void:
 	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
 	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):
 		_action = ""
-	# recuperação só vale enquanto ela está parada (andou/atacou = corta)
-	elif _action.begins_with("rec_") and anim_state != "idle":
+	# recuperação e freada só valem enquanto ela está parada (andou/atacou = corta)
+	elif (_action.begins_with("rec_") or _action == "stop_run") and anim_state != "idle":
+		_action = ""
+	# largada só enquanto corre; pulo duplo só no ar (golpe/esquiva/pouso = corta)
+	elif _action == "start_run" and anim_state != "walk":
+		_action = ""
+	elif _action == "double_jump" and not anim_state in ["jump", "fall"]:
 		_action = ""
 
 

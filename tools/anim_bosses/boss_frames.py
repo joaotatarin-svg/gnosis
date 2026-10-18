@@ -44,6 +44,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "anim"))
 from clean_sheets import fill_transparent_rgb, key_array  # noqa: E402
 from build_frames import PAD, measure, pack, resize_rgba, scale_meas, slice_sheet  # noqa: E402
+from geometry import measure_geometry  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUT = os.path.join(ROOT, "assets", "painted", "derived", "bosses")
@@ -278,6 +279,8 @@ def build(name: str, use_rife: bool = True) -> None:
 			band = al[y0h:y1h]
 			xs_h = np.nonzero(band)[1]
 			out_frames[n]["head"] = [round(float(xs_h.mean()), 2), round(m["top"] + 0.07 * hh, 2)]
+		# geometria por quadro (caixa/contorno do corpo) — hurtbox no jogo
+		out_frames[n].update(measure_geometry(img))
 	os.makedirs(OUT, exist_ok=True)
 	a = atlas[..., 3] / 255.0
 	rgb = fill_transparent_rgb(atlas[..., :3], a)
