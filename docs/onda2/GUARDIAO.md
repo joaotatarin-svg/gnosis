@@ -725,8 +725,8 @@ isso. MAPA7.md com a decisão final e a CHECAGEM atualizada (o "ponto honesto" f
 - `belias.json`: `foot_gap 0` (pés no chão).
 - Sondas `ContrastProbe` / `FeetProbe` / `contrast_r18.py` e pedido ao cenario7.
 
-**Prova vista:** `C:\gnosis-wt\_capsrte-gpt1818_antes_depois.png` (Torpor 3, Corrente 30, Praga 57) e o meu recorte ampliado
-2× das pernas/botas: `C:\gnosis-wt\_caps\guardiao18_arte_zoom.png`.
+**Prova vista:** `C:\gnosis-wt\_caps\arte-gpt\r18\r18_antes_depois.png` (Torpor 3, Corrente 30, Praga 57) e o meu recorte ampliado
+2× das pernas/botas: `C:\gnosis-wt\_caps\guardiao\r18_arte_zoom.png`.
 
 **O rim "lava" a pintura? NÃO.** O miolo da pintura fica igual: o manto branco e o turquesa não mudam, porque a luz de recorte só entra nas
 bordas ESCURAS (fator `dark`). O que se nota é o HALO de fora:
