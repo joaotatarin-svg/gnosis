@@ -715,36 +715,64 @@ func hold_death() -> bool:
 
 
 func _death_sequence() -> void:
-	# 0 — IMPACTO: o último golpe pesa (hitstop longo + câmera lenta curta)
+	var v = e.visual
+	var art: bool = v != null and v.has_method("play_boss_death") and v.has_method("has_boss_frames") and v.has_boss_frames()
+	# 0 — IMPACTO: o golpe final pesa. É o ÚNICO tremor grande da morte (R3/§4.1);
+	# as etapas seguintes só têm micro-tremor.
+	e.estate = Enemy.EState.DEAD
 	e.boss_dying.emit(0)
 	Juice.hit_stop(0.2)
-	Juice.slow_mo(0.3, 1.0)
+	Juice.slow_mo(0.3, 0.8)
 	Juice.shake(0.8)
 	Juice.rumble(0.6, 0.8, 0.4)
 	e._flash(Color(3.2, 3.2, 3.2, 1), Enemy.VIB_HEAVY)
 	Audio.duck_music(3.0, -14.0)
-	await _real_wait(DEATH_STEPS[0])
-	# 1 — CAMBALEIA: o quadro de dor segurado, tremendo
-	_dying = 1
-	e.boss_dying.emit(1)
-	e._flash(Color(2.2, 2.0, 1.8, 1), Enemy.VIB_HEAVY)
-	await _real_wait(DEATH_STEPS[1])
-	# 2 — COLAPSO: os quadros de morte (de joelhos / desmoronando)
-	_dying = 2
-	e.boss_dying.emit(2)
-	e.estate = Enemy.EState.DEAD
-	Juice.shake(0.5)
-	await _real_wait(DEATH_STEPS[2])
-	# 3 — PAUSA: um instante de silêncio com o corpo caído
-	_dying = 3
-	e.boss_dying.emit(3)
-	await _real_wait(DEATH_STEPS[3])
-	# 4 — DESINTEGRAÇÃO: libera a morte normal (recompensa, defeated, gibs)
+	if art:
+		# a ARTE conduz a linha do tempo (cambaleio 0,34 · queda 0,62 · estilhaço
+		# 1,08 · fim 1,9 s); o cérebro só marca as etapas e espera o fim
+		v.play_boss_death(e.eye_color)
+		await _until_death_t(v, 0.34)
+		_dying = 1
+		e.boss_dying.emit(1)
+		await _until_death_t(v, 0.62)
+		_dying = 2
+		e.boss_dying.emit(2)
+		Juice.shake(0.15)
+		await _until_death_t(v, 1.08)
+		_dying = 3
+		e.boss_dying.emit(3)
+		if e._orb != null:
+			e._orb.visible = false
+		if v.is_dying():
+			await v.death_finished
+	else:
+		await _real_wait(DEATH_STEPS[0])
+		_dying = 1
+		e.boss_dying.emit(1)
+		e._flash(Color(2.2, 2.0, 1.8, 1), Enemy.VIB_HEAVY)
+		await _real_wait(DEATH_STEPS[1])
+		_dying = 2
+		e.boss_dying.emit(2)
+		Juice.shake(0.15)
+		await _real_wait(DEATH_STEPS[2])
+		_dying = 3
+		e.boss_dying.emit(3)
+		await _real_wait(DEATH_STEPS[3])
+	# 4 — FIM: libera a morte normal (recompensa, defeated); com a arte, o corpo
+	# já estilhaçou — o Enemy não faz o segundo final (is_dying)
 	_dying = 4
 	e.boss_dying.emit(4)
 	if is_instance_valid(e):
 		e.estate = Enemy.EState.STAGGER
 		e._on_died()
+
+
+## Espera o relógio da morte desenhada chegar em t (s), com teto de segurança.
+func _until_death_t(v, t: float) -> void:
+	var guard := 0
+	while is_instance_valid(v) and v.is_dying() and float(v.get("_death_t")) < t and guard < 600:
+		guard += 1
+		await get_tree().process_frame
 
 
 ## Espera em tempo REAL (ignora câmera lenta e hitstop; corre com o jogo pausado).

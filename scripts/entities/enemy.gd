@@ -1346,6 +1346,12 @@ func _on_died() -> void:
 	if visual == null:
 		queue_free()
 		return
+	# chefes6: a morte desenhada (play_boss_death) já estilhaçou o corpo — sem
+	# segundo final (_death_pose_then_burst), só libera o nó.
+	if brain != null and not revivable and visual.has_method("is_dying") and visual.is_dying():
+		visual.visible = false
+		queue_free()
+		return
 	# Batalha final: a forma cai mas fica (pode se refazer).
 	if revivable:
 		_flash_t = -1.0                     # o tween de "forma caída" manda no modulate
