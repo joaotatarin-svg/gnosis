@@ -7016,44 +7016,64 @@ msgid "selado  ·  vença %s"
 msgstr "sealed  ·  defeat %s"
 
 #. world_map._build_ui.1d8158  [ui]
-#: scripts/ui/world_map.gd:136
+#: scripts/ui/world_map.gd:143
 msgid "escolhem o caminho"
 msgstr "choose the path"
 
+#. world_map._subtitle.5840f1  [ui]
+#: scripts/ui/world_map.gd:152
+msgid "Com as asas, as salas secretas se abrem."
+msgstr "With wings, the secret rooms open."
+
 #. world_map._subtitle.4d3e17  [ui]
-#: scripts/ui/world_map.gd:145
+#: scripts/ui/world_map.gd:154
 msgid "Prévia do mapa — o caminho do Éon"
 msgstr "Map preview — the path of the Aeon"
 
 #. world_map._subtitle.b71987  [ui]
-#: scripts/ui/world_map.gd:146
+#: scripts/ui/world_map.gd:155
 msgid "O caminho se divide. Escolha por onde subir."
 msgstr "The path splits. Choose your way up."
 
 #. world_map._refresh_info.acebcb  [ui]
-#: scripts/ui/world_map.gd:250
+#: scripts/ui/world_map.gd:288
 msgid "Recompensa: %s"
 msgstr "Reward: %s"
 
-#. world_map._refresh_info.592a8f  [ui]
-#: scripts/ui/world_map.gd:253
-msgid "Selado: exige o pulo duplo. Quem dá asas não luta."
-msgstr "Sealed: needs the double jump. The one who gives wings does not fight."
+#. world_map._refresh_info.eb4a3b  [ui]
+#: scripts/ui/world_map.gd:294
+msgid "Recompensa: escondida"
+msgstr "Reward: hidden"
 
-#. world_map._refresh_info.f50600  [ui]
-#: scripts/ui/world_map.gd:255
-msgid "O pulo duplo abre esta passagem."
-msgstr "The double jump opens this passage."
+#. world_map._refresh_info.6ad01a  [ui]
+#: scripts/ui/world_map.gd:295
+msgid "Precisa de asas: só o pulo duplo alcança esta sala. Mais adiante, alguém te dá asas."
+msgstr "Needs wings: only the double jump reaches this room. Further on, someone will give you wings."
+
+#. world_map._refresh_info.1956f9  [ui]
+#: scripts/ui/world_map.gd:297
+msgid "Aberta: com as asas, esta sala está ao alcance."
+msgstr "Open: with wings, this room is within reach."
 
 #. world_map._refresh_info.30330f  [ui]
-#: scripts/ui/world_map.gd:258
+#: scripts/ui/world_map.gd:300
 msgid "Há uma Estela nesta camada, em qualquer caminho."
 msgstr "There is a Stele on this layer, on any path."
 
+#. world_map._draw_graph.35236c  [ui]
+#: scripts/ui/world_map.gd:386
+msgid "precisa de asas"
+msgstr "needs wings"
+
 #. world_map._draw_legend.35b777  [ui]
-#: scripts/ui/world_map.gd:356
+#: scripts/ui/world_map.gd:408
 msgid "Estela"
 msgstr "Stele"
+
+#. world_map._draw_legend.cdf277  [ui]
+#: scripts/ui/world_map.gd:413
+msgid "precisa de asas (pulo duplo)"
+msgstr "needs wings (double jump)"
 
 #. EndScreen.Menu.57f5f5  [ui_cena]
 #: scenes/ui/EndScreen.tscn:80
@@ -7312,6 +7332,10 @@ msgstr "ARCHON   ·   PALETTE %d / 3"
 #. composto (montado pelo código)
 msgid "segue"
 msgstr "continue"
+
+#. composto (montado pelo código)
+msgid "aberta"
+msgstr "open"
 
 #. composto (montado pelo código)
 msgid "fechar"
