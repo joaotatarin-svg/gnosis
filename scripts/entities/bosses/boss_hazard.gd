@@ -59,8 +59,14 @@ static func make(parent: Node, pos: Vector2, p_shape: String, p_half_w: float, p
 	return h
 
 
+## R5: nada fere sem aviso próprio — mínimo de MIN_WARN s de contorno antes.
+const MIN_WARN := 0.45
+
+
 func _ready() -> void:
 	add_to_group("boss_hazard")
+	if not safe and (damage > 0 or effect != ""):
+		delay = maxf(delay, MIN_WARN)
 	if not silent and delay > 0.25:
 		_tell_sound("tell_unblock")
 

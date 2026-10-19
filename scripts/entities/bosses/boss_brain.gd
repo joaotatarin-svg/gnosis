@@ -250,7 +250,12 @@ func strike_tick(delta: float) -> void:
 	if String(mv.get("kind", "")) == "charge":
 		e.velocity.x = e.atk_dir * float(mv.get("speed", 420.0))
 		var b := arena_bounds()
-		if (e.atk_dir > 0 and e.global_position.x > b.y - 40.0) or (e.atk_dir < 0 and e.global_position.x < b.x + 40.0):
+		var past: float = 0.0
+		var pl := _player()
+		if pl != null:
+			past = (e.global_position.x - pl.global_position.x) * float(e.atk_dir)
+		# para na parede OU logo depois de passar por ela (fica no quadro da câmera)
+		if (e.atk_dir > 0 and e.global_position.x > b.y - 40.0) or (e.atk_dir < 0 and e.global_position.x < b.x + 40.0) or past > 130.0:
 			e.velocity.x = 0.0
 			e.attack_timer = minf(e.attack_timer, 0.0)
 	_strike_tick(mv, delta)

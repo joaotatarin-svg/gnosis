@@ -976,7 +976,17 @@ func _boss_setup() -> void:
 	brain = b
 	add_child(brain)
 	brain.setup(self)
+	# R18: a Sophia sempre na frente do corpo enorme do chefe (o chefe vai para
+	# antes dela na árvore — mesma z, desenhado atrás).
+	_draw_behind_player.call_deferred()
 	phase_marks = brain.marks.duplicate()
+
+
+func _draw_behind_player() -> void:
+	if player == null or not is_instance_valid(player) or get_parent() == null:
+		return
+	if player.get_parent() == get_parent() and get_index() > player.get_index():
+		get_parent().move_child(self, player.get_index())
 
 
 ## Confere se o dano levou o chefe à próxima fase. true = mudou de fase.

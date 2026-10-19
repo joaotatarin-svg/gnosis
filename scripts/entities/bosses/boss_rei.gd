@@ -194,7 +194,9 @@ func _on_strike(m: Dictionary) -> void:
 					e._summon("larva", 2)
 		"teleporte":
 			if pl != null:
-				e._blink_to(pl.global_position.x - float(pl.get("facing")) * 50.0)
+				# o manto é largo: nunca cola na parede (não fica cortado na borda)
+				var b2 := arena_bounds()
+				e._blink_to(clampf(pl.global_position.x - float(pl.get("facing")) * 50.0, b2.x + 110.0, b2.y - 110.0))
 
 
 func _on_defeated(x) -> void:
