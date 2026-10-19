@@ -88,8 +88,9 @@ func _draw_art() -> void:
 	var sc := Vector2.ONE * (width / maxf(1.0, HazardArt.num("mirror_plat", "ref_w", width)))
 	var at := Vector2(0.0, -6.0)
 	if not _solid:
-		var a := 0.2 + 0.08 * sin(_t * 3.0)
+		var a := 0.3 + 0.08 * sin(_t * 3.0)
 		var wob := Vector2(sin(_t * 9.0) * 1.2, sin(_t * 5.3) * 0.8)
+		HazardArt.draw_outline(self, "mirror_plat", 0, at + wob, Color(glass, a * 0.8), 1.0, 0.0, sc)
 		HazardArt.draw(self, "mirror_plat", 0, at + wob, 0.0, sc, Color(0.6, 0.85, 1.1, a))
 		draw_rect(Rect2(-width * 0.5, -6.0, width, 12.0), Color(glass, a + 0.05), false, 1.0)
 		return

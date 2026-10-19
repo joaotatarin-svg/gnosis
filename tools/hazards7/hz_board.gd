@@ -131,9 +131,9 @@ func _open(screen: int, node_id: String) -> void:
 		await _frame()
 	# sem HUD/legendas (dentro e fora da fase)
 	# só o HUD da fase (o fundo/parallax também são CanvasLayers)
-	for c in _lv.get_children():
-		if c is CanvasLayer and (c.name.begins_with("HUD") or c.is_in_group("hud")):
-			c.visible = false
+	for cl in _lv.find_children("*", "CanvasLayer", true, false):
+		if (cl as CanvasLayer).layer > 0 or cl.name.begins_with("HUD"):
+			(cl as CanvasLayer).visible = false
 	for n in get_tree().get_nodes_in_group("hud"):
 		if n is CanvasItem:
 			(n as CanvasItem).visible = false
@@ -270,6 +270,9 @@ func _shots(dir: String, tag: String, job: String) -> void:
 	if h == null:
 		print("HZ: '%s' não achado na tela %d %s" % [kind, int(j[1]), j[2]])
 		return
+	for i in 8:
+		_place(kind, h)
+		await _frame()
 	for st in _states(kind, h):
 		for i in 3:
 			_place(kind, h)
