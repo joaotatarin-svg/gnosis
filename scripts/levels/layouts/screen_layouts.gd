@@ -253,15 +253,13 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 	return out
 
 
-## A tela tem ENCONTRO da história (Soter nos Éons 1/3/5 camada 6; Velkar no
-## Éon 6 camada 5)? Mesma regra do Level._spawn_extras. O NPC fica no descanso
+## A tela tem ENCONTRO da história (Soter/Velkar)? Lugares em
+## RunManager.SOTER_SLOTS/VELKAR_SLOT (a mesma fonte do Level._spawn_extras). O NPC fica no descanso
 ## do meio (passagem 1).
 static func npc_on_screen(screen: int) -> bool:
 	if not RunManager.run_active:
 		return false
-	var eon := RunManager.eon_index(screen)
-	var off := RunManager.eon_offset(screen)
-	return (off == 6 and eon in [1, 3, 5]) or (off == 5 and eon == 6)
+	return RunManager.soter_meeting_at(screen) >= 0 or RunManager.velkar_at(screen)
 
 
 ## Tipo de LAYOUT da tela (nome do level6) a partir do tipo do nó do mapa.
@@ -337,14 +335,12 @@ static func _set_arena(out: Dictionary, i: int, arena: String) -> void:
 
 
 ## mapa7 (decisão do chefe, 19/10, §4 da satisfação: nenhuma isca impossível):
-## o pulo duplo vem do 1º Soter, na tela 17. Antes dela (telas 2–16) o baú alto
-## é uma TORRE de pulo simples ("tower_cache"); a saliência de pulo duplo com as
-## setas no chão ("dj_cache") só aparece da 17 em diante, quando de fato se alcança.
-const SOTER_SCREEN := 17
-
-
+## o pulo duplo vem do 1º Soter (RunManager.double_jump_screen(), lido de
+## RunManager.SOTER_SLOTS). Antes dele o baú alto é uma TORRE de pulo simples
+## ("tower_cache"); a saliência de pulo duplo com as setas no chão ("dj_cache")
+## só aparece da tela do Soter em diante, quando de fato se alcança.
 static func _high_cache(screen: int) -> String:
-	return "tower_cache" if screen < SOTER_SCREEN else "dj_cache"
+	return "tower_cache" if screen < RunManager.double_jump_screen() else "dj_cache"
 
 
 static func _add(out: Dictionary, passage: int, item: Dictionary) -> void:

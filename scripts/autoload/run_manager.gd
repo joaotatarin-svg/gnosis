@@ -532,6 +532,35 @@ func node_available(id: String) -> bool:
 	return true
 
 
+## ENCONTROS DA HISTÓRIA no mapa — fonte ÚNICA (Level, layouts e mapa leem
+## daqui): Soter em (Éon, camada); o 1º encontro concede o PULO DUPLO
+## (npc_encounter, meeting 0). Velkar no Éon 6, camada 5. Mudou o lugar do
+## Soter? Mude só aqui: o layout das fases (sem pulo duplo antes dele) e a QA
+## do mapa (nenhuma sala de asas antes dele) acompanham.
+const SOTER_SLOTS := [[1, 6], [3, 6], [5, 6]]
+const VELKAR_SLOT := [6, 5]
+
+
+## Índice do encontro de Soter nesta tela (0..2); -1 se não houver.
+func soter_meeting_at(screen: int) -> int:
+	if screen < FIRST_EON_SCREEN or screen > LAST_ARCHON_SCREEN:
+		return -1
+	var here := [eon_index(screen), eon_offset(screen)]
+	for i in SOTER_SLOTS.size():
+		if str(SOTER_SLOTS[i]) == str(here):
+			return i
+	return -1
+
+
+func velkar_at(screen: int) -> bool:
+	return screen >= FIRST_EON_SCREEN and screen <= LAST_ARCHON_SCREEN 		and eon_index(screen) == int(VELKAR_SLOT[0]) and eon_offset(screen) == int(VELKAR_SLOT[1])
+
+
+## Tela em que o pulo duplo chega (o 1º Soter). Antes dela nada pode exigi-lo.
+func double_jump_screen() -> int:
+	return EonMap.screen_of(int(SOTER_SLOTS[0][0]), int(SOTER_SLOTS[0][1]))
+
+
 ## Contrato com a Progressão/Combate (Onda 6): Progression.has_double_jump().
 ## Sem o método (branch sem a mecânica ainda), ninguém tem o pulo duplo.
 func has_double_jump() -> bool:

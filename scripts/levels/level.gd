@@ -463,9 +463,7 @@ func reserved_spans() -> Array:
 		var px: float = _seal_x()
 		out.append([px - 125.0, px + 125.0])
 	if RunManager.run_active:
-		var eon := RunManager.eon_index(screen)
-		var off := RunManager.eon_offset(screen)
-		if (off == 6 and eon in [1, 3, 5]) or (off == 5 and eon == 6):
+		if RunManager.soter_meeting_at(screen) >= 0 or RunManager.velkar_at(screen):
 			var mx: float = rest_points[rest_points.size() / 2].x
 			out.append([mx - 60.0, mx + 60.0])
 	return out
@@ -556,20 +554,19 @@ func _spawn_extras() -> void:
 		puz.screen = screen
 		add_child(puz)
 		puz.global_position = Vector2(_seal_x(), rest_points[last].y)
-	# Encontros da história: Soter nos Éons 1, 3 e 5 (offset 6, no descanso do
-	# meio) e Velkar no Éon 6 (offset 5), perto do fim.
+	# Encontros da história (Soter e Velkar, no descanso do meio). Os lugares
+	# vêm de RunManager.SOTER_SLOTS/VELKAR_SLOT (mapa7: fonte única).
 	if not RunManager.run_active:
 		return
-	var eon := RunManager.eon_index(screen)
-	var off := RunManager.eon_offset(screen)
 	var mid: Vector2 = rest_points[rest_points.size() / 2]
-	if off == 6 and eon in [1, 3, 5]:
+	var meet := RunManager.soter_meeting_at(screen)
+	if meet >= 0:
 		var soter := NpcEncounter.new()
 		soter.kind = "soter"
-		soter.meeting = [1, 3, 5].find(eon)
+		soter.meeting = meet
 		add_child(soter)
 		soter.global_position = mid + Vector2(0.0, -10.0)
-	elif off == 5 and eon == 6:
+	elif RunManager.velkar_at(screen):
 		var velkar := NpcEncounter.new()
 		velkar.kind = "velkar"
 		add_child(velkar)

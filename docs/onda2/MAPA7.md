@@ -61,6 +61,21 @@ Por isso:
   - LayoutQA: 1246 verificações em 129 telas, PASS (baú de torre alcançável com pulo simples);
   - validate -Repeat 2: **TUDO VERDE (11 etapas, 2/2)**.
 
+### 1d. Lugar do Soter numa fonte só (robustez, pedido do chefe)
+- A regra "sem pulo duplo antes do Soter" não usa mais o número 17 fixo.
+  - Lê `RunManager.double_jump_screen()`, que vem de `RunManager.SOTER_SLOTS`
+    (`[[1,6],[3,6],[5,6]]`, o 1º concede o pulo duplo) e `VELKAR_SLOT` (`[6,5]`).
+- A mesma tabela agora posiciona os encontros:
+  - `Level._spawn_extras` e a reserva de espaço em `level.gd` usam `soter_meeting_at()` e
+    `velkar_at()`;
+  - `ScreenLayouts.npc_on_screen` também;
+  - `_high_cache` usa `double_jump_screen()`.
+- Mudar o Soter de lugar = editar `SOTER_SLOTS`. O layout e a MapQA acompanham sozinhos.
+- **Validação:**
+  - MapQA 29 PASS (nova: "lugar do Soter lido de SOTER_SLOTS");
+  - LayoutQA: 1246 verificações, PASS, com saída idêntica nas telas de encontro;
+  - validate -Repeat 2 verde.
+
 ### Pedido restante
 - **narrativa:**
   - Uma fala de chegada para `"hidden"` em `Narrative.node_arrival` (hoje fica muda).
