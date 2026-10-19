@@ -32,6 +32,7 @@ var _close_button: Button
 
 
 func _ready() -> void:
+	layer = 45                       # acima do HUD (20) — ver hud.gd HUD_LAYER
 	CodexStyle.apply_existing(self)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	PauseStack.push(self)

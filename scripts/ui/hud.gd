@@ -46,6 +46,7 @@ const BOSS_BAR_Y := 334.0        # topo da barra do chefe
 const EON_RIGHT := 626.0
 ## Toast numa faixa SÓ DELE (QA-UX M2): abaixo da fileira de Anéis (y 62) e do
 ## nome do Anel, à esquerda do contador de golpes (x ≥ 520), acima das cabeças.
+const HUD_LAYER := 20
 const TOAST_RECT := Rect2(120, 88, 400, 30)
 const HINT_Y := 46.0              # centro vertical da faixa de dicas (topo central)
 const HINT_TIME := 4.2            # s visível (tempo de jogo, para na pausa)
@@ -147,6 +148,10 @@ var _obj_k: float = 0.0              # 0..1 entrada/saída do ícone do objetivo
 
 func _ready() -> void:
 	add_to_group("hud")
+	# QA7 #24: o HUD fica SEMPRE acima do mundo e dos efeitos de tela do mundo
+	# (vinheta do cenário = 1, clarão = 5). Pausa/Loja = 45, Golpes = 50,
+	# legenda = 60, caixa de diálogo = 90, cinemática = 95 continuam por cima.
+	layer = HUD_LAYER
 	# Roda com a árvore pausada SÓ para recolher durante o card de chefe (M4);
 	# o estado do jogo (barras, faíscas) continua congelado na pausa.
 	process_mode = Node.PROCESS_MODE_ALWAYS
