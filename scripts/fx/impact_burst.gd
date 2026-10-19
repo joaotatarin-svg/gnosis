@@ -20,6 +20,15 @@ static func spawn(parent: Node, pos: Vector2, col: Color, heavy: bool = false) -
 	if fx != null:
 		fx.impact(pos)
 		return
+	# golpe corpo a corpo de INIMIGO na Sophia (hitbox.gd pinta com esta cor):
+	# garras de luz + borrifo escuro, no padrão dos impactos premium
+	if col.is_equal_approx(VfxLibrary.ENEMY_HIT_COLOR):
+		var b0 := ImpactBurst.new()
+		b0.color = col
+		parent.add_child(b0)
+		b0.global_position = pos
+		VfxLibrary.claw_impact(parent, pos, heavy)
+		return
 	var b := ImpactBurst.new()
 	b.color = col
 	parent.add_child(b)

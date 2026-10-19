@@ -13,6 +13,8 @@ extends Node2D
 ## A janela fica minúscula e fora da tela; a imagem sai do SubViewport.
 
 const ATTACKS := ["solar", "corrente", "coroa", "rei", "salva", "galila"]
+## Fase 2 (zonas de chão e golpe corpo a corpo de inimigo). `gif <pasta> fase2`.
+const ATTACKS2 := ["zonas", "garra"]
 const GIF_FRAMES := 110           # 1,8 s por ataque
 const FIRE_AT := 22               # quadro do disparo (antes disso: antecipação)
 const PERF_WARM := 90
@@ -74,7 +76,7 @@ func _ready() -> void:
 		out = args[1]
 	if mode == "gif":
 		var which: String = args[2] if args.size() >= 3 else "all"
-		queue = ATTACKS.duplicate() if which == "all" else [which]
+		queue = ATTACKS.duplicate() if which == "all" else (ATTACKS2.duplicate() if which == "fase2" else [which])
 	elif mode == "perf" and args.size() >= 3:
 		perf_n = int(args[2])
 		_perf_noimpact = args.size() >= 4 and args[3] == "noimpact"
@@ -109,7 +111,7 @@ func _build_world() -> void:
 	vp.add_child(world)
 	var sc := Scenery.new()
 	world.add_child(sc)
-	sc.build(1 if attack in ["salva"] else (2 if attack == "galila" else 0), 3)
+	sc.build(1 if attack in ["salva"] else (2 if attack == "galila" else (5 if attack == "zonas" else 0)), 3)
 	var ground := Node2D.new()
 	world.add_child(ground)
 	sc.build_ground(ground, 316.0)
@@ -138,6 +140,8 @@ func _build_world() -> void:
 		dart.set_profile(prof)
 	dart.scale.x = -1.0
 	dummy_hb = _hurtbox(dummy, "enemy")
+	if attack == "garra":
+		dummy.position = SOPHIA_POS + Vector2(64, 0)    # corpo a corpo: colado nela
 
 
 func _hurtbox(host: Node2D, team: String) -> Hurtbox:
@@ -218,8 +222,35 @@ func _anticipate(a: String) -> void:
 			VfxLibrary.charge_up(dummy, Vector2(-20, -20), Color(0.78, 0.78, 0.85), dur, "dark")
 
 
+## A função existe na VfxLibrary desta versão? (a mesma vitrine filma o ANTES)
+func _has(fn: String) -> bool:
+	for m in (VfxLibrary as Script).get_script_method_list():
+		if String(m.name) == fn:
+			return true
+	return false
+
+
 func _fire(a: String) -> void:
 	match a:
+		"zonas":
+			# Névoa do Sono (da Sophia), Flor Podre (do Arconte) e coluna de luz
+			HazardZone.spawn(world, Vector2(215, 300), "sleep", 60.0, 2.0, Color(0.72, 0.78, 1.0), "enemy", 0)
+			HazardZone.spawn(world, Vector2(420, 300), "poison", 55.0, 2.0, Color(0.62, 1.0, 0.5))
+			HazardZone.pillar(world, Vector2(318, 300), 26.0, 0.55, 0, Color(1.0, 0.55, 0.3))
+			sophia_hb.monitorable = false
+		"garra":
+			# golpe corpo a corpo de criatura: rastro do golpe + acerto na Sophia
+			if _has("melee_slash"):
+				VfxLibrary.melee_slash(dummy, Vector2(-34, -4), Vector2(30, 54), -1, Color(1.0, 0.55, 0.3), "swing")
+			var tw := create_tween()
+			tw.tween_interval(0.07)
+			tw.tween_callback(func() -> void: ImpactBurst.spawn(world, SOPHIA_POS + Vector2(10, -8), Color(1.0, 0.45, 0.35), false))
+			tw.tween_interval(0.5)
+			tw.tween_callback(func() -> void:
+				if _has("melee_slash"):
+					VfxLibrary.melee_slash(dummy, Vector2(-30, -4), Vector2(60, 54), -1, Color(1.0, 0.55, 0.3), "rush", true))
+			tw.tween_interval(0.12)
+			tw.tween_callback(func() -> void: ImpactBurst.spawn(world, SOPHIA_POS + Vector2(10, -12), Color(1.0, 0.45, 0.35), true))
 		"solar":
 			VfxLibrary.cast(world, SOPHIA_POS + Vector2(14, -18), Color(1.0, 0.85, 0.5))
 			var p := _proj(1, 26, Color(1.0, 0.85, 0.5), "enemy", 340.0)
