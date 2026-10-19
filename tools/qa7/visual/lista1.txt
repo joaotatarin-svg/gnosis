@@ -1,0 +1,12 @@
+k01_rei|1|180|||
+k02_chegada_e0|2|160|||
+k29_chegada_e3|29|160|||
+k06_desafio_e0|6|320|wave||
+k15_desafio_e1|15|320|wave||
+k24_desafio_e2|24|320|wave||
+k33_desafio_e3|33|320|wave||
+k42_desafio_e4|42|320|wave||
+k51_desafio_e5|51|320|wave||
+k60_desafio_e6|60|320|wave||
+k09_antessala_e0|9|160|||
+k45_antessala_e4|45|160|||

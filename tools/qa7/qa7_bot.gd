@@ -100,6 +100,7 @@ class BalanceWorker extends Node:
 	var _nets: Array = []              # redes de segurança acionadas (zona/avanco/fenda)
 	var _left: Array = []              # inimigos vivos no timeout (tipo@x,y)
 	var _jumps: int = 0                # pulos dados (ia=3)
+	var _trava_suspeita: bool = false  # 1º timeout com vida 0 (pode ser a morte de chefe)
 	var _jump_cd: float = 0.0
 	var _air_t: float = 0.0
 
@@ -247,6 +248,7 @@ class BalanceWorker extends Node:
 			if lv0.zone_index != _zone_cur:
 				_zone_cur = lv0.zone_index
 				_zone_t = 0.0
+				_trava_suspeita = false
 		_zone_t += delta
 		# 5) medição de dano/quase-morte
 		var hp := pl.health.current_health
@@ -282,7 +284,13 @@ class BalanceWorker extends Node:
 			print("BAT   player: pos=(%.0f,%.0f) estado=%s cd=%.2f chao=%s" % [pl.global_position.x, pl.global_position.y, Player.State.keys()[pl.state], pl.attack_cd, str(pl.is_on_floor())])
 			# TRAVA: só sobrou inimigo com vida 0 que não morre (o golpe matou, mas
 			# o estado voltou de DEAD para HURT). Repetir o timeout não resolve.
-			if alive_n > 0 and zero_n == alive_n:
+			if alive_n > 0 and zero_n == alive_n and not _trava_suspeita:
+				# QA7: a morte de chefe dura ~2,5 s REAIS em STAGGER com vida 0 — não
+				# é trava. Confere de novo 10 s de jogo depois antes de encerrar.
+				_trava_suspeita = true
+				_zone_t = ZONE_TIMEOUT - 10.0
+				print("BAT TRAVA? tela %d: vida 0 sem morrer — reconfiro em 10 s" % _cur)
+			elif alive_n > 0 and zero_n == alive_n:
 				_softlock = true
 				print("BAT TRAVA na tela %d: %d inimigo(s) com vida 0 e estado != DEAD — encerrando" % [_cur, zero_n])
 				_finish("TRAVOU na tela %d (inimigo com vida 0 que não morre)" % _cur)
@@ -471,7 +479,7 @@ class BalanceWorker extends Node:
 			else:
 				_zone_tick_t = _run_t
 		if _pend > 0:
-			var k: String = _hit_label if _hit_label != "" else "zona"
+			var k: String = _hit_label if _hit_label != "" else _classify_unlabeled()
 			_src[k] = int(_src.get(k, 0)) + _pend
 			_src_total[k] = int(_src_total.get(k, 0)) + _pend
 		_pend = 0
@@ -481,6 +489,27 @@ class BalanceWorker extends Node:
 				if is_instance_valid(e) and e is Enemy and (e.is_boss_enemy or e.is_champion):
 					_boss = str(e.type_id)
 					break
+
+	## QA7: dano sem hit_received (chamada direta a _on_hit_received): poça hostil,
+	## golpe de ÁREA de um inimigo perto (nova/salto/explosão/agarrão) ou regra do Éon.
+	func _classify_unlabeled() -> String:
+		var pl := get_tree().get_first_node_in_group("player")
+		if pl == null:
+			return "zona"
+		for hz in _zones_hz:
+			if is_instance_valid(hz) and hz.hostile_to == "player" and absf(pl.global_position.x - hz.global_position.x) <= hz.radius + 2.0 and absf(pl.global_position.y - hz.global_position.y) < 62.0:
+				return "poca(%s)" % String(hz.kind)
+		var best := 110.0
+		var who := ""
+		for e in get_tree().get_nodes_in_group("enemy"):
+			if is_instance_valid(e) and e is Enemy:
+				var d: float = e.global_position.distance_to(pl.global_position)
+				if d < best:
+					best = d
+					who = str(e.type_id)
+		if who != "":
+			return "%s(area)" % who
+		return "outro(regra/cenario)"
 
 	## IA v2: o que um humano faz sem pensar. Retorna true se usou o quadro.
 	func _evade(pl: Player) -> bool:

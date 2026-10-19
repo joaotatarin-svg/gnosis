@@ -60,9 +60,11 @@ def main():
 	per = {lab: load(d, lab) for lab in labs}
 	# 1) curva por Éon
 	agg = defaultdict(lambda: defaultdict(float))
+	seeds_in = defaultdict(set)          # Éon -> sementes que chegaram nele
 	for lab, rows in per.items():
 		for r in rows:
 			e = eon_of(int(r["screen"]))
+			seeds_in[e].add(lab)
 			a = agg[e]
 			a["t"] += float(r["time"])
 			a["dmg"] += int(r["dmg"])
@@ -75,7 +77,7 @@ def main():
 			a["wmax"] = max(a.get("wmax", 0), int(r.get("weapon", 0) or 0))
 			a["maxhp"] = max(a.get("maxhp", 0), int(r["maxhp"]))
 	n = max(1, len([l for l in labs if per[l]]))
-	print("## Curva por Éon (média de %d semente(s))" % n)
+	print("## Curva por Éon (média das sementes que chegaram ao Éon; até %d)" % n)
 	print("| Éon | telas | tempo (min) | dano | quase-mortes | mortes reais | timeouts | faíscas ganhas | arma máx. | vida máx. | menor vida |")
 	print("|---|---|---|---|---|---|---|---|---|---|---|")
 	order = ["Rei (1)"] + ["%d %s (%d-%d)" % (k + 1, EONS[k], 2 + 9 * k, 10 + 9 * k) for k in range(7)] + ["Centro+Final (65-68)"]
@@ -83,6 +85,7 @@ def main():
 		if e not in agg:
 			continue
 		a = agg[e]
+		n = max(1, len(seeds_in[e]))
 		print("| %s | %d | %.1f | %.0f | %.1f | %.1f | %.1f | %.0f | %d | %d | %.0f%% |" % (e, a["telas"] / n, a["t"] / n / 60, a["dmg"] / n, a["qm"] / n, a["zero"] / n, a["to"] / n, a["earned"] / n, a["wmax"], a["maxhp"], 100 * a.get("minhp", 1)))
 	# 2) anomalias por tela
 	print("\n## Por semente")

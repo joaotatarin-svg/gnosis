@@ -1,0 +1,14 @@
+k06_desafio_e0_L|6|560|wave||
+k33_desafio_e3_L|33|560|wave||
+k60_desafio_e6_L|60|560|wave||
+c65_060|65|60|||
+c65_120|65|120|dialog||
+c65_500|65|500|||
+c65_800|65|800|||
+b28_f2_L|28|520|hurt||
+b28_f2_LL|28|700|hurt||
+s17_clear700|17|700|clear||
+s17_clear1100|17|1100|clear||
+s17_clear1500|17|1500|clear||
+s35_clear1100|35|1100|clear||
+c68_L|68|600|||
