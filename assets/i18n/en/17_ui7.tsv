@@ -1,0 +1,19 @@
+# UI7 (Onda 7) — correções do QA7: placa dos Selos, Créditos (rótulos e trechos do LICENSES.md),
+# acento de "telégrafo", seta "Siga em frente" e o nome oficial do botão View do Xbox no Brasil.
+seal_puzzle._build_hint.0a08b8	strike them in the order they glow
+credits.CREDIT_HEADS.1638c2	Music:
+credits.CREDIT_HEADS.836c88	Tracks:
+credits.CREDIT_HEADS.d7e62d	Sound effects:
+credits.CREDIT_HEADS.2f2d73	CC0 effects:
+credits.CREDIT_HEADS.4083e0	Particles:
+credits.CREDIT_HEADS.c66302	Ambiences, spells, voices and synthesized layers:
+credits.CREDIT_FRAGMENTS.d78110	and other CC0 authors at
+credits.CREDIT_FRAGMENTS.261cfd	made for GNOSIS
+credits.CREDIT_FRAGMENTS.96c11e	anonymous
+credits.CREDIT_FRAGMENTS.130bb9	multi-licensed; used as CC0
+credits.CREDIT_FRAGMENTS.14c151	and contributors
+credits.CREDIT_FRAGMENTS.bdfd67	MIT license
+hud._queue_screen_hints.336d16	yellow tell:
+hud._draw_go.70bdc3	Keep going
+input_glyphs.pad_button_name.46b613	View
+moves_screen._fill.08f519	YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you.

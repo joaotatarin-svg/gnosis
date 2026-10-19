@@ -50,6 +50,11 @@ const TOAST_RECT := Rect2(120, 88, 400, 30)
 const HINT_Y := 46.0              # centro vertical da faixa de dicas (topo central)
 const HINT_TIME := 4.2            # s visível (tempo de jogo, para na pausa)
 const HINT_NOW_TIME := 6.0        # s das dicas de ensino (show_hint_now)
+## "Siga em frente" (zona limpa) não é aviso de centro de tela: vira uma SETA na
+## borda direita, no sentido do caminho — o centro já tem legenda, dica e o
+## convite da Estela empilhados (QA7 #30).
+const GO_TOAST := "Siga em frente  →"
+const GO_TIME := 3.2              # s de jogo com a seta na borda
 const TOAST_GAP := 0.35           # s entre um toast e o próximo (e depois de uma cena)
 const SPARK_POP := 0.12           # s do pop do contador (1,0→1,15→1,0)
 ## R21 (respiro): faíscas e arma recuam para α 0,6 após 4 s sem combate e
@@ -77,6 +82,7 @@ var _caption_bottom: float = -1.0    # base da faixa de legenda (-1 = sem legend
 var _toast_label: Label
 var _toast_tween: Tween
 var _recede: float = 0.0             # 0..1: HUD recolhido (card de chefe da Cinemática)
+var _go_t: float = 0.0               # s restantes da seta "Siga em frente" (0 = fora)
 var _scene_k: float = 0.0            # 0..1: cena/diálogo no ar (some o HUD de combate não essencial)
 
 # estado das barras
@@ -213,6 +219,8 @@ func _process(delta: float) -> void:
 		_counters.queue_redraw()
 		return
 	_t += delta
+	if _go_t > 0.0 and _scene_k < 0.5:
+		_go_t = maxf(0.0, _go_t - delta)
 	# Vida: a barra viva sobe suave (cura) e desce na hora (dano); a fantasma
 	# segura 0,45 s e drena.
 	var hp_target := hp / maxf(1.0, hp_max)
@@ -328,6 +336,9 @@ func _on_combo(count: int) -> void:
 func toast(msg: String) -> void:
 	if msg == "":
 		return
+	if msg == GO_TOAST:
+		go_cue()
+		return
 	# Toast no ar, ou cena/card/pausa na tela (QA2 #4/#5): entra na FILA e só
 	# aparece quando o jogo voltar (ver _process_toasts) — nunca por cima de
 	# card de chefe, rubrica ou caixa de diálogo, e nunca "queima" escondido.
@@ -336,6 +347,19 @@ func toast(msg: String) -> void:
 			_toast_queue.append(msg)
 		return
 	_show_toast(msg)
+
+
+## Seta "Siga em frente →" na borda direita (tempo de jogo: congela na pausa/cena).
+func go_cue() -> void:
+	_go_t = GO_TIME
+
+
+## Alpha da seta agora (0 = fora) — QA.
+func go_alpha() -> float:
+	if _go_t <= 0.0:
+		return 0.0
+	var k := clampf(minf((GO_TIME - _go_t) / 0.3, _go_t / 0.6), 0.0, 1.0)
+	return k * (1.0 - _scene_k) * (1.0 - _recede)
 
 
 func _show_toast(msg: String) -> void:
@@ -973,7 +997,7 @@ func _queue_screen_hints() -> void:
 			show_hint([{"keys": ["attack_light", "attack_light", "attack_light"], "text": "sequência do cajado"}])
 			show_hint([{"keys": ["skill2"], "text": "Esfera Solar (gasta Éter)"}])
 		3:
-			show_hint([{"keys": [], "text": "telegrafo amarelo:"}, {"keys": ["block"], "text": "apara"}, {"keys": [], "text": "vermelho:"}, {"keys": ["dodge"], "text": "esquiva"}])
+			show_hint([{"keys": [], "text": "telégrafo amarelo:"}, {"keys": ["block"], "text": "apara"}, {"keys": [], "text": "vermelho:"}, {"keys": ["dodge"], "text": "esquiva"}])
 			show_hint([{"keys": ["pause"], "text": "pausa · Golpes & Controles"}])
 
 
@@ -1022,7 +1046,7 @@ func _process_hints(delta: float) -> void:
 
 ## A dica só ENSINA teclas (todo segmento tem tecla) e a jogadora já usou todas
 ## nesta sessão? Então não aparece (QA2 #10: o topo não repete o que ela já sabe).
-## Sempre saem: dicas com texto sem tecla ("telegrafo amarelo:") ou com um
+## Sempre saem: dicas com texto sem tecla ("telégrafo amarelo:") ou com um
 ## complemento depois de "·" ("bloquear · no tempo, apara") — ensinam leitura, não
 ## só a tecla — e as de SEQUÊNCIA (a mesma tecla repetida: "sequência do cajado").
 func _hint_learned(h: Array) -> bool:
@@ -1211,6 +1235,7 @@ class _HudCanvas extends Control:
 			_draw_counters()
 			return
 		_draw_low_hp()
+		_draw_scrim()
 		_draw_medal()
 		_draw_bars()
 		_draw_rings()
@@ -1219,6 +1244,7 @@ class _HudCanvas extends Control:
 		_draw_boss()
 		_draw_combo_tag()
 		_draw_hint()
+		_draw_go()
 
 	# --- texto com contorno -----------------------------------------------------------
 	func _txt(pos: Vector2, s: String, font: Font, size: int, col: Color, align: int = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0, outline: int = 4) -> void:
@@ -1244,6 +1270,49 @@ class _HudCanvas extends Control:
 		]
 		for q in quads:
 			draw_polygon(PackedVector2Array(q), PackedColorArray([edge, edge, clear, clear]))
+
+	# --- seta "Siga em frente" (borda direita) ---------------------------------------
+	func _draw_go() -> void:
+		var a: float = hud.go_alpha()
+		if a <= 0.0:
+			return
+		var y := 172.0
+		var x := 628.0
+		_soft_ellipse(Vector2(x - 70, y), Vector2(96, 20), 0.4 * a)
+		var slide := fmod(hud._t * 1.6, 1.0)          # chevrons correndo para a direita
+		for i in 3:
+			var ph := fmod(float(i) / 3.0 + slide, 1.0)
+			var cx := x - 22.0 + ph * 16.0
+			var ca := a * sin(ph * PI)
+			var col := Color(CodexStyle.GOLD_HI, ca)
+			draw_polyline(PackedVector2Array([Vector2(cx - 4, y - 7), Vector2(cx + 3, y), Vector2(cx - 4, y + 7)]), Color(0.01, 0.03, 0.04, ca * 0.8), 4.0, true)
+			draw_polyline(PackedVector2Array([Vector2(cx - 4, y - 7), Vector2(cx + 3, y), Vector2(cx - 4, y + 7)]), col, 2.0, true)
+		_txt(Vector2(x - 330, y + 4), "Siga em frente", CodexStyle.display(), 11, Color(CodexStyle.GOLD_HI, a), HORIZONTAL_ALIGNMENT_RIGHT, 300.0, 5)
+
+	# --- sombra de leitura (QA7 #24) ----------------------------------------------------
+	# O HUD já fica numa CanvasLayer acima do mundo; o problema era LEITURA: anéis,
+	# orbes e mantos dos chefes passando atrás do medalhão/barras. Uma sombra macia
+	# (elipse que esfuma) separa o HUD do mundo; mais forte com chefe na arena.
+	func _draw_scrim() -> void:
+		var busy: bool = hud.boss != null or not (hud.bosses as Array).is_empty()
+		var a := 0.5 if busy else 0.32
+		_soft_ellipse(Vector2(92, 36), Vector2(132, 58), a)
+		_soft_ellipse(Vector2(EON_RIGHT - 52, 18), Vector2(110, 28), a * 0.85)
+
+	func _soft_ellipse(c: Vector2, r: Vector2, a: float) -> void:
+		var ink := Color(0.0, 0.015, 0.025, a)
+		var mid := Color(ink, a * 0.55)
+		var clear := Color(ink, 0.0)
+		var n := 28
+		for i in n:
+			var t0 := TAU * float(i) / float(n)
+			var t1 := TAU * float(i + 1) / float(n)
+			var d0 := Vector2(cos(t0), sin(t0))
+			var d1 := Vector2(cos(t1), sin(t1))
+			var m0 := c + d0 * r * 0.55
+			var m1 := c + d1 * r * 0.55
+			draw_primitive(PackedVector2Array([c, m0, m1]), PackedColorArray([ink, mid, mid]), PackedVector2Array())
+			draw_primitive(PackedVector2Array([m0, c + d0 * r, c + d1 * r, m1]), PackedColorArray([mid, clear, clear, mid]), PackedVector2Array())
 
 	# --- medalhão ----------------------------------------------------------------------
 	func _draw_medal() -> void:

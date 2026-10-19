@@ -106,7 +106,7 @@ func _rebuild() -> void:
 		if ch0 != null:
 			for c in ch0.combos:
 				if c.required_weapon_level == Progression.weapon_level + 1:
-					opens.append(c.display_name)
+					opens.append(I18n.t(c.display_name))   # i18n: cada nome sozinho (QA7 #16)
 		var sub := ("abre: " + ", ".join(opens)) if not opens.is_empty() else ""
 		var title := "Arma Nv. %d → %d" % [Progression.weapon_level, Progression.weapon_level + 1]
 		if Progression.weapon_sealed():
