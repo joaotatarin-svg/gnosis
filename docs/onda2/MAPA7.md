@@ -59,7 +59,7 @@ Por isso:
   - MapQA confere no plano de layout de todo nó das telas 2–16 que não há `dj_cache` nem
     `vault` (28 PASS);
   - LayoutQA: 1246 verificações em 129 telas, PASS (baú de torre alcançável com pulo simples);
-  - validate -Repeat 2: ver o relatório.
+  - validate -Repeat 2: **TUDO VERDE (11 etapas, 2/2)**.
 
 ### Pedido restante
 - **narrativa:**
