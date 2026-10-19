@@ -321,14 +321,14 @@ def star_charge():
 
 
 def star_impact():
-	"""Queda Estelar pousa: baque fundo + cratera de pedra + chuva de estrelas."""
+	"""Queda Estelar pousa — CAMADA de estrelas sobre a `nova` (que já é o baque,
+	R4: um impacto por evento): chuva de estrelas caindo + cascalho + sino."""
 	d = 1.1
 	o = M.buf(d)
-	M.put(o, thump(95, 32, 0.7, 0.22, 1120, 0.5), 0.0, 2)
-	M.put(o, grains(0.5, 1121, 30, 500, 5000, 0.35, decay_tau=0.08), 0.0, -6)
-	M.put(o, glass_gliss(note(100), note(84), 0.35, 1122, count=6, tau=0.12), 0.04, -8)
-	M.put(o, C.bell(note(64), 0.9, 0.5, seed=1123), 0.0, -12)
-	return C.reverb(o, rt60=1.1, wet=0.2, seed=1124, lp_hz=8000)
+	M.put(o, grains(0.5, 1121, 24, 600, 4000, 0.35, decay_tau=0.08), 0.0, -6)
+	M.put(o, glass_gliss(note(100), note(84), 0.35, 1122, count=6, tau=0.12), 0.02, -2)
+	M.put(o, C.bell(note(64), 0.9, 0.5, seed=1123), 0.0, -8)
+	return C.reverb(o, rt60=1.1, wet=0.25, seed=1124, lp_hz=9000)
 
 
 def riposte_ready():
@@ -1056,7 +1056,8 @@ def hz_tide_tick():
 	"""Maré corroendo (tique de dano): chiado ácido curto."""
 	d = 0.3
 	k = N(0.25)
-	x = C.bp(C.noise(k, 2010), 1500, 6000) * C.env_ad(k, 0.005, 0.07) * (1 + 0.5 * np.sin(2 * np.pi * 60 * C.tvec(k)))
+	# repete a cada 0,45 s: chiado em 600–2400 Hz, sem agudo cansativo (R12)
+	x = C.bp(C.noise(k, 2010), 600, 2400) * C.env_ad(k, 0.005, 0.07) * (1 + 0.5 * np.sin(2 * np.pi * 60 * C.tvec(k)))
 	return st(x + thump(90, 50, 0.25, 0.05, 2011, 0.0) * 0.5)
 
 
@@ -1371,7 +1372,8 @@ def hz_ward_drain():
 	d = 0.5
 	n = N(0.45)
 	t = C.tvec(n)
-	x = C.bp(C.noise(n, 2310), 2000, 6000) * (0.5 + 0.5 * np.sin(2 * np.pi * 17 * t)) * C.env_swell(n, 0.15, 0.2)
+	# banda 900–2500 Hz: repete enquanto drena — nada de 2–5 kHz sustentado (R12)
+	x = C.bp(C.noise(n, 2310), 900, 2500) * (0.5 + 0.5 * np.sin(2 * np.pi * 17 * t)) * C.env_swell(n, 0.15, 0.2)
 	x += np.sin(C.osc_phase(note(84) * (1 - 0.05 * t / 0.45), n)) * C.env_swell(n, 0.1, 0.2) * 0.2
 	return st(x)
 
@@ -1599,7 +1601,7 @@ SOUNDS = {
 	# Sophia
 	"double_jump": ("sophia", _vars(double_jump, 2)),
 	"star_charge": ("charge", [star_charge]),
-	"star_impact": ("sophia_big", [star_impact]),
+	"star_impact": ("sophia_layer", [star_impact]),
 	"riposte_ready": ("tell", [riposte_ready]),
 	"riposte": ("swing_big", [riposte]),
 	# inimigos (por tipo)
@@ -1725,7 +1727,7 @@ CATS = {
 	"charge": -19.0,      # carga antes do tiro (cresce; o tiro é que pesa)
 	"charge_big": -16.0,  # carga do Rei
 	"sophia": -19.0,      # pulo duplo (perto de jump −20)
-	"sophia_big": -13.0,  # Queda Estelar pousando (soma com a nova −12)
+	"sophia_layer": -17.0,  # Queda Estelar: camada de estrelas POR BAIXO da nova (−12), não outro baque
 	"boss_mid": -12.0,    # passos da morte que somam com boss_die
 	"death_hush": -24.0,  # a pausa: quase nada
 	"bsig": -13.0,        # golpe-assinatura de chefe

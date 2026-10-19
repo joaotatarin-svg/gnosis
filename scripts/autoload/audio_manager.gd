@@ -81,6 +81,7 @@ const VOICE_ALONE_FADE := 4.0
 const SCENE_FADE := 2.0           # entrada/saída do tema no santuário
 const SCENE_DUCK_SCALE := 0.35    # roubo/anagnórise: a música É a cena — diálogo abaixa só ~3 dB
 const FOG_DUCK_DB := -8.0
+const CRACK_DELAY := 0.5          # roubo (`sink`): a rachadura do chão abre logo depois (= Staging _b_sink)
 const RING_NOTE_HOLD_MS := 1500   # após um ring_note, o sinal de Anel não toca som próprio
 # Coração (R22 / intro): `heartbeat` é UMA batida lub-dub; a intro toca duas.
 const HEART_GAP := 1.1            # s entre as 2 batidas da intro (~55 bpm: acordando)
@@ -153,6 +154,47 @@ const CATALOG := {
 		"heartbeat", "clap", "child_breath",
 		# --- avisos do combate (R5): brilho do telegrafo; o Combate chama ---
 		"tell_parry", "tell_unblock",
+		# ===== ONDA 7 (Áudio7): conteúdo novo das Ondas 5–6 — docs/onda2/AUDIO7.md =====
+		# --- kit dos chefes (BossBrain.sfx: Galila puxa, Astaphaios devolve) ---
+		"chain", "glass",
+		# --- cargas antes do tiro (VFX7): luz da Sophia × trevas × Rei ---
+		"charge_light", "charge_dark", "charge_king",
+		# --- Sophia: pulo duplo, Queda Estelar, contra-ataque ---
+		"double_jump", "star_charge", "star_impact", "riposte_ready", "riposte",
+		# --- golpes dos inimigos por TIPO (move_sfx) + voadores ---
+		"atk_swing", "atk_combo", "atk_rush", "atk_leap", "atk_slam", "atk_wave", "atk_shot",
+		"atk_shot_air", "atk_fan", "atk_burst", "atk_homing", "atk_lob", "atk_pillar", "atk_fissure",
+		"atk_grab", "atk_blink", "atk_summon", "atk_nova", "atk_dive", "atk_glide", "fly_fall",
+		# --- Campeões ---
+		"champion_enter", "champion_fury",
+		# --- chefes: fase 3, guarda, olho do Rei, morte em 5 passos ---
+		"boss_phase3", "guard_break", "eye_hit",
+		"boss_death_impact", "boss_death_stagger", "boss_death_collapse", "boss_death_hush", "boss_death_shatter",
+		# --- chefes: golpes-assinatura (move_sfx resolve o id do golpe) ---
+		"bs_melee", "bs_cast", "bs_leap", "bs_land",
+		"bs_yawn", "bs_lullaby", "bs_rain",                   # Athoth (Torpor)
+		"bs_suck", "bs_bite", "bs_breath",                    # Harmas (Fome) / Belias
+		"bs_cage",                                            # Galila (Corrente)
+		"bs_scream", "bs_pages", "bs_wings",                  # Yabel (Silêncio)
+		"bs_split", "bs_swap",                                # Astaphaios (Espelho)
+		"bs_spores", "bs_cloud", "bs_burrow",                 # Belias (Praga)
+		"bs_decree", "bs_coronation", "bs_royal_cut", "bs_sweep",  # Armupiel (Coroa)
+		"bs_ray", "bs_hand", "bs_rings",                      # o Rei
+		"bs_collapse",                                        # Colosso
+		# --- perigos do level6 ---
+		"hz_tide_wake", "hz_tide_tick", "hz_guillotine", "hz_winch", "hz_maw_bite", "hz_maw_warn",
+		"hz_beam_on", "hz_beam_off", "hz_mirror_warn", "hz_mirror_flip", "hz_mist_breath",
+		"hz_chain_swing", "hz_bell_toll", "hz_ether_drain", "hz_silence_in", "hz_silence_out",
+		"hz_sink_start", "hz_sink_gone", "hz_sink_return", "hz_spears", "hz_shackles",
+		"hz_spore_swell", "hz_spore_burst", "hz_spore_pop", "hz_shard_warn", "hz_shard_fall", "hz_shard_impact",
+		"hz_totem_arm", "hz_totem_summon", "hz_totem_hit", "hz_totem_break",
+		"hz_ward_drain", "hz_ward_out", "hz_ward_saved", "hz_altar", "hz_altar_hum",
+		"hz_secret_mark", "hz_secret_open", "hz_column", "hz_saw",
+		# --- UI nova: mapa, loja, objetivo, conquista, dom do Soter ---
+		"map_open", "map_select", "map_locked", "shop_seal", "relic_equip", "zone_objective",
+		"achievement", "soter_gift",
+		# --- roubo: a rachadura abre, o Rei afunda (cue `sink`) ---
+		"crack_open", "king_sink",
 	],
 	"music": [
 		"theme", "rei",
@@ -177,25 +219,94 @@ const ALIASES := {
 ## Com 3 variações por som, impacto não precisa de ±8 %: ±4 % (≈ ±0,7 semitom);
 ## passos/corpo ±6 % (R11).
 const PITCH_FAMILIES := {
-	0.04: ["swing_", "hit", "enemy_hurt", "enemy_die", "proj_", "block"],
+	0.04: ["swing_", "hit", "enemy_hurt", "enemy_die", "proj_", "block", "atk_", "fly_", "chain", "glass",
+		"hz_shard_impact", "hz_totem_hit", "hz_spears", "hz_chain_swing", "hz_spore_pop"],
 	0.06: ["step", "land", "jump", "cloth", "dodge", "gib_"],
 	0.05: ["boss_step", "king_step"],
-	0.03: ["blip_"],
-	0.0: ["tell_", "heartbeat", "ui_", "shop_", "subtitle_", "stele_", "ring_", "shard", "spark", "weapon_", "boss_", "zone_", "level_", "portal_", "cast_"],
+	0.03: ["blip_", "double_jump", "bs_melee", "bs_bite", "eye_hit"],
+	0.0: ["tell_", "heartbeat", "ui_", "shop_", "subtitle_", "stele_", "ring_", "shard", "spark", "weapon_", "boss_", "zone_", "level_", "portal_", "cast_",
+		"charge_", "riposte_ready", "map_", "achievement", "soter_", "relic_", "hz_", "bs_", "star_", "champion_", "guard_", "crack_", "king_sink"],
 }
 
 ## Sons frequentes que ganham ±1,5 dB de volume aleatório (R11: "não enjoa").
 const VOLUME_JITTER_DB := 1.5
-const JITTER_FAMILIES := ["swing_", "hit", "step", "enemy_hurt", "land", "block", "cloth", "boss_step", "king_step"]
+const JITTER_FAMILIES := ["swing_", "hit", "step", "enemy_hurt", "land", "block", "cloth", "boss_step", "king_step",
+	"atk_", "fly_", "hz_shard_impact", "hz_totem_hit"]
 
 ## Sons tocados em sequência (sobem as variações em ordem em vez de sortear).
 const SEQUENTIAL := ["spark"]
 
 ## Anti-spam próprio (ms): o arpejo das faíscas chega com 40–70 ms entre orbes.
-const SPAM_OVERRIDE := {"spark": 20}
+const SPAM_OVERRIDE := {"spark": 20,
+	# Onda 7: tiques de dano e presenças não metralham; a conquista em rajada
+	# (check_progress pode liberar várias de uma vez) toca UMA vez.
+	"hz_tide_tick": 300, "hz_ward_drain": 250, "hz_ether_drain": 400, "hz_altar_hum": 1500,
+	"achievement": 2500, "relic_equip": 300, "hz_shard_warn": 200, "fly_fall": 120}
 
 ## Vozes simultâneas próprias: o arpejo precisa deixar as caudas soarem.
-const MAX_SAME_OVERRIDE := {"spark": 6}
+const MAX_SAME_OVERRIDE := {"spark": 6, "achievement": 1, "hz_ward_drain": 1, "hz_altar_hum": 1,
+	"hz_tide_tick": 1, "hz_mist_breath": 2}
+
+## Sons de INFORMAÇÃO fora da família `tell_` que também vão no bus Tell (sem o
+## abafado da câmera lenta, tom fixo): a janela do contra-ataque abriu.
+const TELL_EXTRA := ["riposte_ready"]
+## Sons de interface fora de `ui_`/`shop_` (bus UI).
+const UI_EXTRA := ["map_open", "map_select", "map_locked", "achievement"]
+
+## ONDA 7 — golpes. `move_sfx(golpe, etapa, posição, chefe)` escolhe o som do
+## golpe: 1º pelo id (só chefes: BOSS_MOVE_SFX), 2º pelo TIPO (KIND_SFX).
+## Etapas: "wind" (o telegrafo começa — o aviso tell_* continua por conta do
+## Enemy), "strike" (o golpe sai), "land" (salto do chefe pousa).
+## O id é normalizado: "guarda3"/"corte_b" → "guarda"/"corte".
+const KIND_SFX := {
+	# inimigos comuns (EnemyMoves)
+	"swing": {"strike": "atk_swing"}, "combo": {"strike": "atk_combo"},
+	"rush": {"strike": "atk_rush"}, "leap": {"strike": "atk_leap"},
+	"slam": {"strike": "atk_slam"}, "nova": {"strike": "atk_nova"},
+	"shot": {"strike": "atk_shot"}, "burst": {"strike": "atk_burst"},
+	"lob": {"strike": "atk_lob"}, "pillar": {"strike": "atk_pillar"},
+	"fissure": {"strike": "atk_fissure"}, "grab": {"strike": "atk_grab"},
+	"dive": {"strike": "atk_dive"}, "glide": {"strike": "atk_glide"},
+	"blink": {"wind": "atk_blink"}, "summon": {"strike": "atk_summon"},
+	"wave": {"strike": "atk_wave"},
+	# chefes (BossBrain): melee/slam/charge/shot/cast/leap
+	"melee": {"strike": "bs_melee"}, "charge": {"strike": "atk_rush"},
+	"cast": {"strike": "bs_cast"},
+}
+## Chefes: só a etapa pedida; o que não estiver aqui cai no tipo ("" = mudo
+## nesta etapa: o kit do chefe já soa). O pouso de todo salto ("land") é `bs_land`.
+const BOSS_MOVE_SFX := {
+	# Athoth (Torpor)
+	"bocejo": {"wind": "bs_yawn", "strike": ""}, "cancao": {"wind": "bs_lullaby", "strike": ""},
+	"chuva": {"strike": "bs_rain"}, "orbes": {"strike": "atk_homing"}, "deslize": {"strike": "bs_sweep"},
+	# Harmas (Fome)
+	"succao": {"wind": "bs_suck", "strike": "bs_bite"}, "boca": {"strike": "bs_bite"}, "sopro": {"strike": "bs_breath"},
+	# Galila (Corrente)
+	"corrente": {"strike": "chain"}, "puxao": {"strike": "atk_grab"}, "prisao": {"strike": "bs_cage"},
+	"giro": {"strike": "bs_sweep"},
+	# Yabel (Silêncio)
+	"asas": {"strike": "bs_wings"}, "pergaminhos": {"strike": "bs_pages"}, "grito": {"strike": "bs_scream"},
+	"laminas": {"strike": "atk_fan"}, "pisca": {"strike": "atk_blink"}, "mergulho": {"strike": "atk_dive"},
+	# Astaphaios (Espelho) — a guarda já soa `glass` pelo kit
+	"cacos": {"strike": "atk_fan"}, "guarda": {"strike": ""}, "reflexos": {"strike": "bs_split"},
+	"troca": {"strike": "bs_swap"},
+	# Belias (Praga)
+	"bote": {"strike": "atk_leap"}, "mordida": {"strike": "bs_bite"}, "esporos": {"strike": "bs_spores"},
+	"enterrar": {"strike": "bs_burrow"}, "nuvem": {"strike": "bs_cloud"},
+	# Armupiel (Coroa)
+	"espadao": {"strike": "bs_royal_cut"}, "varredura": {"strike": "bs_sweep"},
+	"decreto": {"wind": "bs_decree", "strike": ""}, "corte_real": {"strike": "bs_royal_cut"},
+	"coroacao": {"wind": "bs_coronation", "strike": ""},
+	# o Rei (as cargas de luz roubada: charge_king, pelo VFX7)
+	"leque": {"strike": "atk_fan"}, "raio": {"strike": "bs_ray"}, "mao": {"strike": "bs_hand"},
+	"aneis": {"strike": "bs_rings"}, "larvas": {"strike": "atk_summon"}, "teleporte": {"strike": "atk_blink"},
+	# Colosso
+	"desabamento": {"strike": "bs_collapse"},
+}
+## Morte do chefe em 5 passos (sinal Enemy.boss_dying): impacto, cambaleio,
+## colapso, pausa, estilhaço. O passo 4 soma com o `boss_die` do Enemy.
+const DEATH_STEP_SFX := ["boss_death_impact", "boss_death_stagger", "boss_death_collapse",
+	"boss_death_hush", "boss_death_shatter"]
 
 ## Falante do diálogo → voz "gromelô".
 const SPEAKER_BLIPS := {
@@ -532,8 +643,10 @@ func blip_for_speaker(speaker: String) -> String:
 func _bus_for(sfx_name: String) -> String:
 	if sfx_name.begins_with("ui_") or sfx_name.begins_with("shop_") or sfx_name == "subtitle_tick":
 		return "UI"
-	if sfx_name.begins_with("tell_"):
+	if sfx_name.begins_with("tell_") or TELL_EXTRA.has(sfx_name):
 		return TELL_BUS
+	if UI_EXTRA.has(sfx_name):
+		return "UI"
 	return "SFX"
 
 
@@ -901,6 +1014,16 @@ func _on_node_added(node: Node) -> void:
 		_duck_holders[id] = true
 		node.tree_exiting.connect(_on_duck_holder_gone.bind(id), CONNECT_ONE_SHOT)
 		_update_duck()
+	# ONDA 7: ganchos por SINAL (ninguém precisa chamar): a morte do chefe em
+	# 5 passos e a janela do contra-ataque da Sophia.
+	if node.has_signal("boss_dying"):
+		var cb := Callable(self, "_on_boss_dying").bind(node)
+		if not node.is_connected("boss_dying", cb):
+			node.connect("boss_dying", cb)
+	if node.has_signal("riposte_window_opened"):
+		var cr := Callable(self, "_on_riposte_window")
+		if not node.is_connected("riposte_window_opened", cr):
+			node.connect("riposte_window_opened", cr)
 
 
 func _on_duck_holder_gone(id: int) -> void:
@@ -966,6 +1089,13 @@ func _connect_context() -> void:
 		_last_stolen = pr.rings_stolen
 		pr.weapon_level_changed.connect(_on_weapon)
 		pr.rings_changed.connect(_on_rings)
+	# ONDA 7: dom do Soter (pulo duplo), relíquia equipada, conquista.
+	if pr != null:
+		_connect_if(pr, "double_jump_granted", "_on_double_jump_granted")
+		_connect_if(pr, "relics_changed", "_on_relics_changed")
+	var ach := get_node_or_null("/root/Achievements")
+	if ach != null:
+		_connect_if(ach, "unlocked", "_on_achievement")
 	# Slow-mo (sinal novo do Combate): liga só se existir — compila sem ele.
 	var juice := get_node_or_null("/root/Juice")
 	if juice != null and juice.has_signal("slowmo_changed"):
@@ -1244,10 +1374,10 @@ func cue(cue_name: String) -> bool:
 			pass
 		"mask_falls":                # cena B: a máscara cai — tema distorcido → roubo
 			voice_theme("roubo")
-		"sink":                      # cena B: vira motor e afunda; a música para
-			play_sfx("dive")
-			play_sfx("boss_step", -1.0, -2.0)
-			play_sfx_pitched("fog_swell", 0.6, -4.0)
+		"sink":                      # cena B: vira motor e afunda, o chão racha; a música para
+			play_sfx("king_sink")
+			play_sfx_later("crack_open", CRACK_DELAY, -2.0)
+			play_sfx_pitched("fog_swell", 0.6, -8.0)
 			stop_music(2.0)
 		"rings_return":              # cena D: corte de música; os Anéis voltam (ring_note)
 			stop_music(0.0)
@@ -1342,6 +1472,96 @@ func _on_rings() -> void:
 	_last_rings = rings
 	_last_restored = restored
 	_last_stolen = stolen
+
+
+# --- ONDA 7: golpes, morte do chefe e ganchos ------------------------------
+
+var _id_re: RegEx = null
+
+
+## Som do golpe `mv` (Dictionary de EnemyMoves ou do BossBrain) na `stage`
+## ("wind" | "strike" | "land"). `boss` = golpe de chefe (consulta o id).
+## Devolve o nome ("" = este golpe não tem som nesta etapa). Não toca nada.
+func move_sound_for(mv: Dictionary, stage: String, boss: bool = false) -> String:
+	if stage == "land":
+		return "bs_land" if boss else ""
+	var id := move_base_id(String(mv.get("id", "")))
+	var kind := String(mv.get("kind", ""))
+	if boss and BOSS_MOVE_SFX.has(id):
+		var m: Dictionary = BOSS_MOVE_SFX[id]
+		if m.has(stage):
+			return String(m[stage])
+	if stage == "strike" and kind == "shot":
+		# variações de tiro: teleguiado, de CIMA (voador), leque (vários)
+		if float(mv.get("homing", 0.0)) > 0.0:
+			return "atk_homing"
+		if bool(mv.get("air", false)):
+			return "atk_shot_air"
+		var offs = mv.get("offs", [])
+		if int(mv.get("count", 1)) > 1 or (offs is Array and (offs as Array).size() > 1):
+			return "atk_fan"
+	var k: Dictionary = KIND_SFX.get(kind, {})
+	return String(k.get(stage, ""))
+
+
+## "guarda3" → "guarda", "corte_b" → "corte" (variações de fase do mesmo golpe).
+func move_base_id(id: String) -> String:
+	if _id_re == null:
+		_id_re = RegEx.new()
+		_id_re.compile("(_[a-c]|[0-9])+$")
+	return _id_re.sub(id, "", false)
+
+
+## Toca o som do golpe (ver `move_sound_for`). Enemy:
+## `Audio.move_sfx(_mv, "strike", global_position)`; BossBrain:
+## `Audio.move_sfx(mv, "strike", e.global_position, true)`.
+func move_sfx(mv: Dictionary, stage: String, world_pos: Vector2 = NO_POS, boss: bool = false) -> bool:
+	var n := move_sound_for(mv, stage, boss)
+	if n == "" or not has_sfx(n):
+		return false
+	if world_pos.is_finite():
+		return play_sfx_at(n, world_pos)
+	return play_sfx(n)
+
+
+## Passo da morte do chefe (0..4) → som ("" fora da faixa).
+func death_step_sfx(step: int) -> String:
+	return String(DEATH_STEP_SFX[step]) if step >= 0 and step < DEATH_STEP_SFX.size() else ""
+
+
+func _on_boss_dying(step: int, enemy: Node = null) -> void:
+	var n := death_step_sfx(step)
+	if n == "":
+		return
+	if enemy is Node2D and is_instance_valid(enemy) and (enemy as Node2D).is_inside_tree():
+		play_sfx_at(n, (enemy as Node2D).global_position)
+	else:
+		play_sfx(n)
+
+
+func _on_riposte_window() -> void:
+	play_sfx("riposte_ready")
+
+
+func _on_double_jump_granted() -> void:
+	play_sfx("soter_gift")
+
+
+func _on_relics_changed() -> void:
+	if _in_game():
+		play_sfx("relic_equip")
+
+
+func _on_achievement(_id: String = "") -> void:
+	play_sfx("achievement")
+
+
+func _connect_if(obj: Object, sig: String, method: String) -> void:
+	if not obj.has_signal(sig):
+		return
+	var cb := Callable(self, method)
+	if not obj.is_connected(sig, cb):
+		obj.connect(sig, cb)
 
 
 # --- Volumes -------------------------------------------------------------
