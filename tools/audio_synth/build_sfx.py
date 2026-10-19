@@ -527,6 +527,11 @@ RECIPES.update(S.SOUNDS)
 import tells as T
 RECIPES.update(T.SOUNDS)
 
+# Onda 7 (Áudio7): conteúdo novo das Ondas 5–6 — onda7.py
+import onda7 as O7
+CAT.update(O7.CATS)
+RECIPES.update(O7.SOUNDS)
+
 
 def finish(x, cat):
 	x = np.asarray(x, dtype=np.float64)
