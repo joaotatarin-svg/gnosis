@@ -82,6 +82,8 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/mapa7 | 26d28b3 | APROVADO | §3 (nada de cadeado que não abre), R10 |
+| dir7/perigos7 | a1c0e4c (topo, sem FINAL) | APROVADO COM RESSALVAS (falta o doc com CHECAGEM) | R5, R10, R18 |
 | dir6/chefes6 | ed66a82 FINAL | APROVADO COM RESSALVAS (ressalvas anteriores fechadas; resta o 0,7 da arte) | R5, R17, R3 |
 | dir7/audio7 | 6df9411 FINAL | APROVADO COM RESSALVAS (REPROVADO anterior fechado; troca do proj_fire hostil tem de entrar junto) | R4 |
 | dir7/vfx7 | 2a5919b | APROVADO COM RESSALVAS (R15 fechada; poça armando pisca 4,8 Hz) | R15, R5, R10 |
@@ -545,3 +547,57 @@ inimigos ficam com som dobrado.
   (pedido ao polimento7).
 
 **Veredito: APROVADO COM RESSALVAS** (só o pulso de 4,8 Hz da poça armando).
+
+---
+
+## dir7/mapa7 — 26d28b3 (6ccf9c3, 5d02ed9, 1d8973f, 26d28b3)
+
+**O que muda:**
+- O segredo de ANTES do Soter (e0.6a, e1.3a) vira o tipo `hidden`, a **câmara oculta**: não pede pulo duplo, alcança-se com pulos
+  simples por torres, tem um perigo opcional no chão e paga o MESMO prêmio da sala secreta (`EonMap.REWARDS.hidden = secret`).
+- As salas `secret` (pulo duplo) só existem depois da tela 17 (1º Soter) e abrem no mesmo run.
+- No `world_map.gd`, o selo (asas + cadeado) diz "precisa de asas" / "aberta". Enquanto está fechado, a recompensa aparece como
+  "escondida" e o texto diz por quê e quando. Há um aviso único, "as salas secretas se abrem", com halo de 4 s.
+- MapQA 28 e LayoutQA verdes; i18n `--strict`.
+
+**Checagem (código lido):**
+- **§3 / §4.12:** prêmio fixo por tipo (`hidden` = `{"orbs": 20, "per_eon": 6, "hp": 8, "mp": 8}`), mostrado antes da escolha.
+  Sem sorteio. Atende.
+- **§3, aversão à perda, resolvida de verdade:** o "ponto honesto" do próprio MAPA7.md (e0.6a e e1.3a nunca abriam em nenhum
+  run, ou seja, um cadeado que não abre) foi corrigido em 26d28b3. Antes do Soter não existe mais sala trancada; depois dele, ela
+  abre no mesmo run. Nada de FOMO nem de "volte amanhã". Atende.
+- **Autonomia (SDT):** o mapa mostra o mundo inteiro, e o fechado explica o motivo. O aviso "abriu" sai 1× por run e é ligado
+  à história (o Soter), não à sorte (princípio 4). Atende.
+- **R10:** o halo pulsa a ~0,6 Hz por 4 s, numa área pequena, sem clarão. Atende.
+- **§4.11:** forma (asas, chave, cadeado) + texto além da cor lilás/azul. Atende.
+- **R18 / R5 na câmara oculta:** torres de pulo simples e perigo opcional; nada obrigatório. Ok (o perigo segue as regras de
+  aviso do perigos7).
+- O MAPA7.md tem a CHECAGEM. O parágrafo "Ponto honesto" ficou desatualizado depois do 26d28b3; vale atualizar (não bloqueia).
+
+**Veredito: APROVADO.**
+
+---
+
+## dir7/perigos7 — a1c0e4c (topo atual; 01b2705, 709a517, dc8eaa7 + merge do audio7 6df9411 em 9873c70). Ainda sem "FINAL".
+
+**O que muda:**
+- `scripts/fx/hazard_art.gd` (novo): desenho pintado de 15 perigos a partir das folhas `hz_1..hz_7`.
+- `level_hazard.gd` `warn_outline()`: borda ESCURA por fora e VERMELHA por dentro, pulsando a `WARN_HZ 2,0`.
+- Os 15 perigos usam a arte e ligam os sons `hz_*` do audio7 na fonte (aviso e golpe). A porta do selo toca ao abrir.
+- Prancha antes/depois em `C:\gnosis-wt\_caps\perigos7\prancha_*.png` (vi a das lanças: no aviso, a grade fica com contorno
+  vermelho e borda escura e lê bem no fundo violeta).
+
+**Checagem:**
+- **R5 (aviso antes de ferir):** as janelas de aviso dos perigos cíclicos são guilhotina 0,7 s (`WARN_AT 1,9 → DROP_AT 2,6`), boca 0,8 s,
+  lanças 0,6 s, esporos 0,8 s, feixe do espelho 0,5 s, plataforma-espelho 0,6 s e cacos 0,8 s. Todas ≥ 0,45 s (o mesmo mínimo
+  dos chefes). Cada uma tem FORMA (contorno da peça), cor e som de aviso (`hz_*_warn`). Atende.
+- **R10:** o pulso do aviso é de 2 Hz (`HazardArt.pulse`); o aviso é informação e não cai com "Reduzir flashes", como pede a R10 para
+  o glint. A "tremedeira" da boca e das correntes é a PEÇA vibrando 1 px (`sin(_t*50)`), não a câmera nem um flash. Atende.
+- **R18 / §4.11:** borda escura + borda vermelha lê em fundo claro (Coroa, Pleroma) e escuro (Silêncio, Torpor), conforme o
+  QA7 #25. Não medi 3:1 por perigo. A prancha das lanças lê bem.
+- **R3:** nenhum `Juice.shake` novo nos perigos. Atende.
+- **R4:** o som do perigo é ligado NA FONTE e o observador do audio7 cuida só dos perigos que eram mudos. Ver na integração se
+  algum perigo ficou tocando pelos dois caminhos: o `docs/pedidos/audio7.md` lista as trocas `dark_tide` e `guillotine`.
+- **Regra da equipe:** não há `docs/onda2/PERIGOS7.md` com CHECAGEM DE SATISFAÇÃO no branch. Correção: escrever antes do FINAL.
+
+**Veredito: APROVADO COM RESSALVAS** (falta só o doc/CHECAGEM). Quando sair o FINAL, reaudito só o delta.
