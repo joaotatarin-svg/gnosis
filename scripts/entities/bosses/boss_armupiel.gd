@@ -17,15 +17,15 @@ var _court_cd: float = 0.0
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.4
+	dmg_scale = 0.27
 	keep_dist = Vector2(40.0, 100.0)
 	gap_by_phase = [0.8, 0.7, 0.6]
 	escape_hits = 4
 
 
 func _build_moves() -> Dictionary:
-	var espadao := {"id": "espadao", "kind": "slam", "anim": "slam", "wind": 0.9, "strike": 0.25, "recover": 1.0,
-		"off": 34.0, "sx": 2.6, "sy": 1.4, "nova": 100.0, "waves": 1, "wave_dmg": 0.4, "wave_speed": 250.0,
+	var espadao := {"id": "espadao", "kind": "slam", "anim": "slam", "wind": 0.85, "strike": 0.25, "recover": 1.25,
+		"off": 34.0, "sx": 2.6, "sy": 1.4, "nova": 100.0, "waves": 1, "wave_dmg": 0.4, "wave_speed": 210.0,
 		"dmg": 1.1, "rmax": 140.0, "w": 2.0, "cd": 1.0}
 	var varredura := {"id": "varredura", "kind": "cast", "anim": "melee", "wind": 0.75, "strike": 0.25, "recover": 0.8,
 		"unblock": true, "rmax": 150.0, "w": 1.4, "cd": 2.5}
@@ -98,7 +98,7 @@ func _on_windup(m: Dictionary) -> void:
 	match m.id:
 		"varredura":
 			# baixa e larga, à frente: só pulando
-			var h := hazard(e.global_position.x + e.atk_dir * 70.0, "band", 85.0, m.wind, 0.9, GOLD)
+			var h := hazard(e.global_position.x + e.atk_dir * 70.0, "band", 85.0, m.wind, 0.7, GOLD)
 			h.height = 30.0
 			h.hit_air = false
 			h.active = 0.15
