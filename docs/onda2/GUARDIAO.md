@@ -9,6 +9,9 @@
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir5/encenacao5 | ab957ac (delta de 0f04eff) | APROVADO (ressalvas anteriores fechadas) | R6, §3, R21 |
+| dir2/arte-gpt | e114a52 (+f30ed17/2c219b4 docs; delta de 4038d12) | APROVADO | R18 |
+| dir7/polimento7 | 87290ca (delta de 661a1a0) | APROVADO COM RESSALVAS (ressalvas anteriores fechadas; nova: dono único dos 3 sons) | R5 (aparo justo), R10, R4 |
 | dir7/vfx7 | 44e587d (fase 2: e99ff1d..cc9e736) | APROVADO COM RESSALVAS | R15 só nos tiros (o acerto corpo a corpo da Sophia segue em 360°) |
 | dir7/perigos7 | dc8eaa7 (WIP) | APROVADO (inofensivo: só recorte/ferramenta; auditoria real quando o perigo pintado entrar no jogo) | — |
 | dir7/cenario7 | 54e3717 (WIP) | APROVADO (inofensivo: ferramenta HdShot + chave `hd_disabled`) | — |
@@ -288,3 +291,77 @@ visual premium; CHECAGEM DE SATISFAÇÃO no VFX7.md.
   perigo pintado e o fundo HD entrarem no jogo. Vou cobrar: R5 (todo perigo avisa com forma + som antes de ferir; o
   audio7 já tem `hz_*`), R18 (fundo HD 10–25 % menos saturado que os personagens, contraste ≥ 3:1 em escala de cinza),
   R10 (perigos que piscam ≤ 3 Hz) e §4.11 (cor nunca é o único aviso).
+
+---
+
+## dir7/polimento7 — 87290ca (reauditoria do delta 661a1a0..87290ca; f7bdd80 é merge da integração)
+
+**O que muda:** `hitbox.gd` (`_off`: golpe encerrado deixa de ferir NA HORA, mesmo dentro do sinal de acerto; `monitoring`
+desliga adiado em `_sync_monitoring`; `rearm()` para multi-hit); `enemy.gd` (`FLASH_ADD` 0,55 → 0,40 × `luma_k()` do atlas;
+morte desliga caixas adiado); `enemy_flash_layer.gd` (`LUMA_K` por atlas, tabela gerada offline por
+`tools/combate/flash_luma.py`, faixa 0,55–1,25); `player.gd` (sons próprios do Áudio7: `double_jump`, `star_charge`,
+`riposte`, com o genérico de reserva quando o som não existe no CATALOG); `staff_reach.gd`; `validate.ps1` (+FeelProbe/HitboxProbe);
+CHECAGEM DE SATISFAÇÃO no POLIMENTO7.md.
+
+**Medido no 87290ca (worktree de sonda, headless 60 fps):** importação sem `SCRIPT ERROR`;
+HitboxProbe `QA PASS (atravessa 0 %, apelão 9 %; corpo desenhado: sem dano 0.0 %, apelão 0.6 %)` — 140 esperados, 154 reais,
+contra o corpo (frame_geometry) 153 encostos e **0 sem dano**, 1 dano sem encostar (0,6 %); contato 120 → 120.
+Log `C:\gnosis-wt\_caps\guardiao\p7b_HitboxProbe.log`. FeelProbe `QA PASS` (aéreo 1/pulo, pulo duplo travado, 2º pulo mais baixo). FlashParryProbe: aparo, janela do contra-ataque
+e contra-ataque `PASS`; o item "≤ 3 flashes cheios/s" FALHA com `--fixed-fps 60` (pico1 0,12 = pico2 0,12) mas PASSA em tempo real
+(pico1 0,25 → pico2 0,12) — e a integração atual falha igual com `--fixed-fps`. É artefato da sonda: o `Juice.flash_strength`
+mede o intervalo em `Time.get_ticks_msec()` (relógio de parede) e o headless com passo fixo corre mais rápido que o relógio.
+No jogo a 60 fps reais o limite vale. Pedido (combate/polimento7, não bloqueia): rodar a FlashParryProbe SEM `--fixed-fps` no
+`validate.ps1`, ou o `flash_strength` contar em passos como o hitstop.
+
+**Checagem:**
+- **R5 / §5.5 (aparo justo) — CORRIGE o bug mais grave do QA7:** antes, `deactivate()` dentro do sinal de acerto era
+  bloqueado pelo Godot e o golpe APARADO continuava ferindo — o jogador fazia a coisa certa e era punido (o oposto de
+  competência, SDT). Agora `_on_area_entered` sai cedo com `_off` (`hitbox.gd`, início de `_on_area_entered`). Atende.
+- **R10:** inimigo 0,40 × fator do atlas; atlas claros (Astaphaios 0,57, Soter 0,56, Rei 0,73) deixam de estourar o corpo
+  grande; escuros sobem até 1,25 para o acerto continuar visível (R1). Fecha a minha ressalva do 661a1a0. Atende.
+  Obs.: a tabela é estática — atlas repintado (ex.: arte-gpt e114a52 nos Campeões) pede rodar `flash_luma.py` de novo.
+- **R4 — atende no código do player, com RESSALVA de integração:** o `player.gd` agora toca o som próprio NO LUGAR do
+  genérico. Mas o `dir7/audio7` (634bc91) ainda toca os mesmos 3 pelo observador `_Watch` (`audio_manager.gd` ~1811/1820/1829
+  do audio7). O anti-spam de 40 ms do mesmo nome provavelmente engole a 2ª chamada no mesmo quadro, mas isso é sorte, não
+  desenho, e o `riposte` do observador sai pela borda de `_riposte_t` (pode cair fora dos 40 ms). Correção mínima (dono:
+  **audio7**): tirar `double_jump`, `star_charge` e `riposte` do `_Watch` — quem toca agora é o player. Com isso o meu
+  item 1 do audio7 também fecha.
+- **R1/R2/R3/R16/R20:** intocados (conferido no diff).
+- CHECAGEM no doc: presente e confere com o código (exceto a frase "o observador do Áudio7 deixa de tocá-los", que ainda
+  não é verdade no audio7 634bc91).
+
+**Veredito: APROVADO COM RESSALVAS** — entra; a ressalva é do audio7 (tirar os 3 do observador).
+
+---
+
+## dir2/arte-gpt — e114a52 (+ f30ed17, 2c219b4 só bilhete; delta de 4038d12)
+
+`despill_full` nas folhas de 2 Campeões (`champ_carcereiro_frames.png`, `champ_esporos_frames.png`: franja rosada pintada
+→ ferrugem/vinho), ajustes no pipeline (`build_frames.py`, `boss_frames.py`, `mk_champ_recipes.py`, 2 receitas) e doc.
+- **R18:** tira a franja rosada (cor de "chave" vazando) e mantém o brilho dos esporos (lê como esporos acesos). Melhora.
+- **R17:** Campeão de vidro morre estilhaçando EM PÉ de propósito, com monte de cacos no chão — morte distinta. Ok.
+- Nenhum código de jogo, som, tremor ou economia.
+- Lembrete: o `LUMA_K` do polimento7 tem esses 2 atlas (0,99 e 0,93); a mudança de luminância do despill é pequena,
+  mas rodar o `flash_luma.py` de novo depois da integração.
+
+**Veredito: APROVADO.**
+
+---
+
+## dir5/encenacao5 — ab957ac (delta de 0f04eff; 2c20de2 é merge da integração)
+
+**O que muda:** `npc_encounter.gd` (as 30 faíscas do degrau agora voam em 9 orbes `SparkOrb.burst` do degrau até ela; presente
+de arma do Soter por `Progression.gift_weapon_level()`, com 120 faíscas EM ORBES quando a arma está selada/no máximo);
+`gnosis.gd` (o mesmo card de chefe não repete na mesma tela em < 8 s); `staging.gd` (descida ao Centro ~5 s sem controle,
+antes 8–10 s; Tween nunca vazio); `cinematic.gd` (quebra equilibrada, sem viúvas); lore do acólito/espectro; i18n.
+
+**Checagem:**
+- **R6 — fecha a ressalva:** crédito na hora + orbes com o tique em escala na chegada (mesmo caminho das mortes). Atende.
+- **§3 — fecha a ressalva antiga:** o presente respeita o selo por Arconte (`gift_weapon_level()` devolve false se selada ou
+  no máximo, `progression_manager.gd:292-297`); a troca é fixa (120). Determinístico, sem sorteio. Atende.
+- **R21 — melhora:** perda de controle na descida cai de 8–10 s para ~5 s, com o peso na ilustração/câmera e não no preto.
+- **Card sem repetir:** usa `Time.get_ticks_msec()` (relógio de sessão, não data real) só para não duplicar o anúncio —
+  sem efeito de recompensa. Ok (§4: menos ruído).
+- Nada de tremor, flash ou slow-mo novo.
+
+**Veredito: APROVADO.**
