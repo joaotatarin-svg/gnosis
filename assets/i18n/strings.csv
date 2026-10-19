@@ -982,6 +982,7 @@ stela._ready.0b4c7d,Kenoma,Kenoma,ui_estela,,,scripts/entities/stela.gd:254,
 stela._ready.7be33a,Fonte: %s,Source: %s,ui_estela,,,scripts/entities/stela.gd:284 scripts/ui/chronicles.gd:187,format string: manter os %
 stela._ready.4deab3,• nova Crônica  %d/%d,• new Chronicle  %d/%d,ui_estela,,,scripts/entities/stela.gd:301,format string: manter os %
 stela._ready.9f1fce,Crônica %d/%d,Chronicle %d/%d,ui_estela,,,scripts/entities/stela.gd:301,format string: manter os %
+projectile_fx.attach.394f4a,ProjectileFX,ProjectileFX,ui,,,scripts/fx/attack_fx/projectile_fx.gd:57,
 cinematic.prologue.56bd6b,"No princípio havia o Um. Dele emanaram os Éons, aos pares,
 como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
 like overflowing light. There nothing slept. Nothing forgot.",card_cinema,,240,scripts/fx/cinematic.gd:151,
