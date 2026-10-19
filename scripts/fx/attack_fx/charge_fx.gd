@@ -89,7 +89,7 @@ func _process(delta: float) -> void:
 	var k := clampf(_t / maxf(duration, 0.01), 0.0, 1.0)
 	var e := k * k                          # brilho cresce acelerando
 	var big := style == "king"
-	var core_s := (0.3 if big else 0.2) * (0.25 + 0.75 * e)
+	var core_s := (0.3 if big else (0.2 if style == "light" else 0.15)) * (0.25 + 0.75 * e)
 	_core.scale = Vector2.ONE * core_s * (1.0 + sin(_t * 40.0) * 0.06 * k)
 	_core.modulate.a = minf(1.0, 0.3 + k)
 	_glow.scale = Vector2.ONE * (0.25 + 0.45 * e) * (1.5 if big else 1.0)
