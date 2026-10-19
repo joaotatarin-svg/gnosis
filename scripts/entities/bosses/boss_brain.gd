@@ -49,6 +49,8 @@ var window_mult := {
 }
 ## Escala do dano de TODOS os golpes deste chefe (balance por chefe).
 var dmg_scale: float = 1.0
+## Distância mínima da parede ao andar (px de mundo).
+var wall_margin: float = 50.0
 ## Golpe com `expose`: na recuperação ele fica EXPOSTO (ajoelha, o ponto fraco
 ## desce) e sente muito mais.
 const EXPOSED_MULT := 1.35
@@ -182,6 +184,10 @@ func chase(delta: float) -> bool:
 	elif dist < keep_dist.x:
 		dir = -signf(dx)
 	if e.rooted_timer > 0.0:
+		dir = 0.0
+	# não recua até colar na parede (arte larga fica cortada na borda da câmera)
+	var wb := arena_bounds()
+	if (dir < 0.0 and e.global_position.x < wb.x + wall_margin) or (dir > 0.0 and e.global_position.x > wb.y - wall_margin):
 		dir = 0.0
 	var spd: float = e.move_speed * (0.5 if e.slow_timer > 0.0 else 1.0)
 	e.velocity.x = dir * spd + e._separation()
