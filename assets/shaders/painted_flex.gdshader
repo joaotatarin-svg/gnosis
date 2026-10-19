@@ -21,6 +21,11 @@ uniform float dissolve : hint_range(0.0, 1.0) = 0.0;
 uniform vec4 glow_color : source_color = vec4(1.0, 0.9, 0.6, 1.0);
 
 varying vec2 body_pos;                 // posição no corpo (0..1 de altura), pra o ruído
+// COR DO VÉRTICE guardada: no Godot 4 o COLOR de entrada do fragment JÁ vem
+// multiplicado pela textura — `texture(...) * COLOR` dava a cor AO QUADRADO
+// (Sophia e criaturas mais escuras e saturadas que a pintura). Igual ao
+// painted_boss.gdshader: amostra uma vez (com o vento) × cor do vértice.
+varying vec4 vert_col;
 
 void vertex() {
 	float h = clamp(-VERTEX.y / body_h, 0.0, 1.6);
@@ -28,6 +33,7 @@ void vertex() {
 	float low = clamp(1.0 - h * 1.6, 0.0, 1.0);
 	VERTEX.x += hem_wave * low * low * sin(wind_time * 3.1 + VERTEX.y * 0.045);
 	body_pos = VERTEX / body_h;
+	vert_col = COLOR;
 }
 
 float hash(vec2 p) {
@@ -66,5 +72,5 @@ void fragment() {
 			c.rgb = mix(c.rgb, glow_color.rgb * 2.2, 0.85);
 		}
 	}
-	COLOR = c * COLOR;
+	COLOR = c * vert_col;
 }
