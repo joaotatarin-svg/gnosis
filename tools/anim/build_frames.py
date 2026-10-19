@@ -120,7 +120,7 @@ def scale_meas(m: dict, s: float, ox: float = 0.0, oy: float = 0.0) -> dict:
 
 
 # ---------------------------------------------------------------- fatiar
-def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, erase=(), strip_glow=False, min_part=0):
+def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, erase=(), strip_glow=False, min_part=0, despill_full=False):
 	"""`raw_alpha_cells`: células cujo alfa da folha é mantido como veio
 	(translúcido DE PROPÓSITO, ex.: o "fade" do Soter).
 	`grid_only`: cada célula é recortada SÓ dentro da sua caixa da grade (folhas
@@ -131,7 +131,10 @@ def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, era
 	pixel semitransparente (α < 0,85) amarelado (b < 0,8·r) some; o corpo opaco
 	e o cabelo prateado (b ≈ r) ficam. A luz é refeita por FX no jogo.
 	`min_part`: pedaço solto menor que isso (px da folha) fica de fora mesmo perto
-	do corpo (faíscas pintadas em volta)."""
+	do corpo (faíscas pintadas em volta).
+	`despill_full`: em todo pixel, tira TODO o excesso comum de r e b sobre
+	g (o "rosado" que o GPT pinta nos panos finos sobre o magenta). Só para folhas
+	SEM violeta/rosa legítimo (o violeta vira azul)."""
 	img = Image.open(path)
 	a_raw = None
 	if img.mode == "RGBA" and np.asarray(img)[..., 3].min() < 250:
@@ -147,6 +150,12 @@ def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, era
 		a[a < 0.05] = 0.0
 	else:
 		F, a, _ = key_array(np.asarray(img.convert("RGB")).astype(np.float32))
+		if despill_full:
+			# em TODO pixel: o rosado está pintado no pano (reflexo do fundo), não só na borda
+			m = np.clip(np.minimum(F[..., 0], F[..., 2]) - F[..., 1], 0.0, None)
+			F = F.copy()
+			F[..., 0] -= m
+			F[..., 2] -= m
 	if strip_glow:
 		yel = (F[..., 2] < 0.8 * F[..., 0]) & (F[..., 0] > 120.0)
 		a = np.where((a < 0.85) & yel, 0.0, a)
