@@ -527,13 +527,24 @@ RECIPES.update(S.SOUNDS)
 import tells as T
 RECIPES.update(T.SOUNDS)
 
+# Onda 7 (Áudio7): conteúdo novo das Ondas 5–6 — onda7.py
+import onda7 as O7
+CAT.update(O7.CATS)
+RECIPES.update(O7.SOUNDS)
+
 
 def finish(x, cat):
 	x = np.asarray(x, dtype=np.float64)
 	x = C.trim_start(x, -50.0, pre_ms=1.0)
 	x = C.trim_end(x, -60.0, keep_ms=15.0)
 	x = C.fade(x, 0.002, 0.012)
-	return C.to_loudness(x, CAT[cat], "momentary", CEIL)
+	x = C.to_loudness(x, CAT[cat], "momentary", CEIL)
+	# Onda 7: o limitador é de pico de AMOSTRA; o pico VERDADEIRO (oversampling)
+	# de transiente curto passava de −1 dBTP. Abaixa o que sobrar (R13).
+	tp = C.true_peak_db(x)
+	if tp > CEIL:
+		x = x * db(CEIL - 0.4 - tp)   # 0,3 dB de folga: o Vorbis passa um pouco do pico
+	return x
 
 
 def build(names=None):
