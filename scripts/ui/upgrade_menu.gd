@@ -319,7 +319,7 @@ func _buy_relic(id: String) -> void:
 
 func _equip_relic(id: String) -> void:
 	Progression.equip_relic(id)
-	Audio.play_sfx("shop_buy")
+	# som: "relic_equip" toca pelo sinal relics_changed (Áudio7) — sem "shop_buy" por cima
 	_rebuild()
 
 
