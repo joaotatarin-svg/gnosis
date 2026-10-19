@@ -13,6 +13,13 @@ const LIFE := 0.32
 ## `heavy` = o golpe pesado ganha as partículas grandes (talho + poeira) NESTE
 ## mesmo ponto — R4: um acerto = um evento de impacto, não dois empilhados.
 static func spawn(parent: Node, pos: Vector2, col: Color, heavy: bool = false) -> void:
+	# VFX7: se quem acertou foi um projétil com visual premium, o impacto é
+	# dele (por família: clarão, anel, faíscas direcionais, decalque) — um
+	# acerto = um evento (R4).
+	var fx := ProjectileFX.find_at(pos)
+	if fx != null:
+		fx.impact(pos)
+		return
 	var b := ImpactBurst.new()
 	b.color = col
 	parent.add_child(b)
