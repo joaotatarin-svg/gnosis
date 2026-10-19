@@ -143,6 +143,25 @@ inimigo → `look` "spike"=`wave`, prende=`chain`, lentidão=`sleep`, cor dourad
    vitrine); jogo real com criaturas atirando/carregando: `C:\gnosis-wt\_caps\vfx7\jogo2\t3_grid.png`,
    `t3_zoom.png`, `t5_grid.png` (0 SCRIPT ERROR). Os 6 GIFs de ataque foram refeitos com as faíscas do R15.
 
+## QA7 (19/10) — bugs de inimigo que viraram meus (R5/R21) + ressalva R15 do Guardião
+- **#8 poça fere no quadro em que nasce** → `HazardZone` hostil à Sophia ARMA por 0,5 s (`ARM_TIME`):
+  cresce do centro com o contorno FINAL piscando rápido e só então fere/prende. As da Sophia valem na
+  hora. Vale para a morte do Portador, o rastro de Belias, a névoa do Torpor e as sementes (`lob`).
+  Captura: `C:\gnosis-wt\_caps\vfx7\f2_qa\zonas_strip.png`.
+- **#9 aparição por trás com 0,25 s** → `EnemyMoves.BLINK_WIND = 0,6 s` (0,51 s com fúria) e a
+  `EnemyOverlay` marca a aparição (redemoinho, anel deitado na cor do aviso, motes) + som do telegrafo.
+- **#15 repulsa nunca sai** → alcance 60 → 90 px, mas a EnemyProbe AINDA mede `repulsa=0`: a causa é a
+  intenção "orbe" guardada 2,5 s no enemy.gd — patch exato pedido ao polimento7.
+- **#10 atiradores fogem para a borda** → coleira pronta (`EnemyAggro.leash_x`, `retreat_dir`: ≤ 230 px da
+  Sophia e dentro de `arena_bounds` − 48); falta a chamada em `_desired_x`/recuo (enemy.gd, polimento7).
+- **#12 Campeão fora da tela** e **#19 fúria < 0,4 s** → pedidos (level6/narrativa6 e polimento7).
+- **R15 (ressalva do Guardião)** → `ImpactBurst.spawn(…, dir)` e `VfxLibrary.hit(…, dir)`: fagulhas em
+  cone de ±50° no sentido do golpe (+20 % em 360°), talho alinhado ±15°, riscos vetoriais no cone. Sem
+  `dir`, o ImpactBurst DEDUZ pelo lado da Sophia — o acerto corpo a corpo dela já sai direcional sem
+  esperar ninguém; o polimento7 passa a direção exata pelo hitbox.gd (pedido).
+- **Som (R4, pedido do Áudio pelo chefe)** → carga = `charge_*` na ChargeFX (sem fallback), disparo =
+  `proj_fire`; o Áudio7 tira o `atk_*` dos tiros (pedido).
+
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop):** não é VFX7 (flash/vibração ficam no enemy.gd/player.gd). Nada
   aqui atrasa ou cobre o flash do alvo: o clarão de impacto dura 100–160 ms, é aditivo e o corpo
@@ -157,9 +176,9 @@ inimigo → `look` "spike"=`wave`, prende=`chain`, lentidão=`sleep`, cor dourad
 - **R10 (≤ 3 flashes/s, "Reduzir flashes"):** `flash_budget()` em todo clarão forte (impactos, coluna,
   coroa, nova grande): 3 inteiros por segundo, o resto a 30 %; a opção corta pela metade. O VFX7 não
   usa `screen_flash`.
-- **R15 (faíscas na direção do golpe):** `_spray` = cone de ±50° no sentido do golpe, levemente para
-  cima, + ~20 % em 360°. Exceção: `claw_impact` sai em 360° (o ImpactBurst não recebe o lado do golpe
-  — pedido ao combate6).
+- **R15 (faíscas na direção do golpe):** `_spray` e `hit(…, dir)` = cone de ±50° no sentido do golpe,
+  levemente para cima, + ~20 % em 360°; talho do pesado alinhado (±15°). Vale para tiros, garras e o
+  acerto corpo a corpo da Sophia (direção deduzida até o hitbox.gd passar a exata).
 - **R17 (confirmação de morte):** não é VFX7; nenhum efeito novo imita a morte (os impactos são menores
   e mais curtos que `enemy_death`/`elite_death`), então a morte continua distinta.
 - **R18 (legibilidade):** medido nas capturas (luminância relativa, 90º percentil do efeito × mediana do
@@ -183,4 +202,6 @@ inimigo → `look` "spike"=`wave`, prende=`chain`, lentidão=`sleep`, cor dourad
   (4) o scratchpad é compartilhado entre agentes: use subpasta própria; (5) a vitrine roda também no
   commit antigo: chame função nova da VfxLibrary por `(VfxLibrary as Script).call(...)`;
   (6) medidas de quadro variam ±1 ms entre rodadas (outros agentes usam a máquina) — compare A/B intercalado.
-- Próximo: chefes6 ligar `charge_up` no BossBrain; ajustar depois do playtest do João.
+- Próximo: conferir quando o polimento7 aplicar os patches (#10/#15/#19/R15) — rodar
+  `tools/inimigos6/EnemyProbe.tscn` (repulsa > 0) e o QA7Bot (sem timeout nas telas 14/32/43/49);
+  chefes6 ligar `charge_up` no BossBrain; ajustar depois do playtest do João.
