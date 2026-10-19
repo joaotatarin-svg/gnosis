@@ -5,6 +5,79 @@
 > Branch que muda depois de aprovado precisa de reauditoria do DELTA (o veredito vale para o commit citado).
 > Sondas: `tools/guardiao/**`. Capturas e logs: `C:\gnosis-wt\_caps\guardiao\`.
 
+## TAREFA 1 — auditoria do que JÁ está no jogo (origin/integracao/onda1 @ 0cc4aa5, 19/10)
+
+Método: li o código integrado (worktree de sonda `C:\gnosis-wt\guardiao_sonda`), rodei sondas headless
+(HitboxProbe, FeelProbe, FlashParryProbe), medi os .ogg offline (ffmpeg ebur128 + numpy, NADA tocado:
+`_caps\guardiao\audio\base_meas.json`) e fiz 4 capturas mínimas 320×180 (telas 3, 22, 40, 58:
+`_caps\guardiao\r18_grade.png` e `r18_grade_cinza.png`). O feel e o timing finos ainda dependem do playtest do João (§5).
+
+| R | Estado | Evidência | Dono da correção |
+|---|---|---|---|
+| R1 flash + vibração no hitstop | **ATENDIDA** | `enemy.gd` `_flash()` é instantâneo (camada aditiva) e apaga em `FLASH_FADE 0,11` s reais. Vibração `VIB_LIGHT 1,5` / `VIB_HEAVY 3,0` px em relógio real. Sophia: `FLASH_TIME 0,10`, `VIB_AMP 1,5` | — |
+| R2 hitstop por peso, o maior vence | **ATENDIDA** | `juice.gd:192-201`: 50/90/108 ms, +33 na morte, +17 na multidão, 25 no multi-hit, 75 no dano, 100 na queda, teto 200. `hit_stop()` estende até o maior (l. 263-269). Um por golpe (`hitbox.gd` `_flush_impact`). A entrada apertada no hitstop fica guardada | — |
+| R3 tremor dedup / Perlin / chute | **PARCIAL** | Na Sophia está ok: maior pedido do quadro (`camera_shake.gd` `_frame_trauma`), Simplex 15 Hz, chute 2/4 px, leve = 0, pesado 0,30, dano 0,35. O problema são os inimigos COMUNS, que tremem a tela em golpe de rotina: pancada 0,35 (`enemy.gd:802` e `:1846`), explosão 0,45 (`:874`), agarrão 0,35 (`:2266`), fúria do Campeão 0,4 (`:2080`). A morte de chefe ainda empilha 0,8 + 0,5 + 0,9 (`boss_brain` + `_death_pose_then_burst`). §4.1 | inimigos6 (comuns: ≤ 0,15 ou só quando ACERTA a Sophia); chefes6 (morte com um ápice só) |
+| R4 um acerto = um evento | **ATENDIDA** | `hitbox.gd:133-139`: um VFX por par, no ponto de contato. Som 1× por golpe, e o pesado toca NO LUGAR do leve (`:173`). Voz de dor ≤ 1 a cada 250 ms. `ImpactBurst` → `ProjectileFX`/`_claim` evita duplicar | (audio7: não pode reintroduzir a dobra) |
+| R5 telegrafo glint / forma / som | **ATENDIDA** (com ressalvas) | Glint 180 ms antes (`enemy.gd:701`), redondo amarelo × losango vermelho, em Z+7/+8. Os sons `tell_parry`/`tell_unblock` existem. Tinta 45 % + pulso 2 Hz (`enemy.gd:52-54`). `_flash` volta à cor-base (bug corrigido). Ressalvas: `tell_parry` dura ~93 ms (alvo 40); o golpe aparado que ainda feria só foi corrigido no polimento7 87290ca | polimento7 (integrar 87290ca); Áudio |
+| R6 faísca na chegada, em escala | **ATENDIDA** | `spark_orb.gd:102-109`: `spark` toca na CHEGADA (5 variações em sequência subindo) e o HUD conta 1 a 1 | — |
+| R7 adoçante tonal do combo | **PARCIAL (quase nada feito)** | `hud.gd:312-320` só tem o pop 1,25→1,0. Não há tique de combo, nem marcos 10/25/50, nem filete de validade | Áudio (`combo_tick`) + UI |
+| R8 slow-mo abafado, em rampa, racionado | **ATENDIDA** | Racionado: chefe sempre; inimigo comum só no fim da tela ou com golpe grande (`enemy.gd:1176-1183`). Rampa de 0,18 s. Passa-baixas pelo `slowmo_changed`. Detalhe: a morte de chefe (escala 0,3) cai no corte de "esquiva" (2,5 kHz) | Áudio (o Juice informa o tipo do slow-mo) |
+| R9 ducking e silêncio | **PARCIAL** | Silêncio pré-chefe e duck na morte do chefe ok. Falta duck em ring_gain, ring_steal, level_clear e weapon_upgrade (−6..−8 dB) e no parry (−3 dB): `audio_manager.gd:1065` só trata boss_appear e boss_die | Áudio |
+| R10 ≤ 3 flashes/s, "Reduzir flashes" | **ATENDIDA** | `Juice.flash_strength`: 333 ms, meia força, chefe 2,0, ×0,5 no modo reduzido. Opção no menu (`options_menu.gd:79`). Dano na Sophia em branco quente, não vermelho. `screen_flash` só na fase 2 e na morte de chefe, 35 % no modo reduzido. Ressalvas: a FlashParryProbe falha com `--fixed-fps` (artefato do relógio de parede); o clarão de tela usa a `eye_color` do chefe, então um chefe de olho vermelho dá clarão vermelho a α 0,6 (§4.4). Conferir | combate (sonda); VFX (clarão sem vermelho saturado) |
+| R11 round-robin, vozes, limitador | **ATENDIDA** | 3 variações de hit, hit_heavy, swing, step e enemy_hurt; `MAX_SAME 3`; HardLimiter no Master | — |
+| R12 grave com harmônicos | **PARCIAL** | `hit_heavy` tem 78–86 % da energia abaixo de 90 Hz e `nova` 69 %: ok. Mas o `hit` LEVE tem 42–44 % abaixo de 90 Hz em 2 das 3 variações, e a R pede leve sem sub | Áudio |
+| R13 loudness | **PARCIAL / não medida** | Não gravei a mixagem de 10 min (regra de silêncio). Arquivos base com true peak acima de −1 dBTP: hit −0,7, hit_heavy −0,6, nova −0,4, swing_heavy_3 −0,5 (o limitador segura) | Áudio (gravar 10 min offline com o bot + ebur128) |
+| R14 estéreo × 0,5 | **ATENDIDA** | `audio_manager.gd:62-68` | — |
+| R15 fagulhas na direção do golpe | **VIOLADA** | No golpe corpo a corpo, que é o mais comum, o `hit()` de `vfx_library.gd` usa `spread 180` (360°) e o talho sai em `randf_range(-0.7,0.7)` (±40°). `impact_burst.gd:32-34` solta 7 fagulhas em 360°. O vfx7 fase 2 só corrigiu os tiros | vfx7 (API com o lado do golpe) + polimento7 (`hitbox.gd` passa o `facing`) |
+| R16 números de dano | **PARCIAL** | A opção liga/desliga existe (`options_menu.gd:105`). Falta agrupar os acertos em 300 ms, o teto de 6 e o pop de entrada (`damage_number.gd:19-29`) | UI |
+| R17 confirmação de morte | **PARCIAL** | O golpe que mata ganha +33 ms de hitstop. Falta o impacto 2 semitons abaixo / +2 dB e o contorno branco de 1 quadro. A morte de chefe em 4 etapas está desenhada, mas NÃO está ligada ao jogo (ver arte-gpt 4038d12) | Áudio + combate; chefes6 + arte |
+| R18 legibilidade 3:1 | **PARCIAL (risco alto)** | No teste do apertar de olhos em cinza (`r18_grade_cinza.png`), as telas 40 e 58 têm fundo claro e cheio de contraste interno (raios, arcos), e a Sophia, que é clara, se mistura. Estimativa grosseira Sophia × fundo local: 1,5–2,2 : 1 (alvo ≥ 3:1; medida a 320×180, sem inimigos na tela). A Sophia não tem luz de contorno (o `painted_flex` não tem rim; os inimigos têm o `enemy_grade`) | cenario7 (fundos HD com 15–25 % menos contraste e saturação no plano de jogo) + arte (rim de 1 px na Sophia) |
+| R19 smear + segurar pose | **ATENDIDA** | Smear do cajado de 110 ms (`character_art.gd` `_draw_smear`; o alvo é 60–90, um pouco longo). Não verifiquei se a pose de impacto é segurada | (arte, ajuste fino) |
+| R20 squash moderado | **ATENDIDA** | `player.gd` `_squash` limita a ±7 % (x·y ≈ 1), 60 + 160 ms | — |
+| R21 respiro + HUD recua | **PARCIAL** | O HUD recua a α 0,6 após 4 s (`hud.gd:55-58`). Mas entre ondas são só **0,8 s** (`level.gd:803`), e o alvo é 2–4 s | level6 |
+| R22 vida baixa discreta | **ATENDIDA** | Vinheta abaixo de 25 %, 0,9 Hz, no máximo 8 s por dano (`hud.gd:60-62, 492-500`); coração em 63 Hz | — |
+
+### §3 (recompensa ética) e §4 (excessos): economia, baús, segredos, faíscas, mapa
+(um funcionário leu e citou arquivo:linha; eu conferi os pontos críticos)
+- **Determinística, sem cassino.** Cada inimigo paga `spark_reward × _reward_mult` (curva por tela × dificuldade). O baú paga
+  `15 + 2·tela` (`chest.gd:85-101`). Selos, Adormecido e baú saem por `tela % N` (`level.gd:540-556`). A recompensa do nó do mapa
+  vem de tabela fixa e aparece ANTES da escolha (`eon_map.gd:108-114`, `world_map.gd:249-250`). RNG só existe em VFX, som e IA,
+  ou com semente por tela. **Nenhum** `Time.get_date` ou `unix` ligado a recompensa, nenhuma sequência diária, e as conquistas são permanentes.
+- **RISCO §3 / grind (donos level6 + mapa6).** Morrer e refazer o trecho paga DE NOVO o baú, os Selos, o Adormecido e a
+  recompensa do nó, porque nada registra o que já foi coletado. Com banco baixo, morrer pode dar lucro e anular o custo da morte.
+  Bug junto: `sleepers_freed` conta 2× (`sleeper.gd:43-44`), o que afeta o final "Semente" e uma conquista.
+- **RISCO leve §3 (aversão à perda).** Morrer tira 20 % das faíscas não gastas (`level.gd:1009-1011`). É anunciado e
+  proporcional, então é aceitável, mas só fica coerente depois de corrigir o item acima.
+- **Balanceamento (progressao6).** A dificuldade multiplica a RENDA (Difícil 1,5×, Muito Difícil 2,2×) e os preços não mudam,
+  então no Difícil a loja inteira cabe. Falta decidir se a dificuldade deve escalar as faíscas.
+- **Misericórdia oculta** (`health_component.gd`): limiar acima de 10 % (o doc sugere acima de 30 %), 1× por zona, com flash e hitstop. Ok;
+  decidir o limiar com o João.
+- Até o 2º chefe (bot, PROGRESSAO6), dá para comprar ~27–45 % do que está aberto, e o selo por Arconte impede maximizar
+  cedo. O item 8 do playtest ("upgrades no máximo antes do 2º chefe") está resolvido no integrado.
+
+### §5: checklist do João, o que o código já garante × o que só o playtest diz
+1 Peso leve/pesado: o código está ok (R2, R4); o `hit` leve ainda tem sub (R12).
+2 Golpe "entra": ok (R1); o aparo justo só vem com o polimento7 87290ca.
+3 Responsividade: buffers no hitstop ok.
+4 Cansaço visual: risco nos tremores de inimigo comum (R3) e no fundo cheio (R18).
+5 Parry: forma, som e 180 ms ok; falta a guarda do Astaphaios (chefes6).
+6 Telegrafo coberto: o glint fica acima de tudo, ok.
+7 Faíscas: ok (R6).
+8 Finalização: racionada, ok (R8).
+9 Ouvido: risco de repetição dos `atk_*` quando o audio7 entrar (§4.7).
+10 Momento grande: o silêncio pré-chefe está ok; a morte de chefe empilha tremores (R3).
+Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo continua (o glint não é cortado).
+**Tudo isso precisa do playtest para ser confirmado.**
+
+### Prioridade das correções (impacto ÷ esforço)
+1. R15: fagulhas na direção do golpe (vfx7 + polimento7). É barato e é o acerto mais visto do jogo.
+2. R3: tremor de inimigo comum ≤ 0,15 ou só no acerto (inimigos6), e um ápice só na morte de chefe (chefes6).
+3. R18: fundo do plano de jogo com menos contraste + rim na Sophia (cenario7 + arte). É o maior risco de "não dá pra ler".
+4. §3: não pagar de novo o que já foi coletado depois de morrer (level6 + mapa6), e corrigir o `sleepers_freed` contado 2×.
+5. R21: 2–4 s entre ondas (level6).
+6. R7 combo e R9 ducks (Áudio + UI).
+7. R16 e R17 (UI, Áudio).
+
 ## Índice de vereditos (o mais novo em cima)
 
 | Branch | Commit auditado | Veredito | R |
