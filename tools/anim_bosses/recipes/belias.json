@@ -11,7 +11,8 @@
  "body_px": 300,
  "size_fix": 1.0,
  "anchors": {
-  "death": "lying"
+  "death": "lying",
+  "d_collapse": "lying"
  },
  "anchor_fix": {},
  "inbetween": {
@@ -84,6 +85,19 @@
    "dur": [
     0.14
    ]
+  },
+  "dying": {
+   "frames": [
+    "d_stagger0",
+    "d_stagger1",
+    "d_kneel",
+    "d_collapse"
+   ],
+   "dur": [
+    0.17,
+    0.17,
+    0.28
+   ]
   }
  },
  "extra_sheets": [
@@ -106,6 +120,22 @@
    "scale": "auto",
    "ref": "walk_p0",
    "main_ref": "idle_0"
+  },
+  {
+   "sheet": "artes/gpt/boss_6_belias_death_a.png",
+   "grid": [
+    2,
+    2
+   ],
+   "cells": [
+    "d_stagger0",
+    "d_stagger1",
+    "d_kneel",
+    "d_collapse"
+   ],
+   "scale": "auto",
+   "ref": "d_stagger0",
+   "main_ref": "hurt"
   }
  ]
 }
