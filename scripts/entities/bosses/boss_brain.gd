@@ -331,6 +331,11 @@ func passive(delta: float) -> void:
 		_self_stagger = false
 	if e.estate == Enemy.EState.CHASE and _prev_estate != Enemy.EState.CHASE:
 		mv = {}
+	# tiro interrompido (aparo, postura, fase, morte): a carga apaga
+	if _charge != null and is_instance_valid(_charge) and e.estate in [Enemy.EState.STAGGER, Enemy.EState.HURT, Enemy.EState.DEAD]:
+		if _charge.has_method("cancel"):
+			_charge.cancel()
+		_charge = null
 	_prev_estate = e.estate
 	# SEM DANO DE CONTATO no corpo: só nas investidas (golpe explícito)
 	var touch: bool = e.estate == Enemy.EState.STRIKE and String(mv.get("kind", "")) == "charge"
@@ -414,6 +419,11 @@ func _start(m: Dictionary) -> void:
 	e.attack_hitbox.unblockable = bool(m.get("unblock", false))
 	_gap_t = float(gap_by_phase[clampi(phase - 1, 0, gap_by_phase.size() - 1)]) * float(m.get("gap", 1.0))
 	e._begin_windup()
+	if String(m.get("kind", "")) == "shot":
+		# VFX7: a luz se junta onde o tiro vai sair (cancela se for interrompido)
+		var col: Color = m.get("color", e.eye_color)
+		var off := Vector2(24.0 * e.atk_dir * e._art_scale, ground_y() - e.global_position.y - 34.0)
+		_charge = _vfx("charge_up", [e, off, col, e.wind_up, "king" if e.kit == "rei" else "dark"])
 	_on_windup(m)
 
 
@@ -467,6 +477,19 @@ func _on_land(_m: Dictionary) -> void:
 ## Batalha dupla: a outra forma (FinalBattle liga). Uma ataca de cada vez —
 ## justiça: a Sophia nunca lê dois telegrafos ao mesmo tempo.
 var partner: BossBrain = null
+var _charge = null                    # antecipação visual (VFX7) do tiro em preparo
+
+
+## Chama a API visual do VFX7 se existir (sem ela, nada — não quebra).
+static var _vfx_methods: Dictionary = {}
+func _vfx(fn: String, args: Array):
+	if _vfx_methods.is_empty():
+		for m in (VfxLibrary as Script).get_script_method_list():
+			_vfx_methods[String(m.name)] = true
+		_vfx_methods["_ok"] = true
+	if not _vfx_methods.has(fn):
+		return null
+	return (VfxLibrary as Script).callv(fn, args)
 
 
 ## Batalha final: a forma se refez (`me`) ou a outra se refez — fase da luta.
@@ -549,6 +572,7 @@ func ground_wave(dir: int, dmg_mult: float, speed: float = 240.0) -> Projectile:
 	p.target_team = "player"
 	p.color = e.eye_color
 	p.lifetime = 2.2
+	p.set("look", "spike")          # VFX7: lâmina rasteira (lê-se como "pule")
 	e.get_parent().add_child(p)
 	p.global_position = e.global_position + Vector2(30.0 * dir, 12.0)
 	return p

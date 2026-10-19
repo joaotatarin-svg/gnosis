@@ -17,7 +17,7 @@ var _court_cd: float = 0.0
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.5
+	dmg_scale = 0.4
 	keep_dist = Vector2(40.0, 100.0)
 	gap_by_phase = [0.8, 0.7, 0.6]
 	escape_hits = 4
@@ -43,7 +43,7 @@ func _build_moves() -> Dictionary:
 	dupla.cd = 3.0
 	var dupla_b := espadao.duplicate()
 	dupla_b.id = "dupla_b"
-	dupla_b.wind = 0.55
+	dupla_b.wind = 0.7
 	dupla_b.rmax = 9999.0
 	dupla_b.w = 0.0
 	dupla_b.cd = 0.0
@@ -129,7 +129,7 @@ func _on_strike(m: Dictionary) -> void:
 		for g in e._minions:
 			if g in before or not is_instance_valid(g):
 				continue
-			g.health.setup(maxi(30, int(BossTuning.expected_hit(BossTuning.expected_weapon_level(screen)) * 6.0)))
+			g.health.setup(maxi(30, int(BossTuning.expected_hit(BossTuning.expected_weapon_level(screen)) * 4.0)))
 			g.spark_reward = 0
 			g.attack_hitbox.damage = maxi(1, g.attack_hitbox.damage / 2)   # guarda que segura, não que mata
 			g.contact_hitbox.damage = maxi(1, g.contact_hitbox.damage / 2)

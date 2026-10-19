@@ -9,7 +9,7 @@ extends "res://scripts/entities/bosses/boss_rei.gd"
 func _on_setup() -> void:
 	super._on_setup()
 	marks = []
-	dmg_scale = 0.45
+	dmg_scale = 0.38
 	keep_dist = Vector2(130.0, 230.0)
 	gap_by_phase = [1.1, 0.95, 0.8]
 	escape_hits = 3

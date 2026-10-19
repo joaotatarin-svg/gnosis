@@ -18,7 +18,7 @@ var _clones: Array = []
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.5
+	dmg_scale = 0.42
 	keep_dist = Vector2(50.0, 110.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 4
@@ -159,6 +159,7 @@ func _bounce_volley() -> void:
 		p.target_team = "player"
 		p.color = GLASS
 		p.lifetime = 2.6
+		p.set("look", "page")        # VFX7: caco de vidro que gira
 		e.get_parent().add_child(p)
 		p.global_position = Vector2((b.x + 20.0) if from_left else (b.y - 20.0), e.global_position.y - 10.0 - 24.0 * float(i % 2))
 
