@@ -116,6 +116,8 @@ const INK := Color(0.04, 0.04, 0.06, 0.95)
 const WARN_COL := Color(1.0, 0.32, 0.25)
 ## Luz de contorno clara (R18): a peça que FERE salta de qualquer fundo escuro.
 const RIM_COL := Color(1.0, 0.92, 0.78, 0.35)
+## Fio quente no meio da borda de aviso (claro: contraste em fundo médio).
+const WARN_HOT := Color(1.0, 0.74, 0.68)
 
 
 ## Contorno de AVISO pulsante (2 Hz) sobre a pintura: intensidade `k` 0..1.
@@ -126,11 +128,15 @@ func warn_outline(piece: String, frame: int, at: Vector2, k: float, rot: float =
 	var a := (0.35 + 0.65 * k) * (0.55 + 0.45 * HazardArt.pulse(_t))
 	# borda ESCURA por fora + vermelha por dentro: lê em fundo claro (Coroa,
 	# Pleroma) e escuro (Silêncio, Torpor) — R18 / QA7 #25
+	# + um FIO QUENTE claro no meio: em fundo de luminância média (onde nem o
+	# escuro nem o vermelho passam de 3:1) é o fio claro que lê (contrast.py)
 	HazardArt.draw_outline(self, piece, frame, at, Color(INK, 0.75 * minf(1.0, a + 0.3)), 2.8, rot, scl)
 	HazardArt.draw_outline(self, piece, frame, at, Color(WARN_COL, a), 1.6, rot, scl)
+	HazardArt.draw_outline(self, piece, frame, at, Color(WARN_HOT, a), 0.8, rot, scl)
 
 
 ## Linha de aviso com sublinhado escuro (lê em qualquer fundo — R18).
 func warn_line(a: Vector2, b: Vector2, col: Color, width: float = 2.0) -> void:
 	draw_line(a, b, Color(INK, minf(0.85, col.a + 0.25)), width + 2.4, true)
 	draw_line(a, b, col, width, true)
+	draw_line(a, b, Color(col.lightened(0.55), col.a), maxf(0.8, width * 0.4), true)
