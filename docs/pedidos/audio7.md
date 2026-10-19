@@ -12,8 +12,7 @@ toca só na BORDA. Nos itens abaixo **NÃO acrescentem chamada**: o som dobraria
   - golpe-assinatura no telegrafo e/ou no golpe (`bs_*` pela tabela `BOSS_MOVE_SFX`);
   - pouso do salto (`bs_land`), quebra de guarda (`guard_break`), olho do Rei (`eye_hit`, pela hurtbox do olho);
   - morte em 5 passos (sinal `boss_dying`).
-- **Sophia:** 2º pulo (`double_jump`), Queda Estelar carregando (`star_charge`), pouso da Queda (`star_impact`,
-  camada sob a `nova`), janela do contra-ataque (`riposte_ready`) e golpe do contra-ataque (`riposte`).
+- **Sophia:** pouso da Queda (`star_impact`, camada sob a `nova`) e janela do contra-ataque (`riposte_ready`).
 - **Objetivo e progressão:**
   - objetivo da zona: totem ou luz armados (`zone_objective`, mais `hz_totem_arm`);
   - selo aberto (`shop_seal`, quando o HUD sobe `_tier_seen`);
@@ -25,7 +24,7 @@ toca só na BORDA. Nos itens abaixo **NÃO acrescentem chamada**: o som dobraria
 - **Roubo:** cue `sink` = `king_sink` + `crack_open`.
 
 O observador lê as propriedades com `get()`. Se renomearem `estate`, `_mv`, `brain.mv`, `_downed`,
-`_champ_fury`, `_air_jumps_left`, `windup_timer`, `dive_landed`, `_riposte_t`, `_armed`, `_tier_seen` ou os
+`_champ_fury`, `current_move`, `dive_landed`, `_armed`, `_tier_seen` ou os
 campos dos perigos, o evento fica MUDO (sem erro): avisem o Áudio. Quem preferir chamar direto, me avise, que
 eu tiro o evento do observador.
 
@@ -39,19 +38,22 @@ mesmo lugar. Linhas de `origin/integracao/onda1` @ 4cfd64c.
    nascer: `_tell_sound("hz_saw")`. `_tell_sound` só toca nome do CATALOG.
 3. (opcional) `boss_brain.gd:543 ground_wave()`: `sfx("atk_wave", e.global_position)`, 1 vez por onda.
 
-### polimento7 / inimigos (`enemy.gd` fora do kit, `projectile.gd`)
+### polimento7 / inimigos (`enemy.gd` fora do kit)
 1. `enemy.gd:333 _boss_intro_fx()`: TROCAR → `Audio.play_sfx("champion_enter" if is_champion and not is_boss_enemy else "boss_appear")`.
    O stinger de chefe libera a música de chefe (R9) e não deve tocar para Campeão.
-2. `projectile.gd:55 _ready()`: tocar `proj_fire` SÓ nos tiros da Sophia. Nos hostis, o golpe de tiro já soa
-   no strike pelo observador (`atk_shot`/`atk_fan`/`atk_homing`/`atk_shot_air`). Hoje são 2 sons por tiro.
 
-### polimento7 / combate (`player.gd`)
-1. `player.gd:432 _double_jump()`: TIRAR `Audio.play_sfx("jump")`. O `double_jump` (anel de luz) já toca pelo
-   observador.
-2. `player.gd:542`: TROCAR `Audio.play_sfx("dive" if heavy else "swing_air")` → `if not heavy: Audio.play_sfx("swing_air")`.
-   Na Queda Estelar, o `star_charge` já toca pelo observador.
-3. `player.gd:~850 _start_riposte()`: o swing do pesado desse golpe pode ficar; o `riposte` (lâmina) soma por
-   cima. Se soar cheio demais no teste, TIREM o swing dele.
+### vfx7 (`projectile.gd`, tiros hostis)
+1. `projectile.gd:55 _ready()`: tocar `proj_fire` SÓ nos tiros da Sophia. Nos hostis, o golpe de tiro já soa
+   no strike pelo observador (`atk_shot`/`atk_fan`/`atk_homing`/`atk_shot_air`). Hoje são 2 sons por tiro (R4).
+
+### polimento7 / combate (`player.gd`): TROCA NA FONTE (o Áudio NÃO observa estes)
+1. `player.gd:432 _double_jump()`: TROCAR `Audio.play_sfx("jump")` → `Audio.play_sfx("double_jump")`. É o anel
+   de luz do Soter.
+2. `player.gd:542`: TROCAR `Audio.play_sfx("dive" if heavy else "swing_air")` →
+   `Audio.play_sfx("star_charge" if heavy else "swing_air")`. A carga da Queda Estelar paira; o pouso
+   (`star_impact`) já soa pelo observador.
+3. `player.gd:628` (o corte sai do wind-up): quando o golpe é o contra-ataque, TROCAR `_swing_sfx()` →
+   `"riposte"`. Basta uma flag `_is_riposte` posta em `_start_riposte()`.
 
 ### perigos7 (`scripts/entities/hazards/**`)
 | Onde | TROCAR / acrescentar |

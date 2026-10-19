@@ -233,11 +233,11 @@ def chain(v=0):
 	"""Galila: o laço pega — elos acelerando + PUXÃO (sopro) + trava de ferro."""
 	d = 0.7
 	o = M.buf(d)
-	M.put(o, links(0.45, 900 + v * 13, 9, 1500 + 150 * v, 0.28, accel=True), 0.0, -2)
+	M.put(o, C.lp(links(0.45, 900 + v * 13, 9, 1000 + 120 * v, 0.28, accel=True), 3500), 0.0, -2)   # elos sem agudo cansativo (R12)
 	M.put(o, whoosh(0.3, 300, 1800, 0.7, 910 + v, 1.0), 0.05, -6)
 	M.put(o, C.metal_clang(320 + 30 * v, 0.5, seed=920 + v, decay=0.25), 0.3, -4)
-	M.put(o, thump(110, 50, 0.3, 0.06, 930 + v, 0.5), 0.3, -8)
-	return tail(o, 0.5, 0.15, 940 + v, 6000)
+	M.put(o, thump(110, 50, 0.3, 0.06, 930 + v, 0.5), 0.3, -4)
+	return C.lp(tail(o, 0.5, 0.15, 940 + v, 6000), 2800)   # ferro escuro: sem 2–5 kHz sustentado (R12)
 
 
 def glass(v=0):
@@ -1163,9 +1163,9 @@ def hz_chain_swing(v=0):
 	t = C.tvec(n)
 	creak = C.bp(C.saw_bl(40 + 25 * np.sin(2 * np.pi * 2 * t), n, 40), 500, 3000) * C.env_swell(n, 0.15, 0.1)
 	M.put(o, creak, 0.0, -10)
-	M.put(o, links(0.3, 2100 + v, 4, 1300, 0.2, decay=0.08), 0.0, -10)
-	M.put(o, whoosh(0.5, 400 + 100 * v, 2200, 0.5, 2105 + v, 1.4, 0.2), 0.12, 0)
-	return o
+	M.put(o, links(0.3, 2100 + v, 4, 800, 0.2, decay=0.08), 0.0, -10)
+	M.put(o, whoosh(0.5, 300 + 80 * v, 1500, 0.5, 2105 + v, 1.4, 0.2), 0.12, 0)
+	return C.lp(o, 3000)   # repete a cada meio período: corpo grave, sem 2–5 kHz sustentado (R12)
 
 
 def hz_bell_toll():

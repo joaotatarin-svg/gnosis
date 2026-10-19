@@ -247,6 +247,12 @@ const SPAM_OVERRIDE := {"spark": 20,
 const MAX_SAME_OVERRIDE := {"spark": 6, "achievement": 1, "hz_ward_drain": 1, "hz_altar_hum": 1,
 	"hz_tide_tick": 1, "hz_mist_breath": 2}
 
+## Golpes dos inimigos (`atk_*`): num grupo de 5–6 bichos, o mesmo golpe saindo
+## junto vira metralha. Anti-spam de 130 ms e no máximo 2 vozes (Guardião, R11).
+const ENEMY_ATK_PREFIX := "atk_"
+const ENEMY_ATK_SPAM_MS := 130
+const ENEMY_ATK_MAX_SAME := 2
+
 ## Sons de INFORMAÇÃO fora da família `tell_` que também vão no bus Tell (sem o
 ## abafado da câmera lenta, tom fixo): a janela do contra-ataque abriu.
 const TELL_EXTRA := ["riposte_ready"]
@@ -591,7 +597,20 @@ func _play(real_name: String, pitch: float, volume_db: float, world_pos: Vector2
 
 ## Anti-spam (ms) do som: mesmo nome não repete em menos que isto.
 func spam_ms_for(sfx_name: String) -> int:
-	return int(SPAM_OVERRIDE.get(sfx_name, SPAM_MS))
+	if SPAM_OVERRIDE.has(sfx_name):
+		return int(SPAM_OVERRIDE[sfx_name])
+	if sfx_name.begins_with(ENEMY_ATK_PREFIX):
+		return ENEMY_ATK_SPAM_MS
+	return SPAM_MS
+
+
+## Vozes simultâneas do mesmo som (R11): golpes de inimigo no máximo 2.
+func max_same_for(sfx_name: String) -> int:
+	if MAX_SAME_OVERRIDE.has(sfx_name):
+		return int(MAX_SAME_OVERRIDE[sfx_name])
+	if sfx_name.begins_with(ENEMY_ATK_PREFIX):
+		return ENEMY_ATK_MAX_SAME
+	return MAX_SAME
 
 
 ## Quantas instâncias deste som estão tocando agora (pool de SFX).
@@ -606,7 +625,7 @@ func voices_playing(sfx_name: String) -> int:
 ## Escolhe o player: se o som já tem MAX_SAME vozes, rouba a mais velha DELE;
 ## senão um player livre; senão o mais velho do pool.
 func _grab_player(sfx_name: String, now: int) -> int:
-	var limit := int(MAX_SAME_OVERRIDE.get(sfx_name, MAX_SAME))
+	var limit := max_same_for(sfx_name)
 	var same := 0
 	var oldest_same := -1
 	var oldest_any := -1
@@ -1686,7 +1705,7 @@ func has_ambience(amb_name: String) -> bool:
 
 # --- ONDA 7: OBSERVADOR (eventos que ainda não têm sinal) -----------------
 ## Os golpes dos inimigos/chefes, o voador derrubado, a fúria do Campeão, a
-## quebra de guarda, o olho do Rei, a Queda Estelar, o 2º pulo, o contra-ataque,
+## quebra de guarda, o olho do Rei, o pouso da Queda Estelar,
 ## o objetivo da zona, o selo aberto e os perigos SILENCIOSOS do level6 não
 ## emitem sinal. Em vez de esperar 7 donos, o Áudio OLHA o estado público
 ## desses nós uma vez por quadro de física (só BORDAS: o quadro em que muda) e
@@ -1805,29 +1824,18 @@ class _Watch extends Node:
 
 	# --- Sophia --------------------------------------------------------------
 	func _player(r: Dictionary, p) -> void:
-		var aj: int = int(p.get("_air_jumps_left"))
-		var on_floor: bool = (p as CharacterBody2D).is_on_floor()
-		if r.init and aj < int(r.get("aj", aj)) and not on_floor:
-			audio.play_sfx("double_jump")          # anel de luz do 2º pulo (o `jump` do player continua)
-		r.aj = aj
-		# Queda Estelar: carga (paira) e pouso (camada de estrelas sob a nova)
+		# 2º pulo, carga da Queda Estelar e golpe do contra-ataque NÃO são daqui:
+		# o player.gd já toca jump/dive/swing nesses momentos e o dono TROCA na
+		# fonte (Guardião, auditoria do 634bc91: observar aqui = som dobrado).
+		# Só o pouso da Queda fica: é camada POR BAIXO da `nova` (sem baque próprio).
 		var dive: bool = false
 		var cm = p.get("current_move")
 		if cm != null and int(p.get("state")) == Player.State.ATTACK:
 			dive = bool(cm.get("air")) and cm.has_method("is_heavy") and bool(cm.call("is_heavy"))
-		var charging: bool = dive and float(p.get("windup_timer")) > 0.0
-		if r.init and charging and not bool(r.get("chg", false)):
-			audio.play_sfx("star_charge")
-		r.chg = charging
 		var landed: bool = dive and bool(p.get("dive_landed"))
 		if r.init and landed and not bool(r.get("land", false)):
 			audio.play_sfx("star_impact")
 		r.land = landed
-		# contra-ataque saiu: a janela fecha em EXATAMENTE 0 (expirar deixa < 0)
-		var rt: float = float(p.get("_riposte_t"))
-		if r.init and float(r.get("rt", 0.0)) > 0.0 and rt == 0.0 and int(p.get("state")) == Player.State.ATTACK:
-			audio.play_sfx("riposte")
-		r.rt = rt
 
 	# --- perigos do level6 (só os eventos hoje MUDOS) ---------------------------
 	func _hazard(r: Dictionary, h) -> void:

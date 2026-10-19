@@ -859,19 +859,22 @@ func _check_onda7(sfx_names: Array) -> void:
 	add_child(hero)
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-	hero.set("_air_jumps_left", 0)            # 2º pulo no ar
+	hero.set("_air_jumps_left", 0)            # 2º pulo no ar: o player.gd toca (dono troca na fonte)
 	hero.set("_riposte_t", 0.3)
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-	var w_dj: bool = Audio.voices_playing("double_jump") >= 1
 	hero.set("state", Player.State.ATTACK)
-	hero.set("_riposte_t", 0.0)               # o contra-ataque saiu (fecha em 0 exato)
+	hero.set("_riposte_t", 0.0)               # contra-ataque saiu: idem, é do player.gd
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-	var w_rip: bool = Audio.voices_playing("riposte") >= 1
+	var w_quiet: bool = Audio.voices_playing("double_jump") == 0 and Audio.voices_playing("riposte") == 0 		and Audio.voices_playing("star_charge") == 0
 	hero.queue_free()
-	check(w_strike and w_fall and w_fury and w_dj and w_rip,
-		"observador: golpe (%s), voador cai (%s), fúria (%s), 2º pulo (%s), contra-ataque (%s)" % [w_strike, w_fall, w_fury, w_dj, w_rip])
+	check(w_strike and w_fall and w_fury and w_quiet,
+		"observador: golpe (%s), voador cai (%s), fúria (%s); 2º pulo/contra-ataque/carga NÃO dobram (%s)" % [w_strike, w_fall, w_fury, w_quiet])
+	# (h10) golpes de inimigo: anti-spam 130 ms e 2 vozes no máximo (R11).
+	check(Audio.spam_ms_for("atk_swing") >= 120 and Audio.spam_ms_for("atk_swing") <= 150
+		and Audio.max_same_for("atk_shot") == 2 and Audio.max_same_for("hit") == Audio.MAX_SAME,
+		"golpes de inimigo atk_*: anti-spam %d ms, %d vozes" % [Audio.spam_ms_for("atk_swing"), Audio.max_same_for("atk_shot")])
 
 
 ## Espera `sec` segundos de relógio REAL, atravessando quadros (não um timer

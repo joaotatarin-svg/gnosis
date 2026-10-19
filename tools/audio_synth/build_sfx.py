@@ -538,7 +538,13 @@ def finish(x, cat):
 	x = C.trim_start(x, -50.0, pre_ms=1.0)
 	x = C.trim_end(x, -60.0, keep_ms=15.0)
 	x = C.fade(x, 0.002, 0.012)
-	return C.to_loudness(x, CAT[cat], "momentary", CEIL)
+	x = C.to_loudness(x, CAT[cat], "momentary", CEIL)
+	# Onda 7: o limitador é de pico de AMOSTRA; o pico VERDADEIRO (oversampling)
+	# de transiente curto passava de −1 dBTP. Abaixa o que sobrar (R13).
+	tp = C.true_peak_db(x)
+	if tp > CEIL:
+		x = x * db(CEIL - 0.4 - tp)   # 0,3 dB de folga: o Vorbis passa um pouco do pico
+	return x
 
 
 def build(names=None):
