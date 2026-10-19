@@ -26,13 +26,25 @@ const LAYERS := [
 ]
 # <<< GERADO
 
+# >>> GERADO HD
+## DADOS GERADOS por tools/cenario7/build_hd.py — não editar à mão.
+## Por Éon com arte HD: s = escala (px lógicos por px da imagem) do Éon; por camada:
+## tex, w×h da textura, y0 = 1ª linha da imagem original na textura, line = linha
+## do chão MEDIDA (px da imagem original), far.s = escala própria do far, far.astro =
+## foco de luz (px da imagem original).
+const HD := {
+	0: {"s": 0.39326, "far": {"tex": "eon_0_far", "w": 1536, "h": 813, "y0": 0, "line": 712, "s": 0.39326, "astro": Vector2(1074.0000, 176.0000)}, "mid": [{"tex": "eon_0_mid_a", "w": 1536, "h": 585, "y0": 167, "line": 676}, {"tex": "eon_0_mid_b", "w": 1536, "h": 581, "y0": 261, "line": 766}, {"tex": "eon_0_mid_c", "w": 1536, "h": 579, "y0": 175, "line": 678}], "wings": [{"tex": "eon_0_wings_a", "w": 1536, "h": 716, "y0": 0, "line": 712}, {"tex": "eon_0_wings_b", "w": 1536, "h": 754, "y0": 0, "line": 750}], "floor": {"tex": "eon_0_floor", "w": 1536, "h": 306}},
+}
+# <<< GERADO HD
+
 ## Direção de luz por Éon (à mão). Coordenadas `ray` em fração da pintura
 ## (acima do chão): x 0..1 da esquerda, y 0..1 do topo. `ray_dark` = raios de
-## VAZIO (escurecem em vez de clarear — a Mente). `crack` (opcional, padrão 1,1)
+## VAZIO (escurecem em vez de clarear — a Mente). `ray_hd` = com o far HD, o foco
+## dos raios é o astro MEDIDO na pintura nova (senão, `ray` vale para ela também). `crack` (opcional, padrão 1,1)
 ## = brilho do Éon nas rachaduras do chão; menor onde a luz do Éon é quase branca.
 const LOOK := [
 	# 0 Torpor: a lua no rosácea; chão alagado reflete bem.
-	{"ray": Vector2(0.60, 0.16), "ray_col": Color(0.62, 0.86, 1.0), "ray_amt": 0.30, "ray_spread": 0.55, "reflect": 0.34, "mist": 0.55, "glow": Color("98cece"), "light": Color(0.80, 0.90, 1.0)},
+	{"ray": Vector2(0.60, 0.16), "ray_hd": true, "ray_col": Color(0.62, 0.86, 1.0), "ray_amt": 0.30, "ray_spread": 0.55, "reflect": 0.34, "mist": 0.55, "glow": Color("98cece"), "light": Color(0.80, 0.90, 1.0)},
 	# 1 Fome: brasa vermelha atrás da janela.
 	{"ray": Vector2(0.52, 0.22), "ray_col": Color(1.0, 0.50, 0.34), "ray_amt": 0.24, "ray_spread": 0.45, "reflect": 0.16, "mist": 0.40, "glow": Color(1.0, 0.55, 0.3), "light": Color(1.0, 0.78, 0.66)},
 	# 2 Corrente: luz cinza de cima, entre as correntes.
@@ -70,6 +82,26 @@ static func texture(name: String) -> Texture2D:
 
 static func has_layers(eon: int) -> bool:
 	return eon >= 0 and eon < LAYERS.size() and layer(eon, "far") != null
+
+
+## FUNDOS HD (Cenário 7): camadas em resolução cheia geradas por
+## `tools/cenario7/build_hd.py` em `assets/backgrounds/hd/`. Vazio = o Éon não
+## tem arte nova (usa as camadas antigas). Um Éon pode ter só o far novo.
+static func hd(eon: int) -> Dictionary:
+	return HD.get(eon, {})
+
+
+static var _hd_eon: int = -1
+
+## Textura HD por nome. Só o Éon atual fica na memória: ao trocar de Éon as
+## texturas HD do anterior saem do cache (cada Éon tem ~25 MB de VRAM em HD).
+static func hd_texture(eon: int, name: String) -> Texture2D:
+	if eon != _hd_eon:
+		for k in _tex.keys():
+			if String(k).begins_with("hd/"):
+				_tex.erase(k)
+		_hd_eon = eon
+	return texture("hd/" + name)
 
 
 ## Dados gerados (tamanho, chão, asas, névoa) do Éon.

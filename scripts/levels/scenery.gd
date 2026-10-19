@@ -38,6 +38,8 @@ var _tile_w: float = 560.0                 # largura lógica de um ladrilho pint
 var _far: ParallaxLayer = null
 var _rays: ColorRect = null
 var _ray_pt: Vector2 = Vector2.ZERO        # foco dos raios no ladrilho (coords da camada)
+var _far_sprite: Sprite2D = null           # o quad do far (p/ achar o astro na TELA)
+var _ray_tex: Vector2 = Vector2.ZERO       # foco dos raios em px da textura do far
 var _fogs: Array = []                      # [{rect, ms, y}]
 
 
@@ -114,8 +116,10 @@ func _rng(salt: int) -> RandomNumberGenerator:
 
 ## Deslocamento que alinha uma camada (motion `ms`) no início da tela: o miolo
 ## do ladrilho no centro da tela e o chão da pintura em FLOOR_Y.
-func _align(ms: Vector2) -> Vector2:
-	return Vector2(VIEW.x * 0.5 - _tile_w * 0.5 + CAM_LEFT0 * ms.x, CAM_TOP * (ms.y - 1.0))
+func _align(ms: Vector2, tw: float = -1.0) -> Vector2:
+	if tw <= 0.0:
+		tw = _tile_w
+	return Vector2(VIEW.x * 0.5 - tw * 0.5 + CAM_LEFT0 * ms.x, CAM_TOP * (ms.y - 1.0))
 
 
 # --- camadas pintadas -------------------------------------------------------------
@@ -126,15 +130,30 @@ func _build_painted() -> void:
 	var s: float = PAINT_H / size.y
 	_tile_w = size.x * s
 	var lk := look()
+	var h := {} if hd_disabled else SceneryLibrary.hd(eon)
 	_build_sky(d.sky, d.haze)
-	# FAR: distância quase parada (anda 3% da câmera).
-	_far = _painted_layer("far", Vector2(0.03, 0.9), 0.0, s, Color(1, 1, 1))
-	_sky_fade(_far, d.sky)
+	var far_top := FLOOR_Y - PAINT_H
+	if h.has("far"):
+		# FAR HD (Cenário 7): pintura nova em resolução cheia, horizonte MEDIDO em FLOOR_Y.
+		var fd: Dictionary = h.far
+		_tile_w = float(fd.w) * float(fd.s)
+		far_top = _hd_top(fd, float(fd.s))
+		_far = _hd_layer(fd, float(fd.s), MS_FAR, 0.0, Color(1, 1, 1), 0.0)
+	else:
+		# FAR: distância quase parada (anda 3% da câmera).
+		_far = _painted_layer("far", Vector2(0.03, 0.9), 0.0, s, Color(1, 1, 1))
+	_sky_fade(_far, d.sky, far_top)
 	if eon == 7:
 		_orbit_sparks(_far, s)
 	_far_motes(d.haze)
 	# Raios: foco no astro da pintura (coords da camada far).
 	_ray_pt = Vector2(lk.ray.x * _tile_w, FLOOR_Y - PAINT_H + lk.ray.y * PAINT_H)
+	_far_sprite = _far.get_child(0) as Sprite2D
+	var far_s: float = _far_sprite.scale.x
+	_ray_tex = Vector2(_ray_pt.x, _ray_pt.y - far_top) / far_s
+	if h.has("far") and bool(lk.get("ray_hd", false)):
+		var fdr: Dictionary = h.far
+		_ray_tex = fdr.astro                          # astro MEDIDO na pintura nova (px)
 	_rays = _screen_rect("rays")
 	_rays.material.set_shader_parameter("col", lk.ray_col)
 	_rays.material.set_shader_parameter("amt", lk.ray_amt)
@@ -142,12 +161,61 @@ func _build_painted() -> void:
 	_rays.material.set_shader_parameter("dark", lk.get("ray_dark", false))
 	# Névoa longe (entre o far e as asas).
 	_add_fog(Vector2(0.08, 0.92), FLOOR_Y - 150.0, FLOOR_Y - 40.0, FLOOR_Y + 4.0, d.haze, 0.30 * lk.mist, 0.004, 4.0, 1.0)
-	# MID: as asas (pilares das bordas), um pouco mais escuras que o fundo.
-	_painted_layer("mid", Vector2(0.14, 0.95), 0.0, s, Color(0.80, 0.80, 0.84))
+	var r := _rng(11)
+	if h.has("mid") and not (h.mid as Array).is_empty():
+		# MID HD: estruturas do meio (variante e fase sorteadas por tela).
+		_hd_variant(h.mid, float(h.s), MS_MID, r, MID_TINT, 4.0)
+	else:
+		# MID: as asas (pilares das bordas), um pouco mais escuras que o fundo.
+		_tile_w = size.x * s
+		_painted_layer("mid", Vector2(0.14, 0.95), 0.0, s, Color(0.80, 0.80, 0.84))
 	# Névoa perto do horizonte.
 	_add_fog(Vector2(0.22, 0.97), FLOOR_Y - 80.0, FLOOR_Y - 14.0, FLOOR_Y + 6.0, Color(d.haze).lightened(0.1), 0.38 * lk.mist, 0.007, 7.0, 2.0)
-	# NEAR: a faixa de entulho/velas do horizonte.
-	_painted_layer("near", Vector2(0.32, 1.0), float(d.get("near_y", 0)) * s, s, Color(0.70, 0.70, 0.76))
+	if h.has("wings") and not (h.wings as Array).is_empty():
+		# ASAS HD: pilares das bordas + entulho, a camada pintada mais rápida.
+		_hd_variant(h.wings, float(h.s), MS_WINGS, r, WINGS_TINT, 0.0)
+	else:
+		# NEAR: a faixa de entulho/velas do horizonte.
+		_tile_w = size.x * s
+		_painted_layer("near", Vector2(0.32, 1.0), float(d.get("near_y", 0)) * s, s, Color(0.70, 0.70, 0.76))
+	if h.has("far"):
+		_tile_w = float((h.far as Dictionary).w) * float((h.far as Dictionary).s)   # os raios usam o período do far
+
+
+# --- camadas HD (Cenário 7) ---------------------------------------------------------
+## PARALLAX REAL das camadas HD: far lento, mid médio, asas rápidas (o chão anda
+## 1:1 na linha dos pés). y < 1: nos pulos altos o fundo sobe menos que o mundo.
+const MS_FAR := Vector2(0.04, 0.88)
+const MS_MID := Vector2(0.18, 0.94)
+const MS_WINGS := Vector2(0.40, 0.98)
+## Variação de tom por tela (multiplica a cor; determinística): [mín, máx] do brilho.
+const MID_TINT := Vector2(0.90, 1.0)
+const WINGS_TINT := Vector2(0.88, 1.0)
+
+
+## Topo (y lógico) de uma camada HD posta com a linha do chão MEDIDA em FLOOR_Y.
+func _hd_top(ld: Dictionary, sc: float) -> float:
+	return FLOOR_Y - (float(ld.line) - float(ld.y0)) * sc
+
+
+## Uma camada HD espelhada sem emenda (mesmo quad do `_mirror_strip`), com a
+## linha do chão dela em FLOOR_Y − lift e a fase (px lógicos, 0..2·ladrilho;
+## passar de 1 ladrilho = começa espelhada) que varia por tela.
+func _hd_layer(ld: Dictionary, sc: float, ms: Vector2, phase: float, mod: Color, lift: float) -> ParallaxLayer:
+	var tw := float(ld.w) * sc
+	var l := _layer(ms, tw * 2.0 * PERIODS)
+	l.motion_offset = _align(ms, tw) - Vector2(phase, 0.0)
+	l.add_child(_mirror_strip(SceneryLibrary.hd_texture(eon, String(ld.tex)), sc, _hd_top(ld, sc) - lift, mod))
+	return l
+
+
+## Sorteia (por tela) a variante, a fase e o tom de uma camada HD.
+func _hd_variant(list: Array, sc: float, ms: Vector2, r: RandomNumberGenerator, tint: Vector2, lift: float) -> ParallaxLayer:
+	var ld: Dictionary = list[r.randi() % list.size()]
+	var tw := float(ld.w) * sc
+	var phase := r.randf_range(0.0, tw * 2.0)
+	var k := r.randf_range(tint.x, tint.y)
+	return _hd_layer(ld, sc, ms, phase, Color(k, k, k * 1.02), lift)
 
 
 ## Uma camada pintada espelhada: [ladrilho][ladrilho invertido], período 2×.
@@ -192,8 +260,7 @@ func _build_sky(sky: Color, hz: Color) -> void:
 
 
 ## Funde o topo da pintura no céu (sem borda dura quando a Sophia pula alto).
-func _sky_fade(l: ParallaxLayer, sky: Color) -> void:
-	var top := FLOOR_Y - PAINT_H
+func _sky_fade(l: ParallaxLayer, sky: Color, top: float = FLOOR_Y - PAINT_H) -> void:
 	var p := Polygon2D.new()
 	var c0 := sky.darkened(0.35)
 	var c1 := Color(sky.r, sky.g, sky.b, 0.0)
@@ -300,21 +367,46 @@ func _process(_delta: float) -> void:
 		return
 	var ct := get_viewport().get_canvas_transform()
 	var cam := -ct.origin                     # canto superior esquerdo da câmera (mundo)
-	if _rays != null and _far != null:
-		var period := _tile_w * 2.0
-		var fy := _ray_pt.y + _far.position.y
-		var ax := _ray_pt.x + _far.position.x
-		var bx := (period - _ray_pt.x) + _far.position.x
-		var a := Vector2(wrapf(ax - VIEW.x * 0.5, -period * 0.5, period * 0.5) + VIEW.x * 0.5, fy)
-		var b := Vector2(wrapf(bx - VIEW.x * 0.5, -period * 0.5, period * 0.5) + VIEW.x * 0.5, fy)
+	if _rays != null and _far_sprite != null and is_instance_valid(_far_sprite):
+		# Cenário 7: o astro vai pra tela pela transformação REAL do quad do far
+		# (inclui o zoom 1,2 da câmera que o ParallaxBackground aplica; a conta
+		# antiga em px de camada errava o foco em dezenas de px). Dois focos: o
+		# astro do ladrilho direto e o do espelhado, cada um no período mais
+		# perto do centro da tela.
+		var to_screen := _far_sprite.get_global_transform_with_canvas()
+		var to_rect := (_rays as CanvasItem).get_global_transform_with_canvas().affine_inverse()
+		var tw := float(_far_sprite.texture.get_width())
+		var a := _nearest_src(to_screen, 2.0 * tw + _ray_tex.x, tw)
+		var b := _nearest_src(to_screen, 4.0 * tw - _ray_tex.x, tw)
 		var m: ShaderMaterial = _rays.material
-		m.set_shader_parameter("src_a", a + Vector2(40, 40))
-		m.set_shader_parameter("src_b", b + Vector2(40, 40))
+		m.set_shader_parameter("src_a", to_rect * a)
+		m.set_shader_parameter("src_b", to_rect * b)
+		m.set_shader_parameter("w_a", _ray_weight(a.x))
+		m.set_shader_parameter("w_b", _ray_weight(b.x))
 	for f in _fogs:
 		var r: ColorRect = f.rect
 		var ms: Vector2 = f.ms
 		r.position.y = float(f.y) - cam.y * ms.y + CAM_TOP * (ms.y - 1.0)
 		r.material.set_shader_parameter("offset", cam.x * ms.x)
+
+
+## Foco na tela (coords lógicas do viewport) mais perto do centro, entre as
+## repetições (período 2·tw em px de textura) do ponto local (x0, _ray_tex.y).
+func _nearest_src(to_screen: Transform2D, x0: float, tw: float) -> Vector2:
+	var best := Vector2(INF, 0.0)
+	for k in range(-1, PERIODS):
+		var p := to_screen * Vector2(x0 + 2.0 * tw * float(k), _ray_tex.y)
+		if absf(p.x - VIEW.x * 0.5) < absf(best.x - VIEW.x * 0.5):
+			best = p
+	return best
+
+
+## Peso dos raios de um foco em x (tela): 1 dentro do quadro, cai até 0,3 a
+## 260 px fora dele (astro que não se vê ilumina pouco — R18/§4: luz sem motivo
+## em cima da luta só cansa).
+static func _ray_weight(x: float) -> float:
+	var out := maxf(0.0, maxf(-x, x - VIEW.x))
+	return clampf(1.0 - out / 260.0 * 0.7, 0.3, 1.0)
 
 
 # --- fallback (sem camadas geradas) -----------------------------------------------
@@ -349,6 +441,12 @@ func _build_architecture() -> void:
 	var r := _rng(3)
 	var mat_mid := SceneryLibrary.prop_material(eon, 0.30, 0.30, 0.45)
 	var x := r.randf_range(20.0, 160.0)
+	# Com o MID HD (estátuas/arcadas pintadas em resolução cheia) os pilares e
+	# obeliscos genéricos daqui sobram: mais baixa resolução e o quadro fica
+	# entulhado (NEURO_SATISFACAO §4/R21: respiro). Fica só a fila de perto.
+	var hd := {} if hd_disabled else SceneryLibrary.hd(eon)
+	if hd.has("mid") and not (hd.mid as Array).is_empty():
+		x = W
 	while x < W - 80.0:
 		var kind: int = 0 if r.randf() < 0.62 else 2
 		var h: float = r.randf_range(170.0, 240.0) if kind == 0 else r.randf_range(140.0, 200.0)
@@ -668,7 +766,14 @@ class FloorBand extends Node2D:
 		var lk := SceneryLibrary.look(e)
 		_mat = SceneryLibrary.material("floor")
 		var tex := SceneryLibrary.layer(e, "floor")
-		if tex != null and not d.is_empty():
+		var h := {} if Scenery.hd_disabled else SceneryLibrary.hd(e)
+		if h.has("floor"):
+			# chão HD (Cenário 7): a parte de baixo das asas novas, luz achatada
+			var fl: Dictionary = h.floor
+			_mat.set_shader_parameter("floor_tex", SceneryLibrary.hd_texture(e, String(fl.tex)))
+			_mat.set_shader_parameter("tile_w", float(fl.w) * float(h.s))
+			_mat.set_shader_parameter("haze", d.haze)
+		elif tex != null and not d.is_empty():
 			var sz: Vector2 = d.size
 			_mat.set_shader_parameter("floor_tex", tex)
 			_mat.set_shader_parameter("tile_w", sz.x * Scenery.PAINT_H / sz.y)
@@ -797,16 +902,14 @@ class ArenaSet extends Node2D:
 
 
 ## PLATAFORMAS integradas (chamado no fim do quadro, depois que o Level as
-## criou): sombra projetada atrás, sombra no chão, borda de cima acesa na cor
-## do Éon, coluna de luz fraca embaixo e poeira caindo. Só visual.
+## criou): penumbra macia embaixo, sombra no chão, borda de cima acesa na cor
+## do Éon e poeira caindo. Só visual.
 func _integrate_platforms(level: Node) -> void:
 	if level == null or not is_instance_valid(level):
 		return
 	var plat_tex := PaintedLibrary.prop(5)
 	var g: Color = look().glow
 	var mat := SceneryLibrary.prop_material(eon, 0.0, 0.08, 1.1)
-	var shadow_mat := SceneryLibrary.prop_material(eon, 0.0)
-	shadow_mat.set_shader_parameter("silhouette", true)
 	for body in level.get_children():
 		if not body is StaticBody2D:
 			continue
@@ -819,28 +922,21 @@ func _integrate_platforms(level: Node) -> void:
 		var w: float = spr.texture.get_width() * absf(spr.scale.x)
 		var h_above: float = FEET_Y - body.position.y
 		spr.material = mat
-		# sombra projetada no fundo (atrás e abaixo)
-		var ds := Sprite2D.new()
-		ds.texture = spr.texture
-		ds.material = shadow_mat
-		ds.scale = spr.scale * Vector2(1.04, 1.25)
-		ds.position = spr.position + Vector2(5.0, 9.0)
-		ds.modulate = Color(1, 1, 1, 0.42)
-		ds.z_index = -1
-		body.add_child(ds)
-		body.move_child(ds, 0)
+		# QA7 #22 (R18): a sombra projetada (silhueta esticada da pedra) e a coluna
+		# de luz embaixo eram retângulos translúcidos de borda dura — um "fantasma"
+		# da plataforma. Troca: só uma penumbra MACIA logo abaixo da pedra (elipse
+		# radial, sem borda) + a sombra no chão. Nada de forma reta no fundo.
+		var under := Sprite2D.new()
+		under.texture = _blob_texture()
+		under.position = spr.position + Vector2(0.0, 12.0)
+		under.scale = Vector2(w * 1.05 / 64.0, 34.0 / 64.0)
+		under.modulate = Color(0.0, 0.0, 0.0, 0.34)
+		under.z_index = -1
+		body.add_child(under)
+		body.move_child(under, 0)
 		# sombra no chão (mais alta = mais larga e mais fraca)
 		var fsh := _contact_shadow(body, Vector2(0.0, h_above + 1.0), w * 0.42 * (1.0 + h_above / 260.0), clampf(0.5 - h_above / 300.0, 0.18, 0.45))
 		fsh.z_index = -1
-		# coluna de luz fraca saindo de baixo (a pedra flutua sustentada por luz)
-		var beam := Polygon2D.new()
-		var hw := w * 0.36
-		var bh := minf(h_above, 90.0)
-		beam.polygon = PackedVector2Array([Vector2(-hw, 10), Vector2(hw, 10), Vector2(hw * 0.8, bh), Vector2(-hw * 0.8, bh)])
-		beam.vertex_colors = PackedColorArray([Color(g.r, g.g, g.b, 0.16), Color(g.r, g.g, g.b, 0.16), Color(g.r, g.g, g.b, 0.0), Color(g.r, g.g, g.b, 0.0)])
-		beam.material = VfxLibrary._additive()
-		beam.z_index = -1
-		body.add_child(beam)
 		# halo da borda de cima
 		var rim := Polygon2D.new()
 		rim.polygon = PackedVector2Array([Vector2(-w * 0.48, -7), Vector2(w * 0.48, -7), Vector2(w * 0.48, -1), Vector2(-w * 0.48, -1)])

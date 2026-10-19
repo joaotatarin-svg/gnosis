@@ -6,6 +6,8 @@ extends Node
 ## Uso: godot --audio-driver Dummy --fixed-fps 60 --path . --resolution 320x180 --position 4000,4000 \
 ##        res://tools/cenario7/HdShot.tscn -- <tela> <saida.png> [frames] [opções do Shot] [nohud] [x=<x>] [face=<-1|1>] [oldbg]
 ##   oldbg   = desliga os fundos novos (HD) e usa as camadas antigas — para o ANTES.
+##   blink   = a Sophia pisca (some 1 quadro sim, 1 não): com seq=2 every=1 sai um
+##             par com/sem ela → máscara exata da Sophia (contraste R18, contrast.py).
 ## Todas as opções do tools/shot.gd valem (seq=N every=K act=walk solo hold...).
 
 const W := 1280
@@ -49,18 +51,15 @@ func _ready() -> void:
 	# O worker vive DENTRO do SubViewport: o get_viewport() dele (de onde sai o
 	# PNG) é o de 1280×720.
 	_vp.add_child.call_deferred(w)
-	var cl = load("res://tools/scenery/clean_shot.gd").Cleaner.new()
-	cl.nohud = args.has("nohud")
-	for a in args:
-		if a.begins_with("x="):
-			cl.x = float(a.substr(2))
-		elif a.begins_with("face="):
-			cl.face = int(a.substr(5))
-	cl.process_mode = Node.PROCESS_MODE_ALWAYS
-	cl.process_priority = 100
-	_vp.add_child.call_deferred(cl)
 	var mv := Mover.new()
 	mv.vp = _vp
+	mv.nohud = args.has("nohud")
+	mv.blink = args.has("blink")
+	for a in args:
+		if a.begins_with("x="):
+			mv.pin_x = float(a.substr(2))
+		elif a.begins_with("face="):
+			mv.face = int(a.substr(5))
 	mv.process_mode = Node.PROCESS_MODE_ALWAYS
 	mv.process_priority = -100
 	get_tree().root.add_child.call_deferred(mv)
@@ -70,14 +69,32 @@ class Mover extends Node:
 	## A cada quadro: se a cena atual do jogo ainda está na raiz, muda ela para
 	## dentro do SubViewport (câmera, parallax e shaders de tela passam a usar o
 	## viewport de 1280×720).
+	## (Fora da raiz o SceneTree zera o current_scene; por isso quem prende a
+	## Sophia em x= e esconde legendas/HUD é este nó, com a referência guardada.)
 	var vp: SubViewport
+	var nohud: bool = false
+	var pin_x: float = INF
+	var face: int = 0
+	var blink: bool = false
+	var level: Node = null
 
 	func _process(_delta: float) -> void:
 		var cs := get_tree().current_scene
-		if cs == null or vp == null or cs.get_parent() == vp:
+		if cs != null and vp != null and cs.get_parent() == get_tree().root:
+			cs.get_parent().remove_child(cs)
+			vp.add_child(cs)
+			level = cs
+		for c in get_tree().root.find_children("*", "CanvasLayer", true, false):
+			if c is CaptionBar or (nohud and c.is_in_group("hud")):
+				c.visible = false
+		if level == null or not is_instance_valid(level) or not ("player" in level):
 			return
-		if cs.get_parent() != get_tree().root:
+		var pl = level.get("player")
+		if pl == null:
 			return
-		cs.get_parent().remove_child(cs)
-		vp.add_child(cs)
-		get_tree().current_scene = cs
+		if pin_x != INF:
+			(pl as Node2D).global_position.x = pin_x
+		if face != 0 and "facing" in pl:
+			pl.set("facing", face)
+		if blink:
+			(pl as CanvasItem).visible = Engine.get_process_frames() % 2 == 0

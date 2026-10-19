@@ -12,6 +12,10 @@ uniform float amt = 0.3;
 uniform float spread = 0.5;        // 0 = feixe estreito p/ baixo; 1 = radial
 uniform float reach = 300.0;
 uniform bool dark = false;
+// Peso de cada foco (Cenário 7): o astro fora do quadro ilumina menos — raios
+// fortes vindos de um ponto que não se vê pareciam "luz de lugar nenhum".
+uniform float w_a = 1.0;
+uniform float w_b = 1.0;
 
 varying vec2 p;
 
@@ -45,7 +49,7 @@ float rays(vec2 src) {
 }
 
 void fragment() {
-	float k = (rays(src_a) + rays(src_b)) * amt;
+	float k = (rays(src_a) * w_a + rays(src_b) * w_b) * amt;
 	if (dark) {
 		float a = clamp(k * 1.4, 0.0, 0.8);
 		COLOR = vec4(col.rgb * a, a);
