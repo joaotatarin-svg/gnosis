@@ -82,6 +82,9 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 | ed66a82 FINAL | APROVADO COM RESSALVAS (ressalvas anteriores fechadas; resta o 0,7 da arte) | R5, R17, R3 |
+| dir7/audio7 | 6df9411 FINAL | APROVADO COM RESSALVAS (REPROVADO anterior fechado; troca do proj_fire hostil tem de entrar junto) | R4 |
+| dir7/vfx7 | 2a5919b | APROVADO COM RESSALVAS (R15 fechada; poça armando pisca 4,8 Hz) | R15, R5, R10 |
 | dir5/encenacao5 | ab957ac (delta de 0f04eff) | APROVADO (ressalvas anteriores fechadas) | R6, §3, R21 |
 | dir2/arte-gpt | e114a52 (+f30ed17/2c219b4 docs; delta de 4038d12) | APROVADO | R18 |
 | dir7/polimento7 | 87290ca (delta de 661a1a0) | APROVADO COM RESSALVAS (ressalvas anteriores fechadas; nova: dono único dos 3 sons) | R5 (aparo justo), R10, R4 |
@@ -438,3 +441,107 @@ antes 8–10 s; Tween nunca vazio); `cinematic.gd` (quebra equilibrada, sem viú
 - Nada de tremor, flash ou slow-mo novo.
 
 **Veredito: APROVADO.**
+
+---
+
+## dir6/chefes6 — ed66a82 FINAL (reauditoria do delta 7a934d9..ed66a82: 7316741, 723f190, 3f620df, ed66a82; os outros são merges)
+
+**O que muda:**
+- QA7: a Sophia é desenhada na frente do chefe; o Rei fica longe da borda (margem de 110–120 px); a investida não sai do quadro;
+  `BossHazard.MIN_WARN 0,45` s em toda área que fere; as formas da final voltam mais fracas a cada vez (`0,45 − 0,1·n`, mín. 0,2)
+  e mais devagar (`REVIVE_AFTER + 3·n`).
+- Ressalvas do Guardião:
+  - a guarda do Espelho mostra o anel desde o INÍCIO do wind (`_on_windup`: `_show_ring(wind + strike)`);
+  - a carga do tiro tem som próprio (`charge_dark`/`charge_king`; muda até o Áudio7 entrar, sem repetir o `proj_fire`).
+- Morte desenhada ligada: o `BossBrain._death_sequence` chama `visual.play_boss_death()` e segue os marcos 0,34/0,62/1,08 s
+  da arte (`_until_death_t`), espera o `death_finished`, e o `Enemy._on_died` não faz o segundo final quando `visual.is_dying()`.
+- Recalibração: Rei 27 golpes, Fome 26, Rei-tutorial sem larvas até a fase 3, Armupiel com 1 Pretoriano só na fase 2.
+- CHECAGEM DE SATISFAÇÃO no CHEFES6.md.
+
+**Medido por mim (BossProbe no ed66a82, headless, vel=3, bot médio skill 0,65, vida 120; importação 0 erros;
+log `C:\gnosis-wt\_caps\guardiao\c6_bossprobe.log`):**
+
+| Tela | Chefe | Tempo | Golpes | Quase-mortes | Fases |
+|---|---|---|---|---|---|
+| 1 | Rei | 95 s | 23 | 1 | 2@41 s, 3@66 s |
+| 46 | Astaphaios | 130 s | 30 | 2 | 2@62 s, 3@99 s |
+| 68 | Rei-Mentira + Colosso | 149 s | 64 | **5** | 2@49 s, 3@63 s |
+
+Os tempos ficam dentro de 1,5–2,5 min e da variação de ±25 % que o próprio doc declara. Na final eu medi 5 quase-mortes (o doc diz 3);
+é a última luta e o bot tem vida fixa de 120, então não reprova. Fica para o playtest.
+
+**Checagem:**
+- **R5, fecha a ressalva:** a guarda que reflete avisa com anel de vidro + som desde o início dos 0,4 s de preparo. Nenhuma área
+  fere com menos de 0,45 s de contorno (QA7 #20). "Amarelo" agora só aparece em golpe que dá para aparar.
+- **R4/R11, fecha a ressalva:** a carga e o disparo deixam de ser o mesmo arquivo.
+- **R17, fecha o achado do arte-gpt 4038d12:** a morte em 4 etapas desenhada agora APARECE no jogo, e há um só final
+  (sem gibs depois do estilhaço).
+- **R3: quase fechado.** Do lado do cérebro sobra um tremor grande no golpe final (0,8) e micro-tremores de 0,15.
+  **Resta** o `Juice.shake(0.7)` da ARTE em 0,34 s (`character_art.gd` `_tick_death`, "cai de joelhos"): são dois grandes em
+  ~0,34 s. Com o decaimento de 1,4/s ele lê quase como um tremor longo, mas o ápice deveria ser um só. O próprio CHEFES6 já
+  aponta isso como pedido à arte. Correção mínima (dono: **arte-gpt**): 0,7 → 0,15 (micro), ou nada.
+- **R8:** slow-mo 0,3× por 0,8 s, só na morte do chefe. Atende.
+- **R9:** fase −8 dB por 0,8 s; morte −14 dB por 3 s. Atende.
+- **R21:** a final converge (as formas voltam mais fracas e mais devagar). É regra visível, não um quase-acerto fabricado (§3). Atende.
+  As lutas ficam em 1,5–2,5 min (antes chegavam a 420 s com TIMEOUT).
+- **R18:** a Sophia na frente do manto do Rei e o Rei longe da borda (QA7 #3). Atende.
+- **§3:** sorteio de golpes semeado por tela, entre golpes legíveis, sem repetir 3×. Pretorianos e reflexos com 0 faíscas. Atende.
+- A CHECAGEM do doc confere com o código.
+
+**Veredito: APROVADO COM RESSALVAS.** Entra na 3.1. A única ressalva é do arte-gpt (o tremor de 0,7 na queda), que não bloqueia.
+
+---
+
+## dir7/audio7 — 6df9411 FINAL (reauditoria do delta 634bc91..6df9411: 801f46e + 6df9411)
+
+**O que muda:**
+- `audio_manager.gd`: o `_Watch` deixa de tocar `double_jump`, `star_charge` e `riposte`. Fica só `star_impact`, como camada sob a `nova`.
+- `atk_*` passa a ter anti-spam de 130 ms e no máximo 2 vozes (`ENEMY_ATK_SPAM_MS`, `ENEMY_ATK_MAX_SAME`, `max_same_for()`).
+- Síntese refeita com pico verdadeiro ≤ −1 dBTP (`onda7.py`, `build_sfx.py`) e verificação offline nova (`tools/audio/onda7_check.py`).
+- `AUDIO7.md` com a tabela "quem liga cada som" e a CHECAGEM DE SATISFAÇÃO.
+
+**Contraprova (ffmpeg ebur128, offline, nada tocado):** hz_spears −1,0 · boss_death_impact −1,0 · boss_phase3 −1,3 ·
+bs_land −1,1 · bs_wings −1,0 dBTP. Antes iam até −0,2. Atende o teto de −1 dBTP.
+
+**Checagem:**
+- **R4: fecha o REPROVADO do 634bc91.** Os 3 eventos dobrados saíram do observador. O polimento7 87290ca toca o som
+  próprio na fonte (troca, não soma). O `star_impact` é camada desenhada sob a `nova` (sem baque próprio), e isso a R4 permite.
+- **§4.7 / R11: atende.** `atk_*` com 130 ms e 2 vozes evita a "metralha" num grupo de 5–6 inimigos.
+- **R13: parcial, e honesto.** Os arquivos estão no alvo, mas a mixagem de 10 min não foi gravada (driver Dummy). Mesma pendência da TAREFA 1.
+- **RESSALVA (R4, de integração):** o tiro hostil ainda soa DUAS vezes no mesmo instante assim que o audio7 entrar. O observador
+  toca `atk_shot`/`atk_fan`/`atk_homing` no STRIKE, e o `projectile.gd:55` continua com `Audio.play_sfx("proj_fire")` para
+  todo projétil, tanto no integrado quanto no polimento7. O pedido existe (`docs/pedidos/audio7.md:46`), mas ninguém fez a troca.
+  Correção mínima: 1 linha no `projectile.gd` (`if team == "player": Audio.play_sfx("proj_fire")`), do dono do
+  projétil (polimento7/inimigos), integrada JUNTO com o audio7.
+
+**Veredito: APROVADO COM RESSALVAS.** Entra. A troca do `proj_fire` hostil precisa entrar na mesma integração; sem ela, os tiros
+inimigos ficam com som dobrado.
+
+---
+
+## dir7/vfx7 — 2a5919b (reauditoria do delta 44e587d..2a5919b: 9d9d353, 5bd7ecd, 2a5919b; 92d8d34 é merge)
+
+**O que muda:**
+- **R15:** `ImpactBurst.spawn(..., dir)`, `VfxLibrary.hit(..., dir)` e `claw_impact(..., dir)`. Sem `dir`, a direção é deduzida pela
+  posição da Sophia (`_guess_dir`). O resultado é um cone de ±50° no sentido do golpe, 20 % das fagulhas soltas em 360° e o talho
+  do pesado alinhado em ±15°. Das 7 fagulhas vetoriais, 6 saem no cone.
+- QA7: as poças hostis ARMAM por 0,5 s antes de ferir (#8); a aparição do fantasma/reflexo tem 0,6 s de wind, marca
+  (anel + fumaça) e o som do telegrafo (#9); a repulsa vale até 90 px (#15); a coleira `EnemyAggro.leash_x` está pronta
+  (#10, falta a chamada no `enemy.gd`).
+- A carga fica muda sem o nome no CATALOG (antes caía num `proj_fire` grave, som dobrado).
+- Desempenho medido pelo dono: 8,3 → 4,2 ms.
+
+**Checagem:**
+- **R15, fecha a ressalva:** o acerto mais comum agora sai no sentido do golpe (`vfx_library.gd` `hit`: `direction = dir + (0,−0,25)`,
+  `spread 50`; talho em `dir.angle() ± 0,26`). Atende.
+- **R5:** a aparição pelas costas passa de 0,25 s para 0,6 s, com marca e som. A poça não fere no quadro em que nasce. Atende,
+  e isso é justiça pura (§5.6).
+- **R4/R11:** a carga não dobra o som do disparo. Atende.
+- **R10 / R5, RESSALVA pequena:** enquanto a poça arma, a borda pulsa a `sin(_t * 30)` = **4,8 Hz** por 0,5 s
+  (`hazard_zone.gd`, `if arming: pulse = 0.5 + sin(_t * 30.0) * 0.5`). A área é pequena e dura pouco, então não fere a
+  WCAG. Mas a R5/R10 pede pulso de aviso ≤ 3 Hz (o telegrafo usa 2 Hz) e o §4.4 diz "nunca acima de 3 Hz". Correção mínima:
+  `sin(_t * 18.0)` (≈ 2,9 Hz), ou crescer sem piscar.
+- **R21 / justiça:** a coleira impede que atirador e voador fujam para a borda. Bom, mas só vale quando o `enemy.gd` chamar
+  (pedido ao polimento7).
+
+**Veredito: APROVADO COM RESSALVAS** (só o pulso de 4,8 Hz da poça armando).
