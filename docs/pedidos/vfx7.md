@@ -94,9 +94,9 @@ não basta, ver polimento7 item 2), coleira pronta em `EnemyAggro.leash_x/retrea
   Pedido: (a) o Campeão nasce DENTRO do enquadramento (ex.: `c ± 120`, no chão, mesmo voador) e
   (b) o card só sai quando ele estiver na tela (ou atrasar o card ~0,6 s e entrar com `VfxLibrary.boss_appear`).
 
-### Áudio7 — um som por evento nos tiros hostis (decisão do chefe, R4)
-- Carga = `charge_dark`/`charge_king` (a ChargeFX toca no início do wind-up; sem fallback),
-  disparo = `proj_fire` (o Projectile toca, para todos os tiros), e `atk_*` SÓ nos golpes corpo a corpo.
-  Logo: tirar a etapa "strike" dos tipos de TIRO em `KIND_SFX`/`move_sound_for` (`shot`, `burst`,
-  `lob`, `atk_homing`/`atk_shot_air`/`atk_fan`). O seu pedido antigo (proj_fire só na Sophia) fica
-  substituído por este.
+### Áudio7 — um som por evento nos tiros (FEITO na fonte, 19/10, merge de 6df9411)
+- Seguindo o `docs/pedidos/audio7.md` (decisão do chefe): `projectile.gd` toca `proj_fire` SÓ no tiro da
+  Sophia; o tiro hostil soa pelo `atk_*` do observador no strike; a carga soa `charge_light`/`charge_dark`/
+  `charge_king` no INÍCIO (ChargeFX, sem fallback). Durações reais da carga: criaturas = o wind-up do golpe
+  de tiro (0,5–0,6 s); Sophia/Rei só quando combate6/chefes6 ligarem (pedido: Rei ~0,9 s). O pedido
+  anterior "tirar atk_* dos tiros" fica CANCELADO.

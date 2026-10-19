@@ -52,7 +52,11 @@ func _ready() -> void:
 	shape.shape = circle
 	add_child(shape)
 	area_entered.connect(_on_area_entered)
-	Audio.play_sfx("proj_fire")
+	# Um som por evento (R4, Áudio7): "proj_fire" só no tiro da Sophia. O tiro
+	# hostil já soa no golpe (atk_shot/atk_fan/atk_homing/atk_shot_air, pelo
+	# observador do Áudio) e a carga antes dele soa na ChargeFX (charge_*).
+	if target_team == "enemy":
+		Audio.play_sfx("proj_fire")
 	_premium = _vfx7_look()
 	if not _premium:
 		VfxLibrary.projectile_trail(self, color)

@@ -211,7 +211,7 @@ func _draw() -> void:
 	var rad := radius * (0.25 + 0.75 * grow)
 	var ry := rad * 0.32
 	if arming:
-		pulse = 0.5 + sin(_t * 30.0) * 0.5
+		pulse = 0.5 + sin(_t * 18.0) * 0.5     # 2,9 Hz (R10: ≤ 3 Hz)
 	# chão: 3 elipses concêntricas (luz macia no meio, some na borda)
 	for layer in 3:
 		var k := 1.0 - float(layer) * 0.28

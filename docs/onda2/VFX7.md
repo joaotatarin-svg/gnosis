@@ -161,8 +161,9 @@ inimigo → `look` "spike"=`wave`, prende=`chain`, lentidão=`sleep`, cor dourad
   cone de ±50° no sentido do golpe (+20 % em 360°), talho alinhado ±15°, riscos vetoriais no cone. Sem
   `dir`, o ImpactBurst DEDUZ pelo lado da Sophia — o acerto corpo a corpo dela já sai direcional sem
   esperar ninguém; o polimento7 passa a direção exata pelo hitbox.gd (pedido).
-- **Som (R4, pedido do Áudio pelo chefe)** → carga = `charge_*` na ChargeFX (sem fallback), disparo =
-  `proj_fire`; o Áudio7 tira o `atk_*` dos tiros (pedido).
+- **Som (R4, Áudio7 6df9411, troca na fonte)** → um som por evento: carga = `charge_light/dark/king` no
+  início (ChargeFX, sem fallback; agora no CATÁLOGO); tiro da Sophia = `proj_fire`; tiro hostil = só o
+  `atk_*` do observador no strike (o `projectile.gd` não toca mais `proj_fire` nele).
 
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop):** não é VFX7 (flash/vibração ficam no enemy.gd/player.gd). Nada
@@ -175,14 +176,16 @@ inimigo → `look` "spike"=`wave`, prende=`chain`, lentidão=`sleep`, cor dourad
   motes convergindo) e som; o `tell_glint` continua ACIMA de todo VFX (Z+8 > Z). Rastro de golpe
   imparável = borda vermelha + mesma forma. Tiro inimigo ≠ tiro da Sophia pela forma (miolo escuro e
   espinhos × redondo e miolo branco), não só pela cor.
-- **R10 (≤ 3 flashes/s, "Reduzir flashes"):** `flash_budget()` em todo clarão forte (impactos, coluna,
+- **R10 (≤ 3 flashes/s, "Reduzir flashes"):** a borda da poça armando pisca a 2,9 Hz (`sin(_t*18)`). `flash_budget()` em todo clarão forte (impactos, coluna,
   coroa, nova grande): 3 inteiros por segundo, o resto a 30 %; a opção corta pela metade. O VFX7 não
   usa `screen_flash`.
 - **R15 (faíscas na direção do golpe):** `_spray` e `hit(…, dir)` = cone de ±50° no sentido do golpe,
   levemente para cima, + ~20 % em 360°; talho do pesado alinhado (±15°). Vale para tiros, garras e o
   acerto corpo a corpo da Sophia (direção deduzida até o hitbox.gd passar a exata).
-- **R17 (confirmação de morte):** não é VFX7; nenhum efeito novo imita a morte (os impactos são menores
-  e mais curtos que `enemy_death`/`elite_death`), então a morte continua distinta.
+- **R17 (confirmação de morte):** `VfxLibrary.kill_confirm` abre o `enemy_death` (comum e Elite): estrela
+  branca de 4 pontas em X + anel fino que abre em 140 ms + risco vertical de luz (a faísca saindo), ~120 ms,
+  no orçamento de flashes. O acerto comum é fagulha/clarão redondo — o golpe que mata se lê diferente.
+  (Hitstop +33 ms, som 2 semitons abaixo e contorno branco de 1 quadro continuam com combate/áudio.)
 - **R18 (legibilidade):** medido nas capturas (luminância relativa, 90º percentil do efeito × mediana do
   fundo local): tiros novos **10,2–12,7 : 1** contra **6,0–9,0 : 1** antes (meta ≥ 3:1). Saturação forte só
   nos tiros/telegrafos; zonas de chão são translúcidas e ficam ATRÁS dos personagens (z −1).

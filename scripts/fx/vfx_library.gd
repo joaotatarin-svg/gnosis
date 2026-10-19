@@ -349,9 +349,37 @@ static func dodge_perfect(parent: Node, pos: Vector2) -> void:
 # ===========================================================================
 
 ## Criatura comum morre: a faísca escapa (luz), o corpo vira fumaça escura.
+## R17 (VFX7): CONFIRMAÇÃO DE MORTE — o golpe que mata tem um estalo próprio,
+## curto e diferente do acerto comum: estrela branca de 4 pontas em X (o acerto
+## é fagulha/clarão redondo), anel fino que abre rápido e um risco vertical de
+## luz (a faísca "sai" do corpo). ~120 ms; no orçamento de flashes (R10).
+static func kill_confirm(parent: Node, pos: Vector2, col: Color = Color(1.0, 0.85, 0.5)) -> void:
+	if not _ok(parent, true):
+		return
+	var fb := flash_budget()
+	var x := _flash_sprite(parent, pos, "star", Color(1, 1, 1, 0.95 * fb), 0.5, 0.12, 0.12)
+	x.rotation = PI * 0.25
+	x.z_index = Z + 2
+	shock_ring(parent, pos, 26.0, Color(1, 1, 1, 0.75 * fb), 0.14, false, 1.0, 0.05)
+	var r := Sprite2D.new()
+	r.texture = tex("light")
+	r.material = _additive()
+	r.modulate = Color(col.r, col.g, col.b, 0.9 * fb)
+	r.z_index = Z + 1
+	r.scale = Vector2(0.06, 0.5)
+	r.add_to_group(GROUP)
+	parent.add_child(r)
+	r.global_position = pos + Vector2(0, -10)
+	var tw := r.create_tween().set_parallel(true)
+	tw.tween_property(r, "scale", Vector2(0.02, 1.1), 0.12).set_ease(Tween.EASE_OUT)
+	tw.tween_property(r, "modulate:a", 0.0, 0.12).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(r.queue_free)
+
+
 static func enemy_death(parent: Node, pos: Vector2, col: Color = Color(1.0, 0.85, 0.5)) -> void:
 	if not _ok(parent, true):
 		return
+	kill_confirm(parent, pos, col)          # R17: o golpe que mata se distingue do acerto
 	_flash_sprite(parent, pos, "glow", Color(col.r, col.g, col.b, 0.85), 0.15, 0.5, 0.3)
 	var s := _burst(parent, pos, "spark", 14, 0.55)
 	s.spread = 180.0
