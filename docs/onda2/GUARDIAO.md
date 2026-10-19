@@ -82,6 +82,8 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/ui7 | 12c6643 FINAL | APROVADO | R16 atende, R18, R21, R4 (shop_buy) |
+| dir7/perigos7 | 04afd65 FINAL (delta de a1c0e4c) | APROVADO | R5, R18 (≥ 3,5:1), R4 |
 | dir2/arte-gpt | e3966e6 + de546f8 (delta de 2c219b4) | APROVADO COM RESSALVAS | R18 (melhora, ainda < 3:1; halo leve no cajado), R3 fechado |
 | dir7/mapa7 | 8e8afc3 FINAL (delta de 26d28b3) | APROVADO | §3/§4 (nenhuma isca impossível) |
 | dir7/vfx7 | a63c40b (delta de 2a5919b) | APROVADO COM RESSALVAS (ressalvas anteriores fechadas; tiro hostil "legado" ficou mudo) | R4, R10, R17 |
@@ -746,6 +748,53 @@ bordas ESCURAS (fator `dark`). O que se nota é o HALO de fora:
 - **Pés do Belias:** sem fresta entre pé e chão. Favorece o R18 (contato com o chão = leitura de peso). Ok.
 
 **Veredito: APROVADO COM RESSALVAS** (halo 0,4 → ~0,25 ou sem halo no cajado; o R18 fecha só com o cenário).
+
+---
+
+## dir7/ui7 — 12c6643 FINAL (f913fc8, fdb785e, 8b5cf25, 0daadb7, 12c6643; o resto é o merge do audio7)
+
+**O que muda (UI de jogo):**
+- `damage_number.gd` (R16): soma acertos no MESMO alvo em ≤ 0,3 s (mesma cor, ≤ 36 px), no máximo 6 vivos (some o mais velho),
+  pop 1,35 → 1,0 em 80 ms com ease-out-back no relógio real (o hitstop não estica), e pop de 1,22 a cada soma.
+- `hud.gd`: HUD na CanvasLayer 20, acima do mundo, da vinheta do cenário (1) e do clarão (5); Pausa/Loja em 45. Ganha uma
+  sombra de leitura macia atrás do medalhão e das barras (α 0,32, ou 0,5 com chefe) e uma faixa escura atrás do nome/título do
+  chefe (QA7 #17/#23). "Siga em frente" sai do CENTRO e vira seta com chevrons na borda direita por 3,2 s (QA7 #30).
+- `dialogue_box.gd`: a caixa fecha sozinha se a cena trocar (QA7 #14).
+- `upgrade_menu.gd`: relíquia sem `shop_buy` por cima do `relic_equip`.
+- Traduções (QA7 #6/#16 e outros).
+
+**Checagem:**
+- **R16: ATENDE agora** (era PARCIAL na TAREFA 1): agrupar, teto, pop e opção liga/desliga (já existia).
+- **R18:** a sombra de leitura e a faixa do card separam o HUD do mundo sem caixa dura. Atende.
+- **R21:** tirar o "Siga em frente" do centro desafoga o meio da tela (legenda, dica e convite já estavam lá). Atende. Os chevrons
+  correm a ~1,6 ciclos/s, numa área pequena, ≤ 3 Hz (R10).
+- **R22:** a vinheta de vida baixa continua no próprio HUD (agora acima do clarão). Sem mudança no ritmo. Atende.
+- **R4:** relíquia = 1 som (`relic_equip`). Atende.
+- **Justiça/UX:** caixa de diálogo órfã tapando botões (QA7 #14) resolvida.
+- Nada de economia mudou (só o som da compra), nada de tremor nem flash novo.
+
+**Veredito: APROVADO.**
+
+---
+
+## dir7/perigos7 — 04afd65 FINAL (delta a1c0e4c..04afd65: a0cf7e1, 04afd65)
+
+**O que muda:** `level_hazard.gd`: um terceiro fio CLARO e quente (`WARN_HOT`) no meio da borda de aviso (escuro, vermelho, claro),
+para ler em fundo de luminância média, onde nem o escuro nem o vermelho passam de 3:1. `tools/hazards7/contrast.py` mede.
+`PERIGOS7.md` com a CHECAGEM DE SATISFAÇÃO. uid do HazardArt.
+
+**Checagem:**
+- **R18: atende.** O dono mediu ≥ 3,51:1 em todos os fundos (é o primeiro elemento do jogo com 3:1 medido). Não refiz a medida.
+- **R5:** forma + cor + som, aviso ≥ 0,45 s (tempos inalterados), a frente visível da maré coincide com o dano. Atende.
+- **R4/R11 (som dobrado):** conferido no código. A fonte toca `hz_guillotine` (queda) e `hz_tide_wake` (maré acorda); o observador
+  do audio7 só toca `hz_winch` (lâmina subindo) e `hz_tide_tick` (`audio_manager.gd:1919/1924`). São eventos diferentes, nada dobra. Atende.
+- **Atenção leve (§4.9, não bloqueia):** o `hz_tide_tick` repete a cada ≥ 300 ms enquanto a Sophia está sendo corroída (1 voz). É
+  informação (dano contínuo), mas um tique contínuo é o tipo de som que irrita. Se o playtest reclamar, espaçar para ~600 ms ou
+  baixar 3 dB.
+- **R10:** pulso de 2 Hz; o feixe deixou de piscar a ~6 Hz; decorativo × 0,5 com "Reduzir flashes", e o aviso não reduz. Atende.
+- A CHECAGEM do doc confere com o código.
+
+**Veredito: APROVADO.**
 
 ---
 
