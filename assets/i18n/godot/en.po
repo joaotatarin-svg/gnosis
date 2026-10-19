@@ -235,158 +235,168 @@ msgstr "Pearl of the Hymn"
 msgid "Toda faísca ganha rende um quarto a mais."
 msgstr "Every spark you earn yields a quarter more."
 
+#. game_content._build_relics.29dd26  [golpe_magia]
+#: scripts/autoload/game_content.gd:29
+msgid "Coro das Faíscas"
+msgstr "Choir of Sparks"
+
+#. game_content._build_relics.1305f3  [golpe_magia]
+#: scripts/autoload/game_content.gd:30
+msgid "Quando todas as faíscas de um inimigo te alcançam, a luz fere quem está perto."
+msgstr "When all of an enemy's sparks reach you, the light strikes whoever is close."
+
 #. game_content._build_characters.b0fb6f  [golpe_magia]
-#: scripts/autoload/game_content.gd:75
+#: scripts/autoload/game_content.gd:78
 msgid "Sophia"
 msgstr "Sophia"
 
 #. game_content._build_characters.2cc339  [golpe_magia]
-#: scripts/autoload/game_content.gd:76
+#: scripts/autoload/game_content.gd:79
 msgid "Uma faísca sem memória, desperta nas cinzas do Kenoma. Luta com o cajado e com a luz que ainda lembra."
 msgstr "A spark without memory, woken in the ashes of the Kenoma. She fights with her staff and the light that still remembers."
 
 #. game_content._build_characters.d3e408  [golpe_magia]
-#: scripts/autoload/game_content.gd:86
+#: scripts/autoload/game_content.gd:89
 msgid "Golpe de Cajado"
 msgstr "Staff Strike"
 
 #. game_content._build_characters.827ea1  [golpe_magia]
-#: scripts/autoload/game_content.gd:87
+#: scripts/autoload/game_content.gd:90
 msgid "Cajado Duplo"
 msgstr "Double Staff"
 
 #. game_content._build_characters.18f0fa  [golpe_magia]
-#: scripts/autoload/game_content.gd:88
+#: scripts/autoload/game_content.gd:91
 msgid "Sopro Arcano"
 msgstr "Arcane Breath"
 
 #. game_content._build_characters.ebdc7f  [golpe_magia]
-#: scripts/autoload/game_content.gd:89
+#: scripts/autoload/game_content.gd:92
 msgid "Impacto Arcano"
 msgstr "Arcane Impact"
 
 #. game_content._build_characters.18f304  [golpe_magia]
-#: scripts/autoload/game_content.gd:91
+#: scripts/autoload/game_content.gd:94
 msgid "Fenda Arcana"
 msgstr "Arcane Rift"
 
 #. game_content._build_characters.848bd2  [golpe_magia]
-#: scripts/autoload/game_content.gd:92
+#: scripts/autoload/game_content.gd:95
 msgid "Ascensão Arcana"
 msgstr "Arcane Ascent"
 
 #. game_content._build_characters.cf85da  [golpe_magia]
-#: scripts/autoload/game_content.gd:94
+#: scripts/autoload/game_content.gd:97
 msgid "Explosão Arcana"
 msgstr "Arcane Burst"
 
 #. game_content._build_characters.8e2928  [golpe_magia]
-#: scripts/autoload/game_content.gd:95
+#: scripts/autoload/game_content.gd:98
 msgid "Corte Ascendente"
 msgstr "Rising Cut"
 
 #. game_content._build_characters.fe5782  [golpe_magia]
-#: scripts/autoload/game_content.gd:96
+#: scripts/autoload/game_content.gd:99
 msgid "Giro Celeste"
 msgstr "Celestial Spin"
 
 #. game_content._build_characters.d0f780  [golpe_magia]
-#: scripts/autoload/game_content.gd:97
+#: scripts/autoload/game_content.gd:100
 msgid "Queda Estelar"
 msgstr "Starfall"
 
 #. game_content._build_characters.986674  [golpe_magia]
-#: scripts/autoload/game_content.gd:99
+#: scripts/autoload/game_content.gd:102
 msgid "Tempestade de Cajado"
 msgstr "Staff Tempest"
 
 #. game_content._build_characters.602a01  [golpe_magia]
-#: scripts/autoload/game_content.gd:100
+#: scripts/autoload/game_content.gd:103
 msgid "Rasgo Duplo"
 msgstr "Twin Rend"
 
 #. game_content._build_characters.328647  [golpe_magia]
-#: scripts/autoload/game_content.gd:102
+#: scripts/autoload/game_content.gd:105
 msgid "Fúria da Mônada"
 msgstr "Fury of the Monad"
 
 #. game_content._build_characters.93c06b  [golpe_magia]
-#: scripts/autoload/game_content.gd:103
+#: scripts/autoload/game_content.gd:106
 msgid "Colapso Arcano"
 msgstr "Arcane Collapse"
 
 #. game_content._build_characters.5b6f4c  [golpe_magia]
-#: scripts/autoload/game_content.gd:109
+#: scripts/autoload/game_content.gd:112
 msgid "Esfera Solar"
 msgstr "Sun Orb"
 
 #. game_content._build_characters.27e4a0  [golpe_magia]
-#: scripts/autoload/game_content.gd:109
+#: scripts/autoload/game_content.gd:112
 msgid "Explode ao acertar."
 msgstr "Explodes on impact."
 
 #. game_content._build_characters.7360e7  [golpe_magia]
-#: scripts/autoload/game_content.gd:110
+#: scripts/autoload/game_content.gd:113
 msgid "Névoa do Sono"
 msgstr "Sleep Mist"
 
 #. game_content._build_characters.c6c58e  [golpe_magia]
-#: scripts/autoload/game_content.gd:110
+#: scripts/autoload/game_content.gd:113
 msgid "Nuvem que adormece: inimigos dentro ficam lentos."
 msgstr "A drowsy cloud: enemies inside it slow down."
 
 #. game_content._build_characters.bb39dc  [golpe_magia]
-#: scripts/autoload/game_content.gd:111
+#: scripts/autoload/game_content.gd:114
 msgid "Boca Voraz"
 msgstr "Ravenous Maw"
 
 #. game_content._build_characters.b72ec1  [golpe_magia]
-#: scripts/autoload/game_content.gd:111
+#: scripts/autoload/game_content.gd:114
 msgid "Suga os inimigos para perto e morde."
 msgstr "Sucks enemies in close and bites."
 
 #. game_content._build_characters.dd6df2  [golpe_magia]
-#: scripts/autoload/game_content.gd:112
+#: scripts/autoload/game_content.gd:115
 msgid "Corrente da Lei"
 msgstr "Chain of the Law"
 
 #. game_content._build_characters.f4e9d0  [golpe_magia]
-#: scripts/autoload/game_content.gd:112
+#: scripts/autoload/game_content.gd:115
 msgid "Corrente que prende o alvo no lugar."
 msgstr "A chain that pins the target in place."
 
 #. game_content._build_characters.cfbb2d  [golpe_magia]
-#: scripts/autoload/game_content.gd:113
+#: scripts/autoload/game_content.gd:116
 msgid "Grito Mudo"
 msgstr "Mute Scream"
 
 #. game_content._build_characters.febc50  [golpe_magia]
-#: scripts/autoload/game_content.gd:113
+#: scripts/autoload/game_content.gd:116
 msgid "Cala todo golpe em preparo ao redor (atordoa)."
 msgstr "Silences all nearby wind-ups (stuns)."
 
 #. game_content._build_characters.c48f73  [golpe_magia]
-#: scripts/autoload/game_content.gd:114
+#: scripts/autoload/game_content.gd:117
 msgid "Por 5 s, todo golpe recebido volta para quem o deu."
 msgstr "For 5 s, every hit you take returns to whoever dealt it."
 
 #. game_content._build_characters.9922e5  [golpe_magia]
-#: scripts/autoload/game_content.gd:115
+#: scripts/autoload/game_content.gd:118
 msgid "Flor Podre"
 msgstr "Rotten Bloom"
 
 #. game_content._build_characters.36846d  [golpe_magia]
-#: scripts/autoload/game_content.gd:115
+#: scripts/autoload/game_content.gd:118
 msgid "Planta um canteiro de veneno que fere quem pisa."
 msgstr "Plants a poison patch that hurts whoever steps in."
 
 #. game_content._build_characters.64af3e  [golpe_magia]
-#: scripts/autoload/game_content.gd:116
+#: scripts/autoload/game_content.gd:119
 msgid "Coroa Partida"
 msgstr "Broken Crown"
 
 #. game_content._build_characters.ac2791  [golpe_magia]
-#: scripts/autoload/game_content.gd:116
+#: scripts/autoload/game_content.gd:119
 msgid "A coroa do Arconte se parte em luz: dano enorme em área."
 msgstr "The Archon's crown shatters into light: huge area damage."
 
@@ -6966,52 +6976,57 @@ msgid "+15 de Éter máx.  ·  %d / %d"
 msgstr "+15 max Aether  ·  %d / %d"
 
 #. upgrade_menu._rebuild.8ffaef  [ui]
-#: scripts/ui/upgrade_menu.gd:165
+#: scripts/ui/upgrade_menu.gd:166
 msgid "%s  ·  em uso"
 msgstr "%s  ·  in use"
 
 #. upgrade_menu._rebuild.fe513f  [ui]
-#: scripts/ui/upgrade_menu.gd:167
+#: scripts/ui/upgrade_menu.gd:168
 msgid "%s  ·  usar"
 msgstr "%s  ·  use"
 
 #. upgrade_menu._rebuild.58c64b  [ui]
-#: scripts/ui/upgrade_menu.gd:169
+#: scripts/ui/upgrade_menu.gd:170
 msgid "Relíquia  ·  %s"
 msgstr "Relic  ·  %s"
 
+#. upgrade_menu._rebuild.d44d45  [ui]
+#: scripts/ui/upgrade_menu.gd:177
+msgid "Segundo engaste  ·  duas relíquias em uso"
+msgstr "Second setting  ·  two relics in use"
+
 #. upgrade_menu._rebuild.df1a37  [ui]
-#: scripts/ui/upgrade_menu.gd:178
+#: scripts/ui/upgrade_menu.gd:188
 msgid "Restauração  ·  cura completa"
 msgstr "Restoration  ·  full heal"
 
 #. upgrade_menu._rebuild.3c4a13  [ui]
-#: scripts/ui/upgrade_menu.gd:178
+#: scripts/ui/upgrade_menu.gd:188
 msgid "a vida já está cheia"
 msgstr "health is already full"
 
 #. upgrade_menu._rebuild.8ac00e  [ui]
-#: scripts/ui/upgrade_menu.gd:180
+#: scripts/ui/upgrade_menu.gd:190
 msgid "só no santuário e depois do Arconte"
 msgstr "only at the shrine and after the Archon"
 
 #. upgrade_menu._update_status.74cd2e  [ui]
-#: scripts/ui/upgrade_menu.gd:202
+#: scripts/ui/upgrade_menu.gd:212
 msgid "Selado  ·  vença %s para abrir"
 msgstr "Sealed  ·  defeat %s to open"
 
 #. upgrade_menu._update_status.deb328  [ui]
-#: scripts/ui/upgrade_menu.gd:206
+#: scripts/ui/upgrade_menu.gd:216
 msgid "Faíscas insuficientes  ·  faltam %d"
 msgstr "Not enough sparks  ·  %d short"
 
 #. upgrade_menu._update_status.cdab2e  [ui]
-#: scripts/ui/upgrade_menu.gd:221
+#: scripts/ui/upgrade_menu.gd:231
 msgid "Faíscas insuficientes para as melhorias"
 msgstr "Not enough sparks for the upgrades"
 
 #. upgrade_menu._add_sealed.3e1bec  [ui]
-#: scripts/ui/upgrade_menu.gd:228
+#: scripts/ui/upgrade_menu.gd:238
 msgid "selado  ·  vença %s"
 msgstr "sealed  ·  defeat %s"
 

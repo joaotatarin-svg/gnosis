@@ -48,8 +48,11 @@ func _cases_gates() -> void:
 	check(not Progression.gift_weapon_level() and Progression.weapon_level == 2, "presente do Soter respeita o selo")
 	Progression.add_ring("arconte_sono", "r_torpor")
 	check(Progression.progress_tier() == 1 and Progression.tier_gate_name(1) == "Athoth", "Athoth vencido: grau 1 (nome curto)")
-	check(Progression.weapon_upgrade_cost() == 450 and Progression.upgrade_weapon() and Progression.weapon_level == 3, "arma Nv.3: 450 depois de Athoth")
-	check(Progression.weapon_next_tier() == 3 and Progression.weapon_sealed(), "arma Nv.4 pede 3 Arcontes")
+	check(Progression.weapon_upgrade_cost() == 500 and Progression.upgrade_weapon() and Progression.weapon_level == 3, "arma Nv.3: 500 depois de Athoth")
+	check(Progression.weapon_next_tier() == 4 and Progression.weapon_sealed(), "arma Nv.4 pede 4 Arcontes (Yabel)")
+	Progression.weapon_level = 4
+	check(Progression.weapon_next_tier() == 6 and Progression.weapon_upgrade_cost() == 1800, "arma Nv.5: 1800 e só depois de Belias (6 Arcontes)")
+	Progression.weapon_level = 3
 	Progression.steal_rings()
 	check(Progression.progress_tier() == 1, "o roubo não tira o grau")
 
@@ -109,6 +112,17 @@ func _cases_relics() -> void:
 	check(o - Progression.orbs == 40, "Pérola não mexe em perdas")
 	check(Progression.equip_relic("brasa") and Progression.equipped_relic() == "brasa", "troca de graça para a Brasa")
 	check(not Progression.equip_relic("lampada"), "não usa relíquia que não tem")
+	# Onda 7: segundo engaste (2 em uso) e o Coro das Faíscas.
+	check(Progression.relic_slots() == 1 and Progression.relic_slot_sealed() and not Progression.buy_relic_slot(), "segundo engaste selado até Astaphaios")
+	Progression.add_ring("arconte_silencio", "r_silencio")
+	Progression.add_ring("arconte_espelho", "r_espelho")
+	var o2 := Progression.orbs
+	check(Progression.buy_relic_slot() and o2 - Progression.orbs == 1500 and Progression.relic_slots() == 2, "segundo engaste: 1500, duas em uso")
+	check(not Progression.buy_relic_slot(), "engaste não se compra duas vezes")
+	Progression.equip_relic("perola")
+	check(Progression.relic_active("brasa") and Progression.relic_active("perola"), "Brasa e Pérola em uso juntas")
+	check(Progression.buy_relic("coro") and Progression.relic_active("coro") and Progression.relic_active("perola") and not Progression.relic_active("brasa"), "Coro entra e sai a mais antiga (Brasa)")
+	check(Progression.unequip_relic("perola") and Progression.equipped_relics().size() == 1 and Progression.equipped_relic() == "coro", "tirar de uso libera o engaste")
 	check(not Progression.item_features().has("#reliquias=brasa,perola") and Progression.item_features().is_empty(), "arte não vê as entradas '#'")
 
 

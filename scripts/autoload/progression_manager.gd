@@ -19,9 +19,12 @@ const MAX_WEAPON_LEVEL := 5
 ## Grau máximo (os 7 Arcontes). Fora do run (Provação, testes) nada é selado.
 const MAX_TIER := 7
 ## Custo para CHEGAR ao nível i da arma (índices 0 e 1 não se compram).
-const WEAPON_COSTS := [0, 0, 200, 450, 900, 1500]
-## Arcontes vencidos exigidos para o nível i da arma (Nv.3 = aéreos só após Athoth).
-const WEAPON_TIER := [0, 0, 0, 1, 3, 5]
+## Onda 7 (QA7 #13): a arma chegava ao Nv.5 na tela 46 e o resto do run
+## não tinha meta — agora a subida se espalha até a reta final.
+const WEAPON_COSTS := [0, 0, 200, 500, 1100, 1800]
+## Arcontes vencidos exigidos para o nível i da arma: Nv.2 no Torpor, Nv.3
+## após Athoth (aéreos), Nv.4 após Yabel (tela 37), Nv.5 após Belias (tela 55).
+const WEAPON_TIER := [0, 0, 0, 1, 4, 6]
 ## Vida máx.: +20 por compra, preço 90 × (n+1), no máximo 10 compras e no
 ## máximo 3 + grau (a 10ª só depois do 7º Arconte).
 const HP_STEP := 20
@@ -50,6 +53,14 @@ const SOTER_HP := 25
 const RELIC_HEAL_PER_SPARK := 2
 const RELIC_ETHER_PER_SPARK := 3
 const RELIC_SPARK_BONUS := 0.25
+## Coro das Faíscas (Onda 7): quando a ÚLTIMA faísca de um inimigo te alcança,
+## um anel de luz fere quem está perto (dano fixo, sem sorteio).
+const RELIC_CHOIR_DAMAGE := 14
+const RELIC_CHOIR_RADIUS := 80.0
+## Segundo engaste (Onda 7): DUAS relíquias em uso. Preço fixo, selado até
+## Astaphaios — o destino das faíscas do fim do run (QA7 #13), sem sorteio.
+const RELIC_SLOT_COST := 1500
+const RELIC_SLOT_TIER := 5
 
 ## Pulo duplo concedido (o Soter dá numa cena; o Combate lê a flag).
 signal double_jump_granted()
@@ -248,7 +259,7 @@ func reset_run() -> void:
 
 func add_orbs(amount: int) -> void:
 	# Pérola do Hino: +25% de toda faísca GANHA (perdas e gastos não mudam).
-	if amount > 0 and equipped_relic() == "perola":
+	if amount > 0 and relic_active("perola"):
 		amount = int(round(float(amount) * (1.0 + RELIC_SPARK_BONUS)))
 	orbs += amount
 	orbs_changed.emit(orbs)
@@ -470,10 +481,48 @@ func has_relic(id: String) -> bool:
 	return owned_relics().has(id)
 
 
-## A relíquia em uso ("" = nenhuma).
+## Relíquias em uso (a mais antiga primeiro). Save da Onda 6 guardava UMA
+## ("#reliquia_ativa=perola") — o formato em lista lê igual.
+func equipped_relics() -> PackedStringArray:
+	var out := PackedStringArray()
+	for id in _flag_get("reliquia_ativa", "").split(",", false):
+		if has_relic(id) and not out.has(id):
+			out.append(id)
+	while out.size() > relic_slots():
+		out.remove_at(0)
+	return out
+
+
+## A relíquia em uso mais recente ("" = nenhuma) — compatível com a Onda 6.
 func equipped_relic() -> String:
-	var id := _flag_get("reliquia_ativa", "")
-	return id if id != "" and has_relic(id) else ""
+	var worn := equipped_relics()
+	return worn[worn.size() - 1] if not worn.is_empty() else ""
+
+
+## Esta relíquia está em uso agora?
+func relic_active(id: String) -> bool:
+	return equipped_relics().has(id)
+
+
+## Quantas relíquias cabem em uso (1; 2 com o segundo engaste).
+func relic_slots() -> int:
+	return 2 if _flag_get("engaste", "") == "1" else 1
+
+
+## O segundo engaste ainda está selado pelo progresso?
+func relic_slot_sealed() -> bool:
+	return progress_tier() < RELIC_SLOT_TIER
+
+
+## Compra o segundo engaste (preço fixo, uma vez por run).
+func buy_relic_slot() -> bool:
+	if relic_slots() >= 2 or relic_slot_sealed():
+		return false
+	if not spend_orbs(RELIC_SLOT_COST):
+		return false
+	_flag_set("engaste", "1")
+	relics_changed.emit()
+	return true
 
 
 ## A relíquia ainda está selada pelo progresso?
@@ -495,11 +544,29 @@ func buy_relic(id: String) -> bool:
 	return true
 
 
-## Põe em uso uma relíquia já comprada (de graça, em qualquer loja).
+## Põe em uso uma relíquia já comprada (de graça, em qualquer loja). Com os
+## engastes cheios, sai a que está em uso há mais tempo.
 func equip_relic(id: String) -> bool:
 	if not has_relic(id):
 		return false
-	_flag_set("reliquia_ativa", id)
+	var worn := equipped_relics()
+	if worn.has(id):
+		return true
+	worn.append(id)
+	while worn.size() > relic_slots():
+		worn.remove_at(0)
+	_flag_set("reliquia_ativa", ",".join(worn))
+	relics_changed.emit()
+	return true
+
+
+## Tira uma relíquia de uso (libera o engaste).
+func unequip_relic(id: String) -> bool:
+	var worn := equipped_relics()
+	if not worn.has(id):
+		return false
+	worn.remove_at(worn.find(id))
+	_flag_set("reliquia_ativa", ",".join(worn))
 	relics_changed.emit()
 	return true
 
