@@ -1,0 +1,100 @@
+{
+ "_doc": "Fila 9: Fantasma do Vazio = en_fantasma_b (FUNDO VERDE ≈2,250,1 — chave verde automática do key_array). q3 dissolve, q4 se forma.",
+ "group": "creatures",
+ "sheet": "artes/gpt/en_fantasma_b.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_0",
+  "float_0",
+  "float_1",
+  "fade_out",
+  "fade_in",
+  "strike",
+  "hurt",
+  "death"
+ ],
+ "kind": "spirit",
+ "body_px": 220,
+ "fit_override": {
+  "body_frac": 0.95,
+  "foot_gap": 0.0,
+  "dx": 0.0
+ },
+ "anchors": {
+  "death": "lying"
+ },
+ "anchor_fix": {},
+ "inbetween": {},
+ "flex": {
+  "cloth_top": 0.5,
+  "cloth_amp": 1.5
+ },
+ "hem_wave": 1.0,
+ "states": {
+  "idle": {
+   "frames": [
+    "idle_0",
+    "float_0"
+   ],
+   "loop": true,
+   "fps": 2.5
+  },
+  "walk": {
+   "frames": [
+    "float_0",
+    "float_1",
+    "idle_0"
+   ],
+   "loop": true,
+   "fps": 5.0
+  },
+  "windup": {
+   "frames": [
+    "fade_in"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "dodge": {
+   "frames": [
+    "fade_out",
+    "fade_in"
+   ],
+   "dur": [
+    0.15
+   ]
+  },
+  "recover": {
+   "frames": [
+    "strike",
+    "idle_0"
+   ],
+   "at": [
+    0.0,
+    0.45
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "fade_out",
+    "death"
+   ],
+   "dur": [
+    0.1,
+    0.18
+   ]
+  }
+ }
+}
