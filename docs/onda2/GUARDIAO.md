@@ -9,6 +9,7 @@
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 | 7a934d9 (WIP) | APROVADO COM RESSALVAS (só o retrato WIP; reauditar o delta final) | R5/§5.6 (guarda do Astaphaios sem aviso), R11 (som da carga repete), falta CHECAGEM |
 | dir5/encenacao5 | 0f04eff | APROVADO COM RESSALVAS | R6 parcial (faíscas do degrau sem orbe), §3 (presente de arma fura o selo — antigo) |
 | dir7/polimento7 | 661a1a0 | APROVADO COM RESSALVAS | R10 (flash dos inimigos ainda 0,55), falta CHECAGEM DE SATISFAÇÃO no doc |
 | dir2/arte-gpt | 62f3ed0 (+60a8cf7 já integrado) | APROVADO COM RESSALVAS | R10 (flash dos inimigos após a cor real), R18 |
@@ -96,3 +97,40 @@ respiro antes do prompt, `rest` + 1,6 s antes de partir) e `docs/onda2/NARRATIVA
 - O doc alega "música −14 dB no encontro" (R9): não medi o áudio nesta rodada (sem som); fica como alegação.
 
 **Veredito: APROVADO COM RESSALVAS.**
+
+---
+
+## dir6/chefes6 — 7a934d9 (WIP; d09566d auditado por funcionário + bf67430/5abf958/7a934d9 por mim)
+
+**O que muda:** recalibração de vida/dano para o dano REAL da Sophia (`BossTuning.expected_hit` ← `SophiaTuning.move_damage`;
+golpes-alvo: Rei 30, Sono 21, Fome 30, Corrente 38, Silêncio 28, Espelho 28, Praga 26, Coroa 26, final 16/forma, Colosso 18;
+`dmg_scale` Armupiel 0,27, Colosso/final 0,30, Astaphaios 0,42, Belias 0,45, Harmas 0,55); Armupiel: corte 1×/fase,
+Pretorianos com vida ≈ 4 golpes, `spark_reward` 0 e meio dano; Espadão com recuperação maior (1,25 s) e onda mais lenta;
+ganchos do VFX7 (carga no preparo do tiro, cancelada em STAGGER/HURT/DEAD); golpes utilitários com `"tell": false`.
+
+**Checagem:**
+- **R3 (tremor raro) — atende/melhora:** `boss_brain.gd` strike 0,5 → 0,35; Colosso 0,8 → 0,5; `boss_hazard.gd` coluna deixa
+  de tremer (só "arena" 0,35). Corte real: `AoeNova` treme 0,45, mas agora 1×/fase.
+- **R5 (telegrafo) — atende nos golpes:** todo tiro tem carga (forma de círculo que fecha + cor + som) pelo `wind_up` inteiro
+  (0,65–0,85 s), glint Z+7/Z+8 acima da carga (Z). Decreto do Armupiel avisa 1,15 s; `dupla_b` 0,7 s. O `_glint_done` é
+  rearmado a cada `_begin_windup` (`enemy.gd:689`), então o `"tell": false` não vaza para o golpe seguinte.
+- **R5 / §5.6 — RESSALVA (Astaphaios `guarda`):** a guarda REFLETE o golpe da Sophia (`_filter`: dano × REFLECT_K,
+  imparável) e agora não tem nenhum aviso no preparo (0,4 s, `"tell": false`); o anel de vidro só aparece quando a guarda
+  já está ativa (`_on_strike` → `_show_ring`). Uma Sophia no meio do combo (o final "compromete") toma o reflexo sem
+  aviso legível. Tirar o AMARELO está certo (amarelo = aparável), mas a guarda precisa de um aviso PRÓPRIO.
+  Correção mínima: mostrar o `MirrorRing` (ou um anel de vidro azul crescendo) + som "glass" já no INÍCIO do wind
+  (0,4 s), não no strike. Os outros `"tell": false` (pisca, deslize, troca, teleporte, larvas, corte real, reflexos)
+  não causam dano por si — ok.
+- **R4/R11 — DÚVIDA (dono vfx7/audio7, não o chefes6):** sem `charge_dark` no catálogo, a carga usa "proj_fire" a pitch
+  0,55/−9 dB e o disparo toca "proj_fire" de novo: o mesmo arquivo 2× por tiro de chefe. Pedido já em
+  `docs/pedidos/vfx7.md`; precisa entrar antes da 3.1.
+- **Dano de contato:** continua desligado (`enemy.gd` `monitoring=false`); chefe só fere no contato em investida. Atende.
+- **§3:** Pretorianos e reflexos com `spark_reward` 0 (fixo). Atende.
+- **Dificuldade (playtest #3/#9):** ainda FORA da meta pelo próprio CHEFES6 (r7: Armupiel 219 s/10 quase-mortes,
+  final 292 s/14). Não sondei o 7a934d9 (WIP). Lembrete §4/§3: dificuldade por leitura e padrão, não por vida inflada; a
+  queda de dano do Armupiel (0,4 → 0,27) vai na direção certa.
+- **Regra da equipe:** `docs/onda2/CHEFES6.md` não tem a seção "CHECAGEM DE SATISFAÇÃO". Correção: acrescentar.
+- Nada de hitstop > 200 ms, slow-mo novo, clarão de tela ou flash vermelho novos.
+
+**Veredito: APROVADO COM RESSALVAS para o retrato 7a934d9** — não bloqueia a prévia se for preciso integrar o WIP, mas a
+ressalva da guarda do Astaphaios (R5) deve ser corrigida antes da versão "redonda"; o commit final exige reauditoria do delta.
