@@ -199,6 +199,10 @@ func _on_lightness_line(index: int, _line: Dictionary) -> void:
 			# (soter_look); a coluna de luz morna desce sobre ela (bless_light).
 			_art.set_anim("lift")
 			_sophia_action("soter_look")
+			# R9: a música, já baixa no encontro, quase some — o dom (`soter_gift`,
+			# tocado pelo Áudio quando o pulo duplo é concedido, na fala seguinte)
+			# entra no silêncio. A Staging solta o abafamento ao fim da cena.
+			Audio.duck_music(600.0, -24.0)
 			if not _sophia_light(true):
 				var col := _glow_sprite("glow", Vector2(0.9, 2.6), Color(1.0, 0.92, 0.65, 0.0))
 				col.global_position = _player.global_position + Vector2(0, -40)
