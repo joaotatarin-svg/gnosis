@@ -9,6 +9,7 @@
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir2/arte-gpt | 4038d12 (delta de 62f3ed0) | APROVADO COM RESSALVAS (inofensivo, mas a R17 NÃO chega ao jogo) | R17 não entregue; R3/R21 no dia em que ligar |
 | dir6/chefes6 | 7a934d9 (WIP) | APROVADO COM RESSALVAS (só o retrato WIP; reauditar o delta final) | R5/§5.6 (guarda do Astaphaios sem aviso), R11 (som da carga repete), falta CHECAGEM |
 | dir5/encenacao5 | 0f04eff | APROVADO COM RESSALVAS | R6 parcial (faíscas do degrau sem orbe), §3 (presente de arma fura o selo — antigo) |
 | dir7/polimento7 | 661a1a0 | APROVADO COM RESSALVAS | R10 (flash dos inimigos ainda 0,55), falta CHECAGEM DE SATISFAÇÃO no doc |
@@ -134,3 +135,41 @@ ganchos do VFX7 (carga no preparo do tiro, cancelada em STAGGER/HURT/DEAD); golp
 
 **Veredito: APROVADO COM RESSALVAS para o retrato 7a934d9** — não bloqueia a prévia se for preciso integrar o WIP, mas a
 ressalva da guarda do Astaphaios (R5) deve ser corrigida antes da versão "redonda"; o commit final exige reauditoria do delta.
+
+---
+
+## dir2/arte-gpt — 4038d12 (delta 62f3ed0..4038d12: morte de chefe em 4 etapas)
+
+**O que muda:** folhas `boss_<n>_<nome>_death_a.png` → estado `dying` nos 9 `*_frames.json` (tranco, cambaleio, joelhos,
+tombado; `dur` 0,17/0,17/0,28, o tombado segura); `character_art.gd`: `_death_seq` prefere `dying`, `_boss_index` indexa
+pelo relógio da morte (`_death_t`); `tools/anim_bosses/add_death.py`; AnimQA `death_board`; CHECAGEM (R17–R20) no ARTE_GPT.md.
+
+**Prova vista:** `C:\gnosis-wt\_caps\arte-gpt\fila9\death_board.png` — as 4 etapas leem bem nos 9 chefes (silhueta muda
+de verdade: em pé → curvado → joelhos → deitado com contorno). Como arte, atende R17 ("acabou" sem olhar a barra).
+
+**ACHADO PRINCIPAL — a morte em 4 etapas não aparece no JOGO:** `_death_seq` só roda com `_death_t >= 0`
+(`character_art.gd` `_boss_seq`, ~l. 2305), e `_death_t` só é ligado por `play_boss_death()` (l. 2503–2505). Ninguém
+chama `play_boss_death()` fora das ferramentas: `git grep` em integracao/onda1, arte-gpt, chefes6, vfx7 e polimento7 → só
+`tools/anim_qa.gd:523,697` e `tools/puppet_qa.gd:215`. O sinal `Enemy.boss_dying(step)` (emitido pelo
+`BossBrain._death_sequence`, 0..4) não tem nenhum ouvinte. No jogo, a morte do chefe continua: cérebro (2,45 s:
+`DEATH_STEPS [0.35, 0.55, 0.95, 0.6]`) → `_death_pose_then_burst` (quadro "dead" 0,4 s) → gibs. A prova é da AnimQA, que
+chama `play_boss_death()` direto. → a CHECAGEM do doc ("R17 atendida") **não se confirma no jogo**.
+
+**R8 / R21 / R3 — o que fica em risco NO DIA em que alguém ligar (`play_boss_death` no `boss_dying(0)`):**
+- duas linhas do tempo competindo: a arte estilhaça em 1,08 s e encerra em 1,9 s; o cérebro segura até 2,45 s e então
+  `_death_pose_then_burst` (+0,4 s) faz OUTRO fim (gibs). Resultado: dois finais ou um corpo invisível esperando 1,4 s.
+- tremor empilhado em ~2,9 s: cérebro 0,8 (impacto) + arte 0,7 (joelhos, `_tick_death`) + cérebro 0,5 (colapso) +
+  `_death_pose_then_burst` 0,9 (gibs). R3 pede o ápice UMA vez (morte de chefe 0,9–1,0); 4 tremores grandes seguidos
+  é o §4.1. O slow-mo (0,3 × 1,0 s, só chefe) e o hitstop 0,2 s estão dentro do R8/R2.
+- duração: 2,45 + 0,4 = **2,85 s reais** até os gibs, com duck de música −14 dB por 3 s (R9 ok). Aceitável para
+  um chefe (evento raro), mas não pode crescer: somar 1,9 s da arte por cima passaria de ~3 s com o controle "morto".
+
+**Correção mínima (dono: chefes6 + arte, combinar por docs/pedidos):** UM dono da linha do tempo — o `BossBrain`
+chama `visual.play_boss_death(eye_color)` no passo 0 (ou o `CharacterArt` ouve `boss_dying`), alinha `DEATH_STEPS` com
+os 0,34/0,62/1,08/1,9 da arte, e o `_on_died` NÃO faz o `_death_pose_then_burst` quando `visual.is_dying()` (os cacos da
+arte já são o fim). Tremor: só o do impacto (≤ 0,5) e o do estilhaço (0,9); tirar o 0,7 dos joelhos ou o 0,5 do
+colapso. Depois disso, reauditoria com captura em jogo (Shot `kill` num chefe).
+
+**Veredito: APROVADO COM RESSALVAS** — o delta é inofensivo (não muda timing, tremor nem som do jogo; só dados de
+quadros e o índice), então pode entrar; mas a R17 pretendida **não está entregue** até a ligação acima existir, e a
+ligação precisa vir com a linha do tempo única (R3/R21).
