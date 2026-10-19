@@ -21,6 +21,7 @@ const GROUND_Y := 24.0            # linha do chão em unidades do corpo (pés)
 
 var anim_state: String = "idle"
 var anim_time: float = 0.0
+var _interim_checked: bool = false
 var drawn_gait: bool = true       # Sophia: largada/freada desenhadas (S18) ao começar/parar de correr
 var damage_ratio: float = 0.0     # 0 = inteiro · 1 = quase morto (rachaduras)
 var _rig_draws: Array = []        # buffer de desenho do rig (tinta em 2 passes)
@@ -54,7 +55,7 @@ var _dead := 0.0         # 0..1 corpo caindo
 
 func set_profile(p: ArtProfile) -> void:
 	profile = p
-	painted = PaintedLibrary.character(p)
+	painted = PaintedLibrary.character(p, _host_ctx())
 	material = _flex_material()
 	# Pinturas grandes exibidas a ~1/4: mipmap evita cintilar a borda (o
 	# BossPuppet, filho deste nó, herda o filtro).
@@ -129,6 +130,43 @@ func set_rig(json_path: String, disp_height: float) -> bool:
 	return not rig.is_empty()
 
 
+## Contexto do Enemy dono deste desenho (tipo do Bestiary e Campeão) para o
+## PaintedLibrary escolher a arte própria. Sobe até 2 níveis (o Rim do Enemy
+## põe o desenho dentro de um CanvasGroup).
+func _host_ctx() -> Dictionary:
+	var n: Node = get_parent()
+	for _i in 2:
+		if n == null:
+			break
+		var t = n.get("type_id")
+		if t != null:
+			var champ = n.get("is_champion")
+			return {"type": String(t), "champion": champ == true}
+		n = n.get_parent()
+	return {}
+
+
+## Tem ARTE PRÓPRIA (Fila 9: voadores, cornudo, fantasma, acólito, campeões)?
+## Quem tinge o interino (tinta do tipo, graduação do Campeão) deve pular.
+func has_own_art() -> bool:
+	return painted.get("own_art", false) and has_boss_frames()
+
+
+## A arte própria já vem com a cor certa: desfaz a tinta e a graduação de cor
+## que o Enemy aplicou para disfarçar o interino (mantém só a transparência).
+func _clear_interim_tint() -> void:
+	if not has_own_art():
+		return
+	self_modulate = Color(1, 1, 1, self_modulate.a)
+	var g: Node = get_parent()
+	if g is CanvasGroup and (g as CanvasGroup).material is ShaderMaterial:
+		var m: ShaderMaterial = (g as CanvasGroup).material
+		if m.get_shader_parameter("grade_sat") != null:
+			m.set_shader_parameter("grade_hue", 0.0)
+			m.set_shader_parameter("grade_sat", 1.0)
+			m.set_shader_parameter("grade_tint", Color(1, 1, 1, 1))
+
+
 func has_rig() -> bool:
 	return not rig.is_empty()
 
@@ -172,6 +210,9 @@ func set_anim(state: String) -> void:
 
 
 func _process(delta: float) -> void:
+	if not _interim_checked:
+		_interim_checked = true
+		_clear_interim_tint()      # depois do _ready do Enemy (tinta + Rim já postos)
 	anim_time += delta
 	_tick_visual(delta)
 	if is_instance_valid(boss_puppet):
@@ -2259,8 +2300,21 @@ func _boss_index(seq: Dictionary) -> int:
 func _on_boss_frame_changed(seq: Dictionary, i: int) -> void:
 	if anim_state == "dead" and i == seq.frames.size() - 1 and seq.frames.size() > 1:
 		_impact = 1.0
+	# efeito que a folha trazia PINTADO e foi apagado no recorte (pó do sono da
+	# mariposa): refeito por partícula na frente do corpo ao entrar na sequência
+	if i == 0 and seq.has("puff") and is_visible_in_tree() and not _boss_shown.is_empty():
+		var pc: Array = seq.puff
+		var r: Rect2 = _boss_shown.rect
+		var front: Vector2 = _body_xform * (Vector2(r.size.x * 0.88, r.size.y * 0.42) - _boss_shown.anchor)
+		call_deferred("_puff_at", to_global(front), Color(float(pc[0]), float(pc[1]), float(pc[2]), 0.85))
 	if i in _int_list(seq.get("impact_at", [])) and i > 0:
 		spawn_afterimage(Color(profile.eye, 0.5), 0.09)
+
+
+func _puff_at(pos: Vector2, col: Color) -> void:
+	var host: Node = get_tree().current_scene if is_inside_tree() else null
+	if host != null:
+		VfxLibrary.cast(host, pos, col)
 
 
 func _silhouette_tex(tex: Texture2D) -> Texture2D:

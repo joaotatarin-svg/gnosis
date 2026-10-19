@@ -1,0 +1,130 @@
+{
+ "_doc": "Fila 9: Espectro Mergulhador (voador do Torpor/Silêncio) = fly_mariposa_a. Pó do sono rosado do 'shot' APAGADO (erase) — vira FX.",
+ "group": "creatures",
+ "sheet": "artes/gpt/fly_mariposa_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_hover",
+  "fly_0",
+  "fly_1",
+  "dive_windup",
+  "dive_strike",
+  "shot",
+  "hurt",
+  "death"
+ ],
+ "erase": [
+  [
+   670,
+   690,
+   800,
+   876
+  ],
+  [
+   800,
+   770,
+   846,
+   866
+  ],
+  [
+   795,
+   720,
+   846,
+   775
+  ]
+ ],
+ "kind": "spirit",
+ "body_px": 220,
+ "ref": "idle_hover",
+ "fit_override": {
+  "body_frac": 1.1,
+  "foot_gap": 0.0,
+  "dx": 0.0
+ },
+ "anchors": {
+  "death": "lying"
+ },
+ "anchor_fix": {},
+ "inbetween": {},
+ "flex": {
+  "cloth_top": 0.5,
+  "cloth_amp": 1.5
+ },
+ "hem_wave": 1.0,
+ "states": {
+  "idle": {
+   "frames": [
+    "idle_hover",
+    "fly_0"
+   ],
+   "loop": true,
+   "fps": 3.0
+  },
+  "walk": {
+   "frames": [
+    "fly_0",
+    "fly_1",
+    "idle_hover"
+   ],
+   "loop": true,
+   "fps": 6.0
+  },
+  "windup": {
+   "frames": [
+    "dive_windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "dive_strike"
+   ]
+  },
+  "charge": {
+   "frames": [
+    "dive_strike"
+   ]
+  },
+  "windup_cast": {
+   "frames": [
+    "idle_hover"
+   ]
+  },
+  "cast": {
+   "frames": [
+    "shot"
+   ],
+   "puff": [
+    1.0,
+    0.72,
+    0.95
+   ]
+  },
+  "recover": {
+   "frames": [
+    "dive_strike",
+    "idle_hover"
+   ],
+   "at": [
+    0.0,
+    0.5
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ }
+}

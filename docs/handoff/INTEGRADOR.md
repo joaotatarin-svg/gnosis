@@ -19,6 +19,13 @@ de linha (viram órfãs) — sempre normalizar para LF antes do extract.
 | dir6/inimigos6 | 8ae2e69 | conflito em enemy.gd (_begin_strike/_process_strike): brain (chefes6) antes de _mv (inimigos6) |
 | dir6/ui6 | f7cf6ce | |
 | dir6/combate6 d2f3e74 (+ arte-gpt b618400: S17/S18, frame_geometry) | ec64161 | |
+| dir2/arte-gpt 7163c12 (Fila 9 blocos 2+3: voadores, acólito/cornudo/fantasma, 7 Campeões) | a727e5d | sem conflito; entrou ANTES do chefes6 (já estava validado quando chegou a ordem "chefes6 primeiro") |
+
+## PAUSA (pedido do João, 18/10) — estado ao parar
+Nada em curso: a727e5d validado 2/2 e no origin. Nenhum Godot meu aberto. Ao retomar: esperar chefes6 (50a89eb é
+WIP da recalibração) → integrar → BossProbe → preview/3.1 em `_build\preview3_1` SEM atalho no Desktop
+(regra nova: versões internas sem atalho; o João só joga a final). Fila Onda 7: dir7/audio7, dir7/polimento7,
+dir7/qa7 (docs/sondas), dir7/vfx7, dir7/dublagem. Roteiro de versões: C:\gnosis-wt\_ONDA6.md §ROTEIRO.
 
 ## Prévia 3 — FEITA
 `preview/3` = ec64161 + cherry-pick e065c85 (save GNOSIS-Previa) → 65b2860 (push feito).

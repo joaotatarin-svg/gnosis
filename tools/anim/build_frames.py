@@ -120,9 +120,16 @@ def scale_meas(m: dict, s: float, ox: float = 0.0, oy: float = 0.0) -> dict:
 
 
 # ---------------------------------------------------------------- fatiar
-def slice_sheet(path: str, grid, names, raw_alpha_cells=()):
+def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, erase=(), strip_glow=False):
 	"""`raw_alpha_cells`: células cujo alfa da folha é mantido como veio
-	(translúcido DE PROPÓSITO, ex.: o "fade" do Soter)."""
+	(translúcido DE PROPÓSITO, ex.: o "fade" do Soter).
+	`grid_only`: cada célula é recortada SÓ dentro da sua caixa da grade (folhas
+	em que um quadro encosta no outro: o cutelo/alabarda dos campeões 2 e 7).
+	`erase`: retângulos [x0, y0, x1, y1] (px da folha) apagados antes do recorte
+	(efeito translúcido pintado junto — pó do sono, coluna de luz — vira FX).
+	`strip_glow`: apaga a LUZ DOURADA translúcida pintada (coluna/halo do Soter):
+	pixel semitransparente (α < 0,85) amarelado (b < 0,8·r) some; o corpo opaco
+	e o cabelo prateado (b ≈ r) ficam. A luz é refeita por FX no jogo."""
 	img = Image.open(path)
 	a_raw = None
 	if img.mode == "RGBA" and np.asarray(img)[..., 3].min() < 250:
@@ -138,10 +145,54 @@ def slice_sheet(path: str, grid, names, raw_alpha_cells=()):
 		a[a < 0.05] = 0.0
 	else:
 		F, a, _ = key_array(np.asarray(img.convert("RGB")).astype(np.float32))
+	if strip_glow:
+		yel = (F[..., 2] < 0.8 * F[..., 0]) & (F[..., 0] > 120.0)
+		a = np.where((a < 0.85) & yel, 0.0, a)
+		# brilho opaco solto (faíscas, espirais) longe do corpo também some:
+		# o recorte por componente descarta o que ficou pequeno e isolado
+	for x0e, y0e, x1e, y1e in erase:
+		a[int(y0e):int(y1e), int(x0e):int(x1e)] = 0.0
+		if a_raw is not None:
+			a_raw[int(y0e):int(y1e), int(x0e):int(x1e)] = 0.0
 	H, W = a.shape
 	cols, rows = grid
 	cw, ch = W / cols, H / rows
 	lab, n = ndimage.label(a > 0.05, structure=np.ones((3, 3), bool))
+	if grid_only:
+		# quadros que se TOCAM: semente = maior pedaço de cada célula (cortado
+		# na linha da grade); cada pixel do bloco fundido vai para a semente mais
+		# próxima POR DENTRO da silhueta (inundação geodésica) — o cutelo
+		# erguido fica com quem o segura, não com o pé que ele encosta
+		from skimage.segmentation import watershed
+		mask = a > 0.05
+		cut = mask.copy()
+		for i in range(1, cols):
+			cut[:, int(round(i * cw)) - 1:int(round(i * cw)) + 1] = False
+		for j in range(1, rows):
+			cut[int(round(j * ch)) - 1:int(round(j * ch)) + 1, :] = False
+		lc, nc = ndimage.label(cut, structure=np.ones((3, 3), bool))
+		sizes = ndimage.sum(np.ones_like(a), lc, range(1, nc + 1))
+		cms = ndimage.center_of_mass(np.ones_like(a), lc, range(1, nc + 1))
+		markers = np.zeros(a.shape, np.int32)
+		best = {}
+		for k in range(nc):
+			cy, cx = cms[k]
+			c = int(min(cols - 1, cx // cw)) + cols * int(min(rows - 1, cy // ch))
+			if c not in best or sizes[k] > sizes[best[c]]:
+				best[c] = k
+		for c, k in best.items():
+			markers[ndimage.binary_erosion(lc == k + 1, iterations=2)] = c + 1
+		ws = watershed(np.zeros(a.shape, np.float32), markers, mask=mask, connectivity=2)
+		free, nf = ndimage.label(mask & (ws == 0), structure=np.ones((3, 3), bool))
+		lab = free.astype(np.int32)
+		for c in best:
+			lab[ws == c + 1] = nf + c + 1
+		ids = np.unique(lab)
+		ids = ids[ids > 0]
+		remap = np.zeros(lab.max() + 1, np.int32)
+		remap[ids] = np.arange(1, ids.size + 1)
+		lab = remap[lab]
+		n = int(ids.size)
 	objs = ndimage.find_objects(lab)
 	cell_of = {}
 	for i in range(n):
@@ -255,7 +306,7 @@ def main() -> None:
 		side_path = path.replace(".png", ".json")
 		if os.path.exists(side_path):
 			side = json.load(open(side_path, encoding="utf-8")).get("anchors", {})
-		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"]).items():
+		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"], (), src.get("grid_only", False), src.get("erase", []), src.get("strip_glow", False)).items():
 			raw[sid + "." + name] = [rgba, src.get("scale", 1.0)]
 			if name in side:
 				# âncora fixa (px da folha) → px locais do recorte
@@ -387,7 +438,7 @@ def main() -> None:
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
 			print("  %s: avanço por quadro %s -> ciclo %.2f alturas" % (sname, adv, sum(adv) / body_px))
-		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support"]:
+		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support", "hold"]:
 			if key in st and key not in entry:
 				entry[key] = st[key]
 		out_states[sname] = entry
