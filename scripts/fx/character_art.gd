@@ -2332,6 +2332,16 @@ func _boss_index(seq: Dictionary) -> int:
 	var n: int = seq.frames.size()
 	if n <= 1:
 		return 0
+	if _death_t >= 0.0 and seq.has("dur") and n > 2:
+		# morte em etapas: cada quadro dura dur[i] no relógio da morte; o último segura
+		var t: float = _death_t
+		var durs: Array = seq.dur
+		for i in n - 1:
+			var d: float = float(durs[i]) if i < durs.size() else 0.2
+			if t < d:
+				return i
+			t -= d
+		return n - 1
 	if _death_t >= DEATH_STAGGER:
 		return n - 1                          # morte encenada: o quadro de queda
 	if _death_t >= 0.0:
@@ -2522,6 +2532,9 @@ func _tick_death(delta: float) -> void:
 
 ## Sequência e quadro durante a morte encenada.
 func _death_seq(states: Dictionary) -> String:
+	# FILA 10: morte DESENHADA em 4 etapas (tranco, cambaleio, joelhos, tombado)
+	if states.has("dying"):
+		return "dying"
 	if _death_t < DEATH_STAGGER and states.has("hurt"):
 		return "hurt"
 	return "dead" if states.has("dead") else "hurt"

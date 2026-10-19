@@ -143,6 +143,8 @@ for cid, n in CHAMPS.items():
 		if k in bot:
 			R[k] = bot[k]
 	R.update(TUNE.get(cid, {}))
+	if cid in ("carcereiro", "esporos"):
+		R["despill_full"] = True     # franja rosada nos panos finos (sem violeta legítimo nessas folhas)
 	if cid in HAZE:
 		hz = HAZE[cid]
 		R["erase"] = R.get("erase", []) + haze_rects(os.path.join(ROOT, R["sheet"]), hz["wipe"], hz["keep"], hz["thin"])

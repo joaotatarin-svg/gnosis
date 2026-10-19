@@ -2278,9 +2278,17 @@ func _grab_throw() -> void:
 ## API usada (leitura) do CharacterArt: _boss_db.meta, _shown_key, _body_xform —
 ## pedido à Arte uma função oficial `body_rect()` (docs/pedidos/onda6_inimigos6.md).
 var hurt_rect: Rect2 = Rect2()        # última caixa (local do inimigo) — sonda/depuração
+## Polimento 7: fração do corpo DESENHADO (frame_geometry().body) que a hurtbox
+## cobre. 80 % da largura: o cajado que encosta na borda do desenho ainda acerta
+## (a caixa do cajado tem folga de ~4 px), sem a hurtbox virar ímã fora do corpo.
+const HURT_W_FRAC := 0.8
+const HURT_H_FRAC := 0.92            # altura a partir dos pés (corta a ponta de chifres/cabelo)
+const HURT_LERP := 0.5               # suavização por quadro (vira-lado sem tremer)
 
 func _fit_hurtbox() -> void:
 	if visual == null or estate == EState.DEAD or not visual.has_boss_frames():
+		return
+	if _fit_hurtbox_geometry():
 		return
 	var key: String = visual._shown_key
 	var cut := key.rfind(":")
@@ -2314,3 +2322,31 @@ func _fit_hurtbox() -> void:
 	var want_s := Vector2(r.size.x / base.x, r.size.y / base.y)
 	shp.position = shp.position.lerp(r.get_center(), 0.35)
 	shp.scale = shp.scale.lerp(want_s, 0.35)
+
+
+## Polimento 7: hurtbox pela API oficial da Arte (`frame_geometry(true).body`,
+## silhueta do corpo medida por quadro, sem arma/pano solto): HURT_W_FRAC da
+## largura, centrada no corpo, dos pés até HURT_H_FRAC da altura. Devolve false
+## se o quadro não tem geometria (aí vale a conta antiga pelo JSON do quadro).
+func _fit_hurtbox_geometry() -> bool:
+	if not visual.has_method("frame_geometry"):
+		return false
+	var g: Dictionary = visual.frame_geometry(true)
+	if not g.has("body"):
+		return false
+	var body: Rect2 = g.body
+	var hb: Node2D = $Hurtbox
+	var inv: Transform2D = hb.get_global_transform().affine_inverse()
+	var lb: Rect2 = Rect2(inv * body.position, Vector2.ZERO).expand(inv * body.end)
+	if lb.size.x < 4.0 or lb.size.y < 4.0:
+		return false
+	var w: float = lb.size.x * HURT_W_FRAC
+	var h: float = lb.size.y * HURT_H_FRAC
+	var r := Rect2(Vector2(lb.get_center().x - w * 0.5, lb.end.y - h), Vector2(w, h))
+	hurt_rect = r
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	var base: Vector2 = (shp.shape as RectangleShape2D).size
+	var want_s := Vector2(r.size.x / base.x, r.size.y / base.y)
+	shp.position = shp.position.lerp(r.get_center(), HURT_LERP)
+	shp.scale = shp.scale.lerp(want_s, HURT_LERP)
+	return true

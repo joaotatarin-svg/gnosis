@@ -30,7 +30,11 @@ const FLASH_FADE := 0.11         # R1: flash ESCURO (modulate) some em 110 ms RE
 # do corpo (FlashLayer): a pintura continua legível e só "acende".
 const FLASH_TIME := 0.10         # F1: o flash inteiro dura ≤ 100 ms REAIS
 const FLASH_HOLD := 0.035        # cheio nos primeiros 35 ms, depois apaga
-const FLASH_ADD := 0.6           # brilho somado no pico (0..1, × força do Juice)
+## brilho somado no pico (0..1, × força do Juice). Polimento 7: era 0,6 com a
+## pintura na cor AO QUADRADO (painted_flex antigo, luminância média 0,39); na
+## cor real (0,53) 0,42 dá o mesmo pico (0,84 de luminância média no atlas) com
+## 35 % do corpo estourado em branco (antes 30 %) — 0,6 estouraria 47 %.
+const FLASH_ADD := 0.42
 const VIB_AMP := 1.5             # R1: vibração da vítima (px) durante o hitstop
 const VIB_STEP_MS := 33          # troca de lado a cada ~33 ms reais
 const HURT_TINT := Color(2.2, 1.95, 1.85, 1) # F1: dano = branco quente (antes 2,2/0,9/0,9 → laranja chapado)

@@ -149,7 +149,7 @@ def build(name: str, use_rife: bool = True) -> None:
 	R = json.load(open(os.path.join(HERE, "recipes", name + ".json"), encoding="utf-8-sig"))
 	sheet = os.path.join(ROOT, R["sheet"])
 	cells = R.get("cells", ["idle_0", "idle_1", "walk_0", "walk_1", "windup", "strike", "hurt", "death"])
-	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []), R.get("grid_only", False), R.get("erase", []), R.get("strip_glow", False))
+	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []), R.get("grid_only", False), R.get("erase", []), R.get("strip_glow", False), R.get("min_part", 0), R.get("despill_full", False))
 	# recolorir células (ex.: o "fade" do Soter veio rosado: o GPT pintou o
 	# fantasma já misturado ao magenta) — mantém a luminância, troca a cor
 	for cn, col in R.get("recolor", {}).items():
