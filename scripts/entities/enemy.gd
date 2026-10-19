@@ -277,7 +277,9 @@ func _ready() -> void:
 	var diff := GameManager.difficulty_multiplier()
 	var hp_mult := Bestiary.screen_multiplier(GameManager.current_screen) * diff
 	var dmg_mult := Bestiary.damage_multiplier(GameManager.current_screen) * diff
-	_reward_mult = hp_mult
+	# Progressão 7 (Guardião §3): a renda de faíscas é IGUAL em todas as dificuldades —
+	# a dificuldade fica no combate (antes o Difícil rendia 1,5× e o Muito Difícil 2,2×)
+	_reward_mult = Bestiary.screen_multiplier(GameManager.current_screen)
 
 	health = HealthComponent.new()
 	add_child(health)
@@ -779,6 +781,7 @@ func _begin_strike() -> void:
 			var offs: Array = [-16.0, 0.0, 16.0] if is_boss_enemy else [0.0]
 			if kit == "rei" and type_id == "rei":
 				offs = [0.0]                       # o Rei-tutorial atira 1 orbe lento
+			Audio.play_sfx_at("atk_shot", global_position)   # Guardião/Áudio7 (R4): 1 som por salva
 			for oy in offs:
 				var p := Projectile.new()
 				p.direction = atk_dir
@@ -837,6 +840,10 @@ func _begin_strike() -> void:
 func _kit_strike() -> void:
 	if player == null or not is_instance_valid(player):
 		return
+	# Guardião/Áudio7 (R4): os disparos que restaram no kit legado soavam mudos —
+	# 1 som por salva (corrente, ondas rasteiras)
+	if kit == "corrente" or kit == "colosso" or (kit in ["coroa", "rei"] and phase == 2):
+		Audio.play_sfx_at("atk_shot", global_position)
 	match kit:
 		"torpor":
 			# Névoa do sono cai onde a Sophia está: dentro dela, ela anda devagar.
