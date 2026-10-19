@@ -9,6 +9,8 @@
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/audio7 | 634bc91 (WIP) | **REPROVADO** sozinho (entra junto das 3 trocas do player.gd ou com o observador sem os 3 eventos) | R4/§4.3 (som dobrado), §4.7 (atk_* sem teto), true peak |
+| dir7/dublagem | bf0c8b3 | APROVADO COM RESSALVAS (só ferramenta; nada entra no jogo) | R13 (true peak após codificar), bus Voice, tell × voz grave |
 | dir2/arte-gpt | 4038d12 (delta de 62f3ed0) | APROVADO COM RESSALVAS (inofensivo, mas a R17 NÃO chega ao jogo) | R17 não entregue; R3/R21 no dia em que ligar |
 | dir6/chefes6 | 7a934d9 (WIP) | APROVADO COM RESSALVAS (só o retrato WIP; reauditar o delta final) | R5/§5.6 (guarda do Astaphaios sem aviso), R11 (som da carga repete), falta CHECAGEM |
 | dir5/encenacao5 | 0f04eff | APROVADO COM RESSALVAS | R6 parcial (faíscas do degrau sem orbe), §3 (presente de arma fura o selo — antigo) |
@@ -173,3 +175,67 @@ colapso. Depois disso, reauditoria com captura em jogo (Shot `kill` num chefe).
 **Veredito: APROVADO COM RESSALVAS** — o delta é inofensivo (não muda timing, tremor nem som do jogo; só dados de
 quadros e o índice), então pode entrar; mas a R17 pretendida **não está entregue** até a ligação acima existir, e a
 ligação precisa vir com a linha do tempo única (R3/R21).
+
+---
+
+## dir7/audio7 — 634bc91 (WIP: a3c2317 sons, 8803bd2 CATALOG/ganchos, bf3bcc3/634bc91 pedidos, 70044eb observador `_Watch`)
+
+Medições offline (funcionário, ffmpeg ebur128 + numpy; NADA tocado): `C:\gnosis-wt\_caps\guardiao\audio\audio7_meas.json`,
+`base_meas.json`. 143 .ogg novos (118 sons).
+
+**Atende (com evidência):**
+- **R8:** passa-baixas no slow-mo 1,5 kHz (2,5 kHz na esquiva), entra 60 ms / sai 250 ms, música −4 dB; bus Tell fora do
+  filtro (`audio_manager.gd:56-70`, ~1048).
+- **R9:** silêncio pré-chefe (`PRE_BOSS_FADE` 0,6 s, faixa de chefe 0,3 s depois do stinger); morte do chefe
+  `duck_music(3, −14)` + −30 dB no `boss_die`.
+- **R11:** `MAX_SAME 3`, limitador no Master −1 dB, round-robin sem repetir, ±1,5 dB, ±4 % tom; 3 variações em
+  hit/hit_heavy/swing/step/enemy_hurt (land 2).
+- **R12:** atk_slam/atk_nova com transiente 4–7 ms e 42–79 % da energia < 90 Hz; leves sem sub (atk_swing 0 % < 90 Hz).
+- **R13:** música de Éon −16,0 LUFS × chefe −15,9 no arquivo; os 3 LU vêm do `EON_MUSIC_DB −3` no código.
+- **R14:** pan × 0,5 em 5 degraus; sons novos de inimigo/perigo por `play_sfx_at`.
+- **R6, R22, §4.8, §4.10:** tique na chegada do orbe subindo; coração 63 Hz ≤ 8 s; voz de dor ≤ 1/250 ms; impacto não
+  sobe de tom com o combo.
+
+**VIOLA (introduzido pelo branch):**
+- **R4 / §4.3 — dois sons no MESMO evento:** o `_Watch` toca `double_jump` e o `player.gd:432` continua tocando `jump`
+  (o próprio código diz "o `jump` do player continua"); `star_charge` + `dive` (`player.gd:542`) na Queda Estelar;
+  `riposte` + `_swing_sfx` (`player.gd:628`) no contra-ataque. Nos tiros hostis, `atk_shot/fan/homing` (observador) +
+  `proj_fire` (`projectile.gd:55`) = 2 sons por tiro (o próprio `docs/pedidos/audio7.md` admite "Hoje são 2 sons por tiro").
+  O branch depende de TROCAS que outros donos ainda não fizeram: integrado sozinho, o jogo fica com som dobrado.
+- **§4.7 — risco de repetição:** um `atk_*` em TODO golpe de TODO inimigo, só com o anti-spam de 40 ms; atk_fan, burst,
+  homing, lob com 1 variação, atk_combo/rush/leap/slam/wave/dive com 2. Com 4–6 inimigos isso passa de dezenas/min.
+
+**Parciais:** R5 `tell_parry` ~93 ms acima de −20 dB (alvo 40 ms); R9 sem ducking de −6..−8 dB em ring_gain/ring_steal/
+level_clear/weapon_upgrade nem −3 dB no parry; R8 o slow-mo da morte de chefe (escala 0,3) cai no caso "esquiva" (2,5 kHz);
+true peak: o funcionário mediu 7 arquivos acima de −1 dBTP (hz_spears −0,2; boss_death_impact, boss_phase3, bs_bite,
+bs_hand, bs_land −0,8; bs_wings −0,9); minha contraprova do hz_spears deu −1,0 dBTP (limiar). O limitador do Master
+segura o pico de amostra; vale baixar 0,5–1 dB nesses 7 na síntese (`onda7.py`) para ter folga.
+
+**Correção mínima para virar APROVADO:**
+1. Até as trocas do `player.gd` e do `projectile.gd` entrarem, o `_Watch` NÃO toca `double_jump`, `star_charge` e `riposte`
+   (ou o chefe integra o audio7 JUNTO do commit do combate/polimento que faz as 3 trocas + a do `proj_fire` hostil).
+   Melhor: o observador checa uma flag do player (`sfx_owned_by_watch`) antes de tocar.
+2. `SPAM_OVERRIDE` 120–150 ms e `MAX_SAME_OVERRIDE` 2 para `atk_*`.
+3. (não bloqueia) 3ª variação para atk_combo/rush/leap/dive e 2ª–3ª para atk_fan/burst/homing; −0,5 a −1 dB nos 7 arquivos.
+
+**Veredito: REPROVADO no 634bc91 como entrega isolada** (R4 violada por construção). Com o item 1 resolvido (por qualquer
+dos dois caminhos) e o item 2, passa a APROVADO COM RESSALVAS — reauditoria só do delta.
+
+---
+
+## dir7/dublagem — bf0c8b3
+
+**O que muda:** só ferramentas/docs (`voicelib.py`, DUBLAGEM.md); nenhum `.gd` e nenhuma voz no jogo. Amostras
+medidas (72, `_caps/dublagem/amostras`; medições `C:\gnosis-wt\_caps\guardiao\audio\dub_meas.json`):
+loudness −21,7 / −19,0 / −17,8 LUFS (alvo −18; 36/72 mais de 1 LU abaixo), true peak máx −0,5 dBTP — **29/72 acima de −1
+dBTP** (o teto de −1 dBFS é aplicado ANTES do Vorbis, `voicelib.py:224-227`, e a codificação sobe o pico), 2–5 kHz mediana
+2 % (ok). Plano de ducking (DUBLAGEM §7.6: música −9 dB no diálogo, −3 dB extra com voz) atende R9.
+
+**Ressalvas para quando a voz ENTRAR (não bloqueiam este branch):**
+- **R13:** medir o true peak DEPOIS de codificar e renormalizar (loudnorm 2 passes, −18 LUFS / −1,5 dBTP).
+- **bus Voice** está dentro do SFX (`audio_manager.gd:298`): pegaria o slider de efeitos e o abafado do slow-mo. Levar ao Master.
+- **R5:** nada protege o `tell_unblock` (80–250 Hz) de vozes graves (Yaldabaoth/Armupiel, F0 95–138 Hz) ao mesmo tempo:
+  legenda falada em luta com voz −3 dB e o bus Tell nunca abaixa.
+- Sem fala repetida em combate (cada fala é única) — ok para §4.8.
+
+**Veredito: APROVADO COM RESSALVAS** (não muda o jogo; as ressalvas são condição para a integração das vozes, versão 3.3).
