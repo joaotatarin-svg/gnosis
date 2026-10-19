@@ -149,7 +149,7 @@ def build(name: str, use_rife: bool = True) -> None:
 	R = json.load(open(os.path.join(HERE, "recipes", name + ".json"), encoding="utf-8-sig"))
 	sheet = os.path.join(ROOT, R["sheet"])
 	cells = R.get("cells", ["idle_0", "idle_1", "walk_0", "walk_1", "windup", "strike", "hurt", "death"])
-	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []), R.get("grid_only", False), R.get("erase", []))
+	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []), R.get("grid_only", False), R.get("erase", []), R.get("strip_glow", False))
 	# recolorir células (ex.: o "fade" do Soter veio rosado: o GPT pintou o
 	# fantasma já misturado ao magenta) — mantém a luminância, troca a cor
 	for cn, col in R.get("recolor", {}).items():
@@ -190,7 +190,7 @@ def build(name: str, use_rife: bool = True) -> None:
 	# extra × `ref` da folha principal) → mesma escala e mesma linha de pés.
 	sheet_scale = {}
 	for ex in R.get("extra_sheets", []):
-		exr = slice_sheet(os.path.join(ROOT, ex["sheet"]), ex.get("grid", [4, 2]), ex["cells"], ex.get("raw_alpha_cells", []))
+		exr = slice_sheet(os.path.join(ROOT, ex["sheet"]), ex.get("grid", [4, 2]), ex["cells"], ex.get("raw_alpha_cells", []), ex.get("grid_only", False), ex.get("erase", []), ex.get("strip_glow", False))
 		sc = ex.get("scale", "auto")
 		if sc == "auto":
 			# compara POSES EQUIVALENTES: `ref` da extra × `main_ref` da principal
