@@ -168,7 +168,16 @@ func _on_area_entered(area: Area2D) -> void:
 		var heavy: bool = mv != null and mv.is_heavy()
 		var col := Color(1.0, 0.92, 0.7) if team == "player" else Color(1.0, 0.45, 0.35)
 		var contact := Vector2(lerpf(area.global_position.x, global_position.x, 0.3), lerpf(area.global_position.y, global_position.y, 0.5))
-		ImpactBurst.spawn(owner.get_parent(), contact, col, heavy)
+		# R15: direção do golpe (quem bate → quem apanha); o lançador sobe e o
+		# mergulho desce — as fagulhas saem no sentido do golpe.
+		var dir := Vector2(signf(area.global_position.x - owner.global_position.x), 0.0)
+		if dir.x == 0.0 and owner.get("facing") != null:
+			dir.x = float(owner.get("facing"))
+		if mv != null and mv.launcher:
+			dir.y = -0.8
+		elif mv != null and mv.air and mv.is_heavy():   # Queda Estelar
+			dir.y = 0.8
+		ImpactBurst.spawn(owner.get_parent(), contact, col, heavy, dir.normalized())
 	if not _flush_queued:
 		_flush_queued = true
 		_flush_impact.call_deferred()

@@ -45,6 +45,7 @@ const RIPOSTE_DMG := 1.5         # × o dano do pesado simples
 const RIPOSTE_WINDUP := 0.06     # sai quase na hora (o inimigo está atordoado)
 const RIPOSTE_REACH := 26.0      # px: distância de contato do golpe (hitbox em x=20, ±17)
 const RIPOSTE_DASH := 560.0      # teto do avanço (px/s)
+const RIPOSTE_LEAD := 0.2        # s: quanto do recuo do aparado o avanço antecipa
 const DEAD_DECEL := 600.0        # morta: freia o deslize até parar
 
 var data: CharacterData
@@ -434,9 +435,7 @@ func _double_jump() -> void:
 	var d := Input.get_axis("move_left", "move_right")
 	if d != 0.0:
 		velocity.x = d * data.move_speed * (0.45 if status_slow > 0.0 else 1.0)
-	# Áudio7 (R4): o 2º pulo tem som próprio (anel de luz); reserva = o pulo comum
-	if not Audio.play_sfx("double_jump"):
-		Audio.play_sfx("jump")
+	Audio.play_sfx("double_jump")   # Áudio7 (R4): o anel de luz do Soter tem som próprio
 	var col := data.sprite_color.lerp(Color(1.0, 0.95, 0.75), 0.6)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, 20), col, false)
 	_squash(Vector2(facing * 0.9, 1.12))
@@ -547,8 +546,7 @@ func _do_move(move: ComboData) -> void:
 	var heavy := move.is_heavy()
 	if move.air:
 		# golpes aéreos soam ao sair; a Queda Estelar tem a carga própria (Áudio7, R4)
-		if not heavy or not Audio.play_sfx("star_charge"):
-			Audio.play_sfx("dive" if heavy else "swing_air")
+		Audio.play_sfx("star_charge" if heavy else "swing_air")
 	velocity.x = facing * move.lunge * (1.35 if heavy else 1.0)
 	pending_dmg = move_damage(move)
 	hitbox.position.x = 20.0 * facing
@@ -635,8 +633,7 @@ func _process_attack(delta: float) -> void:
 			_update_staff_hitbox()
 			if not air_move:
 				# o corte sai do wind-up; o contra-ataque tem a lâmina própria (Áudio7, R4)
-				if not riposting or not Audio.play_sfx("riposte"):
-					Audio.play_sfx(_swing_sfx())
+				Audio.play_sfx("riposte" if riposting else _swing_sfx())
 				velocity.x = facing * current_move.lunge * (1.35 if current_move.is_heavy() else 1.0)
 			if dive:
 				velocity.y = 760.0
@@ -762,7 +759,14 @@ func _riposte_lunge() -> float:
 	if tgt == null or not is_instance_valid(tgt) or not (tgt is Node2D):
 		return base
 	var gap: float = absf((tgt as Node2D).global_position.x - global_position.x) - RIPOSTE_REACH
-	return clampf(gap / 0.16, base, RIPOSTE_DASH)
+	# Polimento 7: o aparado ainda VOA para trás (empurrão do stagger, ~200 px/s);
+	# mirar onde ele vai estar daqui a RIPOSTE_LEAD s, não onde está — com a caixa
+	# do cajado desenhado (alcance ~26 px) o avanço antigo chegava curto.
+	if tgt is CharacterBody2D:
+		var away: float = (tgt as CharacterBody2D).velocity.x * float(facing)
+		gap += maxf(0.0, away) * RIPOSTE_LEAD
+	# a frenagem do golpe (600 px/s²) come ~8 px do avanço em 0,16 s
+	return clampf((gap + 8.0) / 0.16, base, RIPOSTE_DASH)
 
 
 ## Chamado pelo Hitbox quando um golpe do herói acerta — alimenta o combo.

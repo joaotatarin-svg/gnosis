@@ -305,7 +305,7 @@ func _ready() -> void:
 	if visual and profile != null:
 		visual.set_profile(profile)
 		_fit_body(profile.height / 44.0)
-		if def.has("tint"):
+		if def.has("tint") and not _own_art():
 			visual.self_modulate = def.tint               # Onda 6: tinta própria do tipo
 		if type_id.begins_with("eco_"):
 			visual.self_modulate = Color(1, 1, 1, 0.72)   # eco: translúcido
@@ -334,7 +334,7 @@ func _ready() -> void:
 func _boss_intro_fx() -> void:
 	if not is_inside_tree():
 		return
-	Audio.play_sfx("boss_appear")
+	Audio.play_sfx("champion_enter" if is_champion and not is_boss_enemy else "boss_appear")   # Áudio7: o stinger de chefe não toca para Campeão (R9)
 	VfxLibrary.boss_appear(get_parent(), global_position + Vector2(0, -20.0 * _art_scale), eye_color)
 
 
@@ -400,9 +400,26 @@ func _setup_readability() -> void:
 
 const GRADE_SHADER := "res://scripts/entities/enemies/enemy_grade.gdshader"
 
+## Arte própria (Fila 9: voadores, cornudo, fantasma, acólito, campeões) já vem
+## com a cor certa: sem tinta do tipo nem graduação do interino (pedido do VFX7).
+## Polimento 7 (R3, auditoria do Guardião): tremor de golpe de ROTINA de inimigo
+## comum (pancada, explosão, pouso, agarrão, fúria) fica em ≤ COMMON_SHAKE — é o
+## evento mais frequente do jogo e cansava (0,35–0,45). O tremor forte fica para o
+## que importa: a Sophia tomando dano (Juice.TRAUMA_HURT 0,35), o golpe pesado
+## dela, a quebra de guarda e os chefes (que seguem com o valor pedido). A câmera já
+## fica com o MAIOR pedido do quadro (camera_shake `_frame_trauma`): sem soma.
+const COMMON_SHAKE := 0.12
+
+func _shake_routine(trauma: float) -> void:
+	Juice.shake(trauma if is_boss_enemy else minf(trauma, COMMON_SHAKE))
+
+
+func _own_art() -> bool:
+	return visual != null and visual.has_method("has_own_art") and visual.has_own_art()
+
 ## Graduação de cor do corpo: Campeão (por Éon) > a do tipo (bots, alado…) > nada.
 func _body_grade(eon: int) -> Array:
-	if is_boss_enemy:
+	if is_boss_enemy or _own_art():
 		return []
 	if is_champion:
 		var bot := Bestiary.EON_BOTS.find(type_id)
@@ -803,7 +820,7 @@ func _begin_strike() -> void:
 			# Pancada no chão. CHEFE: onda MUITO maior e golpe mais largo.
 			var rad: float = 120.0 if is_boss_enemy else 70.0
 			AoeNova.spawn(get_parent(), global_position + Vector2(0, 14), 0, rad, eye_color)
-			Juice.shake(0.5 if is_boss_enemy else 0.35)
+			_shake_routine(0.5 if is_boss_enemy else 0.35)
 			attack_hitbox.position.x = 0.0
 			attack_hitbox.scale = Vector2(3.8 if is_boss_enemy else 2.6, 1.0)
 			attack_hitbox.activate()
@@ -875,7 +892,7 @@ func _explode() -> void:
 	var pos := global_position + Vector2(0, -8)
 	AoeNova.spawn(get_parent(), pos, 0, r, Color(1.0, 0.55, 0.25))
 	ImpactBurst.spawn(get_parent(), pos, Color(1.0, 0.6, 0.3))
-	Juice.shake(0.45)
+	_shake_routine(0.45)
 	if player != null and is_instance_valid(player) and player.global_position.distance_to(pos) <= r:
 		player._on_hit_received(attack_hitbox.damage, pos, 260.0, true, self)
 	health.take_damage(health.max_health)
@@ -1206,7 +1223,9 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 	if attacker == null:
 		# magia/nova (sem Hitbox): o impacto grande nasce aqui; golpe do Hitbox
 		# já ganhou o seu VFX no ponto de contato (R4: um só por acerto).
-		VfxLibrary.hit(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), true, eye_color)
+		# R15: as fagulhas saem no sentido do golpe (da origem para o inimigo)
+		var hdir := Vector2(signf(global_position.x - source_position.x), 0.0)
+		VfxLibrary.hit(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), true, eye_color, hdir)
 	DamageNumber.spawn(get_parent(), global_position, damage, Color(1.0, 0.92, 0.6))
 	if visual:
 		visual.damage_ratio = 1.0 - float(health.current_health) / maxf(1.0, float(health.max_health))
@@ -1635,6 +1654,7 @@ func _chase_moves(delta: float) -> void:
 	# atirador com a Sophia colada: quase não espera — empurra/explode e foge
 	if role == "shooter" and adx < 70.0:
 		cooldown_timer = minf(cooldown_timer, 0.15)
+		_intent = {}   # QA7 #15: a intenção de longe (orbe) não cabe colado → reação na hora
 	if cooldown_timer <= 0.0 or _counter:
 		# INTENÇÃO: decide o golpe primeiro e só então chega na distância dele
 		# (antes ele soltava sempre o que coubesse onde estava — o de meia
@@ -1670,13 +1690,14 @@ func _desired_x(dx: float, adx: float) -> float:
 		"flyer":
 			if fmod(_orbit_t, 5.5) < get_physics_process_delta_time():
 				_orbit_side = -_orbit_side          # troca de lado: passa por cima dela
-			return px + _orbit_side * (100.0 + 25.0 * sin(_orbit_t * 0.8))
+			# QA7 #10 (R21): coleira — não foge para fora da arena (a Arena fecha)
+			return EnemyAggro.leash_x(self, px + _orbit_side * (100.0 + 25.0 * sin(_orbit_t * 0.8)))
 		"shooter":
 			if adx < 120.0:
-				return px + side * 175.0
+				return EnemyAggro.leash_x(self, px + side * 175.0)
 			if adx > 240.0:
-				return px + side * 200.0
-			return global_position.x
+				return EnemyAggro.leash_x(self, px + side * 200.0)
+			return EnemyAggro.leash_x(self, global_position.x)
 	var waiting: bool = cooldown_timer > 0.0 or (EnemyAggro.count() >= EnemyAggro.MAX_ATTACKERS and not EnemyAggro.holds(self))
 	var ring := 34.0 if role == "tank" else 40.0
 	if not _intent.is_empty():
@@ -1762,7 +1783,8 @@ func _start_move(mv: Dictionary) -> void:
 	_mv_cd[mv.id] = float(mv.cd)
 	_combo_left = int(mv.hits) - 1
 	var fast: bool = elite_mod == "furia" or _champ_fury
-	wind_up = float(mv.wind) * (0.85 if fast else 1.0)
+	# QA7 #19 (R5): a fúria acelera, mas o aviso nunca fica abaixo de ~0,4 s
+	wind_up = maxf(float(mv.wind) * 0.85, minf(float(mv.wind), 0.42)) if fast else float(mv.wind)
 	attack_hitbox.unblockable = is_elite or bool(mv.unb) or behavior == "exploder"
 	tele_target = Vector2.INF
 	var kind := String(mv.kind)
@@ -1772,6 +1794,7 @@ func _start_move(mv: Dictionary) -> void:
 		var away := -1.0
 		if player != null and is_instance_valid(player):
 			away = -signf(player.global_position.x - global_position.x)
+		away = EnemyAggro.retreat_dir(self, away)   # QA7 #10: não recua para fora da arena
 		velocity.x = away * 310.0
 		if is_on_floor():
 			velocity.y = -170.0
@@ -1848,7 +1871,7 @@ func _strike_move() -> void:
 		"slam":
 			var rad := 70.0 * maxf(1.0, hs * 0.8)
 			AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, rad, eye_color)
-			Juice.shake(0.35)
+			_shake_routine(0.35)
 			attack_hitbox.scale = Vector2(2.6, 1.0)
 			attack_hitbox.activate()
 			if bool(_mv.get("waves", false)):
@@ -1858,7 +1881,7 @@ func _strike_move() -> void:
 			var nr := float(_mv.get("radius", 64.0)) * maxf(1.0, hs * 0.7)
 			var np := global_position + Vector2(0, -8.0 * _art_scale)
 			AoeNova.spawn(get_parent(), np, 0, nr, eye_color)
-			Juice.shake(0.3)
+			_shake_routine(0.3)
 			if player != null and is_instance_valid(player) and absf(player.global_position.x - np.x) <= nr and absf(player.global_position.y - global_position.y) < 70.0:
 				player._on_hit_received(attack_hitbox.damage, np, 260.0, attack_hitbox.unblockable, self)
 			strike_time = 0.2
@@ -1925,14 +1948,14 @@ func _strike_tick(delta: float) -> void:
 				# POUSO: poeira de choque e fica no chão (janela de castigo)
 				_perched = 1.0
 				AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, 44.0, eye_color)
-				Juice.shake(0.25)
+				_shake_routine(0.25)
 				_finish_strike(1.0)
 				return
 		"leap":
 			if attack_timer < strike_time - 0.12 and is_on_floor():
 				if bool(_mv.get("slam", false)):
 					AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, 56.0, eye_color)
-					Juice.shake(0.3)
+					_shake_routine(0.3)
 					if player != null and is_instance_valid(player) and absf(player.global_position.x - global_position.x) < 56.0 and absf(player.global_position.y - global_position.y) < 50.0:
 						player._on_hit_received(attack_hitbox.damage, global_position, 220.0, attack_hitbox.unblockable, self)
 				_finish_strike(0.45)
@@ -2082,7 +2105,7 @@ func _champion_fury_check() -> void:
 	_champ_fury = true
 	elite_mod = "furia"
 	move_speed *= 1.2
-	Juice.shake(0.4)
+	_shake_routine(0.4)
 	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
 	_flash(Color(3.0, 2.0, 1.5, 1))
 
@@ -2268,7 +2291,7 @@ func _grab_throw() -> void:
 		return                     # ela escapou (esquiva)
 	var dmg := int(_hit_dmg * 0.9)
 	player._on_hit_received(dmg, global_position, 340.0, true, self)
-	Juice.shake(0.35)
+	_shake_routine(0.35)
 	if behavior == "leech":
 		health.heal(int(dmg * 0.6))
 
