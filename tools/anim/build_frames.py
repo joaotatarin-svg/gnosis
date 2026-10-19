@@ -120,7 +120,7 @@ def scale_meas(m: dict, s: float, ox: float = 0.0, oy: float = 0.0) -> dict:
 
 
 # ---------------------------------------------------------------- fatiar
-def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, erase=(), strip_glow=False):
+def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, erase=(), strip_glow=False, min_part=0):
 	"""`raw_alpha_cells`: células cujo alfa da folha é mantido como veio
 	(translúcido DE PROPÓSITO, ex.: o "fade" do Soter).
 	`grid_only`: cada célula é recortada SÓ dentro da sua caixa da grade (folhas
@@ -129,7 +129,9 @@ def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, era
 	(efeito translúcido pintado junto — pó do sono, coluna de luz — vira FX).
 	`strip_glow`: apaga a LUZ DOURADA translúcida pintada (coluna/halo do Soter):
 	pixel semitransparente (α < 0,85) amarelado (b < 0,8·r) some; o corpo opaco
-	e o cabelo prateado (b ≈ r) ficam. A luz é refeita por FX no jogo."""
+	e o cabelo prateado (b ≈ r) ficam. A luz é refeita por FX no jogo.
+	`min_part`: pedaço solto menor que isso (px da folha) fica de fora mesmo perto
+	do corpo (faíscas pintadas em volta)."""
 	img = Image.open(path)
 	a_raw = None
 	if img.mode == "RGBA" and np.asarray(img)[..., 3].min() < 250:
@@ -219,7 +221,7 @@ def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, era
 		for i in ids:
 			sl = objs[i - 1]
 			near = sl[0].start < ms[0].stop + 40 and sl[0].stop > ms[0].start - 40 and sl[1].start < ms[1].stop + 40 and sl[1].stop > ms[1].start - 40
-			if i == main or areas[i] > 1500 or near:
+			if i == main or areas[i] > 1500 or (near and areas[i] >= min_part):
 				keep.append(i)
 		m = np.isin(lab, keep)
 		yy, xx = np.nonzero(m)
@@ -306,7 +308,7 @@ def main() -> None:
 		side_path = path.replace(".png", ".json")
 		if os.path.exists(side_path):
 			side = json.load(open(side_path, encoding="utf-8")).get("anchors", {})
-		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"], (), src.get("grid_only", False), src.get("erase", []), src.get("strip_glow", False)).items():
+		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"], (), src.get("grid_only", False), src.get("erase", []), src.get("strip_glow", False), src.get("min_part", 0)).items():
 			raw[sid + "." + name] = [rgba, src.get("scale", 1.0)]
 			if name in side:
 				# âncora fixa (px da folha) → px locais do recorte
