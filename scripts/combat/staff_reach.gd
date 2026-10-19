@@ -149,11 +149,17 @@ static func _box(hand: Vector2, tip: Vector2, prev, front: float, floor_y: float
 		hi = Vector2(maxf(hi.x, p.x), maxf(hi.y, p.y))
 	lo -= Vector2(PAD_X, PAD_Y)
 	hi += Vector2(PAD_X, PAD_Y)
+	var all_behind := false
 	if not behind:
 		lo.x = maxf(lo.x, MIN_X)
+		if hi.x <= lo.x:
+			# cajado inteiro atrás do corpo num golpe de frente: sem caixa (e sem
+			# tamanho negativo na forma)
+			hi.x = lo.x + 1.0
+			all_behind = true
 	# impacto: quadro marcado com arrasto (smear_at), o mergulho inteiro, o giro,
 	# ou o cajado claramente à frente do corpo (estocada)
-	var impact: bool = behind or seq_name == "attack_dive" or smear or tip.x >= front + 4.0
+	var impact: bool = not all_behind and (behind or seq_name == "attack_dive" or smear or tip.x >= front + 4.0)
 	return {"rect": Rect2(lo, hi - lo), "impact": impact, "follow": follow}
 
 

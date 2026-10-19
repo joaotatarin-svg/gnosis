@@ -433,7 +433,9 @@ func _double_jump() -> void:
 	var d := Input.get_axis("move_left", "move_right")
 	if d != 0.0:
 		velocity.x = d * data.move_speed * (0.45 if status_slow > 0.0 else 1.0)
-	Audio.play_sfx("jump")
+	# Áudio7 (R4): o 2º pulo tem som próprio (anel de luz); reserva = o pulo comum
+	if not Audio.play_sfx("double_jump"):
+		Audio.play_sfx("jump")
 	var col := data.sprite_color.lerp(Color(1.0, 0.95, 0.75), 0.6)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, 20), col, false)
 	_squash(Vector2(facing * 0.9, 1.12))
@@ -543,7 +545,9 @@ func _do_move(move: ComboData) -> void:
 
 	var heavy := move.is_heavy()
 	if move.air:
-		Audio.play_sfx("dive" if heavy else "swing_air")   # golpes aéreos soam ao sair
+		# golpes aéreos soam ao sair; a Queda Estelar tem a carga própria (Áudio7, R4)
+		if not heavy or not Audio.play_sfx("star_charge"):
+			Audio.play_sfx("dive" if heavy else "swing_air")
 	velocity.x = facing * move.lunge * (1.35 if heavy else 1.0)
 	pending_dmg = move_damage(move)
 	hitbox.position.x = 20.0 * facing
@@ -629,7 +633,9 @@ func _process_attack(delta: float) -> void:
 			_sync_anim()                       # o Visual já mostra o quadro do golpe
 			_update_staff_hitbox()
 			if not air_move:
-				Audio.play_sfx(_swing_sfx())   # o corte sai do wind-up
+				# o corte sai do wind-up; o contra-ataque tem a lâmina própria (Áudio7, R4)
+				if not riposting or not Audio.play_sfx("riposte"):
+					Audio.play_sfx(_swing_sfx())
 				velocity.x = facing * current_move.lunge * (1.35 if current_move.is_heavy() else 1.0)
 			if dive:
 				velocity.y = 760.0
@@ -677,8 +683,7 @@ func _process_attack(delta: float) -> void:
 		if hit_timer <= 0.0:
 			hits_left -= 1
 			hit_timer = current_move.duration / float(maxi(1, current_move.hits))
-			hitbox.deactivate()
-			hitbox.activate(pending_dmg)
+			hitbox.rearm(pending_dmg)
 			_squash(Vector2(facing * 1.15, 0.9))
 
 	# A caixa segue o cajado DESENHADO no quadro atual (só nos quadros de impacto),

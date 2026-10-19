@@ -56,7 +56,11 @@ const GLINT_LEAD := 0.18          # R5: brilho de aviso 180 ms antes do golpe (=
 const GLINT_BOOST := 0.35         # o brilho clareia o tingimento por um instante
 const GLINT_TIME := 0.12          # duração do brilho no corpo (s de jogo)
 const FLASH_FADE := 0.11          # R1: o flash some em 110 ms REAIS depois do hitstop
-const FLASH_ADD := 0.55           # Onda 6: brilho somado no pico do flash aditivo (× força do Juice)
+## brilho somado no pico do flash aditivo (× força do Juice × fator de brilho do
+## atlas, EnemyFlashLayer.luma_k). Polimento 7 (R10 do Guardião): 0,55 → 0,40 na
+## pintura média (L 0,35: pico 0,72, 10 % do corpo em branco; antes 0,83 e 19 %);
+## o fator tira dos atlas claros (Astaphaios 0,23, branco 68 % → ~30 %).
+const FLASH_ADD := 0.40
 const TELEGRAPH_RIM_A := 0.9      # contorno do telegrafo nos chefes por quadros (Pedido 2 da Arte)
 const DEATH_POSE_TIME := 0.4      # chefe: segura o quadro "death" antes de se partir (s REAIS; Pedido 4 da Arte)
 const VIB_LIGHT := 1.5            # R1: vibração da vítima (px), golpe leve
@@ -1305,8 +1309,9 @@ func _on_died() -> void:
 	_set_rim(0.0)
 	EnemyAggro.release(self)
 	tele_target = Vector2.INF
-	contact_hitbox.monitoring = false
-	attack_hitbox.monitoring = false
+	# Polimento 7 (QA7 #1): a morte vem dentro do sinal de acerto — desligar adiado
+	contact_hitbox.set_deferred("monitoring", false)
+	attack_hitbox.deactivate()
 	# som e explosão de morte por porte
 	var death_pos := global_position + Vector2(0, -12.0 * _art_scale)
 	if is_boss_enemy:
@@ -1436,7 +1441,7 @@ func _flash(color: Color, vibrate: float = 0.0) -> void:
 	# (como o da Sophia) — o corpo não vira mais silhueta branca chapada.
 	if peak > 1.0 and _flash_layer != null and is_instance_valid(_flash_layer) and _flash_layer.usable():
 		var hue := Color(color.r / peak, color.g / peak, color.b / peak, 1.0)
-		_flash_layer.fire(hue, FLASH_ADD * k * clampf((peak - 1.0) / 2.0, 0.35, 1.0))
+		_flash_layer.fire(hue, FLASH_ADD * k * _flash_layer.luma_k() * clampf((peak - 1.0) / 2.0, 0.35, 1.0))
 	else:
 		if peak > 1.0:
 			# sem malha pintada (procedural/boneco): clareia pouco, não estoura

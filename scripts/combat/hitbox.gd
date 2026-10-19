@@ -26,6 +26,13 @@ var _active: bool = false
 var _live: bool = true
 var _hit_ids: Dictionary = {}
 var _own_shape: bool = false
+# Polimento 7 (QA7 #1, R5): `deactivate()` é chamado DENTRO do sinal de acerto
+# (aparo → stagger, morte) e o Godot bloqueia mudar `monitoring` ali ("Function
+# blocked during in/out signal") — a caixa seguia ligada e o golpe aparado ainda
+# feria. Agora: `_off` corta o dano NA HORA (checado em _on_area_entered) e o
+# `monitoring` desliga adiado (_sync_monitoring, fora do sinal).
+var _off: bool = false
+var _sync_queued: bool = false
 
 
 func _ready() -> void:
@@ -38,13 +45,35 @@ func activate(new_damage: int = -1) -> void:
 	if new_damage >= 0:
 		damage = new_damage
 	_active = true
+	_off = false
 	_hit_ids.clear()
 	monitoring = _active and _live
 
 
+## Encerra o golpe: deixa de ferir no mesmo instante (mesmo dentro de um sinal
+## de acerto) e desliga a área no fim do quadro.
 func deactivate() -> void:
 	_active = false
+	_off = true
+	if not _sync_queued:
+		_sync_queued = true
+		_sync_monitoring.call_deferred()
+
+
+## Religa o golpe para mais um toque (multi-hit): desliga e liga a área no mesmo
+## passo de física, para o Godot reportar de novo quem já está dentro. Só fora
+## de sinal (o Player chama no _physics_process).
+func rearm(new_damage: int = -1) -> void:
 	monitoring = false
+	activate(new_damage)
+
+
+## Aplica o estado pedido (`_active` e `_live`, sem `_off`) fora do sinal.
+func _sync_monitoring() -> void:
+	_sync_queued = false
+	var want: bool = _active and _live and not _off
+	if monitoring != want:
+		monitoring = want
 
 
 ## Liga/desliga a caixa sem encerrar o golpe (quadro de impacto ou não).
@@ -103,6 +132,9 @@ func _move() -> ComboData:
 
 func _on_area_entered(area: Area2D) -> void:
 	if not (area is Hurtbox and area.team != team):
+		return
+	# golpe encerrado (aparado, morto, interrompido) ou fora do quadro de impacto
+	if _off or not _live:
 		return
 	var victim: Node = area.owner if area.owner != null else area.get_parent()
 	if _is_harmless_contact(victim):
