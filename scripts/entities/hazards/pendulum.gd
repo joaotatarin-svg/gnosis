@@ -63,6 +63,36 @@ func _tick(delta: float) -> void:
 
 
 func _draw() -> void:
+	var piece := "bell_body" if style == "bell" else "pend_blade"
+	if HazardArt.has(piece):
+		_draw_art(piece)
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): suporte no teto, corrente de elos ladrilhados e a peça
+## (lâmina em meia-lua / sino mudo) GIRANDO pelo ponto de pendurar — o mesmo
+## ângulo da lógica. A leitura é o próprio movimento + o rastro do arco; a
+## luz de contorno (R18) destaca a peça que fere em qualquer fundo.
+func _draw_art(piece: String) -> void:
+	var pivot := Vector2(0, -length - 14.0)
+	var a := _angle()
+	var u := Vector2(sin(a), cos(a))
+	var tip := _tip_local()
+	# rastro do arco (lê o caminho da lâmina)
+	draw_arc(pivot, length, PI * 0.5 - SWING, PI * 0.5 + SWING, 32, Color(1, 1, 1, 0.06), 6.0, true)
+	# ponto de pendurar: a peça é desenhada com o CENTRO na ponta da lógica
+	var hang_d := HazardArt.point(piece, "center").y - HazardArt.anchor(piece).y
+	var hang := tip - u * hang_d
+	HazardArt.draw_chain(self, "pend_chain", pivot, hang)
+	HazardArt.draw_outline(self, piece, 0, hang, RIM_COL, 1.0, -a)
+	HazardArt.draw(self, piece, 0, hang, -a)
+	var bracket := "bell_bracket" if style == "bell" else "pend_bracket"
+	HazardArt.draw(self, bracket, 0, pivot)
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var pivot := Vector2(0, -length - 14.0)
 	var tip := _tip_local()
 	var dir := tip - pivot

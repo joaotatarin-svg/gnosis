@@ -176,12 +176,12 @@ def bell() -> None:
 	br[96:, 160 - 56:, 3] = 0.0
 	br[..., 3] = H.clean_specks(br[..., 3], 80)
 	br = warm_pink(br)
-	emit("bell_bracket", [br], 0.21, (297, 70), (56, 4))
+	emit("bell_bracket", [br], 0.18, (297, 70), (56, 4))
 	bd = region(img, 160, 96, 412, 500)
 	bd = keep_largest(bd)
 	bd = warm_pink(bd)
-	emit("bell_body", [bd], 0.21, (297, 98), (160, 96))
-	CATALOG["bell_body"]["center"] = [round((297 - 160) * 0.21, 2), round((290 - 96) * 0.21, 2)]
+	emit("bell_body", [bd], 0.17, (297, 98), (160, 96))
+	CATALOG["bell_body"]["center"] = [round((297 - 160) * 0.17, 2), round((290 - 96) * 0.17, 2)]
 
 
 def guillotine() -> None:
@@ -218,7 +218,7 @@ def guillotine() -> None:
 		a1 += 1
 	rx0, rx1 = L + a0 - 1, L + a1 + 2
 	rod = c2[640 - 450:760 - 450, rx0:rx1].copy()
-	s = 0.42
+	s = 0.33
 	floor_y = 1005 - 450
 	cx = (L + R) / 2.0
 	emit("gu_frame", [frame], s, (cx, floor_y), (0, 0))

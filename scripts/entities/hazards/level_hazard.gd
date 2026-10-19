@@ -19,9 +19,12 @@ var phase: float = 0.0
 var dmg_mult: float = 1.0
 
 var _t: float = 0.0
+## Camada pintada ATRÁS dos lutadores (Onda 7; criada por HazardArt.back_layer).
+var _back: Node2D = null
 
 
 func _enter_tree() -> void:
+	HazardArt.setup(self)      # filtro com mipmaps (perigos pintados, Onda 7)
 	add_to_group("lv6_hazard")
 	# CENARIO5: perigo precisa ser LIDO — coluna de primeiro plano não o cobre.
 	add_to_group("fg_guard")
@@ -99,6 +102,8 @@ func _physics_process(delta: float) -> void:
 	_t += delta
 	_tick(delta)
 	queue_redraw()
+	if _back != null:
+		_back.queue_redraw()
 
 
 ## Sobrescreva: a lógica do perigo (roda no passo de física).
@@ -109,3 +114,23 @@ func _tick(_delta: float) -> void:
 ## Cor de contorno escuro que lê em qualquer fundo (R18).
 const INK := Color(0.04, 0.04, 0.06, 0.95)
 const WARN_COL := Color(1.0, 0.32, 0.25)
+## Luz de contorno clara (R18): a peça que FERE salta de qualquer fundo escuro.
+const RIM_COL := Color(1.0, 0.92, 0.78, 0.35)
+
+
+## Contorno de AVISO pulsante (2 Hz) sobre a pintura: intensidade `k` 0..1.
+func warn_outline(piece: String, frame: int, at: Vector2, k: float, rot: float = 0.0, scl: Vector2 = Vector2.ONE) -> void:
+	if k <= 0.0:
+		return
+	# é INFORMAÇÃO: não cai com "Reduzir flashes" (R10 mantém o aviso)
+	var a := (0.35 + 0.65 * k) * (0.55 + 0.45 * HazardArt.pulse(_t))
+	# borda ESCURA por fora + vermelha por dentro: lê em fundo claro (Coroa,
+	# Pleroma) e escuro (Silêncio, Torpor) — R18 / QA7 #25
+	HazardArt.draw_outline(self, piece, frame, at, Color(INK, 0.75 * minf(1.0, a + 0.3)), 2.8, rot, scl)
+	HazardArt.draw_outline(self, piece, frame, at, Color(WARN_COL, a), 1.6, rot, scl)
+
+
+## Linha de aviso com sublinhado escuro (lê em qualquer fundo — R18).
+func warn_line(a: Vector2, b: Vector2, col: Color, width: float = 2.0) -> void:
+	draw_line(a, b, Color(INK, minf(0.85, col.a + 0.25)), width + 2.4, true)
+	draw_line(a, b, col, width, true)

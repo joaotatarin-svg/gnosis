@@ -49,4 +49,4 @@ func _draw() -> void:
 		draw_circle(c, rad * 0.6, Color(col.lightened(0.2), 0.05 + 0.10 * d))
 	# Borda: linha baixa que acende quando a névoa está cheia (é quando pega).
 	if d >= THICK:
-		draw_line(Vector2(-width * 0.5, 0), Vector2(width * 0.5, 0), Color(0.75, 0.7, 1.0, 0.35 * d), 2.0, true)
+		warn_line(Vector2(-width * 0.5, 0), Vector2(width * 0.5, 0), Color(0.8, 0.75, 1.0, 0.5 * d), 2.0)

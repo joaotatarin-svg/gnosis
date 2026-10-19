@@ -51,8 +51,9 @@ func _draw() -> void:
 	# bordas tracejadas (lê "aqui dentro é outra regra")
 	var y := top
 	while y < 0.0:
-		draw_line(Vector2(-hw, y), Vector2(-hw, y + 8.0), Color(pale, 0.35), 1.0)
-		draw_line(Vector2(hw, y), Vector2(hw, y + 8.0), Color(pale, 0.35), 1.0)
+		for sx in [-hw, hw]:
+			draw_line(Vector2(sx, y), Vector2(sx, y + 8.0), Color(INK, 0.45), 3.0)
+			draw_line(Vector2(sx, y), Vector2(sx, y + 8.0), Color(pale, 0.55), 1.2)
 		y += 16.0
 	# glifos de magia caindo e se apagando (a magia "morre" aqui)
 	for g in _glyphs:
@@ -62,7 +63,10 @@ func _draw() -> void:
 		draw_arc(gp, 4.0, 0, TAU, 10, Color(pale, a), 1.0, true)
 		draw_line(gp + Vector2(-3, -3), gp + Vector2(3, 3), Color(pale, a), 1.0, true)
 	# marca no chão: círculo cortado (o símbolo "sem magia")
+	# (Onda 7, QA7 #25: o símbolo quase sumia no Silêncio — sublinhado escuro
+	# + traço mais claro e grosso: lê em fundo claro e escuro)
 	draw_set_transform(Vector2(0, 2), 0, Vector2(1, 0.25))
-	draw_arc(Vector2.ZERO, hw * 0.8, 0, TAU, 32, Color(pale, 0.4 + (0.3 if _inside else 0.0)), 2.0, true)
+	draw_arc(Vector2.ZERO, hw * 0.8, 0, TAU, 32, Color(INK, 0.55), 6.0, true)
+	draw_arc(Vector2.ZERO, hw * 0.8, 0, TAU, 32, Color(pale, 0.7 + (0.25 if _inside else 0.0)), 2.6, true)
 	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
-	draw_line(Vector2(-hw * 0.55, 2 - hw * 0.14), Vector2(hw * 0.55, 2 + hw * 0.14), Color(pale, 0.35), 1.5, true)
+	warn_line(Vector2(-hw * 0.55, 2 - hw * 0.14), Vector2(hw * 0.55, 2 + hw * 0.14), Color(pale, 0.65), 2.0)

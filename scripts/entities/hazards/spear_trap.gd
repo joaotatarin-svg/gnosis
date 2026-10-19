@@ -56,7 +56,78 @@ func _tick(_delta: float) -> void:
 			Audio.play_sfx_at("rooted" if style == "shackles" else "swing_heavy", global_position, 0.06)
 
 
+## Fase visual: (aviso 0..1, subida 0..1) — a mesma conta do desenho antigo.
+func _phase_vis() -> Vector2:
+	var c := _cycle(PERIOD)
+	var warn := 0.0
+	var up := 0.0
+	if c >= WARN_AT and c < UP_AT:
+		warn = (c - WARN_AT) / (UP_AT - WARN_AT)
+	elif c >= UP_AT and c < UP_END:
+		up = clampf((c - UP_AT) / 0.06, 0.0, 1.0)
+	elif c >= UP_END:
+		up = clampf(1.0 - (c - UP_END) / (PERIOD - UP_END), 0.0, 1.0)
+	return Vector2(warn, up)
+
+
 func _draw() -> void:
+	var piece := "spear_slab" if style == "spears" else "shackles"
+	if HazardArt.has(piece):
+		if style == "spears":
+			_draw_art_spears()
+		else:
+			_draw_art_shackles()
+	else:
+		_draw_code()
+
+
+## Brilho das FENDAS no aviso (por cima da pintura): 6 bocas acendendo.
+func _draw_slots(warn: float, n: int, col: Color) -> void:
+	var hw := width * 0.5 * 0.84
+	for i in n:
+		var x := lerpf(-hw, hw, float(i) / float(n - 1))
+		warn_line(Vector2(x - 5, 0), Vector2(x + 5, 0), Color(col, 0.25 + 0.75 * warn), 2.0)
+		if warn > 0.0:
+			draw_circle(Vector2(x, -1), 3.0 + 3.0 * warn, Color(col, 0.18 * warn * (0.6 + 0.4 * HazardArt.pulse(_t))))
+
+
+## PINTURA (Onda 7) — LANÇAS: a laje com fendas fica embutida no chão; no
+## aviso as fendas acendem, a laje ganha contorno vermelho e as PONTAS
+## espiam (forma, não só cor — R5); na subida as lanças pintadas saem da
+## fenda (recorte da textura: as pontas primeiro).
+func _draw_art_spears() -> void:
+	var v := _phase_vis()
+	var sc := Vector2.ONE * (width / maxf(1.0, HazardArt.size("spear_slab").x))
+	warn_outline("spear_slab", 0, Vector2.ZERO, v.x, 0.0, sc)
+	HazardArt.draw(self, "spear_slab", 0, Vector2.ZERO, 0.0, sc)
+	var peek := 0.1 * v.x * v.x               # as pontas espiam no fim do aviso
+	var up := maxf(v.y, peek)
+	if up > 0.0 and HazardArt.has("spear_tips"):
+		var tsz := HazardArt.size("spear_tips") * sc
+		var tan := HazardArt.anchor("spear_tips") * sc
+		var h := tsz.y * up
+		HazardArt.draw_part(self, "spear_tips", 0, Rect2(0, 0, 1, up), Rect2(-tan.x, -h + (tsz.y - tan.y), tsz.x, h))
+	_draw_slots(v.x, 6, WARN_COL)
+
+
+## PINTURA (Onda 7) — CORRENTES DO CHÃO: laje rachada (espera/aviso, rachas
+## acendendo + contorno) → correntes saindo → estendidas (prendem).
+func _draw_art_shackles() -> void:
+	var v := _phase_vis()
+	var sc := Vector2.ONE * (width / maxf(1.0, HazardArt.size("shackles").x))
+	var f := 0
+	if v.y > 0.6:
+		f = 2
+	elif v.y > 0.0:
+		f = 1
+	var shake := Vector2(sin(_t * 47.0) * 0.8 * v.x, 0.0)
+	warn_outline("shackles", f, shake, v.x, 0.0, sc)
+	HazardArt.draw(self, "shackles", f, shake, 0.0, sc)
+	_draw_slots(v.x, 5, WARN_COL)
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var c := _cycle(PERIOD)
 	var hw := width * 0.5
 	var n := int(width / 16.0)

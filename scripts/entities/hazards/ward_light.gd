@@ -19,6 +19,7 @@ var _drain_now: bool = false
 
 
 func _enter_tree() -> void:
+	HazardArt.setup(self)
 	add_to_group("lv6_objective")
 	add_to_group("fg_guard")          # CENARIO5: o objetivo não fica atrás de coluna
 	set_meta("fg_half", 90.0)
@@ -74,6 +75,20 @@ func _draw() -> void:
 		draw_set_transform(Vector2(0, 2), 0, Vector2(1, 0.25))
 		draw_arc(Vector2.ZERO, NEAR, 0, TAU, 32, Color(gold, 0.25 + (0.35 if _drain_now else 0.0)), 1.5, true)
 		draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
+	# lamparina pintada (Onda 7): FORTE (dourada) com mais da metade da luz,
+	# FRÁGIL abaixo disso, apagada (escura) em zero; brilho e barra por código
+	var piece := "ward_strong" if k > 0.5 else "ward_weak"
+	if HazardArt.has(piece):
+		var dark := 1.0 if light > 0.0 else 0.4
+		HazardArt.draw(self, piece, 0, Vector2.ZERO, 0.0, Vector2.ONE, Color(dark, dark, dark))
+		var fl := HazardArt.point(piece, "flame", Vector2(0, -32))
+		if light > 0.0:
+			var flk := 0.85 + 0.15 * sin(_t * 13.0) + (0.2 * sin(_t * TAU * 2.0) if _drain_now else 0.0)
+			draw_circle(fl, (14.0 + 8.0 * k) * flk, Color(gold, (0.10 * k + 0.04) * HazardArt.flash_k()))
+		var top := -HazardArt.size(piece).y - 8.0
+		draw_rect(Rect2(-16, top, 32, 3), Color(0, 0, 0, 0.6))
+		draw_rect(Rect2(-16, top, 32.0 * k, 3), Color(gold, 0.9))
+		return
 	# pedestal + lamparina
 	draw_rect(Rect2(-7, -18, 14, 18), LevelHazard.INK)
 	draw_rect(Rect2(-5, -17, 10, 16), Color(0.25, 0.22, 0.2))

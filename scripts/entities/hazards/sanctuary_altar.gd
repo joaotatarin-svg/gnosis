@@ -21,6 +21,7 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	z_index = -1
+	HazardArt.setup(self)
 
 
 func _physics_process(delta: float) -> void:
@@ -48,6 +49,15 @@ func _draw() -> void:
 	var a := 0.12 if not used else 0.04 + 0.2 * _glow
 	draw_rect(Rect2(-10, -150, 20, 150), Color(gold, a * 0.6))
 	draw_rect(Rect2(-4, -150, 8, 150), Color(gold, a))
+	# altar pintado (Onda 7): ACESO enquanto oferece a cura; depois que acalma a
+	# Sophia, a chama baixa e ele volta a DORMIR
+	if HazardArt.has("altar"):
+		HazardArt.draw(self, "altar", 1 if (not used or _glow > 0.3) else 0, Vector2.ZERO)
+		var lum2 := 0.9 if not used else 0.35
+		for i in 4:
+			var ph2 := fposmod(_t * 0.35 + float(i) * 0.25, 1.0)
+			draw_circle(Vector2(sin(float(i) * 1.9 + _t) * 12.0, -58.0 - ph2 * 40.0), 1.3, Color(gold, (1.0 - ph2) * lum2))
+		return
 	# altar: base, haste e bacia (contorno escuro + pedra)
 	draw_rect(Rect2(-22, -8, 44, 8), LevelHazard.INK)
 	draw_rect(Rect2(-20, -7, 40, 6), stone)
