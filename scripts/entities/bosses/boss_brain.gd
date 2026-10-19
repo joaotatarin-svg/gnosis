@@ -436,7 +436,7 @@ func _start(m: Dictionary) -> void:
 		# VFX7: a luz se junta onde o tiro vai sair (cancela se for interrompido)
 		var col: Color = m.get("color", e.eye_color)
 		var off := Vector2(24.0 * e.atk_dir * e._art_scale, ground_y() - e.global_position.y - 34.0)
-		_charge = _vfx("charge_up", [e, off, col, e.wind_up, "king" if e.kit == "rei" else "dark"])
+		_charge = _charge_fx(off, col, e.wind_up, e.kit == "rei")
 	_on_windup(m)
 
 
@@ -491,6 +491,20 @@ func _on_land(_m: Dictionary) -> void:
 ## justiça: a Sophia nunca lê dois telegrafos ao mesmo tempo.
 var partner: BossBrain = null
 var _charge = null                    # antecipação visual (VFX7) do tiro em preparo
+
+
+## Carga do tiro (VFX7 ChargeFX) com SOM PRÓPRIO (R11: não é o mesmo
+## "proj_fire" do disparo): "charge_king" no Rei, "charge_dark" nos Arcontes.
+func _charge_fx(off: Vector2, col: Color, dur: float, king: bool) -> Node:
+	var c := ChargeFX.new()
+	c.color = col
+	c.duration = dur
+	c.style = "king" if king else "dark"
+	c.position = off
+	c.silent = true
+	e.add_child(c)
+	sfx("charge_king" if king else "charge_dark", e.global_position + off)
+	return c
 
 
 ## Chama a API visual do VFX7 se existir (sem ela, nada — não quebra).

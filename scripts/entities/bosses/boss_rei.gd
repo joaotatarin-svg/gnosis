@@ -26,7 +26,7 @@ var _summons_cd: float = 0.0
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.7
+	dmg_scale = 0.55
 	keep_dist = Vector2(100.0, 210.0)
 	gap_by_phase = [1.0, 0.9, 0.8]
 	escape_hits = 5
@@ -73,7 +73,7 @@ func _build_moves() -> Dictionary:
 	mao2.n = 2
 	return {
 		1: [leque, gesto, raio, mao],
-		2: [leque, gesto, raio, mao, aneis, larvas, combo, raio_b],
+		2: [leque, gesto, raio, mao, aneis, combo, raio_b],
 		3: [leque, gesto, mao2, aneis, larvas, combo, raio_b, teleporte, gesto_b],
 	}
 

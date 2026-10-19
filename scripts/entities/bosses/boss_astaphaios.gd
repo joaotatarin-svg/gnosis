@@ -81,11 +81,18 @@ func _filter(dmg: int, attacker: Node) -> int:
 	return dmg
 
 
+func _on_windup(m: Dictionary) -> void:
+	# R5: a guarda AVISA desde o começo do preparo (anel de vidro + som), não
+	# só quando já está refletindo
+	if String(m.id).begins_with("guarda"):
+		_show_ring(float(m.wind) + float(m.strike))
+
+
 func _on_strike(m: Dictionary) -> void:
 	var pl := _player()
 	match m.id:
 		"guarda", "guarda3":
-			_show_ring(m.strike)
+			pass
 		"reflexos":
 			_spawn_clones(2 if phase == 2 else 3)
 		"troca":

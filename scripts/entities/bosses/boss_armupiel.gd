@@ -71,7 +71,7 @@ func _build_moves() -> Dictionary:
 	return {
 		1: [espadao, varredura, decreto, investida],
 		2: [espadao, dupla, dupla_b, varredura, decreto, corte_real],
-		3: [dupla, dupla_b, varredura, decreto, coroacao, triplo, triplo_b, triplo_c, corte_real],
+		3: [dupla, dupla_b, varredura, decreto, coroacao, triplo, triplo_b, triplo_c],
 	}
 
 
@@ -122,7 +122,7 @@ func _on_windup(m: Dictionary) -> void:
 
 func _on_strike(m: Dictionary) -> void:
 	if m.id == "corte_real":
-		var n := 2 if phase == 2 else 1
+		var n := 1
 		var before: Array = e._minions.duplicate()
 		e._summon("pretoriano", n)
 		# a guarda tem vida de ~6 golpes cada (não um segundo chefe)
