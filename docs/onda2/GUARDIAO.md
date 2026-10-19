@@ -9,6 +9,9 @@
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/vfx7 | 44e587d (fase 2: e99ff1d..cc9e736) | APROVADO COM RESSALVAS | R15 só nos tiros (o acerto corpo a corpo da Sophia segue em 360°) |
+| dir7/perigos7 | dc8eaa7 (WIP) | APROVADO (inofensivo: só recorte/ferramenta; auditoria real quando o perigo pintado entrar no jogo) | — |
+| dir7/cenario7 | 54e3717 (WIP) | APROVADO (inofensivo: ferramenta HdShot + chave `hd_disabled`) | — |
 | dir7/audio7 | 634bc91 (WIP) | **REPROVADO** sozinho (entra junto das 3 trocas do player.gd ou com o observador sem os 3 eventos) | R4/§4.3 (som dobrado), §4.7 (atk_* sem teto), true peak |
 | dir7/dublagem | bf0c8b3 | APROVADO COM RESSALVAS (só ferramenta; nada entra no jogo) | R13 (true peak após codificar), bus Voice, tell × voz grave |
 | dir2/arte-gpt | 4038d12 (delta de 62f3ed0) | APROVADO COM RESSALVAS (inofensivo, mas a R17 NÃO chega ao jogo) | R17 não entregue; R3/R21 no dia em que ligar |
@@ -239,3 +242,49 @@ dBTP** (o teto de −1 dBFS é aplicado ANTES do Vorbis, `voicelib.py:224-227`, 
 - Sem fala repetida em combate (cada fala é única) — ok para §4.8.
 
 **Veredito: APROVADO COM RESSALVAS** (não muda o jogo; as ressalvas são condição para a integração das vozes, versão 3.3).
+
+---
+
+## dir7/vfx7 — 44e587d (fase 2: e99ff1d, 58e2d3a, 994e0f1, cc9e736; base da diferença 0a77007)
+
+**O que muda:** `enemy_overlay.gd` observa o golpe do inimigo (carga `charge_up` no wind-up de TIRO, cancelada se o golpe
+morrer; rastro `melee_slash` quando a caixa corpo a corpo liga); `vfx_library.gd` (`melee_slash`, `claw_impact`,
+`_spray` em cone ±50° + 20 % em 360°, contagem do teto sem montar Array); `impact_burst.gd` (acerto de inimigo na Sophia →
+`claw_impact` no lugar do `hit`); `hazard_zone.gd` premium (névoa, bolhas, coluna); `projectile.gd` não redesenha com
+visual premium; CHECAGEM DE SATISFAÇÃO no VFX7.md.
+
+**Checagem (código lido):**
+- **R4:** `claw_impact` SUBSTITUI o `VfxLibrary.hit` no acerto de inimigo (o `ImpactBurst` retorna antes); `_claim` evita
+  o segundo `hit` no mesmo ponto. Um evento por acerto — atende. Dose do `claw_impact` (3 garras + luz + anel + 8–12
+  fagulhas + fumaça) é alta, mas é dano RECEBIDO (informação, ≤ 1 por golpe inimigo) e passa pelo `flash_budget()`.
+- **R5:** o rastro do golpe sai no STRIKE (depois do glint, nunca por cima do aviso); imparável ganha borda vermelha na mesma
+  forma; z do rastro = inimigo + 2 (relativo), glint em Z+7/Z+8. Carga dos tiros com forma (espinhos fechando). Atende.
+  Obs. de integração: os chefes já criam a própria carga no `BossBrain._start` (chefes6). A overlay só existe para inimigos com
+  `moves`/Elite/Campeão (`enemy._setup_layers`), então não há carga dupla nos chefes hoje — se um chefe ganhar `moves`,
+  vira carga dupla.
+- **R10:** `flash_budget()` (3 cheios/s, resto 30 %, "Reduzir flashes" corta) em todo clarão novo; sem `screen_flash`; o
+  brilho que corre na borda das zonas gira a 2–5 rad/s (≤ 0,8 Hz por ponto). Atende.
+- **R15 — PARCIAL (RESSALVA):** o cone ±50° está no `_spray` (impactos de PROJÉTIL/ataque premium). O acerto MAIS COMUM do
+  jogo, o golpe corpo a corpo da Sophia (`hitbox.gd` → `ImpactBurst.spawn` → `VfxLibrary.hit`), continua com
+  `direction (0,−1)`, `spread 180` (círculo inteiro), as 7 fagulhas vetoriais do `ImpactBurst._ready` em ângulo aleatório
+  em 360° e o talho do pesado em `randf_range(-0.7, 0.7)` (±40°; a R15 pede ±15° alinhado ao arco). O próprio VFX7.md
+  admite que o `ImpactBurst` não recebe o lado do golpe. Correção mínima: `ImpactBurst.spawn(..., dir_x)` com o `facing`
+  do dono (o `hitbox.gd` já o calcula para o `Juice.kick`) → `hit()` usa o cone do `_spray` e o talho ±15°. Donos:
+  vfx7 (API) + polimento7/combate (passar o lado no `hitbox.gd`).
+- **R18:** o doc mede 10,2–12,7 : 1 para os tiros novos (alvo ≥ 3:1); zonas de chão atrás dos personagens (z −1). Aceito
+  como medida do dono (não refiz).
+- **§4:** sem `Juice.shake` novo, sem clarão de tela, nada de economia.
+
+**Veredito: APROVADO COM RESSALVAS** (R15 incompleta no golpe principal; a ressalva não piora nada que já existe).
+
+---
+
+## dir7/perigos7 — dc8eaa7 (WIP) e dir7/cenario7 — 54e3717 (WIP)
+
+- **perigos7:** só o recorte das folhas `hz_1..hz_7` (`tools/hazards7/*.py`, PNGs, `assets/painted/hazards/hazards_data.gd`
+  +4 linhas de catálogo). Nenhum perigo do jogo muda ainda.
+- **cenario7:** ferramenta `tools/cenario7/HdShot` + `Scenery.hd_disabled` (static, falso por padrão; só ferramenta liga).
+- Nada toca combate, VFX de jogo, som, economia ou UI → **APROVADO (inofensivo)**. A auditoria de verdade vem quando o
+  perigo pintado e o fundo HD entrarem no jogo. Vou cobrar: R5 (todo perigo avisa com forma + som antes de ferir; o
+  audio7 já tem `hz_*`), R18 (fundo HD 10–25 % menos saturado que os personagens, contraste ≥ 3:1 em escala de cinza),
+  R10 (perigos que piscam ≤ 3 Hz) e §4.11 (cor nunca é o único aviso).
