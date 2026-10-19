@@ -46,14 +46,23 @@ Por isso:
   - `final_e1_L3_camara_oculta.png`;
   - `final_e2_L2_sala_asas_aberta.png`: asas + cadeado aberto + o aviso único.
 
-### Pedidos (não fiz: arquivos de outros donos)
-- **level6:**
-  - Os layouts `chegada` e `segredo` põem saliências de PULO DUPLO (`dj_cache`, setas apagadas
-    no chão) também nas telas 2–16, antes do Soter. É o mesmo "cadeado que não abre",
-    só que dentro da fase.
-  - Sugestão: só pôr `dj_cache` quando `RunManager.has_double_jump()` for verdadeiro ou
-    quando a tela for > 17 — ou trocar por `tower_cache` antes disso.
-- **narrativa6/7:**
+### 1c. Saliências de pulo duplo dentro das fases (fechado por mim, autorizado pelo chefe)
+- **O problema:** o level6 punha uma saliência de pulo duplo com baú e setas apagadas no
+  chão (`dj_cache`) nos layouts `chegada` e `segredo` também nas telas 2–16, antes do Soter.
+  Era um baú à vista que não se alcançava.
+- **A correção** (`scripts/levels/layouts/screen_layouts.gd`, `_high_cache(screen)`):
+  - antes da tela 17 o baú alto vira uma **torre de pulo simples** (`tower_cache`);
+  - da 17 em diante a saliência de pulo duplo volta, porque aí ela se alcança.
+- A sala secreta (`vault`) já era só do tipo `secret`, que agora só existe depois da 17.
+  `level.gd` não tinha estrutura de pulo duplo.
+- **Validação:**
+  - MapQA confere no plano de layout de todo nó das telas 2–16 que não há `dj_cache` nem
+    `vault` (28 PASS);
+  - LayoutQA: 1246 verificações em 129 telas, PASS (baú de torre alcançável com pulo simples);
+  - validate -Repeat 2: ver o relatório.
+
+### Pedido restante
+- **narrativa:**
   - Uma fala de chegada para `"hidden"` em `Narrative.node_arrival` (hoje fica muda).
   - Sugestão: "(Uma torre esquecida. Lá no alto, alguém guardou alguma coisa.)".
 
@@ -111,6 +120,7 @@ Por isso:
 |---|---|---|
 | ~~Segredo antes do Soter visível e fechado~~ → **Câmara oculta** (e0.6a, e1.3a), livre e com o mesmo prêmio | §4 / §3: nenhuma isca impossível. Antes do Soter, todo nó que aparece no mapa pode ser tomado. Princípio 5 (autonomia: escolha real); competência (o baú alto se alcança com pulo simples e atenção) | A 1ª versão violava: cadeado em sala que nunca abria no run. **Corrigido** (decisão do chefe). O selo fechado ficou só como caso de borda depois da 17 |
 | Ícone de asas + cadeado + texto ("forma + texto", não só cor) | §4 item 11 (cor não é o único aviso) e R5 (legibilidade por forma): dá para ler o estado mesmo sem distinguir o lilás | — |
+| Baú alto antes do Soter = torre de pulo simples (o `dj_cache` só da tela 17 em diante) | §4/§3: nada prometido fora de alcance; competência (achar e subir a torre) | Antes, setas apagadas e baú inalcançável nas telas 2–16. **Corrigido** |
 | Aviso único "as salas secretas se abrem" | Princípio 4 (erro de predição positivo, raro): uma vez por run, ligado a uma conquista da história; R22 por analogia (nada que fique martelando) | Halo de 4 s a ~0,6 Hz, numa área pequena, sem clarão: R10 e §4 item 4 respeitados |
 | Recompensas fixas e determinísticas por tipo de nó | §3 ético ("quantidade fixa e determinística — manter"); §4 item 12 (nada de recompensa variável manipulativa) | — |
 | Tentar entrar num segredo fechado | Feedback informativo: som "voltar" + o texto do requisito acende | Sem punição, sem tremor (§4 item 1) |
@@ -120,8 +130,8 @@ Por isso:
 12 (sem sorteio) · 13 (bloco pequeno). Não se aplicam (são de combate e som): 2, 3, 5, 6, 7, 8, 9, 10.
 
 **Ponto honesto (resolvido):** e0.6a e e1.3a nunca abriam em nenhum run. Agora são Câmaras
-ocultas, sem pulo duplo (ver §1b). Continua em aberto, no level6: as saliências de pulo duplo
-dentro das telas 2–16 (pedido em §1b).
+ocultas, sem pulo duplo (ver §1b). As saliências de pulo duplo dentro das telas 2–16
+também foram trocadas por torres de pulo simples (§1c).
 
 ## 5. BILHETE PARA O SUCESSOR
 - **Estado:** FINAL. Câmara oculta antes do Soter; sala de asas só depois da 17 (ver `git log dir7/mapa7`).

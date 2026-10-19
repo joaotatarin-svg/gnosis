@@ -161,6 +161,14 @@ func _plan_checks() -> void:
 					for t in wave:
 						if String(Bestiary.get_type(String(t)).get("id", "")) != String(t):
 							bad.append("%s tipo %s" % [id, t])
+			# mapa7: antes do Soter (telas 2–16) nenhuma estrutura de pulo duplo
+			# no layout (saliência com baú ou sala) — nada prometido fora de alcance.
+			if int(n.screen) < SOTER_SCREEN:
+				var lay: Dictionary = ScreenLayouts.plan(int(n.screen), plan.size())
+				for ps in lay.get("passages", []):
+					for it in ps.get("items", []):
+						if String(it.get("t", "")) in ["dj_cache", "vault"]:
+							bad.append("%s pulo duplo no layout (%s)" % [id, it.t])
 			# O papel legado não muda (narrativa/HUD/regras por papel seguem).
 			var legacy := String(EonMap.KINDS[String(n.kind)].role)
 			if RunManager.screen_role(int(n.screen)) != legacy:

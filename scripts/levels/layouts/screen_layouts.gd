@@ -11,7 +11,8 @@ class_name ScreenLayouts
 ##
 ## Layout por TIPO DE NÓ (RunManager.node_kind()):
 ##   arrival     → chegada   · arena baixa → passagem com 1 perigo do Éon + saliência
-##                             de pulo duplo → arena alta
+##                             de pulo duplo → arena alta (antes da tela 17: torre
+##                             de pulo simples — mapa7, _high_cache)
 ##   combat      → por camada: travessia (perigos + TOTEM) · fuga (a escuridão
 ##                             persegue) · segredo (começa antes; baú na torre)
 ##   hazard      → perigo    · passagem aberta e passagem longa com 3 perigos do Éon
@@ -116,7 +117,7 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 				out.gaps[i - 1] = 700.0
 				_add(out, i, {"t": hz, "x": 230.0})
 				# Saliência de pulo duplo com baú (sem degrau por perto).
-				_add(out, i, {"t": "dj_cache", "x": 480.0})
+				_add(out, i, {"t": _high_cache(screen), "x": 480.0})
 		"travessia":
 			for i in n:
 				_set_arena(out, i, arenas[(pick + i * 2) % arenas.size()])
@@ -167,7 +168,7 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 				_set_arena(out, i, ["ponte", "torres", "tres_alturas"][(pick + i) % 3])
 				if i >= 1:
 					out.gaps[i - 1] = 760.0
-					_add(out, i, {"t": "dj_cache", "x": 500.0})
+					_add(out, i, {"t": _high_cache(screen), "x": 500.0})
 			out.zones[n - 1].objective = "totem" if n >= 2 else "ondas"
 		"oculta":
 			# mapa7 (decisão do chefe, 19/10): a CÂMARA OCULTA, o segredo de antes
@@ -333,6 +334,17 @@ static func _set_arena(out: Dictionary, i: int, arena: String) -> void:
 	for p in ARENAS.get(arena, []):
 		plats.append([float(p[0]), float(p[1]), float(p[2])])
 	out.zones[i].plats = plats
+
+
+## mapa7 (decisão do chefe, 19/10, §4 da satisfação: nenhuma isca impossível):
+## o pulo duplo vem do 1º Soter, na tela 17. Antes dela (telas 2–16) o baú alto
+## é uma TORRE de pulo simples ("tower_cache"); a saliência de pulo duplo com as
+## setas no chão ("dj_cache") só aparece da 17 em diante, quando de fato se alcança.
+const SOTER_SCREEN := 17
+
+
+static func _high_cache(screen: int) -> String:
+	return "tower_cache" if screen < SOTER_SCREEN else "dj_cache"
 
 
 static func _add(out: Dictionary, passage: int, item: Dictionary) -> void:
