@@ -34,11 +34,11 @@ func _build_moves() -> Dictionary:
 		"offs": [0.0, 0.0, 0.0], "stagger": 0.15, "speed": 280.0, "dmg": 0.45, "color": GLASS,
 		"rmin": 100.0, "rmax": 9999.0, "w": 1.1, "cd": 2.5, "aa": true}
 	# GUARDA DO ESPELHO: strike = tempo da guarda; recover = espelho trincado
-	var guarda := {"id": "guarda", "kind": "cast", "anim": "ranged", "wind": 0.4, "strike": 1.7, "recover": 1.3,
+	var guarda := {"id": "guarda", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.4, "strike": 1.7, "recover": 1.3,
 		"rmin": 0.0, "rmax": 9999.0, "w": 1.0, "cd": 6.0}
-	var reflexos := {"id": "reflexos", "kind": "cast", "anim": "ranged", "wind": 0.8, "strike": 0.3, "recover": 0.6,
+	var reflexos := {"id": "reflexos", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.8, "strike": 0.3, "recover": 0.6,
 		"rmin": 0.0, "rmax": 9999.0, "w": 1.2, "cd": 9.0}
-	var troca := {"id": "troca", "kind": "cast", "anim": "ranged", "wind": 0.35, "strike": 0.15, "recover": 0.3,
+	var troca := {"id": "troca", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.35, "strike": 0.15, "recover": 0.3,
 		"rmin": 0.0, "rmax": 9999.0, "w": 0.9, "cd": 5.0, "chain": ["estocada_b"]}
 	var estocada_b := estocada.duplicate()
 	estocada_b.id = "estocada_b"

@@ -207,7 +207,7 @@ func strike() -> bool:
 		"slam":
 			var rad: float = float(mv.get("nova", 120.0))
 			AoeNova.spawn(e.get_parent(), e.global_position + Vector2(0, 14), 0, rad, e.eye_color)
-			Juice.shake(0.5)
+			Juice.shake(0.35)
 			e.attack_hitbox.position.x = float(mv.get("off", 0.0)) * dir
 			e.attack_hitbox.scale = Vector2(float(mv.get("sx", 3.6)), float(mv.get("sy", 1.0)))
 			e.attack_hitbox.activate()
@@ -419,6 +419,14 @@ func _start(m: Dictionary) -> void:
 	e.attack_hitbox.unblockable = bool(m.get("unblock", false))
 	_gap_t = float(gap_by_phase[clampi(phase - 1, 0, gap_by_phase.size() - 1)]) * float(m.get("gap", 1.0))
 	e._begin_windup()
+	if not bool(m.get("tell", true)):
+		# golpe utilitário (piscar, guarda, chamar a corte): NADA para aparar ou
+		# rolar — sem tinta/contorno/brilho/som de telegrafo (R5: amarelo = aparável).
+		e._tint_base = Color(1, 1, 1, 1)
+		e._glint_done = true
+		if e.visual:
+			e.visual.modulate = Color(1, 1, 1, e.visual.modulate.a)
+			e.visual.set("telegraph_color", Color(0, 0, 0, 0))
 	if String(m.get("kind", "")) == "shot":
 		# VFX7: a luz se junta onde o tiro vai sair (cancela se for interrompido)
 		var col: Color = m.get("color", e.eye_color)

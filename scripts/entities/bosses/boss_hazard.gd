@@ -75,8 +75,8 @@ func _physics_process(delta: float) -> void:
 	if not _struck:
 		_struck = true
 		struck.emit()
-		if shape == "column" or shape == "arena":
-			Juice.shake(0.35)
+		if shape == "arena":
+			Juice.shake(0.35)       # só o golpe de arena inteira treme (R3: tremor é raro)
 	if _t >= delay + active:
 		queue_free()
 		return

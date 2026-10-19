@@ -33,7 +33,7 @@ func _build_moves() -> Dictionary:
 		"unblock": true, "rmin": 120.0, "rmax": 9999.0, "w": 1.2, "cd": 4.0, "aa": true}
 	var investida := {"id": "investida", "kind": "charge", "anim": "charge", "wind": 0.8, "strike": 0.55,
 		"recover": 1.0, "unblock": true, "speed": 360.0, "dmg": 1.1, "rmin": 160.0, "rmax": 9999.0, "w": 1.0, "cd": 4.0}
-	var corte_real := {"id": "corte_real", "kind": "cast", "anim": "ranged", "wind": 0.9, "strike": 0.4, "recover": 0.8,
+	var corte_real := {"id": "corte_real", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.9, "strike": 0.4, "recover": 0.8,
 		"rmin": 0.0, "rmax": 9999.0, "w": 3.0, "cd": 18.0}
 	var dupla := espadao.duplicate()
 	dupla.id = "dupla"

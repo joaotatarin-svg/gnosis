@@ -45,7 +45,7 @@ func _build_moves() -> Dictionary:
 		"unblock": true, "expose": true, "n": 1, "rmin": 0.0, "rmax": 9999.0, "w": 1.2, "cd": 4.0, "aa": true}
 	var aneis := {"id": "aneis", "kind": "cast", "anim": "ranged", "wind": 0.8, "strike": 0.3, "recover": 0.7,
 		"unblock": true, "rmin": 0.0, "rmax": 9999.0, "w": 1.1, "cd": 6.0}
-	var larvas := {"id": "larvas", "kind": "cast", "anim": "ranged", "wind": 0.9, "strike": 0.3, "recover": 0.8,
+	var larvas := {"id": "larvas", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.9, "strike": 0.3, "recover": 0.8,
 		"rmin": 0.0, "rmax": 9999.0, "w": 0.8, "cd": 14.0}
 	var combo := leque.duplicate()
 	combo.id = "combo"
@@ -58,7 +58,7 @@ func _build_moves() -> Dictionary:
 	raio_b.wind = 0.6
 	raio_b.w = 0.0
 	raio_b.cd = 0.0
-	var teleporte := {"id": "teleporte", "kind": "cast", "anim": "ranged", "wind": 0.4, "strike": 0.12, "recover": 0.15,
+	var teleporte := {"id": "teleporte", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.4, "strike": 0.12, "recover": 0.15,
 		"rmin": 0.0, "rmax": 9999.0, "w": 1.0, "cd": 5.0, "chain": ["gesto_b"]}
 	var gesto_b := gesto.duplicate()
 	gesto_b.id = "gesto_b"

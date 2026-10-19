@@ -51,7 +51,7 @@ func _build_moves() -> Dictionary:
 
 func _on_strike(m: Dictionary) -> void:
 	if m.id == "desabamento":
-		Juice.shake(0.8)
+		Juice.shake(0.5)
 		var b := arena_bounds()
 		var w := b.y - b.x
 		var skip := rng.randi() % 6
