@@ -319,6 +319,7 @@ func _run_cards() -> void:
 		var keep: bool = not arts.is_empty() and arts == _art_cur
 		_title.text = String(card.get("title", ""))
 		_text.text = String(card.get("text", ""))
+		_balance_text()
 		_layout(not arts.is_empty())
 		var bg_i: int = int(card.get("bg", -1))
 		_bg.texture = PaintedLibrary.background(bg_i) if bg_i >= 0 and arts.is_empty() else null
@@ -349,6 +350,36 @@ func _card_art(card: Dictionary) -> Array:
 ## Card ILUSTRADO: pintura cheia, faixa escura embaixo, título + texto no terço
 ## inferior (o texto cresce para cima a partir da base). Card de pintura do Éon:
 ## o layout antigo, centrado, com a vinheta.
+## Quebra EQUILIBRADA (QA7 #30: "viúvas" — uma palavra sozinha na última linha,
+## em PT e EN): a caixa do texto encolhe até a menor largura que ainda dá o
+## mesmo número de linhas, e as linhas ficam parecidas. Mede o texto exibido
+## (traduzido) com a fonte do card.
+func _balance_text() -> void:
+	var shown: String = _text.atr(_text.text) if _text.auto_translate_mode != Node.AUTO_TRANSLATE_MODE_DISABLED else _text.text
+	var w := TEXT_W
+	var n := _lines_at(shown, TEXT_W)
+	if n >= 2:
+		var lo := TEXT_W * 0.45
+		var hi := TEXT_W
+		for _k in 10:
+			var mid := (lo + hi) * 0.5
+			if _lines_at(shown, mid) <= n:
+				hi = mid
+			else:
+				lo = mid
+		w = minf(TEXT_W, hi + 8.0)       # folga: o Label quebra um pouco antes da conta
+	_text.offset_left = -w * 0.5
+	_text.offset_right = w * 0.5
+
+
+func _lines_at(t: String, width: float) -> int:
+	var font: Font = CodexStyle.serif()
+	var fs := 13
+	var sz := font.get_multiline_string_size(t, HORIZONTAL_ALIGNMENT_CENTER, width, fs, -1,
+		TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND)
+	return maxi(1, int(round(sz.y / maxf(1.0, font.get_height(fs)))))
+
+
 func _layout(illustrated: bool) -> void:
 	_shade.visible = illustrated
 	_vig.color.a = 0.08 if illustrated else 0.38

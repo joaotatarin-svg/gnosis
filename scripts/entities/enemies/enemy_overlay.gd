@@ -17,9 +17,54 @@ var _t: float = 0.0
 static var debug_boxes: bool = false
 
 
+## VFX7: a camada da FRENTE também observa o golpe do inimigo (sem mexer no
+## enemy.gd): no começo do wind-up de TIRO liga a antecipação
+## (VfxLibrary.charge_up, estala no disparo; cancela se o golpe morrer) e, a cada
+## vez que a caixa do golpe CORPO A CORPO liga, desenha o rastro do golpe
+## (VfxLibrary.melee_slash).
+const SHOT_KINDS := ["shot", "burst", "lob"]
+const SLASH_KINDS := ["swing", "combo", "grab", "blink", "rush", "leap", "slam", "dive", "glide"]
+var _charge: ChargeFX = null
+var _was_wind: bool = false
+var _was_box: bool = false
+
+
 func _process(delta: float) -> void:
 	_t += delta
+	if front:
+		_watch_attack()
 	queue_redraw()
+
+
+func _watch_attack() -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	var e = enemy
+	var st: int = int(e.estate)
+	var wind: bool = st == Enemy.EState.WINDUP
+	var mv: Dictionary = e._mv if e._mv is Dictionary else {}
+	var kind: String = String(mv.get("kind", ""))
+	if wind and not _was_wind:
+		if kind in SHOT_KINDS or (mv.is_empty() and String(e.attack_style) == "ranged"):
+			var dirx: float = float(e.atk_dir)
+			var off := Vector2(16.0 * dirx, -8.0 * float(e._art_scale))
+			_charge = VfxLibrary.charge_up(e, off, e.eye_color, maxf(0.12, float(e.attack_timer)), "dark")
+	elif not wind and _was_wind and _charge != null:
+		if is_instance_valid(_charge):
+			if st == Enemy.EState.STRIKE:
+				_charge.release()
+			else:
+				_charge.cancel()            # parry, atordoado, morreu: some sem estalo
+		_charge = null
+	_was_wind = wind
+	# caixa do golpe ligou (borda de subida): rastro do golpe corpo a corpo
+	var hb = e.attack_hitbox
+	var box_on: bool = hb != null and bool(hb.get("_active"))
+	if box_on and not _was_box and st == Enemy.EState.STRIKE:
+		if kind in SLASH_KINDS or (mv.is_empty() and String(e.attack_style) in ["melee", "charge", "slam"]):
+			var k := kind if kind != "" else ("rush" if String(e.attack_style) == "charge" else ("slam" if String(e.attack_style) == "slam" else "swing"))
+			VfxLibrary.melee_slash(e, hb.position, hb.box_size() * hb.scale.abs(), int(e.atk_dir), e.eye_color, k, bool(hb.unblockable))
+	_was_box = box_on
 
 
 func _draw() -> void:
