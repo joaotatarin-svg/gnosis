@@ -399,7 +399,9 @@ def blip_npc(i):
 # ----------------------------------------------------------------------------
 
 def _hit(src, edge, seed):
-	return lambda: layers(0.3, (P(src, dur=0.25), 0.0, 0), (P(edge, dur=0.2, hp=1500), 0.0, -14))
+	# R12 (Guardião, Onda 7): o LEVE não tem sub — passa-altas de 4ª ordem em
+	# 110 Hz (o corpo 120–250 Hz fica: soa em notebook); o grave é do pesado.
+	return lambda: layers(0.3, (C.hp(C.hp(P(src, dur=0.25), 110), 110), 0.0, 0), (P(edge, dur=0.2, hp=1500), 0.0, -14))
 
 
 def _hit_heavy(src, seed, pitch=1.0):
@@ -543,7 +545,7 @@ def finish(x, cat):
 	# de transiente curto passava de −1 dBTP. Abaixa o que sobrar (R13).
 	tp = C.true_peak_db(x)
 	if tp > CEIL:
-		x = x * db(CEIL - 0.4 - tp)   # 0,3 dB de folga: o Vorbis passa um pouco do pico
+		x = x * db(CEIL - 0.6 - tp)   # 0,5 dB de folga: o Vorbis passa um pouco do pico
 	return x
 
 

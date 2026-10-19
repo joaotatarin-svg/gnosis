@@ -89,8 +89,8 @@ Usam categorias existentes: `tell` (−17, `riposte_ready`), `swing_big`, `champ
 | Origem | Eventos |
 |---|---|
 | **Sinal** (`audio_manager.gd`) | `Enemy.boss_dying(0..4)` → morte em 5 passos. `Player.riposte_window_opened` → `riposte_ready`. `Progression.double_jump_granted` → `soter_gift`. `Progression.relics_changed` → `relic_equip`. `Achievements.unlocked` → `achievement` |
-| **Observador `_Watch`** (borda de estado, nó PAUSÁVEL, perigo a > 720 px da câmera não soa) | Inimigos: WINDUP/STRIKE → `move_sfx`; `_downed` 0→>0 (voador) → `fly_fall`; `_champ_fury` → `champion_fury`. Chefes: `brain.mv` → `move_sfx(..., true)`; `_airborne` true→false → `bs_land`; postura volta cheia + atordoado > 1,3 s → `guard_break`; hurtbox do olho do Rei → `eye_hit`. Sophia: `dive_landed` → `star_impact`. Totem/luz `_armed` → `zone_objective` (+`hz_totem_arm`). HUD `_tier_seen` sobe → `shop_seal`. Perigos mudos: feixe liga/desliga, plataforma-reflexo, névoa, pedra (afunda/volta), esporo incha, caco (sombra/queda), saída do silêncio, marca do segredo, guilhotina sobe, tique da maré, luz drenando |
-| **Dono troca na fonte** (`docs/pedidos/audio7.md`) | 2º pulo, carga da Queda, contra-ataque (player.gd); fase 3; entrada do Campeão; tiro hostil sem `proj_fire`; perigos que já tocam som genérico; mapa; relíquia sem `shop_buy`; cargas do VFX7 |
+| **Observador `_Watch`** (borda de estado, nó PAUSÁVEL, perigo a > 720 px da câmera não soa) | Inimigos: WINDUP/STRIKE → `move_sfx`, só corpo a corpo (TIRO = shot/burst/lob/fissure não toca `atk_*`: o tiro soa por `charge_*` + `proj_fire`); `_downed` 0→>0 (voador) → `fly_fall`; `_champ_fury` → `champion_fury`. Chefes: `brain.mv` → `move_sfx(..., true)`; `_airborne` true→false → `bs_land`; postura volta cheia + atordoado > 1,3 s → `guard_break`; hurtbox do olho do Rei → `eye_hit`. Sophia: `dive_landed` → `star_impact`. Totem/luz `_armed` → `zone_objective` (+`hz_totem_arm`). HUD `_tier_seen` sobe → `shop_seal`. Perigos mudos: feixe liga/desliga, plataforma-reflexo, névoa, pedra (afunda/volta), esporo incha, caco (sombra/queda), saída do silêncio, marca do segredo, guilhotina sobe, tique da maré, luz drenando |
+| **Dono troca na fonte** (`docs/pedidos/audio7.md`) | 2º pulo, carga da Queda, contra-ataque (player.gd); fase 3; entrada do Campeão; perigos que já tocam som genérico; mapa; relíquia sem `shop_buy`; cargas do VFX7 |
 
 O 2º pulo, a carga da Queda e o golpe do contra-ataque saíram do observador por reprovação do Guardião
 (634bc91, som dobrado com jump/dive/swing). Quem troca é o polimento7.
@@ -136,7 +136,7 @@ O 2º pulo, a carga da Queda e o golpe do contra-ataque saíram do observador po
 
 | Regra | Como o Áudio7 atende | Status |
 |---|---|---|
-| **R4** um acerto = um evento | O golpe do inimigo soa no STRIKE (sopro/rosnado, sem impacto: o acerto continua sendo o `hit`). Queda Estelar = camada de estrelas sob a `nova`, sem 2º baque. O 2º pulo, a carga e o contra-ataque saíram do observador (Guardião). As trocas na fonte estão pedidas (`TROCAR a → b`, nunca `a + b`). Tiro hostil: pedido para não tocar `proj_fire` junto do `atk_*`. | atendido no Áudio; as trocas na fonte dependem dos donos |
+| **R4** um acerto = um evento | O golpe do inimigo soa no STRIKE (sopro/rosnado, sem impacto: o acerto continua sendo o `hit`). Queda Estelar = camada de estrelas sob a `nova`, sem 2º baque. O 2º pulo, a carga e o contra-ataque saíram do observador (Guardião). As trocas na fonte estão pedidas (`TROCAR a → b`, nunca `a + b`). Tiro: o observador não toca `atk_*` em golpe de tiro, porque o projétil já soa (`charge_*` + `proj_fire`), por decisão do chefe/vfx7. | atendido no Áudio; as trocas na fonte dependem dos donos |
 | **R5** telegrafo com som | O `tell_parry/unblock` continua intocado. `riposte_ready` (o "agora!" do contra-ataque) vai no bus Tell, com tom fixo, a 69 de distância MFCC do `tell_parry`. Os perigos que ferem mantêm o `tell_unblock` e ganham som próprio no golpe. | atendido |
 | **R6** faísca | Não mexi. | — |
 | **R7** adoçante do combo | Não mexi; nenhum som novo sobe de tom com o combo. | — |
@@ -176,6 +176,7 @@ Todos são síntese própria (S). Var = nº de arquivos (`nome`, `nome_2`, ...).
 | `sfx/star_impact.ogg` | sophia_layer -17 | 1 | Queda Estelar pousa — CAMADA de estrelas sobre a `nova` (que já é o baque, R4: um impacto por evento): chuva de estrelas caindo + cascalho + sino. |
 | `sfx/riposte_ready.ogg` | tell -17 | 1 | Aparo perfeito → a janela do contra-ataque ABRIU: dois 'tins' de lâmina subindo (Si6→Mi7), curtos — o ouvido aprende 'agora!'. |
 | `sfx/riposte.ogg` | swing_big -16 | 1 | Contra-ataque: estocada — sopro rasgado + 'xing' de lâmina + peso. |
+| `sfx/combo_tick.ogg` | combo -28 | 1 | Adoçante do combo (R7): tique de vidro CURTÍSSIMO (~70 ms) em Mi5, sem agudo sustentado — fica "dentro" do impacto; o Audio sobe a pentatônica. |
 | `sfx/atk_swing.ogg` | eatk -19 | 3 | Garra/osso cortando o ar: sopro médio + estalo ósseo. |
 | `sfx/atk_combo.ogg` | eatk -19 | 2 | Duas garradas coladas (a 2ª mais grave). |
 | `sfx/atk_rush.ogg` | eatk -19 | 2 | Investida: pé que firma + sopro acelerando + rosnado. |

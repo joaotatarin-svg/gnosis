@@ -406,6 +406,12 @@ func _run() -> void:
 	if Juice.has_signal("slowmo_changed"):
 		check(Juice.is_connected("slowmo_changed", Callable(Audio, "_on_slowmo_changed")), "Audio escuta Juice.slowmo_changed")
 	await _wait_real(0.6)
+	# Onda 7 (R9): sons de recompensa tocados antes abaixam a música por ~1–2 s;
+	# espera a abaixada acabar para medir só o slow-mo.
+	var sm_t0 := Time.get_ticks_msec()
+	while Audio._td_active and Time.get_ticks_msec() - sm_t0 < 4000:
+		await get_tree().process_frame
+	await _wait_real(0.05)
 	var sfx_i := AudioServer.get_bus_index("SFX")
 	var lp_slot := -1
 	for i in AudioServer.get_bus_effect_count(sfx_i):
@@ -584,6 +590,10 @@ func _run() -> void:
 	while not Audio._later.is_empty() and Time.get_ticks_msec() - q_t0 < 3000:
 		await get_tree().process_frame
 	await _wait_real(0.7)
+	# Onda 7 (R9): espera a abaixada de momento (recompensa/aparo) terminar.
+	var hb_t0 := Time.get_ticks_msec()
+	while Audio._td_active and Time.get_ticks_msec() - hb_t0 < 4000:
+		await get_tree().process_frame
 	var td_was: bool = Audio._td_active
 	var p1 := Audio.low_health_pulse()
 	var p2 := Audio.low_health_pulse()
@@ -850,6 +860,22 @@ func _check_onda7(sfx_names: Array) -> void:
 	await get_tree().physics_frame
 	var w_fall: bool = Audio.voices_playing("fly_fall") >= 1
 	var w_fury: bool = Audio.voices_playing("champion_fury") >= 1
+	# TIRO: o observador NÃO toca atk_* (o projétil já soa: charge_* + proj_fire)
+	foe.set("estate", Enemy.EState.RECOVER)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	for k in ["shot", "burst", "lob", "fissure"]:
+		foe.set("_mv", {"id": "tiro", "kind": k, "count": 3})
+		foe.set("estate", Enemy.EState.STRIKE)
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		foe.set("estate", Enemy.EState.RECOVER)
+		await get_tree().physics_frame
+	var w_noshot: bool = true
+	for n in ["atk_shot", "atk_fan", "atk_burst", "atk_lob", "atk_fissure", "atk_homing", "atk_shot_air"]:
+		if Audio.voices_playing(n) > 0:
+			w_noshot = false
+	check(w_noshot, "observador: golpe de TIRO (shot/burst/lob/fissure) não toca atk_* (o projétil já soa)")
 	foe.queue_free()
 	var gp := GDScript.new()
 	gp.source_code = "extends CharacterBody2D\nvar state: int = 0\nvar _air_jumps_left: int = 1\nvar current_move = null\nvar windup_timer: float = 0.0\nvar dive_landed: bool = false\nvar _riposte_t: float = 0.0\n"
@@ -875,6 +901,49 @@ func _check_onda7(sfx_names: Array) -> void:
 	check(Audio.spam_ms_for("atk_swing") >= 120 and Audio.spam_ms_for("atk_swing") <= 150
 		and Audio.max_same_for("atk_shot") == 2 and Audio.max_same_for("hit") == Audio.MAX_SAME,
 		"golpes de inimigo atk_*: anti-spam %d ms, %d vozes" % [Audio.spam_ms_for("atk_swing"), Audio.max_same_for("atk_shot")])
+	# (h11) R7 — adoçante do combo: sinal combo_changed → tique a partir do 3º
+	#       acerto, subindo a pentatônica (teto +16), tom EXATO.
+	var curve_ok: bool = Audio.combo_tick_pitch(2) == 0.0 and is_equal_approx(Audio.combo_tick_pitch(3), 1.0) \
+		and is_equal_approx(Audio.combo_tick_pitch(5), pow(2.0, 4.0 / 12.0)) \
+		and is_equal_approx(Audio.combo_tick_pitch(99), pow(2.0, 16.0 / 12.0))
+	var cb := Node.new()
+	cb.add_user_signal("combo_changed", [{"name": "count", "type": TYPE_INT}])
+	add_child(cb)
+	await get_tree().process_frame
+	Audio._last_play_ms.erase("combo_tick")
+	cb.emit_signal("combo_changed", 2)
+	var none_at_2: bool = Audio.voices_playing("combo_tick") == 0
+	cb.emit_signal("combo_changed", 5)
+	var tick_pitch := 0.0
+	for i in Audio._players.size():
+		if Audio._pl_name[i] == "combo_tick" and Audio._players[i].playing:
+			tick_pitch = Audio._players[i].pitch_scale
+	cb.queue_free()
+	check(curve_ok and none_at_2 and is_equal_approx(tick_pitch, pow(2.0, 4.0 / 12.0)),
+		"R7: tique do combo só a partir do 3º acerto, pentatônica com teto +16, tom exato (5º acerto = %.3f)" % tick_pitch)
+	# (h12) R9 — abaixada curta da música nos momentos (−7 dB) e no aparo (−3 dB);
+	#       não atropela uma abaixada maior ativa.
+	await _wait_real(1.5)
+	Audio._last_play_ms.erase("level_clear")
+	Audio.play_sfx("level_clear")
+	await _wait_real(0.15)
+	var lc_db: float = Audio._temp_duck_db
+	await _wait_real(2.0)
+	Audio._last_play_ms.erase("parry")
+	Audio.play_sfx("parry")
+	await _wait_real(0.06)
+	var pa_db: float = Audio._temp_duck_db
+	await _wait_real(0.6)
+	Audio.duck_music(5.0, -14.0)
+	await _wait_real(0.3)
+	Audio._last_play_ms.erase("ring_gain")
+	Audio.play_sfx("ring_gain")
+	await _wait_real(0.1)
+	var keep_db: float = Audio._temp_duck_db
+	Audio.duck_music(0.0, 0.0)
+	await _wait_real(1.0)
+	check(lc_db <= -6.5 and lc_db >= -7.5 and pa_db <= -2.5 and pa_db >= -3.5 and keep_db <= -13.0,
+		"R9: level_clear abaixa a música %.1f dB, aparo %.1f dB; uma abaixada maior não é atropelada (%.1f)" % [lc_db, pa_db, keep_db])
 
 
 ## Espera `sec` segundos de relógio REAL, atravessando quadros (não um timer

@@ -6,7 +6,9 @@ Todos os sons abaixo JÁ EXISTEM: arquivo, CATALOG e AudioQA verde.
 Ganchos do `audio_manager.gd`: sinais existentes e o observador `_Watch`, que olha o estado público dos nós e
 toca só na BORDA. Nos itens abaixo **NÃO acrescentem chamada**: o som dobraria (R4).
 
-- **Inimigos:** golpe de cada tipo no WINDUP→STRIKE (`atk_*`, pelo `_mv.kind`) e "aparecer atrás" no WINDUP.
+- **Inimigos:** golpe CORPO A CORPO de cada tipo no WINDUP→STRIKE (`atk_*`, pelo `_mv.kind`) e "aparecer atrás"
+  no WINDUP. Golpes que são TIRO (shot/burst/lob/fissure, inclusive de chefe) NÃO tocam `atk_*`: o tiro soa por
+  `charge_*` (VFX7) + `proj_fire`.
 - **Voadores:** derrubado no ar (`fly_fall`). **Campeão:** fúria (`champion_fury`).
 - **Chefes:**
   - golpe-assinatura no telegrafo e/ou no golpe (`bs_*` pela tabela `BOSS_MOVE_SFX`);
@@ -43,8 +45,9 @@ mesmo lugar. Linhas de `origin/integracao/onda1` @ 4cfd64c.
    O stinger de chefe libera a música de chefe (R9) e não deve tocar para Campeão.
 
 ### vfx7 (`projectile.gd`, tiros hostis)
-1. `projectile.gd:55 _ready()`: tocar `proj_fire` SÓ nos tiros da Sophia. Nos hostis, o golpe de tiro já soa
-   no strike pelo observador (`atk_shot`/`atk_fan`/`atk_homing`/`atk_shot_air`). Hoje são 2 sons por tiro (R4).
+Nada a trocar: o `proj_fire` continua em todo tiro e o observador não toca `atk_*` em TIRO (decisão do chefe).
+Os sons `atk_shot`/`atk_fan`/`atk_burst`/`atk_homing`/`atk_shot_air`/`atk_lob`/`atk_fissure` ficam no catálogo
+para quem quiser usá-los NO LUGAR do `proj_fire` hostil, nunca junto.
 
 ### polimento7 / combate (`player.gd`): TROCA NA FONTE (o Áudio NÃO observa estes)
 1. `player.gd:432 _double_jump()`: TROCAR `Audio.play_sfx("jump")` → `Audio.play_sfx("double_jump")`. É o anel

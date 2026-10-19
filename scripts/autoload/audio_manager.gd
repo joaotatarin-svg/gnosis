@@ -161,6 +161,7 @@ const CATALOG := {
 		"charge_light", "charge_dark", "charge_king",
 		# --- Sophia: pulo duplo, Queda Estelar, contra-ataque ---
 		"double_jump", "star_charge", "star_impact", "riposte_ready", "riposte",
+		"combo_tick",                                         # R7: adoçante tonal do combo (gancho combo_changed)
 		# --- golpes dos inimigos por TIPO (move_sfx) + voadores ---
 		"atk_swing", "atk_combo", "atk_rush", "atk_leap", "atk_slam", "atk_wave", "atk_shot",
 		"atk_shot_air", "atk_fan", "atk_burst", "atk_homing", "atk_lob", "atk_pillar", "atk_fissure",
@@ -246,6 +247,22 @@ const SPAM_OVERRIDE := {"spark": 20,
 ## Vozes simultâneas próprias: o arpejo precisa deixar as caudas soarem.
 const MAX_SAME_OVERRIDE := {"spark": 6, "achievement": 1, "hz_ward_drain": 1, "hz_altar_hum": 1,
 	"hz_tide_tick": 1, "hz_mist_breath": 2}
+
+## R7 — ADOÇANTE DO COMBO: a partir do 3º acerto seguido, um tique de vidro a
+## ~−16 dB do impacto, subindo a pentatônica (+16 semitons no máximo); o combo
+## zerou → volta ao começo. O IMPACTO não muda de tom (só o tique sobe).
+const COMBO_FROM := 3
+const COMBO_SCALE := [0, 2, 4, 7, 9, 12, 14, 16]
+## R9 — ABAIXADAS CURTAS da música nos momentos de recompensa (−7 dB, entra em
+## 40 ms, segura, volta em 600 ms) e no aparo (−3 dB por 250 ms). Nunca atropela
+## uma abaixada maior já ativa (névoa, cena, morte do chefe, coração).
+## nome -> [dB, entrada s, segura s, saída s]
+const MOMENT_DUCKS := {
+	"ring_gain": [-7.0, 0.04, 0.8, 0.6], "ring_steal": [-7.0, 0.04, 1.6, 0.6],
+	"level_clear": [-7.0, 0.04, 0.8, 0.6], "weapon_upgrade": [-6.0, 0.04, 0.6, 0.6],
+	"soter_gift": [-8.0, 0.04, 2.0, 0.8], "boss_phase3": [-8.0, 0.04, 0.8, 0.6],
+	"parry": [-3.0, 0.02, 0.13, 0.1],   # −3 dB por ~250 ms
+}
 
 ## Golpes dos inimigos (`atk_*`): num grupo de 5–6 bichos, o mesmo golpe saindo
 ## junto vira metralha. Anti-spam de 130 ms e no máximo 2 vozes (Guardião, R11).
@@ -402,6 +419,8 @@ var _pulse_ms: int = -100000         # último low_health_pulse
 ## conta cada SFX tocado e grava a contagem no encerramento (prova que os
 ## ganchos da Onda 7 disparam jogando — sem ouvir nada).
 var played_counts: Dictionary = {}
+var _log_events: Array = []          # ver _play: cada SFX tocado (R13 offline)
+var _log_beds: Array = []            # amostras da música/ambiência e dos buses (R13 offline)
 var _log_path: String = OS.get_environment("GNOSIS_AUDIO_LOG")
 var _watch: _Watch = null            # ONDA 7: observador de eventos sem sinal (ver _Watch)
 
@@ -591,6 +610,10 @@ func _play(real_name: String, pitch: float, volume_db: float, world_pos: Vector2
 	p.play()
 	if _log_path != "":
 		played_counts[real_name] = int(played_counts.get(real_name, 0)) + 1
+		# R13 offline: [tempo de JOGO (s), arquivo, dB do player, tom, bus]
+		if _log_events.size() < 200000:
+			_log_events.append([float(Engine.get_physics_frames()) / 60.0, String((stream as Resource).resource_path),
+				p.volume_db, p.pitch_scale, String(p.bus)])
 	_on_sfx_event(real_name)
 	return true
 
@@ -1056,6 +1079,10 @@ func _on_node_added(node: Node) -> void:
 		var cr := Callable(self, "_on_riposte_window")
 		if not node.is_connected("riposte_window_opened", cr):
 			node.connect("riposte_window_opened", cr)
+	if node.has_signal("combo_changed"):
+		var cc := Callable(self, "_on_combo_changed")
+		if not node.is_connected("combo_changed", cc):
+			node.connect("combo_changed", cc)
 	if _watch != null:
 		_watch.track(node)
 
@@ -1235,6 +1262,11 @@ func _on_sfx_event(real_name: String) -> void:
 				_wake()
 		"boss_die":
 			_start_temp_duck(BOSS_KILL_DB, BOSS_KILL_IN, BOSS_KILL_HOLD, BOSS_KILL_OUT)
+		_:
+			# R9: abaixada curta no momento (só se nenhuma outra estiver ativa)
+			if MOMENT_DUCKS.has(real_name) and not _td_active:
+				var d: Array = MOMENT_DUCKS[real_name]
+				_start_temp_duck(float(d[0]), float(d[1]), float(d[2]), float(d[3]))
 
 
 ## Centro (ROTEIRO §2, cena C): sem música até o 1º caco; depois `centro` entra
@@ -1577,6 +1609,21 @@ func _on_riposte_window() -> void:
 	play_sfx("riposte_ready")
 
 
+## R7: o combo da Sophia mudou (`Player.combo_changed`, 1 por acerto; 0 = zerou).
+func _on_combo_changed(count: int) -> void:
+	var p := combo_tick_pitch(count)
+	if p > 0.0:
+		play_sfx_pitched("combo_tick", p)
+
+
+## Tom do tique do combo no acerto `count` (0 = sem tique).
+func combo_tick_pitch(count: int) -> float:
+	if count < COMBO_FROM:
+		return 0.0
+	var s: int = int(COMBO_SCALE[mini(count - COMBO_FROM, COMBO_SCALE.size() - 1)])
+	return pow(2.0, float(s) / 12.0)
+
+
 func _on_double_jump_granted() -> void:
 	play_sfx("soter_gift")
 
@@ -1651,6 +1698,10 @@ func shutdown(settle: bool = false) -> void:
 		if f != null:
 			f.store_string(JSON.stringify(played_counts, "	", true))
 			f.close()
+		var fe := FileAccess.open(_log_path.get_basename() + ".events.json", FileAccess.WRITE)
+		if fe != null:
+			fe.store_string(JSON.stringify({"sfx": _log_events, "beds": _log_beds}))
+			fe.close()
 	_td_active = false
 	_later.clear()
 	for t in [_music_tween, _amb_tween, _pitch_tween]:
@@ -1721,6 +1772,9 @@ func has_ambience(amb_name: String) -> bool:
 class _Watch extends Node:
 	const WATCH_FAR := 720.0
 	const BREAK_MIN_T := 1.3          # atordoado > 1,3 s = quebra de guarda (o aparo dá 1,1)
+	## Golpes que SÃO TIRO (nascem Projectile): o observador não toca `atk_*` neles —
+	## o tiro já soa por charge_* (VFX7) + proj_fire (decisão do chefe, pedido do vfx7).
+	const SHOT_KINDS := ["shot", "burst", "lob", "fissure"]
 	var audio: Node = null
 	var _w: Dictionary = {}           # instance_id -> {"n": nó, "k": tipo, ...estado anterior}
 	var _hud_t := 0.0
@@ -1769,6 +1823,26 @@ class _Watch extends Node:
 		if _hud_t <= 0.0:
 			_hud_t = 0.25
 			_hud()
+		if audio._log_path != "" and Engine.get_physics_frames() % 6 == 0:
+			_log_bed()
+
+	## R13 offline: a cada 0,1 s de jogo, o que a música e a ambiência tocam
+	## (arquivo, posição, volume do player) e o volume dos buses.
+	func _log_bed() -> void:
+		var row: Array = [float(Engine.get_physics_frames()) / 60.0]
+		for pl in [audio._music[audio._music_cur], audio._amb[audio._amb_cur]]:
+			var a := pl as AudioStreamPlayer
+			if a.playing and a.stream != null:
+				row.append([String(a.stream.resource_path), a.get_playback_position(), a.volume_db, a.pitch_scale])
+			else:
+				row.append([])
+		var buses := {}
+		for b in ["Master", "Music", "Ambience", "SFX", "UI", "Voice", "Tell"]:
+			var i := AudioServer.get_bus_index(b)
+			if i >= 0:
+				buses[b] = AudioServer.get_bus_volume_db(i)
+		row.append(buses)
+		audio._log_beds.append(row)
 
 	# --- inimigos e chefes ---------------------------------------------------
 	func _enemy(r: Dictionary, e) -> void:
@@ -1780,7 +1854,8 @@ class _Watch extends Node:
 		if r.init and st != int(r.st) and mv is Dictionary and not (mv as Dictionary).is_empty():
 			if st == Enemy.EState.WINDUP:
 				audio.move_sfx(mv, "wind", pos, boss)
-			elif st == Enemy.EState.STRIKE:
+			elif st == Enemy.EState.STRIKE and not SHOT_KINDS.has(String((mv as Dictionary).get("kind", ""))):
+				# TIRO não: o projétil já soa (charge_* do VFX7 + proj_fire). Só corpo a corpo.
 				audio.move_sfx(mv, "strike", pos, boss)
 		# voador derrubado (cai): borda de _downed 0 → > 0
 		var dn: float = float(e.get("_downed")) if e.get("_downed") != null else 0.0
