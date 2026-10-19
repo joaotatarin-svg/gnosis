@@ -1,0 +1,80 @@
+{
+ "_doc": "Campeão de Éon carcereiro — arte própria (folha champ_3_carcereiro_a, 2x4: idle_0, walk_0, walk_1, walk_2, windup, strike, hurt, death). Ocupa o lugar do bot_carcereiro (mesma camada antiga do boneco; o jogo aumenta 1,35×). Gerada por mk_champ_recipes.py.",
+ "group": "creatures",
+ "sheet": "artes/gpt/champ_3_carcereiro_a.png",
+ "grid": [
+  4,
+  2
+ ],
+ "cells": [
+  "idle_0",
+  "walk_0",
+  "walk_1",
+  "walk_2",
+  "windup",
+  "strike",
+  "hurt",
+  "death"
+ ],
+ "body_px": 220,
+ "anchors": {
+  "death": "lying"
+ },
+ "anchor_fix": {},
+ "inbetween": {},
+ "states": {
+  "idle": {
+   "frames": [
+    "idle_0"
+   ]
+  },
+  "walk": {
+   "frames": [
+    "walk_0",
+    "walk_1",
+    "walk_2"
+   ],
+   "cycle_bodies": 0.9
+  },
+  "windup": {
+   "frames": [
+    "windup"
+   ]
+  },
+  "attack": {
+   "frames": [
+    "strike"
+   ]
+  },
+  "recover": {
+   "frames": [
+    "strike",
+    "idle_0"
+   ],
+   "at": [
+    0.0,
+    0.4
+   ]
+  },
+  "hurt": {
+   "frames": [
+    "hurt"
+   ]
+  },
+  "dead": {
+   "frames": [
+    "hurt",
+    "death"
+   ],
+   "dur": [
+    0.12
+   ]
+  }
+ },
+ "old_body": "assets/painted/derived/puppets/galila_body.png",
+ "old_flip": true,
+ "kind": "biped",
+ "flex": {},
+ "hem_wave": 0.0,
+ "size_fix": 1.0
+}
