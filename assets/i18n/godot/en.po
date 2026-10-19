@@ -1466,12 +1466,12 @@ msgid "O Rei enfraquecido e o Colosso Oco  ·  as duas faces"
 msgstr "Weakened King and Hollow Colossus  ·  two faces"
 
 #. gnosis.boss_card.86ab62  [card_chefe_nome]
-#: scripts/autoload/gnosis.gd:403
+#: scripts/autoload/gnosis.gd:414
 msgid "O CAMPEÃO"
 msgstr "THE CHAMPION"
 
 #. gnosis.boss_card.ea8185  [card_chefe_titulo]
-#: scripts/autoload/gnosis.gd:403
+#: scripts/autoload/gnosis.gd:414
 msgid "Guardião do santuário %s %s"
 msgstr "Guardian of the shrine %s %s"
 
@@ -4270,513 +4270,543 @@ msgstr "It carries its blade the way one carries an order."
 msgid "Apare o golpe dourado e puna a abertura."
 msgstr "Parry the golden strike and punish the opening."
 
-#. bestiary_lore.ENTRIES.7fc39d  [ui]
+#. bestiary_lore.ENTRIES.f15e96  [ui]
 #: scripts/data/bestiary_lore.gd:40
+msgid "Acende fogos-fátuos para que ninguém ache o caminho de volta."
+msgstr "Lights will-o'-the-wisps so that no one finds the way back."
+
+#. bestiary_lore.ENTRIES.57c8a1  [ui]
+#: scripts/data/bestiary_lore.gd:41
+msgid "Nunca deixa a presa chegar perto: atira e recua."
+msgstr "Never lets its prey come close: it shoots and retreats."
+
+#. bestiary_lore.ENTRIES.466d77  [ui]
+#: scripts/data/bestiary_lore.gd:42
+msgid "Ele foge quando você se aproxima: esquive das setas e feche a distância."
+msgstr "It flees as you approach: dodge the bolts and close the distance."
+
+#. bestiary_lore.ENTRIES.7fc39d  [ui]
+#: scripts/data/bestiary_lore.gd:45
 msgid "Uma larva que guardou fogo demais."
 msgstr "A larva that kept too much fire."
 
 #. bestiary_lore.ENTRIES.553ffe  [ui]
-#: scripts/data/bestiary_lore.gd:41
+#: scripts/data/bestiary_lore.gd:46
 msgid "Corre até a luz mais próxima e se desfaz em chamas."
 msgstr "It runs to the nearest light and bursts into flame."
 
 #. bestiary_lore.ENTRIES.8f830b  [ui]
-#: scripts/data/bestiary_lore.gd:42
+#: scripts/data/bestiary_lore.gd:47
 msgid "A explosão não pode ser aparada: esquive."
 msgstr "The blast cannot be parried: dodge."
 
 #. bestiary_lore.ENTRIES.a0d412  [ui]
-#: scripts/data/bestiary_lore.gd:45
+#: scripts/data/bestiary_lore.gd:50
 msgid "Guardião de casca espinhosa, posto nas portas dos Éons."
 msgstr "A thorn-shelled guardian, posted at the gates of the Aeons."
 
 #. bestiary_lore.ENTRIES.214c99  [ui]
-#: scripts/data/bestiary_lore.gd:46
+#: scripts/data/bestiary_lore.gd:51
 msgid "Lento para se erguer, pesado para cair."
 msgstr "Slow to rise, heavy to fall."
 
 #. bestiary_lore.ENTRIES.bf1980  [ui]
-#: scripts/data/bestiary_lore.gd:47
+#: scripts/data/bestiary_lore.gd:52
 msgid "Quando ele erguer os braços, saia: a pancada esmaga o chão."
 msgstr "When it raises its arms, get clear: the blow crushes the ground."
 
 #. bestiary_lore.ENTRIES.701160  [ui]
-#: scripts/data/bestiary_lore.gd:50
+#: scripts/data/bestiary_lore.gd:55
 msgid "Uma besta criada para farejar faíscas."
 msgstr "A beast bred to sniff out sparks."
 
 #. bestiary_lore.ENTRIES.d1bb35  [ui]
-#: scripts/data/bestiary_lore.gd:51
+#: scripts/data/bestiary_lore.gd:56
 msgid "Não late. Investe."
 msgstr "It does not bark. It charges."
 
 #. bestiary_lore.ENTRIES.7dbeb6  [ui]
-#: scripts/data/bestiary_lore.gd:52
+#: scripts/data/bestiary_lore.gd:57
 msgid "Esquive da investida e golpeie enquanto ele freia."
 msgstr "Dodge the charge and strike while it skids to a halt."
 
 #. bestiary_lore.ENTRIES.adfd27  [ui]
-#: scripts/data/bestiary_lore.gd:55
+#: scripts/data/bestiary_lore.gd:60
 msgid "Ceifador de chifres que colhe a luz como trigo maduro."
 msgstr "A horned reaper that gathers light like ripe wheat."
 
 #. bestiary_lore.ENTRIES.613c95  [ui]
-#: scripts/data/bestiary_lore.gd:56
+#: scripts/data/bestiary_lore.gd:61
 msgid "Não guarda raiva; só cumpre a colheita."
 msgstr "It holds no anger; it only reaps."
 
 #. bestiary_lore.ENTRIES.78b745  [ui]
-#: scripts/data/bestiary_lore.gd:57
+#: scripts/data/bestiary_lore.gd:62
 msgid "Apare o golpe dourado e responda com o combo."
 msgstr "Parry the golden strike and answer with the combo."
 
 #. bestiary_lore.ENTRIES.e9525d  [ui]
-#: scripts/data/bestiary_lore.gd:60
+#: scripts/data/bestiary_lore.gd:65
 msgid "Guarda o Selo com um escudo que não conhece cansaço."
 msgstr "It guards the Seal with a shield that knows no weariness."
 
 #. bestiary_lore.ENTRIES.1da729  [ui]
-#: scripts/data/bestiary_lore.gd:61
+#: scripts/data/bestiary_lore.gd:66
 msgid "Atrás dele, a ordem; à frente, ninguém."
 msgstr "Behind it, order; before it, no one."
 
 #. bestiary_lore.ENTRIES.93f473  [ui]
-#: scripts/data/bestiary_lore.gd:62
+#: scripts/data/bestiary_lore.gd:67
 msgid "O golpe leve bate no escudo: use o forte ou uma magia."
 msgstr "Light strikes hit the shield: use a heavy strike or a spell."
 
+#. bestiary_lore.ENTRIES.091177  [ui]
+#: scripts/data/bestiary_lore.gd:70
+msgid "Um eco que não aprendeu a pousar."
+msgstr "An echo that never learned to land."
+
+#. bestiary_lore.ENTRIES.88f184  [ui]
+#: scripts/data/bestiary_lore.gd:71
+msgid "Paira em silêncio e cai sobre quem olha para baixo."
+msgstr "It hovers in silence and falls on whoever looks down."
+
+#. bestiary_lore.ENTRIES.5d9829  [ui]
+#: scripts/data/bestiary_lore.gd:72
+msgid "Ao pousar do mergulho, fica um instante no chão: golpeie aí."
+msgstr "After a dive it stays on the ground for a moment: strike then."
+
 #. bestiary_lore.ENTRIES.1880f3  [ui]
-#: scripts/data/bestiary_lore.gd:65
+#: scripts/data/bestiary_lore.gd:75
 msgid "Vigia dos céus baixos do Kenoma."
 msgstr "A watcher of the Kenoma's low skies."
 
 #. bestiary_lore.ENTRIES.db6fdf  [ui]
-#: scripts/data/bestiary_lore.gd:66
+#: scripts/data/bestiary_lore.gd:76
 msgid "Do alto, aponta e dispara."
 msgstr "From on high, it aims and fires."
 
 #. bestiary_lore.ENTRIES.90d8f6  [ui]
-#: scripts/data/bestiary_lore.gd:67
+#: scripts/data/bestiary_lore.gd:77
 msgid "Atira de longe: aproxime-se entre um disparo e outro."
 msgstr "It shoots from afar: close in between one shot and the next."
 
 #. bestiary_lore.ENTRIES.3a7052  [ui]
-#: scripts/data/bestiary_lore.gd:70
+#: scripts/data/bestiary_lore.gd:80
 msgid "Massa de ferro que obedece sem perguntar."
 msgstr "A mass of iron that obeys without asking."
 
 #. bestiary_lore.ENTRIES.25fb70  [ui]
-#: scripts/data/bestiary_lore.gd:71
+#: scripts/data/bestiary_lore.gd:81
 msgid "Cada passo faz o chão lembrar o próprio peso."
 msgstr "Each step makes the ground remember its own weight."
 
 #. bestiary_lore.ENTRIES.8989af  [ui]
-#: scripts/data/bestiary_lore.gd:72
+#: scripts/data/bestiary_lore.gd:82
 msgid "Não troque golpes com ele: esquive da pancada e volte."
 msgstr "Do not trade blows with it: dodge the slam and come back."
 
 #. bestiary_lore.ENTRIES.ffbd3a  [ui]
-#: scripts/data/bestiary_lore.gd:75
+#: scripts/data/bestiary_lore.gd:85
 msgid "Anuncia o Silêncio com uma coroa e um cajado."
 msgstr "It heralds Silence with a crown and a staff."
 
 #. bestiary_lore.ENTRIES.b115fd  [ui]
-#: scripts/data/bestiary_lore.gd:76
+#: scripts/data/bestiary_lore.gd:86
 msgid "A voz não chega; só o disparo."
 msgstr "The voice never arrives; only the shot."
 
 #. bestiary_lore.ENTRIES.a51a84  [ui]
-#: scripts/data/bestiary_lore.gd:77
+#: scripts/data/bestiary_lore.gd:87
 msgid "Atira de longe: feche a distância e não pare de golpear."
 msgstr "It shoots from afar: close the distance and keep striking."
 
 #. bestiary_lore.ENTRIES.0c8f59  [ui]
-#: scripts/data/bestiary_lore.gd:80
+#: scripts/data/bestiary_lore.gd:90
 msgid "Um eco do vazio que não decide onde está."
 msgstr "An echo of the void that cannot decide where it is."
 
 #. bestiary_lore.ENTRIES.053cbf  [ui]
-#: scripts/data/bestiary_lore.gd:81
+#: scripts/data/bestiary_lore.gd:91
 msgid "Some diante da presa e surge às suas costas."
 msgstr "It vanishes before its prey and appears at its back."
 
 #. bestiary_lore.ENTRIES.2aae9e  [ui]
-#: scripts/data/bestiary_lore.gd:82
+#: scripts/data/bestiary_lore.gd:92
 msgid "Quando ele sumir, vire-se: ele reaparece atrás de você."
 msgstr "When it vanishes, turn around: it reappears behind you."
 
 #. bestiary_lore.ENTRIES.2c6b00  [ui]
-#: scripts/data/bestiary_lore.gd:85
+#: scripts/data/bestiary_lore.gd:95
 msgid "Semeia o chão de larvas e reza por elas."
 msgstr "It sows the ground with larvae and prays for them."
 
 #. bestiary_lore.ENTRIES.b190fb  [ui]
-#: scripts/data/bestiary_lore.gd:86
+#: scripts/data/bestiary_lore.gd:96
 msgid "Prefere a distância e a multidão."
 msgstr "It prefers distance and a crowd."
 
 #. bestiary_lore.ENTRIES.e1b3e1  [ui]
-#: scripts/data/bestiary_lore.gd:87
+#: scripts/data/bestiary_lore.gd:97
 msgid "Derrube-o primeiro, antes que o chão se encha de larvas."
 msgstr "Take it down first, before the ground fills with larvae."
 
 #. bestiary_lore.ENTRIES.71896b  [ui]
-#: scripts/data/bestiary_lore.gd:90
+#: scripts/data/bestiary_lore.gd:100
 msgid "Uma forma que o Kenoma começou e desistiu de terminar."
 msgstr "A form the Kenoma began and gave up on finishing."
 
 #. bestiary_lore.ENTRIES.945f46  [ui]
-#: scripts/data/bestiary_lore.gd:91
+#: scripts/data/bestiary_lore.gd:101
 msgid "Garras, espinhos e pressa."
 msgstr "Claws, thorns and haste."
 
 #. bestiary_lore.ENTRIES.8e09ef  [ui]
-#: scripts/data/bestiary_lore.gd:92
+#: scripts/data/bestiary_lore.gd:102
 msgid "Investe com força: esquive e contra-ataque."
 msgstr "It charges hard: dodge and counter."
 
 #. bestiary_lore.ENTRIES.b48374  [ui]
-#: scripts/data/bestiary_lore.gd:96
+#: scripts/data/bestiary_lore.gd:106
 msgid "Caminha dormindo pelas catacumbas do Torpor."
 msgstr "It walks asleep through the catacombs of Torpor."
 
 #. bestiary_lore.ENTRIES.f9f24b  [ui]
-#: scripts/data/bestiary_lore.gd:97
+#: scripts/data/bestiary_lore.gd:107
 msgid "Boceja, e quem respira o bocejo fica pesado."
 msgstr "It yawns, and whoever breathes the yawn grows heavy."
 
 #. bestiary_lore.ENTRIES.0743d5  [ui]
-#: scripts/data/bestiary_lore.gd:98
+#: scripts/data/bestiary_lore.gd:108
 msgid "Saia da frente do bocejo: ele deixa você lenta."
 msgstr "Stay out of the yawn's path: it slows you down."
 
 #. bestiary_lore.ENTRIES.768e83  [ui]
-#: scripts/data/bestiary_lore.gd:101
+#: scripts/data/bestiary_lore.gd:111
 msgid "A Fome feita corpo, com uma boca no lugar do peito."
 msgstr "Hunger made flesh, with a mouth where its chest should be."
 
 #. bestiary_lore.ENTRIES.a1ddf1  [ui]
-#: scripts/data/bestiary_lore.gd:102
+#: scripts/data/bestiary_lore.gd:112
 msgid "Nunca está cheio; só está com menos fome."
 msgstr "It is never full; only less hungry."
 
 #. bestiary_lore.ENTRIES.e76087  [ui]
-#: scripts/data/bestiary_lore.gd:103
+#: scripts/data/bestiary_lore.gd:113
 msgid "Cada mordida que acerta o cura: não deixe que ele morda."
 msgstr "Every bite that lands heals it: do not let it bite."
 
 #. bestiary_lore.ENTRIES.b9ab7a  [ui]
-#: scripts/data/bestiary_lore.gd:106
+#: scripts/data/bestiary_lore.gd:116
 msgid "Ninguém sabe do que é acusado; ele também não."
 msgstr "No one knows what they are accused of; neither does he."
 
 #. bestiary_lore.ENTRIES.2df98a  [ui]
-#: scripts/data/bestiary_lore.gd:107
+#: scripts/data/bestiary_lore.gd:117
 msgid "A corrente dele nunca solta o que prende."
 msgstr "His chain never lets go of what it holds."
 
 #. bestiary_lore.ENTRIES.d31738  [ui]
-#: scripts/data/bestiary_lore.gd:108
+#: scripts/data/bestiary_lore.gd:118
 msgid "A corrente prende você no lugar: esquive quando ele lançar."
 msgstr "The chain pins you in place: dodge when he throws it."
 
 #. bestiary_lore.ENTRIES.5638bf  [ui]
-#: scripts/data/bestiary_lore.gd:111
+#: scripts/data/bestiary_lore.gd:121
 msgid "Guarda a biblioteca de livros em branco."
 msgstr "He guards the library of blank books."
 
 #. bestiary_lore.ENTRIES.197850  [ui]
-#: scripts/data/bestiary_lore.gd:112
+#: scripts/data/bestiary_lore.gd:122
 msgid "A boca costurada; o silêncio, contagioso."
 msgstr "His mouth sewn shut; his silence, contagious."
 
 #. bestiary_lore.ENTRIES.a7bc4d  [ui]
-#: scripts/data/bestiary_lore.gd:113
+#: scripts/data/bestiary_lore.gd:123
 msgid "Perto dele as magias calam: lute com a arma."
 msgstr "Near him, spells fall silent: fight with the weapon."
 
 #. bestiary_lore.ENTRIES.065040  [ui]
-#: scripts/data/bestiary_lore.gd:116
+#: scripts/data/bestiary_lore.gd:126
 msgid "O Espelho devolve tudo, até o golpe."
 msgstr "The Mirror returns everything, even the blow."
 
 #. bestiary_lore.ENTRIES.b4bf78  [ui]
-#: scripts/data/bestiary_lore.gd:117
+#: scripts/data/bestiary_lore.gd:127
 msgid "Recua no instante exato do ataque."
 msgstr "It pulls back at the exact instant of the attack."
 
 #. bestiary_lore.ENTRIES.8d57aa  [ui]
-#: scripts/data/bestiary_lore.gd:118
+#: scripts/data/bestiary_lore.gd:128
 msgid "Ele recua do primeiro golpe: avance e emende o combo."
 msgstr "It recoils from the first strike: press in and chain the combo."
 
 #. bestiary_lore.ENTRIES.d8c42e  [ui]
-#: scripts/data/bestiary_lore.gd:121
+#: scripts/data/bestiary_lore.gd:131
 msgid "Carrega a Praga nas costas, como um jardim podre."
 msgstr "It carries Blight on its back, like a rotten garden."
 
 #. bestiary_lore.ENTRIES.b876b4  [ui]
-#: scripts/data/bestiary_lore.gd:122
+#: scripts/data/bestiary_lore.gd:132
 msgid "Morto, ainda floresce."
 msgstr "Dead, it still blooms."
 
 #. bestiary_lore.ENTRIES.38a685  [ui]
-#: scripts/data/bestiary_lore.gd:123
+#: scripts/data/bestiary_lore.gd:133
 msgid "Ao cair, deixa uma poça de veneno: afaste-se dela."
 msgstr "When it falls it leaves a pool of poison: move away from it."
 
 #. bestiary_lore.ENTRIES.7233c3  [ui]
-#: scripts/data/bestiary_lore.gd:126
+#: scripts/data/bestiary_lore.gd:136
 msgid "A guarda pessoal da Coroa."
 msgstr "The Crown's personal guard."
 
 #. bestiary_lore.ENTRIES.3b8fb5  [ui]
-#: scripts/data/bestiary_lore.gd:127
+#: scripts/data/bestiary_lore.gd:137
 msgid "Não dá as costas a ninguém."
 msgstr "It turns its back on no one."
 
 #. bestiary_lore.ENTRIES.15c21d  [ui]
-#: scripts/data/bestiary_lore.gd:128
+#: scripts/data/bestiary_lore.gd:138
 msgid "De frente, só o golpe forte fere: ataque pelas costas."
 msgstr "From the front only heavy strikes wound it: attack from behind."
 
 #. bestiary_lore.ENTRIES.590d68  [ui]
-#: scripts/data/bestiary_lore.gd:131
+#: scripts/data/bestiary_lore.gd:141
 msgid "O Espelho tira dela a forma e a enche de vazio."
 msgstr "The Mirror strips her of her form and fills it with void."
 
 #. bestiary_lore.ENTRIES.2c141a  [ui]
-#: scripts/data/bestiary_lore.gd:132
+#: scripts/data/bestiary_lore.gd:142
 msgid "Luta como ela, e mais depressa do que ela."
 msgstr "It fights like her, and faster than her."
 
 #. bestiary_lore.ENTRIES.bc10cb  [ui]
-#: scripts/data/bestiary_lore.gd:133
+#: scripts/data/bestiary_lore.gd:143
 msgid "Não troque golpes: apare e responda."
 msgstr "Do not trade blows: parry and answer."
 
 #. bestiary_lore.ENTRIES.7967cf  [ui]
-#: scripts/data/bestiary_lore.gd:137
+#: scripts/data/bestiary_lore.gd:147
 msgid "Athoth, Arconte do Torpor, oferece o sono como quem oferece abrigo."
 msgstr "Athoth, Archon of Torpor, offers sleep the way one offers shelter."
 
 #. bestiary_lore.ENTRIES.7d5949  [ui]
-#: scripts/data/bestiary_lore.gd:138
+#: scripts/data/bestiary_lore.gd:148
 msgid "A névoa dele rouba o movimento."
 msgstr "His fog steals movement."
 
 #. bestiary_lore.ENTRIES.fb4061  [ui]
-#: scripts/data/bestiary_lore.gd:139
+#: scripts/data/bestiary_lore.gd:149
 msgid "Saia da névoa: dentro dela você fica lenta."
 msgstr "Get out of the fog: inside it you are slowed."
 
 #. bestiary_lore.ENTRIES.813652  [ui]
-#: scripts/data/bestiary_lore.gd:142
+#: scripts/data/bestiary_lore.gd:152
 msgid "Harmas, Arconte da Fome, vende tudo o que falta."
 msgstr "Harmas, Archon of Hunger, sells everything that is missing."
 
 #. bestiary_lore.ENTRIES.0b3bf8  [ui]
-#: scripts/data/bestiary_lore.gd:143
+#: scripts/data/bestiary_lore.gd:153
 msgid "Uma boca sem fim no lugar do torso."
 msgstr "An endless mouth where the torso should be."
 
 #. bestiary_lore.ENTRIES.4f3a88  [ui]
-#: scripts/data/bestiary_lore.gd:144
+#: scripts/data/bestiary_lore.gd:154
 msgid "Quando ele começar a sugar, afaste-se antes da pancada."
 msgstr "When he starts to suck in, move away before the slam."
 
 #. bestiary_lore.ENTRIES.33ab3b  [ui]
-#: scripts/data/bestiary_lore.gd:147
+#: scripts/data/bestiary_lore.gd:157
 msgid "Galila, Arconte da Corrente, classifica, julga e prende."
 msgstr "Galila, Archon of the Chain, classifies, judges and binds."
 
 #. bestiary_lore.ENTRIES.e4391c  [ui]
-#: scripts/data/bestiary_lore.gd:148
+#: scripts/data/bestiary_lore.gd:158
 msgid "Toda lei deseja uma corrente."
 msgstr "Every law longs for a chain."
 
 #. bestiary_lore.ENTRIES.185040  [ui]
-#: scripts/data/bestiary_lore.gd:149
+#: scripts/data/bestiary_lore.gd:159
 msgid "A corrente prende no lugar: esquive do lançamento e da investida."
 msgstr "The chain pins you in place: dodge the throw and the charge."
 
 #. bestiary_lore.ENTRIES.33cae8  [ui]
-#: scripts/data/bestiary_lore.gd:152
+#: scripts/data/bestiary_lore.gd:162
 msgid "Yabel, Arconte do Silêncio, não fala: só cala."
 msgstr "Yabel, Archon of Silence, does not speak: he only silences."
 
 #. bestiary_lore.ENTRIES.a6b3d6  [ui]
-#: scripts/data/bestiary_lore.gd:153
+#: scripts/data/bestiary_lore.gd:163
 msgid "A aura dele enterra as magias no vazio."
 msgstr "His aura buries spells in the void."
 
 #. bestiary_lore.ENTRIES.5fe225  [ui]
-#: scripts/data/bestiary_lore.gd:154
+#: scripts/data/bestiary_lore.gd:164
 msgid "Na aura, use a arma. Ferido, ele surge às suas costas."
 msgstr "Inside the aura, use the weapon. Wounded, he appears at your back."
 
 #. bestiary_lore.ENTRIES.807fc2  [ui]
-#: scripts/data/bestiary_lore.gd:157
+#: scripts/data/bestiary_lore.gd:167
 msgid "Astaphaios, Arconte do Espelho, devolve as palavras de quem o enfrenta."
 msgstr "Astaphaios, Archon of the Mirror, returns the words of whoever faces him."
 
 #. bestiary_lore.ENTRIES.6f75c6  [ui]
-#: scripts/data/bestiary_lore.gd:158
+#: scripts/data/bestiary_lore.gd:168
 msgid "Prata, cacos e um “nós” que não é ninguém."
 msgstr "Silver, shards and a “we” that is no one."
 
 #. bestiary_lore.ENTRIES.6504c8  [ui]
-#: scripts/data/bestiary_lore.gd:159
+#: scripts/data/bestiary_lore.gd:169
 msgid "Ferido, chama a Sombra da Sophia: não deixe que ela cerque você."
 msgstr "Wounded, he calls Sophia's Shadow: do not let it surround you."
 
 #. bestiary_lore.ENTRIES.fdbab9  [ui]
-#: scripts/data/bestiary_lore.gd:162
+#: scripts/data/bestiary_lore.gd:172
 msgid "Belias, Arconte da Praga, confunde cansaço com verdade."
 msgstr "Belias, Archon of Blight, mistakes weariness for truth."
 
 #. bestiary_lore.ENTRIES.890764  [ui]
-#: scripts/data/bestiary_lore.gd:163
+#: scripts/data/bestiary_lore.gd:173
 msgid "Onde passa, a vida esquece de morrer."
 msgstr "Wherever he passes, life forgets to die."
 
 #. bestiary_lore.ENTRIES.5efbb0  [ui]
-#: scripts/data/bestiary_lore.gd:164
+#: scripts/data/bestiary_lore.gd:174
 msgid "A investida deixa poças de veneno: não lute em cima delas."
 msgstr "His charge leaves pools of poison: do not fight standing in them."
 
 #. bestiary_lore.ENTRIES.3f6b23  [ui]
-#: scripts/data/bestiary_lore.gd:167
+#: scripts/data/bestiary_lore.gd:177
 msgid "Armupiel, Arconte da Coroa: quase rei de tudo."
 msgstr "Armupiel, Archon of the Crown: almost king of everything."
 
 #. bestiary_lore.ENTRIES.f7c470  [ui]
-#: scripts/data/bestiary_lore.gd:168
+#: scripts/data/bestiary_lore.gd:178
 msgid "Um trono feito de obediência."
 msgstr "A throne made of obedience."
 
 #. bestiary_lore.ENTRIES.1a90b8  [ui]
-#: scripts/data/bestiary_lore.gd:169
+#: scripts/data/bestiary_lore.gd:179
 msgid "Ferido, chama servos e se blinda: derrube os servos primeiro."
 msgstr "Wounded, he summons servants and shields himself: take the servants down first."
 
 #. bestiary_lore.ENTRIES.df2335  [ui]
-#: scripts/data/bestiary_lore.gd:173
+#: scripts/data/bestiary_lore.gd:183
 msgid "O sacerdote branco que guarda o Limiar."
 msgstr "The white priest who guards the Threshold."
 
 #. bestiary_lore.ENTRIES.99886a  [ui]
-#: scripts/data/bestiary_lore.gd:174
+#: scripts/data/bestiary_lore.gd:184
 msgid "Gentil demais para quem fecha uma passagem."
 msgstr "Too kind for one who bars a passage."
 
 #. bestiary_lore.ENTRIES.ba05fc  [ui]
-#: scripts/data/bestiary_lore.gd:175
+#: scripts/data/bestiary_lore.gd:185
 msgid "Apare os golpes dourados; esquive dos vermelhos."
 msgstr "Parry the golden strikes; dodge the red ones."
 
 #. bestiary_lore.ENTRIES.59f02d  [ui]
-#: scripts/data/bestiary_lore.gd:178
+#: scripts/data/bestiary_lore.gd:188
 msgid "A máscara do Rei, agora sem quem a sustente."
 msgstr "The King's mask, with no one left to hold it up."
 
 #. bestiary_lore.ENTRIES.e5541b  [ui]
-#: scripts/data/bestiary_lore.gd:179
+#: scripts/data/bestiary_lore.gd:189
 msgid "Mais frágil e mais rápida que a do Limiar."
 msgstr "More fragile and faster than the one at the Threshold."
 
 #. bestiary_lore.ENTRIES.2b07b2  [ui]
-#: scripts/data/bestiary_lore.gd:180
+#: scripts/data/bestiary_lore.gd:190
 msgid "Leia o brilho cedo: o golpe chega mais depressa."
 msgstr "Read the glow early: the blow arrives sooner."
 
 #. bestiary_lore.ENTRIES.00df00  [ui]
-#: scripts/data/bestiary_lore.gd:183
+#: scripts/data/bestiary_lore.gd:193
 msgid "O que havia atrás da máscara: um gigante oco."
 msgstr "What lay behind the mask: a hollow giant."
 
 #. bestiary_lore.ENTRIES.2bfd73  [ui]
-#: scripts/data/bestiary_lore.gd:184
+#: scripts/data/bestiary_lore.gd:194
 msgid "Os cacos do rosto ainda refletem luz alheia."
 msgstr "The shards of its face still reflect borrowed light."
 
 #. bestiary_lore.ENTRIES.46e32f  [ui]
-#: scripts/data/bestiary_lore.gd:185
+#: scripts/data/bestiary_lore.gd:195
 msgid "Fique fora do alcance da pancada e golpeie na volta."
 msgstr "Stay out of the slam's reach and strike on its way back."
 
 #. bestiary_lore.ENTRIES.e6fd81  [ui]
-#: scripts/data/bestiary_lore.gd:188
+#: scripts/data/bestiary_lore.gd:198
 msgid "Yaldabaoth, o Demiurgo: fez o Kenoma e o chamou de seu."
 msgstr "Yaldabaoth, the Demiurge: he made the Kenoma and called it his."
 
 #. bestiary_lore.ENTRIES.732cf4  [ui]
-#: scripts/data/bestiary_lore.gd:189
+#: scripts/data/bestiary_lore.gd:199
 msgid "Cego para tudo o que não é ele."
 msgstr "Blind to all that is not himself."
 
 #. bestiary_lore.ENTRIES.974de9  [ui]
-#: scripts/data/bestiary_lore.gd:190
+#: scripts/data/bestiary_lore.gd:200
 msgid "Nenhuma arma basta sozinha: lembre-se do que arde."
 msgstr "No weapon is enough on its own: remember what burns."
 
 #. bestiary_lore.ENTRIES.dbf409  [ui]
-#: scripts/data/bestiary_lore.gd:194
+#: scripts/data/bestiary_lore.gd:204
 msgid "Soter, o Ungido, caminha livre pelo Kenoma: o Cego não o vê."
 msgstr "Soter, the Anointed, walks freely through the Kenoma: the Blind One cannot see him."
 
 #. bestiary_lore.ENTRIES.ecb4c5  [ui]
-#: scripts/data/bestiary_lore.gd:195
+#: scripts/data/bestiary_lore.gd:205
 msgid "Cura, desperta e pergunta. Nunca luta."
 msgstr "He heals, awakens and asks. He never fights."
 
 #. bestiary_lore.ENTRIES.0fc644  [ui]
-#: scripts/data/bestiary_lore.gd:196
+#: scripts/data/bestiary_lore.gd:206
 msgid "Ele não luta: escolha um dos dons que ele oferece."
 msgstr "He does not fight: choose one of the gifts he offers."
 
 #. bestiary_lore.ENTRIES.193a39  [ui]
-#: scripts/data/bestiary_lore.gd:199
+#: scripts/data/bestiary_lore.gd:209
 msgid "Velkar, o Arconte que soltou a própria corrente."
 msgstr "Velkar, the Archon who let go of his own chain."
 
 #. bestiary_lore.ENTRIES.d47435  [ui]
-#: scripts/data/bestiary_lore.gd:200
+#: scripts/data/bestiary_lore.gd:210
 msgid "Perdeu a coroa e o posto; ficou com a culpa."
 msgstr "He lost the crown and the post; he kept the guilt."
 
 #. bestiary_lore.ENTRIES.f4e808  [ui]
-#: scripts/data/bestiary_lore.gd:201
+#: scripts/data/bestiary_lore.gd:211
 msgid "Ele não luta: ouça o que ele tem a dizer."
 msgstr "He does not fight: listen to what he has to say."
 
 #. bestiary_lore.category.eaceb5  [ui]
-#: scripts/data/bestiary_lore.gd:208
+#: scripts/data/bestiary_lore.gd:218
 msgid "A faísca"
 msgstr "The spark"
 
 #. bestiary_lore.category.00a3e5  [ui]
-#: scripts/data/bestiary_lore.gd:210
+#: scripts/data/bestiary_lore.gd:220
 msgid "Aliado"
 msgstr "Ally"
 
 #. bestiary_lore.category.6dffc1  [ui]
-#: scripts/data/bestiary_lore.gd:217
+#: scripts/data/bestiary_lore.gd:227
 msgid "Arconte  ·  "
 msgstr "Archon  ·  "
 
 #. bestiary_lore.category.187bde  [ui]
-#: scripts/data/bestiary_lore.gd:220
+#: scripts/data/bestiary_lore.gd:230
 msgid "Guardião  ·  "
 msgstr "Guardian  ·  "
 
 #. bestiary_lore.category.d8f090  [ui]
-#: scripts/data/bestiary_lore.gd:222
+#: scripts/data/bestiary_lore.gd:232
 msgid "Arconte  ·  Espelho"
 msgstr "Archon  ·  Mirror"
 
 #. bestiary_lore.category.de87bb  [ui]
-#: scripts/data/bestiary_lore.gd:223
+#: scripts/data/bestiary_lore.gd:233
 msgid "Criatura do Kenoma"
 msgstr "Creature of the Kenoma"
 

@@ -106,11 +106,11 @@ func _do_soter(player: Node) -> void:
 			if player.health:
 				player.health.heal(player.health.max_health)
 		1:
-			if Progression.weapon_level < Progression.MAX_WEAPON_LEVEL:
-				Progression.weapon_level += 1
-				Progression.weapon_level_changed.emit(Progression.weapon_level)
-			else:
-				Progression.add_orbs(120)     # arma já desperta: faíscas no lugar
+			# O presente respeita o selo de nível da arma (Progressão); selada ou
+			# no máximo, vêm faíscas no lugar — entregues como orbes (R6).
+			if not Progression.gift_weapon_level():
+				Progression.add_orbs(120)
+				SparkOrb.burst(get_parent(), global_position + Vector2(0, -30), 9)
 		2:
 			Progression.bonus_max_health += 25
 			Progression.stats_changed.emit()
@@ -175,9 +175,12 @@ func _soter_lightness(player: Node) -> void:
 		return
 	if done:
 		Audio.play_sfx("stele_unlock", -1.0, -4.0)
+		# As 30 faíscas entram como TODAS as outras (R6): creditadas e entregues em
+		# orbes que voam do degrau até ela, com a nota que sobe em escala.
 		Progression.add_orbs(30)
 		if _ledge != null and is_instance_valid(_ledge):
 			_ledge.reward()
+			SparkOrb.burst(get_parent(), _ledge.global_position + Vector2(0, -20), 9)
 		Gnosis.captions(Narrative.soter_lightness_done())
 		_art.set_anim("rest")                  # mãos juntas, em paz — antes de partir
 		await get_tree().create_timer(1.6, true, false, true).timeout
