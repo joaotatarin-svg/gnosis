@@ -183,11 +183,10 @@ static func _tr_credit(text: String) -> String:
 	if not I18n.is_en():
 		return text
 	var out := I18n.t(text)      # chave inteira (ou padrão "%s: %s" parcial)
-	if out == text:
-		for h in CREDIT_HEADS:
-			if out.begins_with(h):
-				out = I18n.t(h) + out.substr(String(h).length())
-				break
+	for h in CREDIT_HEADS:       # rótulo que ficou em português (padrão parcial ou linha nova)
+		if out.begins_with(h):
+			out = I18n.t(h) + out.substr(String(h).length())
+			break
 	# trechos em português que sobraram (padrão parcial ou linha nova)
 	for frag in CREDIT_FRAGMENTS:
 		if out.contains(frag):

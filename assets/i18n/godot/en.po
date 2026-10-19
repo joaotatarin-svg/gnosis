@@ -5981,232 +5981,232 @@ msgid "AINDA NÃO ENCONTRADO"
 msgstr "NOT YET FOUND"
 
 #. hud._on_weapon.3b2ee9  [ui]
-#: scripts/ui/hud.gd:299
+#: scripts/ui/hud.gd:304
 msgid "lança o inimigo para o alto"
 msgstr "launches the enemy into the air"
 
 #. hud._on_weapon.d40c9a  [ui]
-#: scripts/ui/hud.gd:301
+#: scripts/ui/hud.gd:306
 msgid "golpe no ar"
 msgstr "air strike"
 
 #. hud._on_achievement.87fa2b  [toast]
-#: scripts/ui/hud.gd:462
+#: scripts/ui/hud.gd:467
 msgid "Conquista  ·  %s"
 msgstr "Achievement  ·  %s"
 
 #. hud.seal_text.c9c856  [ui]
-#: scripts/ui/hud.gd:905
+#: scripts/ui/hud.gd:910
 msgid "Arma Nv. %d na loja"
 msgstr "Weapon Lv. %d in the shop"
 
 #. hud.seal_text.117cdc  [ui]
-#: scripts/ui/hud.gd:911
+#: scripts/ui/hud.gd:916
 msgid "%s na loja"
 msgstr "%s in the shop"
 
 #. hud.seal_text.3e2d6c  [ui]
-#: scripts/ui/hud.gd:914
+#: scripts/ui/hud.gd:919
 msgid "mais Vida e Éter na loja"
 msgstr "more Life and Aether in the shop"
 
 #. hud.seal_text.3e9499  [ui]
-#: scripts/ui/hud.gd:915
+#: scripts/ui/hud.gd:920
 msgid "Selo aberto"
 msgstr "Seal opened"
 
 #. hud._queue_screen_hints.97ec4f  [ui]
-#: scripts/ui/hud.gd:994
+#: scripts/ui/hud.gd:999
 msgid "golpe leve"
 msgstr "light strike"
 
 #. hud._queue_screen_hints.df3f2e  [ui]
-#: scripts/ui/hud.gd:994
+#: scripts/ui/hud.gd:999
 msgid "golpe forte"
 msgstr "heavy strike"
 
 #. hud._queue_screen_hints.3c90a7  [ui]
-#: scripts/ui/hud.gd:995
+#: scripts/ui/hud.gd:1000
 msgid "bloquear · no tempo, apara"
 msgstr "block · on time, parries"
 
 #. hud._queue_screen_hints.6b344d  [ui]
-#: scripts/ui/hud.gd:997
+#: scripts/ui/hud.gd:1002
 msgid "sequência do cajado"
 msgstr "staff combo"
 
 #. hud._queue_screen_hints.61dfe8  [ui]
-#: scripts/ui/hud.gd:998
+#: scripts/ui/hud.gd:1003
 msgid "Esfera Solar (gasta Éter)"
 msgstr "Sun Orb (costs Aether)"
 
 #. hud._queue_screen_hints.336d16  [ui]
-#: scripts/ui/hud.gd:1000
+#: scripts/ui/hud.gd:1005
 msgid "telégrafo amarelo:"
 msgstr "yellow tell:"
 
 #. hud._queue_screen_hints.e9b353  [ui]
-#: scripts/ui/hud.gd:1000
+#: scripts/ui/hud.gd:1005
 msgid "vermelho:"
 msgstr "red:"
 
 #. hud._queue_screen_hints.bd84ff  [ui]
-#: scripts/ui/hud.gd:1001
+#: scripts/ui/hud.gd:1006
 msgid "pausa · Golpes & Controles"
 msgstr "pause · Moves & Controls"
 
 #. hud._check_ring_hints.385e09  [ui]
-#: scripts/ui/hud.gd:1013
+#: scripts/ui/hud.gd:1018
 msgid "usar o Anel equipado (gasta Éter)"
 msgstr "use the equipped Ring (costs Aether)"
 
 #. hud._check_ring_hints.beab08  [ui]
-#: scripts/ui/hud.gd:1015
+#: scripts/ui/hud.gd:1020
 msgid "trocar de Anel"
 msgstr "switch Ring"
 
 #. hud.key_label.84c4c5  [ui]
-#: scripts/ui/hud.gd:1123
+#: scripts/ui/hud.gd:1128
 msgid "Analógico"
 msgstr "Stick"
 
 #. hud.key_label.f999e2  [ui]
-#: scripts/ui/hud.gd:1123
+#: scripts/ui/hud.gd:1128
 msgid "%s  %s"
 msgstr "%s  %s"
 
 #. hud._key_name.f61d6e  [ui]
-#: scripts/ui/hud.gd:1168
+#: scripts/ui/hud.gd:1173
 msgid "Espaço"
 msgstr "Space"
 
 #. hud._key_name.1f7a4f  [ui]
-#: scripts/ui/hud.gd:1169
+#: scripts/ui/hud.gd:1174
 msgid "Esc"
 msgstr "Esc"
 
 #. hud._key_name.469d5b  [ui]
-#: scripts/ui/hud.gd:1170
+#: scripts/ui/hud.gd:1175
 msgid "Shift"
 msgstr "Shift"
 
 #. hud._key_name.2b9ece  [ui]
-#: scripts/ui/hud.gd:1171
+#: scripts/ui/hud.gd:1176
 msgid "Enter"
 msgstr "Enter"
 
 #. hud._key_name.71815f  [ui]
-#: scripts/ui/hud.gd:1172
+#: scripts/ui/hud.gd:1177
 msgid "Esq."
 msgstr "Left"
 
 #. hud._key_name.72acb3  [ui]
-#: scripts/ui/hud.gd:1173
+#: scripts/ui/hud.gd:1178
 msgid "Dir."
 msgstr "Right"
 
 #. hud._key_name.4effab  [ui]
-#: scripts/ui/hud.gd:1174
+#: scripts/ui/hud.gd:1179
 msgid "Cima"
 msgstr "Up"
 
 #. hud._key_name.74fd00  [ui]
-#: scripts/ui/hud.gd:1175
+#: scripts/ui/hud.gd:1180
 msgid "Baixo"
 msgstr "Down"
 
 #. hud._pad_button_name.6dcd4c  [ui]
-#: scripts/ui/hud.gd:1181
+#: scripts/ui/hud.gd:1186
 msgid "A"
 msgstr "A"
 
 #. hud._pad_button_name.ae4f28  [ui]
-#: scripts/ui/hud.gd:1182
+#: scripts/ui/hud.gd:1187
 msgid "B"
 msgstr "B"
 
 #. hud._pad_button_name.c032ad  [ui]
-#: scripts/ui/hud.gd:1183
+#: scripts/ui/hud.gd:1188
 msgid "X"
 msgstr "X"
 
 #. hud._pad_button_name.23eb4d  [ui]
-#: scripts/ui/hud.gd:1184
+#: scripts/ui/hud.gd:1189
 msgid "Y"
 msgstr "Y"
 
 #. hud._pad_button_name.2d1958  [ui]
-#: scripts/ui/hud.gd:1185
+#: scripts/ui/hud.gd:1190
 msgid "LB"
 msgstr "LB"
 
 #. hud._pad_button_name.38026d  [ui]
-#: scripts/ui/hud.gd:1186
+#: scripts/ui/hud.gd:1191
 msgid "RB"
 msgstr "RB"
 
 #. hud._pad_button_name.952f37  [ui]
-#: scripts/ui/hud.gd:1188
+#: scripts/ui/hud.gd:1193
 msgid "Start"
 msgstr "Start"
 
 #. hud._pad_button_name.53157e  [ui]
-#: scripts/ui/hud.gd:1189
+#: scripts/ui/hud.gd:1194
 msgid "D-pad Esq."
 msgstr "D-pad Left"
 
 #. hud._pad_button_name.b7d05d  [ui]
-#: scripts/ui/hud.gd:1190
+#: scripts/ui/hud.gd:1195
 msgid "D-pad Dir."
 msgstr "D-pad Right"
 
 #. hud._pad_button_name.442f4a  [ui]
-#: scripts/ui/hud.gd:1191
+#: scripts/ui/hud.gd:1196
 msgid "D-pad Cima"
 msgstr "D-pad Up"
 
 #. hud._pad_button_name.237b1b  [ui]
-#: scripts/ui/hud.gd:1192
+#: scripts/ui/hud.gd:1197
 msgid "D-pad Baixo"
 msgstr "D-pad Down"
 
 #. hud._pad_button_name.67c850  [ui]
-#: scripts/ui/hud.gd:1193
+#: scripts/ui/hud.gd:1198
 msgid "Botão %d"
 msgstr "Button %d"
 
 #. hud._pad_axis_name.6c62fb  [ui]
-#: scripts/ui/hud.gd:1198
+#: scripts/ui/hud.gd:1203
 msgid "LT"
 msgstr "LT"
 
 #. hud._pad_axis_name.bc410c  [ui]
-#: scripts/ui/hud.gd:1199
+#: scripts/ui/hud.gd:1204
 msgid "RT"
 msgstr "RT"
 
 #. hud._pad_axis_name.e39ae1  [ui]
-#: scripts/ui/hud.gd:1201
+#: scripts/ui/hud.gd:1206
 msgid "Eixo %d"
 msgstr "Axis %d"
 
 #. hud._draw_go.70bdc3  [ui]
-#: scripts/ui/hud.gd:1290
+#: scripts/ui/hud.gd:1295
 msgid "Siga em frente"
 msgstr "Keep going"
 
 #. hud._draw_counters.a602bb  [ui]
-#: scripts/ui/hud.gd:1417
+#: scripts/ui/hud.gd:1422
 msgid "Arma Nv. %d"
 msgstr "Weapon Lv. %d"
 
 #. hud._draw_one_boss.dbb588  [ui]
-#: scripts/ui/hud.gd:1697
+#: scripts/ui/hud.gd:1702
 msgid "FASE III"
 msgstr "PHASE III"
 
 #. hud._draw_one_boss.794201  [ui]
-#: scripts/ui/hud.gd:1697
+#: scripts/ui/hud.gd:1702
 msgid "FASE II"
 msgstr "PHASE II"
 
@@ -6866,47 +6866,47 @@ msgid "Desligada"
 msgstr "Off"
 
 #. pause_menu._ready.6867e6  [ui]
-#: scripts/ui/pause_menu.gd:44
+#: scripts/ui/pause_menu.gd:45
 msgid "Relic"
 msgstr "Relic"
 
 #. pause_menu._role_text.352f78  [ui]
-#: scripts/ui/pause_menu.gd:74
+#: scripts/ui/pause_menu.gd:75
 msgid "Provação  ·  encontro %d / 3"
 msgstr "Trial  ·  encounter %d / 3"
 
 #. pause_menu._open_map.412f13  [ui]
-#: scripts/ui/pause_menu.gd:120
+#: scripts/ui/pause_menu.gd:121
 msgid "O caminho do Éon até aqui. Só para olhar."
 msgstr "The Aeon's path so far. Just for looking."
 
 #. pause_menu._open_map.8b07a2  [ui]
-#: scripts/ui/pause_menu.gd:123
+#: scripts/ui/pause_menu.gd:124
 msgid "passeiam pelas saídas"
 msgstr "browse the exits"
 
 #. pause_menu._lock_upgrades_in_combat.da279d  [ui]
-#: scripts/ui/pause_menu.gd:161
+#: scripts/ui/pause_menu.gd:162
 msgid "Disponível fora de combate"
 msgstr "Available outside combat"
 
 #. pause_menu._ask_quit.0c5877  [ui]
-#: scripts/ui/pause_menu.gd:252
+#: scripts/ui/pause_menu.gd:253
 msgid "Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d."
 msgstr "You'll return to the menu. Your saved return point remains: %s, screen %d."
 
 #. pause_menu._ask_quit.9e31c8  [ui]
-#: scripts/ui/pause_menu.gd:254
+#: scripts/ui/pause_menu.gd:255
 msgid "Você volta ao menu. A Provação não grava progresso."
 msgstr "You'll return to the menu. The Trial doesn't save progress."
 
 #. pause_menu._ask_quit.d7932f  [ui]
-#: scripts/ui/pause_menu.gd:255
+#: scripts/ui/pause_menu.gd:256
 msgid "Abandonar a jornada?"
 msgstr "Abandon the journey?"
 
 #. pause_menu._ask_quit.a2f17f  [ui]
-#: scripts/ui/pause_menu.gd:255
+#: scripts/ui/pause_menu.gd:256
 msgid "Abandonar"
 msgstr "Abandon"
 
@@ -6981,107 +6981,107 @@ msgid "fuja da maré"
 msgstr "flee the tide"
 
 #. upgrade_menu._ready.ef0a9f  [ui]
-#: scripts/ui/upgrade_menu.gd:43
+#: scripts/ui/upgrade_menu.gd:44
 msgid "Santuário de Ascensão"
 msgstr "Shrine of Ascension"
 
 #. upgrade_menu._ready.87090a  [ui]
-#: scripts/ui/upgrade_menu.gd:81
+#: scripts/ui/upgrade_menu.gd:82
 msgid "Voltar ao jogo"
 msgstr "Back to game"
 
 #. upgrade_menu._ready.fc9a7c  [ui]
-#: scripts/ui/upgrade_menu.gd:81
+#: scripts/ui/upgrade_menu.gd:82
 msgid "Seguir caminho"
 msgstr "Move on"
 
 #. upgrade_menu._rebuild.8a9815  [ui]
-#: scripts/ui/upgrade_menu.gd:110
+#: scripts/ui/upgrade_menu.gd:111
 msgid "abre: "
 msgstr "opens: "
 
 #. upgrade_menu._rebuild.782524  [ui]
-#: scripts/ui/upgrade_menu.gd:111
+#: scripts/ui/upgrade_menu.gd:112
 msgid "Arma Nv. %d → %d"
 msgstr "Weapon Lv. %d → %d"
 
 #. upgrade_menu._rebuild.ac6d4d  [ui]
-#: scripts/ui/upgrade_menu.gd:117
+#: scripts/ui/upgrade_menu.gd:118
 msgid "Arma no nível máximo"
 msgstr "Weapon at max level"
 
 #. upgrade_menu._rebuild.3efade  [ui]
-#: scripts/ui/upgrade_menu.gd:127
+#: scripts/ui/upgrade_menu.gd:128
 msgid "%s  ·  Nv. %d (máx.)"
 msgstr "%s  ·  Lv. %d (max.)"
 
 #. upgrade_menu._rebuild.25f367  [ui]
-#: scripts/ui/upgrade_menu.gd:130
+#: scripts/ui/upgrade_menu.gd:131
 msgid "%s  ·  Nv. %d → %d"
 msgstr "%s  ·  Lv. %d → %d"
 
 #. upgrade_menu._rebuild.c03253  [ui]
-#: scripts/ui/upgrade_menu.gd:138
+#: scripts/ui/upgrade_menu.gd:139
 msgid "+20 de vida máx.  ·  %d / %d"
 msgstr "+20 max health  ·  %d / %d"
 
 #. upgrade_menu._rebuild.29a2f3  [ui]
-#: scripts/ui/upgrade_menu.gd:140
+#: scripts/ui/upgrade_menu.gd:141
 msgid "no máximo"
 msgstr "maxed out"
 
 #. upgrade_menu._rebuild.591292  [ui]
-#: scripts/ui/upgrade_menu.gd:147
+#: scripts/ui/upgrade_menu.gd:148
 msgid "+15 de Éter máx.  ·  %d / %d"
 msgstr "+15 max Aether  ·  %d / %d"
 
 #. upgrade_menu._rebuild.8ffaef  [ui]
-#: scripts/ui/upgrade_menu.gd:165
+#: scripts/ui/upgrade_menu.gd:166
 msgid "%s  ·  em uso"
 msgstr "%s  ·  in use"
 
 #. upgrade_menu._rebuild.fe513f  [ui]
-#: scripts/ui/upgrade_menu.gd:167
+#: scripts/ui/upgrade_menu.gd:168
 msgid "%s  ·  usar"
 msgstr "%s  ·  use"
 
 #. upgrade_menu._rebuild.58c64b  [ui]
-#: scripts/ui/upgrade_menu.gd:169
+#: scripts/ui/upgrade_menu.gd:170
 msgid "Relíquia  ·  %s"
 msgstr "Relic  ·  %s"
 
 #. upgrade_menu._rebuild.df1a37  [ui]
-#: scripts/ui/upgrade_menu.gd:178
+#: scripts/ui/upgrade_menu.gd:179
 msgid "Restauração  ·  cura completa"
 msgstr "Restoration  ·  full heal"
 
 #. upgrade_menu._rebuild.3c4a13  [ui]
-#: scripts/ui/upgrade_menu.gd:178
+#: scripts/ui/upgrade_menu.gd:179
 msgid "a vida já está cheia"
 msgstr "health is already full"
 
 #. upgrade_menu._rebuild.8ac00e  [ui]
-#: scripts/ui/upgrade_menu.gd:180
+#: scripts/ui/upgrade_menu.gd:181
 msgid "só no santuário e depois do Arconte"
 msgstr "only at the shrine and after the Archon"
 
 #. upgrade_menu._update_status.74cd2e  [ui]
-#: scripts/ui/upgrade_menu.gd:202
+#: scripts/ui/upgrade_menu.gd:203
 msgid "Selado  ·  vença %s para abrir"
 msgstr "Sealed  ·  defeat %s to open"
 
 #. upgrade_menu._update_status.deb328  [ui]
-#: scripts/ui/upgrade_menu.gd:206
+#: scripts/ui/upgrade_menu.gd:207
 msgid "Faíscas insuficientes  ·  faltam %d"
 msgstr "Not enough sparks  ·  %d short"
 
 #. upgrade_menu._update_status.cdab2e  [ui]
-#: scripts/ui/upgrade_menu.gd:221
+#: scripts/ui/upgrade_menu.gd:222
 msgid "Faíscas insuficientes para as melhorias"
 msgstr "Not enough sparks for the upgrades"
 
 #. upgrade_menu._add_sealed.3e1bec  [ui]
-#: scripts/ui/upgrade_menu.gd:228
+#: scripts/ui/upgrade_menu.gd:229
 msgid "selado  ·  vença %s"
 msgstr "sealed  ·  defeat %s"
 

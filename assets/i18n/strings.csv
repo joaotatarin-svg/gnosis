@@ -86,9 +86,9 @@ game_manager.screen_title.76f65a,%s · O Desafio,%s · The Challenge,ui,,,script
 game_manager.screen_title.bcc8a0,%s · Antessala,%s · Antechamber,ui,,,scripts/autoload/game_manager.gd:292,format string: manter os %
 game_manager.screen_title.4907e4,%s · O Arconte,%s · The Archon,ui,,,scripts/autoload/game_manager.gd:293,format string: manter os %
 game_manager.screen_title.8bca3a,%s · Travessia %s,%s · Crossing %s,ui,,,scripts/autoload/game_manager.gd:297,format string: manter os %
-game_manager._roman.ca73ab,I,I,ui,,,scripts/autoload/game_manager.gd:301 scripts/ui/hud.gd:1710,
-game_manager._roman.e95267,II,II,ui,,,scripts/autoload/game_manager.gd:301 scripts/ui/hud.gd:1712,
-game_manager._roman.a6178c,III,III,ui,,,scripts/autoload/game_manager.gd:301 scripts/ui/hud.gd:1712,
+game_manager._roman.ca73ab,I,I,ui,,,scripts/autoload/game_manager.gd:301 scripts/ui/hud.gd:1715,
+game_manager._roman.e95267,II,II,ui,,,scripts/autoload/game_manager.gd:301 scripts/ui/hud.gd:1717,
+game_manager._roman.a6178c,III,III,ui,,,scripts/autoload/game_manager.gd:301 scripts/ui/hud.gd:1717,
 game_manager._roman.932eaa,IV,IV,ui,,,scripts/autoload/game_manager.gd:301,
 game_manager._roman.c9ee56,V,V,ui,,,scripts/autoload/game_manager.gd:301,
 game_manager._roman.85ebe3,VI,VI,ui,,,scripts/autoload/game_manager.gd:301,
@@ -1044,7 +1044,7 @@ level._play_narrative_beats.34d9f2,Recusar,Refuse,ui,,,scripts/levels/level.gd:3
 level._play_narrative_beats.8eb3bb,Ceder,Yield,ui,,,scripts/levels/level.gd:357,
 level._arm_objective.42e14a,Um totem chama reforços: quebre-o.,A totem calls reinforcements: break it.,ui,,,scripts/levels/level.gd:614,
 level._arm_objective.84d7c0,Proteja a luz do Adormecido: lute longe dela.,Protect the Sleeper's light: fight away from it.,ui,,,scripts/levels/level.gd:615,
-level._on_zone_cleared.5e6b69,Siga em frente  →,Keep going  →,toast,,60,scripts/levels/level.gd:696 scripts/ui/hud.gd:56,
+level._on_zone_cleared.5e6b69,Siga em frente  →,Keep going  →,toast,,60,scripts/levels/level.gd:696 scripts/ui/hud.gd:57,
 level._open_exit.141467,A fenda abriu no alto: suba.,The rift opened up high: climb.,toast,,60,scripts/levels/level.gd:882,
 level._on_player_died.f920d1,Você caiu no Kenoma,You fell in the Kenoma,ui,,,scripts/levels/level.gd:982,
 level._on_player_died.ba60d8,Chegou até a Tela %d.,Reached Screen %d.,ui,,,scripts/levels/level.gd:983,format string: manter os %
@@ -1128,7 +1128,7 @@ Tall crown, bulk and hierarchy.
 Servants hold up its armor.",ui,,,scripts/ui/character_atelier.gd:19,
 character_atelier._ready.96dcc1,Galeria,Gallery,ui,,,scripts/ui/character_atelier.gd:52,
 character_atelier._ready.05c153,SOPHIA · ARCONTES · POSES,SOPHIA · ARCHONS · POSES,ui,,,scripts/ui/character_atelier.gd:53,
-character_atelier._ready.6da1db,Voltar,Back,ui,,,scripts/ui/character_atelier.gd:54 scripts/ui/chronicles.gd:47 scripts/ui/codex_menu.gd:221 scripts/ui/codex_style.gd:504 scripts/ui/controls_menu.gd:78 scripts/ui/credits.gd:86 scripts/ui/gallery.gd:80 scripts/ui/moves_screen.gd:66 scripts/ui/pause_menu.gd:255 scenes/ui/OptionsMenu.tscn:50 scenes/ui/PreGame.tscn:72,
+character_atelier._ready.6da1db,Voltar,Back,ui,,,scripts/ui/character_atelier.gd:54 scripts/ui/chronicles.gd:47 scripts/ui/codex_menu.gd:221 scripts/ui/codex_style.gd:504 scripts/ui/controls_menu.gd:78 scripts/ui/credits.gd:86 scripts/ui/gallery.gd:80 scripts/ui/moves_screen.gd:66 scripts/ui/pause_menu.gd:256 scenes/ui/OptionsMenu.tscn:50 scenes/ui/PreGame.tscn:72,
 character_atelier._ready.65a46c,Bestiário,Bestiary,ui,,,scripts/ui/character_atelier.gd:55 scripts/ui/gallery.gd:73,
 character_atelier._ready.308b49,%02d  %s,%02d  %s,ui,,,scripts/ui/character_atelier.gd:59,format string: manter os %
 character_atelier._ready.bac98a,RECEITA VISUAL,VISUAL RECIPE,ui,,,scripts/ui/character_atelier.gd:70,
@@ -1200,7 +1200,7 @@ Endings seen and options are kept.",ui,,,scripts/ui/codex_menu.gd:216,format str
 codex_menu._on_new_campaign.2c92c9,Apagar e começar,Erase and start,ui,,,scripts/ui/codex_menu.gd:217,
 codex_menu._open_trial.c63558,Provação,Trial,ui,,,scripts/ui/codex_menu.gd:247 scripts/ui/run_labels.gd:16,
 codex_menu._open_trial.d37464,Escolha o Arconte do 3º encontro,Choose the Archon for the 3rd encounter,ui,,,scripts/ui/codex_menu.gd:249,
-codex_menu._open_trial.d1a79e,%s  ·  %s,%s  ·  %s,ui,,,scripts/ui/codex_menu.gd:256 scripts/ui/hud.gd:915 scripts/ui/moves_screen.gd:122,format string: manter os %
+codex_menu._open_trial.d1a79e,%s  ·  %s,%s  ·  %s,ui,,,scripts/ui/codex_menu.gd:256 scripts/ui/hud.gd:920 scripts/ui/moves_screen.gd:122,format string: manter os %
 controls_menu._ready.0ba15d,Controles,Controls,ui,,,scripts/ui/controls_menu.gd:49 scripts/ui/options_menu.gd:107,
 controls_menu._ready.69339d,AÇÃO,ACTION,ui,,,scripts/ui/controls_menu.gd:52,
 controls_menu._ready.dfc9b4,TECLADO,KEYBOARD,ui,,,scripts/ui/controls_menu.gd:53,
@@ -1264,52 +1264,52 @@ end_screen._build_demo.b20f6c,Adicione GNOSIS à sua lista de desejos.,Add GNOSI
 end_screen._build_demo.671b28,Lista de desejos,Wishlist,ui,,,scripts/ui/end_screen.gd:162,
 gallery._build_header.0ccaf6,Encontrados  %d / %d,Found  %d / %d,ui,,,scripts/ui/gallery.gd:78,format string: manter os %
 gallery._show.ab4581,AINDA NÃO ENCONTRADO,NOT YET FOUND,ui,,,scripts/ui/gallery.gd:175,
-hud._on_weapon.3b2ee9,lança o inimigo para o alto,launches the enemy into the air,ui,,,scripts/ui/hud.gd:299,
-hud._on_weapon.d40c9a,golpe no ar,air strike,ui,,,scripts/ui/hud.gd:301,
-hud._on_achievement.87fa2b,Conquista  ·  %s,Achievement  ·  %s,toast,,60,scripts/ui/hud.gd:462,format string: manter os %
-hud.seal_text.c9c856,Arma Nv. %d na loja,Weapon Lv. %d in the shop,ui,,,scripts/ui/hud.gd:905,format string: manter os %
-hud.seal_text.117cdc,%s na loja,%s in the shop,ui,,,scripts/ui/hud.gd:911,format string: manter os %
-hud.seal_text.3e2d6c,mais Vida e Éter na loja,more Life and Aether in the shop,ui,,,scripts/ui/hud.gd:914,
-hud.seal_text.3e9499,Selo aberto,Seal opened,ui,,,scripts/ui/hud.gd:915,
-hud._queue_screen_hints.97ec4f,golpe leve,light strike,ui,,,scripts/ui/hud.gd:994,
-hud._queue_screen_hints.df3f2e,golpe forte,heavy strike,ui,,,scripts/ui/hud.gd:994,
-hud._queue_screen_hints.3c90a7,"bloquear · no tempo, apara","block · on time, parries",ui,,,scripts/ui/hud.gd:995,
-hud._queue_screen_hints.6b344d,sequência do cajado,staff combo,ui,,,scripts/ui/hud.gd:997,
-hud._queue_screen_hints.61dfe8,Esfera Solar (gasta Éter),Sun Orb (costs Aether),ui,,,scripts/ui/hud.gd:998,
-hud._queue_screen_hints.336d16,telégrafo amarelo:,yellow tell:,ui,,,scripts/ui/hud.gd:1000,
-hud._queue_screen_hints.e9b353,vermelho:,red:,ui,,,scripts/ui/hud.gd:1000,
-hud._queue_screen_hints.bd84ff,pausa · Golpes & Controles,pause · Moves & Controls,ui,,,scripts/ui/hud.gd:1001,
-hud._check_ring_hints.385e09,usar o Anel equipado (gasta Éter),use the equipped Ring (costs Aether),ui,,,scripts/ui/hud.gd:1013,
-hud._check_ring_hints.beab08,trocar de Anel,switch Ring,ui,,,scripts/ui/hud.gd:1015,
-hud.key_label.84c4c5,Analógico,Stick,ui,,,scripts/ui/hud.gd:1123 scripts/ui/hud.gd:1200 scripts/ui/input_glyphs.gd:159 scripts/ui/input_glyphs.gd:164,
-hud.key_label.f999e2,%s  %s,%s  %s,ui,,,scripts/ui/hud.gd:1123,format string: manter os %
-hud._key_name.f61d6e,Espaço,Space,ui,,,scripts/ui/hud.gd:1168 scripts/ui/input_glyphs.gd:229,
-hud._key_name.1f7a4f,Esc,Esc,ui,,,scripts/ui/hud.gd:1169 scripts/ui/input_glyphs.gd:230,
-hud._key_name.469d5b,Shift,Shift,ui,,,scripts/ui/hud.gd:1170 scripts/ui/input_glyphs.gd:231,
-hud._key_name.2b9ece,Enter,Enter,ui,,,scripts/ui/hud.gd:1171 scripts/ui/input_glyphs.gd:235,
-hud._key_name.71815f,Esq.,Left,ui,,,scripts/ui/hud.gd:1172,
-hud._key_name.72acb3,Dir.,Right,ui,,,scripts/ui/hud.gd:1173,
-hud._key_name.4effab,Cima,Up,ui,,,scripts/ui/hud.gd:1174,
-hud._key_name.74fd00,Baixo,Down,ui,,,scripts/ui/hud.gd:1175,
-hud._pad_button_name.6dcd4c,A,A,ui,,,scripts/ui/hud.gd:1181 scripts/ui/input_glyphs.gd:252 scripts/ui/input_glyphs.gd:253,
-hud._pad_button_name.ae4f28,B,B,ui,,,scripts/ui/hud.gd:1182 scripts/ui/input_glyphs.gd:252 scripts/ui/input_glyphs.gd:253,
-hud._pad_button_name.c032ad,X,X,ui,,,scripts/ui/hud.gd:1183 scripts/ui/input_glyphs.gd:254 scripts/ui/input_glyphs.gd:255,
-hud._pad_button_name.23eb4d,Y,Y,ui,,,scripts/ui/hud.gd:1184 scripts/ui/input_glyphs.gd:254 scripts/ui/input_glyphs.gd:255,
-hud._pad_button_name.2d1958,LB,LB,ui,,,scripts/ui/hud.gd:1185 scripts/ui/input_glyphs.gd:256,
-hud._pad_button_name.38026d,RB,RB,ui,,,scripts/ui/hud.gd:1186 scripts/ui/input_glyphs.gd:257,
-hud._pad_button_name.952f37,Start,Start,ui,,,scripts/ui/hud.gd:1188,
-hud._pad_button_name.53157e,D-pad Esq.,D-pad Left,ui,,,scripts/ui/hud.gd:1189,
-hud._pad_button_name.b7d05d,D-pad Dir.,D-pad Right,ui,,,scripts/ui/hud.gd:1190,
-hud._pad_button_name.442f4a,D-pad Cima,D-pad Up,ui,,,scripts/ui/hud.gd:1191,
-hud._pad_button_name.237b1b,D-pad Baixo,D-pad Down,ui,,,scripts/ui/hud.gd:1192,
-hud._pad_button_name.67c850,Botão %d,Button %d,ui,,,scripts/ui/hud.gd:1193 scripts/ui/input_glyphs.gd:270,format string: manter os %
-hud._pad_axis_name.6c62fb,LT,LT,ui,,,scripts/ui/hud.gd:1198 scripts/ui/input_glyphs.gd:277,
-hud._pad_axis_name.bc410c,RT,RT,ui,,,scripts/ui/hud.gd:1199 scripts/ui/input_glyphs.gd:278,
-hud._pad_axis_name.e39ae1,Eixo %d,Axis %d,ui,,,scripts/ui/hud.gd:1201 scripts/ui/input_glyphs.gd:282,format string: manter os %
-hud._draw_go.70bdc3,Siga em frente,Keep going,ui,,,scripts/ui/hud.gd:1290,
-hud._draw_counters.a602bb,Arma Nv. %d,Weapon Lv. %d,ui,,,scripts/ui/hud.gd:1417 scripts/ui/moves_screen.gd:171,format string: manter os %
-hud._draw_one_boss.dbb588,FASE III,PHASE III,ui,,,scripts/ui/hud.gd:1697,
-hud._draw_one_boss.794201,FASE II,PHASE II,ui,,,scripts/ui/hud.gd:1697,
+hud._on_weapon.3b2ee9,lança o inimigo para o alto,launches the enemy into the air,ui,,,scripts/ui/hud.gd:304,
+hud._on_weapon.d40c9a,golpe no ar,air strike,ui,,,scripts/ui/hud.gd:306,
+hud._on_achievement.87fa2b,Conquista  ·  %s,Achievement  ·  %s,toast,,60,scripts/ui/hud.gd:467,format string: manter os %
+hud.seal_text.c9c856,Arma Nv. %d na loja,Weapon Lv. %d in the shop,ui,,,scripts/ui/hud.gd:910,format string: manter os %
+hud.seal_text.117cdc,%s na loja,%s in the shop,ui,,,scripts/ui/hud.gd:916,format string: manter os %
+hud.seal_text.3e2d6c,mais Vida e Éter na loja,more Life and Aether in the shop,ui,,,scripts/ui/hud.gd:919,
+hud.seal_text.3e9499,Selo aberto,Seal opened,ui,,,scripts/ui/hud.gd:920,
+hud._queue_screen_hints.97ec4f,golpe leve,light strike,ui,,,scripts/ui/hud.gd:999,
+hud._queue_screen_hints.df3f2e,golpe forte,heavy strike,ui,,,scripts/ui/hud.gd:999,
+hud._queue_screen_hints.3c90a7,"bloquear · no tempo, apara","block · on time, parries",ui,,,scripts/ui/hud.gd:1000,
+hud._queue_screen_hints.6b344d,sequência do cajado,staff combo,ui,,,scripts/ui/hud.gd:1002,
+hud._queue_screen_hints.61dfe8,Esfera Solar (gasta Éter),Sun Orb (costs Aether),ui,,,scripts/ui/hud.gd:1003,
+hud._queue_screen_hints.336d16,telégrafo amarelo:,yellow tell:,ui,,,scripts/ui/hud.gd:1005,
+hud._queue_screen_hints.e9b353,vermelho:,red:,ui,,,scripts/ui/hud.gd:1005,
+hud._queue_screen_hints.bd84ff,pausa · Golpes & Controles,pause · Moves & Controls,ui,,,scripts/ui/hud.gd:1006,
+hud._check_ring_hints.385e09,usar o Anel equipado (gasta Éter),use the equipped Ring (costs Aether),ui,,,scripts/ui/hud.gd:1018,
+hud._check_ring_hints.beab08,trocar de Anel,switch Ring,ui,,,scripts/ui/hud.gd:1020,
+hud.key_label.84c4c5,Analógico,Stick,ui,,,scripts/ui/hud.gd:1128 scripts/ui/hud.gd:1205 scripts/ui/input_glyphs.gd:159 scripts/ui/input_glyphs.gd:164,
+hud.key_label.f999e2,%s  %s,%s  %s,ui,,,scripts/ui/hud.gd:1128,format string: manter os %
+hud._key_name.f61d6e,Espaço,Space,ui,,,scripts/ui/hud.gd:1173 scripts/ui/input_glyphs.gd:229,
+hud._key_name.1f7a4f,Esc,Esc,ui,,,scripts/ui/hud.gd:1174 scripts/ui/input_glyphs.gd:230,
+hud._key_name.469d5b,Shift,Shift,ui,,,scripts/ui/hud.gd:1175 scripts/ui/input_glyphs.gd:231,
+hud._key_name.2b9ece,Enter,Enter,ui,,,scripts/ui/hud.gd:1176 scripts/ui/input_glyphs.gd:235,
+hud._key_name.71815f,Esq.,Left,ui,,,scripts/ui/hud.gd:1177,
+hud._key_name.72acb3,Dir.,Right,ui,,,scripts/ui/hud.gd:1178,
+hud._key_name.4effab,Cima,Up,ui,,,scripts/ui/hud.gd:1179,
+hud._key_name.74fd00,Baixo,Down,ui,,,scripts/ui/hud.gd:1180,
+hud._pad_button_name.6dcd4c,A,A,ui,,,scripts/ui/hud.gd:1186 scripts/ui/input_glyphs.gd:252 scripts/ui/input_glyphs.gd:253,
+hud._pad_button_name.ae4f28,B,B,ui,,,scripts/ui/hud.gd:1187 scripts/ui/input_glyphs.gd:252 scripts/ui/input_glyphs.gd:253,
+hud._pad_button_name.c032ad,X,X,ui,,,scripts/ui/hud.gd:1188 scripts/ui/input_glyphs.gd:254 scripts/ui/input_glyphs.gd:255,
+hud._pad_button_name.23eb4d,Y,Y,ui,,,scripts/ui/hud.gd:1189 scripts/ui/input_glyphs.gd:254 scripts/ui/input_glyphs.gd:255,
+hud._pad_button_name.2d1958,LB,LB,ui,,,scripts/ui/hud.gd:1190 scripts/ui/input_glyphs.gd:256,
+hud._pad_button_name.38026d,RB,RB,ui,,,scripts/ui/hud.gd:1191 scripts/ui/input_glyphs.gd:257,
+hud._pad_button_name.952f37,Start,Start,ui,,,scripts/ui/hud.gd:1193,
+hud._pad_button_name.53157e,D-pad Esq.,D-pad Left,ui,,,scripts/ui/hud.gd:1194,
+hud._pad_button_name.b7d05d,D-pad Dir.,D-pad Right,ui,,,scripts/ui/hud.gd:1195,
+hud._pad_button_name.442f4a,D-pad Cima,D-pad Up,ui,,,scripts/ui/hud.gd:1196,
+hud._pad_button_name.237b1b,D-pad Baixo,D-pad Down,ui,,,scripts/ui/hud.gd:1197,
+hud._pad_button_name.67c850,Botão %d,Button %d,ui,,,scripts/ui/hud.gd:1198 scripts/ui/input_glyphs.gd:270,format string: manter os %
+hud._pad_axis_name.6c62fb,LT,LT,ui,,,scripts/ui/hud.gd:1203 scripts/ui/input_glyphs.gd:277,
+hud._pad_axis_name.bc410c,RT,RT,ui,,,scripts/ui/hud.gd:1204 scripts/ui/input_glyphs.gd:278,
+hud._pad_axis_name.e39ae1,Eixo %d,Axis %d,ui,,,scripts/ui/hud.gd:1206 scripts/ui/input_glyphs.gd:282,format string: manter os %
+hud._draw_go.70bdc3,Siga em frente,Keep going,ui,,,scripts/ui/hud.gd:1295,
+hud._draw_counters.a602bb,Arma Nv. %d,Weapon Lv. %d,ui,,,scripts/ui/hud.gd:1422 scripts/ui/moves_screen.gd:171,format string: manter os %
+hud._draw_one_boss.dbb588,FASE III,PHASE III,ui,,,scripts/ui/hud.gd:1702,
+hud._draw_one_boss.794201,FASE II,PHASE II,ui,,,scripts/ui/hud.gd:1702,
 input_glyphs.DEVICE_NAMES.84601a,Teclado,Keyboard,ui,,,scripts/ui/input_glyphs.gd:23,
 input_glyphs.DEVICE_NAMES.288e67,Xbox,Xbox,ui,,,scripts/ui/input_glyphs.gd:23,
 input_glyphs.DEVICE_NAMES.92f1af,PlayStation,PlayStation,ui,,,scripts/ui/input_glyphs.gd:23,
@@ -1441,15 +1441,15 @@ options_menu._ready.36a9db,Vibração do controle,Controller vibration,ui,,,scri
 options_menu._ready.0d64f3,Teclas e botões,Keys and buttons,ui,,,scripts/ui/options_menu.gd:108,
 options_menu._refresh_toggle.31d43c,Ligada,On,ui,,,scripts/ui/options_menu.gd:175,
 options_menu._refresh_toggle.164bf4,Desligada,Off,ui,,,scripts/ui/options_menu.gd:175,
-pause_menu._ready.6867e6,Relic,Relic,ui,,,scripts/ui/pause_menu.gd:44,
-pause_menu._role_text.352f78,Provação  ·  encontro %d / 3,Trial  ·  encounter %d / 3,ui,,,scripts/ui/pause_menu.gd:74,format string: manter os %
-pause_menu._open_map.412f13,O caminho do Éon até aqui. Só para olhar.,The Aeon's path so far. Just for looking.,ui,,,scripts/ui/pause_menu.gd:120,
-pause_menu._open_map.8b07a2,passeiam pelas saídas,browse the exits,ui,,,scripts/ui/pause_menu.gd:123,
-pause_menu._lock_upgrades_in_combat.da279d,Disponível fora de combate,Available outside combat,ui,,,scripts/ui/pause_menu.gd:161 scripts/ui/pause_menu.gd:165,
-pause_menu._ask_quit.0c5877,"Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d.","You'll return to the menu. Your saved return point remains: %s, screen %d.",ui,,,scripts/ui/pause_menu.gd:252,format string: manter os %
-pause_menu._ask_quit.9e31c8,Você volta ao menu. A Provação não grava progresso.,You'll return to the menu. The Trial doesn't save progress.,ui,,,scripts/ui/pause_menu.gd:254,
-pause_menu._ask_quit.d7932f,Abandonar a jornada?,Abandon the journey?,ui,,,scripts/ui/pause_menu.gd:255,
-pause_menu._ask_quit.a2f17f,Abandonar,Abandon,ui,,,scripts/ui/pause_menu.gd:255,
+pause_menu._ready.6867e6,Relic,Relic,ui,,,scripts/ui/pause_menu.gd:45,
+pause_menu._role_text.352f78,Provação  ·  encontro %d / 3,Trial  ·  encounter %d / 3,ui,,,scripts/ui/pause_menu.gd:75,format string: manter os %
+pause_menu._open_map.412f13,O caminho do Éon até aqui. Só para olhar.,The Aeon's path so far. Just for looking.,ui,,,scripts/ui/pause_menu.gd:121,
+pause_menu._open_map.8b07a2,passeiam pelas saídas,browse the exits,ui,,,scripts/ui/pause_menu.gd:124,
+pause_menu._lock_upgrades_in_combat.da279d,Disponível fora de combate,Available outside combat,ui,,,scripts/ui/pause_menu.gd:162 scripts/ui/pause_menu.gd:166,
+pause_menu._ask_quit.0c5877,"Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d.","You'll return to the menu. Your saved return point remains: %s, screen %d.",ui,,,scripts/ui/pause_menu.gd:253,format string: manter os %
+pause_menu._ask_quit.9e31c8,Você volta ao menu. A Provação não grava progresso.,You'll return to the menu. The Trial doesn't save progress.,ui,,,scripts/ui/pause_menu.gd:255,
+pause_menu._ask_quit.d7932f,Abandonar a jornada?,Abandon the journey?,ui,,,scripts/ui/pause_menu.gd:256,
+pause_menu._ask_quit.a2f17f,Abandonar,Abandon,ui,,,scripts/ui/pause_menu.gd:256,
 pregame.DIFF_DESCS.f8d666,A travessia como foi pensada. Pontos de retorno a cada Éon.,The crossing as it was designed. Return points in every Aeon.,ui,,,scripts/ui/pregame.gd:16,
 pregame.DIFF_DESCS.c97360,Inimigos com 50% a mais de vida e dano.,Enemies with 50% more health and damage.,ui,,,scripts/ui/pregame.gd:17,
 pregame.DIFF_DESCS.44759e,Mais que o dobro. Para quem já lê o vermelho e o amarelo.,More than double. For those who already read red and yellow.,ui,,,scripts/ui/pregame.gd:18,
@@ -1464,27 +1464,27 @@ run_labels.objective_text.3a7e16,quebre o totem,break the totem,ui,,,scripts/ui/
 run_labels.objective_text.bb5ced,proteja a luz,protect the light,ui,,,scripts/ui/run_labels.gd:55,
 run_labels.objective_text.88a020,maré,tide,ui,,,scripts/ui/run_labels.gd:56,
 run_labels.objective_text.8a0415,fuja da maré,flee the tide,ui,,,scripts/ui/run_labels.gd:57,
-upgrade_menu._ready.ef0a9f,Santuário de Ascensão,Shrine of Ascension,ui,,,scripts/ui/upgrade_menu.gd:43,
-upgrade_menu._ready.87090a,Voltar ao jogo,Back to game,ui,,,scripts/ui/upgrade_menu.gd:81,
-upgrade_menu._ready.fc9a7c,Seguir caminho,Move on,ui,,,scripts/ui/upgrade_menu.gd:81,
-upgrade_menu._rebuild.8a9815,abre: ,opens: ,ui,,,scripts/ui/upgrade_menu.gd:110,
-upgrade_menu._rebuild.782524,Arma Nv. %d → %d,Weapon Lv. %d → %d,ui,,,scripts/ui/upgrade_menu.gd:111,format string: manter os %
-upgrade_menu._rebuild.ac6d4d,Arma no nível máximo,Weapon at max level,ui,,,scripts/ui/upgrade_menu.gd:117,
-upgrade_menu._rebuild.3efade,%s  ·  Nv. %d (máx.),%s  ·  Lv. %d (max.),ui,,,scripts/ui/upgrade_menu.gd:127,format string: manter os %
-upgrade_menu._rebuild.25f367,%s  ·  Nv. %d → %d,%s  ·  Lv. %d → %d,ui,,,scripts/ui/upgrade_menu.gd:130,format string: manter os %
-upgrade_menu._rebuild.c03253,+20 de vida máx.  ·  %d / %d,+20 max health  ·  %d / %d,ui,,,scripts/ui/upgrade_menu.gd:138,format string: manter os %
-upgrade_menu._rebuild.29a2f3,no máximo,maxed out,ui,,,scripts/ui/upgrade_menu.gd:140 scripts/ui/upgrade_menu.gd:149,
-upgrade_menu._rebuild.591292,+15 de Éter máx.  ·  %d / %d,+15 max Aether  ·  %d / %d,ui,,,scripts/ui/upgrade_menu.gd:147,format string: manter os %
-upgrade_menu._rebuild.8ffaef,%s  ·  em uso,%s  ·  in use,ui,,,scripts/ui/upgrade_menu.gd:165,format string: manter os %
-upgrade_menu._rebuild.fe513f,%s  ·  usar,%s  ·  use,ui,,,scripts/ui/upgrade_menu.gd:167,format string: manter os %
-upgrade_menu._rebuild.58c64b,Relíquia  ·  %s,Relic  ·  %s,ui,,,scripts/ui/upgrade_menu.gd:169 scripts/ui/upgrade_menu.gd:172,format string: manter os %
-upgrade_menu._rebuild.df1a37,Restauração  ·  cura completa,Restoration  ·  full heal,ui,,,scripts/ui/upgrade_menu.gd:178 scripts/ui/upgrade_menu.gd:180,
-upgrade_menu._rebuild.3c4a13,a vida já está cheia,health is already full,ui,,,scripts/ui/upgrade_menu.gd:178,
-upgrade_menu._rebuild.8ac00e,só no santuário e depois do Arconte,only at the shrine and after the Archon,ui,,,scripts/ui/upgrade_menu.gd:180,
-upgrade_menu._update_status.74cd2e,Selado  ·  vença %s para abrir,Sealed  ·  defeat %s to open,ui,,,scripts/ui/upgrade_menu.gd:202,format string: manter os %
-upgrade_menu._update_status.deb328,Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short,ui,,,scripts/ui/upgrade_menu.gd:206,format string: manter os %
-upgrade_menu._update_status.cdab2e,Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades,ui,,,scripts/ui/upgrade_menu.gd:221,
-upgrade_menu._add_sealed.3e1bec,selado  ·  vença %s,sealed  ·  defeat %s,ui,,,scripts/ui/upgrade_menu.gd:228,format string: manter os %
+upgrade_menu._ready.ef0a9f,Santuário de Ascensão,Shrine of Ascension,ui,,,scripts/ui/upgrade_menu.gd:44,
+upgrade_menu._ready.87090a,Voltar ao jogo,Back to game,ui,,,scripts/ui/upgrade_menu.gd:82,
+upgrade_menu._ready.fc9a7c,Seguir caminho,Move on,ui,,,scripts/ui/upgrade_menu.gd:82,
+upgrade_menu._rebuild.8a9815,abre: ,opens: ,ui,,,scripts/ui/upgrade_menu.gd:111,
+upgrade_menu._rebuild.782524,Arma Nv. %d → %d,Weapon Lv. %d → %d,ui,,,scripts/ui/upgrade_menu.gd:112,format string: manter os %
+upgrade_menu._rebuild.ac6d4d,Arma no nível máximo,Weapon at max level,ui,,,scripts/ui/upgrade_menu.gd:118,
+upgrade_menu._rebuild.3efade,%s  ·  Nv. %d (máx.),%s  ·  Lv. %d (max.),ui,,,scripts/ui/upgrade_menu.gd:128,format string: manter os %
+upgrade_menu._rebuild.25f367,%s  ·  Nv. %d → %d,%s  ·  Lv. %d → %d,ui,,,scripts/ui/upgrade_menu.gd:131,format string: manter os %
+upgrade_menu._rebuild.c03253,+20 de vida máx.  ·  %d / %d,+20 max health  ·  %d / %d,ui,,,scripts/ui/upgrade_menu.gd:139,format string: manter os %
+upgrade_menu._rebuild.29a2f3,no máximo,maxed out,ui,,,scripts/ui/upgrade_menu.gd:141 scripts/ui/upgrade_menu.gd:150,
+upgrade_menu._rebuild.591292,+15 de Éter máx.  ·  %d / %d,+15 max Aether  ·  %d / %d,ui,,,scripts/ui/upgrade_menu.gd:148,format string: manter os %
+upgrade_menu._rebuild.8ffaef,%s  ·  em uso,%s  ·  in use,ui,,,scripts/ui/upgrade_menu.gd:166,format string: manter os %
+upgrade_menu._rebuild.fe513f,%s  ·  usar,%s  ·  use,ui,,,scripts/ui/upgrade_menu.gd:168,format string: manter os %
+upgrade_menu._rebuild.58c64b,Relíquia  ·  %s,Relic  ·  %s,ui,,,scripts/ui/upgrade_menu.gd:170 scripts/ui/upgrade_menu.gd:173,format string: manter os %
+upgrade_menu._rebuild.df1a37,Restauração  ·  cura completa,Restoration  ·  full heal,ui,,,scripts/ui/upgrade_menu.gd:179 scripts/ui/upgrade_menu.gd:181,
+upgrade_menu._rebuild.3c4a13,a vida já está cheia,health is already full,ui,,,scripts/ui/upgrade_menu.gd:179,
+upgrade_menu._rebuild.8ac00e,só no santuário e depois do Arconte,only at the shrine and after the Archon,ui,,,scripts/ui/upgrade_menu.gd:181,
+upgrade_menu._update_status.74cd2e,Selado  ·  vença %s para abrir,Sealed  ·  defeat %s to open,ui,,,scripts/ui/upgrade_menu.gd:203,format string: manter os %
+upgrade_menu._update_status.deb328,Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short,ui,,,scripts/ui/upgrade_menu.gd:207,format string: manter os %
+upgrade_menu._update_status.cdab2e,Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades,ui,,,scripts/ui/upgrade_menu.gd:222,
+upgrade_menu._add_sealed.3e1bec,selado  ·  vença %s,sealed  ·  defeat %s,ui,,,scripts/ui/upgrade_menu.gd:229,format string: manter os %
 world_map._build_ui.1d8158,escolhem o caminho,choose the path,ui,,,scripts/ui/world_map.gd:136,
 world_map._subtitle.4d3e17,Prévia do mapa — o caminho do Éon,Map preview — the path of the Aeon,ui,,,scripts/ui/world_map.gd:145,
 world_map._subtitle.b71987,O caminho se divide. Escolha por onde subir.,The path splits. Choose your way up.,ui,,,scripts/ui/world_map.gd:146,

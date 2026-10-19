@@ -114,6 +114,8 @@ class P extends Node:
 			await _card()
 		if want("hud"):
 			await _hud()
+		if want("numbers"):
+			await _numbers()
 		print("UI7|FIM falhas=", fails)
 		get_tree().quit(0 if fails == 0 else 1)
 
@@ -315,3 +317,23 @@ class P extends Node:
 		await wait(0.6)
 		await shot("hud_dica_xbox")
 		InputGlyphs.set_device(InputGlyphs.Device.KEYBOARD)
+
+	# --- R16 números de dano: soma no mesmo alvo, teto de 6, pop ------------------------------
+	func _numbers() -> void:
+		var lv := await level_at(4)
+		kill_enemies()
+		await wait(0.3)
+		var at: Vector2 = lv.player.global_position + Vector2(80, 0)
+		for i in 5:
+			DamageNumber.spawn(lv, at + Vector2(i * 4, 0), 12, Color(1.0, 0.92, 0.6))
+			await wait(0.05)
+		var ns := get_tree().get_nodes_in_group("damage_number").filter(func(n): return not n.is_queued_for_deletion())
+		check(ns.size() == 1 and int(ns[0].value) == 60, "R16 5 acertos rápidos no mesmo alvo = 1 número (%d nós, valor %s)" % [ns.size(), str(ns[0].value) if ns.size() > 0 else "-"])
+		await shot("numeros_soma")
+		await wait(1.0)
+		for i in 10:
+			DamageNumber.spawn(lv, at + Vector2(-200 + i * 45, 0), 20, Color(1.0, 0.92, 0.6))
+		await wait(0.05)
+		ns = get_tree().get_nodes_in_group("damage_number").filter(func(n): return not n.is_queued_for_deletion())
+		check(ns.size() <= 6, "R16 no máximo 6 números vivos (%d)" % ns.size())
+		await shot("numeros_teto")
