@@ -12,14 +12,15 @@ e grava em `assets/backgrounds/hd/`:
   eon_<i>_floor.png          o chão pintado (abaixo da linha do chão das asas), luz achatada
 e reescreve o bloco "# >>> GERADO HD" de `scripts/fx/scenery_library.gd`.
 
-LINHA DO CHÃO MEDIDA (o GPT não acerta os 77% pedidos): para mid/asas, a 1ª linha
-em que ≥ 90% das colunas são opacas (alfa ≥ 0,5) — onde começa a faixa contínua
-de chão/água. Para o far (sem alfa), o "horizonte" = a última linha com detalhe
+LINHA DO CHÃO MEDIDA (o GPT não acerta os 77% pedidos): para as asas, a 1ª linha
+em que ≥ 90% das colunas são opacas (alfa ≥ 0,5) — onde começa o chão; para o mid,
+a BASE: a última linha com ≥ 8% das colunas opacas (pé das estruturas). Para o far (sem alfa), o "horizonte" = a última linha com detalhe
 (energia de borda ≥ 30% da mediana do miolo), abaixo dela só névoa.
 No jogo, cada camada é posta com a SUA linha em Scenery.FLOOR_Y (alinhamento por
 camada, não por porcentagem).
 
-Uso:  python tools/cenario7/build_hd.py [--only 0,1] [--sheet saida.png]
+Uso:  python tools/cenario7/build_hd.py [--only 0,1] [--partial]
+(--partial aceita Éon só com o far — para teste; o jogo só deve receber Éon completo.)
 Sem libs fora do pipeline (PIL, numpy, opencv).
 """
 import os, sys, re, glob, json
@@ -102,7 +103,18 @@ def floor_line(a, frac=0.90):
 	"""1ª linha (de cima) em que ≥ frac das colunas são opacas."""
 	op = (a >= 0.5).mean(1)
 	rows = np.where(op >= frac)[0]
-	return int(rows[0]) if rows.size else int(np.where(op > 0.02)[0].max())
+	if rows.size:
+		return int(rows[0])
+	# sem faixa contínua (espelhos soltos, colunas): a base = última linha com ≥ 3% de conteúdo
+	return int(np.where(op > 0.03)[0].max())
+
+
+def base_line(a):
+	"""MID: a base = a última linha com ≥ 8% das colunas opacas (o pé das
+	estruturas; grades e colunas finas não chegam a 50% numa linha, por isso
+	não dá pra exigir faixa cheia)."""
+	op = (a >= 0.5).mean(1)
+	return int(np.where(op >= 0.08)[0].max())
 
 
 def far_horizon(rgb):
@@ -171,7 +183,14 @@ def find(i, kind):
 def build_eon(i, haze):
 	d = {}
 	fars, mids, wings = find(i, 'far'), find(i, 'mid'), find(i, 'wings')
-	if not fars:
+	# Só Éon COMPLETO (far + mid + asas): o far novo é "céu e distância, sem
+	# chão"; as estruturas do meio que a pintura antiga tinha no far (gaiolas da
+	# Corrente, molduras do Espelho) vêm no mid novo. Far novo + camadas antigas
+	# perdia a cara do Éon (conferido nas capturas de 19/10) — então espera o jogo.
+	# Asas podem faltar (chegam depois): aí o jogo usa as asas/entulho ANTIGOS na
+	# frente do mid novo (Scenery._build_painted).
+	if not fars or (not mids and '--partial' not in sys.argv):
+		log(f'eon {i}: incompleto (far={len(fars)} mid={len(mids)} asas={len(wings)}) — fica o fundo antigo')
 		return None
 	# ASAS primeiro: a linha do chão delas define a escala do Éon.
 	wl = []
@@ -195,10 +214,15 @@ def build_eon(i, haze):
 	for p in mids:
 		v = os.path.splitext(p)[0][-1]
 		rgb, a, M = magenta_key(load_rgb(p))
-		fl = floor_line(a)
+		fl = base_line(a)
+		# conteúdo pendurado no topo (cortinas da Fome, correntes da Corrente):
+		# some em degradê, sem linha reta quando a câmera sobe
+		if (a[:4] > 0.5).mean() > 0.03:
+			yy = np.arange(a.shape[0], dtype=np.float32)[:, None]
+			a = a * np.clip(yy / 90.0, 0, 1) ** 0.8
 		rows = np.where(a.max(1) > 0.02)[0]
 		y0 = max(0, int(rows.min()) - 2)
-		y1 = min(a.shape[0], fl + int(30 / s))
+		y1 = min(a.shape[0], fl + int(12 / s))
 		g = grade(rgb, 'mid', haze, a)
 		save_rgba(os.path.join(OUT, f'eon_{i}_mid_{v}.png'), g[y0:y1], a[y0:y1])
 		d['mid'].append({'tex': f'eon_{i}_mid_{v}', 'w': a.shape[1], 'h': y1 - y0, 'y0': y0, 'line': fl})
@@ -286,6 +310,10 @@ if __name__ == '__main__':
 		d = build_eon(i, haze_of(i))
 		if d is not None:
 			hd[i] = d
+		else:
+			hd.pop(i, None)
+			for f in glob.glob(os.path.join(OUT, f'eon_{i}_*.png*')):
+				os.remove(f)
 	json.dump(hd, open(cache, 'w', encoding='utf-8'), indent=1)
 	write_lib(hd)
 	log('ok:', sorted(hd))

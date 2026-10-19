@@ -33,7 +33,10 @@ const LAYERS := [
 ## do chão MEDIDA (px da imagem original), far.s = escala própria do far, far.astro =
 ## foco de luz (px da imagem original).
 const HD := {
-	0: {"s": 0.39326, "far": {"tex": "eon_0_far", "w": 1536, "h": 813, "y0": 0, "line": 712, "s": 0.39326, "astro": Vector2(1074.0000, 176.0000)}, "mid": [{"tex": "eon_0_mid_a", "w": 1536, "h": 585, "y0": 167, "line": 676}, {"tex": "eon_0_mid_b", "w": 1536, "h": 581, "y0": 261, "line": 766}, {"tex": "eon_0_mid_c", "w": 1536, "h": 579, "y0": 175, "line": 678}], "wings": [{"tex": "eon_0_wings_a", "w": 1536, "h": 716, "y0": 0, "line": 712}, {"tex": "eon_0_wings_b", "w": 1536, "h": 754, "y0": 0, "line": 750}], "floor": {"tex": "eon_0_floor", "w": 1536, "h": 306}},
+	0: {"s": 0.39326, "far": {"tex": "eon_0_far", "w": 1536, "h": 813, "y0": 0, "line": 712, "s": 0.39326, "astro": Vector2(1074.0000, 176.0000)}, "mid": [{"tex": "eon_0_mid_a", "w": 1536, "h": 601, "y0": 167, "line": 738}, {"tex": "eon_0_mid_b", "w": 1536, "h": 598, "y0": 261, "line": 829}, {"tex": "eon_0_mid_c", "w": 1536, "h": 595, "y0": 175, "line": 740}], "wings": [{"tex": "eon_0_wings_a", "w": 1536, "h": 716, "y0": 0, "line": 712}, {"tex": "eon_0_wings_b", "w": 1536, "h": 754, "y0": 0, "line": 750}], "floor": {"tex": "eon_0_floor", "w": 1536, "h": 306}},
+	1: {"s": 0.39381, "far": {"tex": "eon_1_far", "w": 1536, "h": 803, "y0": 0, "line": 702, "s": 0.39381, "astro": Vector2(951.0000, 354.0000)}, "mid": [{"tex": "eon_1_mid_a", "w": 1536, "h": 746, "y0": 0, "line": 716}, {"tex": "eon_1_mid_b", "w": 1536, "h": 807, "y0": 0, "line": 777}], "wings": []},
+	2: {"s": 0.39381, "far": {"tex": "eon_2_far", "w": 1536, "h": 819, "y0": 0, "line": 718, "s": 0.39381, "astro": Vector2(1004.0000, 156.0000)}, "mid": [{"tex": "eon_2_mid_a", "w": 1536, "h": 755, "y0": 0, "line": 725}, {"tex": "eon_2_mid_b", "w": 1536, "h": 781, "y0": 0, "line": 751}], "wings": []},
+	4: {"s": 0.39381, "far": {"tex": "eon_4_far", "w": 1536, "h": 755, "y0": 0, "line": 659, "s": 0.41578, "astro": Vector2(1112.0000, 236.0000)}, "mid": [{"tex": "eon_4_mid_a", "w": 1536, "h": 756, "y0": 24, "line": 750}, {"tex": "eon_4_mid_b", "w": 1536, "h": 748, "y0": 87, "line": 805}], "wings": []},
 }
 # <<< GERADO HD
 

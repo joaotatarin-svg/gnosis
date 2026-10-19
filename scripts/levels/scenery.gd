@@ -164,7 +164,7 @@ func _build_painted() -> void:
 	var r := _rng(11)
 	if h.has("mid") and not (h.mid as Array).is_empty():
 		# MID HD: estruturas do meio (variante e fase sorteadas por tela).
-		_hd_variant(h.mid, float(h.s), MS_MID, r, MID_TINT, 4.0)
+		_hd_variant(h.mid, float(h.s), MS_MID, r, MID_TINT, MID_SINK)
 	else:
 		# MID: as asas (pilares das bordas), um pouco mais escuras que o fundo.
 		_tile_w = size.x * s
@@ -175,8 +175,13 @@ func _build_painted() -> void:
 		# ASAS HD: pilares das bordas + entulho, a camada pintada mais rápida.
 		_hd_variant(h.wings, float(h.s), MS_WINGS, r, WINGS_TINT, 0.0)
 	else:
-		# NEAR: a faixa de entulho/velas do horizonte.
 		_tile_w = size.x * s
+		if h.has("mid"):
+			# Éon com mid HD mas sem as asas novas (ainda não chegaram): as asas
+			# ANTIGAS (pilares das bordas da pintura 3×) vêm NA FRENTE do mid novo,
+			# no ritmo das asas (mais rápidas que o mid — parallax coerente).
+			_painted_layer("mid", Vector2(0.30, 0.97), 0.0, s, Color(0.74, 0.74, 0.78))
+		# NEAR: a faixa de entulho/velas do horizonte.
 		_painted_layer("near", Vector2(0.32, 1.0), float(d.get("near_y", 0)) * s, s, Color(0.70, 0.70, 0.76))
 	if h.has("far"):
 		_tile_w = float((h.far as Dictionary).w) * float((h.far as Dictionary).s)   # os raios usam o período do far
@@ -191,6 +196,9 @@ const MS_WINGS := Vector2(0.40, 0.98)
 ## Variação de tom por tela (multiplica a cor; determinística): [mín, máx] do brilho.
 const MID_TINT := Vector2(0.90, 1.0)
 const WINGS_TINT := Vector2(0.88, 1.0)
+## A base MEDIDA do mid afunda isto (px lógicos) abaixo do horizonte: a borda de
+## baixo some na névoa do chão em vez de virar uma linha reta.
+const MID_SINK := -5.0
 
 
 ## Topo (y lógico) de uma camada HD posta com a linha do chão MEDIDA em FLOOR_Y.
