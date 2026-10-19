@@ -5,7 +5,9 @@ obrigatório para o visual novo funcionar: o `projectile.gd` já chama `projecti
 tudo que é Projectile ganhou núcleo/fita/impacto. Os pedidos ligam a ANTECIPAÇÃO e afinam
 a família de alguns tiros.
 
-## inimigos6 (enemy.gd / projectile.gd)
+## inimigos6 (enemy.gd / projectile.gd) — FEITO pelo VFX7 na fase 2 (19/10)
+A antecipação dos tiros e o rastro dos golpes corpo a corpo foram ligados pela EnemyOverlay
+(sem mexer no enemy.gd); HazardZone e Projectile agora são do VFX7. Itens abaixo ficam como histórico.
 1. **Antecipação dos tiros** — no começo do wind-up de golpe à distância (`_begin_windup`,
    ou onde o move "shot"/"burst" começa):
    ```gdscript
@@ -45,3 +47,11 @@ Dois sons curtos (0,2–0,5 s, sobem de tom): `charge_light` (Sophia: cristalino
 Com 20 projéteis no ar, ~4–6 ms do quadro não é desenho (escondendo os projéteis o quadro
 cai de ~8 para ~2,8 ms). Vale perfilar `Projectile` (física da Area2D, `queue_redraw`
 mesmo com `_premium`, impactos com `Juice.hit_stop`) — ver `tools/VfxShowcase7 perf`.
+
+## polimento7 (enemy.gd) — fase 2
+- Nada obrigatório. Se mexerem em `attack_hitbox` (nome, `_active`, `box_size()`) ou nos estados
+  WINDUP/STRIKE, avisem: a `EnemyOverlay._watch_attack` lê esses campos para ligar a carga e o rastro.
+
+## combate6 (hitbox.gd) — fase 2
+- R15 completo no acerto de inimigo: se o `ImpactBurst.spawn` receber o lado do golpe (ex.: um
+  parâmetro `dirx`), o `claw_impact` passa a soltar as faíscas no sentido do golpe. Hoje sai em 360°.

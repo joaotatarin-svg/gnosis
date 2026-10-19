@@ -105,14 +105,82 @@ inimigo → `look` "spike"=`wave`, prende=`chain`, lentidão=`sleep`, cor dourad
 `tools/VfxShowcase7.tscn` — `gif <pasta> <ataque|all>` · `still <png>` · `perf <txt> [n] [noimpact]`
 (ver cabeçalho do .gd). `tools/VfxShowcase.tscn` ganhou a fileira de impactos e antecipações.
 
+## FASE 2 (19/10) — dono também de `scripts/entities/enemies/**`, `projectile.gd`, `hazard_zone.gd`
+1. **Antecipação dos tiros dos inimigos — LIGADA no jogo.** A `EnemyOverlay` (frente) observa o
+   estado do inimigo sem tocar no enemy.gd: ao ENTRAR em WINDUP com golpe `shot`/`burst`/`lob`
+   (ou o antigo `attack_style == "ranged"`) chama `charge_up(inimigo, (16·dir, −8·escala), eye_color,
+   tempo restante do wind-up, "dark")`; ao sair do WINDUP: `release()` se foi para STRIKE, `cancel()`
+   se foi atordoado/parry/morte. Núcleo da carga corrompida menor (0,15) para não tapar o corpo.
+   Chefes (BossBrain) não têm EnemyOverlay → pedido ao chefes6.
+2. **Golpes CORPO A CORPO dos inimigos** — a mesma Overlay detecta a borda de subida da caixa do
+   golpe (`attack_hitbox._active`) e chama `VfxLibrary.melee_slash(...)`: meia-lua que VARRE a caixa
+   em 70 ms e some em 160 ms (swing/combo/grab/blink), riscos de velocidade (rush/dive/glide), anel
+   deitado + poeira (leap/slam). Imparável = borda vermelha (forma + cor, R5). Cada golpe de combo
+   ganha o seu rastro. O acerto na Sophia (`hitbox.gd` pinta com `Color(1, 0.45, 0.35)`) vira
+   `VfxLibrary.claw_impact`: três garras de luz, anel corrompido, faíscas e borrifo escuro.
+3. **HazardZone premium** (sono, veneno, coluna): anel deitado no surgimento; chão com 3 camadas de
+   luz macia e borda que CINTILA; sono = névoa aditiva + bolhas lentas; veneno = bolhas que sobem +
+   fumaça tóxica; zonas da Sophia ganham 6 pontos de luz girando; coluna = aviso que enche + pilar de
+   luz aditivo que desce, anel, decalque e faíscas (no orçamento de flashes). Lógica intocada.
+4. **Desempenho — os "4–6 ms" eram o DESENHO VETORIAL do próprio Projectile**: antes do gancho do
+   inimigos6, o `_draw` antigo (8 círculos de rastro + halo + aro, por tiro) continuava rodando por
+   baixo do visual novo (só ficava transparente). Prova: escondendo os projéteis o quadro caía de ~8 ms
+   para ~2,8 ms; com o gancho `projectile_look` (o Projectile pula o `_draw` quando o VFX7 desenha) as
+   chamadas de desenho caíram de 339 para ~127 e o quadro de **8,3 → 4,2–4,3 ms** (n=20, ~20
+   impactos/s, médias de 2 rodadas). Somei: com visual premium o Projectile nem acumula rastro nem
+   pede `queue_redraw`; o teto de VFX conta o grupo sem montar Array (`get_node_count_in_group`).
+   Essas duas micro-otimizações NÃO deram ganho mensurável (A/B intercalado 4×4, dentro do ruído de
+   ±0,7 ms) — ficam porque são trabalho a menos, sem mudar comportamento.
+
+   | n projéteis | quadro médio | p95 | física | process | envio do desenho | GPU |
+   |---|---|---|---|---|---|---|
+   | 0 | 1,0 ms | 1,4 | 0,01 | 0,21 | 0,44 | 0,29 |
+   | 20 | 4,2–4,3 ms | 4,9–6,1 | 0,12 | 0,82 | 1,15 | 0,72 |
+   | 40 | 7,0–7,4 ms | 10,1–10,8 | 0,26 | 1,48 | 2,0 | 1,68 |
+
+   (antes da fase: n=20 = 8,3 ms, n=40 = 12,8 ms.) O modo `perf` agora imprime essas fatias.
+5. Capturas: `antes_depois_zonas.gif`, `antes_depois_garra.gif` (antes = commit e99ff1d, mesma
+   vitrine); jogo real com criaturas atirando/carregando: `C:\gnosis-wt\_caps\vfx7\jogo2\t3_grid.png`,
+   `t3_zoom.png`, `t5_grid.png` (0 SCRIPT ERROR). Os 6 GIFs de ataque foram refeitos com as faíscas do R15.
+
+## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
+- **R1 (alvo pisca/treme no hitstop):** não é VFX7 (flash/vibração ficam no enemy.gd/player.gd). Nada
+  aqui atrasa ou cobre o flash do alvo: o clarão de impacto dura 100–160 ms, é aditivo e o corpo
+  continua visível.
+- **R4 (um acerto = um evento):** o impacto premium SUBSTITUI o genérico — `ImpactBurst` delega ao
+  `ProjectileFX`/`claw_impact` e o `hit` do mesmo ponto/quadro é suprimido (`_claim`). Explosão da
+  Esfera: 1 impacto + a onda do AoeNova (que é o raio do dano: informação).
+- **R5 (telegrafo com forma + cor + som):** a carga dos tiros tem FORMA (círculo de espinhos fechando,
+  motes convergindo) e som; o `tell_glint` continua ACIMA de todo VFX (Z+8 > Z). Rastro de golpe
+  imparável = borda vermelha + mesma forma. Tiro inimigo ≠ tiro da Sophia pela forma (miolo escuro e
+  espinhos × redondo e miolo branco), não só pela cor.
+- **R10 (≤ 3 flashes/s, "Reduzir flashes"):** `flash_budget()` em todo clarão forte (impactos, coluna,
+  coroa, nova grande): 3 inteiros por segundo, o resto a 30 %; a opção corta pela metade. O VFX7 não
+  usa `screen_flash`.
+- **R15 (faíscas na direção do golpe):** `_spray` = cone de ±50° no sentido do golpe, levemente para
+  cima, + ~20 % em 360°. Exceção: `claw_impact` sai em 360° (o ImpactBurst não recebe o lado do golpe
+  — pedido ao combate6).
+- **R17 (confirmação de morte):** não é VFX7; nenhum efeito novo imita a morte (os impactos são menores
+  e mais curtos que `enemy_death`/`elite_death`), então a morte continua distinta.
+- **R18 (legibilidade):** medido nas capturas (luminância relativa, 90º percentil do efeito × mediana do
+  fundo local): tiros novos **10,2–12,7 : 1** contra **6,0–9,0 : 1** antes (meta ≥ 3:1). Saturação forte só
+  nos tiros/telegrafos; zonas de chão são translúcidas e ficam ATRÁS dos personagens (z −1).
+- **§4 (excessos):** sem tremor novo (o VFX7 não chama `Juice.shake`; o da coluna já existia); sem
+  empilhar VFX (R4); sem clarão de tela; cor nunca é o único aviso; nada de recompensa variável.
+  Risco a observar no playtest: a nova da Coroa (domo de 210 px) e muitos tiros com rastro ao mesmo
+  tempo — se cansar, baixar `halo_a`/`trail_w` em `AttackStyle.STYLES`.
+
 ## BILHETE PARA O SUCESSOR
-- Branch `dir7/vfx7` (worktree `C:\gnosis-wt\vfx7`), já com merge de origin/integracao/onda1
-  (18/10). Último estado: relatório fechado, validate -Repeat 2 verde.
+- Branch `dir7/vfx7` (worktree `C:\gnosis-wt\vfx7`), com merge de origin/integracao/onda1 (19/10).
+  Fase 2 fechada: antecipação/rastro dos inimigos (EnemyOverlay), HazardZone premium, perf medido.
 - Arquivos-chave: `scripts/fx/attack_fx/*`, `assets/shaders/vfx_{orb,trail,ring}.gdshader`,
-  `scripts/fx/vfx_library.gd` (bloco VFX7 depois de `nova_ring`), `tools/vfx_showcase7.gd`.
+  `scripts/fx/vfx_library.gd` (blocos VFX7 depois de `nova_ring`: impactos, melee_slash, claw_impact),
+  `scripts/entities/enemies/enemy_overlay.gd` (`_watch_attack`), `scripts/fx/hazard_zone.gd`,
+  `scripts/fx/projectile.gd`, `tools/vfx_showcase7.gd` (`gif … all|fase2`, `still`, `perf`).
 - Armadilhas: (1) no fragment de canvas o `COLOR` já vem × textura → use o `varying vcol`;
   (2) `projectile.gd` compara o retorno de `projectile_look` com `false` → tem que ser bool;
   (3) substituições por texto em `STYLES` — "0.4" casa com "0.45" (já mordeu uma vez);
-  (4) o scratchpad é compartilhado entre agentes: use subpasta própria.
-- Próximo: quando inimigos6/chefes6/combate6 ligarem `charge_up`, filmar de novo no jogo
-  (Shot `act=magic`) e ajustar duração/intensidade.
+  (4) o scratchpad é compartilhado entre agentes: use subpasta própria; (5) a vitrine roda também no
+  commit antigo: chame função nova da VfxLibrary por `(VfxLibrary as Script).call(...)`;
+  (6) medidas de quadro variam ±1 ms entre rodadas (outros agentes usam a máquina) — compare A/B intercalado.
+- Próximo: chefes6 ligar `charge_up` no BossBrain; ajustar depois do playtest do João.
