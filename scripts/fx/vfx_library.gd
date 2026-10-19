@@ -798,11 +798,21 @@ static func ground_decal(parent: Node, pos: Vector2, col: Color, width: float, l
 	tw.chain().tween_callback(s.queue_free)
 
 
-## Faíscas DIRECIONAIS (R15): saem para trás do golpe (contra `dirx`) e para cima.
+## Faíscas DIRECIONAIS (R15): cone de ±50° NO SENTIDO do golpe (`dirx`),
+## levemente para cima, e ~20 % delas em 360° para não virar "jato".
 static func _spray(parent: Node, pos: Vector2, col: Color, n: int, dirx: float, texture: String = "spark", speed: float = 1.0) -> CPUParticles2D:
-	var p := _burst(parent, pos, texture, n, 0.42)
-	p.direction = Vector2(-dirx, -0.55).normalized()
-	p.spread = 62.0
+	var o := _burst(parent, pos, texture, maxi(2, n / 5), 0.36)
+	o.spread = 180.0
+	o.gravity = Vector2(0, 480.0)
+	o.initial_velocity_min = 60.0 * speed
+	o.initial_velocity_max = 150.0 * speed
+	o.scale_amount_min = 0.03
+	o.scale_amount_max = 0.07
+	o.scale_amount_curve = _shrink_curve()
+	o.color = col.lightened(0.3)
+	var p := _burst(parent, pos, texture, maxi(3, n - n / 5), 0.42)
+	p.direction = Vector2(dirx, -0.25).normalized()
+	p.spread = 50.0
 	p.gravity = Vector2(0, 480.0)
 	p.initial_velocity_min = 110.0 * speed
 	p.initial_velocity_max = 270.0 * speed

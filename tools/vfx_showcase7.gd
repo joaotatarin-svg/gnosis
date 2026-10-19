@@ -241,14 +241,14 @@ func _fire(a: String) -> void:
 		"garra":
 			# golpe corpo a corpo de criatura: rastro do golpe + acerto na Sophia
 			if _has("melee_slash"):
-				VfxLibrary.melee_slash(dummy, Vector2(-34, -4), Vector2(30, 54), -1, Color(1.0, 0.55, 0.3), "swing")
+				(VfxLibrary as Script).call("melee_slash", dummy, Vector2(-34, -4), Vector2(30, 54), -1, Color(1.0, 0.55, 0.3), "swing")
 			var tw := create_tween()
 			tw.tween_interval(0.07)
 			tw.tween_callback(func() -> void: ImpactBurst.spawn(world, SOPHIA_POS + Vector2(10, -8), Color(1.0, 0.45, 0.35), false))
 			tw.tween_interval(0.5)
 			tw.tween_callback(func() -> void:
 				if _has("melee_slash"):
-					VfxLibrary.melee_slash(dummy, Vector2(-30, -4), Vector2(60, 54), -1, Color(1.0, 0.55, 0.3), "rush", true))
+					(VfxLibrary as Script).call("melee_slash", dummy, Vector2(-30, -4), Vector2(60, 54), -1, Color(1.0, 0.55, 0.3), "rush", true))
 			tw.tween_interval(0.12)
 			tw.tween_callback(func() -> void: ImpactBurst.spawn(world, SOPHIA_POS + Vector2(10, -12), Color(1.0, 0.45, 0.35), true))
 		"solar":
