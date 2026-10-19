@@ -24,6 +24,7 @@ func _ready() -> void:
 	_cases_gates()
 	_cases_tracks()
 	_cases_relics()
+	_cases_claims()
 	await _cases_shop_ui()
 	await _cases_double_jump_save()
 	print("QA RESULT: ", errors, " falhas")
@@ -124,6 +125,20 @@ func _cases_relics() -> void:
 	check(Progression.buy_relic("coro") and Progression.relic_active("coro") and Progression.relic_active("perola") and not Progression.relic_active("brasa"), "Coro entra e sai a mais antiga (Brasa)")
 	check(Progression.unequip_relic("perola") and Progression.equipped_relics().size() == 1 and Progression.equipped_relic() == "coro", "tirar de uso libera o engaste")
 	check(not Progression.item_features().has("#reliquias=brasa,perola") and Progression.item_features().is_empty(), "arte não vê as entradas '#'")
+
+
+func _cases_claims() -> void:
+	_new_run()
+	check(Progression.claim_once("bau:12") and not Progression.claim_once("bau:12"), "baú paga uma vez por run")
+	check(Progression.was_claimed("bau:12") and not Progression.was_claimed("selo:12"), "registro por chave")
+	var snap: Dictionary = JSON.parse_string(JSON.stringify(RunManager.run_snapshot()))
+	RunManager.saved_run = snap
+	RunManager.continue_run()
+	check(not Progression.claim_once("bau:12"), "o registro sobrevive ao Continuar")
+	_new_run()
+	check(Progression.claim_once("bau:12"), "run novo paga de novo")
+	RunManager.run_active = false
+	check(Progression.claim_once("bau:12") and Progression.claim_once("bau:12"), "fora do run (Provação/testes) sempre paga")
 
 
 func _cases_shop_ui() -> void:

@@ -193,6 +193,29 @@ func _flag_set(key: String, value: String) -> void:
 	items.append(head + value)
 
 
+# --- Recompensa única por run (Guardião §3) ------------------------------
+
+## Paga cada achado UMA vez por run: baú, Selos, Adormecido e recompensa de nó
+## do mapa. Morrer e refazer o trecho não paga de novo (sem lucro por morrer).
+## Devolve true na 1ª vez (quem chama paga) e false depois. Fica no save do run.
+## Chaves usadas: "bau:<tela>", "selo:<tela>", "adormecido:<tela>",
+## "no:<éon>.<camada>". Fora do run (Provação/testes) sempre paga.
+func claim_once(key: String) -> bool:
+	if not RunManager.run_active or CodexSession.active:
+		return true
+	var paid := _flag_get("pagos", "").split(",", false)
+	if paid.has(key):
+		return false
+	paid.append(key)
+	_flag_set("pagos", ",".join(paid))
+	return true
+
+
+## Já foi pago neste run? (consulta, não marca)
+func was_claimed(key: String) -> bool:
+	return _flag_get("pagos", "").split(",", false).has(key)
+
+
 # --- Pulo duplo (dom do Soter) -------------------------------------------
 
 ## A Sophia já pode pular de novo no ar? Por run (o Soter concede numa cena);
