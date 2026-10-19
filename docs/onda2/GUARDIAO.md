@@ -82,6 +82,8 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/mapa7 | 8e8afc3 FINAL (delta de 26d28b3) | APROVADO | §3/§4 (nenhuma isca impossível) |
+| dir7/vfx7 | a63c40b (delta de 2a5919b) | APROVADO COM RESSALVAS (ressalvas anteriores fechadas; tiro hostil "legado" ficou mudo) | R4, R10, R17 |
 | dir5/encenacao5 | 0561f28 (delta de ab957ac: sons das cenas + QA7 #12) | APROVADO COM RESSALVAS | R4 (aparição do Campeão em dobro), R9 ok |
 | dir6/chefes6 | b0b52f0 (delta de ed66a82: trocas de som) | APROVADO COM RESSALVAS | R4 (pancada/pouso com onda = 3 sons até a troca do proj_fire hostil), R11 ok |
 | dir7/mapa7 | 26d28b3 | APROVADO | §3 (nada de cadeado que não abre), R10 |
@@ -660,6 +662,55 @@ inimigos ficam com som dobrado.
   para o Campeão. O audio7 pediu `champion_enter` para ele, porque o stinger de chefe é o que solta a música de chefe (R9).
 
 **Veredito: APROVADO COM RESSALVAS.** Entra no pacote de som; a ressalva é 1 linha no `level.gd`.
+
+---
+
+## dir7/vfx7 — a63c40b (delta 2a5919b..a63c40b: commit próprio a63c40b; o resto é o merge do audio7 6df9411, já aprovado)
+
+**O que muda:**
+- `projectile.gd`: `proj_fire` só quando `target_team == "enemy"` (tiro da Sophia).
+- `hazard_zone.gd`: a poça armando pulsa com `sin(_t * 18)`, ≈ 2,9 Hz.
+- `vfx_library.gd`: `kill_confirm()` (estrela branca em X, anel fino e risco vertical de luz, ~120 ms, dentro do `flash_budget`),
+  chamado no `enemy_death` de inimigo comum.
+
+**Checagem:**
+- **R4: fecha a ressalva do audio7 e do chefes6 b0b52f0.** O tiro hostil soa só pelo `atk_*` do observador e a onda rasteira
+  (Projectile) só pelo `atk_wave`. Pancada e pouso com ondas caem de 3 sons para 2 (golpe + onda), o que é aceitável como camada.
+- **R10: fecha a ressalva.** Poça a 2,9 Hz (≤ 3).
+- **R17: parcial → quase atende.** O golpe que mata o inimigo comum ganha uma forma própria (estrela em X ≠ fagulha redonda do
+  acerto), curta e no orçamento de flashes. Ainda falta a parte do SOM (impacto 2 semitons abaixo / +2 dB, dono Áudio + combate).
+- **R4/R5, RESSALVA NOVA (tiro hostil que ficou MUDO):** o observador do audio7 só toca o golpe quando o inimigo tem `_mv`
+  (repertório do EnemyMoves; `audio_manager.gd:1780`). Atiram com `_mv` vazio, e agora sem nenhum som no disparo:
+  - o caminho antigo `attack_style "ranged"` (`enemy.gd:733` `_begin_strike`, projéteis em `:762`). Pega os ECOS dos Arcontes
+    de estilo "ranged" (eco do Athoth, do Yabel e do Rei, `bestiary.gd:370/379/395`), que entram nas ondas finais
+    (`run_manager.gd:351-352`). Os tipos comuns têm todos repertório próprio;
+  - o voleio que quica do Astaphaios (`boss_astaphaios.gd:153`, `_bounce_volley`), que sai 0,9 s depois do golpe;
+  - os restos de kit em `enemy.gd:826/856` (`_kit_strike`/`_ground_wave`), se algum chefe ainda passar por eles.
+  O aviso (glint + `tell_*`) continua; o que falta é o som do DISPARO, que localiza a ameaça fora da tela (R14).
+  Correção mínima (dono inimigos/polimento7 no `enemy.gd`; chefes6 no Astaphaios): nesses pontos, tocar
+  `Audio.play_sfx_at("atk_shot", pos)` 1× por salva (ou `move_sfx({"kind": "shot"}, "strike", pos)`).
+
+**Veredito: APROVADO COM RESSALVAS.** O pacote de som pode fechar; a ressalva é som que FALTA (não som dobrado) em inimigos de
+fim de jogo.
+
+---
+
+## dir7/mapa7 — 8e8afc3 FINAL (delta 26d28b3..8e8afc3: 0e9ff0c, 932ae93, 8e8afc3)
+
+**O que muda:** `screen_layouts.gd` `_high_cache(screen)`: antes da tela 17 (1º Soter) o baú alto é uma TORRE de pulo simples
+(`tower_cache`); a saliência de pulo duplo (`dj_cache`, com setas no chão) só aparece a partir da 17. `map_qa.gd` confere
+isso. MAPA7.md com a decisão final e a CHECAGEM atualizada (o "ponto honesto" foi resolvido).
+
+**Checagem:**
+- **§3/§4 (nada de isca impossível, nenhum "quase" fabricado):** antes do pulo duplo o jogador não vê mais um prêmio que não
+  alcança, e todo baú visível é alcançável com o que ele tem. Atende. É o mesmo princípio da câmara oculta do 26d28b3.
+- Prêmio e posição são determinísticos (sem sorteio). Atende.
+- **Observação (não bloqueia):** a regra usa o NÚMERO da tela (`SOTER_SCREEN := 17`), não o fato de ter o pulo duplo. Se um dia
+  o Soter mudar de tela, ou o mapa permitir chegar na 17+ sem o encontro, volta a existir saliência inalcançável. Mais robusto:
+  `RunManager.has_double_jump()` na hora de montar a tela (o layout é por tela; se precisar ser estático, ao menos uma
+  checagem no MapQA de que todo caminho até a 17 passa pelo Soter).
+
+**Veredito: APROVADO.**
 
 ---
 
