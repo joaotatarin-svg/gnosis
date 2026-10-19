@@ -25,7 +25,7 @@ func _on_setup() -> void:
 
 func _build_moves() -> Dictionary:
 	var espadao := {"id": "espadao", "kind": "slam", "anim": "slam", "wind": 0.9, "strike": 0.25, "recover": 1.0,
-		"off": 34.0, "sx": 2.6, "sy": 1.4, "nova": 100.0, "waves": 1, "wave_dmg": 0.55, "wave_speed": 250.0,
+		"off": 34.0, "sx": 2.6, "sy": 1.4, "nova": 100.0, "waves": 1, "wave_dmg": 0.4, "wave_speed": 250.0,
 		"dmg": 1.1, "rmax": 140.0, "w": 2.0, "cd": 1.0}
 	var varredura := {"id": "varredura", "kind": "cast", "anim": "melee", "wind": 0.75, "strike": 0.25, "recover": 0.8,
 		"unblock": true, "rmax": 150.0, "w": 1.4, "cd": 2.5}
