@@ -1988,6 +1988,65 @@ func play_action(action_name: String) -> void:
 	_action = action_name
 	_action_t = 0.0
 	anim_time = 0.0
+	queue_redraw()             # troca a pose mesmo com o mundo pausado (cena com caixa de diálogo)
+
+
+## Encerra a ação avulsa (as poses `hold` da cena do Soter ficam até aqui).
+func stop_action() -> void:
+	_action = ""
+	queue_redraw()
+
+
+## COLUNA DE LUZ da bênção do Soter (Fila 9: a luz pintada na folha não se
+## separa do corpo — é refeita aqui): feixe morno aditivo descendo sobre ela,
+## mais forte no meio, com o miolo pulsando. Anima com o jogo pausado.
+## `on = false` apaga em `fade` s.
+func bless_light(on: bool = true, fade: float = 0.6) -> void:
+	var old: Node2D = get_node_or_null("BlessLight") as Node2D
+	if not on:
+		if old != null:
+			var t := old.create_tween()
+			t.tween_property(old, "modulate:a", 0.0, fade)
+			t.tween_callback(old.queue_free)
+		return
+	if old != null:
+		return
+	var root := Node2D.new()
+	root.name = "BlessLight"
+	root.process_mode = Node.PROCESS_MODE_ALWAYS
+	root.z_index = 1
+	var add := CanvasItemMaterial.new()
+	add.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	var h: float = profile.height * 1.19 * 2.4
+	var foot: float = GROUND_Y * profile.height / 44.0
+	# faixas verticais com alfa caindo para as bordas (feixe macio, sem quina);
+	# a camada 1 é o miolo estreito que pulsa
+	for layer in 2:
+		var half: float = profile.height * (0.6 if layer == 0 else 0.24)
+		var peak: float = 0.26 if layer == 0 else 0.3
+		var band := Node2D.new()
+		root.add_child(band)
+		var n: int = 10
+		for k in n:
+			var x0: float = -half + 2.0 * half * float(k) / n
+			var x1: float = -half + 2.0 * half * float(k + 1) / n
+			var xm: float = (x0 + x1) * 0.5 / half
+			var a: float = peak * pow(maxf(0.0, 1.0 - xm * xm), 1.5)
+			var poly := Polygon2D.new()
+			poly.material = add
+			poly.polygon = PackedVector2Array([Vector2(x0, foot - h), Vector2(x1, foot - h), Vector2(x1 * 0.85, foot + 2.0), Vector2(x0 * 0.85, foot + 2.0)])
+			var top := Color(1.0, 0.92, 0.62, 0.0)
+			var low := Color(1.0, 0.86, 0.52, a)
+			poly.vertex_colors = PackedColorArray([top, top, low, low])
+			band.add_child(poly)
+	add_child(root)
+	root.modulate.a = 0.0
+	var t2 := root.create_tween()
+	t2.tween_property(root, "modulate:a", 1.0, 0.7).set_trans(Tween.TRANS_SINE)
+	# miolo respirando (luz viva, não um retângulo parado)
+	var pulse := root.create_tween().set_loops()
+	pulse.tween_property(root.get_child(1), "modulate:a", 0.55, 0.9).set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(root.get_child(1), "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE)
 
 
 func _tick_action(delta: float) -> void:
@@ -2002,6 +2061,11 @@ func _tick_action(delta: float) -> void:
 	var total: float = 0.0
 	for d in seq.get("dur", []):
 		total += float(d)
+	# pose de cena (`hold`, S19 do Soter): fica até stop_action() ou ela se mexer
+	if seq.get("hold", false):
+		if anim_state != "idle":
+			_action = ""
+		return
 	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
 	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):
 		_action = ""

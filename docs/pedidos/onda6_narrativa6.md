@@ -47,3 +47,17 @@ desliza em relação ao corpo. Duas opções (preferida a 1):
    `var hp: Vector2 = art.head_point()` (coordenadas locais do `art`; `Vector2.INF` se faltar) →
    `over` em coordenadas de `_King`: `art.position + hp * art.scale` (respeitando `body.scale.x`).
 Retrato do "…mãe?": `res://assets/painted/derived/portraits/cego_pequeno_olhando.png`.
+
+## Cena da LEVEZA (Soter concede o pulo duplo) com quadros desenhados — de: arte (Fila 9, 18/10/2026, dir2/arte-gpt)
+Folha `npc_soter_blessing_a` integrada (as células com a coluna de luz pintada ficaram FORA: a luz se mistura ao
+corpo; a coluna agora é FX). Em `npc_encounter.gd`:
+- **Soter** (`_art.set_anim`): `lift` (mãos erguidas, laço lento) na fala 0 e enquanto a luz desce; `offer` (estende a
+  mão) na fala 4 ("Vê aquela luz no alto?"); `rest` (mãos juntas, em paz) antes do `fade`. `bless`/`talk`/`fade` iguais.
+- **Sophia** (`player.visual`, um `CharacterArt`): `play_action("soter_look")` (olha pra ele, cajado em pé) na fala 0;
+  `play_action("soter_land")` na fala 1 depois da subida (o tween de `position:y` de vocês continua); `play_action("soter_bow")`
+  (agradece) na última fala. São poses `hold`: ficam até `visual.stop_action()` ou ela se mexer. A pose troca mesmo com o
+  mundo pausado (o `play_action` redesenha na hora).
+- **Coluna de luz**: `player.visual.bless_light(true)` (feixe aditivo macio que pulsa; anima pausado) no lugar do
+  `_glow_sprite("glow", ...)` da fala 0, e `bless_light(false)` quando ela fica leve / no `_clear_glow()`.
+Tudo protegido com `has_method` se quiserem (`has_action`, `bless_light`). Prova: `C:\gnosis-wt\_caps\arte-gpt\fila9\soter_board_crop.png`
+(AnimQA `-- soter_board`).
