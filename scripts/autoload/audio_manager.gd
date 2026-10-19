@@ -392,6 +392,12 @@ var _boss_due_us: int = 0            # µs em que a faixa de chefe entra (0 = n�
 var _boss_wait_us: int = 0           # µs limite da espera (rede de segurança)
 var _boss_seen: bool = false         # o chefe já apareceu nesta visita da tela
 var _pulse_ms: int = -100000         # último low_health_pulse
+## Ferramenta (QA/bot): com a variável de ambiente GNOSIS_AUDIO_LOG=<arquivo.json>,
+## conta cada SFX tocado e grava a contagem no encerramento (prova que os
+## ganchos da Onda 7 disparam jogando — sem ouvir nada).
+var played_counts: Dictionary = {}
+var _log_path: String = OS.get_environment("GNOSIS_AUDIO_LOG")
+var _watch: _Watch = null            # ONDA 7: observador de eventos sem sinal (ver _Watch)
 
 # --- memória pros ganchos por sinal ---
 var _last_weapon: int = 1
@@ -439,6 +445,11 @@ func _ready() -> void:
 		_amb.append(a)
 	_apply_volumes()
 	set_process(false)
+	_watch = _Watch.new()
+	_watch.name = "Watch"
+	_watch.audio = self
+	_watch.process_mode = Node.PROCESS_MODE_PAUSABLE   # pausa do jogo = sem eventos
+	add_child(_watch)
 	get_tree().node_added.connect(_on_node_added)
 	# Os outros autoloads ainda não existem neste _ready (ordem do project.godot).
 	_connect_context.call_deferred()
@@ -572,6 +583,8 @@ func _play(real_name: String, pitch: float, volume_db: float, world_pos: Vector2
 	p.pitch_scale = pitch
 	p.volume_db = volume_db
 	p.play()
+	if _log_path != "":
+		played_counts[real_name] = int(played_counts.get(real_name, 0)) + 1
 	_on_sfx_event(real_name)
 	return true
 
@@ -1024,6 +1037,8 @@ func _on_node_added(node: Node) -> void:
 		var cr := Callable(self, "_on_riposte_window")
 		if not node.is_connected("riposte_window_opened", cr):
 			node.connect("riposte_window_opened", cr)
+	if _watch != null:
+		_watch.track(node)
 
 
 func _on_duck_holder_gone(id: int) -> void:
@@ -1612,6 +1627,11 @@ func shutdown(settle: bool = false) -> void:
 		return
 	_shut_down = true
 	set_process(false)
+	if _log_path != "":
+		var f := FileAccess.open(_log_path, FileAccess.WRITE)
+		if f != null:
+			f.store_string(JSON.stringify(played_counts, "	", true))
+			f.close()
 	_td_active = false
 	_later.clear()
 	for t in [_music_tween, _amb_tween, _pitch_tween]:
@@ -1662,3 +1682,262 @@ func has_ambience(amb_name: String) -> bool:
 	if not amb_name.begins_with("amb_"):
 		amb_name = "amb_" + amb_name
 	return _load(AMB_DIR + amb_name) != null
+
+
+# --- ONDA 7: OBSERVADOR (eventos que ainda não têm sinal) -----------------
+## Os golpes dos inimigos/chefes, o voador derrubado, a fúria do Campeão, a
+## quebra de guarda, o olho do Rei, a Queda Estelar, o 2º pulo, o contra-ataque,
+## o objetivo da zona, o selo aberto e os perigos SILENCIOSOS do level6 não
+## emitem sinal. Em vez de esperar 7 donos, o Áudio OLHA o estado público
+## desses nós uma vez por quadro de física (só BORDAS: o quadro em que muda) e
+## toca o som. Regras:
+##   · só onde hoje NÃO há som (onde já há um genérico, a troca é pedido ao dono
+##     em docs/pedidos/audio7.md — senão o som dobra, R4);
+##   · lê propriedades com `get()` e confere tipo: se um dono renomear algo, o
+##     evento só fica mudo (sem erro) e o AudioQA avisa;
+##   · pausado (PROCESS_MODE_PAUSABLE) não observa; perigo longe da câmera
+##     (> WATCH_FAR px) não soa.
+## Se um dono passar a chamar o som direto, remova o evento daqui (a tabela de
+## "quem liga o quê" está em docs/onda2/AUDIO7.md).
+class _Watch extends Node:
+	const WATCH_FAR := 720.0
+	const BREAK_MIN_T := 1.3          # atordoado > 1,3 s = quebra de guarda (o aparo dá 1,1)
+	var audio: Node = null
+	var _w: Dictionary = {}           # instance_id -> {"n": nó, "k": tipo, ...estado anterior}
+	var _hud_t := 0.0
+	var _hud_prev := -1
+
+	func track(node: Node) -> void:
+		var k := _kind_of(node)
+		if k == "":
+			return
+		var id := node.get_instance_id()
+		if _w.has(id):
+			return
+		_w[id] = {"n": node, "k": k, "init": false}
+		node.tree_exiting.connect(func() -> void: _w.erase(id), CONNECT_ONE_SHOT)
+
+	func _kind_of(node: Node) -> String:
+		var sc = node.get_script()
+		if sc == null:
+			return ""
+		var g: String = String(sc.get_global_name())
+		var base = sc.get_base_script()
+		while g == "" and base != null:
+			g = String(base.get_global_name())
+			base = base.get_base_script()
+		if g in ["MirrorBeam", "MirrorPlatform", "MistPatch", "SinkingPlatform", "SporePod", "ShardFall",
+				"SilenceField", "SecretMark", "Guillotine", "DarkTide", "WardLight", "SummonTotem"]:
+			return g
+		if "estate" in node and "_mv" in node:
+			return "Enemy"
+		if node.has_signal("riposte_window_opened") and "state" in node:
+			return "Player"
+		return ""
+
+	func _physics_process(delta: float) -> void:
+		for id in _w.keys():
+			var r: Dictionary = _w[id]
+			var n = r.n
+			if not is_instance_valid(n) or not (n as Node).is_inside_tree():
+				continue
+			match String(r.k):
+				"Enemy": _enemy(r, n)
+				"Player": _player(r, n)
+				_: _hazard(r, n)
+			r.init = true
+		_hud_t -= delta
+		if _hud_t <= 0.0:
+			_hud_t = 0.25
+			_hud()
+
+	# --- inimigos e chefes ---------------------------------------------------
+	func _enemy(r: Dictionary, e) -> void:
+		var st: int = int(e.get("estate"))
+		var brain = e.get("brain")
+		var boss: bool = brain != null and is_instance_valid(brain)
+		var pos: Vector2 = (e as Node2D).global_position
+		var mv = brain.get("mv") if boss else e.get("_mv")
+		if r.init and st != int(r.st) and mv is Dictionary and not (mv as Dictionary).is_empty():
+			if st == Enemy.EState.WINDUP:
+				audio.move_sfx(mv, "wind", pos, boss)
+			elif st == Enemy.EState.STRIKE:
+				audio.move_sfx(mv, "strike", pos, boss)
+		# voador derrubado (cai): borda de _downed 0 → > 0
+		var dn: float = float(e.get("_downed")) if e.get("_downed") != null else 0.0
+		if r.init and dn > 0.0 and float(r.get("dn", 0.0)) <= 0.0 and float(e.get("fly_height")) > 0.0:
+			audio.play_sfx_at("fly_fall", pos)
+		# fúria do Campeão
+		var fury: bool = bool(e.get("_champ_fury"))
+		if r.init and fury and not bool(r.get("fury", false)):
+			audio.play_sfx_at("champion_fury", pos)
+		if boss:
+			_boss(r, e, brain, st, pos)
+		r.st = st
+		r.dn = dn
+		r.fury = fury
+
+	func _boss(r: Dictionary, e, brain, st: int, pos: Vector2) -> void:
+		# pouso do salto: _airborne true → false (vivo)
+		var air: bool = bool(brain.get("_airborne"))
+		if r.init and bool(r.get("air", false)) and not air and not bool(brain.get("_dead")):
+			audio.play_sfx_at("bs_land", pos)
+		r.air = air
+		# quebra de guarda: a postura volta CHEIA no mesmo quadro em que ele fica
+		# atordoado longo (o aparo atordoa 1,1 s; a quebra, 1,5 s)
+		var poise: float = float(brain.get("_poise"))
+		var ph: int = int(brain.get("phase"))
+		if r.init and poise > float(r.get("poise", poise)) and st == Enemy.EState.STAGGER \
+				and float(e.get("attack_timer")) > BREAK_MIN_T and ph == int(r.get("ph", ph)) \
+				and float(brain.get("_roar_t")) <= 0.0 and int(brain.get("_dying")) < 0:
+			audio.play_sfx_at("guard_break", pos)
+		r.poise = poise
+		r.ph = ph
+		# olho do Rei (ponto fraco): o Rei tem uma hurtbox própria do olho
+		if not bool(r.get("eye", false)):
+			var box = brain.get("_eye_box")
+			if box != null and is_instance_valid(box) and (box as Object).has_signal("hit_received"):
+				(box as Object).connect("hit_received", func(_d, _s, _k, _u, _a) -> void:
+					if is_instance_valid(brain) and bool(brain.get("_low")):
+						var orb = e.get("_orb")
+						audio.play_sfx_at("eye_hit", (orb as Node2D).global_position if orb is Node2D else pos))
+				r.eye = true
+
+	# --- Sophia --------------------------------------------------------------
+	func _player(r: Dictionary, p) -> void:
+		var aj: int = int(p.get("_air_jumps_left"))
+		var on_floor: bool = (p as CharacterBody2D).is_on_floor()
+		if r.init and aj < int(r.get("aj", aj)) and not on_floor:
+			audio.play_sfx("double_jump")          # anel de luz do 2º pulo (o `jump` do player continua)
+		r.aj = aj
+		# Queda Estelar: carga (paira) e pouso (camada de estrelas sob a nova)
+		var dive: bool = false
+		var cm = p.get("current_move")
+		if cm != null and int(p.get("state")) == Player.State.ATTACK:
+			dive = bool(cm.get("air")) and cm.has_method("is_heavy") and bool(cm.call("is_heavy"))
+		var charging: bool = dive and float(p.get("windup_timer")) > 0.0
+		if r.init and charging and not bool(r.get("chg", false)):
+			audio.play_sfx("star_charge")
+		r.chg = charging
+		var landed: bool = dive and bool(p.get("dive_landed"))
+		if r.init and landed and not bool(r.get("land", false)):
+			audio.play_sfx("star_impact")
+		r.land = landed
+		# contra-ataque saiu: a janela fecha em EXATAMENTE 0 (expirar deixa < 0)
+		var rt: float = float(p.get("_riposte_t"))
+		if r.init and float(r.get("rt", 0.0)) > 0.0 and rt == 0.0 and int(p.get("state")) == Player.State.ATTACK:
+			audio.play_sfx("riposte")
+		r.rt = rt
+
+	# --- perigos do level6 (só os eventos hoje MUDOS) ---------------------------
+	func _hazard(r: Dictionary, h) -> void:
+		var pos: Vector2 = (h as Node2D).global_position
+		var cam := get_viewport().get_camera_2d() if get_viewport() != null else null
+		var far: bool = cam != null and absf(pos.x - cam.get_screen_center_position().x) > WATCH_FAR
+		var k: String = r.k
+		if not r.has("cm"):
+			r.cm = (h.get_script() as Script).get_script_constant_map()
+		var cm: Dictionary = r.cm
+		match k:
+			"MirrorBeam":
+				var c: float = float(h.call("_cycle", float(cm.get("PERIOD", 3.0))))
+				var on: bool = c >= float(cm.get("ON_AT", 1.8))
+				if r.init and on != bool(r.get("on", on)) and not far:
+					audio.play_sfx_at("hz_beam_on" if on else "hz_beam_off", pos)
+				r.on = on
+			"MirrorPlatform":
+				var sol: bool = bool(h.get("_solid"))
+				if r.init and sol != bool(r.get("sol", sol)) and not far:
+					audio.play_sfx_at("hz_mirror_flip", pos)
+				r.sol = sol
+			"MistPatch":
+				var den: float = float(h.call("density")) if h.has_method("density") else \
+					0.5 + 0.5 * sin(float(h.call("_cycle", float(cm.get("PERIOD", 6.0)))) / float(cm.get("PERIOD", 6.0)) * TAU)
+				var thick: bool = den >= float(cm.get("THICK", 0.5))
+				if r.init and thick and not bool(r.get("thick", thick)) and not far:
+					audio.play_sfx_at("hz_mist_breath", pos)
+				r.thick = thick
+			"SinkingPlatform":
+				var s: String = String(h.get("_state"))
+				var was: String = String(r.get("s", s))
+				if r.init and s != was and not far:
+					if s == "sinking":
+						audio.play_sfx_at("hz_sink_start", pos)
+					elif s == "rest" and was == "sunk":
+						audio.play_sfx_at("hz_sink_return", pos)
+				r.s = s
+			"SporePod":
+				if not bool(h.get("_dead")):
+					var c2: float = float(h.call("_cycle", float(cm.get("PERIOD", 4.2))))
+					var sw: bool = c2 >= float(cm.get("SWELL_AT", 2.4)) and c2 < float(cm.get("BURST_AT", 3.2))
+					if r.init and sw and not bool(r.get("sw", sw)) and not far:
+						audio.play_sfx_at("hz_spore_swell", pos)
+					r.sw = sw
+			"ShardFall":
+				var warn_t: float = float(cm.get("WARN", 0.8))
+				var drops = h.get("_drops")
+				if drops is Array:
+					var nd: int = (drops as Array).size()
+					for d in drops:
+						if not (d is Dictionary):
+							continue
+						var at := Vector2(float(d.get("x", pos.x)), pos.y)
+						var t: float = float(d.get("t", 0.0))
+						# cada caco é um Dictionary vivo: a marca "_aud" guarda o que já soou
+						var done: int = int(d.get("_aud", 0))
+						if done < 1:
+							d["_aud"] = 1
+							if not far:
+								audio.play_sfx_at("hz_shard_warn", at)
+						elif done < 2 and t >= warn_t:
+							d["_aud"] = 2
+							if not far:
+								audio.play_sfx_at("hz_shard_fall", at)
+					r.nd = nd
+			"SilenceField":
+				var ins: bool = bool(h.get("_inside"))
+				if r.init and not ins and bool(r.get("ins", false)):
+					audio.play_sfx("hz_silence_out")
+				r.ins = ins
+			"SecretMark":
+				var dj: bool = bool(h.get("_has_dj"))
+				if r.init and dj and not bool(r.get("dj", dj)) and not far:
+					audio.play_sfx_at("hz_secret_mark", pos)
+				r.dj = dj
+			"Guillotine":
+				var c3: float = float(h.call("_cycle", float(cm.get("PERIOD", 3.2))))
+				var up: bool = c3 >= float(cm.get("STUCK_END", 3.0))
+				if r.init and up and not bool(r.get("up", up)) and not far:
+					audio.play_sfx_at("hz_winch", pos)
+				r.up = up
+			"DarkTide":
+				var tc: float = float(h.get("_tick_cd"))
+				if r.init and bool(h.get("_running")) and tc > float(r.get("tc", tc)) + 0.05:
+					audio.play_sfx("hz_tide_tick")   # é a Sophia sendo corroída (centro)
+				r.tc = tc
+			"WardLight":
+				var armed: bool = bool(h.get("_armed"))
+				if r.init and armed and not bool(r.get("armed", armed)):
+					audio.play_sfx("zone_objective")
+				r.armed = armed
+				if armed and bool(h.get("_drain_now")) and not far:
+					audio.play_sfx_at("hz_ward_drain", pos)   # anti-spam próprio de 250 ms
+			"SummonTotem":
+				var armed2: bool = bool(h.get("_armed"))
+				if r.init and armed2 and not bool(r.get("armed", armed2)):
+					audio.play_sfx("zone_objective")
+					audio.play_sfx_at("hz_totem_arm", pos)
+				r.armed = armed2
+
+	# --- HUD: selo aberto (o aviso do grau novo é um toast sem som) -------------
+	func _hud() -> void:
+		var hud := get_tree().get_first_node_in_group("hud")
+		if hud == null or not ("_tier_seen" in hud):
+			_hud_prev = -1
+			return
+		var t: int = int(hud.get("_tier_seen"))
+		var rm := get_node_or_null("/root/RunManager")
+		var real: bool = rm != null and bool(rm.get("run_active")) and not CodexSession.active
+		if _hud_prev >= 0 and t > _hud_prev and real:
+			audio.play_sfx("shop_seal")
+		_hud_prev = t
