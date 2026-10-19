@@ -24,6 +24,7 @@ static func spawn(parent: Node, pos: Vector2, dmg: int, rad: float, col: Color) 
 
 
 func _ready() -> void:
+	material = VfxLibrary._additive()   # VFX7: o desenho vetorial soma luz
 	Juice.shake(0.45)
 	if damage > 0:        # ondas puramente visuais ficam mudas (quem as cria tem som próprio)
 		Audio.play_sfx("nova")
@@ -54,10 +55,17 @@ func _damage_area() -> void:
 
 
 func _draw() -> void:
+	# VFX7: o anel principal é o shader de VfxLibrary.nova_ring; aqui fica o
+	# reforço vetorial — eco interno, PEGADA no chão (elipse) e riscos na frente.
 	var t := _time / duration
 	var r := radius * ease(t, 0.4)
 	var fade := 1.0 - t
-	# anel principal + eco + clarão central
-	draw_arc(Vector2.ZERO, r, 0, TAU, 64, Color(color.r, color.g, color.b, 0.85 * fade), 2.0 * (1.0 - t * 0.5))
-	draw_arc(Vector2.ZERO, r * 0.72, 0, TAU, 64, Color(color.r, color.g, color.b, 0.35 * fade), 2.0)
-	draw_circle(Vector2.ZERO, r * 0.3 * (1.0 - t), Color(1, 1, 1, 0.24 * fade))
+	draw_arc(Vector2.ZERO, r * 0.72, 0, TAU, 64, Color(color.r, color.g, color.b, 0.3 * fade), 1.5, true)
+	draw_circle(Vector2.ZERO, r * 0.3 * (1.0 - t), Color(1, 1, 1, 0.2 * fade))
+	draw_set_transform(Vector2(0, 10), 0.0, Vector2(1.0, 0.28))
+	draw_arc(Vector2.ZERO, r, 0, TAU, 64, Color(color.r, color.g, color.b, 0.6 * fade), 3.0, true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	for i in 16:
+		var a := TAU * float(i) / 16.0 + _time * 0.8
+		var d := Vector2(cos(a), sin(a))
+		draw_line(d * r * 0.86, d * r, Color(1, 1, 1, 0.35 * fade), 1.0, true)

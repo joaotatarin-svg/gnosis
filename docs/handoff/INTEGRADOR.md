@@ -20,12 +20,25 @@ de linha (viram órfãs) — sempre normalizar para LF antes do extract.
 | dir6/ui6 | f7cf6ce | |
 | dir6/combate6 d2f3e74 (+ arte-gpt b618400: S17/S18, frame_geometry) | ec64161 | |
 | dir2/arte-gpt 7163c12 (Fila 9 blocos 2+3: voadores, acólito/cornudo/fantasma, 7 Campeões) | a727e5d | sem conflito; entrou ANTES do chefes6 (já estava validado quando chegou a ordem "chefes6 primeiro") |
+| dir7/vfx7 e44be25 | 74af54a | lote i18n 16_vfx7_interno (ProjectileFX) |
+| dir2/arte-gpt 60a8cf7 (cor real da pintura) | a2ea6c2 | autorizado antes da regra do Guardião; auditoria depois |
 
-## PAUSA (pedido do João, 18/10) — estado ao parar
-Nada em curso: a727e5d validado 2/2 e no origin. Nenhum Godot meu aberto. Ao retomar: esperar chefes6 (50a89eb é
-WIP da recalibração) → integrar → BossProbe → preview/3.1 em `_build\preview3_1` SEM atalho no Desktop
-(regra nova: versões internas sem atalho; o João só joga a final). Fila Onda 7: dir7/audio7, dir7/polimento7,
-dir7/qa7 (docs/sondas), dir7/vfx7, dir7/dublagem. Roteiro de versões: C:\gnosis-wt\_ONDA6.md §ROTEIRO.
+## REGRA NOVA (18/10): Guardião da Satisfação
+Só integrar branch com veredito APROVADO / APROVADO COM RESSALVAS do Guardião (dir7/guardiao, docs/onda2/GUARDIAO.md,
+seção do branch). Sem veredito → avisar o chefe. A prévia 3.1 também precisa de auditoria antes do build.
+Versões internas: preview/<versão> + `_build\preview<versão>`, SEM atalho no Desktop.
+
+## Fila aguardando veredito do Guardião
+- dir2/arte-gpt 62f3ed0 (Fila 9 bloco 4: Soter abençoando + poses de cena; inclui 60a8cf7)
+- dir5/encenacao5 (cena do Soter, quando a Narrativa ligar)
+- dir6/chefes6 (recalibração; topo era 50a89eb WIP)
+- dir7/polimento7 661a1a0 (FLASH_ADD 0,42; hurtbox pelo frame_geometry; POLIMENTO7.md)
+- Onda 7 ainda sem entrega final: dir7/audio7, dir7/qa7, dir7/dublagem (WIP).
+
+## Instabilidade observada
+- 18/10, merge a2ea6c2, máquina sob carga (tempos 2×): PuppetQA crashou 1× no arranque (exit -1066598273, log só com
+  o banner). Repetido 3/3 verde e validate completo 2/2 verde. Se repetir → chefe passa ao técnico.
+- Reimporte: o 1º `--editor --quit` às vezes sai com -1073741819 (conhecido); o 2º passa.
 
 ## Prévia 3 — FEITA
 `preview/3` = ec64161 + cherry-pick e065c85 (save GNOSIS-Previa) → 65b2860 (push feito).
@@ -37,7 +50,6 @@ BossProbe (telas=all vel=3) em ec64161: lutas ~2× mais longas que o r4 do CHEFE
 Armupiel (64) e na batalha final (68). 91× "Function blocked during in/out signal (set_deferred monitoring)".
 Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
 
-## Falta
-- Prévia 3.1: quando chefes6 recalibrar → integrar, BossProbe, gerar `preview/3.1` (mesma receita, pasta `_build\preview3_1`).
-- dir7/vfx7 (WIP), dir7/dublagem (WIP, só scripts/docs), dir2/arte-gpt (blocos seguintes da Fila 9).
-- Prévia 4: quando chefes6 + narrativa fecharem de vez (+ vfx7 se pronto).
+## Próximo
+- Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
+- Prévia 4: quando chefes6 + narrativa fecharem de vez.

@@ -4890,6 +4890,11 @@ msgstr "• new Chronicle  %d/%d"
 msgid "Crônica %d/%d"
 msgstr "Chronicle %d/%d"
 
+#. projectile_fx.attach.394f4a  [ui]
+#: scripts/fx/attack_fx/projectile_fx.gd:57
+msgid "ProjectileFX"
+msgstr "ProjectileFX"
+
 #. cinematic.prologue.56bd6b  [card_cinema]
 #: scripts/fx/cinematic.gd:151
 msgid "No princípio havia o Um. Dele emanaram os Éons, aos pares,\ncomo luz que transborda. Ali nada dormia. Nada esquecia."
