@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 | b0b52f0 (delta de ed66a82: trocas de som) | APROVADO COM RESSALVAS | R4 (pancada/pouso com onda = 3 sons até a troca do proj_fire hostil), R11 ok |
 | dir7/mapa7 | 26d28b3 | APROVADO | §3 (nada de cadeado que não abre), R10 |
 | dir7/perigos7 | a1c0e4c (topo, sem FINAL) | APROVADO COM RESSALVAS (falta o doc com CHECAGEM) | R5, R10, R18 |
 | dir6/chefes6 | ed66a82 FINAL | APROVADO COM RESSALVAS (ressalvas anteriores fechadas; resta o 0,7 da arte) | R5, R17, R3 |
@@ -601,6 +602,33 @@ inimigos ficam com som dobrado.
 - **Regra da equipe:** não há `docs/onda2/PERIGOS7.md` com CHECAGEM DE SATISFAÇÃO no branch. Correção: escrever antes do FINAL.
 
 **Veredito: APROVADO COM RESSALVAS** (falta só o doc/CHECAGEM). Quando sair o FINAL, reaudito só o delta.
+
+---
+
+## dir6/chefes6 — b0b52f0 (delta ed66a82..b0b52f0: 9fae4af = merge do audio7 6df9411, já aprovado; commit próprio b0b52f0)
+
+**O que muda (b0b52f0):**
+- `enemy.gd` `_enter_phase`: `boss_phase3` NO LUGAR de `boss_phase2` na fase 3 (troca, não soma).
+- `boss_hazard.gd`: `hz_saw` 1× por serra (`_saw_sfx`); `hz_column` no golpe da coluna, exceto quando quem criou já soa
+  (`strike_sound = false` no pouso do salto, que já toca `bs_land` pelo observador).
+- `boss_brain.gd` `ground_wave()`: `atk_wave` com guarda de 120 ms (duas ondas do mesmo golpe = 1 som).
+
+**Checagem (R4 e R11):**
+- **Fase 3, coluna e serra: atende R4.** São trocas na fonte e nada mais toca nesses eventos. O observador não trata `BossHazard`, e o
+  Decreto do Armupiel tem `strike: ""` na `BOSS_MOVE_SFX`, então a coluna dele soa uma vez só.
+- **Pouso do salto: atende.** `bs_land` (observador) e a coluna-sombra muda.
+- **R11: atende.** `atk_wave` herda o anti-spam de 130 ms e as 2 vozes do prefixo `atk_` do audio7. A guarda de 120 ms do cérebro
+  é redundante, mas inofensiva. `atk_wave` tem 2 variações (ideal 3, não bloqueia).
+- **R4, RESSALVA (pancada `slam` com `waves` e pouso de salto com ondas):** no MESMO quadro tocam o som do golpe
+  (`bs_royal_cut`/`atk_slam` no strike, ou `bs_land` no pouso, pelo observador), o `atk_wave` (novo) e o `proj_fire` de cada
+  onda, porque a onda rasteira é um `Projectile` (`projectile.gd:55` toca `proj_fire` em todo projétil). Hoje são **3 sons**.
+  Com a troca já pendente do `proj_fire` hostil (só o tiro da Sophia toca), caem para 2: golpe + onda, que é aceitável como
+  camada (a onda é um objeto visível que parte do impacto). Correção mínima:
+  (1) a troca do `projectile.gd` (dono polimento7/inimigos), que já é condição do audio7;
+  (2) opcional, `atk_wave` a −3 dB (`sfx(..., -3)`) para soar como camada sob o golpe, não como segundo impacto.
+- AoeNova com dano 0 continua mudo (`aoe_nova.gd:29`). Ok.
+
+**Veredito: APROVADO COM RESSALVAS** (a ressalva depende da mesma linha do `projectile.gd` que já trava o audio7).
 
 ---
 
