@@ -13,6 +13,11 @@ da caixa; `"card"` = prólogo/epílogo; `"estela"` = pedras).
    volume próprio `settings["voice_volume"]`.
 3. Ducking extra de −3 dB na música enquanto uma voz toca; `duck_music` nas
    legendas (sem DialogueBox).
+3b. (Guardião) **Proteger o `tell_unblock`**: enquanto ele toca, bus Voice −8 dB +
+   passa-altas 250 Hz (ataque 10 ms, soltura 300 ms); nenhuma voz de luta começa
+   nos 400 ms seguintes a um tell. Vozes graves (Yaldabaoth, Armupiel, Harmas)
+   são as que mascaram.
+3c. (Guardião) Bus `Voice` com send para `Master` (não `SFX`) — já é o item 2.
 
 ## UI (`scripts/ui/dialogue_box.gd`, `scripts/ui/caption_bar.gd`, menu de opções)
 4. DialogueBox: `_show_line()` chama `Audio.play_voice(l)`; com voz, sem blips e

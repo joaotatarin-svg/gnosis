@@ -169,6 +169,23 @@ torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu`; `pip instal
 chatterbox-tts==0.1.7 kokoro soundfile pyloudnorm faster-whisper "matplotlib<3.11"
 "numpy<2"`; baixar os pesos com `huggingface_hub.snapshot_download` (lista em §0).
 
+**GPU (venv-rocm):** mesmos scripts com `--device cuda`. Lote SEMPRE em
+`BelowNormal`, `VOICE_THREADS=2` (torch na CPU) e `VOICE_ASR_THREADS=2` (Whisper)
+— regra do PC: ≤ 4 threads, 1 job de GPU por vez, GPU ≤ 60% média
+(`tools/voice/gpu_usage.ps1` mede). O `dub_all` roda em PIPELINE: a thread
+principal só gera na GPU; o QA (Whisper/pós/ogg) roda em paralelo numa thread.
+
+## 6. CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
+
+| Regra | Como a dublagem cumpre | Estado |
+|---|---|---|
+| **R13 volume/fadiga** | cada fala a −18 LUFS (voz fica ~4–6 LU acima da mixagem de −20/−23 do jogo = inteligível sem gritar); **true peak ≤ −1 dBTP medido no .ogg decodificado** (limitador com antecipação a −2 dBTP antes do Vorbis + conferência e recodificação — `voicelib.tp_limit/write_ogg`, `tp` no manifesto). Pedido do Guardião: 29/72 amostras antigas passavam de −1 dBTP → `tp_fix.py` corrige as amostras; o rascunho novo já sai certo (`PIPE_VER = 2` refaz o que foi gerado antes). | código pronto; amostras: rodar `tp_fix.py --fix` (foi interrompido pela pausa de CPU) |
+| **R9 ducking** | a voz pede ducking da música (−9 dB do diálogo + −3 dB enquanto a voz soa); nos grandes momentos (roubo, anagnórise) a regra das cenas musicais manda (`SCENE_DUCK_SCALE`). Legendas com voz pedem `duck_music` só durante a fala. | pedido ao Áudio |
+| **tell_unblock (Guardião)** | o aviso de ataque inbloqueável NÃO pode ser mascarado por voz grave (Yaldabaoth, Armupiel, Harmas têm energia forte < 300 Hz). Pedido: enquanto `tell_unblock` toca, o bus Voice desce −8 dB com corte de graves (passa-altas 250 Hz, ataque 10 ms, soltura 300 ms); e nenhuma voz de luta começa nos 400 ms depois de um tell. | pedido ao Áudio |
+| **Bus Voice → Master** (Guardião) | hoje `Voice` é filho de `SFX` (pega volume de efeitos e o passa-baixas da câmera lenta). Mudar o send para `Master` + volume próprio. | pedido ao Áudio |
+| **R21 respiro / voz não atropela combate** | só falam durante a luta as legendas de **fase 2** dos Arcontes (1 fala curta por luta, 1,8–6 s) — nada de bordão repetido; as falas longas ficam em caixa de diálogo (jogo pausado) ou caminhada sem inimigos. A fila da CaptionBar não sobrepõe vozes. | desenho (§7) |
+| **§4 repetição irritante** | toda fala é única no run (regra do ESTILO §6.3); **nenhuma voz de dor/esforço** foi gerada (os "argh" de golpe seguem como SFX com round-robin — R11, do Áudio). `death_revive` tem variações por número de quedas. | ok |
+
 ## 7. Integração no jogo (desenho para os diretores de Áudio e UI)
 
 Nada disto foi implementado aqui (arquivos de outros donos) — pedidos em

@@ -5,6 +5,7 @@ Usado por samples.py (amostras do elenco) e dub_all.py (o jogo inteiro).
 """
 from __future__ import annotations
 
+import os
 import re
 import time
 import unicodedata
@@ -27,7 +28,7 @@ def asr_words(x: np.ndarray, lang: str):
 	import librosa
 	from faster_whisper import WhisperModel
 	if _asr is None:
-		_asr = WhisperModel("small", device="cpu", compute_type="int8")
+		_asr = WhisperModel("small", device="cpu", compute_type="int8", cpu_threads=int(os.environ.get("VOICE_ASR_THREADS", "2")))
 	a16 = librosa.resample(x, orig_sr=V.SR, target_sr=16000)
 	segs, _ = _asr.transcribe(a16, language=lang, beam_size=5, word_timestamps=True, vad_filter=False)
 	words = []
@@ -67,23 +68,56 @@ def render(cb: "V.Chatterbox", char: str, mood: str, mode: str, text_pt: str, sa
 	for k in range(MAX_TRIES):
 		seed = seed0 + 97 * k
 		raw = V.trim(cb.gen(said, ref, p["ex"], p["cfg"], p["temp"], seed))
-		words = asr_words(raw, lang)
-		cutx, heard = cut_tail(raw, words, said)
-		c = cer(said, heard)
-		# duração plausível: 6–22 caracteres por segundo
-		cps = len(said) / max(0.3, len(cutx) / V.SR)
-		bad_rate = cps < 5 or cps > 24
-		score = c + (0.3 if bad_rate else 0)
-		if best is None or score < best["score"]:
-			best = {"x": cutx, "cer": c, "heard": heard, "seed": seed, "score": score, "cps": cps}
-		if c <= CER_OK and not bad_rate:
+		cand = check(raw, said, lang, seed)
+		if best is None or cand["score"] < best["score"]:
+			best = cand
+		if cand["ok"]:
 			break
-	x = V.apply_fx(V.trim(best["x"]), V.fx_for(char, mode))
-	x = V.finalize(V.trim(x, thr_db=-55, pad_ms=40))
-	V.write_ogg(x, out_ogg)
-	info = {"file": out_ogg.name, "char": char, "lang": lang, "mood": mood, "mode": mode,
+	return finish(best, char, lang, mood, mode, said, p, out_ogg, k + 1, time.time() - t0, log)
+
+
+def check(raw: np.ndarray, said: str, lang: str, seed: int) -> dict:
+	"""QA de uma geração (CPU): ASR, corte de cauda, CER e ritmo plausível."""
+	words = asr_words(raw, lang)
+	cutx, heard = cut_tail(raw, words, said)
+	c = cer(said, heard)
+	# duração plausível: 5–24 caracteres por segundo
+	cps = len(said) / max(0.3, len(cutx) / V.SR)
+	bad_rate = cps < 5 or cps > 24
+	score = c + (0.3 if bad_rate else 0)
+	return {"x": cutx, "cer": c, "heard": heard, "seed": seed, "score": score, "cps": cps,
+		"ok": c <= CER_OK and not bad_rate}
+
+
+def finish(best: dict, char: str, lang: str, mood: str, mode: str, said: str, p: dict,
+		out_ogg: Path, tries: int, gen_s: float, log=print) -> dict:
+	"""Pós-processamento do personagem + loudness + .ogg (CPU). Guarda o áudio
+	CRU (antes dos efeitos) em out/raw — mexer no pós de um papel vira só
+	`refx.py`, sem regerar na GPU — e mede a inteligibilidade DEPOIS do pós
+	(cer_pos): efeito que embola a fala aparece aqui."""
+	raw = V.trim(best["x"])
+	raw_dir = V.HERE / "out" / "raw" / lang
+	raw_dir.mkdir(parents=True, exist_ok=True)
+	import soundfile as sf
+	sf.write(str(raw_dir / (out_ogg.stem + ".wav")), raw, V.SR)
+	x, tp, cer_pos, heard_pos = post(raw, char, mode, said, lang, out_ogg)
+	info = {"tp": round(tp, 2), "file": out_ogg.name, "char": char, "lang": lang, "mood": mood, "mode": mode,
 		"said": said, "asr": best["heard"], "cer": round(best["cer"], 3), "seed": best["seed"],
-		"tries": k + 1, "dur": round(len(x) / V.SR, 2), "gen_s": round(time.time() - t0, 1),
+		"cer_pos": round(cer_pos, 3), "asr_pos": heard_pos,
+		"tries": tries, "dur": round(len(x) / V.SR, 2), "gen_s": round(gen_s, 1),
 		"params": p}
-	log("%s cer=%.3f tries=%d dur=%.1fs gen=%.0fs %s" % (out_ogg.name, info["cer"], info["tries"], info["dur"], info["gen_s"], "" if info["cer"] <= CER_OK else "<<< REVER"))
+	ruim = info["cer"] > CER_OK or info["cer_pos"] > CER_POS_OK
+	log("%s cer=%.3f pos=%.3f tries=%d dur=%.1fs gen=%.0fs tp=%.1f %s" % (out_ogg.name, info["cer"], info["cer_pos"], info["tries"], info["dur"], info["gen_s"], tp, "<<< REVER" if ruim else ""), flush=True)
 	return info
+
+
+CER_POS_OK = 0.25
+
+
+def post(raw: np.ndarray, char: str, mode: str, said: str, lang: str, out_ogg: Path):
+	"""Efeitos do personagem → loudness/true peak → ogg → ASR do resultado."""
+	x = V.apply_fx(raw, V.fx_for(char, mode))
+	x = V.finalize(V.trim(x, thr_db=-55, pad_ms=40))
+	tp = V.write_ogg(x, out_ogg)
+	heard = " ".join(w for w, _, _ in asr_words(x, lang))
+	return x, tp, cer(said, heard), heard

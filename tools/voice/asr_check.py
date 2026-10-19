@@ -45,7 +45,7 @@ def transcribe(path: str, lang: str, model_size: str = "small") -> str:
 	global _model
 	if _model is None:
 		from faster_whisper import WhisperModel
-		_model = WhisperModel(model_size, device="cpu", compute_type="int8")
+		_model = WhisperModel(model_size, device="cpu", compute_type="int8", cpu_threads=int(__import__("os").environ.get("VOICE_ASR_THREADS", "2")))
 	# Decodifica aqui (librosa) — o av 19 quebrou o decode_audio do faster-whisper.
 	import librosa
 	audio, _sr = librosa.load(path, sr=16000, mono=True)

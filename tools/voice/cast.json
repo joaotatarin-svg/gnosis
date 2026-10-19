@@ -37,11 +37,11 @@
    "fx": [["hpf", 60], ["reverb", "hall", 0.22]]
   },
   "Yaldabaoth": {
-   "desc": "a Voz sem o veludo: MESMA referência da Voz, mais grave (tom −2 st e formantes no pós), desprezo; camada uma oitava abaixo, distorção leve, catedral",
+   "desc": "a Voz sem o veludo: MESMA referência da Voz (−2 st), desprezo; camada uma oitava abaixo, distorção leve, catedral — dosados para continuar inteligível (ASR pós-efeito)",
    "ref_from": "A Voz",
    "ref": {"pitch": -2, "formant": "preserved"},
    "cb": {"ex": 0.55, "cfg": 0.4, "temp": 0.7},
-   "fx": [["pitch", -2, "shifted"], ["octave", -12, 0.28], ["drive", 2.2, 0.35], ["hpf", 45], ["reverb", "cathedral", 0.3]]
+   "fx": [["hpf", 80], ["octave", -12, 0.16], ["drive", 2.0, 0.2], ["reverb", "cathedral", 0.18]]
   },
   "O Cego": {
    "desc": "a criança cega dentro do Colosso: a voz da Voz encolhida (tom e formantes para cima), frágil",
@@ -85,7 +85,7 @@
    "desc": "Praga: úmido, cansado, lento, fatalista",
    "ref": {"pt": {"voice": "am_eric", "speed": 0.82}, "en": {"voice": "am_eric", "speed": 0.82}, "pitch": -2, "formant": "shifted"},
    "cb": {"ex": 0.25, "cfg": 0.5, "temp": 0.7},
-   "fx": [["tempo", 0.93], ["lpf", 4200], ["wobble", 0.004, 0.7], ["reverb", "swamp", 0.25]]
+   "fx": [["tempo", 0.95], ["lpf", 6000], ["wobble", 0.003, 0.7], ["reverb", "swamp", 0.16]]
   },
   "Armupiel": {
    "desc": "Coroa: grave, majestoso, pomposo; salão de trono",

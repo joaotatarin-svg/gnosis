@@ -110,16 +110,21 @@ def doubler(x, n, cents, ms, mix):
 	out = x.copy()
 	for i in range(n):
 		sgn = 1 if i % 2 == 0 else -1
-		c = pitch_shift(x, sgn * cents / 100.0, "preserved")
+		c = _fit(pitch_shift(x, sgn * cents / 100.0, "preserved"), len(x))
 		d = int(SR * ms * (i + 1) / 1000)
 		c = np.concatenate([np.zeros(d, dtype=np.float32), c])[: len(x)]
 		out = out + mix * c / n
 	return out.astype(np.float32)
 
 
+def _fit(y: np.ndarray, n: int) -> np.ndarray:
+	"""Corta/completa com zeros para n amostras (o rubberband varia ±1%)."""
+	return y[:n] if len(y) >= n else np.concatenate([y, np.zeros(n - len(y), dtype=np.float32)])
+
+
 def octave(x, semis, mix):
-	low = pitch_shift(x, semis, "shifted")
-	return (x + mix * low[: len(x)]).astype(np.float32)
+	low = _fit(pitch_shift(x, semis, "shifted"), len(x))
+	return (x + mix * low).astype(np.float32)
 
 
 def drive(x, amount, mix):
@@ -163,7 +168,7 @@ def wobble(x, depth_s, rate_hz):
 def mirror(x, mix):
 	"""Espelho: a fala dobrada por ela mesma 3 st acima (a Sophia 'por trás do
 	vidro') + um pré-eco invertido que chega ANTES da palavra."""
-	up = pitch_shift(x, 3, "shifted")[: len(x)]
+	up = _fit(pitch_shift(x, 3, "shifted"), len(x))
 	y = x + mix * 0.6 * up
 	pad = int(0.35 * SR)
 	rev = reverb(x[::-1].copy(), "hall", 1.0)[: len(x) + pad][::-1]
@@ -222,20 +227,68 @@ def finalize(x: np.ndarray, gain_db: float = 0.0) -> np.ndarray:
 			x = (x * 10 ** ((TARGET_LUFS + gain_db - lufs) / 20)).astype(np.float32)
 	except ValueError:
 		pass  # trecho curto demais para medir: só o teto de pico
-	pk = np.max(np.abs(x)) + 1e-9
-	ceil = 10 ** (-1 / 20)
-	if pk > ceil:
-		x = (np.tanh(x / ceil * 1.0) * ceil).astype(np.float32) if pk > 1.6 * ceil else x * (ceil / pk)
-	return x.astype(np.float32)
+	# Limitador TRUE PEAK (pedido do Guardião): −2 dBTP antes do Vorbis (o
+	# codec sobe o pico ~0,5–1 dB); write_ogg confere depois de codificar.
+	return tp_limit(x, TP_PRE_DB)
 
 
-def write_ogg(x: np.ndarray, path: str | Path, q: int = 5) -> None:
+TP_PRE_DB = -2.0     # teto antes de codificar
+TP_MAX_DB = -1.0     # teto do arquivo final (medido no .ogg decodificado)
+
+
+def true_peak_db(x: np.ndarray, sr: int = SR) -> float:
+	"""Pico verdadeiro (4× sobreamostrado, como o BS.1770) em dBTP."""
+	os4 = signal.resample_poly(np.asarray(x, dtype=np.float64), 4, 1)
+	return 20 * np.log10(np.max(np.abs(os4)) + 1e-12)
+
+
+def tp_limit(x: np.ndarray, ceil_db: float) -> np.ndarray:
+	"""Limitador com antecipação (5 ms) e soltura (80 ms) sobre o pico
+	verdadeiro: abaixa SÓ os picos, sem mexer na loudness do resto."""
+	from scipy.ndimage import minimum_filter1d
+	x = np.asarray(x, dtype=np.float32)
+	ceil = 10 ** (ceil_db / 20)
+	os4 = np.abs(signal.resample_poly(x.astype(np.float64), 4, 1))
+	n = len(x)
+	os4 = np.pad(os4, (0, max(0, 4 * n - len(os4))))[: 4 * n].reshape(n, 4).max(axis=1)
+	need = np.minimum(1.0, ceil / np.maximum(os4, 1e-9))
+	if need.min() >= 1.0:
+		return x
+	look = int(SR * 0.005)
+	g = minimum_filter1d(need, size=2 * look + 1)
+	rel = 1.0 - np.exp(-1.0 / (SR * 0.08))
+	out = np.empty_like(g)
+	y = 1.0
+	for i in range(n):          # soltura lenta, ataque instantâneo (já antecipado)
+		y = g[i] if g[i] < y else y + (g[i] - y) * rel
+		out[i] = y
+	z = (x * out).astype(np.float32)
+	tp = true_peak_db(z)
+	if tp > ceil_db:            # sobra numérica: um último ajuste fino
+		z = (z * 10 ** ((ceil_db - tp) / 20)).astype(np.float32)
+	return z
+
+
+def write_ogg(x: np.ndarray, path: str | Path, q: int = 5) -> float:
+	"""Codifica Vorbis q5 e CONFERE o pico verdadeiro do arquivo decodificado;
+	acima de −1 dBTP, abaixa e recodifica (até 3×). Devolve o dBTP final."""
 	path = Path(path)
 	path.parent.mkdir(parents=True, exist_ok=True)
-	with tempfile.TemporaryDirectory() as td:
-		a = os.path.join(td, "a.wav")
-		sf.write(a, x, SR, subtype="PCM_16")
-		subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", a, "-c:a", "libvorbis", "-q:a", str(q), str(path)], check=True)
+	tp = 0.0
+	for _ in range(4):
+		with tempfile.TemporaryDirectory() as td:
+			a = os.path.join(td, "a.wav")
+			b = os.path.join(td, "b.ogg")
+			sf.write(a, x, SR, subtype="PCM_16")
+			subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", a, "-c:a", "libvorbis", "-q:a", str(q), b], check=True)
+			y, _ = sf.read(b, dtype="float32")
+			tp = true_peak_db(y)
+			if tp <= TP_MAX_DB:
+				# troca atômica: processo morto no meio nunca deixa .ogg corrompido
+				os.replace(b, str(path))
+				return tp
+		x = tp_limit(x, TP_PRE_DB - (tp - TP_MAX_DB) - 0.3)
+	raise RuntimeError("true peak acima de %.1f dBTP após 4 tentativas: %s" % (TP_MAX_DB, path))
 
 
 # --- motores -----------------------------------------------------------------
