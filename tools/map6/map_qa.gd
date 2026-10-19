@@ -263,6 +263,7 @@ class Flow extends Node:
 		check(o6.has("e0.6a") and not RunManager.node_available("e0.6a") and not RunManager.choose_node("e0.6a"),
 			"sala secreta trancada sem o pulo duplo (%s)" % str(o6))
 		check(RunManager.available_options("e0.5a", 8).size() >= 1, "sempre há uma saída livre")
+		await _seal_checks()
 		# Snapshot / continuar (rota até o checkpoint).
 		RunManager.choose_node("e0.6b")
 		await scene_is("Level01.tscn")
@@ -298,6 +299,49 @@ class Flow extends Node:
 		var secret := r1.filter(func(id): return String(EonMap.find(String(id)).kind) == "secret")
 		check(secret.is_empty(), "o bot sem pulo duplo nunca entra em segredo")
 		RunManager.map_route_seed = -1
+
+	## Onda 7 (decisão do chefe): o segredo antes do Soter aparece SELADO e diz
+	## por quê ("precisa de asas", prêmio escondido); com o pulo duplo o selo
+	## vira "aberto" e o prêmio aparece. A tela de mapa roda num SubViewport
+	## (sem trocar a cena da QA), no estado "escolhendo a camada 6 vindo de e0.5a".
+	func _seal_checks() -> void:
+		var vp := SubViewport.new()
+		vp.size = Vector2i(640, 360)
+		add_child(vp)
+		var m: Node = (load("res://scenes/ui/WorldMap.tscn") as PackedScene).instantiate()
+		vp.add_child(m)
+		await frames(3)
+		var badge_locked := String(m.call("secret_badge", "e0.6a"))
+		# Seleciona o segredo (trilha alta = 1º da lista ordenada).
+		m.set("_sel", 0)
+		m.call("_refresh_info")
+		var req_l := String((m.get("_sel_req") as Label).text)
+		var rew_l := String((m.get("_sel_reward") as Label).text)
+		check(badge_locked == "locked" and req_l.begins_with("Precisa de asas") and rew_l.contains("escondida"),
+			"segredo antes do Soter: selo fechado, 'precisa de asas', prêmio escondido (%s | %s | %s)" % [badge_locked, req_l, rew_l])
+		check(String(m.call("secret_badge", "e0.6b")) == "", "nó comum não tem selo")
+		m.queue_free()
+		# Com as asas: o selo abre e a 1ª tela avisa uma vez.
+		Progression.grant_double_jump()
+		var m2: Node = (load("res://scenes/ui/WorldMap.tscn") as PackedScene).instantiate()
+		vp.add_child(m2)
+		await frames(3)
+		m2.set("_sel", 0)
+		m2.call("_refresh_info")
+		var req_o := String((m2.get("_sel_req") as Label).text)
+		var rew_o := String((m2.get("_sel_reward") as Label).text)
+		var news := float(m2.get("_wings_news")) > 0.0 and String((m2.get("_sub") as Label).text).contains("asas")
+		check(String(m2.call("secret_badge", "e0.6a")) == "open" and req_o.begins_with("Aberta") and rew_o.contains("faíscas") and news,
+			"com o pulo duplo: selo aberto, prêmio à vista, aviso único (%s | %s | aviso=%s)" % [req_o, rew_o, str(news)])
+		m2.queue_free()
+		var m3: Node = (load("res://scenes/ui/WorldMap.tscn") as PackedScene).instantiate()
+		vp.add_child(m3)
+		await frames(2)
+		check(float(m3.get("_wings_news")) == 0.0, "o aviso das asas não se repete")
+		m3.queue_free()
+		vp.queue_free()
+		# Volta ao estado sem asas para o resto da QA (rota do bot sem segredo).
+		Progression.reset_run()
 
 	## Percorre o Éon 0 inteiro com a rota automática (sem jogar: avança direto).
 	func _auto_route(seed: int) -> Array:
