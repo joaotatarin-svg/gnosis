@@ -377,7 +377,8 @@
     "land",
     "-",
     "bow"
-   ]
+   ],
+   "min_part": 400
   }
  },
  "frame_fix": {
@@ -841,11 +842,7 @@
   },
   "soter_bow": {
    "frames": [
-    "s19.land",
     "s19.bow"
-   ],
-   "dur": [
-    0.3
    ],
    "anchor": "pelvis",
    "hold": true
