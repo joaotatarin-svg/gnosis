@@ -372,8 +372,8 @@ João quiser o monge da lanterna, pedir folha nova; quadros de morte das criatur
 `key_array`; AnimQA `film_gait x [old]`, `own_board x [champ]`, `soter_board`, `death_board`.
 **Armadilhas:** estado da Sophia não pode começar com "run"; andar de criatura SEM meios do RIFE (PuppetQA);
 depois de atlas novo, `--editor --quit` e conferir `mipmaps/generate=true`; AnimQA com erro de script trava
-(Start-Process + WaitForExit e matar pelo PID); escreva caminhos Windows em Python com r'' ( vira backspace).
-Pranchas: `C:\gnosis-wt\_capsrte-gptila9\`.
+(Start-Process + WaitForExit e matar pelo PID); escreva caminhos Windows em Python com r'' (barra-b vira backspace).
+Pranchas: `C:\gnosis-wt\_caps\arte-gpt\fila9\`.
 
 ### Bilhete anterior (1º integrador)
 **Estado:** tudo abaixo está commitado e com push; `tools/validate.ps1 -Repeat 2` VERDE (11 etapas) no último commit.
