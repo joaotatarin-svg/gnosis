@@ -38,6 +38,29 @@ var _perf_noimpact: bool = false
 var _draws: float = 0.0
 var _gpu: float = 0.0
 var _rcpu: float = 0.0
+# fatias do quadro (µs): física, process e envio do desenho (pre→post draw)
+var _ph0: int = 0
+var _pr0: int = 0
+var _rd0: int = 0
+var _acc := {"fisica": 0.0, "process": 0.0, "desenho": 0.0}
+
+
+## Nó que roda por ÚLTIMO na física e no process: fecha as fatias do quadro.
+class PerfTail extends Node:
+	var sc: Node
+	func _physics_process(_d: float) -> void:
+		sc._slice("fisica", sc._ph0)
+	func _process(_d: float) -> void:
+		sc._slice("process", sc._pr0)
+
+
+func _slice(key: String, t0: int) -> void:
+	if frame > PERF_WARM and t0 > 0:
+		_acc[key] += float(Time.get_ticks_usec() - t0) / 1000.0
+
+
+func _physics_process(_d: float) -> void:
+	_ph0 = Time.get_ticks_usec()
 
 const SOPHIA_POS := Vector2(170, 286)
 const DUMMY_POS := Vector2(400, 286)
@@ -64,6 +87,16 @@ func _ready() -> void:
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	add_child(vp)
 	RenderingServer.viewport_set_measure_render_time(vp.get_viewport_rid(), true)
+	if mode == "perf":
+		process_priority = -1000
+		process_physics_priority = -1000
+		var tail := PerfTail.new()
+		tail.sc = self
+		tail.process_priority = 1000
+		tail.process_physics_priority = 1000
+		add_child(tail)
+		RenderingServer.frame_pre_draw.connect(func() -> void: _rd0 = Time.get_ticks_usec())
+		RenderingServer.frame_post_draw.connect(func() -> void: _slice("desenho", _rd0))
 	_build_world()
 	if mode == "gif":
 		_next_attack()
@@ -275,6 +308,7 @@ func _fire_still() -> void:
 
 func _perf_step() -> void:
 	var now := Time.get_ticks_usec()
+	_pr0 = now
 	if frame > PERF_WARM and _last_us > 0:
 		_times.append(float(now - _last_us) / 1000.0)
 		_draws += Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
@@ -308,7 +342,7 @@ func _perf_step() -> void:
 		var avg := sum / float(_times.size())
 		var p95: float = _times[int(_times.size() * 0.95)]
 		var nf := float(_times.size())
-		var line := "perf n=%d%s quadros=%d media_ms=%.3f p95_ms=%.3f fps_medio=%.1f gpu_ms=%.3f render_cpu_ms=%.3f draw_calls=%.0f vfx_vivos=%d" % [perf_n, " sem_impacto" if _perf_noimpact else "", _times.size(), avg, p95, 1000.0 / avg, _gpu / nf, _rcpu / nf, _draws / nf, get_tree().get_nodes_in_group(VfxLibrary.GROUP).size()]
+		var line := "perf n=%d%s quadros=%d media_ms=%.3f p95_ms=%.3f fps_medio=%.1f fisica_ms=%.3f process_ms=%.3f desenho_ms=%.3f gpu_ms=%.3f render_cpu_ms=%.3f draw_calls=%.0f vfx_vivos=%d" % [perf_n, " sem_impacto" if _perf_noimpact else "", _times.size(), avg, p95, 1000.0 / avg, _acc.fisica / nf, _acc.process / nf, _acc.desenho / nf, _gpu / nf, _rcpu / nf, _draws / nf, get_tree().get_nodes_in_group(VfxLibrary.GROUP).size()]
 		print("VFX7 ", line)
 		var f := FileAccess.open(out, FileAccess.WRITE)
 		if f != null:

@@ -120,7 +120,8 @@ static func _additive() -> CanvasItemMaterial:
 
 static func _live(parent: Node) -> int:
 	var tree := parent.get_tree()
-	return tree.get_nodes_in_group(GROUP).size() if tree != null else 0
+	# conta sem montar o Array do grupo (era chamado várias vezes por impacto)
+	return tree.get_node_count_in_group(GROUP) if tree != null else 0
 
 
 static func _ok(parent: Node, essential: bool) -> bool:
