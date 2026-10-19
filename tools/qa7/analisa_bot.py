@@ -132,6 +132,7 @@ def main():
 	tot = Counter()
 	for lab in labs:
 		tot.update(errors(os.path.join(d, lab + ".log")))
+		tot.update(errors(os.path.join(d, lab + ".err")))   # reteste.ps1 separa o stderr
 	for k, v in tot.most_common(40):
 		print("- %dx `%s`" % (v, k))
 
