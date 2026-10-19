@@ -76,5 +76,6 @@
  "kind": "biped",
  "flex": {},
  "hem_wave": 0.0,
- "size_fix": 1.0
+ "size_fix": 1.0,
+ "despill_full": true
 }

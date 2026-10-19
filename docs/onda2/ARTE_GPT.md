@@ -329,8 +329,9 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   `mk_champ_recipes.haze_rects`). Estado com `puff: [r,g,b]` solta `VfxLibrary.cast` na frente do corpo ao entrar.
   Andar SEM meios do RIFE (a PuppetQA proíbe: lê como fantasma).
 - Prova: `_caps/arte-gpt/fila9/own_board.png`, `own_board_champ.png` (AnimQA `own_board x [champ]`).
-- Ressalvas: champ_6 fica com resto de névoa amarelada no strike; champ_3 (como o bot) franja rosada na capa
-  translúcida; champ_5 morre estilhaçando em pé; espectro pequeno no chão é normal (voa).
+- Ressalvas (revistas): champ_3 e champ_6 com `despill_full` (o rosado pintado nos panos virou ferrugem/vinho);
+  o brilho amarelado no leque do champ_6 ficou (lê como esporos acesos); champ_5 morre estilhaçando EM PÉ de
+  propósito (cavaleiro de vidro — R17 morte distinta), com o monte de cacos no chão (âncora `lying` = base no chão).
 
 ## Mortes de chefe em 4 etapas (FILA 10) e cor real
 - Folhas `boss_<n>_<nome>_death_a.png` (2×2: tranco, cambaleio, joelhos, tombado) entram por
