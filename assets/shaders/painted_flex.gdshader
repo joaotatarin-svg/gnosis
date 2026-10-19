@@ -90,7 +90,7 @@ void fragment() {
 		}
 		// halo mais forte junto das partes escuras (onde ela some no fundo escuro)
 		float ndark = 1.0 - clamp(dot(ncol, vec3(0.299, 0.587, 0.114)) * 1.4, 0.0, 1.0);
-		float h = clamp(mx - c.a, 0.0, 1.0) * halo_amt * mix(0.3, 1.0, ndark);
+		float h = clamp(mx - c.a, 0.0, 1.0) * halo_amt * ndark;   // partes claras e finas (cajado dourado) quase sem halo
 		if (h > 0.0) {
 			c.rgb = mix(c.rgb, rim_color.rgb, h / max(c.a + h, 0.001));
 			c.a = max(c.a, h);

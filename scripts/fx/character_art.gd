@@ -2282,7 +2282,7 @@ const _TELEGRAPH_TINTS := [Color(1.0, 0.85, 0.2, 1.0), Color(1.0, 0.25, 0.25, 1.
 
 const RIM_BASE := 0.32              # contorno de luz dos inimigos (≈0,3; ×2 na preparação)
 const HERO_RIM := 0.6               # Sophia: luz de recorte por dentro da borda (R18)
-const HERO_HALO := 0.4              # Sophia: halo de ~1 px por fora (R18)
+const HERO_HALO := 0.25             # Sophia: halo de ~1 px por fora (R18)
 static var rim_override: int = -1   # QA: força o Éon da cor do contorno (-1 = tela atual)
 var rim_enabled: bool = true        # QA/cenas: desliga o contorno deste personagem
 var weapon_level_override: int = -1 # QA: força o nível da arma da Sophia (-1 = Progression)
