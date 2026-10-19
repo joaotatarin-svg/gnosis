@@ -24,6 +24,7 @@ usados. Packs brutos: fora do git (`assets/_packs/` da cópia original).
 | `sfx/fog_swell`, `mask_light`, `voice_merge`, `whisper` | cena do Rei — `story.py` |
 | `sfx/heartbeat`, `clap`, `child_breath` | intro, roubo e anagnórise — `story.py` (Onda 2) |
 | `sfx/tell_parry`, `tell_unblock` | avisos do combate (R5) — `tells.py` (Onda 2b) |
+| `sfx/chain`, `glass`, `charge_*`, `double_jump`, `star_*`, `riposte*`, `atk_*`, `fly_fall`, `champion_enter`, `champion_fury`, `boss_phase3`, `guard_break`, `eye_hit`, `boss_death_*`, `bs_*`, `hz_*`, `map_*`, `shop_seal`, `relic_equip`, `zone_objective`, `achievement`, `soter_gift`, `crack_open`, `king_sink` | conteúdo das Ondas 5–6 (118 sons, 143 arquivos) — `onda7.py` (Onda 7), 100 % síntese, nenhum pack |
 | `sfx/boss_appear` | stinger sintetizado + rosnado LRSF (CC-BY) |
 | camadas em `boss_phase2`, `boss_die`, `level_clear`, `ring_gain`, `hit_heavy*`, `step_heavy*`, `boss_step*`, `king_step*`, `launcher`, `parry` | sub-grave, coro, sino ou surto sintetizados sobre o pack |
 
