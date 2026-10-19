@@ -830,6 +830,48 @@ func _check_onda7(sfx_names: Array) -> void:
 		if Audio._pitch_for(n) != 0.0:
 			exact_bad.append(n)
 	check(exact_bad.is_empty(), "cargas e sons de informação com tom fixo (%s)" % str(exact_bad))
+	# (h9) OBSERVADOR (_Watch): eventos sem sinal tocam na BORDA. Bonecos com as
+	#      mesmas propriedades públicas do Enemy/Player (o observador só lê estado).
+	var gs := GDScript.new()
+	gs.source_code = "extends Node2D\nvar estate: int = 0\nvar _mv: Dictionary = {}\nvar brain = null\nvar _downed: float = 0.0\nvar fly_height: float = 30.0\nvar _champ_fury: bool = false\n"
+	gs.reload()
+	var foe: Node2D = gs.new()
+	add_child(foe)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	foe.set("_mv", {"id": "garras", "kind": "combo"})
+	foe.set("estate", Enemy.EState.STRIKE)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var w_strike: bool = Audio.voices_playing("atk_combo") >= 1
+	foe.set("_downed", 1.4)
+	foe.set("_champ_fury", true)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var w_fall: bool = Audio.voices_playing("fly_fall") >= 1
+	var w_fury: bool = Audio.voices_playing("champion_fury") >= 1
+	foe.queue_free()
+	var gp := GDScript.new()
+	gp.source_code = "extends CharacterBody2D\nvar state: int = 0\nvar _air_jumps_left: int = 1\nvar current_move = null\nvar windup_timer: float = 0.0\nvar dive_landed: bool = false\nvar _riposte_t: float = 0.0\n"
+	gp.reload()
+	var hero: CharacterBody2D = gp.new()
+	hero.add_user_signal("riposte_window_opened")
+	add_child(hero)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	hero.set("_air_jumps_left", 0)            # 2º pulo no ar
+	hero.set("_riposte_t", 0.3)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var w_dj: bool = Audio.voices_playing("double_jump") >= 1
+	hero.set("state", Player.State.ATTACK)
+	hero.set("_riposte_t", 0.0)               # o contra-ataque saiu (fecha em 0 exato)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var w_rip: bool = Audio.voices_playing("riposte") >= 1
+	hero.queue_free()
+	check(w_strike and w_fall and w_fury and w_dj and w_rip,
+		"observador: golpe (%s), voador cai (%s), fúria (%s), 2º pulo (%s), contra-ataque (%s)" % [w_strike, w_fall, w_fury, w_dj, w_rip])
 
 
 ## Espera `sec` segundos de relógio REAL, atravessando quadros (não um timer
