@@ -601,3 +601,24 @@ inimigos ficam com som dobrado.
 - **Regra da equipe:** não há `docs/onda2/PERIGOS7.md` com CHECAGEM DE SATISFAÇÃO no branch. Correção: escrever antes do FINAL.
 
 **Veredito: APROVADO COM RESSALVAS** (falta só o doc/CHECAGEM). Quando sair o FINAL, reaudito só o delta.
+
+---
+
+## BILHETE PARA O SUCESSOR (19/10)
+- **Estado:** a TAREFA 1 está publicada (seção do topo). A TAREFA 2 está fechada: todos os branches da Onda 7 têm veredito (índice no topo).
+  Pendentes que vou cobrar:
+  - `ui7` (ainda WIP; não auditado);
+  - FINAL do `perigos7` (reauditar só o delta depois de a1c0e4c);
+  - troca do `proj_fire` hostil no `projectile.gd`, junto com o audio7;
+  - `shake(0,7)` da arte em `character_art._tick_death`;
+  - pulso de 4,8 Hz da poça armando (vfx7).
+- **Ferramentas:**
+  - worktree de SONDA `C:\gnosis-wt\guardiao_sonda` (destacado, `override.cfg` próprio "GNOSIS-WT-guardiao"; `.godot`
+    já importado). Para auditar um branch: `git -C C:\gnosis-wt\guardiao_sonda checkout -q --detach <commit>`, importar
+    headless e rodar as sondas (`tools/combate/HitboxProbe|FeelProbe|FlashParryProbe`, `tools/chefes6/BossProbe -- telas=.. vel=3`).
+  - A FlashParryProbe tem de rodar SEM `--fixed-fps` (o Juice mede flashes pelo relógio de parede).
+- **Áudio:** só offline (`ffmpeg -af "apad=pad_dur=0.6,ebur128=peak=true"`); as medições de base estão em `_caps\guardiao\audio\`.
+- **R18:** capturas 320×180 em `--position 4000,4000` (`tools/Shot.tscn -- <tela> <png> 150`) e a grade em cinza em `_caps\guardiao\`.
+- **Armadilhas:**
+  - diff de branch que fez merge da integração: use o delta dos commits PRÓPRIOS (`git show <c>`), não o `...` (vem sujo);
+  - o chefes6 já matou processos com "BossProbe" na linha de comando; se uma sonda cair, rode de novo.
