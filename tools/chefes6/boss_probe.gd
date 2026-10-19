@@ -94,6 +94,7 @@ class ProbeWorker extends Node:
 	var _cap_name: String = ""
 	var _cap_pending: Array = []
 	var _phase_seen: Dictionary = {}
+	var _death_hold: float = 0.0
 	const PATTERN := ["light", "light", "light", "heavy", "light", "light", "heavy", "heavy", "heavy"]
 	const NEAR_DEATH := 0.25
 
@@ -140,6 +141,7 @@ class ProbeWorker extends Node:
 		_phase_t = {}
 		_phase_seen = {}
 		_src = {}
+		_death_hold = 0.0
 		_plan = {}
 		_load_t = 0.0
 		_done_screen = false
@@ -212,6 +214,14 @@ class ProbeWorker extends Node:
 					if b.phase > 1:
 						_start_capture("p%d" % b.phase)
 		if _all_down():
+			# captura: filma a MORTE (sequência desenhada) antes de seguir
+			if cap_dir != "" and not _phase_seen.has("morte"):
+				_start_capture("morte")
+				_cap_left = 4.0
+				_death_hold = 4.2
+			if _death_hold > 0.0:
+				_death_hold -= delta / maxf(0.05, Engine.time_scale)
+				return
 			_end_fight("ok")
 			return
 		if _t > fight_timeout:
@@ -309,6 +319,9 @@ class ProbeWorker extends Node:
 			if d < best:
 				best = d
 				target = b
+		# chefe BLINDADO (corte de pé): o jogador lê e vai na guarda primeiro
+		if target != null and bool(target.get("armored")):
+			best = INF
 		# ajudantes vivos perto (servos, ecos, larvas) também apanham
 		for e in get_tree().get_nodes_in_group("enemy"):
 			if e is Enemy and not e.is_boss_enemy and e.estate != Enemy.EState.DEAD:

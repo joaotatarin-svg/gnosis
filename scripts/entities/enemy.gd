@@ -976,7 +976,17 @@ func _boss_setup() -> void:
 	brain = b
 	add_child(brain)
 	brain.setup(self)
+	# R18: a Sophia sempre na frente do corpo enorme do chefe (o chefe vai para
+	# antes dela na árvore — mesma z, desenhado atrás).
+	_draw_behind_player.call_deferred()
 	phase_marks = brain.marks.duplicate()
+
+
+func _draw_behind_player() -> void:
+	if player == null or not is_instance_valid(player) or get_parent() == null:
+		return
+	if player.get_parent() == get_parent() and get_index() > player.get_index():
+		get_parent().move_child(self, player.get_index())
 
 
 ## Confere se o dano levou o chefe à próxima fase. true = mudou de fase.
@@ -1274,7 +1284,8 @@ func _is_screen_end() -> bool:
 func stagger() -> void:
 	if estate == EState.DEAD:
 		return
-	attack_hitbox.deactivate()
+	# chamado dentro do sinal de acerto (aparo): monitoring só pode mudar adiado
+	attack_hitbox.set_deferred("monitoring", false)
 	_interrupt_move()
 	if fly_height > 0.0:
 		_downed = maxf(_downed, 1.6)     # aparar um voador o derruba
@@ -1333,6 +1344,12 @@ func _on_died() -> void:
 	defeated.emit(self)
 
 	if visual == null:
+		queue_free()
+		return
+	# chefes6: a morte desenhada (play_boss_death) já estilhaçou o corpo — sem
+	# segundo final (_death_pose_then_burst), só libera o nó.
+	if brain != null and not revivable and visual.has_method("is_dying") and visual.is_dying():
+		visual.visible = false
 		queue_free()
 		return
 	# Batalha final: a forma cai mas fica (pode se refazer).

@@ -41,7 +41,7 @@ func _build_moves() -> Dictionary:
 		"unblock": true, "rmin": 0.0, "rmax": 999.0, "w": 1.0, "cd": 4.0, "aa": true}
 	var toque := {"id": "toque", "kind": "melee", "anim": "melee", "wind": 0.7, "strike": 0.22, "recover": 0.75,
 		"off": 34.0, "sx": 2.0, "sy": 1.5, "dmg": 1.0, "rmin": 0.0, "rmax": 90.0, "w": 2.0, "cd": 1.0}
-	var deslize := {"id": "deslize", "kind": "cast", "anim": "ranged", "wind": 0.45, "strike": 0.15, "recover": 0.3,
+	var deslize := {"id": "deslize", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.45, "strike": 0.15, "recover": 0.3,
 		"rmin": 0.0, "rmax": 85.0, "w": 0.8, "cd": 6.0}
 	var cancao := {"id": "cancao", "kind": "cast", "anim": "ranged", "wind": 1.0, "strike": 0.3, "recover": 1.4,
 		"unblock": true, "rmin": 0.0, "rmax": 999.0, "w": 1.2, "cd": 6.0}

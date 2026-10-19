@@ -18,7 +18,7 @@ var _clones: Array = []
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.65
+	dmg_scale = 0.42
 	keep_dist = Vector2(50.0, 110.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 4
@@ -34,11 +34,11 @@ func _build_moves() -> Dictionary:
 		"offs": [0.0, 0.0, 0.0], "stagger": 0.15, "speed": 280.0, "dmg": 0.45, "color": GLASS,
 		"rmin": 100.0, "rmax": 9999.0, "w": 1.1, "cd": 2.5, "aa": true}
 	# GUARDA DO ESPELHO: strike = tempo da guarda; recover = espelho trincado
-	var guarda := {"id": "guarda", "kind": "cast", "anim": "ranged", "wind": 0.4, "strike": 1.7, "recover": 1.3,
+	var guarda := {"id": "guarda", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.4, "strike": 1.7, "recover": 1.3,
 		"rmin": 0.0, "rmax": 9999.0, "w": 1.0, "cd": 6.0}
-	var reflexos := {"id": "reflexos", "kind": "cast", "anim": "ranged", "wind": 0.8, "strike": 0.3, "recover": 0.6,
+	var reflexos := {"id": "reflexos", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.8, "strike": 0.3, "recover": 0.6,
 		"rmin": 0.0, "rmax": 9999.0, "w": 1.2, "cd": 9.0}
-	var troca := {"id": "troca", "kind": "cast", "anim": "ranged", "wind": 0.35, "strike": 0.15, "recover": 0.3,
+	var troca := {"id": "troca", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.35, "strike": 0.15, "recover": 0.3,
 		"rmin": 0.0, "rmax": 9999.0, "w": 0.9, "cd": 5.0, "chain": ["estocada_b"]}
 	var estocada_b := estocada.duplicate()
 	estocada_b.id = "estocada_b"
@@ -74,18 +74,25 @@ func no_touch() -> bool:
 func _filter(dmg: int, attacker: Node) -> int:
 	if _guarding():
 		if attacker != null and is_instance_valid(attacker) and attacker.has_method("_on_hit_received"):
-			attacker._on_hit_received(maxi(1, int(dmg * REFLECT_K)), e.global_position, 200.0, true, e)
+			attacker._on_hit_received.call_deferred(maxi(1, int(dmg * REFLECT_K)), e.global_position, 200.0, true, e)   # fora do sinal de acerto
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -20.0 * e._art_scale), GLASS)
 		sfx("glass", e.global_position)
 		return 0
 	return dmg
 
 
+func _on_windup(m: Dictionary) -> void:
+	# R5: a guarda AVISA desde o começo do preparo (anel de vidro + som), não
+	# só quando já está refletindo
+	if String(m.id).begins_with("guarda"):
+		_show_ring(float(m.wind) + float(m.strike))
+
+
 func _on_strike(m: Dictionary) -> void:
 	var pl := _player()
 	match m.id:
 		"guarda", "guarda3":
-			_show_ring(m.strike)
+			pass
 		"reflexos":
 			_spawn_clones(2 if phase == 2 else 3)
 		"troca":
@@ -130,7 +137,7 @@ func _on_clone_broken(c) -> void:
 	var pl := _player()
 	ImpactBurst.spawn(e.get_parent(), c.global_position + Vector2(0, -16), GLASS)
 	if pl != null and pl.global_position.distance_to(c.global_position) < 70.0:
-		pl._on_hit_received(int(_base_dmg * 0.35), c.global_position, 160.0, true, e)
+		pl._on_hit_received.call_deferred(int(_base_dmg * 0.35), c.global_position, 160.0, true, e)
 
 
 func _swap_with_clone() -> void:
@@ -159,6 +166,7 @@ func _bounce_volley() -> void:
 		p.target_team = "player"
 		p.color = GLASS
 		p.lifetime = 2.6
+		p.set("look", "page")        # VFX7: caco de vidro que gira
 		e.get_parent().add_child(p)
 		p.global_position = Vector2((b.x + 20.0) if from_left else (b.y - 20.0), e.global_position.y - 10.0 - 24.0 * float(i % 2))
 

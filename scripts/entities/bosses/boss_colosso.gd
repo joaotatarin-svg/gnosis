@@ -12,7 +12,7 @@ const STONE := Color(1.0, 0.75, 0.4)
 
 func _on_setup() -> void:
 	marks = []
-	dmg_scale = 0.45
+	dmg_scale = 0.3
 	keep_dist = Vector2(40.0, 110.0)
 	gap_by_phase = [1.2, 1.0, 0.85]
 	escape_hits = 4
@@ -51,7 +51,7 @@ func _build_moves() -> Dictionary:
 
 func _on_strike(m: Dictionary) -> void:
 	if m.id == "desabamento":
-		Juice.shake(0.8)
+		Juice.shake(0.5)
 		var b := arena_bounds()
 		var w := b.y - b.x
 		var skip := rng.randi() % 6
