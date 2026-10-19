@@ -127,13 +127,14 @@ class Runner extends Node:
 	func _report(label: String, r: Dictionary) -> void:
 		print("HITBOX|%s: esperados=%d reais=%d certos=%d atravessa=%d apelão=%d alcance_max_real=%.0f px alcance_max_desenho=%.0f px" % [label, r.exp, r.real, r.tp, r.exp - r.tp, r.real - r.tp, r.max_real, r.max_exp])
 		print("HITBOX|%s contra o CORPO DESENHADO: cajado encostou no desenho %d vezes, sem dano em %d (%.0f %%) — hurtbox estreita" % [label, r.exp_d, r.miss_d, 100.0 * r.miss_d / maxf(1.0, r.exp_d)])
+		print("HITBOX|%s contra o CORPO (frame_geometry): cajado encostou %d vezes, sem dano em %d (%.1f %%)" % [label, r.exp_g, r.miss_g, 100.0 * r.miss_g / maxf(1.0, r.exp_g)])
 		for line in r.lines:
 			print("HITBOX|  " + line)
 
 	## Uma bateria completa (5 golpes × 4 tipos × 7 distâncias).
 	func _battery(legacy: bool) -> Dictionary:
 		pl.set("debug_legacy_hitbox", legacy)
-		var r := {"exp": 0, "real": 0, "tp": 0, "exp_d": 0, "miss_d": 0, "max_real": 0.0, "max_exp": 0.0, "lines": []}
+		var r := {"exp": 0, "real": 0, "tp": 0, "exp_d": 0, "miss_d": 0, "exp_g": 0, "miss_g": 0, "max_real": 0.0, "max_exp": 0.0, "lines": []}
 		for mv in MOVES:
 			for t in TYPES:
 				var cells: Array[String] = []
@@ -145,6 +146,8 @@ class Runner extends Node:
 					r.exp += int(e)
 					r.exp_d += int(o.exp_drawn)
 					r.miss_d += int(o.exp_drawn and not h)
+					r.exp_g += int(o.exp_geo)
+					r.miss_g += int(o.exp_geo and not h)
 					r.real += int(h)
 					r.tp += int(e and h)
 					if h:
@@ -193,6 +196,8 @@ class Runner extends Node:
 			push_warning("HITBOX: golpe %s não saiu (saiu %s)" % [move_id, pl.current_move.id if pl.current_move else "-"])
 		var expected := false
 		var expected_drawn := false
+		var expected_geo := false
+		var geo_w := -1.0
 		var drawn_w := -1.0
 		var n := 0
 		while pl.state == Player.State.ATTACK and n < 120:
@@ -218,6 +223,12 @@ class Runner extends Node:
 				var dr: Rect2 = _drawn_rect(en, hurt)
 				if dr.size.x > 0.0 and _segs_hit(segs, dr):
 					expected_drawn = true
+				# Polimento 7: corpo pela API oficial da Arte (silhueta medida por quadro)
+				var gb: Rect2 = _geo_body(en)
+				if gb.size.x > 0.0:
+					geo_w = gb.size.x
+					if _segs_hit(segs, gb):
+						expected_geo = true
 			if drawn_w < 0.0:
 				drawn_w = _drawn_width(en)
 			if dump:
@@ -235,8 +246,16 @@ class Runner extends Node:
 			en.queue_free()
 		await _step(2)
 		if not hurt_vs_drawn.has(type_id):
-			hurt_vs_drawn[type_id] = "hurtbox %.0f px × desenho %s" % [_hurt_rect_size(type_id), ("%.0f px" % drawn_w) if drawn_w > 0.0 else "n/d (sem _draw no headless)"]
-		return {"exp": expected, "hit": hit, "exp_drawn": expected_drawn}
+			hurt_vs_drawn[type_id] = "hurtbox %.0f px × corpo (frame_geometry) %s × malha %s" % [_hurt_rect_size(type_id), ("%.0f px" % geo_w) if geo_w > 0.0 else "n/d", ("%.0f px" % drawn_w) if drawn_w > 0.0 else "n/d (sem _draw no headless)"]
+		return {"exp": expected, "hit": hit, "exp_drawn": expected_drawn, "exp_geo": expected_geo}
+
+	## Corpo DESENHADO pela API da Arte: `visual.frame_geometry(true).body` (mundo).
+	func _geo_body(en: Node) -> Rect2:
+		var art = en.get("visual")
+		if art == null or not art.has_method("frame_geometry"):
+			return Rect2()
+		var g: Dictionary = art.frame_geometry(true)
+		return g.get("body", Rect2())
 
 	func _segs_hit(segs: Array, r: Rect2) -> bool:
 		for sg in segs:
