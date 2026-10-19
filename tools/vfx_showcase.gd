@@ -60,3 +60,14 @@ func _fire() -> void:
 	VfxLibrary.boss_phase2(self, Vector2(160, 150), Color(1.0, 0.6, 0.4))
 	VfxLibrary.boss_death(self, Vector2(430, 150), Color(1.0, 0.8, 0.4))
 	VfxLibrary.boss_appear(self, Vector2(560, 150), gold)
+	# VFX7: impactos de ataque à distância por família (fileira do meio) e as
+	# antecipações (Sophia, Arconte, Rei) — o resto está em tools/VfxShowcase7.
+	var x := 50.0
+	for st in ["light", "explosion", "chain", "dark", "king", "sleep", "wave"]:
+		VfxLibrary.attack_impact(self, Vector2(x, 225), gold if st in ["light", "explosion", "king"] else Color(1.0, 0.55, 0.3), st, 1.0, 250.0)
+		x += 80.0
+	for i in 3:
+		var h := Node2D.new()
+		add_child(h)
+		h.position = Vector2(80.0 + i * 60.0, 60.0)
+		VfxLibrary.charge_up(h, Vector2.ZERO, [gold, Color(1.0, 0.55, 0.3), gold][i], 0.6, ["light", "dark", "king"][i])
