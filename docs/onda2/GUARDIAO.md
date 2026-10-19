@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir2/arte-gpt | e3966e6 + de546f8 (delta de 2c219b4) | APROVADO COM RESSALVAS | R18 (melhora, ainda < 3:1; halo leve no cajado), R3 fechado |
 | dir7/mapa7 | 8e8afc3 FINAL (delta de 26d28b3) | APROVADO | §3/§4 (nenhuma isca impossível) |
 | dir7/vfx7 | a63c40b (delta de 2a5919b) | APROVADO COM RESSALVAS (ressalvas anteriores fechadas; tiro hostil "legado" ficou mudo) | R4, R10, R17 |
 | dir5/encenacao5 | 0561f28 (delta de ab957ac: sons das cenas + QA7 #12) | APROVADO COM RESSALVAS | R4 (aparição do Campeão em dobro), R9 ok |
@@ -711,6 +712,40 @@ isso. MAPA7.md com a decisão final e a CHECAGEM atualizada (o "ponto honesto" f
   checagem no MapQA de que todo caminho até a 17 passa pelo Soter).
 
 **Veredito: APROVADO.**
+
+---
+
+## dir2/arte-gpt — e3966e6 + de546f8 (delta depois de 2c219b4; 380a5c1 é merge da integração)
+
+**O que muda:**
+- `painted_flex.gdshader`: `rim_amt` acende a borda POR DENTRO, só onde a pintura é escura (botas, calça, cabelo na sombra), e
+  `halo_amt` põe um halo de ~1 px POR FORA, mais forte junto das partes escuras. A cor é a do Éon misturada a 35 % com branco quente.
+- `character_art.gd`: só na Sophia (`HERO_RIM 0,6`, `HERO_HALO 0,4`, `rim_px 1,6`); tremor da queda na morte desenhada
+  0,7 → 0,15.
+- `belias.json`: `foot_gap 0` (pés no chão).
+- Sondas `ContrastProbe` / `FeetProbe` / `contrast_r18.py` e pedido ao cenario7.
+
+**Prova vista:** `C:\gnosis-wt\_capsrte-gpt1818_antes_depois.png` (Torpor 3, Corrente 30, Praga 57) e o meu recorte ampliado
+2× das pernas/botas: `C:\gnosis-wt\_caps\guardiao18_arte_zoom.png`.
+
+**O rim "lava" a pintura? NÃO.** O miolo da pintura fica igual: o manto branco e o turquesa não mudam, porque a luz de recorte só entra nas
+bordas ESCURAS (fator `dark`). O que se nota é o HALO de fora:
+- ele cria um filete claro e translúcido em volta das botas e, principalmente, ao longo do CAJADO, uma faixa pálida vertical de
+  ~3–4 px dos dois lados da haste. Em Torpor e Corrente, ampliado, ela lê como um "fantasma" e não como luz da cena;
+- no tamanho do jogo é sutil, mas o cajado é fino e está sempre em movimento, então o halo dele vai chamar atenção
+  em golpe e smear.
+- **Ponto:** o rim está bom. O halo está no limite: baixar `HERO_HALO` 0,4 → ~0,25, ou não aplicar halo em partes finas
+  (ex.: pular texels cuja vizinhança tem `mx` alto só num eixo), resolve sem perder a separação nas botas.
+
+**Checagem:**
+- **R18: melhora, mas continua PARCIAL.** O dono mediu 1,4–2,0 → 1,7–2,4 : 1, ainda abaixo de 3:1. O resto tem de vir do FUNDO
+  (pedido ao cenario7: plano de jogo com 15–25 % menos contraste e saturação), como já está no despacho da TAREFA 1. Correto não
+  forçar mais luz na Sophia: rim forte vira "recorte de adesivo" e briga com a pintura.
+- **R3: fecha a ressalva do chefes6.** A morte de chefe agora tem UM tremor grande (0,8 no golpe final) + micro de 0,15.
+- **R10:** o rim/halo é estático (não pisca). Atende.
+- **Pés do Belias:** sem fresta entre pé e chão. Favorece o R18 (contato com o chão = leitura de peso). Ok.
+
+**Veredito: APROVADO COM RESSALVAS** (halo 0,4 → ~0,25 ou sem halo no cajado; o R18 fecha só com o cenário).
 
 ---
 
