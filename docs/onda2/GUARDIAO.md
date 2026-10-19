@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir5/encenacao5 | 0561f28 (delta de ab957ac: sons das cenas + QA7 #12) | APROVADO COM RESSALVAS | R4 (aparição do Campeão em dobro), R9 ok |
 | dir6/chefes6 | b0b52f0 (delta de ed66a82: trocas de som) | APROVADO COM RESSALVAS | R4 (pancada/pouso com onda = 3 sons até a troca do proj_fire hostil), R11 ok |
 | dir7/mapa7 | 26d28b3 | APROVADO | §3 (nada de cadeado que não abre), R10 |
 | dir7/perigos7 | a1c0e4c (topo, sem FINAL) | APROVADO COM RESSALVAS (falta o doc com CHECAGEM) | R5, R10, R18 |
@@ -629,6 +630,36 @@ inimigos ficam com som dobrado.
 - AoeNova com dano 0 continua mudo (`aoe_nova.gd:29`). Ok.
 
 **Veredito: APROVADO COM RESSALVAS** (a ressalva depende da mesma linha do `projectile.gd` que já trava o audio7).
+
+---
+
+## dir5/encenacao5 — 0561f28 (delta ab957ac..0561f28: commit próprio 0561f28; 7d7fb98 e 80617fb são merges do audio7 6df9411 e da integração)
+
+**O que muda:**
+- `staging.gd` (roubo): a fenda abre em `Audio.CRACK_DELAY`, junto com o `crack_open` do cue `sink`; cada pulso do tremor
+  leva `boss_step` a −6 dB.
+- `npc_encounter.gd` (Soter): `Audio.duck_music(600, −24)` na fala da leveza, e o `soter_gift` entra no silêncio.
+- `level.gd` (QA7 #12): o Campeão nasce no chão, 150 px à frente da Sophia, dentro da zona e do quadro
+  (`_champion_x`). O card sai só quando ele está visível (≥ 0,6 s, teto de 2 s; `_champion_card_when_visible`).
+  ChampionProbe 0 falhas.
+- NARRATIVA6.md atualizado.
+
+**Checagem (código lido; nada tocado):**
+- **R9: atende.** Antes do grande momento vem o vazio: a música para e a fenda abre COM o `crack_open` (princípio 1 de sincronia:
+  imagem e som no mesmo evento). No Soter, −24 dB sob o dom. A soltura vem do `Staging._on_finished` (`duck_music(0, 0)` quando
+  `_ducked`), e a cena do Soter liga `_ducked` (`staging.gd:377`). Como o envelope é um só, a soltura sobrescreve o −24.
+  Conferido por leitura, não no jogo.
+- **R4 no roubo: atende.** O `boss_step` a −6 dB acompanha o tremor como camada. É 1× por run, então não cansa (§4.7).
+- **R5 / R18 no Campeão: atende.** Nascer dentro do quadro e à frente acaba com o "golpe de fora da tela"; o card só sai com ele visível.
+  O ataque dele segue o telegrafo de sempre (glint + wind-up).
+- **R4, RESSALVA (aparição do Campeão em dobro):** o `Enemy._ready` já chama `_boss_intro_fx` (deferred) para todo
+  `is_boss_enemy or is_champion` (`enemy.gd:322-334`: `boss_appear` + `VfxLibrary.boss_appear` na posição dele). O novo
+  `_champion_card_when_visible` chama de novo `VfxLibrary.boss_appear(self, champ.global_position + (0,−20))`. São DUAS colunas
+  de luz no mesmo ponto e no mesmo quadro. Correção mínima: tirar a chamada do `level.gd`, porque o Enemy já faz a aparição.
+- **Lembrete fora deste delta (dono polimento7/inimigos, pedido do audio7):** o `_boss_intro_fx` toca o stinger `boss_appear` também
+  para o Campeão. O audio7 pediu `champion_enter` para ele, porque o stinger de chefe é o que solta a música de chefe (R9).
+
+**Veredito: APROVADO COM RESSALVAS.** Entra no pacote de som; a ressalva é 1 linha no `level.gd`.
 
 ---
 
