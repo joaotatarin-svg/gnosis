@@ -11,6 +11,8 @@ Cada chefe tem uma RECEITA em tools/anim_bosses/recipes/<nome>.json:
                (colisões e _fit_body continuam coerentes)
   old_flip     a pintura antiga era espelhada no jogo (archons: true)
   body_px      altura do corpo do quadro de referência (idle_0) no atlas
+  grid_only    recorta cada célula só dentro da grade (quadros que se tocam)
+  erase        [[x0,y0,x1,y1], ...] px da folha apagados antes (efeito pintado → FX)
   anchors      modo de âncora por célula: pelvis (padrão) | top | lying
                top   = cabeça estável (espectros: a barra dos trapos varia)
                lying = corpo caído: centro do corpo, ponto mais baixo no chão
@@ -147,7 +149,7 @@ def build(name: str, use_rife: bool = True) -> None:
 	R = json.load(open(os.path.join(HERE, "recipes", name + ".json"), encoding="utf-8-sig"))
 	sheet = os.path.join(ROOT, R["sheet"])
 	cells = R.get("cells", ["idle_0", "idle_1", "walk_0", "walk_1", "windup", "strike", "hurt", "death"])
-	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []))
+	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []), R.get("grid_only", False), R.get("erase", []))
 	# recolorir células (ex.: o "fade" do Soter veio rosado: o GPT pintou o
 	# fantasma já misturado ao magenta) — mantém a luminância, troca a cor
 	for cn, col in R.get("recolor", {}).items():
@@ -245,7 +247,7 @@ def build(name: str, use_rife: bool = True) -> None:
 		if not seq:
 			continue
 		entry = {"frames": [{"f": f, "anchor": [round(v, 2) for v in frames[f]["anchor"]]} for f in seq]}
-		for k in ["loop", "fps", "dur", "at", "cycle_bodies", "impact_at", "hold"]:
+		for k in ["loop", "fps", "dur", "at", "cycle_bodies", "impact_at", "hold", "puff"]:
 			if k in st:
 				entry[k] = st[k]
 		states[sname] = entry

@@ -1,3 +1,23 @@
+# Pedidos para inimigos6 (de: arte / dir2/arte-gpt)
+
+## Rei: orbe solto ("a máscara não parece colada")
+`enemy.gd` `_apply_illustrated_art()` cria `_orb` (Sprite2D do orbe-olho da pintura ANTIGA) que flutua por
+conta própria (`_process`: seno em x/y e giro) ao lado do Rei. Com os quadros desenhados o Rei já traz o
+orbe PINTADO nos quadros de preparação/golpe/triunfo — o sprite solto sobra e não acompanha o corpo.
+Pedido: não criar o `_orb` (ou escondê-lo) quando `visual.has_boss_frames()`; o brilho do telegrafo do orbe
+fica por conta do contorno do CharacterArt.
+## Geometria por quadro para hitbox/hurtbox (PLAYTEST 2: "o cajado atravessa") — de: arte
+API pública no `CharacterArt` (branch dir2/arte-gpt): `visual.frame_geometry(global := false) -> Dictionary`,
+medida offline na SILHUETA de cada quadro desenhado (tools/anim/geometry.py) e levada pelo mesmo transform do
+corpo (âncora, escala, tranco, flip). Vale para a Sophia, chefes, criaturas, bots e NPCs com quadros.
+- `body: Rect2` — caixa do corpo (sem cajado/arma fina, fios e trapos soltos; desce até os pés) → HURTBOX.
+- `body_poly: PackedVector2Array` — contorno convexo do corpo (≤ 10 pontos), se quiserem `ConvexPolygonShape2D`.
+- `staff: PackedVector2Array [cabo, ponta]` e `tip: Vector2` — eixo VISÍVEL do cajado da Sophia por quadro →
+  HITBOX do golpe (ex.: `SegmentShape2D`/cápsula ao longo do eixo, raio ~4 px de mundo); `staff_estimated: bool`
+  quando o cajado cruza o corpo (eixo estimado da ponta).
+- Coordenadas LOCAIS do nó do visual (ou de mundo com `global=true`); vazio `{}` se o personagem não tem quadros.
+- O quadro é escolhido no `_draw`: leia no `_physics_process` do mesmo quadro de jogo (no máx. 1 quadro de atraso).
+Prova visual: `C:\gnosis-wt\_caps\arte-gpt\gifs\geometria_quadros.png` (AnimQA `-- geo_board`).
 # Pedidos do Inimigos6 (Onda 6)
 
 ## → Arte (GPT + integrador) — arte NOVA (o maior limite desta onda)
@@ -64,23 +84,24 @@ estados idle · walk(4) · windup · attack · recover · hurt · dead). Uma cri
 1. Incluir `res://tools/inimigos6/EnemyProbe.tscn` no `validate.ps1` (headless, `--fixed-fps 60`, ~90 s, sai 0/1).
 2. BalanceBot: rodar r9 com a vida nova; o bot não pula — contra voadores depende do mergulho/rasante.
 
-## Pedidos para inimigos6 (de: arte / dir2/arte-gpt)
-
-## Rei: orbe solto ("a máscara não parece colada")
-`enemy.gd` `_apply_illustrated_art()` cria `_orb` (Sprite2D do orbe-olho da pintura ANTIGA) que flutua por
-conta própria (`_process`: seno em x/y e giro) ao lado do Rei. Com os quadros desenhados o Rei já traz o
-orbe PINTADO nos quadros de preparação/golpe/triunfo — o sprite solto sobra e não acompanha o corpo.
-Pedido: não criar o `_orb` (ou escondê-lo) quando `visual.has_boss_frames()`; o brilho do telegrafo do orbe
-fica por conta do contorno do CharacterArt.
-## Geometria por quadro para hitbox/hurtbox (PLAYTEST 2: "o cajado atravessa") — de: arte
-API pública no `CharacterArt` (branch dir2/arte-gpt): `visual.frame_geometry(global := false) -> Dictionary`,
-medida offline na SILHUETA de cada quadro desenhado (tools/anim/geometry.py) e levada pelo mesmo transform do
-corpo (âncora, escala, tranco, flip). Vale para a Sophia, chefes, criaturas, bots e NPCs com quadros.
-- `body: Rect2` — caixa do corpo (sem cajado/arma fina, fios e trapos soltos; desce até os pés) → HURTBOX.
-- `body_poly: PackedVector2Array` — contorno convexo do corpo (≤ 10 pontos), se quiserem `ConvexPolygonShape2D`.
-- `staff: PackedVector2Array [cabo, ponta]` e `tip: Vector2` — eixo VISÍVEL do cajado da Sophia por quadro →
-  HITBOX do golpe (ex.: `SegmentShape2D`/cápsula ao longo do eixo, raio ~4 px de mundo); `staff_estimated: bool`
-  quando o cajado cruza o corpo (eixo estimado da ponta).
-- Coordenadas LOCAIS do nó do visual (ou de mundo com `global=true`); vazio `{}` se o personagem não tem quadros.
-- O quadro é escolhido no `_draw`: leia no `_physics_process` do mesmo quadro de jogo (no máx. 1 quadro de atraso).
-Prova visual: `C:\gnosis-wt\_caps\arte-gpt\gifs\geometria_quadros.png` (AnimQA `-- geo_board`).
+## Arte PRÓPRIA dos inimigos novos e dos Campeões — de: arte (Fila 9, 18/10/2026, branch dir2/arte-gpt)
+Ligado no `PaintedLibrary.character(p, ctx)`: o `CharacterArt` lê `type_id`/`is_champion` do Enemy dono (pai ou avô)
+e escolhe o atlas `creatures/<x>` quando ele existe (senão, o interino de hoje continua):
+| tipo do Bestiary | folha do GPT | atlas |
+|---|---|---|
+| espectro (Espectro Mergulhador, voador) | fly_mariposa_a (pó do sono apagado → partícula no `cast`) | creatures/en_espectro |
+| alado (Vigia Alado, voador que atira de cima) | fly_sentinela_a (olho orbital, raio dourado no `cast`) | creatures/en_alado |
+| acolito (atirador que foge) | en_alado_a (guardião alado com bastão-besta, rajada de dardos; anda) | creatures/en_acolito |
+| cornudo | en_cornudo_a | creatures/en_cornudo |
+| fantasma | en_fantasma_b (fundo verde; `dodge` = some/aparece) | creatures/en_fantasma |
+| Campeão do Éon (is_champion) | champ_<n>_<bot>_a | creatures/champ_<bot> |
+OBS: a folha `en_alado_a` (andarilho) foi para o ACÓLITO porque o Vigia Alado de vocês VOA e atira de cima — a sentinela
+faz isso. Se preferirem outra troca, é uma linha em `PaintedLibrary.OWN_ART`.
+Estados usados: idle, walk, windup, attack, charge (mergulho/rasante), windup_cast, cast (tiro), recover, hurt, dead
+(+ dodge no fantasma). Pedidos:
+1. **Tinta/graduação do interino**: com arte própria elas desbotam/tingem a pintura certa. Hoje o `CharacterArt` desfaz
+   sozinho no 1º quadro (`self_modulate` volta a branco mantendo o alfa; `grade_*` do Rim neutros) — mas o certo é o
+   Enemy pular: `if visual.has_method("has_own_art") and visual.has_own_art(): (não aplica def.tint nem _body_grade)`.
+   E podem tirar os `_art_as`/`_grade` de espectro/alado/acolito/cornudo/fantasma no bestiary quando integrarem.
+2. Campeão: o diadema/aura de vocês continua por cima (a arte é o campeão inteiro, mais ornado que o bot).
+Prova: `C:\gnosis-wt\_caps\arte-gpt\fila9\own_board.png` e `own_board_champ.png` (AnimQA `-- own_board x [champ]`).
