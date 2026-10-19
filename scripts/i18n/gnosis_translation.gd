@@ -90,6 +90,12 @@ func lookup(s: String, depth: int) -> String:
 	# Padrão que devolve o português INTACTO não conta: o genérico "%s %s" casava
 	# um bloco de várias linhas sem traduzir nada e trancava a tradução linha a
 	# linha abaixo (QA7 #6, placa dos Selos).
+	# Várias linhas e TODAS têm tradução: linha a linha vence o padrão (que pode
+	# casar o bloco no lugar errado e deixar uma linha em português).
+	if s.contains("\n"):
+		var full := _lookup_lines(s, depth, true)
+		if full != "":
+			return full
 	var p := _match_pattern(s, depth)
 	if p != "" and p != s:
 		return p
@@ -111,7 +117,8 @@ func lookup(s: String, depth: int) -> String:
 
 
 ## Várias linhas: cada linha por si (pelo menos uma precisa traduzir; "" se nenhuma).
-func _lookup_lines(s: String, depth: int) -> String:
+## `all` = só vale se TODAS as linhas com texto traduzirem.
+func _lookup_lines(s: String, depth: int, all: bool = false) -> String:
 	var parts := s.split("\n")
 	var any := false
 	for i in parts.size():
@@ -119,6 +126,8 @@ func _lookup_lines(s: String, depth: int) -> String:
 		if t != "":
 			parts[i] = t
 			any = true
+		elif all and parts[i].strip_edges() != "":
+			return ""
 	return "\n".join(parts) if any else ""
 
 

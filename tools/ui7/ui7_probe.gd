@@ -214,21 +214,16 @@ class P extends Node:
 	func _seal() -> void:
 		var lv := await level_at(3)
 		kill_enemies()
-		var sp: SealPuzzle = null
-		for c in lv.get_children():
-			if c is SealPuzzle:
-				sp = c
-		if sp == null:
-			sp = SealPuzzle.new()
-			sp.screen = 3
-			lv.add_child(sp)
-			sp.global_position = lv.player.global_position + Vector2(160, 0)
-		lv.player.global_position = sp.global_position + Vector2(-150, 0)
+		# um Selo novo AO LADO da Sophia (o da tela pode estar fora do quadro)
+		var sp := SealPuzzle.new()
+		sp.screen = 3
+		lv.add_child(sp)
+		sp.global_position = lv.player.global_position + Vector2(170, 0)
 		await wait(0.6)
 		var shown := I18n.t(String(sp._hint.text))
 		print("UI7|seal|placa=", shown.replace("\n", " / "))
 		if I18n.is_en():
-			check(not shown.contains("golpeie"), "#6 placa dos Selos traduzida")
+			check(not shown.contains("golpeie") and not shown.contains("SELOS"), "#6 placa dos Selos traduzida (as 2 linhas)")
 		await shot("seal")
 
 	# --- #30 Estela: pausa e não empilha no centro -------------------------------------------

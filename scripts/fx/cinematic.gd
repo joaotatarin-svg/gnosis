@@ -475,9 +475,9 @@ func _build_boss() -> void:
 	# chefes claros e sumia (QA7 #17 e #23).
 	_boss_band = TextureRect.new()
 	var g := Gradient.new()
-	g.set_color(0, Color(0.0, 0.01, 0.02, 0.72))
+	g.set_color(0, Color(0.0, 0.01, 0.02, 0.82))
 	g.set_color(1, Color(0.0, 0.01, 0.02, 0.0))
-	g.add_point(0.55, Color(0.0, 0.01, 0.02, 0.5))
+	g.add_point(0.6, Color(0.0, 0.01, 0.02, 0.62))
 	var gt := GradientTexture2D.new()
 	gt.gradient = g
 	gt.fill = GradientTexture2D.FILL_RADIAL
