@@ -32,6 +32,7 @@ func _tick(_delta: float) -> void:
 			_warned = true
 			if _near_player(320.0):
 				Audio.play_sfx_at("tell_unblock", global_position, 0.05)
+				Audio.play_sfx_at("hz_maw_warn", global_position, 0.05)
 		return
 	if c < BITE_END and not _bit:
 		_bit = true
@@ -40,7 +41,7 @@ func _tick(_delta: float) -> void:
 		if _live() and player_in(area) and player_grounded_low():
 			hurt_player(int(hazard_damage(4) * 1.5), global_position + Vector2(0, 30), 200.0, true)
 		if _near_player(320.0):
-			Audio.play_sfx_at("hit_heavy", global_position, 0.1)
+			Audio.play_sfx_at("hz_maw_bite", global_position, 0.1)
 			Juice.shake(0.12)
 
 

@@ -9,6 +9,8 @@ var room_w: float = 260.0
 var room_y: float = -170.0         # topo da câmara em relação ao chão (local)
 var hazard_kind: String = "vault"
 var _t: float = 0.0
+var _door: int = -1           # quadro da porta (0 selada, 1 reage, 2 aberta)
+var _door_cd: float = 0.0
 
 
 func _enter_tree() -> void:
@@ -22,6 +24,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	_door_cd -= delta
+	if _door_cd <= 0.0:
+		_door_cd = 0.25
+		var f := _door_frame()
+		if f == 2 and _door >= 0 and _door < 2:
+			Audio.play_sfx_at("hz_secret_open", global_position, 0.05)
+		_door = f
 	queue_redraw()
 
 
@@ -60,7 +69,7 @@ func _draw() -> void:
 	# Sophia já tem o pulo duplo (o caminho por cima existe) → ABERTA quando os
 	# baús secretos da tela foram abertos (só desenho: a porta não é passagem)
 	if HazardArt.has("vault_door"):
-		HazardArt.draw(self, "vault_door", _door_frame(), Vector2.ZERO)
+		HazardArt.draw(self, "vault_door", maxi(0, _door), Vector2.ZERO)
 		return
 	var dw := 30.0
 	draw_rect(Rect2(-dw, -78.0, dw * 2.0, 78.0), Color(0.06, 0.06, 0.08, 0.95))

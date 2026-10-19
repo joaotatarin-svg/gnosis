@@ -53,7 +53,7 @@ func _tick(_delta: float) -> void:
 			hurt_player(hazard_damage(3 if style == "shackles" else 4), global_position + Vector2(0, 30), 60.0, true)
 		var pp := _player()
 		if pp != null and absf(pp.global_position.x - global_position.x) < 300.0:
-			Audio.play_sfx_at("rooted" if style == "shackles" else "swing_heavy", global_position, 0.06)
+			Audio.play_sfx_at("hz_shackles" if style == "shackles" else "hz_spears", global_position, 0.06)
 
 
 ## Fase visual: (aviso 0..1, subida 0..1) — a mesma conta do desenho antigo.

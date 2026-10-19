@@ -60,7 +60,7 @@ func _tick(_delta: float) -> void:
 			hurt_player(hazard_damage(5), global_position + Vector2(0, -60), 120.0, true)
 		var p := _player()
 		if p != null and absf(p.global_position.x - global_position.x) < 320.0:
-			Audio.play_sfx_at("hit_heavy", global_position, 0.05)
+			Audio.play_sfx_at("hz_guillotine", global_position, 0.05)
 			Juice.shake(0.18)
 			VfxLibrary.dust(get_parent(), global_position)
 

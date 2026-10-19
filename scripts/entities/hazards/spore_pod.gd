@@ -43,9 +43,11 @@ func _on_hit(_d: int, _s: Vector2, _k: float, _u: bool = false, _a: Node = null)
 	if _dead:
 		return
 	_hp -= 1
-	Audio.play_sfx_at("enemy_hurt", global_position, 0.1)
+	if _hp > 0:
+		Audio.play_sfx_at("enemy_hurt", global_position, 0.1)
 	if _hp <= 0:
 		_dead = true
+		Audio.play_sfx_at("hz_spore_pop", global_position, 0.05)
 		_hurt.set_deferred("monitorable", false)
 		_hurt.set_deferred("monitoring", false)
 		_cloud = CLOUD_TIME * 0.5
@@ -66,7 +68,7 @@ func _tick(delta: float) -> void:
 			_cloud_weak = false
 			var p0 := _player()
 			if p0 != null and absf(p0.global_position.x - global_position.x) < 300.0:
-				Audio.play_sfx_at("cast_praga", global_position, 0.1)
+				Audio.play_sfx_at("hz_spore_burst", global_position, 0.1)
 	if _cloud <= 0.0:
 		return
 	_cloud -= delta

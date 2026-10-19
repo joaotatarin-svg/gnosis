@@ -26,11 +26,12 @@ func _tick(delta: float) -> void:
 	var p := _player()
 	var now := p != null and area.has_point(p.global_position)
 	if now and not _inside:
-		Audio.play_sfx_at("cast_fail", global_position, 0.05)
+		Audio.play_sfx_at("hz_silence_in", global_position, 0.05)
 	_inside = now
 	if now and p.mana > 0.0:
 		p.mana = maxf(0.0, p.mana - DRAIN * delta)
 		p.mana_changed.emit(int(p.mana), p.max_mana_total)
+		Audio.play_sfx("hz_ether_drain")        # anti-spam de 0,4 s no catálogo
 	# projéteis (de qualquer time) se desfazem no silêncio
 	var lv := get_parent()
 	if lv == null:

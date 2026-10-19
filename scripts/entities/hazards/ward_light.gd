@@ -42,7 +42,7 @@ func finish() -> void:
 		if p != null and p.get("health") != null:
 			p.health.heal(int(p.health.max_health * 0.15))
 		AoeNova.spawn(get_parent(), global_position + Vector2(0, -20), 0, 70.0, gold)
-		Audio.play_sfx_at("sleeper_wake", global_position, 0.05)
+		Audio.play_sfx_at("hz_ward_saved", global_position, 0.05)
 		get_tree().call_group("hud", "toast", "A luz resistiu: o Adormecido te devolve forças.")
 	else:
 		get_tree().call_group("hud", "toast", "A luz se apagou.")
@@ -63,7 +63,7 @@ func _physics_process(delta: float) -> void:
 		_drain_now = true
 		light = maxf(0.0, light - DRAIN * float(n) * delta)
 		if light <= 0.0:
-			Audio.play_sfx_at("cast_fail", global_position, 0.05)
+			Audio.play_sfx_at("hz_ward_out", global_position, 0.05)
 			ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -30), Color(0.4, 0.4, 0.5))
 
 

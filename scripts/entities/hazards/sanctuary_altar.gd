@@ -38,7 +38,7 @@ func _physics_process(delta: float) -> void:
 		_glow = 1.0
 		p.health.heal(int(p.health.max_health * 0.25))
 		AoeNova.spawn(get_parent(), global_position + Vector2(0, -20), 0, 60.0, Color(1.0, 0.95, 0.75))
-		Audio.play_sfx_at("sleeper_wake", global_position, 0.05)
+		Audio.play_sfx_at("hz_altar", global_position, 0.05)
 		get_tree().call_group("hud", "toast", "O altar te acalma.")
 
 

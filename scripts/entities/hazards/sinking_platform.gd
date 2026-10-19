@@ -68,7 +68,7 @@ func _tick(delta: float) -> void:
 				_timer = SUNK_TIME
 				_col.set_deferred("disabled", true)
 				_spr.visible = false
-				Audio.play_sfx_at("land", global_position, 0.1)
+				Audio.play_sfx_at("hz_sink_gone", global_position, 0.1)
 		"sunk":
 			_timer -= delta
 			if _timer <= 0.0:

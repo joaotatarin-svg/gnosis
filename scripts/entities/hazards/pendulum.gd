@@ -42,7 +42,7 @@ func _tick(delta: float) -> void:
 		_last_side = side
 		var p0 := _player()
 		if p0 != null and absf(p0.global_position.x - global_position.x) < 260.0:
-			Audio.play_sfx_at("swing_heavy", tip, 0.08)
+			Audio.play_sfx_at("hz_chain_swing" if style == "chain" else "hz_bell_toll", tip, 0.08)
 	if _hit_cd > 0.0:
 		return
 	var area := Rect2(tip.x - HIT_R - 10.0, tip.y - HIT_R - 26.0, (HIT_R + 10.0) * 2.0, (HIT_R + 26.0) * 2.0)
@@ -59,6 +59,7 @@ func _tick(delta: float) -> void:
 			if style == "bell":
 				p.mana = 0.0
 				p.mana_changed.emit(0, p.max_mana_total)
+				Audio.play_sfx("hz_ether_drain")
 		_hit_cd = 0.6
 
 

@@ -52,7 +52,7 @@ func _impact(x: float) -> void:
 	if _live() and player_in(area):
 		hurt_player(hazard_damage(4), at + Vector2(0, -60), 100.0, true)
 	ImpactBurst.spawn(get_parent(), at + Vector2(0, -6), Color(0.85, 0.9, 1.0))
-	Audio.play_sfx_at("shard", at, 0.1)
+	Audio.play_sfx_at("hz_shard_impact", at, 0.1)
 
 
 func _draw() -> void:

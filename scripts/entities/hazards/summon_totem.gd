@@ -72,7 +72,7 @@ func _on_hit(dmg: int, _s: Vector2, _k: float, _u: bool = false, _a: Node = null
 		return
 	_hp -= maxi(1, dmg)
 	_flash = 0.12
-	Audio.play_sfx_at("chest_hit", global_position, 0.1)
+	Audio.play_sfx_at("hz_totem_hit", global_position, 0.1)
 	DamageNumber.spawn(get_parent(), global_position + Vector2(0, -40), dmg, Color(1.0, 0.85, 0.5))
 	if _hp <= 0:
 		_crumble(true)
@@ -86,7 +86,7 @@ func _crumble(reward: bool) -> void:
 	var col := Color(0.9, 0.4, 0.35) if reward else Color(0.5, 0.45, 0.5)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -30), col, true)
 	if reward:
-		Audio.play_sfx_at("seal_solved", global_position, 0.05)
+		Audio.play_sfx_at("hz_totem_break", global_position, 0.05)
 		Progression.add_orbs(12 + screen)
 		Juice.shake(0.25)
 		get_tree().call_group("hud", "toast", "Totem quebrado: os reforços cessam.")
@@ -124,7 +124,7 @@ func _summon() -> void:
 	if lv.has_method("_on_minion"):
 		lv.call("_on_minion", e)
 	VfxLibrary.portal(lv, global_position + Vector2(0, -30), Color(0.9, 0.4, 0.35), 0.6)
-	Audio.play_sfx_at("portal_open", global_position, 0.1)
+	Audio.play_sfx_at("hz_totem_summon", global_position, 0.1)
 
 
 func _draw() -> void:

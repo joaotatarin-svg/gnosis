@@ -38,7 +38,7 @@ func _tick(delta: float) -> void:
 		# acorda quando ela passa do ponto de partida (sem zona trancada)
 		if not locked and p.global_position.x > start_x + 140.0:
 			_running = true
-			Audio.play_sfx_at("fog_swell", p.global_position, 0.05)
+			Audio.play_sfx_at("hz_tide_wake", p.global_position, 0.05)
 		return
 	if _done:
 		_fade = maxf(0.0, _fade - delta * 1.5)
