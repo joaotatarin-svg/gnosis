@@ -37,5 +37,6 @@ world_map._refresh_info.eb4a3b	Reward: hidden
 world_map._refresh_info.6ad01a	Needs wings: only the double jump reaches this room. Further on, someone will give you wings.
 world_map._refresh_info.1956f9	Open: with wings, this room is within reach.
 world_map._draw_graph.35236c	needs wings
-world_map._draw_legend.cdf277	needs wings (double jump)
 =aberta	open
+eon_map.KINDS.157542	Hidden chamber
+eon_map.KINDS.e88a8d	A hideaway up high, within reach of single jumps. A hidden treasure.

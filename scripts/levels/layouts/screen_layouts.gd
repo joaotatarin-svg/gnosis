@@ -169,6 +169,19 @@ static func plan(screen: int, n_zones: int) -> Dictionary:
 					out.gaps[i - 1] = 760.0
 					_add(out, i, {"t": "dj_cache", "x": 500.0})
 			out.zones[n - 1].objective = "totem" if n >= 2 else "ondas"
+		"oculta":
+			# mapa7 (decisão do chefe, 19/10): a CÂMARA OCULTA, o segredo de antes
+			# do Soter. Nada de pulo duplo aqui (nenhum cadeado que não abre): o
+			# tesouro fica no alto de torres de um pulo por degrau, depois de um
+			# perigo opcional no chão. Mesmo prêmio da sala secreta (EonMap.REWARDS).
+			out.spawn_x = -600.0
+			_add(out, 0, {"t": "tower_cache", "x": 330.0})
+			for i in n:
+				_set_arena(out, i, ["torres", "tres_alturas", "ponte"][(pick + i) % 3])
+				if i >= 1:
+					out.gaps[i - 1] = 760.0
+					_add(out, i, {"t": hz, "x": 200.0})
+					_add(out, i, {"t": "tower_cache", "x": 480.0})
 		"secreta":
 			# A SALA SECRETA: a câmara fica lá em cima; só se entra com PULO DUPLO
 			# (saliência a 116 px do chão → câmara em Y3). Embaixo, a porta selada.
@@ -281,6 +294,8 @@ static func layout_kind(screen: int) -> String:
 			return "arena"
 		"secret":
 			return "secreta"
+		"hidden":
+			return "oculta"            # mapa7: segredo sem pulo duplo (antes do Soter)
 		"combat", "travel":
 			# Travessia comum: a forma muda com a camada (o mapa do meio = o
 			# caminho do bot; antes era sempre o mesmo corredor).

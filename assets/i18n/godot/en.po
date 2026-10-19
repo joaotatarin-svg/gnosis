@@ -5096,127 +5096,137 @@ msgid "Chegou até a Tela %d."
 msgstr "Reached Screen %d."
 
 #. eon_map.KINDS.d144c4  [ui]
-#: scripts/levels/map/eon_map.gd:88
+#: scripts/levels/map/eon_map.gd:91
 msgid "Chegada"
 msgstr "Arrival"
 
 #. eon_map.KINDS.5ddace  [ui]
-#: scripts/levels/map/eon_map.gd:88
+#: scripts/levels/map/eon_map.gd:91
 msgid "A porta do Éon. Checkpoint."
 msgstr "The gate of the Aeon. Checkpoint."
 
 #. eon_map.KINDS.c51361  [ui]
-#: scripts/levels/map/eon_map.gd:89
+#: scripts/levels/map/eon_map.gd:92
 msgid "Travessia"
 msgstr "Crossing"
 
 #. eon_map.KINDS.313d02  [ui]
-#: scripts/levels/map/eon_map.gd:89
+#: scripts/levels/map/eon_map.gd:92
 msgid "Zonas de combate cheias. Mais faíscas."
 msgstr "Packed combat zones. More sparks."
 
 #. eon_map.KINDS.cf1f77  [ui]
-#: scripts/levels/map/eon_map.gd:90
+#: scripts/levels/map/eon_map.gd:93
 msgid "Passagem perigosa"
 msgstr "Perilous passage"
 
 #. eon_map.KINDS.5623f7  [ui]
-#: scripts/levels/map/eon_map.gd:90
+#: scripts/levels/map/eon_map.gd:93
 msgid "Menos inimigos, chão traiçoeiro. Fortalece a vida."
 msgstr "Fewer enemies, treacherous ground. Strengthens life."
 
 #. eon_map.KINDS.e2fcea  [ui]
-#: scripts/levels/map/eon_map.gd:91
+#: scripts/levels/map/eon_map.gd:94
 msgid "Escalada"
 msgstr "Ascent"
 
 #. eon_map.KINDS.a1019c  [ui]
-#: scripts/levels/map/eon_map.gd:91
+#: scripts/levels/map/eon_map.gd:94
 msgid "Plataformas e altura. Fortalece o Éter."
 msgstr "Platforms and heights. Strengthens the Aether."
 
 #. eon_map.KINDS.d50f02  [ui]
-#: scripts/levels/map/eon_map.gd:92
+#: scripts/levels/map/eon_map.gd:95
 msgid "Santuário"
 msgstr "Shrine"
 
 #. eon_map.KINDS.4e6061  [ui]
-#: scripts/levels/map/eon_map.gd:92
+#: scripts/levels/map/eon_map.gd:95
 msgid "Luta leve e um lugar de repouso. Cura inteira."
 msgstr "A light fight and a place of rest. Full healing."
 
 #. eon_map.KINDS.1a4ba8  [ui]
-#: scripts/levels/map/eon_map.gd:93
+#: scripts/levels/map/eon_map.gd:96
 msgid "Arena"
 msgstr "Arena"
 
 #. eon_map.KINDS.d67188  [ui]
-#: scripts/levels/map/eon_map.gd:93
+#: scripts/levels/map/eon_map.gd:96
 msgid "Opcional e dura: ondas pesadas. Grande recompensa."
 msgstr "Optional and hard: heavy waves. Great reward."
 
 #. eon_map.KINDS.026944  [ui]
-#: scripts/levels/map/eon_map.gd:94
+#: scripts/levels/map/eon_map.gd:97
 msgid "Sala secreta"
 msgstr "Secret room"
 
 #. eon_map.KINDS.7ce718  [ui]
-#: scripts/levels/map/eon_map.gd:94
+#: scripts/levels/map/eon_map.gd:97
 msgid "Só se alcança com o pulo duplo. Um tesouro escondido."
 msgstr "Only the double jump reaches it. A hidden treasure."
 
+#. eon_map.KINDS.157542  [ui]
+#: scripts/levels/map/eon_map.gd:98
+msgid "Câmara oculta"
+msgstr "Hidden chamber"
+
+#. eon_map.KINDS.e88a8d  [ui]
+#: scripts/levels/map/eon_map.gd:98
+msgid "Um esconderijo no alto, ao alcance de pulos simples. Um tesouro escondido."
+msgstr "A hideaway up high, within reach of single jumps. A hidden treasure."
+
 #. eon_map.KINDS.4eba1b  [ui]
-#: scripts/levels/map/eon_map.gd:95
+#: scripts/levels/map/eon_map.gd:99
 msgid "O Desafio"
 msgstr "The Challenge"
 
 #. eon_map.KINDS.c139d6  [ui]
-#: scripts/levels/map/eon_map.gd:95
+#: scripts/levels/map/eon_map.gd:99
 msgid "O Campeão guarda o santuário do Éon. Checkpoint."
 msgstr "The Champion guards the shrine of the Aeon. Checkpoint."
 
 #. eon_map.KINDS.7c4ddf  [ui]
-#: scripts/levels/map/eon_map.gd:96
+#: scripts/levels/map/eon_map.gd:100
 msgid "Antessala"
 msgstr "Antechamber"
 
 #. eon_map.KINDS.6976d8  [ui]
-#: scripts/levels/map/eon_map.gd:96
+#: scripts/levels/map/eon_map.gd:100
 msgid "A última prova antes do trono. Checkpoint."
 msgstr "The last trial before the throne. Checkpoint."
 
 #. eon_map.KINDS.cd8ae5  [ui]
-#: scripts/levels/map/eon_map.gd:97
+#: scripts/levels/map/eon_map.gd:101
 msgid "O Arconte"
 msgstr "The Archon"
 
 #. eon_map.KINDS.72079d  [ui]
-#: scripts/levels/map/eon_map.gd:97
+#: scripts/levels/map/eon_map.gd:101
 msgid "O senhor deste Éon."
 msgstr "The lord of this Aeon."
 
 #. eon_map.reward_text.b23cae  [ui]
-#: scripts/levels/map/eon_map.gd:169
+#: scripts/levels/map/eon_map.gd:174
 msgid "+%d faíscas"
 msgstr "+%d sparks"
 
 #. eon_map.reward_text.dcf4ab  [ui]
-#: scripts/levels/map/eon_map.gd:171
+#: scripts/levels/map/eon_map.gd:176
 msgid "+%d vida máx."
 msgstr "+%d max life"
 
 #. eon_map.reward_text.2d5b9d  [ui]
-#: scripts/levels/map/eon_map.gd:173
+#: scripts/levels/map/eon_map.gd:178
 msgid "+%d Éter máx."
 msgstr "+%d max Aether"
 
 #. eon_map.reward_text.cf629f  [ui]
-#: scripts/levels/map/eon_map.gd:175
+#: scripts/levels/map/eon_map.gd:180
 msgid "cura inteira"
 msgstr "full healing"
 
 #. eon_map.slot.ad28c6  [ui]
-#: scripts/levels/map/eon_map.gd:281
+#: scripts/levels/map/eon_map.gd:286
 msgid "e%d.L%d"
 msgstr "e%d.L%d"
 
@@ -7069,11 +7079,6 @@ msgstr "needs wings"
 #: scripts/ui/world_map.gd:408
 msgid "Estela"
 msgstr "Stele"
-
-#. world_map._draw_legend.cdf277  [ui]
-#: scripts/ui/world_map.gd:413
-msgid "precisa de asas (pulo duplo)"
-msgstr "needs wings (double jump)"
 
 #. EndScreen.Menu.57f5f5  [ui_cena]
 #: scenes/ui/EndScreen.tscn:80

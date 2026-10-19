@@ -19,7 +19,7 @@ const SECRET_COL := Color("b48ce0")
 const KIND_COL := {
 	"arrival": Color("c5a56a"), "combat": Color("e0743a"), "hazard": Color("c9475b"),
 	"platform": Color("4f9ad0"), "sanctuary": Color("ecd498"), "challenge": Color("f08a8f"),
-	"secret": Color("b48ce0"), "trial": Color("c5a56a"), "antechamber": Color("c5a56a"),
+	"secret": Color("b48ce0"), "hidden": Color("8fb4d8"), "trial": Color("c5a56a"), "antechamber": Color("c5a56a"),
 	"archon": Color("ecd498"),
 }
 
@@ -391,7 +391,7 @@ func _draw_graph() -> void:
 
 
 ## Legenda no pé do painel: ícone + nome de cada tipo de caminho e a Estela.
-const LEGEND := ["combat", "hazard", "platform", "sanctuary", "challenge", "secret"]
+const LEGEND := ["combat", "hazard", "platform", "sanctuary", "challenge", "hidden", "secret"]
 
 
 func _draw_legend(c: CanvasItem, font: Font) -> void:
@@ -407,10 +407,8 @@ func _draw_legend(c: CanvasItem, font: Font) -> void:
 	_icon_stela(c, Vector2(x, y), CodexStyle.MUTED)
 	var et := I18n.t("Estela")
 	c.draw_string(font, Vector2(x + 9.0, y + 3.5), et, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(CodexStyle.PAPER, 0.7))
-	x += 26.0 + font.get_string_size(et, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
-	# O cadeado: o mesmo selo dos nós (trancado antes do Soter, aberto depois).
-	_icon_lock(c, Vector2(x, y), Color(CodexStyle.PAPER, 0.85))
-	c.draw_string(font, Vector2(x + 8.0, y + 3.5), I18n.t("precisa de asas (pulo duplo)"), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(CodexStyle.PAPER, 0.7))
+	# mapa7 (19/10): sem a entrada do cadeado — a sala de asas só existe depois
+	# do Soter, quando já abre; o selo fechado virou caso de borda, não legenda.
 
 
 ## Selo do nó secreto (o ícone dele são as ASAS do pulo duplo): cadeado fechado
@@ -474,6 +472,11 @@ func _icon(c: CanvasItem, kind: String, p: Vector2, col: Color) -> void:
 			c.draw_rect(Rect2(p + Vector2(-3, 3), Vector2(6, 4)), col)
 			c.draw_circle(p + Vector2(-2, -1), 1.5, CodexStyle.INK)
 			c.draw_circle(p + Vector2(2, -1), 1.5, CodexStyle.INK)
+		"hidden":        # chave (a câmara oculta: acha quem olha pra cima)
+			c.draw_arc(p + Vector2(-3, -3), 3.2, 0.0, TAU, 12, col, 1.8, true)
+			c.draw_line(p + Vector2(-0.8, -0.8), p + Vector2(6, 6), col, 2.0, true)
+			c.draw_line(p + Vector2(3, 3), p + Vector2(5, 1), col, 1.8)
+			c.draw_line(p + Vector2(5, 5), p + Vector2(7, 3), col, 1.8)
 		"secret":        # asas (o pulo duplo abre a sala)
 			_draw_wings(c, p, col, 1.0)
 		"trial":         # estrela do Campeão

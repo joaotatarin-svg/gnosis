@@ -1061,6 +1061,8 @@ Arena,Arena
 Opcional e dura: ondas pesadas. Grande recompensa.,Optional and hard: heavy waves. Great reward.
 Sala secreta,Secret room
 Só se alcança com o pulo duplo. Um tesouro escondido.,Only the double jump reaches it. A hidden treasure.
+Câmara oculta,Hidden chamber
+"Um esconderijo no alto, ao alcance de pulos simples. Um tesouro escondido.","A hideaway up high, within reach of single jumps. A hidden treasure."
 O Desafio,The Challenge
 O Campeão guarda o santuário do Éon. Checkpoint.,The Champion guards the shrine of the Aeon. Checkpoint.
 Antessala,Antechamber
@@ -1482,7 +1484,6 @@ Recompensa: escondida,Reward: hidden
 "Há uma Estela nesta camada, em qualquer caminho.","There is a Stele on this layer, on any path."
 precisa de asas,needs wings
 Estela,Stele
-precisa de asas (pulo duplo),needs wings (double jump)
 Menu,Menu
 PAUSA,PAUSED
 Continuar,Continue

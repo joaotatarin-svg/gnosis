@@ -298,7 +298,7 @@ func screen_role(screen: int) -> String:
 func zone_count(screen: int) -> int:
 	# Nós de mapa com tipo próprio têm sempre 2 zonas: as legendas de zona
 	# (Z0/Z1 do ROTEIRO) tocam em qualquer rota.
-	if node_kind(screen) in ["hazard", "platform", "sanctuary", "challenge", "secret"]:
+	if node_kind(screen) in ["hazard", "platform", "sanctuary", "challenge", "secret", "hidden"]:
 		return 2
 	match screen_role(screen):
 		"arrival": return 2
@@ -376,7 +376,7 @@ func zone_plan(screen: int) -> Array:
 	# MAPA (Onda 6): telas de escolha com tipo próprio. "combat" (o nó padrão)
 	# segue o plano legado abaixo — a rota do meio é o jogo de antes.
 	var kind := node_kind(screen)
-	if kind in ["hazard", "platform", "sanctuary", "challenge", "secret"]:
+	if kind in ["hazard", "platform", "sanctuary", "challenge", "secret", "hidden"]:
 		return _kind_plan(kind, screen, eon, bot, ids, allies)
 	# arrival / travel — r5 (18/09): o bot media 300–800 de dano por tela com
 	# 2 waves × 3 inimigos em cada zona. Agora a densidade sobe com o Éon:
@@ -420,7 +420,7 @@ func _kind_plan(kind: String, screen: int, eon: int, bot: String, ids: Array, _a
 	match kind:
 		"hazard":
 			size = maxi(2, per_wave - 1)
-		"sanctuary", "secret":
+		"sanctuary", "secret", "hidden":
 			size = 2
 		"challenge":
 			waves_by_zone = [2, 3]
@@ -558,7 +558,7 @@ func node_at(screen: int) -> Dictionary:
 
 
 ## TIPO da tela para o layout (level6) e a narrativa: "king" · "arrival" ·
-## "combat" · "hazard" · "platform" · "sanctuary" · "challenge" · "secret" ·
+## "combat" · "hazard" · "platform" · "sanctuary" · "challenge" · "secret" · "hidden" ·
 ## "trial" · "antechamber" · "archon" · "center" · "final". Sem argumento = tela atual.
 func node_kind(screen: int = -1) -> String:
 	if screen < 0:
@@ -576,7 +576,7 @@ func node_title(screen: int = -1) -> String:
 
 ## A tela é um nó OPCIONAL (Arena ou segredo)? Útil pra HUD/narrativa.
 func is_optional_node(screen: int = -1) -> bool:
-	return node_kind(screen) in ["challenge", "secret"]
+	return node_kind(screen) in ["challenge", "secret", "hidden"]
 
 
 ## Slot de compatibilidade dos beats ("e1.L6" = tela 17). Fora dos Éons: "s<tela>".
