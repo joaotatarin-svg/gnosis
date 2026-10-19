@@ -9,7 +9,7 @@ class_name BossTuning
 
 ## Golpes-alvo por chefe (jogador médio, sem magia). Sobe ao longo do run.
 const TARGET_HITS := {
-	"rei": 24,                 # tutorial: ~1:15 de luta
+	"rei": 27,                 # tutorial: ~1:15 de luta
 	"arconte_sono": 21,
 	"arconte_fome": 26,
 	"arconte_corrente": 38,

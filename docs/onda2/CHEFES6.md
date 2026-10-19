@@ -104,3 +104,42 @@ e folhas `..._sheet.png`.
 - PRÓXIMO PASSO: baixar dano do Armupiel (dmg_scale 0,5→0,4; dupla mais lenta), Pretorianos 1 por fase ou
   vida 4 golpes; Astaphaios 34→28 golpes e dmg 0,5→0,42; final 22/26 → 18/20 e dmg 0,45→0,38; re-sondar
   (3 instâncias), validate -Repeat 2, commit/push, relatório com tabela antes (bossprobe_ec64161.log) /depois.
+
+## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
+| Decisão das lutas | R atendidas | R violadas / risco | Como ficou |
+|---|---|---|---|
+| Telegrafo de todo golpe (círculo amarelo = aparável, losango vermelho = imparável, brilho a 180 ms, som `tell_*`) | R5 | — | do Enemy; golpes UTILITÁRIOS (piscar, guarda, chamar a corte) não acendem telegrafo (`"tell": false`) — amarelo só quando dá pra aparar |
+| Perigos de chão (`BossHazard`): contorno que se FECHA até o golpe + losango + som | R5, R10 (pulso 2 Hz) | antes: 0,05–0,35 s de aviso (QA7 #20) | mínimo de 0,45 s para qualquer área que fere (`MIN_WARN`) |
+| Guarda do Espelho (reflete) | R5 | antes: reflexo sem aviso nos 0,4 s de preparo (Guardião) | anel de vidro + som "glass" desde o INÍCIO do preparo |
+| Carga dos tiros (VFX7 ChargeFX) | R5, R11 | antes: carga e disparo com o mesmo "proj_fire" | carga com `charge_dark` / `charge_king` (toca quando o Áudio7 entrar no CATALOG; até lá muda, sem repetir o disparo) |
+| Tremor | R3, §4.1 | antes: colunas tremiam a cada queda; morte com 4 tremores grandes | só golpe de arena inteira treme (0,35); pancadas 0,35; MORTE: um grande (0,8) no golpe final + micro (0,15). O 0,7 da queda na arte é do integrador de arte (pedido) |
+| Hitstop | R2 | — | fase 0,15; golpe final 0,2 (teto) |
+| Câmera lenta | R8 | — | só na morte do chefe (0,3× por 0,8 s) e no golpe que mata (Enemy); nada nas fases |
+| Silêncio/ducking | R9 | — | fase: −8 dB por 0,8 s; morte: −14 dB por 3 s (o `boss_die` soa sozinho) |
+| Confirmação de morte | R17 | — | morte em 5 etapas: impacto → cambaleio → queda (quadros desenhados) → estilhaço → fim; `boss_dying(step)` |
+| Um acerto = um evento | R4 | olho do Rei: golpe que pega corpo E olho conta 2× (de propósito: ponto fraco) | o olho só fica atingível exposto |
+| Flash | R1, R10 | — | flash do Enemy (limitado pelo Juice); postura quebrada/fase: 1 flash cada |
+| Respiro | R21 | risco: lutas longas cansam (QA7) | pausa entre golpes por fase (1,0→0,6 s), rugido de fase 1,3 s intocável, janelas de punição após golpes grandes; recalibrado para 1,5–2,5 min no bot médio |
+| Legibilidade | R18 | antes: Sophia sumia atrás do manto do Rei (QA7 #3) | o chefe é desenhado ATRÁS da Sophia; o Rei não encosta na parede (margem 110–120 px) |
+| Sorteio de golpes | §3 (sem recompensa variável manipulativa) | — | sorteio semeado pela tela, entre golpes legíveis; não repete 3× |
+§4 conferido: 1 (tremor raro) ok · 2 (soma por inimigo) n/a · 3 (empilhar VFX) — a morte desenhada substitui os gibs, sem segundo final · 4 (clarão) só fase e morte · 5 (slow-mo racionado) ok · 6 (hitstop longo em golpe rápido) n/a · 11 (só cor) ok, forma+som · 13 (tudo de uma vez) — risco real: mexi em muitos chefes juntos; precisa do playtest do João.
+
+## RECALIBRAÇÃO pós-combate6 (integração ec64161 → 0a77007, 19/10)
+Causa: o `BossTuning` somava o bônus antigo de arma (+6/nível) à tabela crua; o combate6 passou o dano para
+`SophiaTuning.move_damage` (×0,65, +17 %/nível) e os golpes ficaram mais lentos → vida dos chefes ~2× maior
+que o planejado. Agora a vida usa o dano REAL. Além disso: Armupiel tinha ERRO DE PARSE (lutava sem cérebro);
+corte com 1 Pretoriano (só na fase 2, meio dano, vida de 4 golpes) e o rei só comanda enquanto a guarda vive.
+Bot médio, vida 120 (sonda r_i, `_caps/chefes6/ri?.txt`):
+| tela | chefe | ec64161 (integração) | DEPOIS | golpes | quase-mortes |
+|---|---|---|---|---|---|
+| 1 | Rei | 123 s / 1 qm | 61 s (alvo subido p/ 27 golpes depois) | 18 | 0 |
+| 10 | Athoth | 288 s / 3 | 133 s | 21 | 1 |
+| 19 | Harmas | 255 s / 5 | 127 s | 30 | 2 |
+| 28 | Galila | 211 s / 6 | 114 s | 38 | 2 |
+| 37 | Yabel | 307 s / 4 | 154 s | 28 | 2 |
+| 46 | Astaphaios | 234 s / 6 | 124 s | 27 | 2 |
+| 55 | Belias | 324 s / 6 | 140 s | 32 | 3 |
+| 64 | Armupiel | 420 s TIMEOUT / 22 | 126 s | 29 | 2 |
+| 68 | Rei-Mentira + Colosso | 420 s TIMEOUT / 21 | 117 s (fase 3 alcançada) | 47 | 3 |
+Variação entre rodadas iguais: ±25 % (ex.: Armupiel 126–178 s; Rei 61–112 s). GIFs novos: luta + MORTE
+desenhada do Rei e do Athoth em `C:\gnosis-wt\_caps\chefes6\gif2\` (`morte\*_morte.gif`, `_sheet.png`).

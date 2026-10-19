@@ -743,7 +743,7 @@ func _death_sequence() -> void:
 		e.boss_dying.emit(3)
 		if e._orb != null:
 			e._orb.visible = false
-		if v.is_dying():
+		if is_inside_tree() and is_instance_valid(v) and v.is_dying():
 			await v.death_finished
 	else:
 		await _real_wait(DEATH_STEPS[0])
@@ -761,6 +761,8 @@ func _death_sequence() -> void:
 	# 4 — FIM: libera a morte normal (recompensa, defeated); com a arte, o corpo
 	# já estilhaçou — o Enemy não faz o segundo final (is_dying)
 	_dying = 4
+	if not is_inside_tree() or not is_instance_valid(e):
+		return                      # a cena trocou no meio (ferramenta/saída)
 	e.boss_dying.emit(4)
 	if is_instance_valid(e):
 		e.estate = Enemy.EState.STAGGER
@@ -770,13 +772,15 @@ func _death_sequence() -> void:
 ## Espera o relógio da morte desenhada chegar em t (s), com teto de segurança.
 func _until_death_t(v, t: float) -> void:
 	var guard := 0
-	while is_instance_valid(v) and v.is_dying() and float(v.get("_death_t")) < t and guard < 600:
+	while is_inside_tree() and is_instance_valid(v) and v.is_dying() and float(v.get("_death_t")) < t and guard < 600:
 		guard += 1
 		await get_tree().process_frame
 
 
 ## Espera em tempo REAL (ignora câmera lenta e hitstop; corre com o jogo pausado).
 func _real_wait(t: float) -> void:
+	if not is_inside_tree():
+		return
 	await get_tree().create_timer(t, true, false, true).timeout
 
 
