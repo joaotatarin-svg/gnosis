@@ -1,38 +1,61 @@
 # Onda 7 — Áudio7 (branch `dir7/audio7`, base `origin/integracao/onda1`)
 
 > Som com identidade (sombrio, sacro, cósmico) para o conteúdo novo das Ondas 5–6. 100 % síntese própria
-> (numpy, `tools/audio_synth/onda7.py`), determinística. Nenhum pack novo, nenhum crédito novo.
+> (numpy, `tools/audio_synth/onda7.py`), determinística. Nenhum pack novo, nenhum crédito de terceiros novo.
 
 ## BILHETE PARA O SUCESSOR (atualizado a cada bloco)
 
-**Estado:** 118 sons novos (143 arquivos com as variações) gerados e no CATALOG; API `move_sfx` e ganchos por
-sinal no `audio_manager.gd`; AudioQA com o bloco (h) da Onda 7. Pendente/feito: ver as seções abaixo.
+**Estado:** ENTREGA FINAL do Áudio7.
+- 118 sons novos (143 arquivos com as variações) estão no CATALOG.
+- API nova: `move_sfx`/`move_sound_for`.
+- Ganchos por sinal + observador `_Watch` (eventos sem sinal, só bordas).
+- AudioQA verde, com o bloco (h1–h10).
+- `onda7_check.py` verde (R5/R11/R12/R13).
+- Bot de balance (telas 2–64) confirma que os ganchos disparam jogando.
 
-**Armadilhas:** `M.choir(notas, dur, vogal, shift, ...)`: a 4ª posição é `shift`, então passe `vowel2=` por nome.
-`build_sfx.py` só grava `sfx_report.json` no fim, e uma receita que quebra perde o relatório do lote. Os
-`.import` dos sons antigos aparecem como modificados depois do import (só CRLF), então NÃO os commite.
+**O que falta (dos outros):** as TROCAS de som genérico na fonte, em `docs/pedidos/audio7.md` (player.gd,
+`_enter_phase`, campeão, perigos, mapa, projétil hostil, cargas do VFX7). Até lá, esses eventos tocam o som
+antigo. Nada fica mudo por causa disso.
 
-**Como refazer:** `GNOSIS_PACKS=<cópia OneDrive>/assets/_packs python tools/audio_synth/build_sfx.py <nomes>`
-(nomes: `python tools/audio_synth/onda7.py --list`) → import headless → AudioQA.
+**Armadilhas:**
+- `M.choir(notas, dur, vogal, shift, ...)`: a 4ª posição é `shift`, então passe `vowel2=` por nome.
+- `build_sfx.py` só grava `sfx_report.json` no fim; uma receita que quebra perde o relatório do lote.
+- Os `.import` dos sons ANTIGOS aparecem como modificados depois do import (só CRLF): NÃO os commite.
+- Na edição por script, `"# --- perigos do level6"` casa primeiro com o comentário do CATALOG. Use marcadores
+  únicos.
+- O observador lê propriedades de outros scripts por `get()`. Se um dono renomear uma delas, o evento fica mudo
+  sem erro. A prova é rodar o bot com `GNOSIS_AUDIO_LOG=<arquivo.json>` e ver a contagem.
+
+**Como refazer:**
+1. `GNOSIS_PACKS=<cópia OneDrive>/assets/_packs python tools/audio_synth/build_sfx.py <nomes>`. Os nomes saem de
+   `python tools/audio_synth/onda7.py --list`.
+2. Import headless, depois AudioQA, depois `python tools/audio/onda7_check.py`.
+3. Amostras: `python tools/audio/onda7_demos.py`.
 
 ## Paleta (a "cara" do som)
-- **Luz** (Sophia, Mônada, Soter, altar): vidro (parciais de taça), sinos, coro aberto 'a' em **Mi maior**.
+- **Luz** (Sophia, Mônada, Soter, altar): vidro (parciais de taça), sinos e coro aberto 'a' em **Mi maior**.
 - **Trevas** (Arcontes, criaturas, perigos): serras graves desafinadas (2ª menor/trítono), formantes 'o/u',
   aspereza (AM 20–40 Hz), pedra e ferro.
-- **O Rei/Yaldabaoth:** luz ROUBADA, ou seja, coro masculino grave + metal dourado + sub.
-- **Cada Arconte** tem a textura do seu Éon: Torpor = caixinha/bocejo, Fome = sucção/mordida, Corrente =
-  elos/grades, Silêncio = grito que corta e zumbido, Espelho = vidro dos dois lados, Praga = esporos e enxame,
-  Coroa = gongo/coro/lâmina dourada.
+- **O Rei/Yaldabaoth:** luz ROUBADA. Coro masculino grave + metal dourado + sub.
+- **Cada Arconte tem a textura do seu Éon:**
+  - Torpor: caixinha e bocejo.
+  - Fome: sucção e mordida.
+  - Corrente: elos e grades.
+  - Silêncio: grito que corta e zumbido.
+  - Espelho: vidro dos dois lados.
+  - Praga: esporos e enxame.
+  - Coroa: gongo, coro e lâmina dourada.
 
 ## Mixagem (M-max por categoria, mesmo método das ondas anteriores)
-Categorias novas, somadas ao `CAT` do `build_sfx.py`:
+As categorias novas entram no `CAT` do `build_sfx.py`. Teto: pico de amostra −1 dBFS (limitador). Novo nesta
+onda: depois do limitador, o PICO VERDADEIRO é forçado a ≤ −1 dBTP, com 0,3 dB de folga para o Vorbis.
 
 | Categoria | M-max | Uso |
 |---|---|---|
 | `eatk` | −19 | golpe de inimigo comum, abaixo do swing da Sophia (−18) e do acerto (−12) |
 | `eatk_big` | −16 | pancada, coluna e invocação de inimigo; `chain`/`glass` do kit |
 | `charge` / `charge_big` | −19 / −16 | carga antes do tiro (cresce; quem pesa é o tiro) e carga do Rei |
-| `sophia` / `sophia_big` | −19 / −13 | pulo duplo / Queda Estelar pousando (soma com a `nova`) |
+| `sophia` / `sophia_layer` | −19 / −17 | pulo duplo; Queda Estelar pousando = camada POR BAIXO da `nova` (−12), sem baque próprio (R4) |
 | `bsig` / `bsig_soft` | −13 / −15 | golpe-assinatura de chefe / feitiço longo de chefe |
 | `boss_mid` / `death_hush` | −12 / −24 | passos da morte que somam com `boss_die` / a pausa (quase nada) |
 | `hazard_big` / `hazard` / `hazard_soft` / `hazard_amb` | −15 / −18 / −22 / −28 | perigo que fere / perigo / aviso-presença / presença contínua |
@@ -40,28 +63,102 @@ Categorias novas, somadas ao `CAT` do `build_sfx.py`:
 Usam categorias existentes: `tell` (−17, `riposte_ready`), `swing_big`, `champion` (−12), `boss` (−10),
 `elite`, `hit`, `reward` (−13), `ui_big`/`ui`/`shop`, `structure`, `story`.
 
+**Vozes e anti-spam:**
+- `atk_*`: 130 ms e no máximo 2 vozes (Guardião). Também variam ±4 % de tom e ±1,5 dB.
+- Tiques e presenças: maré 300 ms, luz drenando 250 ms, Éter 400 ms, altar 1,5 s.
+- Conquista: 2,5 s e 1 voz. Uma rajada de conquistas toca uma vez só.
+
 ## API nova do `Audio` (Onda 7)
-- `move_sfx(mv: Dictionary, stage: String, pos := NO_POS, boss := false) -> bool`: som do golpe. Ordem:
-  1. `BOSS_MOVE_SFX[id]`, só para chefes (id normalizado: `guarda3` → `guarda`, `corte_b` → `corte`);
-  2. o tiro: teleguiado → `atk_homing`, de cima → `atk_shot_air`, vários → `atk_fan`;
+- `move_sfx(mv: Dictionary, stage: String, pos := NO_POS, boss := false) -> bool` toca o som do golpe. A ordem:
+  1. `BOSS_MOVE_SFX[id]`, só para chefes (id normalizado: `guarda3` → `guarda`, `corte_b` → `corte`).
+  2. Tiro: teleguiado → `atk_homing`; de cima → `atk_shot_air`; vários → `atk_fan`.
   3. `KIND_SFX[kind]`.
 
   Etapas: `"wind"` (início do telegrafo; o `tell_*` continua à parte), `"strike"` e `"land"` (pouso do salto
-  do chefe = `bs_land`). Golpe ou etapa sem som devolve false, sem erro.
-- `move_sound_for(mv, stage, boss) -> String`: a mesma resolução, sem tocar (o AudioQA usa).
-  `move_base_id(id)` e `death_step_sfx(passo)` também estão expostas.
-- **Ganchos por sinal (ninguém precisa chamar):**
-  - `Enemy.boss_dying(passo 0..4)` dispara `boss_death_impact` → `_stagger` → `_collapse` → `_hush` →
-    `_shatter`. O passo 4 soma com o `boss_die` do Enemy.
-  - `Player.riposte_window_opened` → `riposte_ready` (bus Tell).
-  - `Progression.double_jump_granted` → `soter_gift`.
-  - `Progression.relics_changed` → `relic_equip` (só no jogo; o sinal não dispara no load).
-  - `Achievements.unlocked` → `achievement` (rajada = 1 som; anti-spam de 2,5 s).
-- **Cue `sink` (roubo):** `king_sink`, depois `crack_open` 0,5 s mais tarde e `fog_swell` 0,6 a −8 dB. Antes era
-  `dive` + `boss_step` + `fog_swell`, ou seja, sons de combate reaproveitados.
-- **Buses:** `riposte_ready` → Tell; `map_*` e `achievement` → UI (`shop_seal` já é UI pelo prefixo).
-- **Tom:** cargas, informação, chefes, perigos e UI tocam com tom fixo. Golpes de inimigo, voadores, cacos,
-  lanças e corrente variam ±4 % e ±1,5 dB.
+  do chefe → `bs_land`).
+- `move_sound_for(mv, stage, boss)`, `move_base_id(id)`, `death_step_sfx(passo)`, `spam_ms_for(nome)` e
+  `max_same_for(nome)`: as consultas usadas pelo AudioQA.
+- `played_counts` + variável de ambiente `GNOSIS_AUDIO_LOG=<json>`: conta o que tocou e grava no encerramento.
+  É ferramenta de QA/bot; desligada, não custa nada.
+- Cue `sink` (roubo): `king_sink`, `crack_open` 0,5 s depois e `fog_swell` 0,6 a −8 dB. Antes eram sons de
+  combate reaproveitados (`dive` + `boss_step`).
+- Buses: `riposte_ready` → Tell (fora do abafado da câmera lenta). `map_*` e `achievement` → UI.
+
+### Quem liga cada som (para ninguém dobrar)
+
+| Origem | Eventos |
+|---|---|
+| **Sinal** (`audio_manager.gd`) | `Enemy.boss_dying(0..4)` → morte em 5 passos. `Player.riposte_window_opened` → `riposte_ready`. `Progression.double_jump_granted` → `soter_gift`. `Progression.relics_changed` → `relic_equip`. `Achievements.unlocked` → `achievement` |
+| **Observador `_Watch`** (borda de estado, nó PAUSÁVEL, perigo a > 720 px da câmera não soa) | Inimigos: WINDUP/STRIKE → `move_sfx`; `_downed` 0→>0 (voador) → `fly_fall`; `_champ_fury` → `champion_fury`. Chefes: `brain.mv` → `move_sfx(..., true)`; `_airborne` true→false → `bs_land`; postura volta cheia + atordoado > 1,3 s → `guard_break`; hurtbox do olho do Rei → `eye_hit`. Sophia: `dive_landed` → `star_impact`. Totem/luz `_armed` → `zone_objective` (+`hz_totem_arm`). HUD `_tier_seen` sobe → `shop_seal`. Perigos mudos: feixe liga/desliga, plataforma-reflexo, névoa, pedra (afunda/volta), esporo incha, caco (sombra/queda), saída do silêncio, marca do segredo, guilhotina sobe, tique da maré, luz drenando |
+| **Dono troca na fonte** (`docs/pedidos/audio7.md`) | 2º pulo, carga da Queda, contra-ataque (player.gd); fase 3; entrada do Campeão; tiro hostil sem `proj_fire`; perigos que já tocam som genérico; mapa; relíquia sem `shop_buy`; cargas do VFX7 |
+
+O 2º pulo, a carga da Queda e o golpe do contra-ataque saíram do observador por reprovação do Guardião
+(634bc91, som dobrado com jump/dive/swing). Quem troca é o polimento7.
+
+## Verificação
+- **AudioQA:** 0 falhas, 66 PASS. O bloco (h) da Onda 7 confere:
+  - 18 tipos de golpe de inimigo com som; 55 golpes de chefe com som, lidos dos scripts e não de lista;
+  - normalização de id;
+  - variações de tiro;
+  - `move_sfx`;
+  - morte em 5 passos pelo sinal;
+  - contra-ataque no bus Tell;
+  - conquista em rajada = 1;
+  - cue `sink`;
+  - tom fixo dos sons de informação;
+  - observador (golpe, voador, fúria; e que 2º pulo, contra-ataque e carga NÃO dobram);
+  - anti-spam/vozes de `atk_*`.
+- **Bot de balance jogando** (`GNOSIS_AUDIO_LOG`, telas 2–64, 108 min de jogo, 0 SCRIPT ERROR). Exemplos do que
+  disparou sozinho:
+  - morte em 5 passos 7/7 chefes;
+  - `atk_swing` 641, `atk_combo` 608, `atk_pillar` 272, `fly_fall` 185, `atk_dive` 170;
+  - `bs_land` 50, `bs_melee` 35, `bs_bite` 17, `bs_burrow` 14, `bs_royal_cut` 12;
+  - `hz_beam_on` 130, `hz_spore_swell` 147, `hz_winch` 44, `hz_silence_out` 53;
+  - `zone_objective` 17, `shop_seal` 5, `achievement` 8, `soter_gift` 1, `champion_fury` 7, `guard_break` 1.
+
+  Não dispararam no bot porque o bot não faz isso ou não passa por lá:
+  - `star_impact` (não usa a Queda) e `riposte_ready` (não apara);
+  - `eye_hit` e `bs_ray/hand/rings` (o Rei está nas telas 1/68);
+  - `hz_shard_*` (Centro 65–67), `hz_sink_start` (não fica parado em cima);
+  - `chain` (o laço não pegou).
+
+  A contagem é da versão anterior à correção de 130 ms.
+- **`tools/audio/onda7_check.py`** (medição dos arquivos): pico verdadeiro ≤ −1 dBTP em todos; M-max no alvo
+  (±1,5) em todos.
+  - R12 pesados: 17/17 com sub ou corpo ≥ −14 dB do total.
+  - R12 frequentes: nenhum com > 0,25 s de 2–5 kHz dominante; `chain` e `hz_chain_swing` foram filtrados para
+    passar.
+  - R11: variações diferentes entre si.
+  - R5: os sons de informação a ≥ 29 de distância MFCC uns dos outros. O par mais perto é `charge_king` ~
+    `swing_light` (29,6); a mediana entre variações do mesmo som fica abaixo de 10.
+
+## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
+
+| Regra | Como o Áudio7 atende | Status |
+|---|---|---|
+| **R4** um acerto = um evento | O golpe do inimigo soa no STRIKE (sopro/rosnado, sem impacto: o acerto continua sendo o `hit`). Queda Estelar = camada de estrelas sob a `nova`, sem 2º baque. O 2º pulo, a carga e o contra-ataque saíram do observador (Guardião). As trocas na fonte estão pedidas (`TROCAR a → b`, nunca `a + b`). Tiro hostil: pedido para não tocar `proj_fire` junto do `atk_*`. | atendido no Áudio; as trocas na fonte dependem dos donos |
+| **R5** telegrafo com som | O `tell_parry/unblock` continua intocado. `riposte_ready` (o "agora!" do contra-ataque) vai no bus Tell, com tom fixo, a 69 de distância MFCC do `tell_parry`. Os perigos que ferem mantêm o `tell_unblock` e ganham som próprio no golpe. | atendido |
+| **R6** faísca | Não mexi. | — |
+| **R7** adoçante do combo | Não mexi; nenhum som novo sobe de tom com o combo. | — |
+| **R8** slow-mo | Sons novos no bus SFX passam pelo abafado da câmera lenta. Só `riposte_ready` fica fora (informação). | atendido |
+| **R9** silêncio antes do chefe e na morte | O Campeão NÃO toca mais `boss_appear` (pedido), para não soltar a música de chefe fora de hora. A morte em 5 passos encaixa na abaixada que já existe (`duck_music` 3 s, −14 dB) e no corte de 150 ms do `boss_die`, com um passo de quase-silêncio (`boss_death_hush` −24). | atendido |
+| **R11** variação | 2–3 variações nos frequentes (`atk_swing/shot` 3, `atk_combo/rush/leap/slam/wave/dive/shot_air` 2, `fly_fall` 2, `chain/glass` 3, `hz_shard_impact` 3, `hz_spears/chain_swing/totem_hit` 2, `eye_hit` 2, `bs_melee/cast` 2). Variação ±4 % e ±1,5 dB. Vozes: `atk_*` 2, padrão 3. Limitador −1 dB no Master. O AudioQA exige 2+ variações nos frequentes. | atendido |
+| **R12** grave que sobrevive / sem agudo cansativo | Pesados com fundamental de 30–100 Hz e corpo de 120–250 Hz (medido). Leves sem sub. Frequentes e repetidos sem 2–5 kHz sustentado (medido: ≤ 0,25 s). `hz_tide_tick` e `hz_ward_drain` foram puxados para 600–2500 Hz. | atendido |
+| **R13** loudness | Arquivos no alvo por categoria; pico verdadeiro ≤ −1 dBTP. NÃO medi os 10 min de combate gravado (alvo −20 a −23 LUFS integrados): exige captura de áudio do jogo rodando, e o driver é Dummy. | parcial (honesto) |
+| **R14** estéreo discreto | Inimigos, chefes e perigos tocam por `play_sfx_at` (pan ±50 %, atenuação pela distância). Perigo a > 720 px da câmera não toca. Sophia e UI no centro. | atendido |
+| **R22** vida baixa | Não mexi. Nenhum som novo é "bip" contínuo; as presenças (`hz_altar_hum`, `hz_ward_drain`) têm anti-spam e 1 voz. | — |
+| **§3/§4** sem cassino | Nada de moeda, caça-níquel, arpejo "jackpot" nem som que cresce com sorte. Conquista, selo, relíquia, altar e dom do Soter são coro, sino e vidro em Mi maior, de duração fixa e independentes do valor ganho. A conquista em rajada toca 1 vez. O `shop_buy` (moedas, antigo) não foi tocado nem ampliado. | atendido |
+
+## O que NÃO ficou bom / não verifiquei (honesto)
+- **Ninguém ouviu.** Vozes por formantes (rugidos, grito do Yabel, coros) podem soar "de computador".
+  Amostras para o João: `C:\gnosis-wt\_caps\audio7\AMOSTRAS.md`.
+- R13 de combate gravado não foi medido.
+- O observador depende de nomes de propriedades de outros donos. Renomear = evento mudo (sem erro). O bot com
+  `GNOSIS_AUDIO_LOG` é a prova.
+- `hz_secret_open` não tem onde tocar: `secret_vault.gd` ainda não tem lógica de abrir.
+- Galila `chain` e o olho do Rei não dispararam no bot; estão cobertos só pelo AudioQA e pela leitura do código.
+- `guard_break` usa uma heurística (postura volta cheia + atordoado > 1,3 s). Se o chefes6 mudar
+  `BREAK_STAGGER` para ≤ 1,3 s, ela para de disparar.
 
 ## Catálogo dos sons novos
 
@@ -76,7 +173,7 @@ Todos são síntese própria (S). Var = nº de arquivos (`nome`, `nome_2`, ...).
 | `sfx/charge_king.ogg` | charge_big -16 | 1 | O Rei carrega: luz ROUBADA — coro masculino grave 'o' + gongo ao contrário + sino dourado no topo; mais longo e mais largo. |
 | `sfx/double_jump.ogg` | sophia -19 | 2 | 2º pulo (dom do Soter): sopro para cima + ANEL de luz (vidro em Mi-Si). |
 | `sfx/star_charge.ogg` | charge -19 | 1 | Queda Estelar carregando (paira): estrelas se juntando, sobe e segura. |
-| `sfx/star_impact.ogg` | sophia_big -13 | 1 | Queda Estelar pousa: baque fundo + cratera de pedra + chuva de estrelas. |
+| `sfx/star_impact.ogg` | sophia_layer -17 | 1 | Queda Estelar pousa — CAMADA de estrelas sobre a `nova` (que já é o baque, R4: um impacto por evento): chuva de estrelas caindo + cascalho + sino. |
 | `sfx/riposte_ready.ogg` | tell -17 | 1 | Aparo perfeito → a janela do contra-ataque ABRIU: dois 'tins' de lâmina subindo (Si6→Mi7), curtos — o ouvido aprende 'agora!'. |
 | `sfx/riposte.ogg` | swing_big -16 | 1 | Contra-ataque: estocada — sopro rasgado + 'xing' de lâmina + peso. |
 | `sfx/atk_swing.ogg` | eatk -19 | 3 | Garra/osso cortando o ar: sopro médio + estalo ósseo. |
