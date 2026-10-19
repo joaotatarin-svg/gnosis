@@ -1,7 +1,8 @@
 """R18 (NEURO_SATISFACAO): a Sophia "salta" do fundo? Mede, num par de capturas
 com/sem a Sophia (HdShot ... seq=2 every=1 blink), o contraste de luminância na
 borda da silhueta: para cada pixel da borda, luminância média 3 px para dentro
-× 3 px para fora (razão WCAG (L1+0,05)/(L2+0,05)). Reporta mediana e % ≥ 3:1,
+× 3 px para fora (razão WCAG (L1+0,05)/(L2+0,05)). Reporta mediana e % ≥ 3:1, a razão SILHUETA (luminância média da Sophia × a do
+fundo num anel de 12 px em volta — o "apertar de olhos" do R18),
 mais a saturação média do fundo em volta × a da Sophia.
 Uso: python tools/cenario7/contrast.py <prefixo_seq> [<prefixo_seq> ...]"""
 import sys
@@ -45,8 +46,12 @@ def measure(prefix):
 	ratio = (np.maximum(r1, r2) + 0.05) / (np.minimum(r1, r2) + 0.05)
 	hsv_s = cv2.cvtColor(sop.astype(np.uint8), cv2.COLOR_RGB2HSV)[..., 1][m > 0].mean() / 255
 	big_ring = (cv2.dilate(m, np.ones((61, 61), np.uint8)) - m) > 0
+	near_ring = (cv2.dilate(m, np.ones((25, 25), np.uint8)) - m) > 0
+	Lsm = float(L_s[m > 0].mean())
+	Lrn = float(L_b[near_ring].mean())
+	mean_ratio = (max(Lsm, Lrn) + 0.05) / (min(Lsm, Lrn) + 0.05)
 	hsv_b = cv2.cvtColor(bg.astype(np.uint8), cv2.COLOR_RGB2HSV)[..., 1][big_ring].mean() / 255
-	return {'px': int(m.sum()), 'med': float(np.median(ratio)), 'ge3': float((ratio >= 3).mean() * 100),
+	return {'mean_ratio': mean_ratio, 'px': int(m.sum()), 'med': float(np.median(ratio)), 'ge3': float((ratio >= 3).mean() * 100),
 		'Ls': float(L_s[m > 0].mean()), 'Lbg': float(L_b[big_ring].mean()), 'sat_s': float(hsv_s), 'sat_bg': float(hsv_b)}
 
 
@@ -56,5 +61,5 @@ if __name__ == '__main__':
 		if r is None:
 			print(p, 'sem máscara')
 			continue
-		print('%s: borda mediana %.2f:1, %.0f%% da borda >= 3:1 | lum Sophia %.3f fundo %.3f | sat Sophia %.2f fundo %.2f (%d px)' % (
-			p, r['med'], r['ge3'], r['Ls'], r['Lbg'], r['sat_s'], r['sat_bg'], r['px']))
+		print('%s: SILHUETA (média Sophia × fundo a 12 px) %.2f:1 | borda mediana %.2f:1, %.0f%% da borda >= 3:1 | lum Sophia %.3f fundo %.3f | sat Sophia %.2f fundo %.2f (%d px)' % (
+			p, r['mean_ratio'], r['med'], r['ge3'], r['Ls'], r['Lbg'], r['sat_s'], r['sat_bg'], r['px']))

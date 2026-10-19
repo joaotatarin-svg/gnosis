@@ -43,7 +43,7 @@ GRADE = {
 	'far':   {'sat': 0.92, 'con': 0.90, 'haze': 0.06, 'gain': 1.00},
 	'mid':   {'sat': 0.82, 'con': 0.85, 'haze': 0.10, 'gain': 0.92},
 	'wings': {'sat': 0.84, 'con': 0.88, 'haze': 0.05, 'gain': 0.80},
-	'floor': {'sat': 0.80, 'con': 0.85, 'haze': 0.00, 'gain': 0.92},
+	'floor': {'sat': 0.78, 'con': 0.72, 'haze': 0.00, 'gain': 0.84},
 }
 
 
@@ -60,15 +60,25 @@ def load_rgb(p):
 def magenta_key(rgb):
 	"""Alfa + cor sem franja a partir do fundo magenta.
 	Força da chave k = min(R,B) − G (magenta puro ≈ 0,97; pedra/vela/estandarte < 0,1).
-	Nos pixels de borda (mistura tinta+magenta) a cor é DESMISTURADA:
+	TRIMAP: fundo certo = k perto do magenta puro; a faixa de até 3 px em volta
+	dele é a borda (mistura tinta+magenta) e ganha alfa pela chave; o resto é
+	tinta OPACA — mesmo roxo/lilás (estandarte da Mente, cristais do Espelho) não
+	fica translúcido. Na borda a cor é DESMISTURADA:
 	C = α·F + (1−α)·M  →  F = (C − (1−α)·M)/α, e o que sobrar de rosa é cortado."""
 	k = np.minimum(rgb[..., 0], rgb[..., 2]) - rgb[..., 1]
 	pure = k > 0.80
 	M = np.median(rgb[pure], axis=0) if pure.any() else np.array([1.0, 0.0, 1.0], np.float32)
 	k_bg = float(np.minimum(M[0], M[2]) - M[1])
 	k_fg = 0.16
-	a = np.clip((k_bg - 0.05 - k) / (k_bg - 0.05 - k_fg), 0.0, 1.0)
-	# pedacinhos soltos (respingos de chave) somem; buracos minúsculos fecham
+	bg = (k > k_bg - 0.10).astype(np.uint8)
+	# distância (px) até o fundo certo: > 3 px = tinta opaca
+	dist = cv2.distanceTransform(1 - bg, cv2.DIST_L2, 3)
+	a_k = np.clip((k_bg - 0.05 - k) / (k_bg - 0.05 - k_fg), 0.0, 1.0)
+	# opaco à força só onde a cor NÃO puxa pro magenta (k ≤ 0,45: roxo/lilás de
+	# verdade fica ~0,1–0,25); halos de vela/brilho misturados com o magenta seguem a chave
+	a = np.where((dist > 3.0) & (k <= 0.45), 1.0, a_k).astype(np.float32)
+	a[bg > 0] = 0.0
+	# pedacinhos soltos (respingos de chave) somem
 	solid = (a > 0.5).astype(np.uint8)
 	n, lab, st, _ = cv2.connectedComponentsWithStats(solid, 8)
 	small = np.zeros(n, bool)
@@ -82,14 +92,53 @@ def magenta_key(rgb):
 	F = (rgb - (1.0 - a[..., None]) * M) / safe
 	F = np.where(a[..., None] > 0.02, F, 0.0)
 	F = np.clip(F, 0, 1)
-	# rosa residual: min(R,B) não pode passar muito do G onde a borda é semitransparente
-	edge = (a < 0.98) & (a > 0.0)
+	# rosa residual: só na borda (o miolo roxo de verdade fica como está)
+	edge = ((dist <= 3.0) | (k > 0.45)) & (a > 0.0)
 	spill = np.clip(np.minimum(F[..., 0], F[..., 2]) - F[..., 1] - 0.06, 0, None)
 	spill = np.where(edge, spill, 0.0)
 	F[..., 0] -= spill
 	F[..., 2] -= spill
 	a[a < 0.04] = 0.0
 	return np.clip(F, 0, 1), a, M
+
+
+def align_objects(rgb, a):
+	"""MID de objetos soltos (Corrente, Silêncio, Espelho, Coroa, Mente): cada
+	objeto pousado é descido/subido até a BASE COMUM (a base mais baixa); o que
+	está pendurado no topo (cortinas, correntes) ou flutua bem acima (ilhas da
+	Mente) fica onde está. Retorna (rgb, a, base)."""
+	H = a.shape[0]
+	solid = (a > 0.5).astype(np.uint8)
+	grp = cv2.dilate(solid, np.ones((15, 15), np.uint8))
+	n, lab, st, _ = cv2.connectedComponentsWithStats(grp, 8)
+	objs = []
+	for j in range(1, n):
+		x, y, w, h, area = st[j]
+		if area < 2000:
+			continue
+		m = (lab == j) & (solid > 0)
+		rows = np.where(m.any(1))[0]
+		if rows.size == 0:
+			continue
+		objs.append((j, int(rows.min()), int(rows.max()), m))
+	if not objs:
+		return rgb, a, int(np.where((a >= 0.5).mean(1) > 0.03)[0].max()), 0
+	base = max(o[2] for o in objs)
+	out_rgb = np.zeros_like(rgb)
+	out_a = np.zeros_like(a)
+	moved = 0
+	for j, top, bot, m in objs:
+		dy = 0
+		if top > 4 and bot >= base - 0.12 * H:
+			dy = base - bot
+		region = (lab == j)
+		ys, xs = np.where(region)
+		ys2 = np.clip(ys + dy, 0, H - 1)
+		keep = a[ys, xs] > out_a[ys2, xs]
+		out_rgb[ys2[keep], xs[keep]] = rgb[ys[keep], xs[keep]]
+		out_a[ys2[keep], xs[keep]] = a[ys[keep], xs[keep]]
+		moved += 1 if dy else 0
+	return out_rgb, out_a, base, moved
 
 
 def pink_residue(rgb, a):
@@ -177,7 +226,8 @@ def save_rgb(path, rgb):
 
 
 def find(i, kind):
-	return sorted(glob.glob(os.path.join(SRC, f'bg_{i}_*_{kind}_*.png')))
+	"""Só as versões _a (as _b/_c do ChatGPT são quase iguais — decisão da Produção)."""
+	return sorted(glob.glob(os.path.join(SRC, f'bg_{i}_*_{kind}_a.png')))
 
 
 def build_eon(i, haze):
@@ -214,7 +264,7 @@ def build_eon(i, haze):
 	for p in mids:
 		v = os.path.splitext(p)[0][-1]
 		rgb, a, M = magenta_key(load_rgb(p))
-		fl = base_line(a)
+		rgb, a, fl, moved = align_objects(rgb, a)
 		# conteúdo pendurado no topo (cortinas da Fome, correntes da Corrente):
 		# some em degradê, sem linha reta quando a câmera sobe
 		if (a[:4] > 0.5).mean() > 0.03:
@@ -226,7 +276,7 @@ def build_eon(i, haze):
 		g = grade(rgb, 'mid', haze, a)
 		save_rgba(os.path.join(OUT, f'eon_{i}_mid_{v}.png'), g[y0:y1], a[y0:y1])
 		d['mid'].append({'tex': f'eon_{i}_mid_{v}', 'w': a.shape[1], 'h': y1 - y0, 'y0': y0, 'line': fl})
-		log(f'  mid_{v}: linha={fl} ({fl / a.shape[0]:.0%}) conteúdo {y0}..{y1} rosa={pink_residue(rgb, a):.3f}% M={np.round(M * 255)}')
+		log(f'  mid_{v}: objetos alinhados={moved} base={fl} ({fl / a.shape[0]:.0%}) conteúdo {y0}..{y1} rosa={pink_residue(rgb, a):.3f}% M={np.round(M * 255)}')
 	# WINGS (só acima da linha do chão; o chão vai pro eon_<i>_floor)
 	d['wings'] = []
 	for p, rgb, a, fl in wl:

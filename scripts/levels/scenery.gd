@@ -171,6 +171,8 @@ func _build_painted() -> void:
 		_painted_layer("mid", Vector2(0.14, 0.95), 0.0, s, Color(0.80, 0.80, 0.84))
 	# Névoa perto do horizonte.
 	_add_fog(Vector2(0.22, 0.97), FLOOR_Y - 80.0, FLOOR_Y - 14.0, FLOOR_Y + 6.0, Color(d.haze).lightened(0.1), 0.38 * lk.mist, 0.007, 7.0, 2.0)
+	if h.has("mid"):
+		_lane_veil(Color(d.haze))
 	if h.has("wings") and not (h.wings as Array).is_empty():
 		# ASAS HD: pilares das bordas + entulho, a camada pintada mais rápida.
 		_hd_variant(h.wings, float(h.s), MS_WINGS, r, WINGS_TINT, 0.0)
@@ -199,6 +201,40 @@ const WINGS_TINT := Vector2(0.88, 1.0)
 ## A base MEDIDA do mid afunda isto (px lógicos) abaixo do horizonte: a borda de
 ## baixo some na névoa do chão em vez de virar uma linha reta.
 const MID_SINK := -5.0
+
+
+## VÉU DA FAIXA DE LUTA (R18 do NEURO_SATISFACAO, auditoria do Guardião):
+## a Sophia, na média, é CLARA (pano branco, cabelo, pele: luminância média
+## ≈ 0,19) com partes escuras (botas, barras); o fundo HD atrás dela, mais
+## detalhado, ficava em ≈ 0,06–0,11 e brigava com ela. Uma névoa de
+## profundidade LISA e ESCURA na cor do ar do Éon, por cima do far e do mid
+## (as asas ficam nítidas, na frente), só na altura em que se luta: baixa o
+## valor, a saturação e o contraste interno do fundo exatamente atrás dos
+## lutadores (as partes escuras dela ganham o rim de luz da Arte —
+## docs/pedidos/cenario7.md). Some em degradê para cima (céu e astro intactos).
+const LANE_TOP := 160.0      # px acima do horizonte onde o véu começa (alfa 0)
+const LANE_FULL := 40.0      # px acima do horizonte onde chega ao máximo
+## Alfa do véu = 0,25 + 0,4 × luminância do ar do Éon (Espelho/Coroa, claros,
+## precisam de mais; Torpor/Mente, escuros, de menos), entre 0,30 e 0,60.
+const LANE_ALPHA := Vector2(0.30, 0.60)
+
+func _lane_veil(hz: Color) -> void:
+	var l := _layer(Vector2(0.0, 1.0), 0.0)
+	var c := hz.lerp(Color(0.5, 0.5, 0.5), 0.3).darkened(0.72)
+	var c0 := Color(c, 0.0)
+	var luma := hz.r * 0.3 + hz.g * 0.59 + hz.b * 0.11
+	var c1 := Color(c, clampf(0.25 + 0.4 * luma, LANE_ALPHA.x, LANE_ALPHA.y))
+	var y0 := FLOOR_Y - LANE_TOP
+	var y1 := FLOOR_Y - LANE_FULL
+	var y2 := FLOOR_Y + 8.0
+	var p := Polygon2D.new()
+	p.polygon = PackedVector2Array([Vector2(-400, y0), Vector2(1100, y0), Vector2(1100, y1), Vector2(-400, y1)])
+	p.vertex_colors = PackedColorArray([c0, c0, c1, c1])
+	l.add_child(p)
+	var q := Polygon2D.new()
+	q.polygon = PackedVector2Array([Vector2(-400, y1), Vector2(1100, y1), Vector2(1100, y2), Vector2(-400, y2)])
+	q.color = c1
+	l.add_child(q)
 
 
 ## Topo (y lógico) de uma camada HD posta com a linha do chão MEDIDA em FLOOR_Y.
@@ -794,6 +830,11 @@ class FloorBand extends Node2D:
 		_mat.set_shader_parameter("reflect_amt", lk.reflect)
 		_mat.set_shader_parameter("glow", lk.glow)
 		_mat.set_shader_parameter("crack_amt", float(lk.get("crack", 1.1)))
+		# R18: em Éon claro, o chão atrás dos pés escurece um pouco (a Sophia,
+		# clara na média, precisa de fundo mais escuro que ela)
+		var hz: Color = d.get("haze", Color(0.5, 0.5, 0.5))
+		var luma := hz.r * 0.3 + hz.g * 0.59 + hz.b * 0.11
+		_mat.set_shader_parameter("lane_dim", clampf((luma - 0.45) * 0.8, 0.0, 0.3))
 		material = _mat
 
 	func _process(_delta: float) -> void:
