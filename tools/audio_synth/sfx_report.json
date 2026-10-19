@@ -1,5 +1,261 @@
 [
  {
+  "name": "achievement",
+  "cat": "ui_big",
+  "dur": 2.66,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -9.1
+ },
+ {
+  "name": "atk_blink",
+  "cat": "eatk",
+  "dur": 0.74,
+  "ch": 2,
+  "Mmax": -19.3,
+  "peak": -1.1
+ },
+ {
+  "name": "atk_burst",
+  "cat": "eatk",
+  "dur": 0.55,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -6.8
+ },
+ {
+  "name": "atk_combo",
+  "cat": "eatk",
+  "dur": 0.32,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -6.5
+ },
+ {
+  "name": "atk_combo_2",
+  "cat": "eatk",
+  "dur": 0.32,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -7.3
+ },
+ {
+  "name": "atk_dive",
+  "cat": "eatk",
+  "dur": 0.61,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -9.2
+ },
+ {
+  "name": "atk_dive_2",
+  "cat": "eatk",
+  "dur": 0.61,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -9.6
+ },
+ {
+  "name": "atk_fan",
+  "cat": "eatk",
+  "dur": 0.35,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -5.3
+ },
+ {
+  "name": "atk_fissure",
+  "cat": "eatk",
+  "dur": 0.71,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -6.7
+ },
+ {
+  "name": "atk_glide",
+  "cat": "eatk",
+  "dur": 0.76,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -4.9
+ },
+ {
+  "name": "atk_grab",
+  "cat": "eatk",
+  "dur": 0.45,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -2.5
+ },
+ {
+  "name": "atk_homing",
+  "cat": "eatk",
+  "dur": 1.47,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -10.9
+ },
+ {
+  "name": "atk_leap",
+  "cat": "eatk",
+  "dur": 0.41,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -6.9
+ },
+ {
+  "name": "atk_leap_2",
+  "cat": "eatk",
+  "dur": 0.41,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -8.3
+ },
+ {
+  "name": "atk_lob",
+  "cat": "eatk",
+  "dur": 0.59,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -8.4
+ },
+ {
+  "name": "atk_nova",
+  "cat": "eatk_big",
+  "dur": 0.68,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -3.6
+ },
+ {
+  "name": "atk_pillar",
+  "cat": "eatk_big",
+  "dur": 1.59,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -5.3
+ },
+ {
+  "name": "atk_rush",
+  "cat": "eatk",
+  "dur": 0.54,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -9.3
+ },
+ {
+  "name": "atk_rush_2",
+  "cat": "eatk",
+  "dur": 0.54,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -9.6
+ },
+ {
+  "name": "atk_shot",
+  "cat": "eatk",
+  "dur": 0.31,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -2.5
+ },
+ {
+  "name": "atk_shot_2",
+  "cat": "eatk",
+  "dur": 0.31,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -3.0
+ },
+ {
+  "name": "atk_shot_3",
+  "cat": "eatk",
+  "dur": 0.31,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -4.4
+ },
+ {
+  "name": "atk_shot_air",
+  "cat": "eatk",
+  "dur": 0.4,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -7.5
+ },
+ {
+  "name": "atk_shot_air_2",
+  "cat": "eatk",
+  "dur": 0.4,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -7.1
+ },
+ {
+  "name": "atk_slam",
+  "cat": "eatk_big",
+  "dur": 0.59,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -3.1
+ },
+ {
+  "name": "atk_slam_2",
+  "cat": "eatk_big",
+  "dur": 0.57,
+  "ch": 2,
+  "Mmax": -16.5,
+  "peak": -1.3
+ },
+ {
+  "name": "atk_summon",
+  "cat": "eatk_big",
+  "dur": 1.75,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -6.5
+ },
+ {
+  "name": "atk_swing",
+  "cat": "eatk",
+  "dur": 0.21,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -4.7
+ },
+ {
+  "name": "atk_swing_2",
+  "cat": "eatk",
+  "dur": 0.21,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -2.4
+ },
+ {
+  "name": "atk_swing_3",
+  "cat": "eatk",
+  "dur": 0.21,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -4.8
+ },
+ {
+  "name": "atk_wave",
+  "cat": "eatk",
+  "dur": 0.74,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -7.7
+ },
+ {
+  "name": "atk_wave_2",
+  "cat": "eatk",
+  "dur": 0.74,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -8.4
+ },
+ {
   "name": "blip_estela",
   "cat": "blip",
   "dur": 0.06,
@@ -192,6 +448,46 @@
   "peak": -1.0
  },
  {
+  "name": "boss_death_collapse",
+  "cat": "boss_mid",
+  "dur": 2.07,
+  "ch": 2,
+  "Mmax": -12.3,
+  "peak": -1.1
+ },
+ {
+  "name": "boss_death_hush",
+  "cat": "death_hush",
+  "dur": 0.66,
+  "ch": 2,
+  "Mmax": -24.0,
+  "peak": -13.8
+ },
+ {
+  "name": "boss_death_impact",
+  "cat": "boss",
+  "dur": 2.01,
+  "ch": 2,
+  "Mmax": -10.3,
+  "peak": -1.2
+ },
+ {
+  "name": "boss_death_shatter",
+  "cat": "boss_mid",
+  "dur": 3.62,
+  "ch": 2,
+  "Mmax": -12.0,
+  "peak": -5.7
+ },
+ {
+  "name": "boss_death_stagger",
+  "cat": "boss_soft",
+  "dur": 1.81,
+  "ch": 2,
+  "Mmax": -14.0,
+  "peak": -6.1
+ },
+ {
   "name": "boss_die",
   "cat": "boss",
   "dur": 2.4,
@@ -206,6 +502,14 @@
   "ch": 1,
   "Mmax": -10.0,
   "peak": -1.1
+ },
+ {
+  "name": "boss_phase3",
+  "cat": "boss",
+  "dur": 3.74,
+  "ch": 2,
+  "Mmax": -10.6,
+  "peak": -1.4
  },
  {
   "name": "boss_step",
@@ -230,6 +534,238 @@
   "ch": 1,
   "Mmax": -14.2,
   "peak": -1.0
+ },
+ {
+  "name": "bs_bite",
+  "cat": "bsig",
+  "dur": 0.84,
+  "ch": 2,
+  "Mmax": -13.8,
+  "peak": -1.4
+ },
+ {
+  "name": "bs_breath",
+  "cat": "bsig",
+  "dur": 1.72,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -3.8
+ },
+ {
+  "name": "bs_burrow",
+  "cat": "bsig",
+  "dur": 0.91,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -2.7
+ },
+ {
+  "name": "bs_cage",
+  "cat": "bsig",
+  "dur": 2.35,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -2.3
+ },
+ {
+  "name": "bs_cast",
+  "cat": "bsig_soft",
+  "dur": 2.02,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -6.1
+ },
+ {
+  "name": "bs_cast_2",
+  "cat": "bsig_soft",
+  "dur": 2.07,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -6.2
+ },
+ {
+  "name": "bs_cloud",
+  "cat": "bsig_soft",
+  "dur": 1.49,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -8.6
+ },
+ {
+  "name": "bs_collapse",
+  "cat": "bsig",
+  "dur": 2.78,
+  "ch": 2,
+  "Mmax": -13.4,
+  "peak": -1.1
+ },
+ {
+  "name": "bs_coronation",
+  "cat": "bsig",
+  "dur": 4.12,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -4.5
+ },
+ {
+  "name": "bs_decree",
+  "cat": "bsig",
+  "dur": 3.62,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -3.7
+ },
+ {
+  "name": "bs_hand",
+  "cat": "bsig",
+  "dur": 2.07,
+  "ch": 2,
+  "Mmax": -13.3,
+  "peak": -1.1
+ },
+ {
+  "name": "bs_land",
+  "cat": "bsig",
+  "dur": 1.36,
+  "ch": 2,
+  "Mmax": -13.3,
+  "peak": -1.2
+ },
+ {
+  "name": "bs_leap",
+  "cat": "bsig",
+  "dur": 0.73,
+  "ch": 2,
+  "Mmax": -13.3,
+  "peak": -1.1
+ },
+ {
+  "name": "bs_lullaby",
+  "cat": "bsig_soft",
+  "dur": 3.95,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -8.0
+ },
+ {
+  "name": "bs_melee",
+  "cat": "bsig",
+  "dur": 0.74,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -1.2
+ },
+ {
+  "name": "bs_melee_2",
+  "cat": "bsig",
+  "dur": 0.74,
+  "ch": 2,
+  "Mmax": -13.2,
+  "peak": -1.1
+ },
+ {
+  "name": "bs_pages",
+  "cat": "bsig_soft",
+  "dur": 1.41,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -1.9
+ },
+ {
+  "name": "bs_rain",
+  "cat": "bsig_soft",
+  "dur": 2.31,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -4.8
+ },
+ {
+  "name": "bs_ray",
+  "cat": "bsig",
+  "dur": 2.06,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -2.6
+ },
+ {
+  "name": "bs_rings",
+  "cat": "bsig_soft",
+  "dur": 2.54,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -6.6
+ },
+ {
+  "name": "bs_royal_cut",
+  "cat": "bsig",
+  "dur": 1.22,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -1.5
+ },
+ {
+  "name": "bs_scream",
+  "cat": "bsig",
+  "dur": 1.6,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -5.9
+ },
+ {
+  "name": "bs_split",
+  "cat": "bsig_soft",
+  "dur": 2.6,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -7.3
+ },
+ {
+  "name": "bs_spores",
+  "cat": "bsig_soft",
+  "dur": 1.44,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -1.5
+ },
+ {
+  "name": "bs_suck",
+  "cat": "bsig",
+  "dur": 1.11,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -3.8
+ },
+ {
+  "name": "bs_swap",
+  "cat": "bsig_soft",
+  "dur": 1.2,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -2.9
+ },
+ {
+  "name": "bs_sweep",
+  "cat": "bsig",
+  "dur": 0.79,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -3.2
+ },
+ {
+  "name": "bs_wings",
+  "cat": "bsig",
+  "dur": 1.48,
+  "ch": 2,
+  "Mmax": -13.3,
+  "peak": -1.1
+ },
+ {
+  "name": "bs_yawn",
+  "cat": "bsig_soft",
+  "dur": 3.25,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -5.0
  },
  {
   "name": "cast_coroa",
@@ -304,12 +840,76 @@
   "peak": -3.7
  },
  {
+  "name": "chain",
+  "cat": "eatk_big",
+  "dur": 1.03,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -7.1
+ },
+ {
+  "name": "chain_2",
+  "cat": "eatk_big",
+  "dur": 1.03,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -6.5
+ },
+ {
+  "name": "chain_3",
+  "cat": "eatk_big",
+  "dur": 1.02,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -5.6
+ },
+ {
   "name": "champion_die",
   "cat": "champion",
   "dur": 1.09,
   "ch": 1,
   "Mmax": -12.0,
   "peak": -2.8
+ },
+ {
+  "name": "champion_enter",
+  "cat": "champion",
+  "dur": 2.97,
+  "ch": 2,
+  "Mmax": -12.0,
+  "peak": -3.5
+ },
+ {
+  "name": "champion_fury",
+  "cat": "champion",
+  "dur": 1.86,
+  "ch": 2,
+  "Mmax": -12.0,
+  "peak": -4.2
+ },
+ {
+  "name": "charge_dark",
+  "cat": "charge",
+  "dur": 1.33,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -7.3
+ },
+ {
+  "name": "charge_king",
+  "cat": "charge_big",
+  "dur": 2.46,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -4.7
+ },
+ {
+  "name": "charge_light",
+  "cat": "charge",
+  "dur": 1.46,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -10.4
  },
  {
   "name": "chest_hit",
@@ -376,6 +976,14 @@
   "peak": -7.8
  },
  {
+  "name": "crack_open",
+  "cat": "story",
+  "dur": 3.53,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -3.7
+ },
+ {
   "name": "dive",
   "cat": "swing_big",
   "dur": 0.27,
@@ -398,6 +1006,22 @@
   "ch": 1,
   "Mmax": -13.9,
   "peak": -1.0
+ },
+ {
+  "name": "double_jump",
+  "cat": "sophia",
+  "dur": 0.83,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -8.2
+ },
+ {
+  "name": "double_jump_2",
+  "cat": "sophia",
+  "dur": 0.79,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -8.5
  },
  {
   "name": "elite_die",
@@ -440,6 +1064,38 @@
   "peak": -4.5
  },
  {
+  "name": "eye_hit",
+  "cat": "hit",
+  "dur": 1.12,
+  "ch": 2,
+  "Mmax": -12.3,
+  "peak": -1.1
+ },
+ {
+  "name": "eye_hit_2",
+  "cat": "hit",
+  "dur": 1.09,
+  "ch": 2,
+  "Mmax": -12.0,
+  "peak": -2.2
+ },
+ {
+  "name": "fly_fall",
+  "cat": "eatk",
+  "dur": 0.88,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -7.8
+ },
+ {
+  "name": "fly_fall_2",
+  "cat": "eatk",
+  "dur": 0.88,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -7.3
+ },
+ {
   "name": "fog_swell",
   "cat": "story_soft",
   "dur": 3.11,
@@ -462,6 +1118,38 @@
   "ch": 1,
   "Mmax": -26.2,
   "peak": -1.0
+ },
+ {
+  "name": "glass",
+  "cat": "eatk_big",
+  "dur": 1.59,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -5.7
+ },
+ {
+  "name": "glass_2",
+  "cat": "eatk_big",
+  "dur": 1.6,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -6.6
+ },
+ {
+  "name": "glass_3",
+  "cat": "eatk_big",
+  "dur": 1.53,
+  "ch": 2,
+  "Mmax": -16.0,
+  "peak": -4.4
+ },
+ {
+  "name": "guard_break",
+  "cat": "elite",
+  "dur": 1.36,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -3.1
  },
  {
   "name": "heartbeat",
@@ -520,12 +1208,380 @@
   "peak": -1.0
  },
  {
+  "name": "hz_altar",
+  "cat": "reward",
+  "dur": 3.38,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -3.9
+ },
+ {
+  "name": "hz_altar_hum",
+  "cat": "hazard_amb",
+  "dur": 3.27,
+  "ch": 2,
+  "Mmax": -28.0,
+  "peak": -22.3
+ },
+ {
+  "name": "hz_beam_off",
+  "cat": "hazard_soft",
+  "dur": 0.25,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -10.4
+ },
+ {
+  "name": "hz_beam_on",
+  "cat": "hazard",
+  "dur": 1.21,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -10.8
+ },
+ {
+  "name": "hz_bell_toll",
+  "cat": "hazard_big",
+  "dur": 2.55,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -5.5
+ },
+ {
+  "name": "hz_chain_swing",
+  "cat": "hazard",
+  "dur": 0.63,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -7.4
+ },
+ {
+  "name": "hz_chain_swing_2",
+  "cat": "hazard",
+  "dur": 0.61,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -6.5
+ },
+ {
+  "name": "hz_column",
+  "cat": "hazard_big",
+  "dur": 0.51,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -2.8
+ },
+ {
+  "name": "hz_ether_drain",
+  "cat": "hazard",
+  "dur": 0.8,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -8.6
+ },
+ {
+  "name": "hz_guillotine",
+  "cat": "hazard_big",
+  "dur": 1.08,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -3.3
+ },
+ {
+  "name": "hz_maw_bite",
+  "cat": "hazard_big",
+  "dur": 1.02,
+  "ch": 2,
+  "Mmax": -15.5,
+  "peak": -1.3
+ },
+ {
+  "name": "hz_maw_warn",
+  "cat": "hazard",
+  "dur": 0.74,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -10.9
+ },
+ {
+  "name": "hz_mirror_flip",
+  "cat": "hazard_soft",
+  "dur": 0.97,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -10.0
+ },
+ {
+  "name": "hz_mirror_warn",
+  "cat": "hazard_soft",
+  "dur": 1.01,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -13.2
+ },
+ {
+  "name": "hz_mist_breath",
+  "cat": "hazard_soft",
+  "dur": 3.4,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -14.3
+ },
+ {
+  "name": "hz_saw",
+  "cat": "hazard",
+  "dur": 1.0,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -4.4
+ },
+ {
+  "name": "hz_secret_mark",
+  "cat": "hazard_soft",
+  "dur": 1.46,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -14.2
+ },
+ {
+  "name": "hz_secret_open",
+  "cat": "reward",
+  "dur": 3.67,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -3.8
+ },
+ {
+  "name": "hz_shackles",
+  "cat": "hazard_big",
+  "dur": 0.99,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -4.3
+ },
+ {
+  "name": "hz_shard_fall",
+  "cat": "hazard_soft",
+  "dur": 0.2,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -11.0
+ },
+ {
+  "name": "hz_shard_impact",
+  "cat": "hazard",
+  "dur": 1.0,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -8.7
+ },
+ {
+  "name": "hz_shard_impact_2",
+  "cat": "hazard",
+  "dur": 0.97,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -8.5
+ },
+ {
+  "name": "hz_shard_impact_3",
+  "cat": "hazard",
+  "dur": 1.0,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -9.4
+ },
+ {
+  "name": "hz_shard_warn",
+  "cat": "hazard_soft",
+  "dur": 1.38,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -10.1
+ },
+ {
+  "name": "hz_silence_in",
+  "cat": "hazard",
+  "dur": 1.16,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -8.5
+ },
+ {
+  "name": "hz_silence_out",
+  "cat": "hazard_soft",
+  "dur": 0.43,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -9.9
+ },
+ {
+  "name": "hz_sink_gone",
+  "cat": "hazard_soft",
+  "dur": 0.84,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -10.1
+ },
+ {
+  "name": "hz_sink_return",
+  "cat": "hazard_soft",
+  "dur": 0.66,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -11.5
+ },
+ {
+  "name": "hz_sink_start",
+  "cat": "hazard_soft",
+  "dur": 1.1,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -11.7
+ },
+ {
+  "name": "hz_spears",
+  "cat": "hazard_big",
+  "dur": 0.33,
+  "ch": 2,
+  "Mmax": -16.2,
+  "peak": -2.0
+ },
+ {
+  "name": "hz_spears_2",
+  "cat": "hazard_big",
+  "dur": 0.33,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -1.6
+ },
+ {
+  "name": "hz_spore_burst",
+  "cat": "hazard",
+  "dur": 0.83,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -5.6
+ },
+ {
+  "name": "hz_spore_pop",
+  "cat": "hazard",
+  "dur": 0.43,
+  "ch": 2,
+  "Mmax": -18.7,
+  "peak": -1.2
+ },
+ {
+  "name": "hz_spore_swell",
+  "cat": "hazard_soft",
+  "dur": 0.71,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -10.2
+ },
+ {
+  "name": "hz_tide_tick",
+  "cat": "hazard_soft",
+  "dur": 0.25,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -3.4
+ },
+ {
+  "name": "hz_tide_wake",
+  "cat": "hazard_big",
+  "dur": 3.79,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -3.5
+ },
+ {
+  "name": "hz_totem_arm",
+  "cat": "hazard",
+  "dur": 1.95,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -9.4
+ },
+ {
+  "name": "hz_totem_break",
+  "cat": "hazard_big",
+  "dur": 2.24,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -4.6
+ },
+ {
+  "name": "hz_totem_hit",
+  "cat": "hazard",
+  "dur": 0.31,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -4.0
+ },
+ {
+  "name": "hz_totem_hit_2",
+  "cat": "hazard",
+  "dur": 0.31,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -2.9
+ },
+ {
+  "name": "hz_totem_summon",
+  "cat": "hazard",
+  "dur": 1.87,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -5.8
+ },
+ {
+  "name": "hz_ward_drain",
+  "cat": "hazard_soft",
+  "dur": 0.45,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -10.5
+ },
+ {
+  "name": "hz_ward_out",
+  "cat": "hazard",
+  "dur": 2.24,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -9.1
+ },
+ {
+  "name": "hz_ward_saved",
+  "cat": "reward",
+  "dur": 2.65,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -5.0
+ },
+ {
+  "name": "hz_winch",
+  "cat": "hazard_soft",
+  "dur": 0.31,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -8.4
+ },
+ {
   "name": "jump",
   "cat": "move",
   "dur": 0.3,
   "ch": 1,
   "Mmax": -20.0,
   "peak": -3.0
+ },
+ {
+  "name": "king_sink",
+  "cat": "story",
+  "dur": 4.83,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -6.2
  },
  {
   "name": "king_step",
@@ -582,6 +1638,30 @@
   "ch": 2,
   "Mmax": -13.2,
   "peak": -1.0
+ },
+ {
+  "name": "map_locked",
+  "cat": "ui",
+  "dur": 0.23,
+  "ch": 2,
+  "Mmax": -22.0,
+  "peak": -9.1
+ },
+ {
+  "name": "map_open",
+  "cat": "ui_big",
+  "dur": 1.79,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -6.6
+ },
+ {
+  "name": "map_select",
+  "cat": "ui_big",
+  "dur": 1.68,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -9.7
  },
  {
   "name": "mask_light",
@@ -688,6 +1768,14 @@
   "peak": -1.0
  },
  {
+  "name": "relic_equip",
+  "cat": "shop",
+  "dur": 1.23,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -8.5
+ },
+ {
   "name": "revive",
   "cat": "revive",
   "dur": 1.14,
@@ -710,6 +1798,22 @@
   "ch": 1,
   "Mmax": -13.0,
   "peak": -4.1
+ },
+ {
+  "name": "riposte",
+  "cat": "swing_big",
+  "dur": 0.53,
+  "ch": 2,
+  "Mmax": -16.3,
+  "peak": -1.5
+ },
+ {
+  "name": "riposte_ready",
+  "cat": "tell",
+  "dur": 0.59,
+  "ch": 2,
+  "Mmax": -17.0,
+  "peak": -6.6
  },
  {
   "name": "rooted",
@@ -768,12 +1872,28 @@
   "peak": -5.0
  },
  {
+  "name": "shop_seal",
+  "cat": "shop",
+  "dur": 1.84,
+  "ch": 2,
+  "Mmax": -18.0,
+  "peak": -8.2
+ },
+ {
   "name": "sleeper_wake",
   "cat": "object_big",
   "dur": 1.16,
   "ch": 1,
   "Mmax": -14.0,
   "peak": -7.9
+ },
+ {
+  "name": "soter_gift",
+  "cat": "reward",
+  "dur": 4.11,
+  "ch": 2,
+  "Mmax": -13.0,
+  "peak": -5.2
  },
  {
   "name": "spark",
@@ -814,6 +1934,22 @@
   "ch": 2,
   "Mmax": -25.0,
   "peak": -14.6
+ },
+ {
+  "name": "star_charge",
+  "cat": "charge",
+  "dur": 0.69,
+  "ch": 2,
+  "Mmax": -19.0,
+  "peak": -8.8
+ },
+ {
+  "name": "star_impact",
+  "cat": "sophia_layer",
+  "dur": 1.54,
+  "ch": 2,
+  "Mmax": -17.0,
+  "peak": -9.6
  },
  {
   "name": "stele_open",
@@ -1054,5 +2190,13 @@
   "ch": 1,
   "Mmax": -15.1,
   "peak": -1.0
+ },
+ {
+  "name": "zone_objective",
+  "cat": "structure",
+  "dur": 2.16,
+  "ch": 2,
+  "Mmax": -15.0,
+  "peak": -5.9
  }
 ]

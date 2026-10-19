@@ -8,12 +8,17 @@ extends Node
 ## Imprime "AUDIO QA: N falhas" e sai com 0 (ok) ou 1.
 
 const DOC_PATH := "res://docs/AUDIO.md"
+## Onda 7: o catálogo dos sons novos fica no relatório do Áudio7 (lido junto).
+const DOC7_PATH := "res://docs/onda2/AUDIO7.md"
 const AUDIO_DIR := "res://assets/audio/"
 const SCAN_DIRS := ["res://scripts", "res://tools"]
 const AUDIO_EXTS := ["ogg", "wav", "mp3"]
 ## Eventos frequentes: precisam de pelo menos 2 variações (contrato de áudio).
 const NEED_VARIANTS := ["swing_light", "swing_heavy", "hit", "hit_heavy", "step", "step_heavy", "cloth",
-	"boss_step", "enemy_hurt", "block", "blip_voz", "blip_rei", "blip_sophia", "blip_estela", "blip_npc", "spark"]
+	"boss_step", "enemy_hurt", "block", "blip_voz", "blip_rei", "blip_sophia", "blip_estela", "blip_npc", "spark",
+	# Onda 7: frequentes do conteúdo novo
+	"atk_swing", "atk_combo", "atk_shot", "atk_rush", "atk_dive", "fly_fall", "chain", "glass",
+	"hz_shard_impact", "hz_spears", "hz_chain_swing", "hz_totem_hit", "double_jump", "eye_hit", "bs_melee"]
 ## Contrato com Animação/UI: estes nomes TÊM de existir com arquivo.
 const CONTRACT := ["step", "step_heavy", "cloth", "boss_step", "blip_voz", "blip_rei", "blip_sophia",
 	"blip_estela", "blip_npc", "ui_move", "ui_confirm", "ui_back", "ui_open",
@@ -43,6 +48,7 @@ func _run() -> void:
 	# (a) todo nome do catálogo está documentado na lista de compras.
 	var doc := FileAccess.get_file_as_string(DOC_PATH)
 	check(doc != "", "docs/AUDIO.md existe e não está vazio")
+	doc += "\n" + FileAccess.get_file_as_string(DOC7_PATH)
 	var missing_doc: Array[String] = []
 	for n in sfx_names:
 		if not doc.contains("sfx/%s.ogg" % n):
@@ -659,7 +665,9 @@ func _run() -> void:
 	for d in SCAN_DIRS:
 		_collect_gd(d, files)
 	var re := RegEx.new()
-	re.compile("play_(sfx_at|sfx_pitched|sfx|music)\\(\"([A-Za-z0-9_]+)\"")
+	# Onda 7: também `sfx("x"` (BossBrain.sfx — só toca nome do catálogo) e
+	# `_tell_sound("x"` / `play_sfx_later("x"`.
+	re.compile("(?:play_(sfx_at|sfx_pitched|sfx_later|sfx|music)|\\b(?:sfx|_tell_sound))\\(\"([A-Za-z0-9_]+)\"")
 	var unknown: Array[String] = []
 	var used: Dictionary = {}
 	for f in files:
@@ -683,6 +691,9 @@ func _run() -> void:
 			never.append(n)
 	print("Nomes do catálogo ainda sem chamada no código (esperados até a integração): ", never)
 
+	# (h) ONDA 7 — golpes, chefes, ganchos por sinal, cena do roubo.
+	await _check_onda7(sfx_names)
+
 	# (g) Encerramento (REVISAO #15): para e solta todos os players.
 	Audio.play_music("boss")
 	Audio.play_ambience("torpor")
@@ -697,6 +708,173 @@ func _run() -> void:
 
 	print("AUDIO QA: %d falhas" % fails)
 	get_tree().quit(0 if fails == 0 else 1)
+
+
+## ONDA 7 (Áudio7): o conteúdo novo das Ondas 5–6 tem som próprio e as rotas
+## automáticas (move_sfx, morte em 5 passos, contra-ataque, conquista, roubo)
+## funcionam. Os golpes são lidos do CÓDIGO (ids/tipos nos scripts), não de uma
+## lista daqui: golpe novo sem som aparece como falha.
+func _check_onda7(sfx_names: Array) -> void:
+	# (h1) todo TIPO de golpe dos inimigos comuns e dos chefes tem som no strike
+	#      (menos os que não ferem/têm som próprio: recuo, explosão = nova).
+	var kind_re := RegEx.new()
+	kind_re.compile("\"kind\":\\s*\"([a-z_]+)\"")
+	var call_re := RegEx.new()
+	call_re.compile("\\b_m\\(\"[a-z_0-9]+\",\\s*\"([a-z_]+)\"")
+	var kinds: Dictionary = {}
+	var moves_src := FileAccess.get_file_as_string("res://scripts/entities/enemies/enemy_moves.gd")
+	for m in kind_re.search_all(moves_src) + call_re.search_all(moves_src):
+		kinds[m.get_string(1)] = true
+	var doc_re := RegEx.new()
+	doc_re.compile("##\\s+kind\\s+([a-z ·]+)")
+	var dm := doc_re.search(moves_src)
+	if dm != null:
+		for k in dm.get_string(1).split("·"):
+			if k.strip_edges() != "":
+				kinds[k.strip_edges()] = true
+	var silent_kinds := ["retreat", "explode"]
+	var no_kind: Array[String] = []
+	for k in kinds:
+		if silent_kinds.has(k):
+			continue
+		var n: String = Audio.move_sound_for({"id": "x", "kind": k}, "wind" if k == "blink" else "strike")
+		if n == "" or not Audio.has_sfx(n):
+			no_kind.append(k)
+	check(kinds.size() >= 15 and no_kind.is_empty(), "todo tipo de golpe de inimigo tem som (%d tipos; sem som: %s)" % [kinds.size(), str(no_kind)])
+	# (h2) todo golpe de chefe (id + tipo nos scripts dos chefes) tem som em ALGUMA
+	#      etapa (o telegrafo tell_* já existe à parte) — e todo nome resolvido existe.
+	var id_re := RegEx.new()
+	id_re.compile("\"id\":\\s*\"([a-z_0-9]+)\"[^}]*?\"kind\":\\s*\"([a-z]+)\"")
+	var boss_dir := DirAccess.open("res://scripts/entities/bosses")
+	var n_moves := 0
+	var mute: Array[String] = []
+	var bad_name: Array[String] = []
+	var kit_sound := ["guarda"]      # a guarda do Astaphaios soa `glass` pelo kit
+	if boss_dir != null:
+		for f in boss_dir.get_files():
+			if not f.ends_with(".gd"):
+				continue
+			var src := FileAccess.get_file_as_string("res://scripts/entities/bosses/" + f)
+			for m in id_re.search_all(src):
+				n_moves += 1
+				var mv := {"id": m.get_string(1), "kind": m.get_string(2)}
+				var any := false
+				for stg in ["wind", "strike", "land"]:
+					var sn: String = Audio.move_sound_for(mv, stg, true)
+					if sn == "":
+						continue
+					if not Audio.has_sfx(sn):
+						bad_name.append("%s/%s→%s" % [mv.id, stg, sn])
+					any = true
+				if not any and not kit_sound.has(Audio.move_base_id(mv.id)):
+					mute.append("%s:%s" % [f.get_basename(), mv.id])
+	check(n_moves >= 40 and mute.is_empty() and bad_name.is_empty(),
+		"todo golpe de chefe tem som (%d golpes; mudos: %s; nomes sem arquivo: %s)" % [n_moves, str(mute), str(bad_name)])
+	check(Audio.move_base_id("guarda3") == "guarda" and Audio.move_base_id("corte_b") == "corte"
+		and Audio.move_base_id("corte_real") == "corte_real", "id de golpe normalizado (guarda3→guarda, corte_b→corte, corte_real fica)")
+	check(Audio.move_sound_for({"id": "x", "kind": "shot", "homing": 2.0}, "strike") == "atk_homing"
+		and Audio.move_sound_for({"id": "x", "kind": "shot", "air": true}, "strike") == "atk_shot_air"
+		and Audio.move_sound_for({"id": "x", "kind": "shot", "count": 3}, "strike") == "atk_fan"
+		and Audio.move_sound_for({"id": "mordida", "kind": "melee"}, "strike") == "bs_melee"
+		and Audio.move_sound_for({"id": "mordida", "kind": "melee"}, "strike", true) == "bs_bite",
+		"tiro teleguiado/de cima/leque têm som próprio; id de chefe só vale para chefe")
+	# (h3) move_sfx toca de verdade (com posição: pan) e não toca golpe mudo.
+	Audio._last_play_ms.erase("atk_rush")
+	var played: bool = Audio.move_sfx({"id": "investida", "kind": "rush"}, "strike", Vector2(100, 200))
+	var mute_ok: bool = not Audio.move_sfx({"id": "bocejo", "kind": "cast"}, "strike", Vector2.INF, true)
+	check(played and Audio.voices_playing("atk_rush") >= 1 and mute_ok, "move_sfx toca o golpe e respeita etapa muda")
+	# (h4) morte do chefe em 5 passos: o sinal boss_dying(passo) toca o passo certo.
+	var steps_ok := true
+	for i in 5:
+		var sn: String = Audio.death_step_sfx(i)
+		if sn == "" or not Audio.has_sfx(sn):
+			steps_ok = false
+	var fake := Node2D.new()
+	fake.add_user_signal("boss_dying", [{"name": "step", "type": TYPE_INT}])
+	add_child(fake)
+	await get_tree().process_frame
+	fake.emit_signal("boss_dying", 0)
+	var impact_ok: bool = Audio.voices_playing("boss_death_impact") >= 1
+	fake.emit_signal("boss_dying", 4)
+	var shatter_ok: bool = Audio.voices_playing("boss_death_shatter") >= 1
+	fake.queue_free()
+	check(steps_ok and impact_ok and shatter_ok and Audio.death_step_sfx(5) == "",
+		"morte do chefe em 5 passos ligada ao sinal boss_dying (impacto e estilhaço tocaram)")
+	# (h5) contra-ataque: sinal da Sophia → riposte_ready no bus Tell, tom fixo.
+	var pl := Node.new()
+	pl.add_user_signal("riposte_window_opened")
+	add_child(pl)
+	await get_tree().process_frame
+	pl.emit_signal("riposte_window_opened")
+	var rip_ok: bool = Audio.voices_playing("riposte_ready") >= 1
+	pl.queue_free()
+	check(rip_ok and Audio._bus_for("riposte_ready") == Audio.TELL_BUS and Audio._pitch_for("riposte_ready") == 0.0,
+		"janela do contra-ataque soa riposte_ready (bus Tell, tom fixo)")
+	# (h6) conquista em rajada toca UMA vez; sons de interface no bus UI.
+	Audio._last_play_ms.erase("achievement")
+	Audio._on_achievement("a")
+	Audio._on_achievement("b")
+	Audio._on_achievement("c")
+	check(Audio.voices_playing("achievement") == 1 and Audio._bus_for("achievement") == "UI"
+		and Audio._bus_for("map_select") == "UI" and Audio._bus_for("shop_seal") == "UI",
+		"conquista em rajada toca 1 vez; mapa/loja/conquista no bus UI")
+	# (h7) roubo: o cue `sink` é o Rei afundando + a rachadura logo depois.
+	Audio._last_play_ms.erase("king_sink")
+	Audio.cue("sink")
+	var sink_ok: bool = Audio.voices_playing("king_sink") >= 1
+	await _wait_real(Audio.CRACK_DELAY + 0.25)
+	check(sink_ok and Audio.voices_playing("crack_open") >= 1, "cue `sink` do roubo: king_sink e crack_open %.1f s depois" % Audio.CRACK_DELAY)
+	# (h8) cargas (VFX7) e sons de informação tocam com tom EXATO.
+	var exact_bad: Array[String] = []
+	for n in ["charge_light", "charge_dark", "charge_king", "riposte_ready", "achievement", "map_select", "soter_gift"]:
+		if Audio._pitch_for(n) != 0.0:
+			exact_bad.append(n)
+	check(exact_bad.is_empty(), "cargas e sons de informação com tom fixo (%s)" % str(exact_bad))
+	# (h9) OBSERVADOR (_Watch): eventos sem sinal tocam na BORDA. Bonecos com as
+	#      mesmas propriedades públicas do Enemy/Player (o observador só lê estado).
+	var gs := GDScript.new()
+	gs.source_code = "extends Node2D\nvar estate: int = 0\nvar _mv: Dictionary = {}\nvar brain = null\nvar _downed: float = 0.0\nvar fly_height: float = 30.0\nvar _champ_fury: bool = false\n"
+	gs.reload()
+	var foe: Node2D = gs.new()
+	add_child(foe)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	foe.set("_mv", {"id": "garras", "kind": "combo"})
+	foe.set("estate", Enemy.EState.STRIKE)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var w_strike: bool = Audio.voices_playing("atk_combo") >= 1
+	foe.set("_downed", 1.4)
+	foe.set("_champ_fury", true)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var w_fall: bool = Audio.voices_playing("fly_fall") >= 1
+	var w_fury: bool = Audio.voices_playing("champion_fury") >= 1
+	foe.queue_free()
+	var gp := GDScript.new()
+	gp.source_code = "extends CharacterBody2D\nvar state: int = 0\nvar _air_jumps_left: int = 1\nvar current_move = null\nvar windup_timer: float = 0.0\nvar dive_landed: bool = false\nvar _riposte_t: float = 0.0\n"
+	gp.reload()
+	var hero: CharacterBody2D = gp.new()
+	hero.add_user_signal("riposte_window_opened")
+	add_child(hero)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	hero.set("_air_jumps_left", 0)            # 2º pulo no ar: o player.gd toca (dono troca na fonte)
+	hero.set("_riposte_t", 0.3)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	hero.set("state", Player.State.ATTACK)
+	hero.set("_riposte_t", 0.0)               # contra-ataque saiu: idem, é do player.gd
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var w_quiet: bool = Audio.voices_playing("double_jump") == 0 and Audio.voices_playing("riposte") == 0 		and Audio.voices_playing("star_charge") == 0
+	hero.queue_free()
+	check(w_strike and w_fall and w_fury and w_quiet,
+		"observador: golpe (%s), voador cai (%s), fúria (%s); 2º pulo/contra-ataque/carga NÃO dobram (%s)" % [w_strike, w_fall, w_fury, w_quiet])
+	# (h10) golpes de inimigo: anti-spam 130 ms e 2 vozes no máximo (R11).
+	check(Audio.spam_ms_for("atk_swing") >= 120 and Audio.spam_ms_for("atk_swing") <= 150
+		and Audio.max_same_for("atk_shot") == 2 and Audio.max_same_for("hit") == Audio.MAX_SAME,
+		"golpes de inimigo atk_*: anti-spam %d ms, %d vozes" % [Audio.spam_ms_for("atk_swing"), Audio.max_same_for("atk_shot")])
 
 
 ## Espera `sec` segundos de relógio REAL, atravessando quadros (não um timer
