@@ -159,7 +159,7 @@ class P extends Node:
 		Input.action_release("attack_light")
 		Input.action_release("block")
 		act = str(pl.visual.get("_action"))
-		print("FPPROBE|contra|estado=%d acao=%s riposting=%s dano=%d" % [pl.state, act, str(pl.riposting), pl.pending_dmg])
+		print("FPPROBE|contra|estado=%d acao=%s riposting=%s dano=%d dx=%.0f foe_estado=%d" % [pl.state, act, str(pl.riposting), pl.pending_dmg, foe.global_position.x - pl.global_position.x if is_instance_valid(foe) else -1.0, foe.estate if is_instance_valid(foe) else -1])
 		check(pl.state == Player.State.ATTACK and pl.riposting, "ataque na janela vira contra-ataque")
 		check(act == "riposte", "contra-ataque toca os quadros 'riposte'")
 		await wait(0.12)
@@ -202,12 +202,21 @@ class P extends Node:
 		var alive_mid: bool = is_instance_valid(boss)
 		var anim_mid: String = str(boss.visual.anim_state) if alive_mid else "-"
 		print("FPPROBE|morte|0,2s vivo=%s anim=%s gibs=%d" % [str(alive_mid), anim_mid, Gib.live_pieces() - gibs0])
-		check(alive_mid and anim_mid == "dead" and Gib.live_pieces() == gibs0, "chefe segura a pose 'dead' antes de se partir")
-		await snap("morte_pose", bpos + Vector2(0, -90), Vector2(170, 170))
-		await wait(0.45)
-		print("FPPROBE|morte|0,65s vivo=%s gibs=%d" % [str(is_instance_valid(boss)), Gib.live_pieces() - gibs0])
-		check(not is_instance_valid(boss) and Gib.live_pieces() > gibs0, "depois da pose, desmembra")
-		await snap("morte_gibs", bpos + Vector2(0, -60), Vector2(170, 170))
+		# Polimento 7: com cérebro (chefes6), a morte de chefe virou um MOMENTO
+		# (BossBrain.death_sequence: dor → morte, mais longo) — o tempo e os pedaços
+		# são do chefes6; aqui só confere que ele NÃO se parte na hora.
+		var has_brain: bool = alive_mid and boss.get("brain") != null
+		if has_brain:
+			check(Gib.live_pieces() == gibs0, "chefe (death_sequence do chefes6) não se parte na hora")
+			print("FPPROBE|morte|com cérebro: o resto da morte é medido pelas ferramentas do chefes6")
+			await snap("morte_pose", bpos + Vector2(0, -90), Vector2(170, 170))
+		else:
+			check(alive_mid and anim_mid == "dead" and Gib.live_pieces() == gibs0, "chefe segura a pose 'dead' antes de se partir")
+			await snap("morte_pose", bpos + Vector2(0, -90), Vector2(170, 170))
+			await wait(0.45)
+			print("FPPROBE|morte|0,65s vivo=%s gibs=%d" % [str(is_instance_valid(boss)), Gib.live_pieces() - gibs0])
+			check(not is_instance_valid(boss) and Gib.live_pieces() > gibs0, "depois da pose, desmembra")
+			await snap("morte_gibs", bpos + Vector2(0, -60), Vector2(170, 170))
 
 		# --- C1: número de dano some quando o mundo pausa ------------------------
 		await wait(0.5)

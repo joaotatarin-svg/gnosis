@@ -9,7 +9,7 @@
       Obs.: o editor NÃO reclama de .gd solto (sem cena/class_name) — por isso
       a etapa ScriptCheck carrega cada .gd do projeto.
   (b) roda as cenas de QA headless: ScriptCheck, CodexQA, AudioQA, GnoseQA, SaveQA, PuppetQA,
-      HeroQA, WaveQA, TecnicoQA, LangQA, FeelProbe, HitboxProbe (cada uma sai com 0/1 sozinha). Com -Full também roda o
+      HeroQA, WaveQA, TecnicoQA, LangQA, FeelProbe, HitboxProbe, FlashParryProbe (cada uma sai com 0/1 sozinha). Com -Full também roda o
       CodexPlaytest (bot jogando o desafio por inputs reais; até ~3 min).
       Toda execução usa `--audio-driver Dummy` (sem som no PC do dono).
   (c) resumo: uma linha por etapa (OK/FALHOU/TEMPO), nº de "QA PASS", tempo,
@@ -80,6 +80,10 @@ $fast = [ordered]@{
 	# corpo desenhado: 0 atravessa, ≤ 2 % encosta sem dano, sem dano de contato).
 	"FeelProbe"   = "res://tools/combate/FeelProbe.tscn"
 	"HitboxProbe" = "res://tools/combate/HitboxProbe.tscn"
+	# Flash ≤ 3 cheios/s (R10), aparo/contra-ataque, telegrafo por contorno. SEM
+	# --fixed-fps: o Juice conta os flashes no relógio de parede (com física fixa
+	# o tempo de jogo corre diferente e dá falso negativo — pedido do Guardião).
+	"FlashParryProbe" = "res://tools/combate/FlashParryProbe.tscn"
 }
 # argumentos de usuário (depois de "--") e física fixa por QA
 $userArgs = @{

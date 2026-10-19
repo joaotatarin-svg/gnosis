@@ -35,6 +35,7 @@ const FLASH_HOLD := 0.035        # cheio nos primeiros 35 ms, depois apaga
 ## cor real (0,53) 0,42 dá o mesmo pico (0,84 de luminância média no atlas) com
 ## 35 % do corpo estourado em branco (antes 30 %) — 0,6 estouraria 47 %.
 const FLASH_ADD := 0.42
+const CAST_CHARGE_FX := 0.12      # carga visual do cast (s; não atrasa o disparo)
 const VIB_AMP := 1.5             # R1: vibração da vítima (px) durante o hitstop
 const VIB_STEP_MS := 33          # troca de lado a cada ~33 ms reais
 const HURT_TINT := Color(2.2, 1.95, 1.85, 1) # F1: dano = branco quente (antes 2,2/0,9/0,9 → laranja chapado)
@@ -944,6 +945,10 @@ func _cast_skill(skill: SkillData) -> void:
 	Audio.play_sfx(_cast_sfx(skill))
 	cast_anim_timer = 0.3
 	VfxLibrary.cast(get_parent(), global_position + Vector2(14.0 * facing, -18.0), skill.color)
+	# Polimento 7 (pedido do VFX7): "piscar" de carga na mão no instante do cast.
+	# SEM atrasar o disparo (0,2 s de preparo foi descartado: magia é a saída de
+	# emergência e o João elogiou a resposta) — só a antecipação visual.
+	VfxLibrary.charge_up(self, Vector2(18.0 * facing, -6.0), skill.color, CAST_CHARGE_FX, "light")
 
 	var total := skill.base_damage + (Progression.skill_level(skill.id) - 1) * 12   # r2: 8→12
 	var col := skill.color
