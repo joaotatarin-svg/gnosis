@@ -461,6 +461,7 @@ func _leap_start() -> void:
 	h.follow = pl
 	h.lock_at = 0.45
 	h.knockback = 300.0
+	h.strike_sound = false          # o pouso já soa (bs_land, pelo Áudio)
 	h.struck.connect(_leap_land.bind(h))
 
 
@@ -490,7 +491,8 @@ func _on_land(_m: Dictionary) -> void:
 ## Batalha dupla: a outra forma (FinalBattle liga). Uma ataca de cada vez —
 ## justiça: a Sophia nunca lê dois telegrafos ao mesmo tempo.
 var partner: BossBrain = null
-var _charge = null                    # antecipação visual (VFX7) do tiro em preparo
+var _charge = null
+var _wave_sfx_ms: int = -100000                    # antecipação visual (VFX7) do tiro em preparo
 
 
 ## Carga do tiro (VFX7 ChargeFX) com SOM PRÓPRIO (R11: não é o mesmo
@@ -600,6 +602,11 @@ func ground_wave(dir: int, dmg_mult: float, speed: float = 240.0) -> Projectile:
 	p.color = e.eye_color
 	p.lifetime = 2.2
 	p.set("look", "spike")          # VFX7: lâmina rasteira (lê-se como "pule")
+	# um som por evento (R4): duas ondas no mesmo golpe soam uma vez só
+	var now := Time.get_ticks_msec()
+	if now - _wave_sfx_ms > 120:
+		_wave_sfx_ms = now
+		sfx("atk_wave", e.global_position)
 	e.get_parent().add_child(p)
 	p.global_position = e.global_position + Vector2(30.0 * dir, 12.0)
 	return p

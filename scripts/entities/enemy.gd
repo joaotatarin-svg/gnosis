@@ -1016,7 +1016,7 @@ func _enter_phase(n: int) -> void:
 	_tint_base = Color(1, 1, 1, 1)
 	Juice.shake(0.7 + 0.15 * float(n - 2))
 	Juice.hit_stop(0.15)
-	Audio.play_sfx("boss_phase2")
+	Audio.play_sfx("boss_phase3" if n >= 3 else "boss_phase2")
 	Audio.duck_music(0.8, -8.0)
 	AoeNova.spawn(get_parent(), global_position, 0, 140.0 + 40.0 * float(n - 2), eye_color)
 	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
