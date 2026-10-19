@@ -150,8 +150,10 @@ inimigo → `look` "spike"=`wave`, prende=`chain`, lentidão=`sleep`, cor dourad
   Captura: `C:\gnosis-wt\_caps\vfx7\f2_qa\zonas_strip.png`.
 - **#9 aparição por trás com 0,25 s** → `EnemyMoves.BLINK_WIND = 0,6 s` (0,51 s com fúria) e a
   `EnemyOverlay` marca a aparição (redemoinho, anel deitado na cor do aviso, motes) + som do telegrafo.
-- **#15 repulsa nunca sai** → alcance 60 → 90 px, mas a EnemyProbe AINDA mede `repulsa=0`: a causa é a
-  intenção "orbe" guardada 2,5 s no enemy.gd — patch exato pedido ao polimento7.
+- **#15 repulsa nunca sai** → alcance 60 → 90 px. Antes do último merge a EnemyProbe ainda media
+  `repulsa=0` (intenção "orbe" guardada 2,5 s no enemy.gd); depois do merge de 19/10 mede
+  `orbe=2 pilar=1 repulsa=1` e a sonda fica toda VERDE (111 PASS, 0 FAIL). O patch do `_intent` segue
+  pedido ao polimento7 como reforço (1 uso em 7 s ainda é pouco).
 - **#10 atiradores fogem para a borda** → coleira pronta (`EnemyAggro.leash_x`, `retreat_dir`: ≤ 230 px da
   Sophia e dentro de `arena_bounds` − 48); falta a chamada em `_desired_x`/recuo (enemy.gd, polimento7).
 - **#12 Campeão fora da tela** e **#19 fúria < 0,4 s** → pedidos (level6/narrativa6 e polimento7).
