@@ -347,7 +347,17 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   brancos no tranco, tremor e contorno crescendo antes do estilhaço — lê como "acabou" sem olhar a barra.
   Criaturas novas têm quadro de morte próprio (deitado/desfazendo); o contorno branco de 1 quadro no golpe que
   mata é do combate/juice.
-- **R18 legibilidade**: cor REAL da pintura (sem o quadrado, a Sophia ficou mais clara e salta do fundo escuro);
+- **R18 legibilidade (19/10, auditoria do Guardião)**: Sophia ganhou luz de recorte (por dentro, só onde a borda é
+  escura) + halo de ~1 px (por fora) na cor do Éon no `painted_flex` (`HERO_RIM` 0,6, `HERO_HALO` 0,4, raio 1,6 texel).
+  Medido em jogo (ContrastProbe + contrast_r18.py): tela 3 1,68→2,03:1 · tela 30 1,97→2,36:1 · tela 57 1,42→1,71:1.
+  Mais forte lava a pintura; o resto até 3:1 é do fundo (pedido em `docs/pedidos/cenario7.md`). Prancha:
+  `_caps/arte-gpt/r18/r18_antes_depois.png`. Chefes/criaturas por quadros já tinham o rim do `painted_boss`.
+- **R17 tremor**: o `Juice.shake` da queda de joelhos na morte desenhada caiu de 0,7 para 0,15 (micro) — o tremor
+  grande é UM, no golpe final (combate/chefes6).
+- **QA7 #18 pés**: `tools/FeetProbe.tscn` mede pé desenhado × base da colisão nas 7 telas de Arconte: todos ≤ 3 px,
+  exceto Belias 6,7 px (foot_gap do boneco antigo → zerado). Os 40–55 px da captura do QA7 não se reproduzem no
+  idle/andar — devem ser de pose/encenação (entrada do chefe), não da âncora do PNG.
+- **R18 (antes)**: cor REAL da pintura (sem o quadrado, a Sophia ficou mais clara e salta do fundo escuro);
   inimigos com arte própria mantêm o contorno do Rim (cor do Éon); o interino tingido/dessaturado sai quando
   há arte própria. Fantasma: fumaça despill p/ cinza-violeta (não some no fundo azul). Pendente: teste em
   escala de cinza ≥ 3:1 por tela (dono: cenário/QA).
