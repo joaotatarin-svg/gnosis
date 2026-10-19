@@ -28,6 +28,9 @@ const VIEW := Vector2(640.0, 360.0)
 ## Cor de base por Éon (fallback sem as camadas geradas).
 const FALLBACK := [Color("27464e"), Color(0.45, 0.16, 0.12), Color(0.28, 0.32, 0.42), Color(0.14, 0.10, 0.26), Color(0.55, 0.58, 0.72), Color(0.22, 0.34, 0.20), Color(0.42, 0.28, 0.10), Color(0.12, 0.10, 0.16), Color(0.20, 0.06, 0.14)]
 
+## Ferramentas (HdShot oldbg): desliga os fundos HD e usa as camadas antigas.
+static var hd_disabled: bool = false
+
 var eon: int = 0
 var seed_screen: int = 1
 var _built: bool = false
