@@ -2,7 +2,7 @@ extends Control
 ## Opções (tela cheia ou overlay da pausa). Duas colunas (#34):
 ##   VÍDEO     — modo de janela (janela · tela cheia · sem bordas) · VSync ·
 ##               tremor de câmera (0–100%) · reduzir flashes
-##   ÁUDIO     — volumes Geral / Efeitos / Música / Vozes (dublagem; 0 = desligadas)
+##   ÁUDIO     — volumes Geral / Efeitos / Música (o volume das Vozes/dublagem fica em JOGO)
 ##   JOGO      — velocidade do texto (0,5× · 1× · 2× · instantâneo) · legendas
 ##               (P/M/G, com amostra) · números de dano · vibração do controle
 ##   CONTROLES — "Teclas e botões" abre a tela de remapeamento (ControlsMenu)
@@ -81,10 +81,6 @@ func _ready() -> void:
 	_slider(_left, "Volume geral", 0.0, 1.0, Audio.master_vol, func(v: float): Audio.set_volume("Master", v))
 	_slider(_left, "Efeitos", 0.0, 1.0, Audio.sfx_vol, func(v: float): Audio.set_volume("SFX", v))
 	_slider(_left, "Música", 0.0, 1.0, Audio.music_vol, func(v: float): Audio.set_volume("Music", v))
-	# Dublagem (Onda 7 — linha do Áudio por delegação do chefe): 0 = sem vozes
-	# gravadas (as falas voltam ao "gromelô" de blips).
-	_slider(_left, "Vozes", 0.0, 1.0, Audio.voice_vol, func(v: float): Audio.set_volume("Voice", v),
-		func(v: float): return "Desligadas" if v <= 0.001 else "%d%%" % int(round(v * 100.0)))
 	# --- coluna direita: jogo + controles ---
 	_section(_right, "Jogo")
 	# Idioma: rótulo nos DOIS idiomas (quem caiu no idioma errado acha a opção).
@@ -108,6 +104,11 @@ func _ready() -> void:
 	_refresh_caption()
 	_toggle(_right, "Números de dano", "damage_numbers", true)
 	_rumble = _toggle(_right, "Vibração do controle", "rumble")
+	# Dublagem (Onda 7 — linha do Áudio por delegação do chefe): volume das vozes
+	# gravadas; 0 = desligadas (as falas voltam ao "gromelô" de blips). Fica na
+	# coluna JOGO, junto do texto/legendas: na coluna de Áudio a tela transbordava.
+	_slider(_right, "Vozes", 0.0, 1.0, Audio.voice_vol, func(v: float): Audio.set_volume("Voice", v),
+		func(v: float): return "Desligadas" if v <= 0.001 else "%d%%" % int(round(v * 100.0)))
 	_section(_right, "Controles", true)
 	_controls = _row_button(_right, "Teclas e botões")
 	(_controls.get_node("Value") as Label).text = "›"

@@ -69,6 +69,7 @@ func _run() -> void:
 	var env_dir := OS.get_environment("GNOSIS_VOICE_SAMPLES")
 	if env_dir != "":
 		_dir = env_dir.replace("\\", "/").trim_suffix("/") + "/"
+	_check_real_manifest()
 	var voz: Dictionary = _find(Narrative.intro(), "Acorda. ...Isso.")
 	var rei: Dictionary = _find(Narrative.king_intro(), "Faísca perdida")
 	var cap: Dictionary = _find(Narrative.walk_arrival(1), "Uma pedra escrita")
@@ -118,6 +119,30 @@ func _run() -> void:
 	await _check_tell(rei)
 	await _check_off(voz)
 	_end()
+
+
+## (v0) o manifesto DE VERDADE (lotes da Dublagem): lê, e cada arquivo listado
+## existe e carrega como áudio com duração > 0. Lote quebrado = falha aqui.
+func _check_real_manifest() -> void:
+	Audio.reload_voice_manifest()
+	var man: Dictionary = Audio.voice_manifest()
+	var n := 0
+	var bad: Array = []
+	for id in man:
+		var e = man[id]
+		if not (e is Dictionary):
+			bad.append(str(id))
+			continue
+		for lang in ["pt", "en"]:
+			var le = (e as Dictionary).get(lang)
+			if not (le is Dictionary):
+				continue
+			n += 1
+			var s: AudioStream = Audio.call("_voice_stream", String((le as Dictionary).get("file", "")))
+			if s == null or s.get_length() <= 0.0:
+				bad.append("%s/%s" % [id, lang])
+	print("VOICE INFO: manifesto real (%s): %d falas, %d arquivos" % [Audio.VOICE_MANIFEST, man.size(), n])
+	check(bad.is_empty(), "manifesto real: todo arquivo listado existe e carrega (ruins: %s)" % str(bad.slice(0, 8)))
 
 
 ## (v2)(v3) caixa de diálogo

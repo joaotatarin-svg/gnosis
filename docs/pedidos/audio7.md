@@ -105,3 +105,17 @@ Não ponham som nos marcos (o tique já sobe).
 - **king:** o Rei, luz roubada, ~0,9 s.
 
 Se a carga durar bem mais ou menos que isso, me digam a duração e eu refaço.
+
+## DUBLAGEM (29/10) — edições feitas pelo Áudio por DELEGAÇÃO DO CHEFE (registro para os donos)
+Mínimas e marcadas com comentário "DUBLAGEM (Onda 7 — edição do Áudio por delegação do chefe)":
+- UI `dialogue_box.gd`: `_start_voice`/`voice_cps`/`_stop_voice`; blips só sem voz; avançar corta a voz.
+- UI `caption_bar.gd`: `_show` toca a voz (legenda ≥ voz + 0,4 s), `pause_voice` quando escondida, `_hide` corta.
+- Encenação `cinematic.gd`: card ≥ voz + 0,6 s; `_finish`/`_exit_tree` cortam.
+- UI `options_menu.gd`: slider "Vozes" na coluna JOGO.
+- Técnico `save_manager.gd`: `vol_voice` + `DEFAULT_VOLUMES["Voice"] = 1.0`.
+- i18n `en_table.gd`: "Vozes", "Desligadas".
+Se mexerem nesses trechos: a VoiceProbe (`tools/audio/VoiceProbe.tscn`) acusa.
+
+### Pedido à UI/Encenação (opcional, depois do 1º lote)
+- `stela.gd`: botão "ouvir a pedra" tocando as linhas em sequência (`Audio.play_voice({"speaker": "estela", "text": linha}, self)`
+  e esperar a duração devolvida; `Audio.stop_voice(self)` ao fechar).

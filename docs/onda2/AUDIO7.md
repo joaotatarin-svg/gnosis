@@ -5,7 +5,20 @@
 
 ## BILHETE PARA O SUCESSOR (atualizado a cada bloco)
 
-**Estado:** ENTREGA FINAL do Áudio7.
+**29/10 — DUBLAGEM (sucessor do Áudio7):** o jogo toca as vozes gravadas. Último commit de código:
+ver `git log` (a partir de `08994eb`). Seção completa: "Dublagem" mais abaixo. Em uma linha: `Audio.play_voice(fala,
+dono)` acha o `.ogg` pelo id `sha1(falante|texto_pt)[:12]` no MANIFESTO de dados
+`assets/audio/voice/manifest.json` (hoje vazio); lote novo = copiar `.ogg` + acrescentar no manifesto, sem
+código. Contrato com a Dublagem: `C:\gnosis-wt\_caps\dublagem\CONTRATO_AUDIO.md` (escrito por mim; o
+Dublagem não tinha publicado). Prova: `tools/audio/VoiceProbe.tscn` (0 falhas) + validate 14/14.
+- **Próximo passo:** integrar o 1º lote (Limiar/Rei) quando o Dublagem entregar; rodar a VoiceProbe (linha
+  "manifesto real"). Regras do Guardião para vozes (`_caps/dublagem/REGRAS_GUARDIAO.md`) ainda NÃO existiam
+  em 29/10: quando saírem, conferir item a item com a seção Dublagem.
+- **Armadilhas:** `stream_paused` deixa `playing` = false no Godot 4.7 (o dono da voz não pode ser limpo por
+  isso). O id usa o texto PT EXATO (com rubrica e `\n`); texto mudou = voz some até regerar. Os blips saíram
+  do bus Voice para o UI (mesmo ganho de antes).
+
+**Estado anterior:** ENTREGA FINAL do Áudio7.
 - 118 sons novos (143 arquivos com as variações) estão no CATALOG.
 - API nova: `move_sfx`/`move_sound_for`.
 - Ganchos por sinal + observador `_Watch` (eventos sem sinal, só bordas).
@@ -147,9 +160,62 @@ O 2º pulo, a carga da Queda e o golpe do contra-ataque saíram do observador po
 | **R13** loudness | Arquivos no alvo por categoria; pico verdadeiro ≤ −1 dBTP. NÃO medi os 10 min de combate gravado (alvo −20 a −23 LUFS integrados): exige captura de áudio do jogo rodando, e o driver é Dummy. | parcial (honesto) |
 | **R14** estéreo discreto | Inimigos, chefes e perigos tocam por `play_sfx_at` (pan ±50 %, atenuação pela distância). Perigo a > 720 px da câmera não toca. Sophia e UI no centro. | atendido |
 | **R22** vida baixa | Não mexi. Nenhum som novo é "bip" contínuo; as presenças (`hz_altar_hum`, `hz_ward_drain`) têm anti-spam e 1 voz. | — |
+| **R4** (dublagem) sem poluição sonora | Fala dublada NÃO toca blips (um evento de voz por fala, não dois). Só uma voz por vez: a nova corta a velha com fade de 0,12 s; a legenda seguinte só entra depois da voz + 0,4 s. Voz de dor/esforço: nenhuma nova. | atendido (VoiceProbe) |
+| **R5** (dublagem) aviso acima da voz | Durante um `tell_*` a voz desce 8 dB e perde graves (passa-altas 250 Hz, ataque 10 ms, soltura 300 ms); voz de luta não começa nos 400 ms depois de um aviso; o bus Tell não baixa com a voz. | atendido (VoiceProbe) |
+| **R9** (dublagem) ducking | Voz soando: música −3 dB na caixa (sobre os −9 do diálogo) ou −9 na legenda; ambiência −2/−6; efeitos de luta −3 dB só na legenda (a luta continua audível). Envelope 0,15 s / 0,5 s por relógio real. | atendido (VoiceProbe) |
+| **R13** (dublagem) volume | Falas a −18 LUFS e ≤ −1 dBTP (contrato); bus Voice direto no Master, slider próprio (padrão 100 %), fora do −6 dB do SFX e do abafado do slow-mo. NÃO medi a mixagem com voz (driver Dummy). | parcial (honesto) |
+| **R21** (dublagem) ritmo de leitura | A caixa NUNCA avança sozinha: espera o jogador. O texto digita no ritmo da voz (termina com ~90 % dela), nunca mais lento que 0,6× o normal, e quem escolheu texto 2×/instantâneo continua rápido. 1º aperto mostra tudo (a voz segue), 2º corta e avança. Legenda escondida pela pausa congela a voz. | atendido (VoiceProbe) |
 | **§3/§4** sem cassino | Nada de moeda, caça-níquel, arpejo "jackpot" nem som que cresce com sorte. Conquista, selo, relíquia, altar e dom do Soter são coro, sino e vidro em Mi maior, de duração fixa e independentes do valor ganho. A conquista em rajada toca 1 vez. O `shop_buy` (moedas, antigo) não foi tocado nem ampliado. | atendido |
 
+## Dublagem (29/10/2026)
+
+Pedido do João: dublagem na próxima versão, entrando AOS POUCOS (lotes da Dublagem, começando pelo
+Limiar/Rei). Desenho do Dublagem (`dir7/dublagem`, `docs/onda2/DUBLAGEM.md` §7) implementado com uma mudança:
+os blips ficam no bus UI e o slider "Vozes" só controla a dublagem (0 = desligada → blips).
+
+**Dados (sem código por lote):** `assets/audio/voice/manifest.json` → `lines.<id>.<pt|en>.file`. O id é
+calculado pelo jogo: `sha1(falante + "|" + texto_pt)[:12]` (falante `"card"` nos cards, `"estela"` nas pedras).
+Idioma = o do texto; sem arquivo nele, o outro. Arquivo ainda não importado (lote recém-copiado no editor) é
+lido cru (`AudioStreamOggVorbis.load_from_file`); o build exportado usa o importado. Variável
+`GNOSIS_VOICE_MANIFEST=<arquivo>` troca o manifesto (sonda). Contrato completo:
+`C:\gnosis-wt\_caps\dublagem\CONTRATO_AUDIO.md`.
+
+**API do Audio:** `play_voice(fala, dono) -> duração` (0 = sem voz), `stop_voice(dono, fade)`,
+`pause_voice(dono, on)`, `is_voice_playing(dono)`, `voice_entry(fala)`, `voice_id(falante, texto)`,
+`voice_manifest()` / `reload_voice_manifest()`, `voices_enabled()`; `set_volume("Voice", v)`. Dois players
+no bus Voice (a fala nova entra enquanto a velha some); a voz só é cortada pelo próprio dono (a legenda não
+cala a caixa que abriu depois).
+
+**Onde as falas nascem (edição mínima por delegação do chefe, registrada em cada arquivo):**
+
+| Arquivo (dono) | O que mudou |
+|---|---|
+| dialogue_box.gd (UI) | `_start_voice` em `_show_line`; com voz, sem blips e CPS pela duração (`voice_cps`); avançar/fechar/abortar corta a voz |
+| caption_bar.gd (UI) | `_show` toca a voz e segura a legenda ≥ voz + 0,4 s; sem blips; `pause_voice` enquanto escondida; `_hide` corta |
+| cinematic.gd (Encenação) | card segura ≥ voz + 0,6 s; fim do card, `_finish` e `_exit_tree` cortam |
+| options_menu.gd (UI) | slider "Vozes" (0 = "Desligadas") na coluna JOGO, depois de "Vibração do controle": na coluna de Áudio a tela transbordava (título e "Voltar" cortados). Captura: `C:\gnosis-wt\_capsudio7\opcoes_vozes_640.png` |
+| save_manager.gd (Técnico) | `vol_voice` no save e em `DEFAULT_VOLUMES` (padrão 1,0) |
+| en_table.gd (i18n) | "Vozes" → "Voices", "Desligadas" → "Off" |
+
+O npc_encounter usa DialogueBox e `Gnosis.captions` (CaptionBar): coberto sem edição. O narrative.gd não
+precisou mudar (o id sai do texto). Estelas: o painel mostra tudo de uma vez — "ouvir a pedra" fica para
+depois (botão novo no `stela.gd`, outro dono).
+
+**Verificação (`--audio-driver Dummy`, nada tocado no PC):**
+`godot --headless --audio-driver Dummy --path . res://tools/audio/VoiceProbe.tscn` → `VOICE PROBE: 0 falhas`.
+Monta um manifesto de teste ligando 4 falas REAIS às amostras da Dublagem (intro da Voz `d6059a40ad2f`,
+legenda da Sophia no Limiar, chegada do Rei, card 1 do prólogo `a4f2a4baab4a`). Resultados medidos:
+caixa com voz 4,02 s, música −4,4 → −16,4 dB, ambiência −4,4 → −11,4; fala dublada sem blips; texto ainda
+digitando aos 0,6 s e completo antes do fim; a caixa espera o jogador; 1º aperto completa (voz segue), 2º
+avança e corta (fade 0,12 s); fala sem arquivo volta aos blips (17); legenda 5,94 s fica 6,62 s no ar,
+música −9, SFX −3, Tell intocado, pausa congela e retoma; card do prólogo segura 8,1 s de voz (tempo do card
+5,9 s); `tell_unblock` → voz −8 dB + passa-altas 250 Hz; voz pedida logo após o aviso espera 0,67 s;
+Vozes = 0 → blips. Também checa o manifesto REAL: todo arquivo listado existe e carrega.
+
 ## O que NÃO ficou bom / não verifiquei (honesto)
+- **Dublagem:** ninguém ouviu a mixagem voz + música + luta (driver Dummy); os dB acima são do mixer, não de
+  medida de loudness. A única mudança de tela é o slider "Vozes" nas Opções (capturado, cabe).
+  O manifesto do jogo está vazio até o 1º lote.
 - **Ninguém ouviu.** Vozes por formantes (rugidos, grito do Yabel, coros) podem soar "de computador".
   Amostras para o João: `C:\gnosis-wt\_caps\audio7\AMOSTRAS.md`.
 - R13 de combate gravado não foi medido.
