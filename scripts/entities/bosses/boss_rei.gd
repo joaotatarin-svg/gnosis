@@ -26,6 +26,9 @@ const HUD_ZONE := Vector2(230.0, 70.0)
 var _eye_box: Hurtbox = null
 var _low: bool = false
 var _summons_cd: float = 0.0
+## Caixa de dano do MANTO desenhado (playtest 28/10: "a Sophia atravessa o manto").
+const BODY_TABLE := preload("res://scripts/entities/bosses/rei_body_data.gd")
+var _body: BossBodyBox = null
 
 
 func _on_setup() -> void:
@@ -35,6 +38,8 @@ func _on_setup() -> void:
 	escape_hits = 5
 	wall_margin = 120.0
 	_setup_eye()
+	if e.hurtbox != null:
+		_body = BossBodyBox.attach(e, BODY_TABLE)
 
 
 func _build_moves() -> Dictionary:
@@ -160,6 +165,7 @@ func _on_windup(m: Dictionary) -> void:
 			var b := arena_bounds()
 			var dir := e.atk_dir
 			var h := hazard(e.global_position.x + dir * 40.0, "band", 20.0, m.wind, 0.8, LIGHT)
+			h.look = "beam"          # orbe de luz rente ao chão (era uma faixa chapada: "quadrado")
 			h.height = 28.0
 			h.hit_air = false
 			h.active = 2.2
