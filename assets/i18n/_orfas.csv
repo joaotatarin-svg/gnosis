@@ -1,2 +1,4 @@
 id,pt,en,kind,speaker,limit,where,note
-world_map._draw_legend.cdf277,precisa de asas (pulo duplo),needs wings (double jump),ui,,,scripts/ui/world_map.gd:413,
+hud._queue_screen_hints.f4f473,telegrafo amarelo:,yellow tell:,ui,,,scripts/ui/hud.gd:976,
+input_glyphs.pad_button_name.69bd4e,View,View,ui,,,scripts/ui/input_glyphs.gd:260,
+moves_screen._fill.55ae3a,Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.,YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you.,ui,,,scripts/ui/moves_screen.gd:158,
