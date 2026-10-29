@@ -121,6 +121,11 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
 - `preview/3.2.2` = b14f7d6 + cherry-pick do save GNOSIS-Previa (5de1297); build `C:\gnosis-wt\_build\preview3_2_2\GNOSIS.exe`, sem atalho.
 - BossProbe b14f7d6: Rei 74 s, Coroa 148, Rei+Colosso 79 (3 q.-m.), Galila 123, Yabel 158, Praga 149; sem TIMEOUT.
 
+## Prévia 3.2.3 FEITA (29/10/2026)
+- chefes6 6c2bd29 (já contém arte-gpt 9ad0b06: Rei v11 parada/andar + BodyBox nova) -> 9ce066a, VERDE -Repeat 2. Push: origin/integracao/onda1 = 9ce066a.
+- `preview/3.2.3` = 9ce066a + cherry-pick do save GNOSIS-Previa; build `C:\gnosis-wt\_build\preview3_2_3\GNOSIS.exe`, sem atalho.
+- ReiProbe: BodyBox cobre 97-98 %; BossProbe: sem TIMEOUT; Coroa 162 s (3 q.-m.), Rei+Colosso 140 s (6), Galila 123, Yabel 158, Praga 149.
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
