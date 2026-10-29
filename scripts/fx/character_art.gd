@@ -1540,7 +1540,8 @@ func _seq_index(seq: Dictionary, seq_name: String) -> int:
 	var n: int = seq.frames.size()
 	if n <= 1:
 		return 0
-	if seq_name.begins_with("run"):
+	if seq_name.begins_with("run") or seq_name == "walk3d":
+		# (walk3d = andar 3D do Lab, pose para encenação: também por distância)
 		# fase pela DISTÂNCIA: cada quadro dura o quanto o pé apoiado recua
 		# nele (advance, px da folha) — o pé volta ao mesmo ponto a cada troca
 		var world_k: float = profile.height * 1.19 / float(frame_db("sophia").meta.body_px) if painted.get("hero", false) else 1.0
@@ -2072,6 +2073,9 @@ func _tick_action(delta: float) -> void:
 	if seq.get("hold", false):
 		if anim_state != "idle":
 			_action = ""
+		return
+	# pose de encenação persistente (andar 3D): vale até stop_action(), mesmo com ela andando
+	if seq.get("persist", false):
 		return
 	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
 	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):
