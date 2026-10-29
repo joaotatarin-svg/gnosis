@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 | 61645f7 (delta de 82454b2) | APROVADO (3 ressalvas fechadas; `block` 4/s no pior caso, só se reclamarem) | R5, R4, R10 |
 | dir7/cenario7 | 1b1c69f (delta de ba91602) | APROVADO COM RESSALVAS (R18 1,6-2,4 -> 2,75-2,97, ainda < 3:1; Coroa diante da estátua não confirmada; halo em movimento só no playtest) | R18, R10 |
 | dir6/chefes6 | 82454b2 (delta de 8d00636: 5eeea79, 04c46e0, 9bf99e2, 846314d, d439998, 82454b2) | APROVADO COM RESSALVAS (BodyBox do Sono/Espelho aceitável; guarda alta justa e sinalizada; falta aviso da forma que se refaz e o root no muro) | R5, R18, R21, SDT |
 | dir7/polimento7 | 28d8df7 (delta de 0ba25d8) | APROVADO (as 2 ressalvas fecharam) | R5, R18, R4/R9 |
@@ -1158,21 +1159,69 @@ e a saia branca contra o céu do Espelho. (4) +0,02-0,03 de luminância é peque
 
 ---
 
-## BILHETE PARA O SUCESSOR (19/10)
-- **Estado:** a TAREFA 1 está publicada (seção do topo). A TAREFA 2 está fechada: todos os branches da Onda 7 têm veredito (índice no topo).
-  Pendentes que vou cobrar:
-  - `ui7` (ainda WIP; não auditado);
-  - FINAL do `perigos7` (reauditar só o delta depois de a1c0e4c);
-  - troca do `proj_fire` hostil no `projectile.gd`, junto com o audio7;
-  - `shake(0,7)` da arte em `character_art._tick_death`;
-  - pulso de 4,8 Hz da poça armando (vfx7).
-- **Ferramentas:**
-  - worktree de SONDA `C:\gnosis-wt\guardiao_sonda` (destacado, `override.cfg` próprio "GNOSIS-WT-guardiao"; `.godot`
-    já importado). Para auditar um branch: `git -C C:\gnosis-wt\guardiao_sonda checkout -q --detach <commit>`, importar
-    headless e rodar as sondas (`tools/combate/HitboxProbe|FeelProbe|FlashParryProbe`, `tools/chefes6/BossProbe -- telas=.. vel=3`).
-  - A FlashParryProbe tem de rodar SEM `--fixed-fps` (o Juice mede flashes pelo relógio de parede).
-- **Áudio:** só offline (`ffmpeg -af "apad=pad_dur=0.6,ebur128=peak=true"`); as medições de base estão em `_caps\guardiao\audio\`.
-- **R18:** capturas 320×180 em `--position 4000,4000` (`tools/Shot.tscn -- <tela> <png> 150`) e a grade em cinza em `_caps\guardiao\`.
-- **Armadilhas:**
-  - diff de branch que fez merge da integração: use o delta dos commits PRÓPRIOS (`git show <c>`), não o `...` (vem sujo);
-  - o chefes6 já matou processos com "BossProbe" na linha de comando; se uma sonda cair, rode de novo.
+## dir6/chefes6 — 61645f7 (delta de 82454b2: db313fd, ba5ffb1, 61645f7)
+
+**Medido:** li o código (não rodei: o delta é de 3 trechos curtos e já tenho a base do 82454b2 na sonda).
+
+- **Guarda alta, 2º sinal (db313fd): ATENDE, com uma observação.** `sfx("block")` no acerto armado, limitado a 1 a cada 0,25 s por `_t` (tempo de jogo), só se
+  o som existe no CATALOG, com variação de tom (`block` está em `JITTER_FAMILIES`) e anti-spam de 40 ms do mesmo nome. Fecha a minha ressalva (cor não pode ser o
+  único aviso, §4.11). Metralhadora? No pior caso (martelando sem parar) sai ~4 por segundo, junto do som do golpe; é o jogador que mais precisa do sinal, mas 4/s
+  é perto do que a §4.7 chama de cansativo. Se o playtest reclamar: 0,25 -> 0,4 s. Não bloqueia.
+- **Aviso de 2,5 s antes de a forma se refazer (ba5ffb1): ATENDE.** Luz que cresce e se fecha na forma caída (círculo 18 -> 64 px, anel branco que se fecha de 70 -> 30 px,
+  núcleo) + `charge_king` UMA vez (guardado em `_warned`, só se existe no CATALOG), apagado quando ela volta. Fecha a minha ressalva R5 (telegrafo da contagem).
+  R10: o pulso vai de 1,6 a 3,8 Hz, mas modula só 25 % do alfa de um círculo de até 64 px (não é tela cheia); aceitável, sem flash cheio.
+- **Root não é anulado pela parede (db313fd): FECHADA.** O empurrão para o meio só vale com `rooted_timer <= 0`.
+- **Espelho a 55 px mantido (61645f7):** a sonda mede o raspão de 4 pontos na ponta do véu; concordo em não inflar a caixa (piorava o apelão). É o resíduo que eu já aceitava.
+
+**Veredito: APROVADO.** (Observação de 0,25 -> 0,4 s do `block` só se o playtest reclamar.)
+
+---
+
+## BILHETE PARA O SUCESSOR (29/10)
+
+**Quem sou:** Guardião da Satisfação. Worktree `C:\gnosis-wt\guardiao` (branch `dir7/guardiao`, push em `origin/dir7/guardiao`). Reporto SÓ ao chefe (relatório curto, o
+limite que ele pedir, normalmente ≤ 5 linhas). Mensagem de commit em português, termina com `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+
+**Leitura obrigatória ao começar:** `C:\gnosis-wt\_REGRAS.md`; `docs/handoff/NEURO_SATISFACAO.md` (§2 R1-R22, §3, §4); este doc (índice de vereditos no topo, o mais novo em cima).
+
+**Como audito um branch (padrão que o chefe espera):**
+1. `git fetch`; diff contra o commit anterior que já aprovei (use `git show <commits PRÓPRIOS>`; `a...b` vem sujo quando o branch fez merge da integração).
+2. Ler código e o doc do dono (CHECAGEM DE SATISFAÇÃO). Conferir se a CHECAGEM confere com o código.
+3. Rodar só o indispensável, em headless e sem som. Resultado: APROVADO / APROVADO COM RESSALVAS / REPROVADO + R atendidas/violadas + item de §4.
+4. Escrever a seção no doc (ordem: sondas medidas, o que muda, checagem por R, veredito), acrescentar a linha no índice do topo, commit e push.
+5. Relatório ao chefe no limite de linhas dele. Depois do relatório, terminar o turno.
+
+**Sondas que uso** (worktree de sonda destacado `C:\gnosis-wt\guardiao_sonda`, `.godot` já importado):
+- Trocar de commit: `git -C C:\gnosis-wt\guardiao_sonda checkout -q -f --detach <commit>` (o `-f` descarta o lixo de `.import` gerado), depois importar:
+  `Godot --headless --audio-driver Dummy --path C:\gnosis-wt\guardiao_sonda --editor --quit` (conferir ZERO `SCRIPT ERROR|Parse Error`; o segfault ao sair é normal).
+- Combate: `tools/combate/FeelProbe.tscn`, `HitboxProbe.tscn -- <json> rapido` (ambas `--fixed-fps 60`), `FlashParryProbe.tscn` (SEM `--fixed-fps`; o Juice mede flashes pelo relógio).
+- Chefes: `tools/chefes6/ReiProbe.tscn -- out=<prefixo> tag=<x> tela=<N>` (headless; mede cobertura da caixa e golpe esperado × real em qualquer chefe por tela);
+  `tools/chefes6/BossProbe` (longa; li os números do dono); `tools/combate/BossHurtProbe` (precisa de janela; li o log do dono).
+- Mapa: `tools/map6/MapQA.tscn` (29 PASS no 4e4b9cc), `tools/level6/LayoutQA.tscn`. Progressão: `tools/progressao6/ProgQA.tscn` (58 PASS).
+- Visual: `tools/cenario7/HdShot.tscn -- <tela> <png> 150 nohud x=<x> [solo]` com `--resolution 320x180 --position 4000,4000` (janela mínima fora da vista; imagem sai 1280x720).
+  `--script` NÃO carrega autoloads (não dá para chamar `RunManager`/`EonMap` assim).
+- Áudio: só offline (`ffmpeg -af "apad=pad_dur=0.6,ebur128=peak=true"`); medidas de base em `_caps\guardiao\audio\`.
+- Logs e capturas do Guardião: `C:\gnosis-wt\_caps\guardiao\` (prefixos `p7*_`, `c7*`, `arc_*`).
+
+**Estado (29/10):** todos os branches da Onda 7 têm veredito no índice do topo. Últimos: polimento7 28d8df7 APROVADO, chefes6 61645f7 APROVADO, progressao6 3d13bbd,
+cenario7 1b1c69f, mapa7 4e4b9cc, arte-gpt 50f807a (aprovado), todos com as ressalvas listadas nas respectivas seções.
+
+**PENDENTES que eu cobraria:**
+1. **Coroa (cenario7):** captura com a Sophia DIANTE da estátua dourada (tela 57/58, `HdShot x=<...> solo nohud`) para confirmar que a sombra resolve e não vira bolha. Não confirmado.
+2. **Halo (cenario7) em movimento:** só o playtest decide se lê como "nuvem escura que segue".
+3. **Borda da Sophia +0,02-0,03 (pedido do dono à Arte):** minha opinião (na seção do cenario7): subir `HERO_RIM` interno, não o halo de fora; repetir `contrast_r18.py` nas 10 telas.
+4. **Progressão:** chave do baú secreto colide com a do comum (`bau:<tela>`; corrigir com `":s"`); avisar quando o `claim_once` nega; opinião sobre os 20 % ao morrer (teto ~150 ou só as faíscas
+   da tela) entregue ao chefe; ritmo da arma (~27 telas no Nv.3).
+5. **polimento7:** Arconte do Sono/Espelho (resolvido pelo chefes6 com BodyBox, 1 golpe a 55 px no Espelho aceito); BALANCE r7 foi medido com a renda de faíscas antiga.
+6. **chefes6:** `block` da guarda alta 0,25 -> 0,4 s só se o playtest reclamar; Armupiel/Coroa ainda curtos no bot agressivo (o dono admite).
+7. **audio7 / perigos7 (antigos):** `hz_tide_tick` a cada 300 ms (espaçar para ~600 ms se reclamarem); `Gnosis.boss_card("campeao")` já mudo.
+8. **Integração:** conferir que o chefes6 `4574a19` (som do voleio do Astaphaios) entra junto do polimento7 2854fc0 (senão esse tiro fica mudo) e que `champion_enter` não dobra com o cue do encenacao5.
+
+**Armadilhas:**
+- O `claim_once` e o `LaneHalo` só se avaliam bem no jogo; sem rodar o jogo marque "provável, conferir".
+- Tabelas de atlas estáticas (`LUMA_K`) pedem `tools/combate/flash_luma.py` de novo se a Arte repintar atlas.
+- Não existe pasta `esgotado`/capturas dos outros diretores até eles gerarem; se ainda não existir, audite o resto e marque a leitura visual como pendente.
+- Chefes: nunca chame de "aprovado" sem ver o delta PRÓPRIO do branch.
+
+---
+
