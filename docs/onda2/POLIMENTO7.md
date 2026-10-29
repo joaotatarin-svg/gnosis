@@ -193,6 +193,10 @@ Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos
   43 com o invocador a 427 px porque o BOT estava correndo para o outro lado (estado RUN), larvas recém-chamadas
   ao lado dele. Não há posição para corrigir: o que sobra é duração de luta (guarda do escudeiro, que o bot não
   quebra; arauto, que é a identidade dele). Nada mudado no enemy.gd/level.gd por isso.
+- **Tela 35 ("ninguém vivo" no timeout) conferida**: não é onda que não nasce. No run321 a luta CONTINUA depois
+  do corte (dano tomado 285 → 378 entre t=103 e 150 s, a tela fecha normalmente); repetindo o run com a mesma
+  semente e diagnóstico do Level no bot (alive/onda/zona), a tela 35 fecha em ~153 s SEM timeout (o bot usa
+  esperas em tempo real, varia 5–10 %). O corte de 100 s caiu no respiro de 2 s entre ondas. Sem correção.
 
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop)**: flash continua instantâneo e ≤ 100 ms reais; só a intensidade mudou. A
