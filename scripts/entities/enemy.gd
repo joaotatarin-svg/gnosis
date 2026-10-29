@@ -603,6 +603,15 @@ func _process_chase(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, 300.0 * delta)
 		return
 
+	# Invocador ESGOTADO (teto de invocações): PARADO e sem golpe nenhum (nem tiro,
+	# nem recuo a pé) — a janela de punição fica clara (Guardião, 0ba25d8).
+	if _summon_exhausted:
+		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
+		var fdx := player.global_position.x - global_position.x
+		if visual and fdx != 0.0:
+			visual.scale.x = absf(visual.scale.x) * signf(fdx)
+		return
+
 	if not moves.is_empty():
 		_chase_moves(delta)
 		return
@@ -970,11 +979,12 @@ func _summon(id: String, count: int) -> void:
 
 ## Polimento 7 (decisão do chefe, 28/10 — QA7 #10): teto TOTAL de invocações por
 ## invocador. Antes ele repunha larvas sem fim (só o teto de 3 vivas) e a zona não
-## acabava. Agora: 3 chamadas (até 6 larvas). Na 3ª ele fica ESGOTADO — à vista:
-## o corpo apaga (cinza), solta um sopro de cinza e para de recuar/fugir (fica ao
-## alcance do cajado). Nenhum multiplicador de dano escondido.
+## acabava. Agora: 3 chamadas (até 6 larvas). Na 3ª ele fica ESGOTADO — à vista
+## (cinza claro + fumaça contínua + um sopro na hora) e PARADO sem golpe nenhum
+## (`_process_chase`): não anda, não recua, não atira. Nenhum multiplicador escondido.
 const SUMMON_MAX_CALLS := 3
-const SUMMON_SPENT_TINT := Color(0.62, 0.62, 0.68, 1.0)
+const SUMMON_SPENT_SAT := 0.08         # corpo quase sem cor (a graduação do contorno)
+const SUMMON_SPENT_LIFT := Color(2.0, 2.0, 2.1, 1.0)   # e mais CLARO: cinza claro (lê no fundo escuro)
 var _summon_calls: int = 0
 var _summon_exhausted: bool = false
 
@@ -987,10 +997,44 @@ func _summon_larvae() -> void:
 	_summon_calls += 1
 	if _summon_spent() and not _summon_exhausted:
 		_summon_exhausted = true
-		if visual != null:
-			visual.self_modulate = visual.self_modulate * SUMMON_SPENT_TINT
+		# leitura: o corpo DESBOTA para cinza CLARO (graduação do CanvasGroup do contorno)
+		if _rim_mat != null:
+			if _rim_mat.shader == null or _rim_mat.shader.resource_path != GRADE_SHADER:
+				var rc: Color = _rim_mat.get_shader_parameter("rim_color")
+				_rim_mat.shader = load(GRADE_SHADER)
+				_rim_mat.set_shader_parameter("rim_color", rc)
+				_rim_mat.set_shader_parameter("rim_px", 1.0)
+			_rim_mat.set_shader_parameter("grade_sat", SUMMON_SPENT_SAT)
+			_rim_mat.set_shader_parameter("grade_tint", SUMMON_SPENT_LIFT)
+		_spent_smoke()
 		if is_inside_tree():
 			ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), Color(0.6, 0.6, 0.65))
+
+
+## Fumaça cinza leve e CONTÍNUA saindo do corpo enquanto ele estiver esgotado.
+func _spent_smoke() -> void:
+	if not is_inside_tree():
+		return
+	var sm := CPUParticles2D.new()
+	sm.name = "SpentSmoke"
+	sm.texture = VfxLibrary.tex("smoke")
+	sm.amount = 10
+	sm.lifetime = 1.3
+	sm.local_coords = false
+	sm.position = Vector2(0, -26.0 * _art_scale)
+	sm.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	sm.emission_rect_extents = Vector2(9.0, 16.0) * _art_scale
+	sm.direction = Vector2(0, -1)
+	sm.spread = 25.0
+	sm.gravity = Vector2(0, -12.0)
+	sm.initial_velocity_min = 6.0
+	sm.initial_velocity_max = 16.0
+	sm.scale_amount_min = 0.16
+	sm.scale_amount_max = 0.3
+	sm.color = Color(0.88, 0.88, 0.92, 0.5)
+	sm.z_index = 1
+	add_child(sm)
+	sm.emitting = true
 
 
 func _prune_minions() -> void:
