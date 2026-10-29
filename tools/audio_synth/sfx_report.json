@@ -241,19 +241,19 @@
  },
  {
   "name": "atk_wave",
-  "cat": "eatk",
+  "cat": "eatk_soft",
   "dur": 0.74,
   "ch": 2,
-  "Mmax": -19.0,
-  "peak": -7.7
+  "Mmax": -22.0,
+  "peak": -10.7
  },
  {
   "name": "atk_wave_2",
-  "cat": "eatk",
+  "cat": "eatk_soft",
   "dur": 0.74,
   "ch": 2,
-  "Mmax": -19.0,
-  "peak": -8.4
+  "Mmax": -22.0,
+  "peak": -11.4
  },
  {
   "name": "blip_estela",

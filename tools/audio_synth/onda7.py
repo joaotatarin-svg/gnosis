@@ -1624,7 +1624,7 @@ SOUNDS = {
 	"atk_rush": ("eatk", _vars(atk_rush, 2)),
 	"atk_leap": ("eatk", _vars(atk_leap, 2)),
 	"atk_slam": ("eatk_big", _vars(atk_slam, 2)),
-	"atk_wave": ("eatk", _vars(atk_wave, 2)),
+	"atk_wave": ("eatk_soft", _vars(atk_wave, 2)),   # Guardião: −3 dB (rola longe; não cobre o golpe)
 	"atk_shot": ("eatk", _vars(atk_shot, 3)),
 	"atk_shot_air": ("eatk", _vars(atk_shot_air, 2)),
 	"atk_fan": ("eatk", [atk_fan]),
@@ -1738,6 +1738,7 @@ SOUNDS = {
 CATS = {
 	"eatk": -19.0,        # golpe de inimigo comum: abaixo do swing da Sophia (−18) e do acerto (−12)
 	"eatk_big": -16.0,    # pancada/coluna/invocação de inimigo
+	"eatk_soft": -22.0,   # onda pelo chão: 3 dB abaixo do golpe comum (Guardião)
 	"charge": -19.0,      # carga antes do tiro (cresce; o tiro é que pesa)
 	"charge_big": -16.0,  # carga do Rei
 	"sophia": -19.0,      # pulo duplo (perto de jump −20)

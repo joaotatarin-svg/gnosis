@@ -40,6 +40,12 @@ const MUSIC_FADE := 1.2           # segundos de crossfade entre faixas
 const AMB_FADE := 2.5             # crossfade entre ambiências
 const SPAM_MS := 40               # mesmo som não repete em menos que isto
 const SILENT_DB := -60.0
+## R13 (Onda 7): a mixagem de 10 min de combate renderizada offline do log do bot
+## (tools/audio/onda7_mix.py) deu −16,7 LUFS integrados com os sliders padrão —
+## acima do alvo de −20 a −23. O bus SFX (e UI/Voz, que somam nele) desce 6 dB
+## fixos; a música e os avisos (bus Tell) ficam onde foram medidos. Resultado
+## medido: ver docs/onda2/AUDIO7.md §R13.
+const SFX_TRIM_DB := -6.0
 const MAX_VARIANTS := 6           # procura nome_2 .. nome_6
 const SEQ_WINDOW_MS := 600        # faísca: coletas dentro disto sobem a escala
 const DUCK_MUSIC_DB := -9.0       # quanto a música abaixa no diálogo/card
@@ -85,7 +91,8 @@ const CRACK_DELAY := 0.5          # roubo (`sink`): a rachadura do chão abre lo
 const RING_NOTE_HOLD_MS := 1500   # após um ring_note, o sinal de Anel não toca som próprio
 # Coração (R22 / intro): `heartbeat` é UMA batida lub-dub; a intro toca duas.
 const HEART_GAP := 1.1            # s entre as 2 batidas da intro (~55 bpm: acordando)
-const HEART_PULSE_DB := -3.0      # vinheta de vida baixa: por baixo (o arquivo já está a −18 LUFS)…
+const HEART_PULSE_DB := 3.0       # vinheta de vida baixa: −3 dB por baixo, +6 que compensam o SFX_TRIM_DB
+                                  # (a batida ficou onde foi medida sob a música — R22)…
 const HEART_DIP_DB := -3.0        # …e a música abre espaço (−3 dB por ~0,6 s): sem isso a batida some
                                   # sob a música de chefe (medido: tools/audio/tell_check.py)
 const HEART_PULSE_MIN_MS := 600   # nunca mais que ~1,6 batida/s, mesmo se o HUD chamar mais
@@ -1660,7 +1667,7 @@ func set_volume(bus_name: String, linear: float) -> void:
 
 func _apply_volumes() -> void:
 	_set_bus("Master", master_vol, 0.0)
-	_set_bus("SFX", sfx_vol, 0.0)
+	_set_bus("SFX", sfx_vol, SFX_TRIM_DB)
 	_set_bus(TELL_BUS, sfx_vol, 0.0)
 	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck * _duck_scale + _temp_duck_db + _layer_now + SLOW_MUSIC_DB * _slow)
 	_set_bus("Ambience", music_vol, DUCK_AMB_DB * _duck)
@@ -1772,9 +1779,6 @@ func has_ambience(amb_name: String) -> bool:
 class _Watch extends Node:
 	const WATCH_FAR := 720.0
 	const BREAK_MIN_T := 1.3          # atordoado > 1,3 s = quebra de guarda (o aparo dá 1,1)
-	## Golpes que SÃO TIRO (nascem Projectile): o observador não toca `atk_*` neles —
-	## o tiro já soa por charge_* (VFX7) + proj_fire (decisão do chefe, pedido do vfx7).
-	const SHOT_KINDS := ["shot", "burst", "lob", "fissure"]
 	var audio: Node = null
 	var _w: Dictionary = {}           # instance_id -> {"n": nó, "k": tipo, ...estado anterior}
 	var _hud_t := 0.0
@@ -1854,8 +1858,9 @@ class _Watch extends Node:
 		if r.init and st != int(r.st) and mv is Dictionary and not (mv as Dictionary).is_empty():
 			if st == Enemy.EState.WINDUP:
 				audio.move_sfx(mv, "wind", pos, boss)
-			elif st == Enemy.EState.STRIKE and not SHOT_KINDS.has(String((mv as Dictionary).get("kind", ""))):
-				# TIRO não: o projétil já soa (charge_* do VFX7 + proj_fire). Só corpo a corpo.
+			elif st == Enemy.EState.STRIKE:
+				# inclui TIRO: o vfx7 deixou o disparo hostil MUDO de propósito e usa o
+				# atk_* daqui como o som do tiro (a carga toca charge_dark/charge_king).
 				audio.move_sfx(mv, "strike", pos, boss)
 		# voador derrubado (cai): borda de _downed 0 → > 0
 		var dn: float = float(e.get("_downed")) if e.get("_downed") != null else 0.0

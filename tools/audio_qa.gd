@@ -591,8 +591,8 @@ func _run() -> void:
 		await get_tree().process_frame
 	await _wait_real(0.7)
 	# Onda 7 (R9): espera a abaixada de momento (recompensa/aparo) terminar.
-	var hb_t0 := Time.get_ticks_msec()
-	while Audio._td_active and Time.get_ticks_msec() - hb_t0 < 4000:
+	var hbw_t0 := Time.get_ticks_msec()
+	while Audio._td_active and Time.get_ticks_msec() - hbw_t0 < 4000:
 		await get_tree().process_frame
 	var td_was: bool = Audio._td_active
 	var p1 := Audio.low_health_pulse()
@@ -860,22 +860,6 @@ func _check_onda7(sfx_names: Array) -> void:
 	await get_tree().physics_frame
 	var w_fall: bool = Audio.voices_playing("fly_fall") >= 1
 	var w_fury: bool = Audio.voices_playing("champion_fury") >= 1
-	# TIRO: o observador NÃO toca atk_* (o projétil já soa: charge_* + proj_fire)
-	foe.set("estate", Enemy.EState.RECOVER)
-	await get_tree().physics_frame
-	await get_tree().physics_frame
-	for k in ["shot", "burst", "lob", "fissure"]:
-		foe.set("_mv", {"id": "tiro", "kind": k, "count": 3})
-		foe.set("estate", Enemy.EState.STRIKE)
-		await get_tree().physics_frame
-		await get_tree().physics_frame
-		foe.set("estate", Enemy.EState.RECOVER)
-		await get_tree().physics_frame
-	var w_noshot: bool = true
-	for n in ["atk_shot", "atk_fan", "atk_burst", "atk_lob", "atk_fissure", "atk_homing", "atk_shot_air"]:
-		if Audio.voices_playing(n) > 0:
-			w_noshot = false
-	check(w_noshot, "observador: golpe de TIRO (shot/burst/lob/fissure) não toca atk_* (o projétil já soa)")
 	foe.queue_free()
 	var gp := GDScript.new()
 	gp.source_code = "extends CharacterBody2D\nvar state: int = 0\nvar _air_jumps_left: int = 1\nvar current_move = null\nvar windup_timer: float = 0.0\nvar dive_landed: bool = false\nvar _riposte_t: float = 0.0\n"

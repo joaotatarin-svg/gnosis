@@ -6,9 +6,9 @@ Todos os sons abaixo JÁ EXISTEM: arquivo, CATALOG e AudioQA verde.
 Ganchos do `audio_manager.gd`: sinais existentes e o observador `_Watch`, que olha o estado público dos nós e
 toca só na BORDA. Nos itens abaixo **NÃO acrescentem chamada**: o som dobraria (R4).
 
-- **Inimigos:** golpe CORPO A CORPO de cada tipo no WINDUP→STRIKE (`atk_*`, pelo `_mv.kind`) e "aparecer atrás"
-  no WINDUP. Golpes que são TIRO (shot/burst/lob/fissure, inclusive de chefe) NÃO tocam `atk_*`: o tiro soa por
-  `charge_*` (VFX7) + `proj_fire`.
+- **Inimigos:** golpe de cada tipo no WINDUP→STRIKE (`atk_*`, pelo `_mv.kind`) e "aparecer atrás" no WINDUP.
+  Inclui TIRO: o vfx7 (a63c40b) deixou o disparo hostil mudo e o `atk_*` daqui é o som do tiro; a carga toca
+  `charge_dark`/`charge_king`.
 - **Voadores:** derrubado no ar (`fly_fall`). **Campeão:** fúria (`champion_fury`).
 - **Chefes:**
   - golpe-assinatura no telegrafo e/ou no golpe (`bs_*` pela tabela `BOSS_MOVE_SFX`);
@@ -45,9 +45,7 @@ mesmo lugar. Linhas de `origin/integracao/onda1` @ 4cfd64c.
    O stinger de chefe libera a música de chefe (R9) e não deve tocar para Campeão.
 
 ### vfx7 (`projectile.gd`, tiros hostis)
-Nada a trocar: o `proj_fire` continua em todo tiro e o observador não toca `atk_*` em TIRO (decisão do chefe).
-Os sons `atk_shot`/`atk_fan`/`atk_burst`/`atk_homing`/`atk_shot_air`/`atk_lob`/`atk_fissure` ficam no catálogo
-para quem quiser usá-los NO LUGAR do `proj_fire` hostil, nunca junto.
+Feito por ele (a63c40b): o disparo hostil ficou mudo e o som do tiro é o `atk_*` do observador. Nada a trocar.
 
 ### polimento7 / combate (`player.gd`): TROCA NA FONTE (o Áudio NÃO observa estes)
 1. `player.gd:432 _double_jump()`: TROCAR `Audio.play_sfx("jump")` → `Audio.play_sfx("double_jump")`. É o anel
@@ -85,6 +83,15 @@ para quem quiser usá-los NO LUGAR do `proj_fire` hostil, nunca junto.
 4. `upgrade_menu.gd:321 _equip_relic`: TIRAR `shop_buy` (o `relic_equip` toca pelo sinal `relics_changed`). Na
    compra (`buy_relic`), o `shop_buy` continua.
 5. NÃO ponham som no toast do selo, da conquista nem do objetivo: já tocam.
+
+### UI do integrador (`hud.gd`) — R7, a parte visual do combo
+O SOM do combo já toca: `combo_tick`, a partir do 3º acerto, subindo a pentatônica pelo sinal `combo_changed`.
+Falta a parte de UI da R7:
+- marcos em 10, 25 e 50: pop maior no texto (1,0→1,3 em 80 ms, volta em 200 ms) e o texto esquenta (branco →
+  dourado do Éon);
+- filete de validade do combo (1,4 s = `combo_show_timer` do player) esvaziando sob o número.
+
+Não ponham som nos marcos (o tique já sobe).
 
 ### narrativa (cenas)
 1. Nada obrigatório: o roubo (`sink`) já está no `Audio.cue`. Se a rachadura da Staging (`staging.gd:756`)

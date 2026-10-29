@@ -72,6 +72,20 @@ def main():
 	n = int(T * SR)
 	fx = np.zeros((n, 2))
 	bed = np.zeros((n, 2))
+	# vfx7 (a63c40b, integrado depois): o disparo HOSTIL é mudo — o som do tiro é o
+	# atk_* do observador. Este worktree ainda toca proj_fire em todo tiro; para
+	# medir a mixagem integrada, tira o proj_fire que sai junto (≤ 80 ms) de um
+	# golpe de tiro inimigo.
+	shot_t = np.array(sorted(t for (t, r, *_x) in sfx if any(k in r for k in
+		("atk_shot", "atk_fan", "atk_burst", "atk_homing", "atk_lob", "atk_fissure"))))
+	def hostile(t):
+		if len(shot_t) == 0:
+			return False
+		i = np.searchsorted(shot_t, t + 1e-6)
+		return i > 0 and t - shot_t[i - 1] <= 0.08
+	n_before = len(sfx)
+	sfx = [e for e in sfx if not ("/proj_fire" in e[1] and hostile(e[0]))]
+	removed_pf = n_before - len(sfx)
 	# --- SFX
 	names = {}
 	for (t, r, vdb, pitch, bus) in sfx:
@@ -105,6 +119,9 @@ def main():
 			g1 = (e1[2] if e1 and e1[0] == r else vdb) + bus_db_at(beds_t, beds_b, beds[i + 1][0], [busname])
 			gl = 10 ** (np.linspace(g0, g1, m) / 20)
 			C.place(bed, seg * gl[:, None], ta)
+	trim = float(os.environ.get("SFX_TRIM_DB", "0"))   # simulação: trim extra no bus SFX (dB)
+	if trim:
+		fx *= 10 ** (trim / 20)
 	mix = C.limit(fx + bed, -1.0)
 	C.write_ogg(base + ".ogg", mix.astype(np.float32), quality=4)
 	# --- medidas
@@ -132,6 +149,7 @@ def main():
 			dom += 1
 	out = {
 		"duracao_min": round(dur_min, 2), "sfx_tocados": len(sfx), "sfx_por_minuto": round(per_min, 1),
+		"proj_fire_hostil_removido": removed_pf,
 		"mix": {"LUFS_I": round(float(C.integrated_lufs(mix)), 1), "LRA": round(float(C.lra(mix)), 1),
 			"TP": round(float(C.true_peak_db(mix)), 1), "M_max": round(float(C.max_momentary(mix)), 1)},
 		"so_musica_amb": {"LUFS_I": round(float(C.integrated_lufs(bed)), 1)},
