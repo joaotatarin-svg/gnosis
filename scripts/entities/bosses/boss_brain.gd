@@ -310,6 +310,10 @@ func filter_damage(dmg: int, attacker: Node) -> int:
 	var k: float = float(window_mult.get(e.estate, 1.0))
 	if e.estate == Enemy.EState.RECOVER and bool(mv.get("expose", false)):
 		k = EXPOSED_MULT
+	# golpe-RESPOSTA (Réplica do Juízo, estouro por toque): volta já em guarda —
+	# não é janela; a janela é de quem esperou (29/10)
+	elif e.estate == Enemy.EState.RECOVER and bool(mv.get("guard_rec", false)):
+		k = minf(k, float(window_mult.get(Enemy.EState.CHASE, 0.85)))
 	if k < 1.0:
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -18.0 * e._art_scale), Color(0.85, 0.9, 1.0))
 		# 2º sinal do "armado" (Guardião, R5/R11: forma + SOM, não só cor): um "block"

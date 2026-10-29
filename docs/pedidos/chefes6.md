@@ -22,3 +22,10 @@
 - `hurt` (tira 55 % dos chefes na metade dos quadros) acerta o Arconte ENCENADO antes do gatilho (zona inativa).
   Agora o chefe encenado é intocável (Chefes6), então nesses casos o `hurt` não força a fase 2. Pedido: aplicar o
   `hurt` só quando `ativa=true` (zona trancada), ou andar a Sophia até o gatilho antes.
+
+## Para o Áudio (Áudio7 ou sucessor) — 29/10
+- Juízo da Coroa (Armupiel): a postura começa com `mask_light` emprestado (luz da coroa). Pedido: um som PRÓPRIO
+  `stance_crown` (espadão cravando no chão + coro curto de luz, ~0,5 s) — R11: evento novo, som novo. Chamo via
+  `BossBrain.sfx` (só toca se estiver no CATALOG; trocar o nome numa linha de `boss_armupiel.gd`).
+- Pústulas (Belias): hoje mudas. Pedido: `pus_grow` (bolha brotando, curto, grave baixo, máx. 1 a cada 0,25 s) e
+  `pus_burst` (estouro úmido) — o Estouro hoje soa só pelo `tell_unblock` do contorno.
