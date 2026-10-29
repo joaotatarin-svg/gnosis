@@ -95,6 +95,59 @@ ele vai estar (`RIPOSTE_LEAD` 0,2 s do recuo) e desconta a frenagem: 4 de 4 acer
 foi descartado (magia é a saída de emergência e a resposta é o ponto forte que o João elogiou). O disparo sai no
 mesmo quadro de antes.
 
+## 12. Hurtbox dos CHEFES = contorno desenhado (3.2 — João, 19/10: "a Sophia atravessa o manto do Rei")
+- Achado (BossHurtProbe, nova): na prévia 3 a caixa do chefe era ½ do recorte do quadro (ciano nas pranchas): no
+  Rei a barra do manto ficava de fora — 30 px (soma dos dois lados, por linha) de pano DESENHADO na altura do
+  cajado da Sophia sem dano. No boneco articulado (reserva sem atlas) era pior: caixa fixa 54×96 num manto de
+  200 px de largura (26 % do desenho acertável, 45 px de cada lado) — é exatamente o print do João.
+- Agora (`enemy.gd` `_fit_hurtbox*`/`_fit_hurt_poly`): nos chefes a Hurtbox é um POLÍGONO CONVEXO =
+  `frame_geometry().body_poly` (contorno do corpo, sem cajado/fios) + os 2 cantos de baixo de `body` (a barra do
+  manto no chão), encolhido 10 % na largura e com o topo cortado em 92 % (igual aos comuns). Sem suavização: segue o
+  quadro como ele é desenhado (no hitstop o quadro não troca → a caixa para, R1). Boneco: `BossPuppet.body_polygon()`
+  (casco convexo da malha pintada, só células visíveis, levado pelo balanço do quadril). Inimigos comuns: intocados.
+- BossHurtProbe (10 chefes × 5 poses; "faixa" = pés até 1 Sophia de altura, onde o cajado bate):
+| | prévia 3 (½ recorte) | 2d54867 (retângulo 80 %) | agora (contorno) |
+|---|---|---|---|
+| silhueta dentro da hurtbox | 73 % | 80 % | 79 % |
+| hurtbox fora do desenho ("apelão") | 22 % | 21 % | **15 %** |
+| pano sem dano na faixa (px/linha, 2 lados) | 25,1 | 15,0 | **12,5** (Rei: 30 → 9) |
+| boneco: silhueta dentro / pano sem dano | 62 % / 31,9 | — | **93 % / 3,8** (Rei 26 % → 97 %) |
+  O que sobra fora são fiapos/rasgos da barra e os tentáculos de névoa do Athoth (não são corpo). A caixa do cajado
+  da Sophia tem ~4 px de folga, então ~6 px por lado de fiapo ainda pega na ponta.
+- Provas: `C:\gnosis-wt\_caps\polimento7\hurt_chefes\antes\*.png` × `...\depois\*.png` (vermelho = hurtbox,
+  ciano = caixa da prévia 3, pontilhado = altura da Sophia; `*_boneco.png` = reserva sem atlas) e os `.log`.
+- Sonda: `godot --audio-driver Dummy --path . --resolution 320x180 --position 4000,4000
+  res://tools/combate/BossHurtProbe.tscn -- png=<dir> [puppet] [ids=rei,colosso]` (precisa de renderer).
+
+- **BodyBox do Chefes6** (Rei e Rei-Mentira, 6 faixas por quadro, `scripts/entities/bosses/boss_body_box.gd`):
+  `_fit_hurtbox` sai na hora se o inimigo tem o nó `BodyBox` — não troca a forma nem mexe no `disabled` da
+  HurtShape (senão o golpe conta 2× ou a caixa dele é desfeita). BossHurtProbe confere: `HURTPROBE_BODYBOX|PASS`.
+  Sem a BodyBox (este branch), o Rei usa o contorno: pano sem dano na faixa 30,2 → 9,2 px/linha.
+- BossProbe (chefes6, `telas=all vel=3`, depois): os 9 chefes terminam `[ok]`, sem erro de forma
+  (`...\hurt_chefes\depois\bossprobe.log`).
+
+## 13. Campeão mais curto (decisão do chefe ao pedido 2 da Progressão 7)
+`enemy.gd` bloco `is_champion`: vida ×1,7 → **×1,35**, dano ×1,15 → **×1,0**. Repertório de elite, brado, onda
+dupla, 2º fôlego e letreiro continuam: a dificuldade vem do que ele FAZ, não da barra.
+
+## 14. Ressalvas do Guardião ao 2d54867
+- R4: a carga visual do cast (`ChargeFX`) sai MUDA (`silent` antes do `add_child`; o som tocava no `_ready`) — o
+  cast já toca `cast_*` e o tiro `proj_fire` no mesmo quadro.
+- `projectile.gd:55` (`proj_fire` também no tiro hostil): arquivo do VFX7, editado por DELEGAÇÃO DO CHEFE (VFX7
+  encerrado), mudança mínima — `proj_fire` só se `target_team == "enemy"` (tiro da Sophia); o hostil soa na salva.
+
+## 15. Bot QA7 das telas de timeout (run inteiro, seed 1, ia=3, vel 4, BelowNormal)
+Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos chefes + Campeão ×1,35
+(`...\bot\run32_s1.*`). Total 92,3 → 93,6 min, 209 → 208 quase-mortes.
+- Timeouts: **13 → 9 telas**. Saíram as Provações do Campeão (33 mudo, 42 reflexo) e 35/36/49; Provações 6/15/24/
+  33/42 ficaram 15–25 s mais curtas e com 25–48 % menos dano tomado.
+- Arcontes (10, 28, 37, 46, 64, 68) seguem passando dos 100 s do bot (bug 2 do QA7, balance dos chefes —
+  Chefes6), mas a vida que SOBRA no corte caiu na soma 3677 → 2534 (Athoth 1020 → 274, Galila 375 → 195, Yabel
+  690 → 342, Astaphaios 574 → 215; Armupiel 229 → 669 e Rei-final 789 → 839 pioraram — ruído de sorteio/IA).
+- Timeouts de inimigo comum que restam: 38 (invocador@x 2288), 39 (reflexo@2306), 43 (arauto@2190), todos na zona 1
+  e LONGE (x > 2190): o bot passa pela fenda e eles ficam vivos para trás. Não é dano/vida — é posição. Pedido ao
+  QA7/Mapa em `docs/pedidos/polimento7.md`.
+
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop)**: flash continua instantâneo e ≤ 100 ms reais; só a intensidade mudou. A
   hurtbox segue o quadro desenhado, mas no hitstop (time_scale 0,05) o quadro não troca → caixas paradas no
@@ -119,6 +172,17 @@ mesmo quadro de antes.
 - **Justiça (playtest 2: "o cajado atravessa")**: 0 casos de atravessar, 0 % encosta no desenho sem dano, 0,6 % de
   dano sem encostar no desenho — o alcance é o do desenho, sem ficar apelão.
 
+- **Economia (renda igual em todas as dificuldades, Progressão 7 item 4 / Guardião §3)**: `_reward_mult` não
+  multiplica mais pela dificuldade (antes Difícil 1,5× e Muito Difícil 2,2× com os mesmos preços). §3 (recompensa
+  com limite ético): a dificuldade fica no combate, sem "pagar mais para sofrer mais" nem Normal "pobre"; nenhum
+  sorteio novo, nenhuma escassez artificial (§4 conferido).
+- **Justiça nos chefes (3.2)**: hurtbox = contorno desenhado; o manto que se vê é acertável (Rei 30 → 9 px/linha
+  de pano sem dano) e a caixa acerta MENOS o ar (21 % → 15 %) — fiel, não apelão. R1 mantida (sem suavização,
+  quadro parado no hitstop). R18: o jogador lê o golpe pelo desenho e o desenho responde.
+- **Campeão ×1,35 (3.2)**: R5/R21 — luta mais curta, a ameaça vem do repertório legível (telegrafo, brado) e não
+  de barra inflada; recompensa do Campeão intocada (sem perda artificial).
+- **R4 (3.2)**: carga do cast muda — um evento (cast) = um som.
+
 ## O que NÃO ficou bom / não testei
 - Feel do flash novo e do alcance: só medido (atlas/sonda), sem captura em janela nem playtest humano.
 - A sonda só cobre inimigo parado, no chão, mesma altura; voadores e chefes grandes não entram na bateria.
@@ -128,7 +192,9 @@ mesmo quadro de antes.
 
 ## BILHETE PARA O SUCESSOR (19/10)
 - Feito: tarefas 1–5, QA7 #1/#10/#15/#19, R3, R10 do inimigo, R15, sons do Áudio7, charge_up no cast,
-  contra-ataque. Bot QA7 das telas de timeout e `validate.ps1 -Repeat 2`: ver §12.
+  contra-ataque (até 2d54867). 3.2: hurtbox dos chefes/boneco (§12), Campeão ×1,35 (§13), ressalvas do Guardião (§14), bot QA7 de timeouts (§15).
+- 3.2 (28/10): validate VERDE 14/14 depois do último código. Sonda dos chefes: `tools/combate/BossHurtProbe.tscn`
+  (renderer). Chefe com `BodyBox` (Chefes6) é pulado no `_fit_hurtbox` — manter assim.
 - `tools/qa7/` é cópia LOCAL (não versionada aqui) do worktree qa7 só para medir; não commitar.
 - Arquivos-chave: `scripts/combat/{hitbox,staff_reach}.gd`, `scripts/entities/enemy.gd` (`_fit_hurtbox*`,
   `FLASH_ADD`, `die`), `scripts/entities/enemies/enemy_flash_layer.gd` (`LUMA_K`), `scripts/entities/player.gd`
