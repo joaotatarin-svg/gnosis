@@ -94,6 +94,12 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
 - Áudio do Campeão (BalanceBot tela 15, GNOSIS_AUDIO_LOG, `audio_t15_9cda737.json`): champion_enter=1, champion_fury=1,
   boss_appear AUSENTE: o som dobrado foi corrigido (polimento7 222dc38, sting=false no card).
 
+## Onda 7 - Lote 3.2 parte 3 (29/10/2026) - SEM prévia/build ainda
+- VERDE (-Repeat 1 por passo, -Repeat 2 no fim): chefes6 61645f7 -> c396629; progressao6 54141ed -> e6235c4;
+  arte-gpt 118cb99 (fio de contorno da Sophia) -> 59ecfc9. Push: origin/integracao/onda1 = 59ecfc9 (+ commit do bilhete).
+- Sondas em e6235c4 (`_caps/integ/*_e6235c4*`): ProgQA todos QA PASS; BossProbe todas [ok], sem TIMEOUT: Rei 74 s, Athoth 97,
+  Harmas 83, Galila 179 (4 quase-mortes), Yabel 183 (3), Astaphaios 79, Belias 98 (3), Armupiel 125 (3), Rei+Colosso 120 s (4).
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
