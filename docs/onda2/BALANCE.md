@@ -132,3 +132,30 @@ tempo de jogo por tela, não o dano. Lembre: a tela 68 varia sozinha até a Ence
 - `sim=poca3` e `loja=teto` são simulações dentro da ferramenta, não o jogo alterado.
 - P2 e P4 não foram simuladas.
 - Achado fora do balance, mas grave: **soft-lock na batalha final** (pedido 1, BLOQUEANTE para o Combate).
+
+## 8. Progressão 7 (29/10) — renda IGUAL nas dificuldades: o Difícil/Muito Difícil ficou injusto?
+Base 4dad743 (3.1) + curva da Progressão 7 (b12455d). Bot: `tools/progressao6/ProgBot.tscn` (QA7Bot +
+`dif=` + `loja=real`, compra pela API real da loja, perfil focado), run inteiro 1–68, vel 4, `ia=3`,
+`--fixed-fps 60`, headless, `--audio-driver Dummy`, BelowNormal em 4 CPUs (`run_bots.ps1`), sementes 1 e 2.
+Brutos: `C:\gnosis-wt\_caps\progressao7\r1\` e `r2\` (`python tools/progressao6/curva.py <csv>`).
+
+| dificuldade | faíscas no run (s1 / s2) | arma no topo | 10ª vida | quase-mortes (s1 / s2) | telas c/ timeout | maior golpe (% da vida, Torpor) | min de jogo |
+|---|---|---|---|---|---|---|---|
+| Normal | 14 926 / 15 128 | tela 59 | 66 / 67 | 132 / 138 | 10 / 5 | 19% / 17% | 93 / 92 |
+| Difícil | 16 145 / 15 337 | tela 59 | 66 / 67 | 269 / 282 | 26 / 26 | 28% / 23% | 125 / 121 |
+| Muito Difícil | 16 406 / 15 080 | tela 59 | 65 / 67 | 479 / 492 | 40 / 37 | 42% / 37% | 151 / 146 |
+
+Mortes reais (vida a 0 antes da cura do medidor): **0** em todas. Leitura:
+- **A loja anda igual nas três**: mesmo nível de arma e de vida ao fim de cada Éon (diferença ≤ 1 compra).
+  O que segura a força são os SELOS por Arconte, não as faíscas — por isso a renda igual quase não mexe
+  no poder da Sophia.
+- Quanto a renda antiga daria (simulado no `econ_sim.py` com a renda medida × 1,5 / × 2,2, perfil focado):
+  Difícil +1 vida por Éon (+20) e Éter/magias antes; arma Nv.4 na tela 37 em vez de ~40 e Nv.5 na 55 em
+  vez de 59; no fim sobravam 6 mil (Difícil) e **18 mil** (Muito Difícil) — a loja inteira cabia. Com a
+  renda igual: −20 de vida (~10%) e a arma 2–4 telas depois. **Não fica injusto pelo lado da economia.**
+- A pressão a mais vem do combate (×1,5 / ×2,2 em vida E dano dos inimigos → ~×2 e ~×3,6 de quase-mortes,
+  ~×2,6 e ~×3,7 de telas com timeout). No Muito Difícil o golpe mais forte do Torpor tira 37–42% da vida
+  (3 golpes matam) com a Sophia em ~140 de vida — duro, mas não "um golpe mata". Se o chefe achar demais,
+  o lugar é `GameManager.difficulty_multiplier()`/inimigos, não a renda (não mexi).
+- Limite: o bot não bloqueia nem faz parry e cura a 45% — quase-morte é teto, não média humana; os
+  timeouts somam lentidão do bot com voadores.

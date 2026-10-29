@@ -154,3 +154,53 @@ O `econ_sim.py` (Python) bate com o bot: mesma renda → mesma curva nas duas fe
 - ProgQA: **58 PASS / 0** (novos: selo da última compra de Éter/vida; grau 5 para em 5/6; grau 6 abre).
   O caso de `claim_once` passou para o fim: o `continue_run()` dele troca de cena (adiada) e tirava o QA
   da árvore no meio do teste da loja (`process_frame` em null e o processo não fechava).
+
+### 9.4 A curva medida (ProgBot, loja real, Normal, sementes 1 e 2 — run de 68 telas)
+Perfil FOCADO (arma > vida > magias > Éter):
+
+| Éon (fim) | tela | ganhas | gastas | arma | vida | Éter | magias Nv.3 | compras no Éon |
+|---|---|---|---|---|---|---|---|---|
+| Torpor | 10 | 621–640 | 470 | 2 | 2/10 | 0/6 | 0 | 3 |
+| Fome (2º Arconte) | 19 | 1 624–1 773 | 1 600 | 3 | 4/10 | 0/6 | 0 | 3 |
+| Corrente | 28 | ~2 830 | 2 620 | 3 | 5/10 | 0/6 | 0 | 4 |
+| Silêncio | 37 | ~4 600 | ~4 350 | 3 | 6/10 | 0–1/6 | 2 | 4–5 |
+| Espelho | 46 | ~6 800 | ~6 200 | 4 | 7/10 | 0–1/6 | 2 | 2–3 |
+| Praga | 55 | ~9 100 | ~8 600 | 4 | 8/10 | 1–3/6 | 3–4 | 4–7 |
+| Coroa | 64 | ~12 400 | ~11 900 | **5 (tela 59)** | 9/10 | 1–3/6 | 4 | 3–4 |
+| Centro | 67 | ~13 000 | ~12 800 | 5 | **10/10 (tela 66–67)** | 1–3/6 | 4 | 1 |
+
+**Em uma frase:** ~15 mil faíscas no run, **26–31 compras** (uma a cada 2–3 telas, 2–7 por Éon, maior
+jejum 3–6 telas), **nenhuma trilha no topo antes da tela 56** (arma 59, vida 66–67, Éter 56 só no perfil
+guloso, magias todas nunca) e antes do 2º Arconte a Sophia tem arma Nv.3/5 e vida 4/10.
+Guloso (só compra o mais barato): Éter no topo na tela 56 (era 48 antes desta iteração), arma presa no
+Nv.3 — ver limite abaixo. A loja inteira custa ~21,4 mil (relíquias e engaste inclusos): escolha real.
+Sobra no fim: ~0,1–0,7 mil no Centro; a tela 68 (Mente) rende ~2,5 mil que não têm onde ser gastas (fim).
+
+## 10. CHECAGEM DE SATISFAÇÃO (NEURO_SATISFACAO.md §2–§4) — Onda 7
+| Decisão | R / § atendidas | Violadas? | §4 conferido |
+|---|---|---|---|
+| Arma Nv.4 após Yabel, Nv.5 após Belias; 10ª vida após Armupiel; **6ª compra de Éter após Belias** | §3 competência (cada Arconte vencido abre algo que se vê na loja — a recompensa vem de ter ido bem, não de sorte); a queixa do João ("máximo antes do 2º chefe") fechada com medida | Nenhuma. Selo ≠ escassez artificial: o preço e o selo são FIXOS, mostrados na loja ("vença Belias"), sem prazo nem sorteio | 12 (sem recompensa variável), 13 (uma mudança só nesta iteração, medida antes/depois) |
+| Renda IGUAL em todas as dificuldades (3.1) | §3 "dificuldade vem do combate"; a loja anda igual nas três (selos) | Nenhuma; Muito Difícil fica duro (golpe de 37–42% no Torpor) — anotado para quem cuida do combate | 12 |
+| Não dá para comprar tudo (~15 mil × ~21,4 mil) | SDT: autonomia — escolha entre arma, vida, magias, relíquias | Nenhuma: nada some com o tempo, nada se perde por não comprar (sem FOMO) | 12 |
+| `claim_once` (baú/Selo/Adormecido/camada pagam 1×) | §3: quantidade fixa e determinística | Nenhuma: tira a "farmagem" de morrer e voltar | — |
+| Respiro de 2 s entre ondas | R21 | Nenhuma | 5 (sem slow-mo) |
+| Morte custa 20% das faíscas NA CARTEIRA (level.gd, não é meu) | — | §3 "aversão à perda como motor": risco BAIXO — a loja abre pela pausa a qualquer hora, quem gasta não perde nada, e inimigos re-mortos rendem de novo. Não mexi; se o Guardião quiser zero perda, o lugar é `level.gd:1012` | — |
+
+## 11. BILHETE PARA O SUCESSOR (29/10)
+- **Estado:** curva fechada (§9.4) e Difícil/Muito Difícil conferidos com renda igual (BALANCE.md §8).
+  Último commit do branch: ver `git log -1 dir6/progressao6`. validate.ps1 **TUDO VERDE (14 etapas)**;
+  ProgQA 58/0; `econ_sim.py --checa` ok; i18n strict 1433/1433.
+- **Arquivos-chave:** `scripts/autoload/progression_manager.gd` (constantes no topo: `WEAPON_COSTS/TIER`,
+  `HP_*`, `MP_*`, `MP_LAST_TIER`, `SKILL_*`, relíquias), `scripts/ui/upgrade_menu.gd` (linha selada usa
+  `hp_buy_tier`/`mp_buy_tier`), `tools/progressao6/{ProgBot.tscn, prog_bot.gd, run_bots.ps1, curva.py,
+  econ_sim.py, prog_qa.gd}`.
+- **Medir de novo:** `powershell -File tools/progressao6/run_bots.ps1 -Out C:\gnosis-wt\_caps\progressao7\rN
+  -Jobs "dif=0 perfil=arma seed=1;dif=1 perfil=arma seed=1;dif=2 perfil=arma seed=1;dif=0 perfil=guloso seed=1"`
+  (~15–25 min) e `python tools/progressao6/curva.py <csv>`. Mudou constante → mude `econ_sim.py` e rode `--checa`.
+- **Armadilhas:** o `*_console.exe` do Godot abre o Godot de verdade como FILHO — a prioridade/afinidade
+  tem que ir no filho (o run_bots.ps1 já faz). O CSV do bot tem vírgulas no campo `left` (curva.py trata).
+  No ProgQA, caso que chama `continue_run()` tem que ser o ÚLTIMO (troca de cena adiada mata o QA).
+  `tools/qa7/` é cópia não versionada do QA7 — não commitar.
+- **Próximo passo (se pedirem):** (1) o perfil guloso nunca junta para a arma Nv.4 (1 100) — se o
+  playtest mostrar jogador "preso" no Nv.3, a resposta é a loja mostrar "faltam X" na arma (pedido ao ui),
+  não baratear; (2) acertar com o chefes6 a força do fim (pedido em `docs/pedidos/progressao7.md`).
