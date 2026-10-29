@@ -285,6 +285,12 @@ func strike_tick(delta: float) -> void:
 func filter_damage(dmg: int, attacker: Node) -> int:
 	if _roar_t > 0.0 or _dying >= 0 or _airborne:
 		return 0
+	# Arconte ENCENADO (tentação: congelado até a Sophia cruzar o gatilho) é
+	# intocável — senão um tiro de longe (ou o `hurt` do Shot) troca a fase com ele
+	# parado fora da luta: as gaiolas da fase 2 descem e a Galila fica congelada
+	# fora do quadro (QA7 #11).
+	if not e.can_process():
+		return 0
 	dmg = _filter(dmg, attacker)
 	if dmg <= 0:
 		return dmg
