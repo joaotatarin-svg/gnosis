@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir2/arte-gpt + dir6/chefes6 | 63f597a (delta de 9ad0b06) + b587064 | APROVADO (Rei a 450 px legível sem o halo; telégrafo intacto por ser outro mecanismo; ReiProbe tela 1: atravessa=0, apelão=0, 96-99 %) | R5, R18, justiça |
 | dir2/arte-gpt + dir6/chefes6 | 9ad0b06 (delta de a238686) + 6c2bd29 (delta de 0e8d761; inclui a arte) | APROVADO COM RESSALVA (Rei v11: parada 16q e andar 12q estáveis, sem borracha medida; ReiProbe atravessa=0, apelão=0, cobertura 97-98 %; a troca seca parada->preparo fica até os golpes novos) | R5, R18, justiça |
 | dir2/arte-gpt | a238686 (delta de 8916611: parada r4 = a pintura s16 animada em camadas) | APROVADO (a ressalva de identidade fecha: cabelo branco com mecha azul, mesmo corpo; sem "borracha" medida; R18 volta ao nível da pintura, Coroa ~2,7 aceita) | R18, coerência |
 | dir2/arte-gpt | 8916611 (delta de 118cb99; base 95ec4b3) | APROVADO COM RESSALVAS (R18 3,23-3,79 em 9 telas; reversível; o pulo de estilo parada 3D x resto pintado é REAL, pior no cabelo e na anatomia, e fica para o playtest decidir) | R18, coerência, R16 |
@@ -1069,6 +1070,22 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## Rei nítido — arte-gpt 63f597a (delta de 9ad0b06) e chefes6 b587064
+
+**Medido (sonda no b587064, headless):** importação sem erro (`_caps\guardiao\p14_import.txt`). **ReiProbe tela 1** (`p14_rei1.txt`): `atravessa=0`, `apelao=0`, golpe esperado x real batem (fere de 70 a 50 px, nada a >= 75), parada cobre 96 % (6 % fora), golpe 99 % (14 % fora).
+Na tela 68 a sonda mede o COLOSSO (sem BodyBox, `punhos_*`; `apelao=1` a 55 px), arquivo que este branch não toca: não é regressão do Rei; o Rei da 68 não foi medido pela sonda.
+Li o diff de `character_art.gd`/`rei.json` e vi `_caps\arte\rei_nitido\prancha_antes_depois.png`, `cmp_rim.png`, `depois.png`.
+
+- **Legibilidade do Rei sem o halo: ok.** O manto creme claro contra o azul-petróleo do Limiar tem contraste de sobra; no zoom 4x, o contorno fino azul-Éon some (2ª metade) e a borda continua nítida pelo próprio recorte do atlas de 450 px (1:1 na janela). A pintura fica mais limpa que a de 300 px com halo. É a mesma lógica da Sophia: o contorno só ajuda onde o fundo é claro e o personagem escuro; aqui é o oposto.
+- **Telégrafo: NÃO perdeu força.** O aviso dos golpes não vem do `rim` nem do `Rim` do Enemy: o contorno do telégrafo é `telegraph_color` (8 cópias da silhueta, 1,3 px, alfa 0,9, pulsando; `character_art.gd` ~l.1735), mais a tinta de 45 % e o glint 180 ms antes. Esse caminho não lê `rim_mul`, `outline_mul` nem `rim_px_mul`, e a escala em mundo é a mesma (`k` compensa os 450 px), então a largura do brilho é igual.
+  O que o `rim_mul 0,2` reduz é só o contorno de leitura na cor do Éon (que dobrava na preparação, 0,64 -> 0,13): era um reforço secundário, rosado, não o aviso. Ressalva leve: a cor amarela do telégrafo some em um manto creme se alguém olhar só a tinta; por isso vale conferir no playtest que o contorno brilhante e o glint bastam no Rei (nas capturas v11 já bastavam).
+- **BodyBox (chefes6 b587064):** regenerada no atlas de 450 px com folga de 4 px (`body_slabs.py --folga`), o resultado acima. A faixa do cajado fica abaixo do que o olho vê, igual ao v11.
+- §4: sem recompensa, flash ou tremor novo; Rei so; outros chefes leem `outline_mul/rim_mul = 1,0` por padrão (não mudam).
+
+**Veredito: APROVADO.** Pendente só para o playtest: o Rei da tela 68 (lado a lado com o Colosso) a 450 px e o telégrafo contra o fundo roxo.
 
 ---
 
