@@ -479,6 +479,40 @@ Duas causas, as duas tratadas só no Rei:
   intocada) e R16 (silhueta e telégrafo preservados; o aviso do golpe não depende do halo); R19 (nada de mola nova); R4/R5 (hitbox
   mantida: ReiProbe); §4 conferido (arte apenas). Risco aceito: +VRAM; o feel/nitidez final é do olho do João.
 
+## REI HD h07 (29/10/2026, Lab3D; base integracao/onda1 1ccaf59)
+Resposta ao "o Rei parece meio não nítido" (atlas de ~300 px desenhado a ~440 px): a pintura HD nova, animada em camadas,
+já no TAMANHO DE JOGO (corpo 449 px, escala 1:1, sem reamostrar no `boss_frames`). Substitui a parada/andar v11.
+- **Receita:** `tools/anim_bosses/recipes/rei.json` = a do Lab (`entrega/rei.json`): tirada a folha v11
+  (`boss_9_rei_idle_camadas.png`), entra `artes/gpt/boss_9_rei_hd_camadas.png` (8×6, alfa real): parada 16q a 6 fps,
+  deslizar 12q (`walk`, por distância) e golpes 17q (`windup`/`attack`/`recover`, com meios RIFE já feitos fora, sem névoa rosada).
+  Âncora plantada pela estola em todos os quadros (`anchor_fix` por célula): a barra não desliza e não pula na troca de pose.
+  Chaves mantidas: `spring_mul` 0,3, `rim_mul` 0,2, `outline_mul` 0,2; `flex_off_states` = idle, walk, windup, attack, recover
+  (o manto já ondula na folha; o vento do shader não soma).
+- **Atlas próprio do Rei:** `rei_frames.png` (e `_flex`/`_sil`) é uma página só do Rei, agora 2048×8192 (56 quadros; área
+  pura ~4940 linhas); os outros chefes/atlas não mudaram. Custo: +~190 MB de VRAM sem compressão nas 3 texturas (era 2048×2048).
+  `mipmaps/generate=true` conferido nos 3 `.import`; `--editor --quit` sem SCRIPT ERROR. Se pesar na build, cortar parada de
+  16 para 12 quadros e 3 golpes segurados repetidos (ainda não volta a 4096).
+- **Mesma escala de mundo e âncora** do `idle_0` antigo (fenda→pé 422 px de atlas; proporção do corpo igual): o Rei não encolhe
+  mais no golpe (antes encolhia ~11%). A silhueta dos quadros novos muda um pouco (manto HD): a **BodyBox
+  (`rei_body_data.gd`) NÃO foi tocada** — pedido ao Chefes6 para regenerar:
+  `python -I tools/chefes6/body_slabs.py bosses/rei scripts/entities/bosses/rei_body_data.gd --faixas 16 --fill 0.30`
+  (a cópia pronta está em `C:\gnosis-wt\_caps\lab3d\rei_hd\entrega\rei_body_data.gd`; a opção `--faixas` está no
+  `body_slabs_lab.py` do Lab em `C:\Users\jmtat\gnosis-tools\lab3d\rei\`).
+- **Fica na pintura antiga (nesta entrega):** `hurt`, `death`/`dying`, `mask_crack`, `revealed`, `triumph`, `dominion`,
+  `sinking` — aparece na troca para o dano. 4 das 8 trocas de pose do golpe são secas (sem pintura intermediária; o RIFE entre
+  poses distantes vira fantasma). Cada pose é uma pintura diferente e o damasco "ferve" um pouco entre elas, visível só no zoom 2×.
+- **Halo claro-azulado (queixa do João):** o Rei não tem rim nem contorno de silhueta próprios além dos 20% (`rim_mul`/
+  `outline_mul`); a folha HD sai com borda ESCURA (alfa pré-multiplicado, despill), sem franja clara. O contorno AMARELO que
+  se vê no preparo do golpe é o telégrafo do jogo (cor de aviso), igual ao de antes.
+- **Prova (Shot na luta do Limiar, tela 1, 1280×720, mesma linha do tempo antes/depois — o Rei chega, prepara, golpeia, recupera):**
+  `C:\gnosis-wt\_caps\arte\rei_hd\` — `prancha_rei_hd.png` (A em cima = antes, D embaixo = depois: andar, preparo, golpe leque,
+  recuperação), `windup36.png` (preparo em tamanho de jogo), `zoom2x_rei.png` (capuz e barra a 2×). No tamanho de jogo o Rei HD
+  tem mais detalhe de damasco/correntes e o orbe aparece alto no preparo; os golpes mostram o manto contínuo.
+- **Não verificado:** feel/ritmo do golpe e do telégrafo (precisa jogar); BodyBox nova (Chefes6).
+- **CHECAGEM DE SATISFAÇÃO:** R18 ok (silhueta nítida, sem halo claro; telégrafo amarelo preservado e legível); R19/R20: manto
+  contínuo e mola do cartão a 30% — sem "cartão de borracha"; R16: poses de preparo/golpe distintas (orbe alto → varrida →
+  baixa); §4 conferido (arte apenas). Risco aceito: trocas secas em 4 pontos do golpe e dano/morte ainda na pintura antiga.
+
 ## BILHETE PARA O SUCESSOR (19/10/2026, 2º integrador de arte, branch `dir2/arte-gpt`)
 
 **Estado:** TUDO da lista do chefe feito, validado (validate -Repeat 2 verde) e com push; último commit e114a52.
