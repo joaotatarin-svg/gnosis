@@ -24,6 +24,11 @@ class_name CaptionBar
 ## a fila enfileirada ANTES (chegada da tela) é descartada; o que nasce DURANTE a
 ## luta (fase 2 dos Arcontes, 7º Anel, lembranças dos ecos) passa normalmente.
 ## Velocidade do texto segue as Opções (DialogueBox.text_speed()).
+## DUBLAGEM (Onda 7 — edição do Áudio por delegação do chefe): cada legenda pede
+## `Audio.play_voice(fala, self)`. Com voz: sem blips, o texto anda no ritmo da
+## voz e a legenda fica no ar pelo menos a voz + 0,4 s (a próxima da fila só entra
+## depois: duas vozes nunca se sobrepõem). Escondida (pausa/caixa) = voz congelada;
+## saiu (luta, troca de tela, morte) = voz cortada com fade. Sem voz: como antes.
 
 const SPEAKER_COLOR := Color("ecd498")
 const MIN_TIME := 3.0
@@ -62,6 +67,11 @@ var _current: Dictionary = {}      # fala na tela (para devolver à fila)
 var _shown_t: float = 0.0
 var _lines_shown: int = 0
 const MIN_FS := 11                # menor corpo aceito ao apertar para 1 linha
+const VOICE_TAIL := 0.4           # dublagem: a legenda fica no ar a voz + isto (s)
+var _voice_dur: float = 0.0       # duração da voz da legenda atual (0 = blips)
+var _cps: float = CPS             # letras/s da legenda atual
+var _voice_synced: bool = false   # a voz já começou e o ritmo do texto foi acertado
+var _voice_refused: bool = false  # a fala tem voz, mas a guarda de frequência da luta barrou
 
 
 func _ready() -> void:
@@ -143,6 +153,8 @@ func _process(delta: float) -> void:
 	var paused := get_tree().paused or PauseStack.is_held() or _scene_on()
 	_root.visible = not paused
 	_report_band()
+	if _voice_dur > 0.0:
+		Audio.pause_voice(self, paused)    # legenda escondida = voz congelada
 	if paused:
 		return
 	# Fora de uma tela do run (menu, Crônicas, fim), nada fica pendurado.
@@ -170,6 +182,7 @@ func _process(delta: float) -> void:
 			_queue.push_front(again)
 			_hide()
 			return
+		_voice_step()
 		_type(delta)
 		_time_left -= delta
 		_shown_t += delta
@@ -219,18 +232,46 @@ func is_holding() -> bool:
 	return _calm_t < CALM_NEED and not _queue.is_empty()
 
 
+## Dublagem, a cada quadro da legenda no ar: a voz que espera a folga da luta
+## (golpe avisado, aviso, stinger — Guardião §10/§20) segura o texto; quando ela
+## começa, o texto anda no ritmo dela (termina junto, §3); se a luta não deu folga
+## e o Audio desistiu da voz, a legenda segue só com texto. Voz soando = a
+## legenda não sai antes dela + VOICE_TAIL.
+func _voice_step() -> void:
+	if _voice_dur <= 0.0:
+		return
+	if Audio.is_voice_pending(self):
+		_time_left = maxf(_time_left, VOICE_TAIL)
+		return
+	if not _voice_synced:
+		_voice_synced = true
+		var left: float = Audio.voice_time_left(self)
+		if left <= 0.0:
+			_voice_dur = 0.0           # desistiu (ou já acabou): texto no ritmo de sempre
+			return
+		var sp := DialogueBox.text_speed()
+		if not is_inf(sp):
+			var rest := maxi(1, _text.get_total_character_count() - int(_shown))
+			_cps = float(rest) / maxf(0.3, left - 0.15)
+		_time_left = maxf(_time_left, left + VOICE_TAIL)
+	if Audio.is_voice_playing(self):
+		_time_left = maxf(_time_left, VOICE_TAIL)
+
+
 func _type(delta: float) -> void:
 	if not _typing:
 		return
+	if _voice_dur > 0.0 and not _voice_synced:
+		return                     # a voz ainda espera a folga: o texto também
 	var total := _text.get_total_character_count()
 	var before := int(_shown)
 	var sp := DialogueBox.text_speed()
-	_shown = INF if is_inf(sp) else _shown + delta * CPS * sp
+	_shown = INF if is_inf(sp) else _shown + delta * _cps
 	var now := total if is_inf(_shown) else mini(int(_shown), total)
 	var txt := _text.text
 	for i in range(before, now):
-		if is_inf(_shown):
-			break                  # instantâneo: sem rajada de blips
+		if is_inf(_shown) or _voice_dur > 0.0 or _voice_refused:
+			break                  # instantâneo, dublada ou voz barrada na luta: sem blips
 		if i < txt.length() and txt[i] != " ":
 			_blips += 1
 			if _blips % 2 == 1:
@@ -276,6 +317,17 @@ func _show(l: Dictionary) -> void:
 	_typing = true
 	_time_left = clampf(MIN_TIME + float(text.length()) * 0.03, MIN_TIME, MAX_TIME) + float(text.length()) / CPS
 	Audio.play_sfx("caption")
+	# Dublagem: com voz, a legenda dura pelo menos a voz e o texto anda com ela.
+	var sp := DialogueBox.text_speed()
+	_cps = CPS * (1.0 if is_inf(sp) else sp)
+	# combate por perto / fala da luta = voz de LUTA (guarda de frequência, Guardião §9)
+	_voice_dur = Audio.play_voice(l, self, _hot or _in_fight or bool(l.get("urgent", false)))
+	# fala que TEM voz mas a guarda da luta barrou: só legenda (nem voz, nem blips)
+	_voice_refused = _voice_dur <= 0.0 and Audio.voices_enabled() and not Audio.voice_entry(l).is_empty()
+	_voice_synced = false
+	if _voice_dur > 0.0:
+		_time_left = maxf(_time_left, _voice_dur + VOICE_TAIL)
+		_voice_step()              # sem espera: já sincroniza o ritmo do texto
 	_strip.queue_redraw()
 	_kill_tween()
 	_tween = create_tween()
@@ -350,6 +402,9 @@ func _player_dead() -> bool:
 func _hide() -> void:
 	_showing = false
 	_gap = 0.9
+	if _voice_dur > 0.0:
+		Audio.stop_voice(self)     # saiu da tela: a voz sai junto (fade curto)
+		_voice_dur = 0.0
 	_kill_tween()
 	_tween = create_tween()
 	_tween.tween_property(_root, "modulate:a", 0.0, 0.35)

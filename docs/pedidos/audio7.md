@@ -7,6 +7,8 @@ Ganchos do `audio_manager.gd`: sinais existentes e o observador `_Watch`, que ol
 toca só na BORDA. Nos itens abaixo **NÃO acrescentem chamada**: o som dobraria (R4).
 
 - **Inimigos:** golpe de cada tipo no WINDUP→STRIKE (`atk_*`, pelo `_mv.kind`) e "aparecer atrás" no WINDUP.
+  Inclui TIRO: o vfx7 (a63c40b) deixou o disparo hostil mudo e o `atk_*` daqui é o som do tiro; a carga toca
+  `charge_dark`/`charge_king`.
 - **Voadores:** derrubado no ar (`fly_fall`). **Campeão:** fúria (`champion_fury`).
 - **Chefes:**
   - golpe-assinatura no telegrafo e/ou no golpe (`bs_*` pela tabela `BOSS_MOVE_SFX`);
@@ -43,8 +45,7 @@ mesmo lugar. Linhas de `origin/integracao/onda1` @ 4cfd64c.
    O stinger de chefe libera a música de chefe (R9) e não deve tocar para Campeão.
 
 ### vfx7 (`projectile.gd`, tiros hostis)
-1. `projectile.gd:55 _ready()`: tocar `proj_fire` SÓ nos tiros da Sophia. Nos hostis, o golpe de tiro já soa
-   no strike pelo observador (`atk_shot`/`atk_fan`/`atk_homing`/`atk_shot_air`). Hoje são 2 sons por tiro (R4).
+Feito por ele (a63c40b): o disparo hostil ficou mudo e o som do tiro é o `atk_*` do observador. Nada a trocar.
 
 ### polimento7 / combate (`player.gd`): TROCA NA FONTE (o Áudio NÃO observa estes)
 1. `player.gd:432 _double_jump()`: TROCAR `Audio.play_sfx("jump")` → `Audio.play_sfx("double_jump")`. É o anel
@@ -83,6 +84,15 @@ mesmo lugar. Linhas de `origin/integracao/onda1` @ 4cfd64c.
    compra (`buy_relic`), o `shop_buy` continua.
 5. NÃO ponham som no toast do selo, da conquista nem do objetivo: já tocam.
 
+### UI do integrador (`hud.gd`) — R7, a parte visual do combo
+O SOM do combo já toca: `combo_tick`, a partir do 3º acerto, subindo a pentatônica pelo sinal `combo_changed`.
+Falta a parte de UI da R7:
+- marcos em 10, 25 e 50: pop maior no texto (1,0→1,3 em 80 ms, volta em 200 ms) e o texto esquenta (branco →
+  dourado do Éon);
+- filete de validade do combo (1,4 s = `combo_show_timer` do player) esvaziando sob o número.
+
+Não ponham som nos marcos (o tique já sobe).
+
 ### narrativa (cenas)
 1. Nada obrigatório: o roubo (`sink`) já está no `Audio.cue`. Se a rachadura da Staging (`staging.gd:756`)
    abrir muito antes ou depois de 0,5 s, me digam o atraso e eu ajusto `CRACK_DELAY`.
@@ -95,3 +105,17 @@ mesmo lugar. Linhas de `origin/integracao/onda1` @ 4cfd64c.
 - **king:** o Rei, luz roubada, ~0,9 s.
 
 Se a carga durar bem mais ou menos que isso, me digam a duração e eu refaço.
+
+## DUBLAGEM (29/10) — edições feitas pelo Áudio por DELEGAÇÃO DO CHEFE (registro para os donos)
+Mínimas e marcadas com comentário "DUBLAGEM (Onda 7 — edição do Áudio por delegação do chefe)":
+- UI `dialogue_box.gd`: `_start_voice`/`voice_cps`/`_stop_voice`; blips só sem voz; avançar corta a voz.
+- UI `caption_bar.gd`: `_show` toca a voz (legenda ≥ voz + 0,4 s), `pause_voice` quando escondida, `_hide` corta.
+- Encenação `cinematic.gd`: card ≥ voz + 0,6 s; `_finish`/`_exit_tree` cortam.
+- UI `options_menu.gd`: slider "Vozes" na coluna JOGO.
+- Técnico `save_manager.gd`: `vol_voice` + `DEFAULT_VOLUMES["Voice"] = 1.0`.
+- i18n `en_table.gd`: "Vozes", "Desligadas".
+Se mexerem nesses trechos: a VoiceProbe (`tools/audio/VoiceProbe.tscn`) acusa.
+
+### Pedido à UI/Encenação (opcional, depois do 1º lote)
+- `stela.gd`: botão "ouvir a pedra" tocando as linhas em sequência (`Audio.play_voice({"speaker": "estela", "text": linha}, self)`
+  e esperar a duração devolvida; `Audio.stop_voice(self)` ao fechar).

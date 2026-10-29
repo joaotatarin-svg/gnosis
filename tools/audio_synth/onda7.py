@@ -355,6 +355,19 @@ def riposte():
 	return tail(o, 0.4, 0.12, 1144, 9000)
 
 
+def combo_tick():
+	"""Adoçante do combo (R7): tique de vidro CURTÍSSIMO (~70 ms) em Mi5, sem
+	agudo sustentado — fica "dentro" do impacto; o Audio sobe a pentatônica."""
+	d = 0.12
+	n = N(d)
+	t = C.tvec(n)
+	f = note(76)
+	x = (np.sin(C.osc_phase(f, n)) + 0.35 * np.sin(C.osc_phase(f * 2.32, n))) * C.env_ad(n, 0.0015, 0.03)
+	k = N(0.006)
+	x[:k] += C.bp(C.noise(k, 1150), 2500, 6000) * C.env_ad(k, 0.0003, 0.0015) * 0.3
+	return C.lp(x, 4500)
+
+
 # ----------------------------------------------------------------------------
 # Inimigos: golpe por TIPO (Audio.move_sfx). Escuro, curto, abaixo dos golpes
 # da Sophia (categoria eatk −19 / eatk_big −16).
@@ -1604,13 +1617,14 @@ SOUNDS = {
 	"star_impact": ("sophia_layer", [star_impact]),
 	"riposte_ready": ("tell", [riposte_ready]),
 	"riposte": ("swing_big", [riposte]),
+	"combo_tick": ("combo", [combo_tick]),
 	# inimigos (por tipo)
 	"atk_swing": ("eatk", _vars(atk_swing, 3)),
 	"atk_combo": ("eatk", _vars(atk_combo, 2)),
 	"atk_rush": ("eatk", _vars(atk_rush, 2)),
 	"atk_leap": ("eatk", _vars(atk_leap, 2)),
 	"atk_slam": ("eatk_big", _vars(atk_slam, 2)),
-	"atk_wave": ("eatk", _vars(atk_wave, 2)),
+	"atk_wave": ("eatk_soft", _vars(atk_wave, 2)),   # Guardião: −3 dB (rola longe; não cobre o golpe)
 	"atk_shot": ("eatk", _vars(atk_shot, 3)),
 	"atk_shot_air": ("eatk", _vars(atk_shot_air, 2)),
 	"atk_fan": ("eatk", [atk_fan]),
@@ -1724,6 +1738,7 @@ SOUNDS = {
 CATS = {
 	"eatk": -19.0,        # golpe de inimigo comum: abaixo do swing da Sophia (−18) e do acerto (−12)
 	"eatk_big": -16.0,    # pancada/coluna/invocação de inimigo
+	"eatk_soft": -22.0,   # onda pelo chão: 3 dB abaixo do golpe comum (Guardião)
 	"charge": -19.0,      # carga antes do tiro (cresce; o tiro é que pesa)
 	"charge_big": -16.0,  # carga do Rei
 	"sophia": -19.0,      # pulo duplo (perto de jump −20)
@@ -1736,6 +1751,7 @@ CATS = {
 	"hazard_big": -15.0,  # perigo que fere (guilhotina, boca, lanças, coluna)
 	"hazard_soft": -22.0, # aviso/presença de perigo
 	"hazard_amb": -28.0,  # presença contínua (altar), no nível da ambiência
+	"combo": -28.0,       # R7: tique do combo ~16 dB abaixo do acerto (−12): sentido, não ouvido
 }
 
 

@@ -5,7 +5,20 @@
 
 ## BILHETE PARA O SUCESSOR (atualizado a cada bloco)
 
-**Estado:** ENTREGA FINAL do Áudio7.
+**29/10 — DUBLAGEM (sucessor do Áudio7):** o jogo toca as vozes gravadas. Último commit de código:
+ver `git log` (a partir de `08994eb`). Seção completa: "Dublagem" mais abaixo. Em uma linha: `Audio.play_voice(fala,
+dono)` acha o `.ogg` pelo id `sha1(falante|texto_pt)[:12]` no MANIFESTO de dados
+`assets/audio/voice/manifest.json` (hoje vazio); lote novo = copiar `.ogg` + acrescentar no manifesto, sem
+código. Contrato com a Dublagem: `C:\gnosis-wt\_caps\dublagem\CONTRATO_AUDIO.md` (escrito por mim; o
+Dublagem não tinha publicado). Prova: `tools/audio/VoiceProbe.tscn` (0 falhas) + validate 14/14.
+- **Próximo passo:** integrar o 1º lote (Limiar/Rei) quando o Dublagem entregar; rodar a VoiceProbe (linha
+  "manifesto real"). Regras do Guardião (`_caps/dublagem/REGRAS_GUARDIAO.md`) JÁ aplicadas nas partes do jogo
+  (§1, §2, §5, §10, §18-20, §22); §3/§4 são do roteiro/Dublagem.
+- **Armadilhas:** `stream_paused` deixa `playing` = false no Godot 4.7 (o dono da voz não pode ser limpo por
+  isso). O id usa o texto PT EXATO (com rubrica e `\n`); texto mudou = voz some até regerar. Os blips saíram
+  do bus Voice para o UI (mesmo ganho de antes).
+
+**Estado anterior:** ENTREGA FINAL do Áudio7.
 - 118 sons novos (143 arquivos com as variações) estão no CATALOG.
 - API nova: `move_sfx`/`move_sound_for`.
 - Ganchos por sinal + observador `_Watch` (eventos sem sinal, só bordas).
@@ -89,8 +102,8 @@ Usam categorias existentes: `tell` (−17, `riposte_ready`), `swing_big`, `champ
 | Origem | Eventos |
 |---|---|
 | **Sinal** (`audio_manager.gd`) | `Enemy.boss_dying(0..4)` → morte em 5 passos. `Player.riposte_window_opened` → `riposte_ready`. `Progression.double_jump_granted` → `soter_gift`. `Progression.relics_changed` → `relic_equip`. `Achievements.unlocked` → `achievement` |
-| **Observador `_Watch`** (borda de estado, nó PAUSÁVEL, perigo a > 720 px da câmera não soa) | Inimigos: WINDUP/STRIKE → `move_sfx`; `_downed` 0→>0 (voador) → `fly_fall`; `_champ_fury` → `champion_fury`. Chefes: `brain.mv` → `move_sfx(..., true)`; `_airborne` true→false → `bs_land`; postura volta cheia + atordoado > 1,3 s → `guard_break`; hurtbox do olho do Rei → `eye_hit`. Sophia: `dive_landed` → `star_impact`. Totem/luz `_armed` → `zone_objective` (+`hz_totem_arm`). HUD `_tier_seen` sobe → `shop_seal`. Perigos mudos: feixe liga/desliga, plataforma-reflexo, névoa, pedra (afunda/volta), esporo incha, caco (sombra/queda), saída do silêncio, marca do segredo, guilhotina sobe, tique da maré, luz drenando |
-| **Dono troca na fonte** (`docs/pedidos/audio7.md`) | 2º pulo, carga da Queda, contra-ataque (player.gd); fase 3; entrada do Campeão; tiro hostil sem `proj_fire`; perigos que já tocam som genérico; mapa; relíquia sem `shop_buy`; cargas do VFX7 |
+| **Observador `_Watch`** (borda de estado, nó PAUSÁVEL, perigo a > 720 px da câmera não soa) | Inimigos: WINDUP/STRIKE → `move_sfx`, inclusive TIRO (o vfx7 deixou o disparo hostil mudo e usa o `atk_*` como som do tiro); `_downed` 0→>0 (voador) → `fly_fall`; `_champ_fury` → `champion_fury`. Chefes: `brain.mv` → `move_sfx(..., true)`; `_airborne` true→false → `bs_land`; postura volta cheia + atordoado > 1,3 s → `guard_break`; hurtbox do olho do Rei → `eye_hit`. Sophia: `dive_landed` → `star_impact`. Totem/luz `_armed` → `zone_objective` (+`hz_totem_arm`). HUD `_tier_seen` sobe → `shop_seal`. Perigos mudos: feixe liga/desliga, plataforma-reflexo, névoa, pedra (afunda/volta), esporo incha, caco (sombra/queda), saída do silêncio, marca do segredo, guilhotina sobe, tique da maré, luz drenando |
+| **Dono troca na fonte** (`docs/pedidos/audio7.md`) | 2º pulo, carga da Queda, contra-ataque (player.gd); fase 3; entrada do Campeão; perigos que já tocam som genérico; mapa; relíquia sem `shop_buy`; cargas do VFX7 |
 
 O 2º pulo, a carga da Queda e o golpe do contra-ataque saíram do observador por reprovação do Guardião
 (634bc91, som dobrado com jump/dive/swing). Quem troca é o polimento7.
@@ -136,7 +149,7 @@ O 2º pulo, a carga da Queda e o golpe do contra-ataque saíram do observador po
 
 | Regra | Como o Áudio7 atende | Status |
 |---|---|---|
-| **R4** um acerto = um evento | O golpe do inimigo soa no STRIKE (sopro/rosnado, sem impacto: o acerto continua sendo o `hit`). Queda Estelar = camada de estrelas sob a `nova`, sem 2º baque. O 2º pulo, a carga e o contra-ataque saíram do observador (Guardião). As trocas na fonte estão pedidas (`TROCAR a → b`, nunca `a + b`). Tiro hostil: pedido para não tocar `proj_fire` junto do `atk_*`. | atendido no Áudio; as trocas na fonte dependem dos donos |
+| **R4** um acerto = um evento | O golpe do inimigo soa no STRIKE (sopro/rosnado, sem impacto: o acerto continua sendo o `hit`). Queda Estelar = camada de estrelas sob a `nova`, sem 2º baque. O 2º pulo, a carga e o contra-ataque saíram do observador (Guardião). As trocas na fonte estão pedidas (`TROCAR a → b`, nunca `a + b`). Tiro: o disparo hostil é mudo (vfx7, a63c40b) e o `atk_*` é o som do tiro. A carga é `charge_*`; não há 2 sons por tiro. | atendido no Áudio; as trocas na fonte dependem dos donos |
 | **R5** telegrafo com som | O `tell_parry/unblock` continua intocado. `riposte_ready` (o "agora!" do contra-ataque) vai no bus Tell, com tom fixo, a 69 de distância MFCC do `tell_parry`. Os perigos que ferem mantêm o `tell_unblock` e ganham som próprio no golpe. | atendido |
 | **R6** faísca | Não mexi. | — |
 | **R7** adoçante do combo | Não mexi; nenhum som novo sobe de tom com o combo. | — |
@@ -147,9 +160,71 @@ O 2º pulo, a carga da Queda e o golpe do contra-ataque saíram do observador po
 | **R13** loudness | Arquivos no alvo por categoria; pico verdadeiro ≤ −1 dBTP. NÃO medi os 10 min de combate gravado (alvo −20 a −23 LUFS integrados): exige captura de áudio do jogo rodando, e o driver é Dummy. | parcial (honesto) |
 | **R14** estéreo discreto | Inimigos, chefes e perigos tocam por `play_sfx_at` (pan ±50 %, atenuação pela distância). Perigo a > 720 px da câmera não toca. Sophia e UI no centro. | atendido |
 | **R22** vida baixa | Não mexi. Nenhum som novo é "bip" contínuo; as presenças (`hz_altar_hum`, `hz_ward_drain`) têm anti-spam e 1 voz. | — |
+| **R4** (dublagem) sem poluição sonora | Fala dublada NÃO toca blips (um evento de voz por fala). Só uma voz por vez: a nova corta a velha; a legenda seguinte só entra depois da voz + 0,4 s; voz de luta sem folga por 4 s é DESCARTADA (nunca empilha — Guardião §22). Guarda de frequência das vozes de LUTA (§9, legenda com combate por perto): fala ≤ 2,5 s (mais longa = só legenda, sem voz nem blips), ≥ 8 s de silêncio desde a última, ≤ 6 por tela (8 na batalha final), nunca a mesma fala 2x na tela. Nenhuma voz de dor/esforço nova. | atendido (VoiceProbe) |
+| **R5** (dublagem) aviso acima da voz | Durante um `tell_*` a voz desce 8 dB e perde graves (passa-altas 250 Hz, 10/300 ms); voz de luta não COMEÇA nos 400 ms depois de um aviso, com golpe avisado no ar (windup→strike + 0,3 s, lido pelo observador) nem até 0,5 s depois do stinger/morte do chefe (Guardião §10/§20). Nenhuma informação só por voz. | atendido (VoiceProbe) |
+| **R9** (dublagem) ducking | Voz soando: música em −8 dB, ambiência em −6 dB, ataque 80 ms / release 700 ms, "vale o maior" (com o diálogo já em −9 a voz não soma: medido −9, não −12). Efeitos de gameplay e Tell NÃO baixam (medido: intocados). | atendido (VoiceProbe) |
+| **R13** (dublagem) volume | Contrato: fala −20 a −22 LUFS short-term, grito ≤ +4 LU, ≤ −1 dBTP (Guardião §21). Bus Voice direto no Master, slider próprio (padrão 80 %), fora do −6 dB do SFX e do abafado do slow-mo. NÃO medi a mixagem com voz (driver Dummy). | parcial (honesto) |
+| **R21** (dublagem) ritmo de leitura / controle | A caixa NUNCA avança sozinha e nunca segura o jogador: avanço livre desde o 1º quadro (fala dublada ignora o `wait_2s`); aperto com o texto digitando completa o texto e corta a voz (80 ms); com o texto completo, UM aperto corta a voz E avança (decisão do chefe: nenhum aperto "perdido"). Texto e voz terminam juntos (medido 0,09 s; regra ±0,3). Nenhuma fala pausa o mundo em combate (legenda não bloqueante). Pausa congela a voz da legenda; morte, troca de cena e pular cortam (0,12 s); dono apagado = voz some. | atendido (VoiceProbe) |
 | **§3/§4** sem cassino | Nada de moeda, caça-níquel, arpejo "jackpot" nem som que cresce com sorte. Conquista, selo, relíquia, altar e dom do Soter são coro, sino e vidro em Mi maior, de duração fixa e independentes do valor ganho. A conquista em rajada toca 1 vez. O `shop_buy` (moedas, antigo) não foi tocado nem ampliado. | atendido |
 
+## Dublagem (29/10/2026)
+
+Pedido do João: dublagem na próxima versão, entrando AOS POUCOS (lotes da Dublagem, começando pelo
+Limiar/Rei). Segue as regras do Guardião (`C:\gnosis-wt\_caps\dublagem\REGRAS_GUARDIAO.md`) nas partes
+que são do jogo: §1 controle, §2 legenda, §5 mixagem, §10/§20 janelas. §3/§4 (frequência, duração,
+intensidade, legião, reverb) são do roteiro/Dublagem. Desenho do Dublagem (`dir7/dublagem`, `docs/onda2/DUBLAGEM.md` §7) implementado com uma mudança:
+os blips ficam no bus UI e o slider "Vozes" só controla a dublagem (0 = desligada → blips).
+
+**Dados (sem código por lote):** `assets/audio/voice/manifest.json` → `lines.<id>.<pt|en>.file`. O id é
+calculado pelo jogo: `sha1(falante + "|" + texto_pt)[:12]` (falante `"card"` nos cards, `"estela"` nas pedras).
+Idioma = o do texto; sem arquivo nele, o outro. Arquivo ainda não importado (lote recém-copiado no editor) é
+lido cru (`AudioStreamOggVorbis.load_from_file`); o build exportado usa o importado. Variável
+`GNOSIS_VOICE_MANIFEST=<arquivo>` troca o manifesto (sonda). Contrato completo:
+`C:\gnosis-wt\_caps\dublagem\CONTRATO_AUDIO.md`.
+
+**API do Audio:** `play_voice(fala, dono) -> duração` (0 = sem voz), `stop_voice(dono, fade)`,
+`pause_voice(dono, on)`, `is_voice_playing(dono)`, `voice_entry(fala)`, `voice_id(falante, texto)`,
+`voice_manifest()` / `reload_voice_manifest()`, `voices_enabled()`; `set_volume("Voice", v)`. Dois players
+no bus Voice (a fala nova entra enquanto a velha some); a voz só é cortada pelo próprio dono (a legenda não
+cala a caixa que abriu depois).
+
+**Onde as falas nascem (edição mínima por delegação do chefe, registrada em cada arquivo):**
+
+| Arquivo (dono) | O que mudou |
+|---|---|
+| dialogue_box.gd (UI) | `_start_voice` em `_show_line`; com voz, sem blips e CPS pela duração (`voice_cps`); avançar/fechar/abortar corta a voz |
+| caption_bar.gd (UI) | `_show` toca a voz e segura a legenda ≥ voz + 0,4 s; sem blips; `pause_voice` enquanto escondida; `_hide` corta |
+| cinematic.gd (Encenação) | card segura ≥ voz + 0,6 s; fim do card, `_finish` e `_exit_tree` cortam |
+| options_menu.gd (UI) | slider "Vozes" (0 = "Desligadas") na coluna JOGO, depois de "Vibração do controle": na coluna de Áudio a tela transbordava (título e "Voltar" cortados). Captura: `C:\gnosis-wt\_caps\audio7\opcoes_vozes_640.png` |
+| save_manager.gd (Técnico) | `vol_voice` no save e em `DEFAULT_VOLUMES` (padrão 0,8 — Guardião §18) |
+| en_table.gd (i18n) | "Vozes" → "Voices", "Desligadas" → "Off" |
+
+O npc_encounter usa DialogueBox e `Gnosis.captions` (CaptionBar): coberto sem edição. O narrative.gd não
+precisou mudar (o id sai do texto). Estelas: o painel mostra tudo de uma vez — "ouvir a pedra" fica para
+depois (botão novo no `stela.gd`, outro dono).
+
+**Verificação (`--audio-driver Dummy`, nada tocado no PC):**
+`godot --headless --audio-driver Dummy --path . res://tools/audio/VoiceProbe.tscn` → `VOICE PROBE: 0 falhas`
+(também no `tools/validate.ps1`; sem as amostras em `_caps`, roda só o manifesto real e os ids; vigia de 150 s).
+Monta um manifesto de teste ligando 4 falas REAIS às amostras da Dublagem (intro da Voz `d6059a40ad2f`,
+legenda da Sophia no Limiar, chegada do Rei, card 1 do prólogo `a4f2a4baab4a`). Resultados medidos:
+caixa com voz 4,02 s, música −4,4 → −13,4 dB (−9 do diálogo, a voz não empilha), ambiência −6; fala
+dublada sem blips; texto termina 0,09 s antes da voz; a caixa espera o jogador; aperto no 2º quadro completa
+o texto e corta a voz (80 ms), o seguinte avança; texto completo + voz soando: UM aperto corta e avança;
+guarda de luta: fala de 7,7 s barrada (a mesma toca fora da luta), 2ª voz em < 8 s barrada (7,9 s barra,
+8,1 s toca), repetida barrada, 7ª da tela barrada, final permite 8, reset por tela, legenda barrada sem blips;
+Vozes no boot = 80 % (save sem `vol_voice`; captura `C:\gnosis-wt\_caps\audio7\opcoes_vozes_80.png` — a de
+100 % era de antes do padrão 0,8); fala sem arquivo volta aos blips; `wait_2s` não trava fala
+dublada; dono apagado = voz some; legenda 5,94 s fica 6,62 s no ar, música −8, efeitos e Tell intocados,
+pausa congela e retoma; card do prólogo segura 8,1 s de voz (tempo do card 5,9 s); `tell_unblock` → voz
+−8 dB + passa-altas 250 Hz; voz logo após o aviso espera 0,67 s; golpe avisado no ar segura a voz e ela
+começa 0,3 s depois; sem folga por 4 s = descartada; stinger (2,58 s) segura a voz 3,09 s; Vozes = 0 →
+blips; padrão do slider 80 %. Também checa o manifesto REAL: todo arquivo listado existe e carrega.
+
 ## O que NÃO ficou bom / não verifiquei (honesto)
+- **Dublagem:** ninguém ouviu a mixagem voz + música + luta (driver Dummy); os dB acima são do mixer, não de
+  medida de loudness. A única mudança de tela é o slider "Vozes" nas Opções (capturado, cabe).
+  O manifesto do jogo está vazio até o 1º lote.
 - **Ninguém ouviu.** Vozes por formantes (rugidos, grito do Yabel, coros) podem soar "de computador".
   Amostras para o João: `C:\gnosis-wt\_caps\audio7\AMOSTRAS.md`.
 - R13 de combate gravado não foi medido.
@@ -176,6 +251,7 @@ Todos são síntese própria (S). Var = nº de arquivos (`nome`, `nome_2`, ...).
 | `sfx/star_impact.ogg` | sophia_layer -17 | 1 | Queda Estelar pousa — CAMADA de estrelas sobre a `nova` (que já é o baque, R4: um impacto por evento): chuva de estrelas caindo + cascalho + sino. |
 | `sfx/riposte_ready.ogg` | tell -17 | 1 | Aparo perfeito → a janela do contra-ataque ABRIU: dois 'tins' de lâmina subindo (Si6→Mi7), curtos — o ouvido aprende 'agora!'. |
 | `sfx/riposte.ogg` | swing_big -16 | 1 | Contra-ataque: estocada — sopro rasgado + 'xing' de lâmina + peso. |
+| `sfx/combo_tick.ogg` | combo -28 | 1 | Adoçante do combo (R7): tique de vidro CURTÍSSIMO (~70 ms) em Mi5, sem agudo sustentado — fica "dentro" do impacto; o Audio sobe a pentatônica. |
 | `sfx/atk_swing.ogg` | eatk -19 | 3 | Garra/osso cortando o ar: sopro médio + estalo ósseo. |
 | `sfx/atk_combo.ogg` | eatk -19 | 2 | Duas garradas coladas (a 2ª mais grave). |
 | `sfx/atk_rush.ogg` | eatk -19 | 2 | Investida: pé que firma + sopro acelerando + rosnado. |

@@ -330,11 +330,21 @@ func _run_cards() -> void:
 			_show_art(arts, i)
 		_art_fade = not keep
 		_advance = false
+		# DUBLAGEM (Onda 7 — edição do Áudio por delegação do chefe): o card
+		# narrado (falante "card") fica no ar pelo menos a voz + 0,6 s; avançar
+		# ou sair corta a voz com fade curto. Sem voz: o tempo de sempre.
+		var hold_t := float(card.get("time", 5.0))
+		var vdur := float(Audio.call("play_voice", {"speaker": "card", "text": String(card.get("text", ""))}, self)) \
+			if Audio.has_method("play_voice") else 0.0
+		if vdur > 0.0:
+			hold_t = maxf(hold_t, vdur + 0.6 - float(card.get("fade_in", 0.55)))
 		await _fade(1.0, float(card.get("fade_in", 0.55)))
 		if arts.size() > 1:
-			await _hold_art(arts, float(card.get("time", 5.0)))
+			await _hold_art(arts, hold_t)
 		else:
-			await _hold(float(card.get("time", 5.0)))
+			await _hold(hold_t)
+		if vdur > 0.0:
+			Audio.call("stop_voice", self)
 		var nxt: Array = _card_art(cards[i + 1]) if i + 1 < cards.size() else []
 		_art_fade = _skip_all or arts.is_empty() or nxt != arts
 		await _fade(0.0, float(card.get("fade_out", 0.35)))
@@ -610,6 +620,8 @@ func _finish() -> void:
 	if _done:
 		return
 	_done = true
+	if Audio.has_method("stop_voice"):
+		Audio.call("stop_voice", self)     # dublagem: nenhuma voz de card fica no ar
 	PauseStack.pop(self)
 	finished.emit()
 	queue_free()
@@ -617,6 +629,8 @@ func _finish() -> void:
 
 ## Apagado sem passar por _finish (troca de cena): não segura a pausa.
 func _exit_tree() -> void:
+	if Audio.has_method("stop_voice"):
+		Audio.call("stop_voice", self)
 	if not _done:
 		PauseStack.pop(self)
 

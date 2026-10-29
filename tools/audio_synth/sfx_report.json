@@ -241,19 +241,19 @@
  },
  {
   "name": "atk_wave",
-  "cat": "eatk",
+  "cat": "eatk_soft",
   "dur": 0.74,
   "ch": 2,
-  "Mmax": -19.0,
-  "peak": -7.7
+  "Mmax": -22.0,
+  "peak": -10.7
  },
  {
   "name": "atk_wave_2",
-  "cat": "eatk",
+  "cat": "eatk_soft",
   "dur": 0.74,
   "ch": 2,
-  "Mmax": -19.0,
-  "peak": -8.4
+  "Mmax": -22.0,
+  "peak": -11.4
  },
  {
   "name": "blip_estela",
@@ -976,6 +976,14 @@
   "peak": -7.8
  },
  {
+  "name": "combo_tick",
+  "cat": "combo",
+  "dur": 0.12,
+  "ch": 1,
+  "Mmax": -28.0,
+  "peak": -11.8
+ },
+ {
   "name": "crack_open",
   "cat": "story",
   "dur": 3.53,
@@ -1164,48 +1172,48 @@
   "cat": "hit",
   "dur": 0.25,
   "ch": 1,
-  "Mmax": -13.9,
-  "peak": -1.0
+  "Mmax": -13.7,
+  "peak": -1.4
  },
  {
   "name": "hit_2",
   "cat": "hit",
-  "dur": 0.25,
+  "dur": 0.24,
   "ch": 1,
-  "Mmax": -14.0,
-  "peak": -1.0
+  "Mmax": -13.8,
+  "peak": -1.4
  },
  {
   "name": "hit_3",
   "cat": "hit",
   "dur": 0.25,
   "ch": 1,
-  "Mmax": -13.5,
-  "peak": -1.0
+  "Mmax": -13.7,
+  "peak": -1.4
  },
  {
   "name": "hit_heavy",
   "cat": "hit_heavy",
   "dur": 0.46,
   "ch": 1,
-  "Mmax": -11.9,
-  "peak": -1.0
+  "Mmax": -12.8,
+  "peak": -1.9
  },
  {
   "name": "hit_heavy_2",
   "cat": "hit_heavy",
   "dur": 0.46,
   "ch": 1,
-  "Mmax": -11.0,
-  "peak": -1.0
+  "Mmax": -11.4,
+  "peak": -1.4
  },
  {
   "name": "hit_heavy_3",
   "cat": "hit_heavy",
   "dur": 0.44,
   "ch": 1,
-  "Mmax": -11.5,
-  "peak": -1.0
+  "Mmax": -11.9,
+  "peak": -1.4
  },
  {
   "name": "hz_altar",
@@ -1676,8 +1684,8 @@
   "cat": "nova",
   "dur": 0.98,
   "ch": 2,
-  "Mmax": -12.2,
-  "peak": -1.0
+  "Mmax": -12.9,
+  "peak": -1.8
  },
  {
   "name": "parry",
@@ -2036,8 +2044,8 @@
   "cat": "swing",
   "dur": 0.31,
   "ch": 1,
-  "Mmax": -18.4,
-  "peak": -1.0
+  "Mmax": -18.8,
+  "peak": -1.4
  },
  {
   "name": "swing_heavy_2",
@@ -2052,8 +2060,8 @@
   "cat": "swing",
   "dur": 0.34,
   "ch": 1,
-  "Mmax": -18.3,
-  "peak": -1.0
+  "Mmax": -18.8,
+  "peak": -1.4
  },
  {
   "name": "swing_light",

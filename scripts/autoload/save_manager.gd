@@ -24,7 +24,8 @@ const SAVE_VERSION := 2
 
 ## Volumes da 1ª execução (sem save) e de save sem a chave: Master 0,7 e
 ## Música 0,6 — a mixagem nova vem forte; 100% de cara assustava.
-const DEFAULT_VOLUMES := {"Master": 0.7, "SFX": 0.9, "Music": 0.6}
+## "Voice" = dublagem (Onda 7, linha do Áudio por delegação do chefe; 80 % = regra do Guardião).
+const DEFAULT_VOLUMES := {"Master": 0.7, "SFX": 0.9, "Music": 0.6, "Voice": 0.8}
 
 ## Ferramentas de dev (shot/balance_bot/combat_test) desligam isto pra não
 ## sujarem o save real do jogador com runs sintéticos.
@@ -66,6 +67,7 @@ func save_game() -> void:
 		"vol_master": Audio.master_vol,
 		"vol_sfx": Audio.sfx_vol,
 		"vol_music": Audio.music_vol,
+		"vol_voice": Audio.voice_vol,
 		"settings": GameManager.settings,
 		# Desbloqueios (#26): chefes vencidos na CAMPANHA e criaturas vistas —
 		# meta-progresso, sobrevive a run novo.
@@ -130,7 +132,7 @@ func load_game() -> bool:
 			run = {}
 	RunManager.saved_run = run if typeof(run) == TYPE_DICTIONARY else {}
 	# --- áudio ---
-	for bus in [["Master", "vol_master"], ["SFX", "vol_sfx"], ["Music", "vol_music"]]:
+	for bus in [["Master", "vol_master"], ["SFX", "vol_sfx"], ["Music", "vol_music"], ["Voice", "vol_voice"]]:
 		var dv: float = DEFAULT_VOLUMES[bus[0]]
 		Audio.set_volume(bus[0], clampf(_float(d.get(bus[1], dv), dv), 0.0, 1.0))
 	# --- opções (só chaves conhecidas; o resto fica no padrão) ---
