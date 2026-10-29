@@ -82,6 +82,9 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 | 82454b2 (delta de 8d00636: 5eeea79, 04c46e0, 9bf99e2, 846314d, d439998, 82454b2) | APROVADO COM RESSALVAS (BodyBox do Sono/Espelho aceitável; guarda alta justa e sinalizada; falta aviso da forma que se refaz e o root no muro) | R5, R18, R21, SDT |
+| dir7/polimento7 | 28d8df7 (delta de 0ba25d8) | APROVADO (as 2 ressalvas fecharam) | R5, R18, R4/R9 |
+| dir6/progressao6 | 3d13bbd (= e78feb4 + merge ba91602; delta da base 4dad743: eea11d9, 941e8a0, b12455d, a22e1d7, 0e8fc37) | APROVADO COM RESSALVAS (curva ok; `claim_once` com chave de baú que colide e sem aviso) | §3, §4, R21 |
 | dir7/mapa7 | 4e4b9cc (delta de 8e8afc3) | APROVADO (a observação do SOTER_SCREEN fixo fecha; sem mudança de som no world_map) | §3/§4, R4 |
 | dir7/polimento7 | 0ba25d8 (delta de 2854fc0: 222dc38, 0ba25d8) | APROVADO COM RESSALVAS (Campeão com 1 som: ok; teto do invocador ok; o "esgotado" é discreto e ele AINDA recua andando, ao contrário do que o doc diz) | R4, R9, R18, R5/§5 |
 | dir7/polimento7 | 2854fc0 (delta de 2d54867: d639053, 4305f1d, 5898825, 2854fc0) | APROVADO COM RESSALVAS (cast mudo e proj_fire hostil FECHADOS; contorno dos chefes melhora, mas o Arconte do Sono ainda tem pano de 15-27 px sem dano; Astaphaios fica mudo sem o 4574a19 do chefes6) | R4, R5/§5.5, §3, R1 |
@@ -1015,6 +1018,102 @@ MapQA leem dali em vez do número 17 fixo e das condições `off == 6 and eon in
 - MAPA7.md ganhou a seção 1d com a validação (confere com o que medi).
 
 **Veredito: APROVADO.**
+
+---
+
+## dir6/progressao6 — 3d13bbd (= e78feb4 + merge da integração ba91602; delta da base 4dad743; 8757da6 é merge)
+
+**Medido no 3d13bbd (worktree de sonda, headless):** importação sem `SCRIPT ERROR`; ProgQA **58 `QA PASS`**, 0 falhas. O 3d13bbd só soma ao e78feb4 o merge da integração (arquivos de outros donos; o código da Progressão é o mesmo, conferido por diff; a única mudança em arquivo dela é a quebra de linha da placa dos Selos, por i18n). Não refiz o ProgBot
+(15 a 25 min); conferi a conta contra o doc (§9.4) e o código.
+
+**O que muda:** arma espalhada (custos 200/500/1100/1800; Nv.3 após Athoth, Nv.4 após Yabel, Nv.5 após Belias); 6ª compra de Éter só após Belias
+(`MP_LAST_TIER = 6`); segundo engaste (1500, após Astaphaios) e Coro das Faíscas (700): relíquias de fim de run; `claim_once` (baú, Selos,
+Adormecido e recompensa de camada pagam 1 vez por run, no save); respiro entre ondas 0,8 -> 2,0 s; ProgBot com a loja real.
+
+**Checagem:**
+- **§3, a curva: ATENDE.** Preços e selos fixos e mostrados na loja ("vença Belias"), sem prazo nem sorteio; nada se perde por não comprar (sem
+  FOMO). A recompensa vem de ter vencido o Arconte (competência). ~15 mil faíscas, 26 a 31 compras (uma a cada 2-3 telas, maior jejum 3-6
+  telas), nenhuma trilha no topo antes da tela 56, loja inteira ~21,4 mil: o jogador escolhe. Fecha o item 8 do playtest ("tudo no máximo cedo").
+  Observação: no perfil focado a arma fica no Nv.3 da tela 19 até ~46 (Nv.4) e 59 (Nv.5): ~27 telas sem golpe novo. É decisão de ritmo, não
+  violação; vale o playtest do João ficar de olho (se reclamar de "nada novo", baixar o preço do Nv.4, 1100).
+- **§3, `claim_once` (era o meu risco "morrer dá lucro"): ATENDE, com uma RESSALVA.** A chave do baú é `bau:<tela>` para o baú comum e para o baú
+  SECRETO. O baú comum fica em toda tela `screen % 3 == 1` e o secreto (`tower_cache`/`dj_cache`, em layouts de santuário, escalada e segredo) pode cair
+  na mesma tela (ex.: o santuário da trilha baixa do Torpor na tela 7: 7 % 3 == 1, e o layout de santuário põe `tower_cache`). Quem abre o segundo
+  recebe 0 faíscas, calado (o baú abre, soa e cura, sem aviso). O secreto vale o dobro: o prejuízo cai no prêmio por esforço. Não consegui enumerar
+  todas as telas sem rodar o jogo (o `--script` não carrega os autoloads), então é "provável, conferir". Correção mínima:
+  `"bau:%d%s" % [screen, ":s" if secret else ""]`. Além disso, quando `claim_once` nega (baú, Selo, Adormecido), mostrar um aviso curto ("já
+  recolhido") em vez de calar; sem isso lê como bug.
+- **R21: ATENDE.** Respiro de 2,0 s entre ondas (era 0,8). Sem slow-mo.
+- **Coro das Faíscas:** dano fixo 14, raio fixo 80, sem sorteio, sem tremor nem som próprio; a última faísca de cada inimigo solta o anel pequeno (o
+  `nova_ring` de raio < 140 não entra no orçamento de flashes, e o clarão central é de 0,7 por 0,1 s). Premia derrubar inimigos agrupados (habilidade).
+  Atenção leve (R10): uma cadeia de mortes pode repetir o anel várias vezes por segundo; é pequeno, mas se o playtest incomodar, limitar a 1 anel por segundo.
+- **§4:** sem recompensa variável, sem timer, sem escassez artificial. Conferido.
+
+**OPINIÃO (pedida, não é deste branch): a perda de 20 % das faíscas ao morrer (`level.gd:1012`).** Pela §4 não é "perda artificial" no sentido do cassino:
+é anunciada, proporcional, determinística, sem FOMO, sem timer. Mas é o item mais fraco do conjunto, por três motivos: (1) não há recuperação (some
+para sempre), o que é puro custo; (2) o texto da morte é de "checkpoint, algo te recompõe" e a perda contradiz o tom; (3) pune quem guarda, e a loja
+só abre pela pausa; o dono diz que "quem gasta não perde nada", mas o jogador novo não sabe disso. Com `claim_once` o "morrer dá lucro" acabou, então
+o piso de proteção já existe e a perda deixa de ser necessária como contrapeso. Recomendo: manter, porém com teto (ex.: o menor entre 20 % e ~150
+faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de morte que dá para gastar antes. Se o chefe quiser o mínimo de risco: zerar
+a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
+
+**Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## dir7/polimento7 — 28d8df7 (delta de 0ba25d8: um commit)
+
+**Medido:** li o código e as capturas `C:\gnosis-wt\_caps\polimento7\esgotado\` (telas 38 e 48, `depois` × `v1_escuro`).
+
+**Minhas 2 ressalvas do 0ba25d8:**
+- **(1) `_desired_x` ainda o afastava: FECHADA.** `_process_chase` agora sai logo se `_summon_exhausted`, ANTES do ramo `moves` e do legado: ele
+  desacelera até parar, vira para a Sophia e não tem golpe nenhum (nem tiro, nem recuo, nem passo). O doc agora diz exatamente isso. É uma janela de
+  punição clara (competência), sem número escondido.
+- **(2) escuro some no fundo escuro: FECHADA.** A cor sai por dessaturação (`grade_sat` 0,08) com luz x2 (cinza CLARO), mais um sopro e uma fumaça
+  leve contínua (10 partículas, alfa 0,5). Nas capturas, na tela 48 (fundo verde escuro) o corpo é um cinza claro que salta do cenário e na 38
+  (fundo claro) continua legível; a fumaça é discreta, quem carrega a leitura é o cinza. É estático, sem pisca (R10).
+- **Ramo órfão do `Gnosis.boss_card("campeao")`: FECHADO** (passa `sting = false`; agora nada toca `boss_appear` para Campeão, por nenhum caminho).
+- Efeito no jogo: bot nas telas com invocador -7,5 % do tempo (era -9 %), dano tomado 7740 -> 6637, run 93,6 -> 89,6 min, quase-mortes 208 -> 179. Nota
+  do doc: a tela 35 passou a dar timeout por um cornudo colado, sorteio e não o invocador.
+
+**Veredito: APROVADO.**
+
+---
+
+## dir6/chefes6 — 82454b2 (delta de 8d00636: 5eeea79, 04c46e0, 9bf99e2, 846314d, d439998, 82454b2; 463c148 é merge da integração)
+
+**Medido no 82454b2 (worktree de sonda, headless):** importação sem `SCRIPT ERROR`; ReiProbe nas telas 10 (Athoth) e 46 (Astaphaios), logs
+`C:\gnosis-wt\_caps\guardiao\arc_t10.txt` e `arc_t46.txt`: Athoth parado cobre 88 % do desenho, 22 % da caixa fora, 0 atravessa, 0 apelão;
+Astaphaios cobre 78 %, 26 % fora, 1 golpe a 55 px ainda atravessa (a ponta do cajado toca a ponta do véu, como o doc admite), 0 apelão. Não rodei o
+BossProbe de curva (longo); li os números do dono.
+
+**Checagem:**
+- **BodyBox do Sono e do Espelho (~33 % da caixa fora): ACEITÁVEL.** O número é de ÁREA e o desenho deles é rendado (véu em tiras, fiapos); o que
+  decide a justiça é a faixa do cajado: pano sem dano 25,5 -> 7,0 px (Sono) e 18,9 -> 7,8 (Espelho), sobra por linha de 2,6 a 2,8 px, e o contorno
+  do polimento7 já tinha 26-28 % fora. Na faixa onde a Sophia bate, o "acerta o ar" é de 2-3 px por lado, abaixo do que o olho vê. R18 atende (o que se vê
+  fere), com a ressalva do 1 golpe a 55 px no Espelho.
+- **Guarda alta (04c46e0): JUSTA E SINALIZADA, com uma ressalva.** `guard_up` escala o dano que o chefe SOFRE no neutro (x0,55 a 0,7) e armado (x0,35 a
+  0,45) e a postura (x1,3 a 1,5); a punição cheia fica nas janelas (recuperação, golpe exposto, atordoado, aparo). É a mesma lógica de janelas que já
+  existia (0,5/0,5/0,85), só mais dura, e a leitura tem sinal: toda vez que o golpe é reduzido sai o `ImpactBurst` azul pálido em vez do acerto
+  dourado (`filter_damage`). Quem espera a hora sente pouco (médio 1,5 a 2,5 min; final 155 s); quem martela cai de 33 s para 76-87 s, e o bot
+  agressivo continua curto em Coroa/Praga (~57-60 s, o doc admite). Boa direção: premia o padrão certo, é competência (SDT), não vira vida inflada.
+  Risco de frustração: no neutro ele agora aguenta só 55-70 % do dano, e o jogador novo no Harmas (tela 19) vê a faísca azul mas pode não entender o
+  porquê. Mitigação barata: uma dica no 1º chefe ("o Arconte se protege enquanto ataca: bata quando ele recuperar"), ou um som de guarda no acerto armado
+  (hoje só a cor muda; §4.11, cor não deve ser o único aviso).
+- **Forma caída se refaz em 9 s (era 14): ATENDE com RESSALVA.** O desenho é bom (derrubar as duas juntas; ela volta mais fraca e o prazo sobe 3 s por
+  refeita, R21 converge). Mas não há aviso visível da contagem: só o toast no momento da volta (`final_revive`) e o tremor 0,6. Em 9 s o jogador não
+  sabe quanto falta; um brilho que cresce na forma caída nos últimos ~2,5 s tornaria isso um telegrafo (R5), não uma surpresa.
+- **Dano ajustado à vida da curva (~390): ATENDE.** Belias 0,45 -> 0,55, Armupiel 0,27 -> 0,38, Rei-Mentira e Colosso 0,38 -> 0,48, coerente com a vida e a arma Nv.5
+  que a Progressão entrega. O médio no final dá 2 quase-mortes (antes 7): menos frustração, e a luta é mais longa (155 s) mas não infinita. Bom.
+- **Chefe encenado intocável (Galila antes do gatilho): ATENDE.** `filter_damage` devolve 0 quando `can_process()` é falso; o mesmo mecanismo que o rugido e a
+  morte já usavam. É correção de bug (a fase trocava fora do quadro). Sem aviso visual de "imune", o que é aceitável para um chefe congelado em cena.
+- **Chefe colado na parede volta ao meio (Colosso): ATENDE, com um bug leve.** O override novo de `chase()` roda DEPOIS do `if e.rooted_timer > 0: dir = 0`,
+  então um chefe preso pela Corrente da Lei dentro da margem da parede caminha para o meio e "sai" da prisão. Correção mínima: `and e.rooted_timer <= 0.0`
+  nas duas condições novas.
+- **R1 a R4, R10:** nenhum tremor, flash ou som novo. **§3:** nenhuma recompensa mexida.
+
+**Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: (1) aviso visível antes de a forma caída se refazer; (2) o root não pode ser anulado pelo
+empurrão da parede; (3) dar um segundo sinal (som/dica) ao golpe "armado" da guarda alta.
 
 ---
 
