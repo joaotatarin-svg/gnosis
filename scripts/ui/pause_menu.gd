@@ -20,6 +20,7 @@ var _map_view: Control = null    # WorldMap aberto em modo leitura
 
 
 func _ready() -> void:
+	layer = 45                       # acima do HUD (20) — ver hud.gd HUD_LAYER
 	CodexStyle.apply_existing(self)
 	_vbox.custom_minimum_size.x = 260
 	# 6 botões + relíquia + aviso de combate: o painel precisa caber nos 360 px.
