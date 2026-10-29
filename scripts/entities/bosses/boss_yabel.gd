@@ -23,6 +23,8 @@ func _on_setup() -> void:
 	gap_by_phase = [1.0, 0.85, 0.7]
 	escape_hits = 3
 	escape_id = "mergulho"
+	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
+	guard_up(0.65, 0.4, 1.3)
 
 
 func _build_moves() -> Dictionary:

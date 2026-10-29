@@ -17,10 +17,12 @@ var _court_cd: float = 0.0
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.27
+	dmg_scale = 0.38          # 28/10: curva da Progressão (~370 de vida na tela 64)
 	keep_dist = Vector2(40.0, 100.0)
 	gap_by_phase = [0.8, 0.7, 0.6]
 	escape_hits = 4
+	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
+	guard_up(0.55, 0.35, 1.5)
 
 
 func _build_moves() -> Dictionary:

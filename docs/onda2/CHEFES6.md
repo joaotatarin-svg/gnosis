@@ -178,3 +178,68 @@ Balanço depois da caixa nova (BossProbe, `_caps/chefes6/r_corpo.txt`): Rei 74 s
 | Caixa de dano = manto desenhado | R18 (o que se vê é o que vale), R4 (1 Área = 1 acerto) | apelão: faixa de cima pega o braço estendido nos quadros de golpe (até 15 % fora no corpo todo); na metade de baixo, 8 % | franjas finas e pontas fora; olho exposto continua somando (ponto fraco, já documentado) |
 | Raio vira orbe com cauda | R5 (aviso: risco/seta + losango + `tell_unblock`), R18 | — | forma de LUZ (não bloco); mesma área de dano; sem clarão novo (R10) |
 | Sem mexer em tremor/hitstop/flash | R1–R3, R10 | — | nada novo |
+
+## BodyBox do SONO (Athoth) e do ESPELHO (Astaphaios) — 28/10 (pedido do chefe após o Guardião aprovar 8d00636)
+Com a hurtbox genérica do Polimento7 (contorno `body_poly`), o Athoth deixava 15–27 px de pano fora na altura do
+cajado e o Astaphaios cobria 50–76 % do desenho. Agora os dois usam `BossBodyBox` (como o Rei). Tabelas:
+`body_slabs.py bosses/<id> ... --abrir 3 --fill 0.3`: antes de medir, uma ABERTURA leve (3 px) + maior peça conexa
+tira o que está SOLTO (cacos flutuando do Espelho, o espelho que se separa) e fiapos de 1–2 px; o resto é o
+critério do Rei. Os ecos/clones do Astaphaios (inimigos comuns) seguem na genérica.
+Medida em todos os quadros (`body_cover.py ... --abrir 3 --mundo 0.34`, `_caps/chefes6/{athoth,astaphaios}_quadros.*`;
+azul = contorno do Polimento7 reproduzido em Python, verde = faixas). "Pano fora" = px de mundo por linha, dos pés
+até 1 Sophia, desenho BRUTO (com fiapos), 2 lados — a métrica da BossHurtProbe:
+| | ½ recorte (prévia 3) | contorno (Polimento7) | FAIXAS |
+|---|---|---|---|
+| Athoth: pano fora / sobra (média) | 22,7 / 3,5 | 25,5 / 2,6 | **7,0 / 2,8** |
+| Athoth: pano fora no pior quadro | 46,6 | 40,3 | **11,3** |
+| Astaphaios: pano fora / sobra | 15,9 / 3,8 | 18,9 / 1,3 | **7,8 / 2,6** |
+| Astaphaios: pano fora no pior quadro | 62,2 | 29,5 | **12,6** |
+| metade de baixo: cobre (Athoth / Astaphaios) | 77 % / 79 % | 77 % / 78 % | **95 % / 94 %** |
+No jogo (ReiProbe `tela=10/46`, `_caps/chefes6/arc{10,46}_{antes,depois}.log`, antes = ½ recorte deste branch):
+Athoth pano fora 19–25 → 10–20 px (com fiapos), golpe que atravessa 1 → 0; Astaphaios 5–14 → 7–12 px com sobra
+4–11 → 1–3 px; 1 golpe a 55 px ainda "atravessa" (a ponta do cajado toca a ponta do véu/cajado dele).
+Ressalva honesta: a área de caixa fora do desenho fica em ~33 % nos dois — o desenho deles é rendado (fiapos de
+névoa, véu em tiras); o contorno também fica em 26–28 %. Na faixa do cajado a sobra por linha é 2,6–2,8 px.
+
+## Re-teste 3.1 (QA7 N2): final e Éons altos leves — 28/10
+Causa medida: o bot do QA7 bate SEM PARAR e chega com arma um nível acima do esperado. A minha sonda no perfil
+`agressivo` com a arma do QA7 reproduz (Fome 56 s, Praga 62, Coroa 41,5, final 33 s com 0 quase-morte); no perfil
+`medio` (a meta 1,5–2,5 min) as lutas já estavam na faixa. Ou seja: quem MARTELA não era punido — o problema é de
+leitura, não de vida.
+Correção (padrão): `BossBrain.guard_up(k_neutro, k_armado, postura)` — "guarda alta" nos chefes do fim: golpe dado
+com o chefe no neutro ou no meio do golpe dele sai no "armado" (faísca azul, dano baixo) e a postura demora mais a
+quebrar; as janelas (recuperação, golpe exposto, atordoado, aparo) continuam pagando cheio. Harmas 0,7/0,4/×1,3 ·
+Yabel 0,65/0,4/×1,3 · Belias 0,7/0,45/×1,3 · Armupiel, Rei-Mentira e Colosso 0,55/0,35/×1,5. Números: Coroa 26→32
+golpes; final com dano dos golpes 0,30→0,38 (QA7: dano tomado caiu de 668–954 para 86–128).
+BossProbe (`_caps/chefes6/qa_*.txt` antes, `g1_* … g5_*.txt` depois; agressivo = arma do QA7, médio = arma esperada):
+| chefe | agressivo antes → depois | médio depois | quase-mortes (médio) |
+|---|---|---|---|
+| Harmas (19) | 56 → 58 s | 142 s | 3 |
+| Yabel (37) | 64 → 78 s | 147 s | 1 |
+| Belias (55) | 62 → 64–71 s | 92–116 s | 2 |
+| Armupiel (64) | 41,5 → 65 s | 107–117 s | 1 |
+| Final (68) | 33 → 87 s | 188 s | 7 |
+Harmas quase não mudou (ele foge/salta, a guarda pega pouco); fica para o playtest. Variação entre rodadas iguais ±25 %.
+
+## QA7 3.1 — Colosso cortado na borda esquerda (tela 68) — 28/10
+Causa: a INVESTIDA do Colosso passa da Sophia e para colada na parede; depois, com a Sophia a 40–110 px (dentro
+do `keep_dist`), ele não anda mais — fica ali com metade do corpo fora da câmera (Shot 68 seq: centro a 61–87 px
+da borda da imagem). Correção: `BossBrain.chase` — colado na parede (dentro de `wall_margin`) o chefe SAI andando
+para o meio; Colosso com `wall_margin` 115 (o Rei já tinha 120). Depois: centro a 113–124 px.
+Antes/depois: `_caps/chefes6/colosso68_antes_esq_depois_dir.png` (`c68a/` × `c68d/` com o `_meta.json`).
+
+## Fim do jogo pela CURVA DA PROGRESSÃO (e78feb4) em cima da integração ba91602 — 28/10
+- Trouxe a integração `ba91602` para o branch (merge 463c148, sem conflito). O `e78feb4` da Progressão conflita
+  em arquivos de outros donos (`upgrade_menu.gd`, i18n) — NÃO commitei; medi num worktree descartável
+  (`C:\gnosis-wt\chefes6_med` = este branch + e78feb4 com `-X theirs`).
+- BossProbe ganhou `curva=1` (arma e vida da tabela de `docs/pedidos/progressao7.md` por tela: 64 → Nv.5/372,
+  68 → Nv.5/392) e `vida=N`.
+- Integração antes destes ajustes, curva: final 112 s médio / **39 s agressivo** (0 quase-morte); Coroa 98 / 53 s.
+- Ajustes (padrão primeiro): batalha final — a forma caída se refaz em **9 s** (era 14): derrubar as DUAS juntas
+  é a leitura (baixar as duas, depois fechar), não martelar uma; vida 16/18 → 20/22 golpes. Dano dos chefes do fim
+  dimensionado para a vida que a curva entrega (~330–390): Belias 0,45→0,55, Armupiel 0,27→0,38, Rei-Mentira e
+  Colosso 0,38→0,48; Coroa 34 golpes.
+- Depois (curva, `_caps/chefes6/cv4_*.txt`): final **155 s médio (2 qm) / 76 s agressivo**; Coroa 87–129 s médio /
+  57 s agressivo; Praga 90–110 s médio. Coroa e Praga no agressivo seguem curtos (~57–60 s): o bot agressivo acerta
+  >1 golpe/s quase sem ser punido — é o próximo passo de PADRÃO (não de vida) para o Armupiel; fica para o playtest.
+- Não é meu: ecos do Centro (bestiary.gd) — pedido da Progressão segue para inimigos.

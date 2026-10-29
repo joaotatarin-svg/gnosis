@@ -47,6 +47,20 @@ var window_mult := {
 	Enemy.EState.WINDUP: 0.5, Enemy.EState.STRIKE: 0.5, Enemy.EState.CHASE: 0.85,
 	Enemy.EState.RECOVER: 1.1, Enemy.EState.STAGGER: 1.3, Enemy.EState.HURT: 1.0,
 }
+## GUARDA ALTA (re-teste QA7 da 3.1, 28/10): nos chefes do fim, quem só martela
+## no neutro e no meio do golpe dele fica batendo no "armado" (faísca azul, dano
+## baixo) e não quebra a postura tão fácil; a punição de verdade sai nas JANELAS
+## (recuperação, golpe exposto, atordoado, aparo) — que continuam iguais. Mexe na
+## LEITURA, não na vida: o jogador médio que espera a hora sente pouco; o que
+## aperta sem parar sente muito.
+func guard_up(k_chase: float, k_armed: float, poise_k: float) -> void:
+	window_mult[Enemy.EState.CHASE] = k_chase
+	window_mult[Enemy.EState.WINDUP] = k_armed
+	window_mult[Enemy.EState.STRIKE] = k_armed
+	_poise_max *= poise_k
+	_poise = _poise_max
+
+
 ## Escala do dano de TODOS os golpes deste chefe (balance por chefe).
 var dmg_scale: float = 1.0
 ## Distância mínima da parede ao andar (px de mundo).
@@ -189,6 +203,12 @@ func chase(delta: float) -> bool:
 	var wb := arena_bounds()
 	if (dir < 0.0 and e.global_position.x < wb.x + wall_margin) or (dir > 0.0 and e.global_position.x > wb.y - wall_margin):
 		dir = 0.0
+	# colado na parede (depois de uma investida/empurrão): sai dela andando para o
+	# meio — arte larga cortada na borda da câmera (QA7 3.1: Colosso na tela 68)
+	if e.global_position.x < wb.x + wall_margin - 12.0:
+		dir = 1.0
+	elif e.global_position.x > wb.y - wall_margin + 12.0:
+		dir = -1.0
 	var spd: float = e.move_speed * (0.5 if e.slow_timer > 0.0 else 1.0)
 	e.velocity.x = dir * spd + e._separation()
 	if _gap_t <= 0.0 and not _partner_busy():
@@ -270,6 +290,12 @@ func strike_tick(delta: float) -> void:
 ## Dano que chega: filtro do chefe + invulnerável no rugido de fase.
 func filter_damage(dmg: int, attacker: Node) -> int:
 	if _roar_t > 0.0 or _dying >= 0 or _airborne:
+		return 0
+	# Arconte ENCENADO (tentação: congelado até a Sophia cruzar o gatilho) é
+	# intocável — senão um tiro de longe (ou o `hurt` do Shot) troca a fase com ele
+	# parado fora da luta: as gaiolas da fase 2 descem e a Galila fica congelada
+	# fora do quadro (QA7 #11).
+	if not e.can_process():
 		return 0
 	dmg = _filter(dmg, attacker)
 	if dmg <= 0:

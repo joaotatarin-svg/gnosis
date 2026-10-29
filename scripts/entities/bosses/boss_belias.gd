@@ -21,11 +21,13 @@ var _was_stag: bool = false
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.45
+	dmg_scale = 0.55          # 28/10: curva da Progressão (~330 de vida na tela 55)
 	keep_dist = Vector2(60.0, 160.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 3
 	escape_id = "enterrar"
+	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
+	guard_up(0.7, 0.45, 1.3)
 
 
 func _build_moves() -> Dictionary:
