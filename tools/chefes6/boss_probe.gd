@@ -45,6 +45,7 @@ func _ready() -> void:
 			"perfil": w.profile = v
 			"vida": w.force_hp = int(v)
 			"curva": w.curve = true
+			"semente": w.seed_k = int(v)
 	get_tree().root.add_child.call_deferred(w)
 
 
@@ -55,6 +56,8 @@ class ProbeWorker extends Node:
 	var force_hp: int = 0              # vida máx. da Sophia (0 = a da run nova)
 	## curva=1: arma e vida da CURVA DA PROGRESSÃO (docs/pedidos/progressao7.md, e78feb4)
 	var curve: bool = false
+	## semente=N: muda o sorteio do bot (0 = o de sempre, comparável com as rodadas antigas)
+	var seed_k: int = 0
 	const CURVE := {1: [1, 120], 10: [2, 140], 19: [3, 186], 28: [3, 242], 37: [3, 276], 46: [4, 302], 55: [4, 332], 64: [5, 372], 68: [5, 392]}
 	var out_base: String = "user://boss_probe"
 	var skill: float = 0.65            # chance de rolar do vermelho (o resto escala daqui)
@@ -138,8 +141,9 @@ class ProbeWorker extends Node:
 			if sk.ring != "" and k < n_rings:
 				Progression.add_ring(sk.ring, sk.id)
 				k += 1
-		_rng.seed = hash("probe-%d" % s)
-		seed(hash("probe-g-%d" % s))
+		_rng.seed = hash("probe-%d" % s) if seed_k == 0 else hash("probe-%d-%d" % [s, seed_k])
+		seed(hash("probe-g-%d" % s) if seed_k == 0 else hash("probe-g-%d-%d" % [s, seed_k]))
+		_by_state = {}
 		_bosses = []
 		_fight_on = false
 		_t = 0.0
@@ -262,6 +266,9 @@ class ProbeWorker extends Node:
 		if cur < prev:
 			_hits += 1
 			_dmg_dealt += prev - cur
+			# em que estado do chefe o golpe entrou (diagnóstico de padrão: janela × armado)
+			var st: String = str(Enemy.EState.keys()[e.estate]) if e.estate < Enemy.EState.size() else str(e.estate)
+			_by_state[st] = int(_by_state.get(st, 0)) + prev - cur
 		e.set_meta("probe_hp", cur)
 
 	func _watch(pl: Player) -> void:
@@ -278,6 +285,7 @@ class ProbeWorker extends Node:
 		pl.health.health_changed.connect(_on_pl_hp)
 
 	var _src: Dictionary = {}
+	var _by_state: Dictionary = {}
 
 	func _on_pl_hp(cur: int, _mx: int) -> void:
 		if _fight_on and _hp_seen >= 0 and cur < _hp_seen:
@@ -310,7 +318,7 @@ class ProbeWorker extends Node:
 		var row := {"screen": s, "boss": "+".join(names), "time": _t, "hits": _hits, "dealt": _dmg_dealt,
 			"taken": _dmg_taken, "near": _near, "why": why, "phases": " ".join(ph), "wl": Progression.weapon_level, "src": str(_src)}
 		_rows.append(row)
-		print("PROBE tela=%d %s t=%.0fs golpes=%d dano_dado=%d dano_tomado=%d quase_mortes=%d arma=%d [%s] %s fontes=%s" % [s, row.boss, _t, _hits, _dmg_dealt, _dmg_taken, _near, row.wl, why, row.phases, row.src])
+		print("PROBE tela=%d %s t=%.0fs golpes=%d dano_dado=%d dano_tomado=%d quase_mortes=%d arma=%d [%s] %s fontes=%s estados=%s" % [s, row.boss, _t, _hits, _dmg_dealt, _dmg_taken, _near, row.wl, why, row.phases, row.src, str(_by_state)])
 		_flush_caps()
 		_next_screen.call_deferred()
 
