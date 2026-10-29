@@ -2282,8 +2282,8 @@ const _TELEGRAPH_TINTS := [Color(1.0, 0.85, 0.2, 1.0), Color(1.0, 0.25, 0.25, 1.
 
 
 const RIM_BASE := 0.32              # contorno de luz dos inimigos (≈0,3; ×2 na preparação)
-const HERO_RIM := 0.9               # Sophia: luz de recorte por dentro da borda (R18; era 0,6 com raio de 1,6 texel — fino demais na tela)
-const HERO_RIM_PX := 6.0            # raio da luz de recorte (texels da folha ≈ 1 px de tela)
+const HERO_RIM := 1.6               # Sophia: luz de recorte (R18) — só no fio externo da silhueta; cai ao meio do raio (shader), o interior da pintura fica intacto
+const HERO_RIM_PX := 3.0            # raio da luz de recorte (texels da folha; ≈ 1 px de tela a 1280×720)
 const HERO_HALO_PX := 1.6           # raio do halo de fora (inalterado)
 const HERO_HALO := 0.25             # Sophia: halo de ~1 px por fora (R18)
 static var rim_override: int = -1   # QA: força o Éon da cor do contorno (-1 = tela atual)
