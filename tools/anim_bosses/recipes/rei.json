@@ -13,14 +13,109 @@
  "anchors": {
   "d_collapse": "lying"
  },
- "anchor_fix": {},
- "inbetween": {
-  "idle": [
-   "idle_0",
-   "idle_1",
-   2
+ "anchor_fix": {
+  "idle_a02": [
+   -0.13,
+   1.0
+  ],
+  "idle_a03": [
+   -0.13,
+   1.0
+  ],
+  "idle_a04": [
+   -0.04,
+   1.0
+  ],
+  "idle_a05": [
+   0.21,
+   1.0
+  ],
+  "idle_a06": [
+   0.04,
+   1.0
+  ],
+  "idle_a07": [
+   -0.04,
+   1.0
+  ],
+  "idle_a08": [
+   0.0,
+   1.0
+  ],
+  "idle_a09": [
+   0.17,
+   1.0
+  ],
+  "idle_a10": [
+   0.08,
+   1.0
+  ],
+  "idle_a11": [
+   0.17,
+   1.0
+  ],
+  "idle_a13": [
+   -0.13,
+   1.0
+  ],
+  "idle_a14": [
+   -0.13,
+   1.0
+  ],
+  "idle_a15": [
+   0.0,
+   1.0
+  ],
+  "glide_a00": [
+   -0.25,
+   0.0
+  ],
+  "glide_a01": [
+   -1.0,
+   1.0
+  ],
+  "glide_a02": [
+   -1.13,
+   1.0
+  ],
+  "glide_a03": [
+   -0.92,
+   1.0
+  ],
+  "glide_a04": [
+   -1.13,
+   1.0
+  ],
+  "glide_a05": [
+   -1.25,
+   2.0
+  ],
+  "glide_a06": [
+   -1.0,
+   0.0
+  ],
+  "glide_a07": [
+   -1.13,
+   1.0
+  ],
+  "glide_a08": [
+   -0.79,
+   1.0
+  ],
+  "glide_a09": [
+   -1.13,
+   1.0
+  ],
+  "glide_a10": [
+   -1.13,
+   1.0
+  ],
+  "glide_a11": [
+   -1.0,
+   1.0
   ]
  },
+ "inbetween": {},
  "flex": {
   "cloth_top": 0.35,
   "cloth_amp": 1.5
@@ -28,19 +123,41 @@
  "hem_wave": 0.0,
  "states": {
   "idle": {
-   "pingpong": [
-    "idle_0",
-    "idle_1"
+   "frames": [
+    "idle_a00",
+    "idle_a01",
+    "idle_a02",
+    "idle_a03",
+    "idle_a04",
+    "idle_a05",
+    "idle_a06",
+    "idle_a07",
+    "idle_a08",
+    "idle_a09",
+    "idle_a10",
+    "idle_a11",
+    "idle_a12",
+    "idle_a13",
+    "idle_a14",
+    "idle_a15"
    ],
    "loop": true,
-   "fps": 4.0
+   "fps": 6.0
   },
   "walk": {
    "frames": [
-    "walk_c0",
-    "walk_p0",
-    "walk_c1",
-    "walk_p1"
+    "glide_a00",
+    "glide_a01",
+    "glide_a02",
+    "glide_a03",
+    "glide_a04",
+    "glide_a05",
+    "glide_a06",
+    "glide_a07",
+    "glide_a08",
+    "glide_a09",
+    "glide_a10",
+    "glide_a11"
    ],
    "cycle_bodies": 0.9
   },
@@ -181,6 +298,54 @@
    "scale": "auto",
    "ref": "d_stagger0",
    "main_ref": "hurt"
+  },
+  {
+   "sheet": "artes/gpt/boss_9_rei_idle_camadas.png",
+   "grid": [
+    6,
+    5
+   ],
+   "cells": [
+    "idle_a00",
+    "idle_a01",
+    "idle_a02",
+    "idle_a03",
+    "idle_a04",
+    "idle_a05",
+    "idle_a06",
+    "idle_a07",
+    "idle_a08",
+    "idle_a09",
+    "idle_a10",
+    "idle_a11",
+    "idle_a12",
+    "idle_a13",
+    "idle_a14",
+    "idle_a15",
+    "glide_a00",
+    "glide_a01",
+    "glide_a02",
+    "glide_a03",
+    "glide_a04",
+    "glide_a05",
+    "glide_a06",
+    "glide_a07",
+    "glide_a08",
+    "glide_a09",
+    "glide_a10",
+    "glide_a11",
+    "-",
+    "-"
+   ],
+   "scale": "auto",
+   "ref": "idle_a00",
+   "main_ref": "idle_0"
   }
- ]
+ ],
+ "spring_mul": 0.3,
+ "flex_off_states": [
+  "idle",
+  "walk"
+ ],
+ "_doc_v11": "Rei v11 (Lab3D): idle e walk = pintura idle_0 animada em camadas (o manto já ondula na folha): o vento do shader fica desligado nesses estados (flex_off_states) e a mola do cartão (sx/sy/bend) vale 30% (spring_mul) — a mola inteira lia como 'cartão de borracha'."
 }

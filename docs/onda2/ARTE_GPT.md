@@ -431,6 +431,30 @@ esquiva etc. seguem PINTADOS. O andar 3D entra só como pose de encenação (`wa
   parada (nada de golpe/squash novo — `_hero_motion` respira ±0,6% como antes); R16 ok (parada legível, silhueta e altura
   iguais); §4 conferido: nenhuma recompensa/escassez, só arte. Risco aceito: mudança de estilo parada(3D)×golpe(pintado).
 
+## REI v11 DO LAB3D (29/10/2026; base integracao/onda1 3993fb5)
+Parada e andar do Rei = a pintura `idle_0` animada em camadas (mesma técnica da parada r4 da Sophia). Golpes, preparo, dano,
+morte e cenas seguem com as pinturas atuais (os quadros intermediários de braço virão do GPT — `PEDIDO_GPT.md` do Lab).
+- **Material:** `artes/gpt/boss_9_rei_idle_camadas.png` (grade 6×5, 28 células) e `tools/anim_bosses/recipes/rei.json` = a receita
+  completa do Lab (mais 1 `extra_sheets`, `anchor_fix` medido, `inbetween` vazio, `idle`/`walk` novos). Atlas regerado com
+  `boss_frames.py rei --no-rife`: 44 quadros, 2048×2048 (igual), ajuste `fit` idêntico (`body_frac` 0,9707). `idle` = 16 quadros a
+  6 fps (sem vaivém/RIFE); `walk` = 12 quadros "deslizar", trocados pela distância (`cycle_bodies` 0,9).
+- **`rei_body_data.gd` NÃO foi tocado** (BodyBox é do Chefes6, que aplica o dado novo em paralelo).
+- **Mola do cartão a 30% (recomendação do plano):** chave de receita `spring_mul` (padrão 1,0; Rei 0,3) vai para o meta e o
+  `character_art.gd` aplica a (sx−1), (sy−1) e à curvatura `bend` da mola amortecida do chefe — só o Rei muda; os outros chefes
+  seguem 1,0. A pintura já se mexe; a mola inteira lia como "cartão de borracha".
+- **Sem vento do shader na parada/andar:** chave `flex_off_states` (Rei: idle, walk) zera o `cloth_amp` do shader enquanto a
+  sequência mostrada é uma delas (o manto já ondula na folha); nos golpes o vento do shader continua (pinturas paradas).
+- **Prova** (`C:\gnosis-wt\_caps\arte\rei_v11\`, 1280×720, `--audio-driver Dummy --position 4000,4000`, A = antes em cima, D = depois
+  embaixo): luta real do Rei no Limiar por Shot — `luta_andar_golpe.png` (CHASE→preparo→golpe→recuperação, mesmos estados nos
+  mesmos quadros); quadro a quadro limpo (AnimQA film_boss) — `p_parada.png`, `p_andar.png`, `p_golpe.png`; zoom 2× —
+  `zoom2x_capuz.png`, `zoom2x_barra.png`, `zoom2x_andar_capuz.png`. Parada e andar movem como pano, sem fervura nem borrão dos
+  meios; no golpe a pintura é a mesma e o esticar/achatar sumiu quase todo.
+- **Ressalvas:** a transição parada/andar → preparo (braço sobe) segue troca seca (já era; precisa dos intermediários do GPT);
+  a folha de origem é macia (~450 px, limite da pintura); feel só na mão do João.
+- **CHECAGEM DE SATISFAÇÃO:** R16/R18 (legibilidade do chefe: silhueta e altura iguais, contorno do telégrafo intacto; o preparo
+  continua legível com o brilho/rim); R19 (golpe sem "peça girando": menos mola); R4/R5 não se aplicam (nenhum dado de combate
+  mudou, hitbox só pelo `rei_body_data` do Chefes6); §4 conferido (arte apenas, sem recompensa/escassez).
+
 ## BILHETE PARA O SUCESSOR (19/10/2026, 2º integrador de arte, branch `dir2/arte-gpt`)
 
 **Estado:** TUDO da lista do chefe feito, validado (validate -Repeat 2 verde) e com push; último commit e114a52.
