@@ -34,6 +34,7 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	HazardArt.setup(self)
 	_max_hp = 50 + screen * 4
 	_hp = _max_hp
 	_hurt = Hurtbox.new()
@@ -71,7 +72,7 @@ func _on_hit(dmg: int, _s: Vector2, _k: float, _u: bool = false, _a: Node = null
 		return
 	_hp -= maxi(1, dmg)
 	_flash = 0.12
-	Audio.play_sfx_at("chest_hit", global_position, 0.1)
+	Audio.play_sfx_at("hz_totem_hit", global_position, 0.1)
 	DamageNumber.spawn(get_parent(), global_position + Vector2(0, -40), dmg, Color(1.0, 0.85, 0.5))
 	if _hp <= 0:
 		_crumble(true)
@@ -85,7 +86,7 @@ func _crumble(reward: bool) -> void:
 	var col := Color(0.9, 0.4, 0.35) if reward else Color(0.5, 0.45, 0.5)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -30), col, true)
 	if reward:
-		Audio.play_sfx_at("seal_solved", global_position, 0.05)
+		Audio.play_sfx_at("hz_totem_break", global_position, 0.05)
 		Progression.add_orbs(12 + screen)
 		Juice.shake(0.25)
 		get_tree().call_group("hud", "toast", "Totem quebrado: os reforços cessam.")
@@ -123,12 +124,55 @@ func _summon() -> void:
 	if lv.has_method("_on_minion"):
 		lv.call("_on_minion", e)
 	VfxLibrary.portal(lv, global_position + Vector2(0, -30), Color(0.9, 0.4, 0.35), 0.6)
-	Audio.play_sfx_at("portal_open", global_position, 0.1)
+	Audio.play_sfx_at("hz_totem_summon", global_position, 0.1)
 
 
 func _draw() -> void:
 	if _dead and modulate.a <= 0.0:
 		return
+	if HazardArt.has("totem"):
+		_draw_art()
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): aceso (parado) → PULSANDO quando a invocação se
+## aproxima (o cristal acende, contorno violeta a 2 Hz) → quebrado. Golpe =
+## véu claro (sem escurecer a pintura); rachas por código mostram a vida.
+func _draw_art() -> void:
+	var red := Color(0.95, 0.35, 0.3)
+	var violet := Color(0.75, 0.45, 1.0)
+	draw_set_transform(Vector2(0, 2), 0, Vector2(1, 0.22))
+	draw_circle(Vector2.ZERO, 26.0, Color(0, 0, 0, 0.35))
+	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
+	if _dead:
+		HazardArt.draw(self, "totem", 2, Vector2.ZERO)
+		return
+	var k := 1.0 - clampf(_timer / EVERY, 0.0, 1.0) if _armed else 0.0
+	var f := 1 if k > 0.6 else 0
+	if _armed:
+		var a := (0.25 + 0.6 * k) * (0.5 + 0.5 * HazardArt.pulse(_t))
+		HazardArt.draw_outline(self, "totem", f, Vector2.ZERO, Color(violet, a), 1.5)
+	HazardArt.draw(self, "totem", f, Vector2.ZERO)
+	if _flash > 0.0:
+		HazardArt.draw_wash(self, "totem", f, Vector2.ZERO, Color(1, 0.95, 0.9, 0.55 * HazardArt.flash_k()))
+	# rachas = vida perdida
+	var dmg := 1.0 - float(_hp) / float(maxi(1, _max_hp))
+	var cracks := int(dmg * 6.0)
+	for i in cracks:
+		var y := -12.0 - float(i) * 8.0
+		draw_line(Vector2(-7 + i % 3, y), Vector2(5 - i % 2 * 3, y - 6), Color(red, 0.75), 1.0)
+	# brilho do cristal: pulsa mais rápido perto de invocar (≤ 2 Hz no máximo)
+	var eye := HazardArt.point("totem", "eye", Vector2(0, -60))
+	var g := 0.5 + 0.5 * sin(_t * TAU * (0.6 + 1.4 * k))
+	draw_circle(eye, 6.0 + 4.0 * k * g, Color(violet, (0.12 + 0.25 * k) * HazardArt.flash_k()))
+	# contas: quantas invocações ainda tem
+	for i in MAX_SUMMONS - _summons:
+		draw_circle(Vector2(-6 + i * 6, -10), 1.8, Color(red, 0.8))
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var red := Color(0.95, 0.35, 0.3)
 	var stone := Color(0.18, 0.13, 0.16) if _flash <= 0.0 else Color(0.9, 0.85, 0.8)
 	# sombra

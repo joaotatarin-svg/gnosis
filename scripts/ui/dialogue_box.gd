@@ -125,6 +125,7 @@ var _mode_tween: Tween
 var _mode_set: bool = false       # já houve a 1ª fala (sem fade cruzado nela)
 var _cont: _Cont                  # rodapé "continuar" (fica fora de _box)
 var _speed: float = 1.0           # text_speed() lido ao abrir
+var _scene: Node                  # cena dona da fala (QA7 #14: troca de cena fecha a caixa)
 
 
 static func play(p_lines: Array, p_choices: Array = []) -> DialogueBox:
@@ -219,6 +220,7 @@ func _ready() -> void:
 	PauseStack.push(self)
 	_paused_world = true
 	layer = 90
+	_scene = get_tree().current_scene
 
 	_root = Control.new()
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -536,6 +538,11 @@ func is_typing() -> bool:
 
 
 func _process(delta: float) -> void:
+	# A cena que abriu a fala saiu (troca de cena direta, Abandonar, Crônicas…):
+	# a caixa vai junto — antes ela ficava por cima da tela nova tapando botões (QA7 #14).
+	if _scene_gone():
+		_abort()
+		return
 	# Relógio da caixa: delta (sem câmera lenta), não o relógio de parede.
 	_clock += delta / maxf(0.01, Engine.time_scale)
 	_t += delta
@@ -672,6 +679,23 @@ func _on_choice(i: int) -> void:
 
 
 func _finish() -> void:
+	_release_pause()
+	finished.emit()
+	queue_free()
+
+
+## A cena dona foi trocada? (aberta sem cena — ferramenta/boot — adota a 1ª que aparecer)
+func _scene_gone() -> bool:
+	var cur := get_tree().current_scene
+	if _scene == null:
+		_scene = cur
+		return false
+	return not is_instance_valid(_scene) or cur != _scene
+
+
+## Fecha sem escolher: solta a pausa, avisa quem espera `finished` e some.
+func _abort() -> void:
+	set_process(false)
 	_release_pause()
 	finished.emit()
 	queue_free()

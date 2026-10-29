@@ -32,6 +32,7 @@ var _close_button: Button
 
 
 func _ready() -> void:
+	layer = 45                       # acima do HUD (20) — ver hud.gd HUD_LAYER
 	CodexStyle.apply_existing(self)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	PauseStack.push(self)
@@ -106,7 +107,7 @@ func _rebuild() -> void:
 		if ch0 != null:
 			for c in ch0.combos:
 				if c.required_weapon_level == Progression.weapon_level + 1:
-					opens.append(c.display_name)
+					opens.append(I18n.t(c.display_name))   # i18n: cada nome sozinho (QA7 #16)
 		var sub := ("abre: " + ", ".join(opens)) if not opens.is_empty() else ""
 		var title := "Arma Nv. %d → %d" % [Progression.weapon_level, Progression.weapon_level + 1]
 		if Progression.weapon_sealed():
@@ -318,7 +319,7 @@ func _buy_relic(id: String) -> void:
 
 func _equip_relic(id: String) -> void:
 	Progression.equip_relic(id)
-	Audio.play_sfx("shop_buy")
+	# som: "relic_equip" toca pelo sinal relics_changed (Áudio7) — sem "shop_buy" por cima
 	_rebuild()
 
 

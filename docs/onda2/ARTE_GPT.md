@@ -329,11 +329,64 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   `mk_champ_recipes.haze_rects`). Estado com `puff: [r,g,b]` solta `VfxLibrary.cast` na frente do corpo ao entrar.
   Andar SEM meios do RIFE (a PuppetQA proíbe: lê como fantasma).
 - Prova: `_caps/arte-gpt/fila9/own_board.png`, `own_board_champ.png` (AnimQA `own_board x [champ]`).
-- Ressalvas: champ_6 fica com resto de névoa amarelada no strike; champ_3 (como o bot) franja rosada na capa
-  translúcida; champ_5 morre estilhaçando em pé; espectro pequeno no chão é normal (voa).
+- Ressalvas (revistas): champ_3 e champ_6 com `despill_full` (o rosado pintado nos panos virou ferrugem/vinho);
+  o brilho amarelado no leque do champ_6 ficou (lê como esporos acesos); champ_5 morre estilhaçando EM PÉ de
+  propósito (cavaleiro de vidro — R17 morte distinta), com o monte de cacos no chão (âncora `lying` = base no chão).
 
-## BILHETE PARA O SUCESSOR (18/10/2026, integrador de arte, branch `dir2/arte-gpt`)
+## Mortes de chefe em 4 etapas (FILA 10) e cor real
+- Folhas `boss_<n>_<nome>_death_a.png` (2×2: tranco, cambaleio, joelhos, tombado) entram por
+  `tools/anim_bosses/add_death.py` como `extra_sheets` (escala auto contra o `hurt`) e estado `dying`
+  (dur 0,17/0,17/0,28; o tombado segura até o estilhaço em 1,08 s). `_death_seq` prefere `dying`; `_boss_index`
+  indexa pelo relógio da morte. O fundo rosa do Rei (≈248,2,192) passou na chave magenta normal (K estimado da
+  moldura; r e b ≫ g) — sem chave própria. Galila: usada a `_a`. Prova: `_caps/arte-gpt/fila9/death_board.png`
+  (AnimQA `death_board`: 1ª linha = antes).
+- Cor ao quadrado corrigida no `painted_flex` (60a8cf7): Sophia e criaturas sem quadros na cor real da pintura.
 
+## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
+- **R17 morte distinta**: chefe morre em 4 poses desenhadas (tranco → cambaleio → joelhos → tombado) + lampejos
+  brancos no tranco, tremor e contorno crescendo antes do estilhaço — lê como "acabou" sem olhar a barra.
+  Criaturas novas têm quadro de morte próprio (deitado/desfazendo); o contorno branco de 1 quadro no golpe que
+  mata é do combate/juice.
+- **R18 legibilidade (19/10, auditoria do Guardião)**: Sophia ganhou luz de recorte (por dentro, só onde a borda é
+  escura) + halo de ~1 px (por fora) na cor do Éon no `painted_flex` (`HERO_RIM` 0,6, `HERO_HALO` 0,25 só junto das partes ESCURAS —
+  sem piso: o cajado dourado ficou sem a faixa pálida que o Guardião apontou —, raio 1,6 texel).
+  Medido em jogo (ContrastProbe + contrast_r18.py): tela 3 1,76→2,06:1 · tela 30 2,02→2,37:1 · tela 57 1,45→1,71:1.
+  Mais forte lava a pintura; o resto até 3:1 é do fundo (pedido em `docs/pedidos/cenario7.md`). Prancha:
+  `_caps/arte-gpt/r18/r18_antes_depois.png`. Chefes/criaturas por quadros já tinham o rim do `painted_boss`.
+- **R17 tremor**: o `Juice.shake` da queda de joelhos na morte desenhada caiu de 0,7 para 0,15 (micro) — o tremor
+  grande é UM, no golpe final (combate/chefes6).
+- **QA7 #18 pés**: `tools/FeetProbe.tscn` mede pé desenhado × base da colisão nas 7 telas de Arconte: todos ≤ 3 px,
+  exceto Belias 6,7 px (foot_gap do boneco antigo → zerado). Os 40–55 px da captura do QA7 não se reproduzem no
+  idle/andar — devem ser de pose/encenação (entrada do chefe), não da âncora do PNG.
+- **R18 (antes)**: cor REAL da pintura (sem o quadrado, a Sophia ficou mais clara e salta do fundo escuro);
+  inimigos com arte própria mantêm o contorno do Rim (cor do Éon); o interino tingido/dessaturado sai quando
+  há arte própria. Fantasma: fumaça despill p/ cinza-violeta (não some no fundo azul). Pendente: teste em
+  escala de cinza ≥ 3:1 por tela (dono: cenário/QA).
+- **R19 smear/segurar pose**: nada mudou no golpe da Sophia; as ações novas (pulo duplo, freada) são quadros
+  desenhados — sem "foto cortada" girando (o giro do cartão do pulo duplo saiu quando há quadros).
+- **R20 squash**: pulo duplo/arrancada/freada desenhados não usam squash extra do CharacterArt (o `_hero_motion`
+  segue moderado: jump 0,95/1,06). O squash do player.gd é do combate6.
+
+## BILHETE PARA O SUCESSOR (19/10/2026, 2º integrador de arte, branch `dir2/arte-gpt`)
+
+**Estado:** TUDO da lista do chefe feito, validado (validate -Repeat 2 verde) e com push; último commit e114a52.
+- Fila 9: bloco 1 Sophia S17/S18 (b618400) · blocos 2+3 inimigos/campeões (7163c12) · bloco 4 Soter (62f3ed0).
+- Cor ao quadrado do `painted_flex` corrigida (60a8cf7) — polimento7 recalibra o FLASH_ADD.
+- Mortes de chefe em 4 etapas (4038d12, `add_death.py`, estado `dying`). Ressalvas dos campeões (e114a52).
+**Pedidos abertos (de outros):** inimigos6 pular a tinta/graduação do interino com `visual.has_own_art()`
+(hoje o CharacterArt desfaz sozinho); narrativa6 usar Soter `lift/offer/rest`, Sophia `soter_look/land/bow`
+e `visual.bless_light()` na cena da leveza (`docs/pedidos/onda6_narrativa6.md`).
+**Possíveis próximos:** virada da Sophia (s18 q6-7 fraca — pedir refação ao GPT se o João quiser); `fx_floor_crack_a`
+já está em `assets/cinematic/` (integrado por outro); acólito usa a arte do alado de besta (en_alado_a) — se o
+João quiser o monge da lanterna, pedir folha nova; quadros de morte das criaturas comuns são 1 só (hurt→death).
+**Ferramentas novas:** `slice_sheet(grid_only, erase, strip_glow, min_part, despill_full)`; chave VERDE automática no
+`key_array`; AnimQA `film_gait x [old]`, `own_board x [champ]`, `soter_board`, `death_board`.
+**Armadilhas:** estado da Sophia não pode começar com "run"; andar de criatura SEM meios do RIFE (PuppetQA);
+depois de atlas novo, `--editor --quit` e conferir `mipmaps/generate=true`; AnimQA com erro de script trava
+(Start-Process + WaitForExit e matar pelo PID); escreva caminhos Windows em Python com r'' (barra-b vira backspace).
+Pranchas: `C:\gnosis-wt\_caps\arte-gpt\fila9\`.
+
+### Bilhete anterior (1º integrador)
 **Estado:** tudo abaixo está commitado e com push; `tools/validate.ps1 -Repeat 2` VERDE (11 etapas) no último commit.
 Feito na Onda 6: Rei revelado + retratos (Pedidos 8/9), morte de chefe com peso (`play_boss_death`, pedido ao chefes6),
 cabeça por quadro (`head_point`, pedidos ao inimigos6/narrativa6 sobre o orbe solto e a máscara do `_King`),

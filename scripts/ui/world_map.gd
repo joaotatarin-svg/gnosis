@@ -19,7 +19,7 @@ const SECRET_COL := Color("b48ce0")
 const KIND_COL := {
 	"arrival": Color("c5a56a"), "combat": Color("e0743a"), "hazard": Color("c9475b"),
 	"platform": Color("4f9ad0"), "sanctuary": Color("ecd498"), "challenge": Color("f08a8f"),
-	"secret": Color("b48ce0"), "trial": Color("c5a56a"), "antechamber": Color("c5a56a"),
+	"secret": Color("b48ce0"), "hidden": Color("8fb4d8"), "trial": Color("c5a56a"), "antechamber": Color("c5a56a"),
 	"archon": Color("ecd498"),
 }
 
@@ -34,6 +34,8 @@ var _preview: bool = false
 var _done: bool = false
 var _t: float = 0.0
 var _graph: Dictionary = {}
+var _wings: bool = false          # a Sophia já tem o pulo duplo (as "asas" do Soter)
+var _wings_news: float = 0.0      # s de destaque "as salas secretas se abriram" (1ª vez)
 
 var _canvas: Control
 var _title: Label
@@ -49,6 +51,11 @@ func _ready() -> void:
 	CodexStyle.apply_existing(self, true)
 	_load_state()
 	_graph = EonMap.graph(_eon)
+	_wings = _has_wings()
+	# 1ª tela de mapa com asas e um segredo à vista: avisa UMA vez que abriu
+	# (erro de predição positivo ganho pela história, não por sorte).
+	if _wings and not _preview and _has_secret_ahead() and Narrative.once("mapa_asas_abertas"):
+		_wings_news = 4.0
 	_build_ui()
 	_pick_first()
 	_refresh_info()
@@ -141,6 +148,8 @@ func _build_ui() -> void:
 
 
 func _subtitle() -> String:
+	if _wings_news > 0.0:
+		return I18n.t("Com as asas, as salas secretas se abrem.")
 	if _preview:
 		return I18n.t("Prévia do mapa — o caminho do Éon")
 	return I18n.t("O caminho se divide. Escolha por onde subir.")
@@ -148,6 +157,10 @@ func _subtitle() -> String:
 
 func _process(delta: float) -> void:
 	_t += delta
+	if _wings_news > 0.0:
+		_wings_news = maxf(0.0, _wings_news - delta)
+		if _wings_news == 0.0 and _sub != null:
+			_sub.text = _subtitle()
 	if _canvas != null:
 		_canvas.queue_redraw()
 
@@ -163,8 +176,33 @@ func _ordered() -> Array:
 
 func _available(id: String) -> bool:
 	if _preview:
-		return String(EonMap.find(id).requires) == ""
+		return String(EonMap.find(id).requires) == "" or _wings
 	return RunManager.node_available(id)
+
+
+## O pulo duplo já veio? Run: RunManager (Progression); prévia: GNOSIS_MAP_ASAS=1.
+func _has_wings() -> bool:
+	if _preview:
+		return OS.get_environment("GNOSIS_MAP_ASAS") == "1"
+	return RunManager.has_double_jump()
+
+
+## Há sala secreta nas camadas que ainda vêm (a partir da que está sendo escolhida)?
+func _has_secret_ahead() -> bool:
+	for id in _graph.nodes:
+		var n: Dictionary = _graph.nodes[id]
+		if String(n.requires) == "double_jump" and int(n.layer) >= _layer:
+			return true
+	return false
+
+
+## Estado do selo de um nó (QA e desenho): "" (sem requisito) · "locked"
+## (precisa de asas) · "open" (as asas já vieram).
+func secret_badge(id: String) -> String:
+	var n := EonMap.find(id)
+	if n.is_empty() or String(n.requires) != "double_jump":
+		return ""
+	return "open" if _available(id) else "locked"
 
 
 func _pick_first() -> void:
@@ -249,10 +287,14 @@ func _refresh_info() -> void:
 	var rw: Dictionary = n.get("reward", {})
 	_sel_reward.text = (I18n.t("Recompensa: %s") % EonMap.reward_text(rw)) if not rw.is_empty() else ""
 	_sel_req.add_theme_color_override("font_color", SECRET_COL if String(n.requires) != "" else CodexStyle.MUTED)
-	if not _available(id):
-		_sel_req.text = "Selado: exige o pulo duplo. Quem dá asas não luta."
-	elif String(n.requires) == "double_jump":
-		_sel_req.text = "O pulo duplo abre esta passagem."
+	var badge := secret_badge(id)
+	if badge == "locked":
+		# Fechada não é bug: diz POR QUÊ e QUANDO, sem vender o prêmio (nada de
+		# aversão à perda — NEURO §3): a recompensa fica escondida.
+		_sel_reward.text = I18n.t("Recompensa: escondida")
+		_sel_req.text = "Precisa de asas: só o pulo duplo alcança esta sala. Mais adiante, alguém te dá asas."
+	elif badge == "open":
+		_sel_req.text = "Aberta: com as asas, esta sala está ao alcance."
 	else:
 		var st: Dictionary = Gnosis.stela_for_screen(int(n.screen))
 		_sel_req.text = "Há uma Estela nesta camada, em qualquer caminho." if not st.is_empty() else ""
@@ -325,21 +367,31 @@ func _draw_graph() -> void:
 		if is_opt and not is_sel:
 			c.draw_arc(p, r + 3.0, 0.0, TAU, 32, Color(CodexStyle.GOLD_HI, 0.35 * pulse), 1.0, true)
 		_icon(c, kind, p, Color(kc, alpha) if not locked else Color(SECRET_COL, 0.55))
-		if locked:
-			_icon_lock(c, p + Vector2(9, 9), Color(CodexStyle.PAPER, 0.85))
+		var badge := secret_badge(String(id))
+		if badge != "":
+			_draw_seal(c, p, r, badge == "open", alpha, pulse)
 		if String(id) == _from:
 			# Onde a Sophia está: uma faísca sobre o nó vencido.
 			CodexStyle.draw_spark(c, p + Vector2(0, -r - 8.0), 4.0 + pulse, CodexStyle.SPARK)
+		var label_y := r + 13.0
 		if is_opt:
 			var nm := I18n.t(EonMap.kind_name(kind))
 			var fs := 9
 			var tw := font.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
-			c.draw_string(font, p + Vector2(-tw * 0.5, r + 13.0), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, fs,
+			c.draw_string(font, p + Vector2(-tw * 0.5, label_y), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, fs,
 				CodexStyle.GOLD_HI if is_sel else Color(CodexStyle.PAPER, 0.75))
+			label_y += 10.0
+		# Selo do segredo, por extenso, em todo nó secreto que ainda vem.
+		if badge != "" and not past and not visited:
+			var st := I18n.t("precisa de asas") if badge == "locked" else I18n.t("aberta")
+			var sw := font.get_string_size(st, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
+			var sc_col := Color(SECRET_COL, 0.9) if badge == "locked" else Color(SECRET_COL.lightened(0.4), 1.0)
+			var sy := (-r - 7.0) if int(n.row) == 0 else label_y
+			c.draw_string(font, p + Vector2(-sw * 0.5, sy), st, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, sc_col)
 
 
 ## Legenda no pé do painel: ícone + nome de cada tipo de caminho e a Estela.
-const LEGEND := ["combat", "hazard", "platform", "sanctuary", "challenge", "secret"]
+const LEGEND := ["combat", "hazard", "platform", "sanctuary", "challenge", "hidden", "secret"]
 
 
 func _draw_legend(c: CanvasItem, font: Font) -> void:
@@ -353,7 +405,41 @@ func _draw_legend(c: CanvasItem, font: Font) -> void:
 		c.draw_string(font, Vector2(x + 11.0, y + 3.5), nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(CodexStyle.PAPER, 0.7))
 		x += 26.0 + font.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
 	_icon_stela(c, Vector2(x, y), CodexStyle.MUTED)
-	c.draw_string(font, Vector2(x + 9.0, y + 3.5), I18n.t("Estela"), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(CodexStyle.PAPER, 0.7))
+	var et := I18n.t("Estela")
+	c.draw_string(font, Vector2(x + 9.0, y + 3.5), et, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(CodexStyle.PAPER, 0.7))
+	# mapa7 (19/10): sem a entrada do cadeado — a sala de asas só existe depois
+	# do Soter, quando já abre; o selo fechado virou caso de borda, não legenda.
+
+
+## Selo do nó secreto (o ícone dele são as ASAS do pulo duplo): cadeado fechado
+## no canto = "precisa de asas"; depois do Soter, cadeado aberto dourado e, na
+## 1ª tela de mapa com asas, um halo que pulsa por alguns segundos.
+func _draw_seal(c: CanvasItem, p: Vector2, r: float, open: bool, alpha: float, pulse: float) -> void:
+	var lp := p + Vector2(r * 0.72, r * 0.72)
+	if open:
+		if _wings_news > 0.0:
+			c.draw_arc(p, r + 5.0 + 2.0 * pulse, 0.0, TAU, 32, Color(SECRET_COL.lightened(0.3), 0.6 * pulse), 2.0, true)
+		c.draw_circle(lp, 5.5, Color(CodexStyle.INK, maxf(alpha, 0.85)))
+		_icon_lock_open(c, lp + Vector2(0, -0.5), Color(CodexStyle.SPARK, maxf(alpha, 0.85)))
+	else:
+		c.draw_circle(lp, 5.5, Color(CodexStyle.INK, 0.95))
+		_icon_lock(c, lp + Vector2(0, -0.5), Color(CodexStyle.PAPER, 0.95))
+
+
+## Asas (o pulo duplo): três penas de cada lado, abertas para cima. `k` = escala.
+func _draw_wings(c: CanvasItem, p: Vector2, col: Color, k: float = 1.0) -> void:
+	for side in [-1.0, 1.0]:
+		var root := p + Vector2(side * 1.4, 2.5) * k
+		for f in [[7.5, 58.0], [7.2, 30.0], [5.6, 4.0]]:
+			var ang := deg_to_rad(float(f[1]))
+			var tip := root + Vector2(side * cos(ang), -sin(ang)) * float(f[0]) * k
+			c.draw_line(root, tip, col, 2.2 * k, true)
+	c.draw_circle(p + Vector2(0, 2.5) * k, 1.6 * k, col)
+
+
+func _icon_lock_open(c: CanvasItem, p: Vector2, col: Color) -> void:
+	c.draw_rect(Rect2(p + Vector2(-3.5, -1), Vector2(7, 6)), col)
+	c.draw_arc(p + Vector2(2.2, -2.6), 2.6, PI, TAU, 8, col, 1.4)
 
 
 # --- ícones (desenhados por código, ~10 px) --------------------------------------
@@ -386,10 +472,13 @@ func _icon(c: CanvasItem, kind: String, p: Vector2, col: Color) -> void:
 			c.draw_rect(Rect2(p + Vector2(-3, 3), Vector2(6, 4)), col)
 			c.draw_circle(p + Vector2(-2, -1), 1.5, CodexStyle.INK)
 			c.draw_circle(p + Vector2(2, -1), 1.5, CodexStyle.INK)
-		"secret":        # olho
-			c.draw_arc(p + Vector2(0, 4), 7.0, PI + 0.6, TAU - 0.6, 12, col, 1.5, true)
-			c.draw_arc(p + Vector2(0, -4), 7.0, 0.6, PI - 0.6, 12, col, 1.5, true)
-			c.draw_circle(p, 2.2, col)
+		"hidden":        # chave (a câmara oculta: acha quem olha pra cima)
+			c.draw_arc(p + Vector2(-3, -3), 3.2, 0.0, TAU, 12, col, 1.8, true)
+			c.draw_line(p + Vector2(-0.8, -0.8), p + Vector2(6, 6), col, 2.0, true)
+			c.draw_line(p + Vector2(3, 3), p + Vector2(5, 1), col, 1.8)
+			c.draw_line(p + Vector2(5, 5), p + Vector2(7, 3), col, 1.8)
+		"secret":        # asas (o pulo duplo abre a sala)
+			_draw_wings(c, p, col, 1.0)
 		"trial":         # estrela do Campeão
 			var pts := PackedVector2Array()
 			for i in 10:

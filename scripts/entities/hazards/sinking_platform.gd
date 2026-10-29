@@ -37,6 +37,10 @@ func _ready() -> void:
 	_spr.modulate = Color(0.78, 0.74, 1.0)
 	_body.add_child(_spr)
 	add_child(_body)
+	if HazardArt.has("sink_stone"):
+		# a pedra pintada é desenhada no _draw (com aviso por cima); o Sprite2D
+		# fica sem textura, mas segue guardando tremor/alfa/visível da lógica
+		_spr.texture = null
 
 
 func _standing() -> bool:
@@ -64,7 +68,7 @@ func _tick(delta: float) -> void:
 				_timer = SUNK_TIME
 				_col.set_deferred("disabled", true)
 				_spr.visible = false
-				Audio.play_sfx_at("land", global_position, 0.1)
+				Audio.play_sfx_at("hz_sink_gone", global_position, 0.1)
 		"sunk":
 			_timer -= delta
 			if _timer <= 0.0:
@@ -81,6 +85,43 @@ func _tick(delta: float) -> void:
 
 
 func _draw() -> void:
+	if HazardArt.has("sink_stone") and _spr != null and _spr.texture == null:
+		_draw_art()
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): pedra do sono inteira → RACHADA (veias violetas) quando
+## a Sophia para em cima (aviso + tremor + contorno) → AFUNDANDO (inclina e
+## esfarela) → some; volta com fade. Bolhas de sono por cima.
+func _draw_art() -> void:
+	var y := _body.position.y
+	var col := Color(0.7, 0.65, 1.0)
+	if _state == "sunk" or not _spr.visible:
+		draw_rect(Rect2(-width * 0.5, -6.0, width, 12.0), Color(col, 0.18 + 0.1 * sin(_t * 4.0)), false, 1.0)
+		return
+	var warn := clampf(_stand / GRACE, 0.0, 1.0)
+	var f := 0
+	if _state == "sinking":
+		warn = 1.0
+		f = 2 if y > SINK_DEPTH * 0.35 else 1
+	elif _stand > 0.1:
+		f = 1
+	var sc := Vector2.ONE * (width / maxf(1.0, HazardArt.num("sink_stone", "ref_w", width)))
+	var at := Vector2(_spr.position.x, y - 6.0)
+	var mod := Color(1, 1, 1, _spr.modulate.a)
+	if warn > 0.0:
+		var a := (0.3 + 0.6 * warn) * (0.55 + 0.45 * HazardArt.pulse(_t))
+		HazardArt.draw_outline(self, "sink_stone", f, at, Color(col.lightened(0.2), a * mod.a), 1.5, 0.0, sc)
+	HazardArt.draw(self, "sink_stone", f, at, 0.0, sc, mod)
+	for i in 4:
+		var ph := fposmod(_t * 0.6 + float(i) * 0.27, 1.0)
+		var bx := (float(i) - 1.5) * width * 0.22
+		draw_circle(Vector2(bx, y - 12.0 - ph * 26.0), 1.5 + ph * 1.5, Color(col, (1.0 - ph) * (0.2 + 0.5 * warn)))
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var y := _body.position.y if _body != null else 0.0
 	var col := Color(0.7, 0.65, 1.0)
 	if _state == "sunk":

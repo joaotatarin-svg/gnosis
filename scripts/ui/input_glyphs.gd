@@ -257,7 +257,9 @@ static func pad_button_name(b: int, dev: int = Device.XBOX) -> String:
 		JOY_BUTTON_RIGHT_SHOULDER: return "R1" if (ps or deck) else ("R" if nin else "RB")
 		JOY_BUTTON_LEFT_STICK: return "L3" if (ps or deck) else "LS"
 		JOY_BUTTON_RIGHT_STICK: return "R3" if (ps or deck) else "RS"
-		JOY_BUTTON_BACK: return "Create" if ps else ("−" if nin else "View")
+		# Nomes OFICIAIS de cada fabricante no Brasil (QA7 #27): a Microsoft traduz
+		# ("Exibir"); a Sony mantém "Create"/"Options" também no manual em português.
+		JOY_BUTTON_BACK: return "Create" if ps else ("−" if nin else "Exibir")
 		JOY_BUTTON_START: return "Options" if ps else ("+" if nin else "Menu")
 		JOY_BUTTON_GUIDE: return "PS" if ps else ("Home" if nin else "Guia")
 		JOY_BUTTON_DPAD_LEFT: return "D-pad ←"

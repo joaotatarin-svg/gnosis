@@ -9,7 +9,7 @@
       Obs.: o editor NÃO reclama de .gd solto (sem cena/class_name) — por isso
       a etapa ScriptCheck carrega cada .gd do projeto.
   (b) roda as cenas de QA headless: ScriptCheck, CodexQA, AudioQA, GnoseQA, SaveQA, PuppetQA,
-      HeroQA, WaveQA, TecnicoQA, LangQA (cada uma sai com 0/1 sozinha). Com -Full também roda o
+      HeroQA, WaveQA, TecnicoQA, LangQA, FeelProbe, HitboxProbe, FlashParryProbe (cada uma sai com 0/1 sozinha). Com -Full também roda o
       CodexPlaytest (bot jogando o desafio por inputs reais; até ~3 min).
       Toda execução usa `--audio-driver Dummy` (sem som no PC do dono).
   (c) resumo: uma linha por etapa (OK/FALHOU/TEMPO), nº de "QA PASS", tempo,
@@ -75,7 +75,21 @@ $fast = [ordered]@{
 	"WaveQA"   = "res://tools/WaveQA.tscn"
 	"TecnicoQA" = "res://tools/tecnico/TecnicoQA.tscn"   # checkpoints/demo/desbloqueios/conquistas (--fixed-fps 60)
 	"LangQA"   = "res://tools/i18n/LangQA.tscn"          # tradução inglesa ligada (Onda 4)
+	# Polimento 7: combate da Sophia (--fixed-fps 60). FeelProbe ~20 s (arrancada,
+	# freio, ritmo dos golpes); HitboxProbe ~60 s no modo rápido (cajado × hurtbox ×
+	# corpo desenhado: 0 atravessa, ≤ 2 % encosta sem dano, sem dano de contato).
+	"FeelProbe"   = "res://tools/combate/FeelProbe.tscn"
+	"HitboxProbe" = "res://tools/combate/HitboxProbe.tscn"
+	# Flash ≤ 3 cheios/s (R10), aparo/contra-ataque, telegrafo por contorno. SEM
+	# --fixed-fps: o Juice conta os flashes no relógio de parede (com física fixa
+	# o tempo de jogo corre diferente e dá falso negativo — pedido do Guardião).
+	"FlashParryProbe" = "res://tools/combate/FlashParryProbe.tscn"
 }
+# argumentos de usuário (depois de "--") e física fixa por QA
+$userArgs = @{
+	"HitboxProbe" = @("--", "user://hitbox_probe.json", "rapido")
+}
+$fixedFps = @("TecnicoQA", "FeelProbe", "HitboxProbe")
 $slow = [ordered]@{
 	"CodexPlaytest" = "res://tools/CodexPlaytest.tscn"
 }
@@ -149,8 +163,10 @@ for ($rep = 1; $rep -le $Repeat; $rep++) {
 		Write-Host "-> $name..." -NoNewline
 		$stepArgs = @("--headless", "--audio-driver", "Dummy", "--path", $Path)
 		# A TecnicoQA troca de cena e conta tempo em quadros (como as regressões).
-		if ($name -eq "TecnicoQA") { $stepArgs += @("--fixed-fps", "60") }
-		$r = Invoke-Step $name ($stepArgs + @($scene, "--quit-after", "20000")) $tag
+		if ($fixedFps -contains $name) { $stepArgs += @("--fixed-fps", "60") }
+		$extra = @()
+		if ($userArgs.ContainsKey($name)) { $extra = $userArgs[$name] }
+		$r = Invoke-Step $name ($stepArgs + @($scene, "--quit-after", "20000") + $extra) $tag
 		if (-not $runs.Contains($name)) { $runs[$name] = @() }
 		$runs[$name] += $r
 		if ($Repeat -eq 1) { $results += $r }

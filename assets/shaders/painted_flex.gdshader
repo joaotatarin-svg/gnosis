@@ -19,8 +19,21 @@ uniform float cloth_amp = 0.0;         // px da folha
 uniform vec2 texel = vec2(0.0005);
 uniform float dissolve : hint_range(0.0, 1.0) = 0.0;
 uniform vec4 glow_color : source_color = vec4(1.0, 0.9, 0.6, 1.0);
+// LEITURA (NEURO R18, auditoria do Guardião): luz de contorno fina na cor do
+// Éon, no estilo das pinturas — `rim_amt` acende a borda POR DENTRO (luz de
+// recorte) e `halo_amt` põe um halo de ~1 px POR FORA (separa a silhueta do
+// fundo cheio). `rim_px` = raio em texels do atlas.
+uniform vec4 rim_color : source_color = vec4(0.8, 0.9, 1.0, 1.0);
+uniform float rim_amt = 0.0;
+uniform float halo_amt = 0.0;
+uniform float rim_px = 3.0;
 
 varying vec2 body_pos;                 // posição no corpo (0..1 de altura), pra o ruído
+// COR DO VÉRTICE guardada: no Godot 4 o COLOR de entrada do fragment JÁ vem
+// multiplicado pela textura — `texture(...) * COLOR` dava a cor AO QUADRADO
+// (Sophia e criaturas mais escuras e saturadas que a pintura). Igual ao
+// painted_boss.gdshader: amostra uma vez (com o vento) × cor do vértice.
+varying vec4 vert_col;
 
 void vertex() {
 	float h = clamp(-VERTEX.y / body_h, 0.0, 1.6);
@@ -28,6 +41,7 @@ void vertex() {
 	float low = clamp(1.0 - h * 1.6, 0.0, 1.0);
 	VERTEX.x += hem_wave * low * low * sin(wind_time * 3.1 + VERTEX.y * 0.045);
 	body_pos = VERTEX / body_h;
+	vert_col = COLOR;
 }
 
 float hash(vec2 p) {
@@ -55,6 +69,33 @@ void fragment() {
 		}
 	}
 	vec4 c = texture(TEXTURE, uv);
+	if (rim_amt > 0.0 || halo_amt > 0.0) {
+		float mn = 1.0;
+		float mx = 0.0;
+		vec3 ncol = vec3(1.0);
+		for (int i = 0; i < 8; i++) {
+			float ang = float(i) * 0.785398;
+			vec4 nb = texture(TEXTURE, uv + vec2(cos(ang), sin(ang)) * texel * rim_px);
+			mn = min(mn, nb.a);
+			if (nb.a > mx) {
+				mx = nb.a;
+				ncol = nb.rgb;
+			}
+		}
+		if (c.a > 0.05) {
+			// só acende onde a borda é ESCURA (botas, calça, cabelo na sombra): o
+			// branco do manto já salta; luz nele só lavaria a pintura
+			float dark = 1.0 - clamp(dot(c.rgb, vec3(0.299, 0.587, 0.114)) * 1.4, 0.0, 1.0);
+			c.rgb += rim_color.rgb * clamp(c.a - mn, 0.0, 1.0) * rim_amt * dark;
+		}
+		// halo mais forte junto das partes escuras (onde ela some no fundo escuro)
+		float ndark = 1.0 - clamp(dot(ncol, vec3(0.299, 0.587, 0.114)) * 1.4, 0.0, 1.0);
+		float h = clamp(mx - c.a, 0.0, 1.0) * halo_amt * ndark;   // partes claras e finas (cajado dourado) quase sem halo
+		if (h > 0.0) {
+			c.rgb = mix(c.rgb, rim_color.rgb, h / max(c.a + h, 0.001));
+			c.a = max(c.a, h);
+		}
+	}
 	if (dissolve > 0.0) {
 		float n = vnoise(body_pos * 18.0) * 0.7 + vnoise(body_pos * 47.0) * 0.3;
 		// de cima pra baixo levemente: a forma se desfaz a partir da cabeça
@@ -66,5 +107,5 @@ void fragment() {
 			c.rgb = mix(c.rgb, glow_color.rgb * 2.2, 0.85);
 		}
 	}
-	COLOR = c * COLOR;
+	COLOR = c * vert_col;
 }

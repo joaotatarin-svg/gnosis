@@ -1707,6 +1707,12 @@ func _draw_painted(s: float) -> void:
 		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("hem_wave", 2.0 if profile.body == ArtProfile.Body.WRAITH else 0.0)
+		# R18: a Sophia salta do fundo cheio — luz de recorte + halo fino na cor do Éon
+		var hero_rim: bool = hero and rim_enabled
+		mat.set_shader_parameter("rim_amt", HERO_RIM if hero_rim else 0.0)
+		mat.set_shader_parameter("halo_amt", HERO_HALO if hero_rim else 0.0)
+		mat.set_shader_parameter("rim_px", 1.6)
+		mat.set_shader_parameter("rim_color", eon_light().lerp(Color(1, 0.96, 0.88), 0.35))
 	mat.set_shader_parameter("texel", Vector2(1.0 / tex.get_width(), 1.0 / tex.get_height()))
 	mat.set_shader_parameter("dissolve", _dissolve_amount())
 	mat.set_shader_parameter("glow_color", profile.eye)
@@ -1988,6 +1994,65 @@ func play_action(action_name: String) -> void:
 	_action = action_name
 	_action_t = 0.0
 	anim_time = 0.0
+	queue_redraw()             # troca a pose mesmo com o mundo pausado (cena com caixa de diálogo)
+
+
+## Encerra a ação avulsa (as poses `hold` da cena do Soter ficam até aqui).
+func stop_action() -> void:
+	_action = ""
+	queue_redraw()
+
+
+## COLUNA DE LUZ da bênção do Soter (Fila 9: a luz pintada na folha não se
+## separa do corpo — é refeita aqui): feixe morno aditivo descendo sobre ela,
+## mais forte no meio, com o miolo pulsando. Anima com o jogo pausado.
+## `on = false` apaga em `fade` s.
+func bless_light(on: bool = true, fade: float = 0.6) -> void:
+	var old: Node2D = get_node_or_null("BlessLight") as Node2D
+	if not on:
+		if old != null:
+			var t := old.create_tween()
+			t.tween_property(old, "modulate:a", 0.0, fade)
+			t.tween_callback(old.queue_free)
+		return
+	if old != null:
+		return
+	var root := Node2D.new()
+	root.name = "BlessLight"
+	root.process_mode = Node.PROCESS_MODE_ALWAYS
+	root.z_index = 1
+	var add := CanvasItemMaterial.new()
+	add.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	var h: float = profile.height * 1.19 * 2.4
+	var foot: float = GROUND_Y * profile.height / 44.0
+	# faixas verticais com alfa caindo para as bordas (feixe macio, sem quina);
+	# a camada 1 é o miolo estreito que pulsa
+	for layer in 2:
+		var half: float = profile.height * (0.6 if layer == 0 else 0.24)
+		var peak: float = 0.26 if layer == 0 else 0.3
+		var band := Node2D.new()
+		root.add_child(band)
+		var n: int = 10
+		for k in n:
+			var x0: float = -half + 2.0 * half * float(k) / n
+			var x1: float = -half + 2.0 * half * float(k + 1) / n
+			var xm: float = (x0 + x1) * 0.5 / half
+			var a: float = peak * pow(maxf(0.0, 1.0 - xm * xm), 1.5)
+			var poly := Polygon2D.new()
+			poly.material = add
+			poly.polygon = PackedVector2Array([Vector2(x0, foot - h), Vector2(x1, foot - h), Vector2(x1 * 0.85, foot + 2.0), Vector2(x0 * 0.85, foot + 2.0)])
+			var top := Color(1.0, 0.92, 0.62, 0.0)
+			var low := Color(1.0, 0.86, 0.52, a)
+			poly.vertex_colors = PackedColorArray([top, top, low, low])
+			band.add_child(poly)
+	add_child(root)
+	root.modulate.a = 0.0
+	var t2 := root.create_tween()
+	t2.tween_property(root, "modulate:a", 1.0, 0.7).set_trans(Tween.TRANS_SINE)
+	# miolo respirando (luz viva, não um retângulo parado)
+	var pulse := root.create_tween().set_loops()
+	pulse.tween_property(root.get_child(1), "modulate:a", 0.55, 0.9).set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(root.get_child(1), "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE)
 
 
 func _tick_action(delta: float) -> void:
@@ -2002,6 +2067,11 @@ func _tick_action(delta: float) -> void:
 	var total: float = 0.0
 	for d in seq.get("dur", []):
 		total += float(d)
+	# pose de cena (`hold`, S19 do Soter): fica até stop_action() ou ela se mexer
+	if seq.get("hold", false):
+		if anim_state != "idle":
+			_action = ""
+		return
 	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
 	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):
 		_action = ""
@@ -2211,6 +2281,8 @@ const _TELEGRAPH_TINTS := [Color(1.0, 0.85, 0.2, 1.0), Color(1.0, 0.25, 0.25, 1.
 
 
 const RIM_BASE := 0.32              # contorno de luz dos inimigos (≈0,3; ×2 na preparação)
+const HERO_RIM := 0.6               # Sophia: luz de recorte por dentro da borda (R18)
+const HERO_HALO := 0.25             # Sophia: halo de ~1 px por fora (R18)
 static var rim_override: int = -1   # QA: força o Éon da cor do contorno (-1 = tela atual)
 var rim_enabled: bool = true        # QA/cenas: desliga o contorno deste personagem
 var weapon_level_override: int = -1 # QA: força o nível da arma da Sophia (-1 = Progression)
@@ -2268,6 +2340,16 @@ func _boss_index(seq: Dictionary) -> int:
 	var n: int = seq.frames.size()
 	if n <= 1:
 		return 0
+	if _death_t >= 0.0 and seq.has("dur") and n > 2:
+		# morte em etapas: cada quadro dura dur[i] no relógio da morte; o último segura
+		var t: float = _death_t
+		var durs: Array = seq.dur
+		for i in n - 1:
+			var d: float = float(durs[i]) if i < durs.size() else 0.2
+			if t < d:
+				return i
+			t -= d
+		return n - 1
 	if _death_t >= DEATH_STAGGER:
 		return n - 1                          # morte encenada: o quadro de queda
 	if _death_t >= 0.0:
@@ -2448,8 +2530,9 @@ func _tick_death(delta: float) -> void:
 	_death_t += delta
 	if before < DEATH_STAGGER and _death_t >= DEATH_STAGGER:
 		_impact = 1.0                       # cai de joelhos
+		# micro-tremor: o tremor GRANDE é um só, no golpe final (combate/chefes6)
 		if is_inside_tree():
-			Juice.shake(0.7)
+			Juice.shake(0.15)
 	if before < DEATH_BREAK and _death_t >= DEATH_BREAK:
 		_shatter()
 	if before < DEATH_END and _death_t >= DEATH_END:
@@ -2458,6 +2541,9 @@ func _tick_death(delta: float) -> void:
 
 ## Sequência e quadro durante a morte encenada.
 func _death_seq(states: Dictionary) -> String:
+	# FILA 10: morte DESENHADA em 4 etapas (tranco, cambaleio, joelhos, tombado)
+	if states.has("dying"):
+		return "dying"
 	if _death_t < DEATH_STAGGER and states.has("hurt"):
 		return "hurt"
 	return "dead" if states.has("dead") else "hurt"

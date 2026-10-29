@@ -155,14 +155,16 @@ func _fill() -> void:
 	]:
 		_control_row(c[0], c[1], c[2])
 	_gap()
-	_note("Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.")
+	_note("Telégrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.")
 	_note("Escudeiros só caem com golpe forte ou magia.   A esquiva arrebenta a Corrente da Lei.")
 
 
 func _combo_row(c: ComboData, gamepad: bool) -> void:
 	var unlocked := c.required_weapon_level <= Progression.weapon_level
-	var kb := _seq(c.sequence, [InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD), InputGlyphs.label("attack_heavy", InputGlyphs.Device.KEYBOARD)])
-	var pad := _seq(c.sequence, [_pad("attack_light"), _pad("attack_heavy")])
+	# i18n: cada glifo é traduzido SOZINHO ("Quadrado" → "Square") e a linha montada
+	# não passa de novo pela tradução automática (ela casava pedaços — QA7 #7).
+	var kb := _seq(c.sequence, [I18n.t(InputGlyphs.label("attack_light", InputGlyphs.Device.KEYBOARD)), I18n.t(InputGlyphs.label("attack_heavy", InputGlyphs.Device.KEYBOARD))])
+	var pad := _seq(c.sequence, [I18n.t(_pad("attack_light")), I18n.t(_pad("attack_heavy"))])
 	var seq := "%s   ·   %s" % [pad, kb] if gamepad else "%s   ·   %s" % [kb, pad]
 	var info := ""
 	if not unlocked:
@@ -178,7 +180,7 @@ func _combo_row(c: ComboData, gamepad: bool) -> void:
 		tags.append("dano %d" % c.damage)
 		info = "  ·  ".join(tags)
 	var col := CodexStyle.PAPER if unlocked else LOCKED
-	_row(c.display_name, seq, info, col, CodexStyle.GOLD if unlocked else LOCKED)
+	_row(c.display_name, seq, info, col, CodexStyle.GOLD if unlocked else LOCKED, true)
 
 
 func _seq(sequence: Array, names: Array) -> String:
@@ -231,7 +233,8 @@ func _sub(text: String) -> void:
 
 
 ## Linha padrão: nome (170) · sequência/custo (150) · info (resto).
-func _row(name: String, mid: String, info: String, col: Color, mid_col: Color) -> void:
+## `mid_ready`: a coluna do meio já vem traduzida (sequência de glifos) — não retraduzir.
+func _row(name: String, mid: String, info: String, col: Color, mid_col: Color, mid_ready: bool = false) -> void:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 8)
 	var a := Label.new()
@@ -242,6 +245,8 @@ func _row(name: String, mid: String, info: String, col: Color, mid_col: Color) -
 	h.add_child(a)
 	var b := Label.new()
 	b.text = mid
+	if mid_ready:
+		b.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
 	b.custom_minimum_size.x = 150
 	b.add_theme_font_override("font", CodexStyle.body_bold())
 	b.add_theme_font_size_override("font_size", 12)

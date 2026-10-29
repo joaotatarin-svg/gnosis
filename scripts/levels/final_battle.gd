@@ -9,14 +9,14 @@ class_name FinalBattle
 signal won
 
 const REVIVE_AFTER := 14.0
-const RING_SPAWN_EVERY := 6.0
-const MAX_LARVAS := 3
+const RING_SPAWN_EVERY := 9.0
+const MAX_LARVAS := 2
 # Onde as formas nascem (px a partir da parede esquerda da arena trancada da
 # Mente — Level._lock_final_arena). A vista (zoom 1,2) cobre ~533 px de mundo:
 # Sophia a 70, Rei (~85 px de largura) a 215, Colosso (~160 px) a 420.
 const ARENA_LEFT := Level.ZONE_FIRST_X - Level.ZONE_HALF
-const REI_DX := 215.0
-const COL_DX := 420.0
+const REI_DX := 290.0
+const COL_DX := 440.0
 # Na luta, as duas formas não se EMPILHAM (o Colosso por cima do Rei virava um
 # borrão dourado): se ficam a menos de APART_MIN px por STACK_TIME s, o Rei
 # (a mentira, que luta à distância) pisca para o outro lado da Sophia.
@@ -110,8 +110,9 @@ func _keep_apart(delta: float) -> void:
 	var pl := get_tree().get_first_node_in_group("player") as Node2D
 	if pl == null:
 		return
-	var lo := ARENA_LEFT + 50.0
-	var hi := ARENA_LEFT + Level.ZONE_HALF * 2.0 - 50.0
+	# margem larga: o manto do Rei não pode ficar cortado na borda (QA7 #3)
+	var lo := ARENA_LEFT + 120.0
+	var hi := ARENA_LEFT + Level.ZONE_HALF * 2.0 - 120.0
 	var side := -signf(col.global_position.x - pl.global_position.x)
 	if side == 0.0:
 		side = -1.0
@@ -213,9 +214,10 @@ func _process(delta: float) -> void:
 		if not is_instance_valid(e):
 			continue
 		down_since[e] += delta
-		if down_since[e] >= REVIVE_AFTER:
+		if down_since[e] >= REVIVE_AFTER + 3.0 * float(_revives):
 			down_since.erase(e)
-			e.revive(0.45)
+			# cada vez que se refaz, volta mais fraca (a luta converge; R21)
+			e.revive(maxf(0.2, 0.45 - 0.1 * float(_revives)))
 			# chefes6: a 1ª forma que se refaz leva as DUAS à fase 3
 			_revives += 1
 			for f in forms:
@@ -238,9 +240,21 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## Área do medalhão/vida do HUD na tela base 640×360 (QA7 #24): os Anéis
+## descem quando passariam por trás dela.
+const HUD_ZONE := Vector2(230.0, 70.0)
+
+
 func _ring_pos(k: int) -> Vector2:
 	var a := _t * 0.35 + TAU * float(k) / 7.0
-	return arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0)
+	var p := arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0)
+	if is_inside_tree():
+		var ct := get_viewport().get_canvas_transform()
+		var sp: Vector2 = ct * p
+		var lim := HUD_ZONE.y + 18.0
+		if sp.x < HUD_ZONE.x + 24.0 and sp.y < lim:
+			p.y += (lim - sp.y) / maxf(0.01, ct.get_scale().y)
+	return p
 
 
 ## Os 7 Anéis girando em volta da arena (glifo por Arconte, brilho pulsante).
