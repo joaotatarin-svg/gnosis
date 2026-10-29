@@ -340,6 +340,7 @@ class Runner extends Node:
 			Input.action_release("attack_light")
 			var touched := false
 			var shot_done := false
+			touch_max = 0
 			for k in 40:
 				await get_tree().physics_frame
 				if pl.hitbox.monitoring:
@@ -358,7 +359,7 @@ class Runner extends Node:
 			if hit and not touched:
 				apelao += 1
 			res.append("%d:%s%s" % [int(dist), "E" if touched else "-", "A" if hit else "-"])
-			_log("REI|GOLPE|dist=%d|esperado=%s|real=%s|dano=%d" % [int(dist), str(touched), str(hit), hp_lost])
+			_log("REI|GOLPE|dist=%d|esperado=%s|real=%s|dano=%d|toque=%d pts (grade 2 px)" % [int(dist), str(touched), str(hit), hp_lost, touch_max])
 			await _wait(0.4)
 		_log("REI|RESUMO|esperados=%d|atravessa=%d|apelao=%d|%s" % [esperados, atravessa, apelao, " ".join(res)])
 
@@ -370,19 +371,23 @@ class Runner extends Node:
 		var xf: Transform2D = cs.get_global_transform()
 		return Rect2(xf * (-sz * 0.5), Vector2.ZERO).expand(xf * (sz * 0.5))
 
+	var touch_max: int = 0             # maior nº de pontos (grade 2 px) do desenho dentro do cajado
+
 	func _hitbox_touches_drawing() -> bool:
 		var r := _hitbox_rect()
 		if r.size == Vector2.ZERO:
 			return false
+		var n := 0
 		var x := r.position.x
 		while x <= r.end.x:
 			var y := r.position.y
 			while y <= r.end.y:
 				if _drawn(Vector2(x, y)):
-					return true
+					n += 1
 				y += 2.0
 			x += 2.0
-		return false
+		touch_max = maxi(touch_max, n)
+		return n > 0
 
 	# --- 3) poderes ----------------------------------------------------------
 	func _moves() -> void:

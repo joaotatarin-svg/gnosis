@@ -92,18 +92,29 @@ e folhas `..._sheet.png`.
 - Projéteis ainda usam o `Projectile` padrão; quando sair a API do VFX7 (dir7/vfx7), trocar o visual em
   `BossBrain._fire` / `ground_wave` (um ponto só).
 
-## BILHETE PARA O SUCESSOR (pausa 18/10, retomada pós-integração ec64161)
-- Feito nesta retomada: merge de integracao/onda1 (ec64161); `BossTuning.expected_hit` agora usa
-  `SophiaTuning.move_damage` (o dano real ×0,65 +17 %/nível) — era por isso que a vida não acompanhava;
-  `enemy.stagger()` usa set_deferred; reflexo/cacos do Espelho com call_deferred (0 erros de monitoring);
-  Armupiel tinha ERRO DE PARSE (rodava sem cérebro nas rodadas r5/r6) — corrigido; corte vem 1× por fase,
-  Pretorianos com vida de ~6 golpes e meio dano; larvas da final a cada 9 s, máx. 2.
-- Sonda r6 (3 grupos em paralelo, `_caps/chefes6/r6?.txt`) e r7 (`r7?.txt`). Ainda FORA da meta (r7):
-  Armupiel 219 s / 10 quase-mortes (dano "outro" 371 = Pretorianos + dupla_b 204), Astaphaios 196 s / 5,
-  final 292 s / 14. Rei 80 s ok; Athoth 177 s; Harmas 127; Galila 122; Yabel 105; Belias 131 (r6).
-- PRÓXIMO PASSO: baixar dano do Armupiel (dmg_scale 0,5→0,4; dupla mais lenta), Pretorianos 1 por fase ou
-  vida 4 golpes; Astaphaios 34→28 golpes e dmg 0,5→0,42; final 22/26 → 18/20 e dmg 0,45→0,38; re-sondar
-  (3 instâncias), validate -Repeat 2, commit/push, relatório com tabela antes (bossprobe_ec64161.log) /depois.
+## BILHETE PARA O SUCESSOR (atualizado 29/10 — Chefes6 sai por contexto cheio)
+- Estado: branch `dir6/chefes6` com a integração `ba91602` (merge 463c148). Guardião aprovou 8d00636 e 82454b2
+  (com ressalvas, todas atendidas nos commits seguintes, menos a do Espelho — ver abaixo).
+- Feito no fim de out.: BodyBox (caixa de dano = silhueta pintada por quadro, `boss_body_box.gd` + tabelas
+  `<id>_body_data.gd` geradas por `tools/chefes6/body_slabs.py`) no Rei/Rei-Mentira, Athoth e Astaphaios; Raio do Rei
+  vira orbe (`look = "beam"`); guarda alta (`BossBrain.guard_up`) com faísca azul + som "block"; final: forma caída
+  se refaz em 9 s com aviso de 2,5 s (luz + som); chefe encenado intocável; chefe colado na parede sai (respeita root);
+  dano/vida do fim pela curva da Progressão (arma Nv.5, ~390 de vida).
+- Ferramentas: `tools/chefes6/ReiProbe.tscn` (`tela=N`, `sem_caixa`, `fase2`, `fotos`: caixa × desenho, faixa do
+  cajado, esperado × real, fase 2 no quadro), `BossProbe.tscn` (`perfil=agressivo`, `curva=1`, `vida=N`, `wl=N`),
+  `body_cover.py` (todos os quadros: ½ recorte × contorno do Polimento7 × faixas).
+- PENDENTE 1 (padrão, não vida): Coroa (Armupiel, 64) e Praga (Belias, 55) seguem curtas para quem MARTELA —
+  ~57–60 s no agressivo com a curva (médio 87–163 s). O bot agressivo acerta >1 golpe/s quase sem punição. Ideia:
+  Armupiel com resposta à pressão (contra-golpe imparável de área quando a Sophia emenda 4+ golpes, ou postura que
+  só quebra no aparo) — medir agressivo × médio na curva (`BossProbe ... curva=1 perfil=agressivo`).
+- PENDENTE 2: Espelho — 1 golpe a 55 px ainda "atravessa": o cajado raspa 4 pontos (grade 2 px ≈ 16 px²) da ponta
+  do véu. Fechar exigiria pôr a franja do véu na caixa (testei `--fill 0.22`: não fecha e a sobra sobe 2,6→3,8 px);
+  deixei como está (sem inflar). Decisão de design: véu rendado não é corpo.
+- PENDENTE 3: `e78feb4` da Progressão conflita em `upgrade_menu.gd`/i18n (não são meus) — medi num worktree
+  descartável; a integração resolve. Pedidos abertos em `docs/pedidos/chefes6.md` (Polimento7 ok; Shot `hurt` só
+  com zona ativa; Progressão publicar `expected_weapon_level`).
+- Erro visto 1x no BossProbe ao trocar de tela (68→64): `process_frame` em árvore nula — vem de level/staging na
+  troca de cena da sonda, não reproduziu na tela sozinha.
 
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 | Decisão das lutas | R atendidas | R violadas / risco | Como ficou |
@@ -243,3 +254,10 @@ Antes/depois: `_caps/chefes6/colosso68_antes_esq_depois_dir.png` (`c68a/` × `c6
   57 s agressivo; Praga 90–110 s médio. Coroa e Praga no agressivo seguem curtos (~57–60 s): o bot agressivo acerta
   >1 golpe/s quase sem ser punido — é o próximo passo de PADRÃO (não de vida) para o Armupiel; fica para o playtest.
 - Não é meu: ecos do Centro (bestiary.gd) — pedido da Progressão segue para inimigos.
+
+## Ressalvas do Guardião sobre 82454b2 — 29/10
+1. Guarda alta: 2º sinal = som "block" curto (máx. 1 a cada 0,25 s) junto da faísca azul (R5/R11).
+2. Final: nos últimos 2,5 s antes de a forma caída se refazer, luz crescente que se fecha nela + `charge_king` 1×.
+3. Chefe que sai da parede só anda se `rooted_timer <= 0` (o root da Corrente da Lei vale).
+4. Espelho a 55 px: o cajado raspa 4 pontos da ponta do véu (`arc46_depois2.txt`, `toque=4`); com `--fill 0.22` não
+   fecha e a sobra sobe — mantido sem inflar (ver BILHETE, pendente 2).

@@ -53,6 +53,9 @@ var window_mult := {
 ## (recuperação, golpe exposto, atordoado, aparo) — que continuam iguais. Mexe na
 ## LEITURA, não na vida: o jogador médio que espera a hora sente pouco; o que
 ## aperta sem parar sente muito.
+var _armed_sfx_t: float = -9.0
+
+
 func guard_up(k_chase: float, k_armed: float, poise_k: float) -> void:
 	window_mult[Enemy.EState.CHASE] = k_chase
 	window_mult[Enemy.EState.WINDUP] = k_armed
@@ -205,10 +208,12 @@ func chase(delta: float) -> bool:
 		dir = 0.0
 	# colado na parede (depois de uma investida/empurrão): sai dela andando para o
 	# meio — arte larga cortada na borda da câmera (QA7 3.1: Colosso na tela 68)
-	if e.global_position.x < wb.x + wall_margin - 12.0:
-		dir = 1.0
-	elif e.global_position.x > wb.y - wall_margin + 12.0:
-		dir = -1.0
+	# (preso pela Corrente da Lei, fica: o root da Sophia vale — Guardião)
+	if e.rooted_timer <= 0.0:
+		if e.global_position.x < wb.x + wall_margin - 12.0:
+			dir = 1.0
+		elif e.global_position.x > wb.y - wall_margin + 12.0:
+			dir = -1.0
 	var spd: float = e.move_speed * (0.5 if e.slow_timer > 0.0 else 1.0)
 	e.velocity.x = dir * spd + e._separation()
 	if _gap_t <= 0.0 and not _partner_busy():
@@ -307,6 +312,11 @@ func filter_damage(dmg: int, attacker: Node) -> int:
 		k = EXPOSED_MULT
 	if k < 1.0:
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -18.0 * e._art_scale), Color(0.85, 0.9, 1.0))
+		# 2º sinal do "armado" (Guardião, R5/R11: forma + SOM, não só cor): um "block"
+		# metálico curto, no máximo 1 a cada 0,25 s (combo rápido não vira metralhadora)
+		if _t - _armed_sfx_t >= 0.25:
+			_armed_sfx_t = _t
+			sfx("block", e.global_position)
 	return maxi(1, int(round(float(dmg) * k)))
 
 

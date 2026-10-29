@@ -11,6 +11,9 @@ signal won
 ## 28/10 (curva da Progressão: Sophia chega com arma Nv.5): 14 → 9 s — derrubar as
 ## duas JUNTAS virou a leitura da luta (baixar as duas, depois fechar), não martelar uma.
 const REVIVE_AFTER := 9.0
+## Últimos s antes de a forma caída se refazer: brilho crescente nela + som (aviso).
+const REVIVE_WARN := 2.5
+var _warned: Dictionary = {}
 const RING_SPAWN_EVERY := 9.0
 const MAX_LARVAS := 2
 # Onde as formas nascem (px a partir da parede esquerda da arena trancada da
@@ -216,7 +219,15 @@ func _process(delta: float) -> void:
 		if not is_instance_valid(e):
 			continue
 		down_since[e] += delta
+		var left: float = REVIVE_AFTER + 3.0 * float(_revives) - float(down_since[e])
+		if left <= REVIVE_WARN and not _warned.has(e):
+			# aviso de que ela VAI se refazer (Guardião, R5): brilho crescente + som
+			_warned[e] = true
+			var cat = Audio.get("CATALOG")
+			if cat is Dictionary and (cat.get("sfx", []) as Array).has("charge_king"):
+				Audio.play_sfx_at("charge_king", e.global_position)
 		if down_since[e] >= REVIVE_AFTER + 3.0 * float(_revives):
+			_warned.erase(e)
 			down_since.erase(e)
 			# cada vez que se refaz, volta mais fraca (a luta converge; R21)
 			e.revive(maxf(0.2, 0.45 - 0.1 * float(_revives)))
@@ -261,6 +272,20 @@ func _ring_pos(k: int) -> Vector2:
 
 ## Os 7 Anéis girando em volta da arena (glifo por Arconte, brilho pulsante).
 func _draw() -> void:
+	# forma caída prestes a se refazer: luz que cresce e se fecha nela (lê o tempo)
+	for e in down_since.keys():
+		if not is_instance_valid(e):
+			continue
+		var left: float = REVIVE_AFTER + 3.0 * float(_revives) - float(down_since[e])
+		if left > REVIVE_WARN:
+			continue
+		var k: float = clampf(1.0 - left / REVIVE_WARN, 0.0, 1.0)
+		var c: Vector2 = to_local(e.global_position + Vector2(0, -40.0))
+		var col: Color = e.eye_color
+		var pulse: float = 0.75 + 0.25 * sin(_t * (10.0 + 14.0 * k))
+		draw_circle(c, 18.0 + 46.0 * k, Color(col.r, col.g, col.b, 0.10 + 0.25 * k * pulse))
+		draw_arc(c, 70.0 - 40.0 * k, 0, TAU, 32, Color(1, 1, 1, 0.35 + 0.5 * k), 2.0, true)
+		draw_circle(c, 6.0 + 10.0 * k, Color(1, 1, 1, 0.3 + 0.6 * k * pulse))
 	if _rings_free:
 		return
 	for k in 7:
