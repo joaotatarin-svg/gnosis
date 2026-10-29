@@ -113,7 +113,7 @@ custo)`/`buy_max_mana` continuam (presentes e bot).
   `loja_*_grau1.png`, `loja_depois_grau0.png`. Ferramenta: `tools/progressao6/ShopShot.tscn`.
 
 ## 8. Limites honestos
-- A renda é a do BOT (mata tudo, não morre de verdade — a morte custa 20% das faíscas). Um
+- A renda é a do BOT (mata tudo, não morre de verdade — a morte custa as faíscas ganhas na tela, §12). Um
   humano deve ganhar um pouco menos; se o playtest achar a loja seca, o ajuste é UMA linha
   (`WEAPON_COSTS`, `HP_BASE_COST`…) — `econ_sim.py` recalcula a curva.
 - O bot (`_auto_shop`) não compra relíquias nem usa os tetos novos de vida; a curva de
@@ -184,12 +184,34 @@ Sobra no fim: ~0,1–0,7 mil no Centro; a tela 68 (Mente) rende ~2,5 mil que nã
 | Não dá para comprar tudo (~15 mil × ~21,4 mil) | SDT: autonomia — escolha entre arma, vida, magias, relíquias | Nenhuma: nada some com o tempo, nada se perde por não comprar (sem FOMO) | 12 |
 | `claim_once` (baú/Selo/Adormecido/camada pagam 1×) | §3: quantidade fixa e determinística | Nenhuma: tira a "farmagem" de morrer e voltar | — |
 | Respiro de 2 s entre ondas | R21 | Nenhuma | 5 (sem slow-mo) |
-| Morte custa 20% das faíscas NA CARTEIRA (level.gd, não é meu) | — | §3 "aversão à perda como motor": risco BAIXO — a loja abre pela pausa a qualquer hora, quem gasta não perde nada, e inimigos re-mortos rendem de novo. Não mexi; se o Guardião quiser zero perda, o lugar é `level.gd:1012` | — |
+| **Morte leva SÓ as faíscas ganhas NA TELA atual** (era 20% da carteira) — §12 | §3: sem aversão à perda como motor; a perda é a da própria tela que recomeça (coerente com o checkpoint), nunca o que já era seu | Nenhuma | 12 |
+| Recompensa já paga **avisa** ("Recompensa já recolhida neste run") em vez de pagar 0 calado; baú secreto com chave própria — §12 | §3 quantidade fixa e TRANSPARENTE; R21 (aviso curto, no toast do HUD, sem clarão) | Nenhuma | 12 |
+
+## 12. Ressalvas do Guardião + decisão do chefe (29/10) — DELEGAÇÕES REGISTRADAS
+- **Baú secreto pagava 0 calado**: baú comum e secreto da mesma tela usavam `bau:<tela>`. Agora o secreto é
+  `bau:<tela>:s` (`chest.gd`). Novo `Progression.claim_once_or_notice(chave)`: se já foi pago, avisa no HUD
+  "Recompensa já recolhida neste run" (`notice_claimed()`; tenta de novo por ~6 s se a cena ainda não montou
+  o HUD — caso da recompensa do mapa, `run_manager._grant_reward`). Usado em baú, Selos e Adormecido.
+- **Morte (decisão do chefe)**: perde só `Progression.screen_gain` (faíscas GANHAS nesta tela; zera em todo
+  `RunManager.screen_changed`; nunca mais que a carteira — `Progression.death_loss()`).
+  **Delegação do chefe:** edição mínima em `scripts/levels/level.gd` (`_commit_death`, a linha do `lost`).
+  Também, por ser o mesmo pedido ("diga isso na fala da morte"): **uma linha** de `narrative.gd`
+  (`death_revive`, a fala do narrador: "A tela recomeça, e as faíscas dela também. N faíscas escorrem…") e a
+  tradução dela no lote `01_narrative_a.tsv` (narrativa6), e o teste `morte_custa_20pct_faiscas` do
+  `tools/tecnico/tecnico_qa.gd` (técnico) virou `morte_custa_faiscas_da_tela` (100 na carteira, 30 da tela → 70).
+- Validação: ProgQA **62/0** (novos: chave do secreto + aviso; perda = ganho da tela; teto da carteira; tela
+  nova zera), validate.ps1 **TUDO VERDE (14)**, i18n strict 1456/1456.
 
 ## 11. BILHETE PARA O SUCESSOR (29/10)
-- **Estado:** curva fechada (§9.4) e Difícil/Muito Difícil conferidos com renda igual (BALANCE.md §8).
-  Último commit do branch: ver `git log -1 dir6/progressao6`. validate.ps1 **TUDO VERDE (14 etapas)**;
-  ProgQA 58/0; `econ_sim.py --checa` ok; i18n strict 1433/1433.
+- **Estado (29/10, encerrado):** curva fechada (§9.4), Difícil/Muito Difícil conferidos com renda igual
+  (BALANCE.md §8), base = integração ba91602 (merge 3d13bbd), ressalvas do Guardião e morte nova (§12)
+  APROVADAS (68bcaea) + limpeza de comentários. validate.ps1 **TUDO VERDE (14 etapas)**; ProgQA 62/0;
+  `econ_sim.py --checa` ok; i18n strict 1456/1456.
+- **Decisão do chefe (29/10):** a morte não tem custo econômico real (só as faíscas da tela, que a tela
+  devolve ao ser refeita) — o custo é TEMPO; morrer rende menos que seguir. O playtest dirá; não reabrir
+  sem dado de playtest.
+- **Combinado com o chefes6:** a economia NÃO baixa a força do fim; os chefes calibram contra a tabela de
+  potência em `docs/pedidos/progressao7.md` (arma Nv.5 + ~380 de vida no final).
 - **Arquivos-chave:** `scripts/autoload/progression_manager.gd` (constantes no topo: `WEAPON_COSTS/TIER`,
   `HP_*`, `MP_*`, `MP_LAST_TIER`, `SKILL_*`, relíquias), `scripts/ui/upgrade_menu.gd` (linha selada usa
   `hp_buy_tier`/`mp_buy_tier`), `tools/progressao6/{ProgBot.tscn, prog_bot.gd, run_bots.ps1, curva.py,

@@ -339,7 +339,7 @@ Não morras antes da hora. ...Antes de acabarmos. Antes de acabarmos juntos.,Do 
 "Tu cais, e eu refaço-te. Já fizemos isto antes, tu e eu. Muito antes.","You fall, and I remake you. We have done this before, you and I. Long before."
 Eu refaria o mundo inteiro para te pôr de pé.,I would remake the whole world to set you back on your feet.
 ...Não me olhes assim. É modo de dizer.,...Do not look at me like that. It is a figure of speech.
-(A luz te costura de volta. %s da tua mão aberta.),(The light stitches you back together. %s from your open hand.)
+"(A luz te costura de volta. A tela recomeça, e as faíscas dela também. %s da tua mão aberta.)","(The light stitches you back together. The screen starts over, and so do its sparks. %s from your open hand.)"
 "(Escuro. Um coração batendo. Depois, cinza na boca.)","(Darkness. A heart beating. Then, ash in the mouth.)"
 Acorda. ...Isso. Devagar. Eu estou aqui.,Wake. ...That is it. Slowly. I am here.
 "Olha: alguém vem da névoa. Não temas, eu o conheço. É um rei antigo, e gentil. Não te quer mal.","Look: someone comes out of the mist. Do not fear, I know him. An ancient king, and kind. He means you no harm."
@@ -800,6 +800,7 @@ Tantas vezes provou os presentes deles. O trono só lhe pareceu familiar.,So man
 "Na cidade das cinzas aprendeu os nomes. Ina, que cantava errado. Merou, do poço. Tasso, do telhado. Disse cada um em voz alta.","In the city of ash she learned the names. Ina, who sang off-key. Merou, of the well. Tasso, of the roof. She said each one aloud."
 "Não eram a gente dela. Agora são. E dentro dela, pequeno, alguém aprendia a ver.","They were not her people. Now they are. And inside her, small, someone was learning to see."
 A faísca lembrou. O resto é silêncio.,The spark remembered. The rest is silence.
+Recompensa já recolhida neste run,Reward already collected this run
 no:%d.%d,no:%d.%d
 O arquivo de save estava ilegível e foi ignorado.,The save file was unreadable and has been ignored.
 O save principal estava danificado; o progresso foi recuperado da cópia de segurança.,The main save was damaged; your progress was recovered from the backup copy.
@@ -973,7 +974,8 @@ z,z
 BossBrain,BossBrain
 OrbRig,OrbRig
 HudPush,HudPush
-bau:%d,bau:%d
+bau:%d%s,bau:%d%s
+:s,:s
 Segredo encontrado,Secret found
 Arconte,Archon
 %s (Elite),%s (Elite)

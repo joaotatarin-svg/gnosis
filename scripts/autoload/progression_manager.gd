@@ -80,6 +80,10 @@ signal relics_changed()
 const FLAG_PREFIX := "#"
 
 var orbs: int = 0
+## Faíscas GANHAS na tela atual (zera a cada tela nova). Decisão do chefe
+## (Guardião, 29/10): a morte custa SÓ isto — a tela recomeça do checkpoint e
+## as faíscas dela voltam com ela; o que veio de telas anteriores é seu.
+var screen_gain: int = 0
 var weapon_level: int = 1
 var skill_levels: Dictionary = {}      # skill_id -> int
 var bonus_max_health: int = 0
@@ -100,6 +104,15 @@ signal boss_beaten(boss_id: String)
 ## Ids dos chefes já vencidos na campanha ("rei", ids dos Arcontes,
 ## "demiurgo"). Gravado no save; a Provação só lista os vencidos.
 var bosses_beaten: Array[String] = []
+
+
+func _ready() -> void:
+	# o RunManager vem depois na ordem dos autoloads: liga no quadro seguinte
+	_link_screen_gain.call_deferred()
+
+
+func _link_screen_gain() -> void:
+	RunManager.screen_changed.connect(func(_s: int): screen_gain = 0)
 
 
 ## Marca um chefe como vencido na campanha. Ignora a Provação e cenas de teste
@@ -216,6 +229,32 @@ func claim_once(key: String) -> bool:
 	return true
 
 
+## Como `claim_once`, mas se a recompensa JÁ foi paga avisa no HUD em vez de
+## ficar calado (Guardião): "Recompensa já recolhida neste run".
+func claim_once_or_notice(key: String) -> bool:
+	if claim_once(key):
+		return true
+	notice_claimed()
+	return false
+
+
+## Aviso de recompensa já recolhida. Vai por um timer do autoload: se a troca
+## de cena ainda não montou o HUD (recompensa do mapa), tenta de novo.
+func notice_claimed(tries: int = 6) -> void:
+	if not is_inside_tree():
+		return
+	if not get_tree().get_nodes_in_group("hud").is_empty():
+		get_tree().call_group("hud", "toast", "Recompensa já recolhida neste run")
+		return
+	if tries > 0:
+		get_tree().create_timer(1.0, false).timeout.connect(notice_claimed.bind(tries - 1))
+
+
+## Quanto a morte leva: só as faíscas ganhas NESTA tela (nunca mais que a carteira).
+func death_loss() -> int:
+	return clampi(screen_gain, 0, orbs)
+
+
 ## Já foi pago neste run? (consulta, não marca)
 func was_claimed(key: String) -> bool:
 	return _flag_get("pagos", "").split(",", false).has(key)
@@ -260,6 +299,7 @@ func tier_gate_name(tier: int) -> String:
 ## Zera a progressão para uma nova run (chamado ao entrar no menu / começar).
 func reset_run() -> void:
 	orbs = 0
+	screen_gain = 0
 	weapon_level = 1
 	skill_levels.clear()
 	bonus_max_health = 0
@@ -289,6 +329,8 @@ func add_orbs(amount: int) -> void:
 	# Pérola do Hino: +25% de toda faísca GANHA (perdas e gastos não mudam).
 	if amount > 0 and relic_active("perola"):
 		amount = int(round(float(amount) * (1.0 + RELIC_SPARK_BONUS)))
+	if amount > 0:
+		screen_gain += amount
 	orbs += amount
 	orbs_changed.emit(orbs)
 

@@ -89,7 +89,7 @@ const CHECKPOINT_OFFSETS := [0, 4, 7]
 ## na travessia 14 → 11; no Desafio 15 ou depois dele → 15) · Centro → 65 ·
 ## Mente → 68. Como o run é linear, "a última tela de checkpoint alcançada" é
 ## função só da tela atual: o "Continuar" (run_snapshot) usa a mesma conta.
-## O custo da morte continua no Level (−20% de faíscas).
+## O custo da morte continua no Level: só as faíscas ganhas na tela (Progression.death_loss).
 func checkpoint_for(screen: int) -> int:
 	if screen <= KING_SCREEN:
 		return KING_SCREEN
@@ -654,6 +654,7 @@ func _grant_reward(id: String) -> Dictionary:
 	var layer_key := "no:%d.%d" % [int(n.get("eon", 0)), int(n.get("layer", 0))]
 	if not Progression.claim_once(layer_key):
 		rw = {"heal": true} if bool(rw.get("heal", false)) else {}
+		Progression.notice_claimed()      # avisa em vez de pagar 0 calado
 	if int(rw.get("orbs", 0)) > 0:
 		Progression.add_orbs(int(rw.orbs))
 	if int(rw.get("hp", 0)) > 0:

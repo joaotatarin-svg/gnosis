@@ -1705,10 +1705,10 @@ msgstr "I would remake the whole world to set you back on your feet."
 msgid "...Não me olhes assim. É modo de dizer."
 msgstr "...Do not look at me like that. It is a figure of speech."
 
-#. narrative.death_revive.efe9f1  [dialogo · (narrador)]
+#. narrative.death_revive.d0115e  [dialogo · (narrador)]
 #: scripts/autoload/narrative.gd:190
-msgid "(A luz te costura de volta. %s da tua mão aberta.)"
-msgstr "(The light stitches you back together. %s from your open hand.)"
+msgid "(A luz te costura de volta. A tela recomeça, e as faíscas dela também. %s da tua mão aberta.)"
+msgstr "(The light stitches you back together. The screen starts over, and so do its sparks. %s from your open hand.)"
 
 #. narrative.intro.0178c1  [dialogo · (narrador)]
 #: scripts/autoload/narrative.gd:203
@@ -3980,6 +3980,11 @@ msgstr "They were not her people. Now they are. And inside her, small, someone w
 msgid "A faísca lembrou. O resto é silêncio."
 msgstr "The spark remembered. The rest is silence."
 
+#. progression_manager.notice_claimed.32fc7d  [toast]
+#: scripts/autoload/progression_manager.gd:247
+msgid "Recompensa já recolhida neste run"
+msgstr "Reward already collected this run"
+
 #. run_manager._grant_reward.2d0bd4  [ui]
 #: scripts/autoload/run_manager.gd:625
 msgid "no:%d.%d"
@@ -4845,13 +4850,18 @@ msgstr "OrbRig"
 msgid "HudPush"
 msgstr "HudPush"
 
-#. chest._give_reward.872913  [ui]
-#: scripts/entities/chest.gd:101
-msgid "bau:%d"
-msgstr "bau:%d"
+#. chest._give_reward.3faeaa  [ui]
+#: scripts/entities/chest.gd:102
+msgid "bau:%d%s"
+msgstr "bau:%d%s"
+
+#. chest._give_reward.0518b3  [ui]
+#: scripts/entities/chest.gd:102
+msgid ":s"
+msgstr ":s"
 
 #. chest._give_reward.0b11f5  [toast]
-#: scripts/entities/chest.gd:109
+#: scripts/entities/chest.gd:110
 msgid "Segredo encontrado"
 msgstr "Secret found"
 

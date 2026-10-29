@@ -1,6 +1,7 @@
 # Progressão 7: chaves internas de Progression.claim_once (nunca exibidas) — tradução idêntica.
 run_manager._grant_reward.2d0bd4	no:%d.%d
-chest._give_reward.872913	bau:%d
+chest._give_reward.3faeaa	bau:%d%s
+chest._give_reward.0518b3	:s
 seal_puzzle._solve.1dd1f5	selo:%d
 sleeper._on_body_entered.2c1fc4	adormecido:%d
 # nomes internos de nó vindos da integração 3.2 (boss_rei HudPush, hazard_art ArtBack) — tradução idêntica.
