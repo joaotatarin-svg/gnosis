@@ -52,7 +52,10 @@ func _ready() -> void:
 	shape.shape = circle
 	add_child(shape)
 	area_entered.connect(_on_area_entered)
-	Audio.play_sfx("proj_fire")
+	# Polimento7 (por delegação do chefe, VFX7 encerrado — R4): só o tiro da Sophia toca
+	# proj_fire; o hostil já soa na salva (atk_* no enemy.gd/kit), 1 som por evento.
+	if target_team == "enemy":
+		Audio.play_sfx("proj_fire")
 	_premium = _vfx7_look()
 	if not _premium:
 		VfxLibrary.projectile_trail(self, color)

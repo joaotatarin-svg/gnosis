@@ -133,7 +133,8 @@ dupla, 2º fôlego e letreiro continuam: a dificuldade vem do que ele FAZ, não 
 ## 14. Ressalvas do Guardião ao 2d54867
 - R4: a carga visual do cast (`ChargeFX`) sai MUDA (`silent` antes do `add_child`; o som tocava no `_ready`) — o
   cast já toca `cast_*` e o tiro `proj_fire` no mesmo quadro.
-- `projectile.gd:55` (`proj_fire` também no tiro hostil) é do VFX7: pedido em `docs/pedidos/polimento7.md`.
+- `projectile.gd:55` (`proj_fire` também no tiro hostil): arquivo do VFX7, editado por DELEGAÇÃO DO CHEFE (VFX7
+  encerrado), mudança mínima — `proj_fire` só se `target_team == "enemy"` (tiro da Sophia); o hostil soa na salva.
 
 ## 15. Bot QA7 das telas de timeout (run inteiro, seed 1, ia=3, vel 4, BelowNormal)
 Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos chefes + Campeão ×1,35
