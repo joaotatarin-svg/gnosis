@@ -56,7 +56,7 @@ func _build_moves() -> Dictionary:
 	# JUÍZO: wind = cravar o espadão (a postura já defende); strike = postura;
 	# recover = arranca o espadão, EXPOSTO (a janela de quem esperou)
 	var juizo := {"id": "juizo", "tell": false, "kind": "cast", "anim": "slam", "wind": 0.35, "strike": 1.5,
-		"recover": 1.1, "expose": true, "rmin": 0.0, "rmax": 150.0, "w": 0.8, "cd": 6.0}
+		"recover": 1.1, "expose": true, "rmin": 0.0, "rmax": 150.0, "w": 1.4, "cd": 5.0}
 	# RÉPLICA: só nasce de golpe dado na postura (peso 0 — nunca é sorteada)
 	var replica := {"id": "replica", "kind": "slam", "anim": "slam", "wind": 0.32, "strike": 0.25, "recover": 0.7,
 		"unblock": true, "guard_rec": true, "off": 30.0, "sx": 3.4, "sy": 1.6, "nova": 120.0, "dmg": 1.0, "kb": 460.0,
@@ -79,7 +79,7 @@ func _build_moves() -> Dictionary:
 	replica3.wave_speed = 230.0
 	var juizo3 := juizo.duplicate()
 	juizo3.id = "juizo3"
-	juizo3.w = 1.1
+	juizo3.w = 1.6
 	juizo3.cd = 4.5
 	var dupla := espadao.duplicate()
 	dupla.id = "dupla"

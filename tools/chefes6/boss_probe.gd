@@ -144,6 +144,9 @@ class ProbeWorker extends Node:
 		_rng.seed = hash("probe-%d" % s) if seed_k == 0 else hash("probe-%d-%d" % [s, seed_k])
 		seed(hash("probe-g-%d" % s) if seed_k == 0 else hash("probe-g-%d-%d" % [s, seed_k]))
 		_by_state = {}
+		_moves_n = {}
+		_state_t = {}
+		_prev_st = {}
 		_bosses = []
 		_fight_on = false
 		_t = 0.0
@@ -218,6 +221,16 @@ class ProbeWorker extends Node:
 			_near += 1
 			_end_fight("MORREU")
 			return
+		# diagnóstico: golpes começados e tempo por estado
+		for b in _bosses:
+			if is_instance_valid(b) and b.brain != null:
+				var stn: String = str(Enemy.EState.keys()[b.estate])
+				_state_t[stn] = float(_state_t.get(stn, 0.0)) + delta
+				var bid: int = b.get_instance_id()
+				if b.estate == Enemy.EState.WINDUP and int(_prev_st.get(bid, -1)) != Enemy.EState.WINDUP:
+					var mid: String = str(b.brain.mv.get("id", "?"))
+					_moves_n[mid] = int(_moves_n.get(mid, 0)) + 1
+				_prev_st[bid] = b.estate
 		# fases
 		for b in _bosses:
 			if is_instance_valid(b):
@@ -286,6 +299,9 @@ class ProbeWorker extends Node:
 
 	var _src: Dictionary = {}
 	var _by_state: Dictionary = {}
+	var _moves_n: Dictionary = {}      # golpes do chefe (id -> vezes)
+	var _state_t: Dictionary = {}      # tempo do chefe em cada estado (s)
+	var _prev_st: Dictionary = {}
 
 	func _on_pl_hp(cur: int, _mx: int) -> void:
 		if _fight_on and _hp_seen >= 0 and cur < _hp_seen:
@@ -318,9 +334,15 @@ class ProbeWorker extends Node:
 		var row := {"screen": s, "boss": "+".join(names), "time": _t, "hits": _hits, "dealt": _dmg_dealt,
 			"taken": _dmg_taken, "near": _near, "why": why, "phases": " ".join(ph), "wl": Progression.weapon_level, "src": str(_src)}
 		_rows.append(row)
-		print("PROBE tela=%d %s t=%.0fs golpes=%d dano_dado=%d dano_tomado=%d quase_mortes=%d arma=%d [%s] %s fontes=%s estados=%s" % [s, row.boss, _t, _hits, _dmg_dealt, _dmg_taken, _near, row.wl, why, row.phases, row.src, str(_by_state)])
+		print("PROBE tela=%d %s t=%.0fs golpes=%d dano_dado=%d dano_tomado=%d quase_mortes=%d arma=%d [%s] %s fontes=%s estados=%s golpes_chefe=%s tempo_estado=%s" % [s, row.boss, _t, _hits, _dmg_dealt, _dmg_taken, _near, row.wl, why, row.phases, row.src, str(_by_state), str(_moves_n), _fmt_t()])
 		_flush_caps()
 		_next_screen.call_deferred()
+
+	func _fmt_t() -> String:
+		var parts: Array = []
+		for k in _state_t.keys():
+			parts.append("%s=%.0f" % [k, float(_state_t[k])])
+		return " ".join(parts)
 
 	# --- a mão do bot -------------------------------------------------------
 	func _drive(pl: Player, delta: float) -> void:

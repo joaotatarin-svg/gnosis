@@ -38,9 +38,9 @@ func _on_setup() -> void:
 	keep_dist = Vector2(60.0, 160.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 3
-	escape_id = "enterrar"
+	escape_id = "recuo"       # 29/10: acuado, ele SALTA PARA TRÁS e dá o Bote (era se enterrar)
 	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
-	guard_up(0.6, 0.4, 1.4)   # 29/10: perto da Coroa (0,55/0,35/1,5) — coerente no fim do jogo
+	guard_up(0.55, 0.35, 1.5)   # 29/10: igual à Coroa (fim do jogo coerente: neutro/armado pagam pouco)
 
 
 func _build_moves() -> Dictionary:
@@ -85,12 +85,21 @@ func _build_moves() -> Dictionary:
 	estouro_toque.expose = false
 	estouro_toque.guard_rec = true
 	estouro_toque.cloud = true
+	# RECUO (resposta a quem cola): salto para trás, rente ao chão, deixando uma poça onde
+	# estava — e emenda o Bote (vermelho, avisado). Utilitário: sem telegrafo próprio.
+	var recuo := {"id": "recuo", "tell": false, "kind": "cast", "anim": "charge", "wind": 0.15, "strike": 0.35,
+		"recover": 0.1, "guard_rec": true, "rmin": 0.0, "rmax": 9999.0, "w": 0.0, "cd": 0.0, "chain": ["bote_b"]}
+	var bote_b := bote.duplicate()
+	bote_b.id = "bote_b"
+	bote_b.rmin = 0.0
+	bote_b.w = 0.0
+	bote_b.cd = 0.0
 	var jorro := {"id": "jorro", "kind": "cast", "anim": "ranged", "wind": 0.7, "strike": 0.7, "recover": 0.9,
 		"unblock": true, "rmin": 0.0, "rmax": 170.0, "w": 1.1, "cd": 5.0}
 	return {
-		1: [bote, mordida, esporos, enterrar, estouro, estouro_toque],
-		2: [bote, mordida2, mordida_b, esporos5, nuvem, enterrar, jorro, estouro, estouro_toque],
-		3: [bote, mordida2, mordida_b, esporos5, nuvem, enterrar3, jorro, estouro, estouro_toque],
+		1: [bote, mordida, esporos, enterrar, estouro, estouro_toque, recuo, bote_b],
+		2: [bote, mordida2, mordida_b, esporos5, nuvem, enterrar, jorro, estouro, estouro_toque, recuo, bote_b],
+		3: [bote, mordida2, mordida_b, esporos5, nuvem, enterrar3, jorro, estouro, estouro_toque, recuo, bote_b],
 	}
 
 
@@ -103,15 +112,16 @@ func _pick(dist: float, high: float) -> Dictionary:
 	return super._pick(dist, high)
 
 
-## Cada golpe faz brotar uma bolha (menos no atordoado e no MURCHO — essas são
-## as janelas "grátis"). Cheio, tocar nele ESTOURA na hora (sem janela depois).
+## Golpe FORA das janelas (neutro / meio do golpe dele) faz brotar uma bolha; as
+## janelas (recuperação, atordoado, murcho) não enchem nada. Cheio, tocar nele
+## ESTOURA na hora (sem janela depois).
 func _filter(dmg: int, _attacker: Node) -> int:
 	var cur: String = String(mv.get("id", ""))
 	if cur.begins_with("estouro") and e.estate in [Enemy.EState.WINDUP, Enemy.EState.STRIKE]:
 		# inchado: o golpe bate nas bolhas e escorrega (respingo verde, sem dano)
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -16.0 * e._art_scale), ROT)
 		return 0
-	if e.estate == Enemy.EState.STAGGER or (e.estate == Enemy.EState.RECOVER and cur == "estouro"):
+	if e.estate in [Enemy.EState.STAGGER, Enemy.EState.RECOVER, Enemy.EState.HURT]:
 		return dmg
 	if _pus >= PUS_MAX:
 		_burst_on_touch.call_deferred()      # fora do sinal de acerto
@@ -194,8 +204,11 @@ func _on_windup(m: Dictionary) -> void:
 
 
 func _on_strike(m: Dictionary) -> void:
-	if m.id == "bote":
+	if String(m.id).begins_with("bote"):
 		_pool_t = 0.0
+	elif m.id == "recuo":
+		# a poça fica onde ele estava (onde a Sophia colou)
+		_pool_at(e.global_position.x, 28.0, 3.0)
 	elif String(m.id).begins_with("estouro"):
 		# as bolhas estouram (o dano vem do contorno, que fere agora)
 		_pus = 0
@@ -217,8 +230,15 @@ func _on_strike(m: Dictionary) -> void:
 
 
 func _strike_tick(m: Dictionary, delta: float) -> void:
+	# salto para trás: rente ao chão, para na parede
+	if m.id == "recuo":
+		var b := arena_bounds()
+		var vx: float = -float(e.atk_dir) * 460.0
+		if (vx < 0.0 and e.global_position.x < b.x + 70.0) or (vx > 0.0 and e.global_position.x > b.y - 70.0):
+			vx = 0.0
+		e.velocity.x = vx
 	# o Bote deixa rastro de veneno
-	if m.id == "bote":
+	if String(m.id).begins_with("bote"):
 		_pool_t -= delta
 		if _pool_t <= 0.0:
 			_pool_t = 0.14
