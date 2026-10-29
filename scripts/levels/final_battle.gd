@@ -8,7 +8,9 @@ class_name FinalBattle
 
 signal won
 
-const REVIVE_AFTER := 14.0
+## 28/10 (curva da Progressão: Sophia chega com arma Nv.5): 14 → 9 s — derrubar as
+## duas JUNTAS virou a leitura da luta (baixar as duas, depois fechar), não martelar uma.
+const REVIVE_AFTER := 9.0
 const RING_SPAWN_EVERY := 9.0
 const MAX_LARVAS := 2
 # Onde as formas nascem (px a partir da parede esquerda da arena trancada da

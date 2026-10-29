@@ -12,6 +12,7 @@ extends Node
 ##         telas=1,10,19 [vel=3] [wl=N] [out=C:/x/sonda] [skill=0.65]
 ##   telas=all = Rei, os 7 Arcontes e a batalha final.
 ##   wl   = força o nível da arma (senão o esperado da tela: BossTuning).
+##   vida = vida máx. da Sophia · curva=1 = arma e vida da curva da Progressão (e78feb4) por tela.
 ## Captura (janela, vel=1): cap=C:/caps/dir every=4 capsec=7 → em cada FASE,
 ##   capsec s de quadros (<cap>/<chefe>_###.png) para o tools/seq_to_media.py.
 
@@ -42,6 +43,8 @@ func _ready() -> void:
 			"capsec": w.cap_sec = float(v)
 			"timeout": w.fight_timeout = float(v)
 			"perfil": w.profile = v
+			"vida": w.force_hp = int(v)
+			"curva": w.curve = true
 	get_tree().root.add_child.call_deferred(w)
 
 
@@ -49,6 +52,10 @@ class ProbeWorker extends Node:
 	var screens: Array = [10]
 	var speed: float = 3.0
 	var force_wl: int = 0
+	var force_hp: int = 0              # vida máx. da Sophia (0 = a da run nova)
+	## curva=1: arma e vida da CURVA DA PROGRESSÃO (docs/pedidos/progressao7.md, e78feb4)
+	var curve: bool = false
+	const CURVE := {1: [1, 120], 10: [2, 140], 19: [3, 186], 28: [3, 242], 37: [3, 276], 46: [4, 302], 55: [4, 332], 64: [5, 372], 68: [5, 392]}
 	var out_base: String = "user://boss_probe"
 	var skill: float = 0.65            # chance de rolar do vermelho (o resto escala daqui)
 	## perfil: "medio" = bate em sequências de 3–4 e se afasta ~0,8 s (como um
@@ -122,6 +129,8 @@ class ProbeWorker extends Node:
 		GameManager.current_screen = s
 		# Progressão esperada: arma da tela e os Anéis dos Arcontes já vencidos.
 		var wl: int = force_wl if force_wl > 0 else _expected_wl(s)
+		if curve and CURVE.has(s):
+			wl = int(CURVE[s][0])
 		Progression.weapon_level = wl
 		var n_rings: int = 7 if s >= 68 else maxi(0, RunManager.eon_index(s)) if s > 1 else 0
 		var k := 0
@@ -259,6 +268,12 @@ class ProbeWorker extends Node:
 		if _watched_pl == pl.get_instance_id():
 			return
 		_watched_pl = pl.get_instance_id()
+		var hp: int = force_hp
+		if curve and CURVE.has(screens[_idx]):
+			hp = int(CURVE[screens[_idx]][1])
+		if hp > 0:
+			pl.health.max_health = hp
+			pl.health.current_health = hp
 		_hp_seen = pl.health.current_health
 		pl.health.health_changed.connect(_on_pl_hp)
 

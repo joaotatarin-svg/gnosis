@@ -21,7 +21,7 @@ var _was_stag: bool = false
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.45
+	dmg_scale = 0.55          # 28/10: curva da Progressão (~330 de vida na tela 55)
 	keep_dist = Vector2(60.0, 160.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 3

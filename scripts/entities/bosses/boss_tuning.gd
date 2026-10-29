@@ -16,9 +16,9 @@ const TARGET_HITS := {
 	"arconte_silencio": 28,
 	"arconte_espelho": 28,
 	"arconte_praga": 26,          # 28/10: fica 26 — a guarda alta (boss_belias) já segura quem martela
-	"arconte_coroa": 32,          # 28/10: idem
-	"rei_final": 16,           # batalha dupla: cada forma (e elas se refazem)
-	"colosso": 18,
+	"arconte_coroa": 34,          # 28/10: idem
+	"rei_final": 20,           # batalha dupla: cada forma (e elas se refazem)
+	"colosso": 22,               # 28/10: final pela curva (arma Nv.5, ~390 de vida)
 }
 
 ## Nível de arma ESPERADO ao chegar em cada chefe (economia da Onda 6 — o

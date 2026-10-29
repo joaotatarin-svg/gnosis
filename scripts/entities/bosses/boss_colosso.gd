@@ -12,7 +12,7 @@ const STONE := Color(1.0, 0.75, 0.4)
 
 func _on_setup() -> void:
 	marks = []
-	dmg_scale = 0.38
+	dmg_scale = 0.48          # 28/10: curva da Progressão (~390 de vida)
 	keep_dist = Vector2(40.0, 110.0)
 	gap_by_phase = [1.2, 1.0, 0.85]
 	escape_hits = 4

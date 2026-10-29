@@ -227,3 +227,19 @@ do `keep_dist`), ele não anda mais — fica ali com metade do corpo fora da câ
 da borda da imagem). Correção: `BossBrain.chase` — colado na parede (dentro de `wall_margin`) o chefe SAI andando
 para o meio; Colosso com `wall_margin` 115 (o Rei já tinha 120). Depois: centro a 113–124 px.
 Antes/depois: `_caps/chefes6/colosso68_antes_esq_depois_dir.png` (`c68a/` × `c68d/` com o `_meta.json`).
+
+## Fim do jogo pela CURVA DA PROGRESSÃO (e78feb4) em cima da integração ba91602 — 28/10
+- Trouxe a integração `ba91602` para o branch (merge 463c148, sem conflito). O `e78feb4` da Progressão conflita
+  em arquivos de outros donos (`upgrade_menu.gd`, i18n) — NÃO commitei; medi num worktree descartável
+  (`C:\gnosis-wt\chefes6_med` = este branch + e78feb4 com `-X theirs`).
+- BossProbe ganhou `curva=1` (arma e vida da tabela de `docs/pedidos/progressao7.md` por tela: 64 → Nv.5/372,
+  68 → Nv.5/392) e `vida=N`.
+- Integração antes destes ajustes, curva: final 112 s médio / **39 s agressivo** (0 quase-morte); Coroa 98 / 53 s.
+- Ajustes (padrão primeiro): batalha final — a forma caída se refaz em **9 s** (era 14): derrubar as DUAS juntas
+  é a leitura (baixar as duas, depois fechar), não martelar uma; vida 16/18 → 20/22 golpes. Dano dos chefes do fim
+  dimensionado para a vida que a curva entrega (~330–390): Belias 0,45→0,55, Armupiel 0,27→0,38, Rei-Mentira e
+  Colosso 0,38→0,48; Coroa 34 golpes.
+- Depois (curva, `_caps/chefes6/cv4_*.txt`): final **155 s médio (2 qm) / 76 s agressivo**; Coroa 87–129 s médio /
+  57 s agressivo; Praga 90–110 s médio. Coroa e Praga no agressivo seguem curtos (~57–60 s): o bot agressivo acerta
+  >1 golpe/s quase sem ser punido — é o próximo passo de PADRÃO (não de vida) para o Armupiel; fica para o playtest.
+- Não é meu: ecos do Centro (bestiary.gd) — pedido da Progressão segue para inimigos.
