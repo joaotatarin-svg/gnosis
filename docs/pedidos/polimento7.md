@@ -30,3 +30,8 @@
   ```
 - O cast da Sophia: a carga visual (`ChargeFX`) saiu MUDA no player.gd (silent antes do add_child). Se o
   `VfxLibrary.charge_up` ganhar um parâmetro `silent`, eu volto a usar a função.
+
+## → qa7 / mapa7 (posição, não balance) — bot QA7 3.2
+- Telas 38 (invocador), 39 (reflexo) e 43 (arauto): na zona 1 o inimigo fica em x ≈ 2190–2310, o bot cruza a fenda
+  e a zona dá TIMEOUT com ele vivo para trás. Conferir se a zona prende esses tipos na arena (coleira/arena_bounds)
+  ou se é só o bot (`tools/qa7`). Logs: `C:\gnosis-wt\_caps\polimento7\bot\run32_s1.*`.

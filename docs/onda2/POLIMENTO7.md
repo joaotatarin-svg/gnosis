@@ -119,6 +119,13 @@ mesmo quadro de antes.
 - Sonda: `godot --audio-driver Dummy --path . --resolution 320x180 --position 4000,4000
   res://tools/combate/BossHurtProbe.tscn -- png=<dir> [puppet] [ids=rei,colosso]` (precisa de renderer).
 
+- **BodyBox do Chefes6** (Rei e Rei-Mentira, 6 faixas por quadro, `scripts/entities/bosses/boss_body_box.gd`):
+  `_fit_hurtbox` sai na hora se o inimigo tem o nó `BodyBox` — não troca a forma nem mexe no `disabled` da
+  HurtShape (senão o golpe conta 2× ou a caixa dele é desfeita). BossHurtProbe confere: `HURTPROBE_BODYBOX|PASS`.
+  Sem a BodyBox (este branch), o Rei usa o contorno: pano sem dano na faixa 30,2 → 9,2 px/linha.
+- BossProbe (chefes6, `telas=all vel=3`, depois): os 9 chefes terminam `[ok]`, sem erro de forma
+  (`...\hurt_chefes\depois\bossprobe.log`).
+
 ## 13. Campeão mais curto (decisão do chefe ao pedido 2 da Progressão 7)
 `enemy.gd` bloco `is_champion`: vida ×1,7 → **×1,35**, dano ×1,15 → **×1,0**. Repertório de elite, brado, onda
 dupla, 2º fôlego e letreiro continuam: a dificuldade vem do que ele FAZ, não da barra.
@@ -127,6 +134,18 @@ dupla, 2º fôlego e letreiro continuam: a dificuldade vem do que ele FAZ, não 
 - R4: a carga visual do cast (`ChargeFX`) sai MUDA (`silent` antes do `add_child`; o som tocava no `_ready`) — o
   cast já toca `cast_*` e o tiro `proj_fire` no mesmo quadro.
 - `projectile.gd:55` (`proj_fire` também no tiro hostil) é do VFX7: pedido em `docs/pedidos/polimento7.md`.
+
+## 15. Bot QA7 das telas de timeout (run inteiro, seed 1, ia=3, vel 4, BelowNormal)
+Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos chefes + Campeão ×1,35
+(`...\bot\run32_s1.*`). Total 92,3 → 93,6 min, 209 → 208 quase-mortes.
+- Timeouts: **13 → 9 telas**. Saíram as Provações do Campeão (33 mudo, 42 reflexo) e 35/36/49; Provações 6/15/24/
+  33/42 ficaram 15–25 s mais curtas e com 25–48 % menos dano tomado.
+- Arcontes (10, 28, 37, 46, 64, 68) seguem passando dos 100 s do bot (bug 2 do QA7, balance dos chefes —
+  Chefes6), mas a vida que SOBRA no corte caiu na soma 3677 → 2534 (Athoth 1020 → 274, Galila 375 → 195, Yabel
+  690 → 342, Astaphaios 574 → 215; Armupiel 229 → 669 e Rei-final 789 → 839 pioraram — ruído de sorteio/IA).
+- Timeouts de inimigo comum que restam: 38 (invocador@x 2288), 39 (reflexo@2306), 43 (arauto@2190), todos na zona 1
+  e LONGE (x > 2190): o bot passa pela fenda e eles ficam vivos para trás. Não é dano/vida — é posição. Pedido ao
+  QA7/Mapa em `docs/pedidos/polimento7.md`.
 
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop)**: flash continua instantâneo e ≤ 100 ms reais; só a intensidade mudou. A
@@ -173,6 +192,8 @@ dupla, 2º fôlego e letreiro continuam: a dificuldade vem do que ele FAZ, não 
 ## BILHETE PARA O SUCESSOR (19/10)
 - Feito: tarefas 1–5, QA7 #1/#10/#15/#19, R3, R10 do inimigo, R15, sons do Áudio7, charge_up no cast,
   contra-ataque (até 2d54867). 3.2: hurtbox dos chefes/boneco (§12), Campeão ×1,35 (§13), ressalvas do Guardião (§14), bot QA7 de timeouts (§15).
+- 3.2 (28/10): validate VERDE 14/14 depois do último código. Sonda dos chefes: `tools/combate/BossHurtProbe.tscn`
+  (renderer). Chefe com `BodyBox` (Chefes6) é pulado no `_fit_hurtbox` — manter assim.
 - `tools/qa7/` é cópia LOCAL (não versionada aqui) do worktree qa7 só para medir; não commitar.
 - Arquivos-chave: `scripts/combat/{hitbox,staff_reach}.gd`, `scripts/entities/enemy.gd` (`_fit_hurtbox*`,
   `FLASH_ADD`, `die`), `scripts/entities/enemies/enemy_flash_layer.gd` (`LUMA_K`), `scripts/entities/player.gd`
