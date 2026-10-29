@@ -14,105 +14,185 @@
   "d_collapse": "lying"
  },
  "anchor_fix": {
+  "idle_a00": [
+   -1.43,
+   0.71
+  ],
+  "idle_a01": [
+   -1.3,
+   0.71
+  ],
   "idle_a02": [
-   -0.13,
-   1.0
+   -1.05,
+   1.71
   ],
   "idle_a03": [
-   -0.13,
-   1.0
+   -0.55,
+   1.71
   ],
   "idle_a04": [
-   -0.04,
-   1.0
+   -0.05,
+   0.71
   ],
   "idle_a05": [
-   0.21,
-   1.0
+   0.49,
+   0.71
   ],
   "idle_a06": [
-   0.04,
-   1.0
+   0.66,
+   1.71
   ],
   "idle_a07": [
-   -0.04,
-   1.0
+   0.86,
+   1.71
   ],
   "idle_a08": [
-   0.0,
-   1.0
+   0.86,
+   1.71
   ],
   "idle_a09": [
-   0.17,
-   1.0
+   0.74,
+   1.71
   ],
   "idle_a10": [
-   0.08,
-   1.0
+   0.41,
+   1.71
   ],
   "idle_a11": [
-   0.17,
-   1.0
+   -0.05,
+   1.71
+  ],
+  "idle_a12": [
+   -0.51,
+   0.71
   ],
   "idle_a13": [
-   -0.13,
-   1.0
+   -1.01,
+   0.71
   ],
   "idle_a14": [
-   -0.13,
-   1.0
+   -1.3,
+   1.71
   ],
   "idle_a15": [
-   0.0,
-   1.0
+   -1.51,
+   1.71
   ],
   "glide_a00": [
-   -0.25,
-   0.0
+   -3.35,
+   0.71
   ],
   "glide_a01": [
-   -1.0,
-   1.0
+   -3.01,
+   1.71
   ],
   "glide_a02": [
-   -1.13,
-   1.0
+   -2.05,
+   1.71
   ],
   "glide_a03": [
-   -0.92,
-   1.0
+   -0.89,
+   1.71
   ],
   "glide_a04": [
-   -1.13,
-   1.0
+   0.07,
+   1.71
   ],
   "glide_a05": [
-   -1.25,
-   2.0
+   0.82,
+   2.71
   ],
   "glide_a06": [
-   -1.0,
-   0.0
+   0.91,
+   1.71
   ],
   "glide_a07": [
-   -1.13,
-   1.0
+   0.41,
+   1.71
   ],
   "glide_a08": [
-   -0.79,
-   1.0
+   -0.55,
+   1.71
   ],
   "glide_a09": [
-   -1.13,
-   1.0
+   -1.55,
+   0.71
   ],
   "glide_a10": [
-   -1.13,
-   1.0
+   -2.68,
+   1.71
   ],
   "glide_a11": [
-   -1.0,
-   1.0
+   -3.3,
+   1.71
+  ],
+  "atk_00_m_base_inb_raise": [
+   0.06,
+   0.0
+  ],
+  "atk_01_inb_raise": [
+   0.16,
+   0.0
+  ],
+  "atk_02_inb_raise": [
+   0.37,
+   0.0
+  ],
+  "atk_03_windup_1": [
+   29.29,
+   0.0
+  ],
+  "atk_04_m_windup_1_windup_2": [
+   30.15,
+   0.0
+  ],
+  "atk_05_windup_2": [
+   31.01,
+   0.0
+  ],
+  "atk_06_windup_2": [
+   30.72,
+   0.0
+  ],
+  "atk_07_windup_2": [
+   30.33,
+   0.0
+  ],
+  "atk_08_inb_sweep": [
+   73.12,
+   0.0
+  ],
+  "atk_09_m_inb_sweep_strike_1": [
+   70.91,
+   0.0
+  ],
+  "atk_10_strike_1": [
+   86.68,
+   0.0
+  ],
+  "atk_11_strike_1": [
+   85.82,
+   0.0
+  ],
+  "atk_12_strike_2": [
+   73.11,
+   0.0
+  ],
+  "atk_13_strike_2": [
+   73.11,
+   0.0
+  ],
+  "atk_14_inb_lower": [
+   8.19,
+   0.0
+  ],
+  "atk_15_inb_lower": [
+   8.32,
+   0.0
+  ],
+  "atk_16_m_inb_lower_base": [
+   4.15,
+   0.0
   ]
  },
  "inbetween": {},
@@ -163,32 +243,56 @@
   },
   "windup": {
    "frames": [
-    "windup_1",
-    "windup_2"
+    "atk_00_m_base_inb_raise",
+    "atk_01_inb_raise",
+    "atk_02_inb_raise",
+    "atk_03_windup_1",
+    "atk_04_m_windup_1_windup_2",
+    "atk_05_windup_2",
+    "atk_06_windup_2",
+    "atk_07_windup_2"
    ],
    "at": [
     0.0,
-    0.3
+    0.1,
+    0.2,
+    0.32,
+    0.44,
+    0.54,
+    0.7,
+    0.86
    ]
   },
   "attack": {
    "frames": [
-    "strike_1",
-    "strike_2"
+    "atk_08_inb_sweep",
+    "atk_09_m_inb_sweep_strike_1",
+    "atk_10_strike_1",
+    "atk_11_strike_1",
+    "atk_12_strike_2"
    ],
    "at": [
     0.0,
-    0.5
+    0.1,
+    0.2,
+    0.45,
+    0.75
    ]
   },
   "recover": {
    "frames": [
-    "strike_2",
-    "idle_0"
+    "atk_13_strike_2",
+    "atk_14_inb_lower",
+    "atk_15_inb_lower",
+    "atk_16_m_inb_lower_base",
+    "idle_a00"
    ],
    "at": [
     0.0,
-    0.45
+    0.25,
+    0.45,
+    0.65,
+    0.82
    ]
   },
   "hurt": {
@@ -300,10 +404,10 @@
    "main_ref": "hurt"
   },
   {
-   "sheet": "artes/gpt/boss_9_rei_idle_camadas.png",
+   "sheet": "artes/gpt/boss_9_rei_hd_camadas.png",
    "grid": [
-    6,
-    5
+    8,
+    6
    ],
    "cells": [
     "idle_a00",
@@ -334,22 +438,42 @@
     "glide_a09",
     "glide_a10",
     "glide_a11",
+    "atk_00_m_base_inb_raise",
+    "atk_01_inb_raise",
+    "atk_02_inb_raise",
+    "atk_03_windup_1",
+    "atk_04_m_windup_1_windup_2",
+    "atk_05_windup_2",
+    "atk_06_windup_2",
+    "atk_07_windup_2",
+    "atk_08_inb_sweep",
+    "atk_09_m_inb_sweep_strike_1",
+    "atk_10_strike_1",
+    "atk_11_strike_1",
+    "atk_12_strike_2",
+    "atk_13_strike_2",
+    "atk_14_inb_lower",
+    "atk_15_inb_lower",
+    "atk_16_m_inb_lower_base",
+    "-",
     "-",
     "-"
    ],
-   "scale": "auto",
-   "ref": "idle_a00",
-   "main_ref": "idle_0"
+   "scale": 0.9977777777777778
   }
  ],
  "spring_mul": 0.3,
  "flex_off_states": [
+  "attack",
   "idle",
-  "walk"
+  "recover",
+  "walk",
+  "windup"
  ],
  "_doc_v11": "Rei v11 (Lab3D): idle e walk = pintura idle_0 animada em camadas (o manto já ondula na folha): o vento do shader fica desligado nesses estados (flex_off_states) e a mola do cartão (sx/sy/bend) vale 30% (spring_mul) — a mola inteira lia como 'cartão de borracha'.",
  "rim_mul": 0.2,
  "_doc_nitido": "Nitidez (29/10): body_px 300 -> 450. O Rei é desenhado a ~440 px na janela 1280x720; com 300 o atlas era ampliado ×1,47 (macio). A pintura de origem tem ~450 px: 450 = 1:1 (sem upscale por IA). outline_mul 0,2: o halo claro-azulado em volta do Rei é o contorno de leitura do Enemy (CanvasGroup Rim, α 0,5); o CharacterArt multiplica o alfa dele por 0,2 (só no Rei). rim_mul 0,2: o contorno de luz azulado do shader (RIM_BASE) vira só 20% no Rei — era o halo claro em volta da silhueta (o telégrafo do golpe é o contorno do Enemy, não isto).",
  "rim_px_mul": 1.5,
- "outline_mul": 0.2
+ "outline_mul": 0.2,
+ "_doc_hd": "Rei HD (Lab3D 29/10): pintura HD nova animada em camadas, já no tamanho de jogo (body_px 450: escala 449/450 = 1:1, sem reamostrar). Âncora plantada pela estola (a barra não desliza, o corpo não pula na troca de pose)."
 }
