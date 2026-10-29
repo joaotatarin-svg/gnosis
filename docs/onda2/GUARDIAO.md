@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/cenario7 | 1b1c69f (delta de ba91602) | APROVADO COM RESSALVAS (R18 1,6-2,4 -> 2,75-2,97, ainda < 3:1; Coroa diante da estátua não confirmada; halo em movimento só no playtest) | R18, R10 |
 | dir6/chefes6 | 82454b2 (delta de 8d00636: 5eeea79, 04c46e0, 9bf99e2, 846314d, d439998, 82454b2) | APROVADO COM RESSALVAS (BodyBox do Sono/Espelho aceitável; guarda alta justa e sinalizada; falta aviso da forma que se refaz e o root no muro) | R5, R18, R21, SDT |
 | dir7/polimento7 | 28d8df7 (delta de 0ba25d8) | APROVADO (as 2 ressalvas fecharam) | R5, R18, R4/R9 |
 | dir6/progressao6 | 3d13bbd (= e78feb4 + merge ba91602; delta da base 4dad743: eea11d9, 941e8a0, b12455d, a22e1d7, 0e8fc37) | APROVADO COM RESSALVAS (curva ok; `claim_once` com chave de baú que colide e sem aviso) | §3, §4, R21 |
@@ -1114,6 +1115,46 @@ BossProbe de curva (longo); li os números do dono.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: (1) aviso visível antes de a forma caída se refazer; (2) o root não pode ser anulado pelo
 empurrão da parede; (3) dar um segundo sinal (som/dica) ao golpe "armado" da guarda alta.
+
+---
+
+## dir7/cenario7 — 1b1c69f (delta de ba91602: c4963ee, dbae0df, 05b69b7, 2fa2c49, 477768b, 861d62a, 1b1c69f; fc1a811 é merge)
+
+**Medido no 1b1c69f (worktree de sonda):** importação sem `SCRIPT ERROR`. Não refiz a medida de contraste do dono (`ProbeBg` + `contrast_r18.py`, 10 telas). Li
+`scenery.gd` (`LaneHalo`), a CENARIO7.md e as capturas do dono (`C:\gnosis-wt\_caps\cenario7\final\`), e tirei 4 capturas minhas com o HdShot (janela mínima 320x180
+fora da vista, `--audio-driver Dummy`) em `C:\gnosis-wt\_caps\guardiao\c7s_*.png` (Espelho e Coroa, Sophia em 2 posições).
+
+**O que muda:** fundos HD (far, mid, asas, chão) nos 9 Éons, só a variante `_a`; véu escuro na faixa de luta; `LaneHalo` (elipse macia de raio 58 x 84 px lógicos, miolo
+chato até 36 %, alfa 0,66 a 0,72 por Éon, cor do ar do Éon escurecida, z -1: atrás dos lutadores, segue a Sophia, some com ela); halo das plataformas vira elipse
+aditiva (QA7 #22, o retângulo claro do Espelho some). Nada de combate, som, tremor, flash nem economia.
+
+**Checagem:**
+- **R18: MELHORA MUITO, continua PARCIAL.** Do dono: 1,58-2,40 -> 2,75-2,97 : 1 nas 10 telas (as minhas anteriores, 2,06/2,37/1,71 nas telas 3/30/57, vão para 2,89/2,82/2,78).
+  Ainda abaixo de 3:1. O dono já viu o teto: o fundo imediato está em ~0,013-0,029 de luminância e escurecer mais não sobe a razão (a borda dela cai junto). O alfa 0,84 foi
+  rejeitado por virar bolha no Espelho e na Coroa: decisão certa (beleza e honestidade acima do número).
+- **Espelho (fundo lilás claro): a sombra resolve e não vira bolha, com uma ressalva de movimento.** Na captura minha, Sophia em combate no meio do Espelho: o fundo
+  atrás dela escurece em névoa, sem borda dura, e ela (branca e dourada) salta do cenário; o contorno dos inimigos também lê. Em foto parada a sombra parece
+  profundidade de ar, não recorte. Risco que só o playtest decide: ela é colada à Sophia enquanto o cenário anda em parallax, então em movimento pode ler como
+  uma nuvem escura que segue o corpo; a borda longa e o alfa limitado ajudam, mas é onde eu olharia primeiro.
+- **Coroa (estátua dourada atrás de Sophia clara): NÃO CONFIRMADO.** Nas capturas do dono (tela 58) a Sophia está sobre o entulho e o chão escuro, e nas minhas ela
+  ficou escondida atrás de inimigos; nenhuma tem a Sophia DIANTE da estátua dourada, que é o caso que o chefe temia. A razão medida na 57/58 (2,78/2,75) é a mais baixa
+  da tabela depois do Espelho. Pendente: uma captura com ela na frente da estátua (HdShot `x=` na tela 57/58, `nohud`, sem inimigos: `solo`) antes de dar por
+  fechado. Não bloqueia.
+- **Inimigos:** o `LaneHalo` não vai neles (certo: em onda cheia escureceria a faixa toda), e o contraste deles contra o fundo novo não foi medido (o doc admite). Nas
+  capturas eles seguem legíveis pelo contorno próprio.
+- **R10 / §4:** tudo estático, sem pulso nem flash; sem recompensa nem aleatoriedade (os fundos variam por tela de forma determinística). Atende.
+- **Peso:** o doc cita só a variante `_a` por memória e a validate verde (14). Não medi desempenho.
+
+**Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: R18 ainda < 3:1 (falta a borda da Sophia); conferir a Coroa com a Sophia diante da estátua; olhar o halo
+em movimento no playtest.
+
+**OPINIÃO sobre pedir à Arte borda da Sophia +0,02-0,03:** a favor, com cuidado no ONDE. (1) O gargalo é mesmo do lado dela: o fundo já está no piso, e o doc do dono mostra
+que +0,02 de luminância de borda passa de 3:1. (2) Suba a luz de recorte INTERNA (`HERO_RIM`, hoje 0,6, só nas bordas escuras) e NÃO o halo de fora (`HERO_HALO`, 0,25):
+foi o halo que fez a faixa pálida no cajado e o filete nas botas (de546f8 -> 50f807a). (3) O ganho só existe porque o fundo atrás dela está escuro; se a Sophia sair
+do `LaneHalo` (por exemplo, no ar acima da névoa), um rim mais forte numa borda já clara contra fundo claro pode até baixar o contraste, então confira o cajado
+e a saia branca contra o céu do Espelho. (4) +0,02-0,03 de luminância é pequeno o bastante para não "colar um adesivo"; peça à Arte para repetir o
+`contrast_r18.py` nas mesmas 10 telas e a captura do cajado ampliada, como fiz em r18. (5) O número é uma proxy: 3:1 na borda de 2 px não é percepção; se subir de
+2,9 para 3,0 sem a Sophia ler melhor, não vale mexer mais.
 
 ---
 
