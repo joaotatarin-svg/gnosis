@@ -1,0 +1,304 @@
+{
+ "_nota": "Rodada 2 (anti-'professora'). 'texto' = fala do jogo (legenda). 'segs' = a mesma fala quebrada para ATUAÇÃO: cada segmento é gerado sozinho e montado com a pausa 'p' (ms) DEPOIS dele. As palavras não mudam (a legenda continua batendo); só pontuação/respiração.",
+ "falas": [
+  {
+   "id": "sophia",
+   "char": "Sophia",
+   "lang": "pt",
+   "texto": "Eu chorei por eles.",
+   "segs": [
+    [
+     "Eu chorei...",
+     380
+    ],
+    [
+     "por eles.",
+     0
+    ]
+   ],
+   "design": "A young woman around twenty, low-mid warm voice, speaking Brazilian Portuguese. Quiet, firm, restrained grief: she is holding back tears and refuses to break. Close-mic, intimate, breathy, slow. Not a narrator, not a teacher: an actress in a dark fantasy game."
+  },
+  {
+   "id": "yaldabaoth",
+   "char": "Yaldabaoth",
+   "lang": "pt",
+   "texto": "Nunca houve rio. Nunca houve janela. A tua gente? Cinzas de uma colheita qualquer.",
+   "segs": [
+    [
+     "Nunca houve rio.",
+     450
+    ],
+    [
+     "Nunca houve janela.",
+     650
+    ],
+    [
+     "A tua gente?",
+     700
+    ],
+    [
+     "Cinzas.",
+     300
+    ],
+    [
+     "De uma colheita qualquer.",
+     0
+    ]
+   ],
+   "design": "A powerful, very deep male voice of an ancient tyrant god, booming chest resonance, speaking Brazilian Portuguese slowly with cold contempt and cruel amusement, every word heavy. Dark epic video game villain, theatrical, menacing, not a narrator."
+  },
+  {
+   "id": "narrador",
+   "char": "Narrador",
+   "lang": "pt",
+   "texto": "No princípio havia o Um. Dele emanaram os Éons, aos pares, como luz que transborda. Ali nada dormia. Nada esquecia.",
+   "segs": [
+    [
+     "No princípio...",
+     350
+    ],
+    [
+     "havia o Um.",
+     750
+    ],
+    [
+     "Dele emanaram os Éons, aos pares,",
+     300
+    ],
+    [
+     "como luz que transborda.",
+     800
+    ],
+    [
+     "Ali nada dormia.",
+     500
+    ],
+    [
+     "Nada esquecia.",
+     0
+    ]
+   ],
+   "design": "A deep, grave, mature male voice, low and intimate, almost a whisper close to the microphone, speaking Brazilian Portuguese slowly like the opening of an epic dark fantasy game. Mythic gravitas, weary and solemn, with breath between phrases. Not a news reader, not a teacher."
+  },
+  {
+   "id": "a_voz",
+   "char": "A Voz",
+   "lang": "pt",
+   "texto": "Acorda. ...Isso. Devagar. Eu estou aqui.",
+   "segs": [
+    [
+     "Acorda.",
+     900
+    ],
+    [
+     "Isso.",
+     500
+    ],
+    [
+     "Devagar.",
+     700
+    ],
+    [
+     "Eu estou aqui.",
+     0
+    ]
+   ],
+   "design": "A warm, low male baritone murmuring right next to the listener's ear, tender but possessive, hushed and slow, speaking Brazilian Portuguese. Soothing and slightly unsettling, like a voice inside your head in a dark fantasy game."
+  },
+  {
+   "id": "athoth",
+   "char": "Athoth",
+   "lang": "pt",
+   "texto": "Portadora... tu também não dormes, não é? Conheço esse cansaço. Deita. Eu sonho o resto por ti.",
+   "segs": [
+    [
+     "Portadora...",
+     600
+    ],
+    [
+     "tu também não dormes, não é?",
+     700
+    ],
+    [
+     "Conheço esse cansaço.",
+     650
+    ],
+    [
+     "Deita.",
+     800
+    ],
+    [
+     "Eu sonho o resto por ti.",
+     0
+    ]
+   ],
+   "design": "A drowsy, low, half-whispered voice of an ancient sleep demon, speaking Brazilian Portuguese very slowly, like a lullaby, yawning and heavy-lidded, gentle and dangerous. Dark fantasy game creature, not a narrator."
+  },
+  {
+   "id": "astaphaios",
+   "char": "Astaphaios",
+   "lang": "pt",
+   "texto": "Olha: somos nós, antes das cinzas, à janela, contando barcos. Fica deste lado do vidro. Eu fico com o resto.",
+   "segs": [
+    [
+     "Olha...",
+     500
+    ],
+    [
+     "somos nós.",
+     400
+    ],
+    [
+     "Antes das cinzas, à janela, contando barcos.",
+     750
+    ],
+    [
+     "Fica deste lado do vidro.",
+     650
+    ],
+    [
+     "Eu fico com o resto.",
+     0
+    ]
+   ],
+   "design": "A young woman's voice made colder and slightly lower, eerie, seductive and sad, speaking Brazilian Portuguese slowly and softly, like a reflection talking back from a mirror. Dark fantasy game boss, theatrical, intimate."
+  },
+  {
+   "id": "o_rei",
+   "char": "O Rei",
+   "lang": "pt",
+   "texto": "Faísca perdida... que bom que acordaste. O limiar tem uma lei: só passa quem me toca com a própria luz.",
+   "segs": [
+    [
+     "Faísca perdida...",
+     550
+    ],
+    [
+     "que bom que acordaste.",
+     750
+    ],
+    [
+     "O limiar tem uma lei:",
+     450
+    ],
+    [
+     "só passa quem me toca...",
+     300
+    ],
+    [
+     "com a própria luz.",
+     0
+    ]
+   ],
+   "design": "A powerful, deep, regal male voice of a white priest-king, gentle on the surface but too sweet, hiding a tyrant god beneath; speaking Brazilian Portuguese slowly and ceremonially, resonant, theatrical. Dark epic video game, not a narrator."
+  },
+  {
+   "id": "sophia_en",
+   "char": "Sophia",
+   "lang": "en",
+   "texto": "I wept for them.",
+   "segs": [
+    [
+     "I wept...",
+     380
+    ],
+    [
+     "for them.",
+     0
+    ]
+   ],
+   "design": "A young woman around twenty, low-mid warm voice, American English. Quiet, firm, restrained grief: she is holding back tears and refuses to break. Close-mic, intimate, breathy, slow. An actress in a dark fantasy game."
+  },
+  {
+   "id": "yaldabaoth_en",
+   "char": "Yaldabaoth",
+   "lang": "en",
+   "texto": "There never was a river. There never was a window. Your people? Ashes from some harvest or other.",
+   "segs": [
+    [
+     "There never was a river.",
+     450
+    ],
+    [
+     "There never was a window.",
+     650
+    ],
+    [
+     "Your people?",
+     700
+    ],
+    [
+     "Ashes.",
+     300
+    ],
+    [
+     "From some harvest or other.",
+     0
+    ]
+   ],
+   "design": "A powerful, very deep male voice of an ancient tyrant god, booming chest resonance, speaking English slowly with cold contempt and cruel amusement, every word heavy. Dark epic video game villain, theatrical, menacing."
+  },
+  {
+   "id": "rei_limiar",
+   "char": "O Rei",
+   "lang": "pt",
+   "modo": "comeco",
+   "texto": "O limiar tem uma lei: só passa quem me toca com a própria luz.",
+   "segs": [
+    [
+     "O limiar tem uma lei:",
+     450
+    ],
+    [
+     "só passa quem me toca...",
+     300
+    ],
+    [
+     "com a própria luz.",
+     0
+    ]
+   ],
+   "design": "A powerful, deep, regal male voice of a priest-king, calm and ceremonial, too sweet, a tyrant god hiding beneath; speaking Brazilian Portuguese slowly, resonant, theatrical. Dark epic video game."
+  },
+  {
+   "id": "rei_limiar_grito",
+   "char": "O Rei",
+   "lang": "pt",
+   "modo": "final",
+   "texto": "O limiar tem uma lei: só passa quem me toca com a própria luz.",
+   "segs": [
+    [
+     "O limiar tem UMA lei!",
+     350
+    ],
+    [
+     "Só passa quem me TOCA...",
+     250
+    ],
+    [
+     "com a própria LUZ!",
+     0
+    ]
+   ],
+   "design": "A colossal tyrant god SCREAMING in fury, very deep powerful male voice, roaring at the top of his lungs, speaking Brazilian Portuguese, words stretched and spat out with rage. Final boss of a dark epic video game."
+  },
+  {
+   "id": "yald_grito",
+   "char": "Yaldabaoth",
+   "lang": "pt",
+   "modo": "final",
+   "texto": "Eu os forjei! Eles são MEUS!",
+   "segs": [
+    [
+     "Eu os FORJEI!",
+     450
+    ],
+    [
+     "Eles são MEEEUS!",
+     0
+    ]
+   ],
+   "design": "A colossal tyrant god SCREAMING in fury, very deep powerful male voice, roaring at the top of his lungs, speaking Brazilian Portuguese, words stretched and spat out with rage. Final boss of a dark epic video game."
+  }
+ ]
+}

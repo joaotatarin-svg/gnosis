@@ -1,0 +1,405 @@
+{
+ "sophia": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\sophia_s11.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\sophia_ref_24.wav",
+  "text": "Eu não lembro do meu nome. Lembro de cinza na boca... e de alguém chorando. Talvez fosse eu. Não importa. Eu vou subir.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\sophia_s11.wav",
+    "cer": 0.0,
+    "f0": 192,
+    "st_sd": 8.71,
+    "dur": 12.4,
+    "hyp": "Eu não lembro do meu nome. Lembro de cinza na boca e de alguém chorando. Talvez fosse eu. Não importa. Eu vou subir."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\sophia_s13.wav",
+    "cer": 0.0,
+    "f0": 154,
+    "st_sd": 8.52,
+    "dur": 13.0,
+    "hyp": "Eu não lembro do meu nome, lembro de cinza na boca e de alguém chorando, talvez fosse eu, não importa, eu vou subir."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\sophia_s12.wav",
+    "cer": 0.0,
+    "f0": 221,
+    "st_sd": 1.48,
+    "dur": 12.1,
+    "hyp": "Eu não lembro do meu nome, lembro de cinza na boca e de alguém chorando, talvez fosse eu, não importa, eu vou subir."
+   }
+  ]
+ },
+ "demiurgo": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\demiurgo_s13.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\demiurgo_ref_24.wav",
+  "text": "Calma, pequena faísca. Eu estou aqui... sempre estive. Escuta a minha voz: tudo o que perdeste, eu guardei. Vem comigo. Não tenhas medo.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\demiurgo_s13.wav",
+    "cer": 0.016,
+    "f0": 92,
+    "st_sd": 2.46,
+    "dur": 17.4,
+    "hyp": "Calma, pequena faísca. Eu estou aqui, sempre estive. Escuta a minha voz, tudo que perdeste, eu guardei. Vem comigo, não tenhas medo."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\demiurgo_s11.wav",
+    "cer": 0.016,
+    "f0": 88,
+    "st_sd": 2.11,
+    "dur": 15.4,
+    "hyp": "Calma, pequena faísca. Eu estou aqui, sempre estive. Escuta a minha voz, tudo que perdeste, eu guardei. Vem comigo, não tenhas medo."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\demiurgo_s12.wav",
+    "cer": 0.032,
+    "f0": 93,
+    "st_sd": 3.16,
+    "dur": 17.8,
+    "hyp": "Calma, pequena faísca. Eu estou aqui. Sempre estive. Escuta minha voz. Tudo que perdeste, eu guardei. Vem comigo. Não tenhas medo."
+   }
+  ]
+ },
+ "narrador": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\narrador_s13.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\narrador_ref_24.wav",
+  "text": "Houve um tempo antes do tempo. A luz ainda não tinha nome... e ninguém precisava lembrar. Depois veio a queda. E, com ela, o silêncio.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\narrador_s13.wav",
+    "cer": 0.0,
+    "f0": 76,
+    "st_sd": 2.48,
+    "dur": 14.7,
+    "hyp": "Houve um tempo antes do tempo. A luz ainda não tinha nome e ninguém precisava lembrar, depois veio a queda. E, com ela, o silêncio."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\narrador_s12.wav",
+    "cer": 0.0,
+    "f0": 73,
+    "st_sd": 2.24,
+    "dur": 17.2,
+    "hyp": "Houve um tempo antes do tempo, a luz ainda não tinha nome, e ninguém precisava lembrar. Depois veio a queda, e, com ela, o silêncio."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\narrador_s11.wav",
+    "cer": 0.0,
+    "f0": 68,
+    "st_sd": 2.22,
+    "dur": 14.9,
+    "hyp": "Houve um tempo antes do tempo. A luz ainda não tinha nome, e ninguém precisava lembrar. Depois veio a queda. E, com ela, o silencio."
+   }
+  ]
+ },
+ "athoth": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\athoth_s12.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\athoth_ref_24.wav",
+  "text": "Shh... devagar. Ninguém precisa de ti agora. Fecha os olhos... o mundo espera. Eu fico acordado por ti.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\athoth_s12.wav",
+    "cer": 0.032,
+    "f0": 198,
+    "st_sd": 2.18,
+    "dur": 16.6,
+    "hyp": "Shhh! Devagar... Ninguém precisa de Ti agora. Feixa os olhos. O mundo espera. Eu fico acordado por Ti."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\athoth_s13.wav",
+    "cer": 0.204,
+    "f0": 116,
+    "st_sd": 10.45,
+    "dur": 23.0,
+    "hyp": "Vagá. Tenho em precisa de ti agora. Fecho os olhos sobre o mundo, espera. Eu fico acordado por ti."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\athoth_s11.wav",
+    "cer": 0.108,
+    "f0": 185,
+    "st_sd": 1.52,
+    "dur": 10.0,
+    "hyp": "Shhh, ninguém precisa de ti agora. Fechou os olhos, o mundo espera. Eu fico acordado por ti."
+   }
+  ]
+ },
+ "harmas": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\harmas_s11.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\harmas_ref_24.wav",
+  "text": "Ah, que cheiro bom tem a tua saudade. Dá-ma. Só um bocadinho... eu guardo tudo, bem quentinho, aqui dentro.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\harmas_s13.wav",
+    "cer": 0.02,
+    "f0": 125,
+    "st_sd": 5.67,
+    "dur": 13.8,
+    "hyp": "Ah, que cheiro bom tem a tua saudade, dama, sou um bocadinho, eu guardo tudo bem quentinho aqui dentro."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\harmas_s12.wav",
+    "cer": 0.01,
+    "f0": 189,
+    "st_sd": 5.28,
+    "dur": 11.9,
+    "hyp": "Ah, que cheiro bom tem a tua saudade, dama, só um bocadinho, eu guardo tudo bem quentinho aqui dentro."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\harmas_s11.wav",
+    "cer": 0.01,
+    "f0": 74,
+    "st_sd": 2.15,
+    "dur": 12.2,
+    "hyp": "Ah, que cheiro bom tem a tua saudade, dama, só um bocadinho, eu guardo tudo bem quentinho aqui dentro."
+   }
+  ]
+ },
+ "galila": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\galila_s12.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\galila_ref_24.wav",
+  "text": "Consta nos autos. Cada coisa no seu lugar, cada elo na sua corrente. Fora da lei, nada fica de pé.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\galila_s12.wav",
+    "cer": 0.011,
+    "f0": 83,
+    "st_sd": 6.04,
+    "dur": 11.8,
+    "hyp": "Consta -nos, Altos. Cada coisa no seu lugar. Cada elo na sua corrente. Fora da lei, nada fica de pé."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\galila_s13.wav",
+    "cer": 0.011,
+    "f0": 135,
+    "st_sd": 3.13,
+    "dur": 10.5,
+    "hyp": "Consta -nos altos, cada coisa no seu lugar, cada elo na sua corrente, fora da lei, nada fica de pé."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\galila_s11.wav",
+    "cer": 0.011,
+    "f0": 107,
+    "st_sd": 3.01,
+    "dur": 9.7,
+    "hyp": "Consta -nos altos. Cada coisa no seu lugar. Cada elo na sua corrente. Fora da lei. Nada fica de pé."
+   }
+  ]
+ },
+ "yabel": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\yabel_s12.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\yabel_ref_24.wav",
+  "text": "Há... muito tempo... que eu não ouço... a minha voz. Ela dói. Mas eu lembro... de uma resposta.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\yabel_s12.wav",
+    "cer": 0.025,
+    "f0": 215,
+    "st_sd": 7.86,
+    "dur": 12.6,
+    "hyp": "Ah, muito tempo que eu não ouço a minha voz, ela dói, mas eu lembro de uma resposta."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\yabel_s13.wav",
+    "cer": 0.025,
+    "f0": 330,
+    "st_sd": 2.02,
+    "dur": 12.6,
+    "hyp": "Ah, muito tempo que eu não ouço a minha voz. Ela dói. Mas eu lembro de uma resposta."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\yabel_s11.wav",
+    "cer": 0.1,
+    "f0": 260,
+    "st_sd": 1.94,
+    "dur": 11.7,
+    "hyp": "Ah, há muito tempo que o no moço, a minha voz, ela dói, mas eu lembro de uma resposta."
+   }
+  ]
+ },
+ "belias": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\belias_s12.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\belias_ref_24.wav",
+  "text": "Tudo apodrece, sabes? A semente, a raiz, a mão que planta. Eu vi. Não adianta correr... a terra espera por todos.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\belias_s12.wav",
+    "cer": 0.019,
+    "f0": 81,
+    "st_sd": 3.03,
+    "dur": 10.5,
+    "hyp": "Tudo apodrece, sabes? Semente, a raiz, a mão que planta. Eu vi. Não adianta correr. A terra espera por todos."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\belias_s11.wav",
+    "cer": 0.029,
+    "f0": 70,
+    "st_sd": 1.54,
+    "dur": 10.2,
+    "hyp": "Tudo podresse, sabes? A semente, a raiz, a mão que planta. Eu vi. Não adianta correr. A terra espera por todos."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\belias_s13.wav",
+    "cer": 0.068,
+    "f0": 100,
+    "st_sd": 2.83,
+    "dur": 13.2,
+    "hyp": "Tudo apodrece, sabes? A semente, a jaís, a mão que planta. Eu vi, no adianta coger, a teja espera por todos."
+   }
+  ]
+ },
+ "armupiel": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\armupiel_s13.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\armupiel_ref_24.wav",
+  "text": "Curvai-vos diante da Coroa! Eu sou o fim de todas as escadas... e ainda assim, ninguém sobe para me ver.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\armupiel_s12.wav",
+    "cer": 0.0,
+    "f0": 185,
+    "st_sd": 6.09,
+    "dur": 13.0,
+    "hyp": "Curvai -vos diante da coroa, eu sou o fim de todas as escadas, e ainda assim, ninguém sobe para me ver."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\armupiel_s13.wav",
+    "cer": 0.02,
+    "f0": 126,
+    "st_sd": 5.33,
+    "dur": 9.7,
+    "hyp": "Curvaivos diante da coroa, eu sou o fim de todas as escadas, e ainda assim, ninguém soube para me ver."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\armupiel_s11.wav",
+    "cer": 0.01,
+    "f0": 263,
+    "st_sd": 4.66,
+    "dur": 11.4,
+    "hyp": "Curvaivos diante da coroa, eu sou o fim de todas as escadas, e ainda assim, ninguém sobe para me ver."
+   }
+  ]
+ },
+ "soter": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\soter_s13.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\soter_ref_24.wav",
+  "text": "Senta-te um pouco, Portadora. O caminho não foge. Quem anda com pressa no escuro... só tropeça mais depressa.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\soter_s13.wav",
+    "cer": 0.0,
+    "f0": 115,
+    "st_sd": 3.45,
+    "dur": 11.8,
+    "hyp": "Senta -te um pouco, Portadora. O caminho não foge. Quem anda com pressa no escuro só tropeça mais depressa."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\soter_s12.wav",
+    "cer": 0.0,
+    "f0": 88,
+    "st_sd": 3.22,
+    "dur": 11.4,
+    "hyp": "Senta -te um pouco, Portadora, o caminho não foge, Quem anda com pressa no escuro só tropeça mais depressa."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\soter_s11.wav",
+    "cer": 0.01,
+    "f0": 76,
+    "st_sd": 3.21,
+    "dur": 9.7,
+    "hyp": "Sêntate um pouco, Portadora. O caminho não foge. Quem anda com pressa no escuro, só tropeça mais depressa."
+   }
+  ]
+ },
+ "velkar": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\velkar_s11.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\velkar_ref_24.wav",
+  "text": "Eu servi. Por eras. Achei que era lealdade... era só medo. Agora não sobra nada... só isto.",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\velkar_s11.wav",
+    "cer": 0.0,
+    "f0": 102,
+    "st_sd": 2.22,
+    "dur": 10.7,
+    "hyp": "Eu servi por eras. Achei que era lealdade. Era só medo. Agora não sobra nada, só isto."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\velkar_s12.wav",
+    "cer": 0.025,
+    "f0": 215,
+    "st_sd": 2.51,
+    "dur": 12.2,
+    "hyp": "Eu servi por eras. Achei que era a lealdade. Era só medo. Agora não sobra nada. Só isto."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\velkar_s13.wav",
+    "cer": 0.037,
+    "f0": 92,
+    "st_sd": 2.16,
+    "dur": 11.0,
+    "hyp": "Eu servi. Por eras, a chique era lealdade. Era só medo. Agora não sobra nada. Só isto."
+   }
+  ]
+ },
+ "adormecida": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecida_s13.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecida_ref_24.wav",
+  "text": "Onde... onde eu estou? Eu estava sonhando com a minha casa. Por que está tão frio?",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecida_s13.wav",
+    "cer": 0.0,
+    "f0": 198,
+    "st_sd": 4.37,
+    "dur": 8.0,
+    "hyp": "Onde? Onde eu estou? Eu estava sonhando com a minha casa. Por que está tão frio?"
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecida_s12.wav",
+    "cer": 0.013,
+    "f0": 204,
+    "st_sd": 1.93,
+    "dur": 7.0,
+    "hyp": "Onde? Onde eu estou? Eu estava sonhando com a minha casa, porque está tão frio."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecida_s11.wav",
+    "cer": 0.026,
+    "f0": 268,
+    "st_sd": 3.47,
+    "dur": 8.5,
+    "hyp": "Onde? Onde eu estou? Eu estava sonhando com minha casa. Por que está tão frio?"
+   }
+  ]
+ },
+ "adormecido": {
+  "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecido_s11.wav",
+  "wav24": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecido_ref_24.wav",
+  "text": "Eu dormi muito, não foi? A minha cabeça pesa. Por favor... alguém viu o meu filho?",
+  "cands": [
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecido_s13.wav",
+    "cer": 0.013,
+    "f0": 216,
+    "st_sd": 5.99,
+    "dur": 13.5,
+    "hyp": "Eu dormi muito, não foi. A minha cabeça apesa. Por favor, alguém viu o meu filho."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecido_s11.wav",
+    "cer": 0.0,
+    "f0": 101,
+    "st_sd": 2.98,
+    "dur": 8.8,
+    "hyp": "Eu dormi muito, não foi? A minha cabeça pesa. Por favor, alguém viu o meu filho."
+   },
+   {
+    "wav": "C:\\gnosis-wt\\_caps\\dublagem\\r2\\refs\\adormecido_s12.wav",
+    "cer": 0.053,
+    "f0": 168,
+    "st_sd": 1.93,
+    "dur": 8.2,
+    "hyp": "Eu dormi muito, não foi. A minha cabeça é beza. Por favor, alguém viu o meu filho."
+   }
+  ]
+ }
+}

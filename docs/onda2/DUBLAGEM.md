@@ -4,7 +4,56 @@
 > Status: **PESQUISA + MOTOR + ELENCO DE AMOSTRA + PIPELINE**. O jogo inteiro
 > NÃO foi dublado — espera o João aprovar o elenco.
 
-## 0. BILHETE PARA O SUCESSOR (manter sempre atualizado)
+## 0. BILHETE PARA O SUCESSOR — R2 (29/10/2026, PAUSA a pedido do João; nada rodando)
+
+**Mudança de motor (R2):** o João achou as vozes PT da R1 "de professora". A receita nova é
+**Qwen3-TTS (Apache-2.0)**:
+- a voz de cada personagem é PROJETADA uma vez por descrição de texto (VoiceDesign, sintética, ninguém clonado);
+- todas as falas são ditas com essa voz fixa (modelo Base, clonagem ICL da referência projetada);
+- depois vem o pós por personagem (`post_qa.py`: legião, dobra, espelho...), com QA por ASR DEPOIS dos efeitos.
+
+Amostras e comparação: `C:\gnosis-wt\_caps\dublagem\r2\R2_AMOSTRAS.md`. A R1 (Kokoro + Chatterbox) virou só referência.
+
+- **Estado:**
+  - Lote **limiar-1** (11 falas: prólogo, intro, `king_intro`, `king_fall`) entregue no branch
+    **`dir7/dublagem-lote`** (worktree `C:\gnosis-wt\dublagem-lote`, base `integracao/onda1` f1fe98a), commit `4920893`, push feito.
+  - VoiceProbe 0 falhas; validate.ps1 TUDO VERDE.
+  - Tabela do Guardião: `C:\gnosis-wt\_caps\dublagem\r2\entregas\limiar-1.md`.
+- **Falta** (535 falas, PT), em lotes ENCADEADOS no mesmo branch (cada lote = 1 commit só com voice/*.ogg, .import e o manifest acrescentado):
+  - **eon-1:** `eon_intro`, `walk_arrival`, `walk_cleared`, `node_arrival`, `sleeper_line`.
+  - **arcontes:** `temptation`, `archon_phase2`, `archon_phase3`, `_archon_death`, `ring_gained`, `echo_memory`.
+  - **encontros:** `soter_*`, `velkar_*`, `after_soter`, `concession_response`, `refusal_response`.
+  - **clímax:** `sanctuary`, `seventh_ring`, `theft`, `final_pre`, `center_intro`, `final_lines`, `ending_lines`, `epilogue_cards`, `death_revive`.
+  - **pools:** `_arrival_pool`, `_cleared_pool` (176).
+  - **estelas:** `gnosis.stela` (107; o jogo ainda não as toca).
+  - EN não foi gerado (mesma receita com `lang en`; a voz fixa fala EN).
+- **Receita por personagem:** `tools/voice/r2/elenco_r2.json` (descrição de cada voz-base + preset de pós).
+  - As vozes-base estão em `tools/voice/r2/refs/<voz>_ref_24.wav`, com o texto em `escolhidas.json`.
+  - Sementes escolhidas: sophia s11, demiurgo s13, narrador s13, athoth s12, harmas s11, galila s12, yabel s12, belias s12, armupiel s13, soter s13, velkar s11, adormecida s13, adormecido s11.
+  - **NÃO regere as refs:** são a identidade fixa das vozes.
+  - Rei, Yaldabaoth, A Voz e O Cego usam a voz-base `demiurgo` (o mesmo ser); Astaphaios e "Uma voz nos Anéis" usam `sophia`; Estela usa `narrador`.
+  - Intensidade do Demiurgo (`mk_lote.preset`):
+    - O Rei = `legiao1` (nível 2);
+    - Yaldabaoth em cena = `legiao3`, ou `legiao4` com grito;
+    - batalha final (`final_*`/`center`/`ending`) = `legiao4`, ou `legiao5` com grito.
+- **Rodar um lote** (`P=C:\gnosis-wt\_caps\dublagem\r2\_scripts\prod` — cópia versionada em `tools/voice/r2/`):
+  1. `venv\python -I mk_lote.py <nome> <fontes,...> --seeds 1,2,3` (o roteiro é `P\roteiro.json`; re-extraia com `extract_lines.py --root C:\gnosis-wt\dublagem-lote --out P\roteiro.json` se o texto mudar).
+  2. `venv-qwen\python -I gen_qwen.py job_clone_<nome>.json --batch 6 --prio normal` (GPU, RTF ~1,5 em lote; retomável: pula o wav existente).
+  3. `venv\python -I post_qa.py job_post_<nome>.json` (CPU; escolhe o melhor dos 3 por CER + similaridade ≥ 0,90; reprova com CER pós > 0,15, ou > 0,20 na legião).
+  4. Reprovadas: novas sementes (`--seeds 4,5`, mas mantenha 1,2,3 nos `cands`) + `--retry`.
+  5. `venv\python -I entrega.py <nome>` (copia para `dublagem-lote` e acrescenta o manifest).
+  6. Godot `--headless --audio-driver Dummy --editor --quit`, VoiceProbe, `tools\validate.ps1`.
+  7. Commit SÓ de `assets/audio/voice` (o reimport suja outros `.import`: NÃO os adicione) + push + avisar o chefe.
+- **venvs:** `C:\Users\jmtat\gnosis-tools\voice\venv-qwen` (qwen-tts 0.1.1, torch 2.9.1+rocm7.2.1 de repo.radeon.com, `constraints.txt`); `venv` (ASR/pós); `venv-rocm` (Chatterbox, só a abordagem A).
+- **Armadilhas:**
+  - heredoc no Bash desta máquina come `\\`: escreva JSON com `/`.
+  - `cudnn.enabled=False` no ROCm.
+  - Em `HF_HUB_OFFLINE` o modelo é carregado pelo caminho do snapshot.
+  - Lote misto (`--batch 6`) é ~2,5× mais rápido que 1 por vez.
+  - O grito da voz fixa é CONTIDO (o tom sobe só 15–25%); o berro real só sai no VoiceDesign (outro timbre). A decisão é do João (R2_AMOSTRAS.md).
+  - Gritos de combate devem ter ≤ 2 s (Guardião §12) e falas de luta ≤ 2,5 s: `post_qa` acelera até 20%; acima disso, a fala é reprovada.
+
+## 0b. BILHETE R1 (histórico, 18/10)
 
 - **Estado:** pesquisa de licenças feita (§1); venv local pronto em
   `C:\Users\jmtat\gnosis-tools\voice\venv` (Python 3.12, torch 2.6 CPU,
