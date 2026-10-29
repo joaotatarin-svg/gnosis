@@ -100,6 +100,13 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
 - Sondas em e6235c4 (`_caps/integ/*_e6235c4*`): ProgQA todos QA PASS; BossProbe todas [ok], sem TIMEOUT: Rei 74 s, Athoth 97,
   Harmas 83, Galila 179 (4 quase-mortes), Yabel 183 (3), Astaphaios 79, Belias 98 (3), Armupiel 125 (3), Rei+Colosso 120 s (4).
 
+## Prévia 3.2 FEITA (29/10/2026)
+- Última peça: chefes6 213d292 -> 944ec41 (VERDE -Repeat 2, push). Docs BIBLIA §6/ROADMAP em c75c41f (commit separado).
+- `preview/3.2` = c75c41f + cherry-pick do save GNOSIS-Previa (c950dd8), push -f feito. Build: `C:\gnosis-wt\_build\preview3_2\GNOSIS.exe`
+  (+ .pck, LEIA-ME.txt), SEM atalho, jogo não aberto (só abertura headless: "2 resources still in use at exit").
+- BossProbe 944ec41: Rei 74 s, Athoth 97, Harmas 83, Galila 123, Yabel 158, Astaphaios 91, Belias 149, Coroa 192 (4 quase-mortes),
+  Rei+Colosso 140 (6 quase-mortes); sem TIMEOUT. ReiProbe atravessa=0, apelão=0.
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
