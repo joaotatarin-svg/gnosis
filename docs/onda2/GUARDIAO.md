@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 | 213d292 (delta de db14a1a: um commit) | APROVADO (a pegadinha da Réplica fechou; postura gira para a Sophia nas recapturas) | R5, §4 |
 | dir6/chefes6 | db14a1a (delta de 61645f7: d9f4aed, 8252a50, fcf0f43, db14a1a; merges ignorados) | APROVADO COM RESSALVAS (Estouro e Jorro legíveis e justos; pústulas são contáveis e não escondem nada; a Réplica é quase inevitável na 1ª vez, porque o Juízo nasce quando a Sophia já está martelando e a defesa arma a Réplica desde o 1º quadro) | R5, §4, R21 |
 | dir2/arte-gpt | 118cb99 (delta de 50f807a; base com cenario7 1b1c69f) | APROVADO COM RESSALVAS (fio de contorno funciona e a pintura se mantém; R18 3,0-3,2 em 7 de 10 telas, Coroa 2,67-2,85 e Mente 2,33 abaixo de 3:1; o cajado e as botas clareiam e perdem saturação nas telas frias) | R18, R10, §4 |
 | dir6/progressao6 | 68bcaea (delta de 3d13bbd: 1 commit) | APROVADO COM RESSALVAS (as 2 ressalvas antigas FECHADAS; morte só leva o ganho da tela, edições fora da área mínimas e corretas; restam comentários velhos "−20%" e a morte agora sem custo econômico real) | §3, §4, R21 |
@@ -1063,6 +1064,21 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## dir6/chefes6 — 213d292 (reauditoria do delta de db14a1a: um commit)
+
+**Medido:** importação sem `SCRIPT ERROR`/`Parse Error` (`_caps\guardiao\p11_import.txt`); li o diff de `boss_armupiel.gd` (só ele muda no código) e vi `_caps\chefes6\novos2\v2_s64_juizo_sheet.png` e `v2_s64_replica_sheet.png`. Não rodei BossProbe.
+
+- **Pegadinha da Réplica: FECHADA.** A postura só defende e arma a Réplica quando `lit_t() >= 0,3 s` (`_stance_lit()`); antes disso o golpe entra como dano normal (o Juízo está se acendendo), e não conta como pressão (`not _in_stance()`).
+  A 1ª Réplica da luta tem `wind` 0,45 s e as demais 0,32 s (`_replicas_done`, contador por instância: cada tentativa nova de luta recomeça com o preparo longo, leniente). Resto do desenho (guard_rec, volta à postura 1x) intacto.
+  Efeito: o golpe que já estava no buffer quando ele crava o espadão não castiga; quem bate depois de acesa recebe a faísca dourada e um aviso de 0,45 s na 1ª vez. Os 0,32 s seguintes ficam como padrão aprendido (aceito).
+- **Desenho final: CONFERIDO.** Nas recapturas a lâmina e a meia-cúpula ficam SEMPRE do lado da Sophia (quadros 3 a 6, ela troca de lado e a cúpula acompanha), 3 pontas de coroa sobre a cabeça, faísca/anel dourado na defesa.
+  A Réplica mostra o contorno vermelho pulsando por ~3 quadros antes do anel largo dourado, e a Sophia sai jogada para longe (quadro 6). Legível.
+- Nada novo em §4 (sem sorteio, sem timer). Sons próprios continuam pendentes (Áudio); `mask_light` emprestado.
+
+**Veredito: APROVADO.** Resta só o pedido de som e o playtest humano do timing de 0,32 s.
 
 ---
 
