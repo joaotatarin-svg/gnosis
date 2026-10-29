@@ -83,7 +83,9 @@ func _solve() -> void:
 	var gold := Color(1.0, 0.9, 0.5)
 	AoeNova.spawn(get_parent(), global_position + Vector2(0, -10), 0, 90.0, gold)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -30), gold)
-	Progression.add_orbs(30 + screen * 3)
+	# Guardião §3: os Selos pagam UMA vez por run.
+	if Progression.claim_once("selo:%d" % screen):
+		Progression.add_orbs(30 + screen * 3)
 	Juice.shake(0.4)
 
 

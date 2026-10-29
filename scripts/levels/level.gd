@@ -13,6 +13,8 @@ class_name Level
 @export var screen: int = 1
 
 # Geometria da travessia (px de mundo). Zona i tem centro em ZONE_FIRST_X + i*ZONE_STEP.
+## R21 (Guardião, Onda 7): respiro entre ondas da mesma zona (era 0,8 s).
+const WAVE_BREATH := 2.0
 const ZONE_FIRST_X := 620.0
 const ZONE_STEP := 1500.0
 const ZONE_TRIGGER := 430.0       # cruzou centro-430 → tranca
@@ -836,7 +838,8 @@ func _on_enemy_defeated(e) -> void:
 	if wave_index >= waves.size():
 		_on_zone_cleared()
 	else:
-		await get_tree().create_timer(0.8, false).timeout
+		# R21 (Guardião): respiro entre ondas — era 0,8 s.
+		await get_tree().create_timer(WAVE_BREATH, false).timeout
 		if is_inside_tree():
 			_start_wave()
 

@@ -648,6 +648,12 @@ func _grant_reward(id: String) -> Dictionary:
 	if n.is_empty() or CodexSession.active:
 		return {}
 	var rw: Dictionary = n.reward
+	# Guardião §3 (progressao7): a recompensa de cada CAMADA paga uma vez por
+	# run — morrer, voltar ao checkpoint e refazer (ou trocar de trilha) não
+	# paga de novo. A cura do santuário continua valendo (não acumula).
+	var layer_key := "no:%d.%d" % [int(n.get("eon", 0)), int(n.get("layer", 0))]
+	if not Progression.claim_once(layer_key):
+		rw = {"heal": true} if bool(rw.get("heal", false)) else {}
 	if int(rw.get("orbs", 0)) > 0:
 		Progression.add_orbs(int(rw.orbs))
 	if int(rw.get("hp", 0)) > 0:

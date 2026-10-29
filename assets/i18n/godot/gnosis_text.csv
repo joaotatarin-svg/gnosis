@@ -45,6 +45,8 @@ Lâmpada de Óleo,Oil Lamp
 Cada faísca que te alcança devolve 3 de Éter.,Each spark that reaches you restores 3 Aether.
 Pérola do Hino,Pearl of the Hymn
 Toda faísca ganha rende um quarto a mais.,Every spark you earn yields a quarter more.
+Coro das Faíscas,Choir of Sparks
+"Quando todas as faíscas de um inimigo te alcançam, a luz fere quem está perto.","When all of an enemy's sparks reach you, the light strikes whoever is close."
 Sophia,Sophia
 "Uma faísca sem memória, desperta nas cinzas do Kenoma. Luta com o cajado e com a luz que ainda lembra.","A spark without memory, woken in the ashes of the Kenoma. She fights with her staff and the light that still remembers."
 Golpe de Cajado,Staff Strike
@@ -798,6 +800,7 @@ Tantas vezes provou os presentes deles. O trono só lhe pareceu familiar.,So man
 "Na cidade das cinzas aprendeu os nomes. Ina, que cantava errado. Merou, do poço. Tasso, do telhado. Disse cada um em voz alta.","In the city of ash she learned the names. Ina, who sang off-key. Merou, of the well. Tasso, of the roof. She said each one aloud."
 "Não eram a gente dela. Agora são. E dentro dela, pequeno, alguém aprendia a ver.","They were not her people. Now they are. And inside her, small, someone was learning to see."
 A faísca lembrou. O resto é silêncio.,The spark remembered. The rest is silence.
+no:%d.%d,no:%d.%d
 O arquivo de save estava ilegível e foi ignorado.,The save file was unreadable and has been ignored.
 O save principal estava danificado; o progresso foi recuperado da cópia de segurança.,The main save was damaged; your progress was recovered from the backup copy.
 "Um progresso de versão anterior foi descartado (o mapa mudou). Faíscas totais, finais e opções foram preservados.","Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept."
@@ -969,6 +972,8 @@ Criatura do Kenoma,Creature of the Kenoma
 z,z
 BossBrain,BossBrain
 OrbRig,OrbRig
+HudPush,HudPush
+bau:%d,bau:%d
 Segredo encontrado,Secret found
 Arconte,Archon
 %s (Elite),%s (Elite)
@@ -982,6 +987,8 @@ A luz se apagou.,The light went out.
 OS TRÊS SELOS,THE THREE SEALS
 golpeie na ordem em que brilham,strike them in the order they glow
 selos abertos,seals opened
+selo:%d,selo:%d
+adormecido:%d,adormecido:%d
 %s · ler a Estela,%s · read the Stele
 Crônica desbloqueada: %s  (%d/%d),Chronicle unlocked: %s  (%d/%d)
 ESTELA  ·  %s,STELE  ·  %s
@@ -1023,6 +1030,7 @@ Sounds and effects CC0/CC-BY — see assets/LICENSES.md
 Inspired by the Nag Hammadi texts, the Pistis Sophia
 and the accounts of Irenaeus, Hippolytus and Clement."
 ...mãe?,...mother?
+ArtBack,ArtBack
 I  ·  A FAÍSCA DESPERTA,I  ·  THE SPARK AWAKENS
 II  ·  QUEBRE A GUARDA,II  ·  BREAK THE GUARD
 III  ·  ENCARE O ARCONTE,III  ·  FACE THE ARCHON
@@ -1486,6 +1494,7 @@ no máximo,maxed out
 %s  ·  em uso,%s  ·  in use
 %s  ·  usar,%s  ·  use
 Relíquia  ·  %s,Relic  ·  %s
+Segundo engaste  ·  duas relíquias em uso,Second setting  ·  two relics in use
 Restauração  ·  cura completa,Restoration  ·  full heal
 a vida já está cheia,health is already full
 só no santuário e depois do Arconte,only at the shrine and after the Archon

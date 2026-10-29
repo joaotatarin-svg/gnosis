@@ -25,6 +25,9 @@ func _build_relics() -> void:
 			"desc": "Cada faísca que te alcança devolve 3 de Éter."},
 		{"id": "perola", "name": "Pérola do Hino", "cost": 500, "tier": 3, "color": Color(0.95, 0.92, 0.8),
 			"desc": "Toda faísca ganha rende um quarto a mais."},
+		# Onda 7: relíquia de fim de run — premia derrubar inimigos AGRUPADOS.
+		{"id": "coro", "name": "Coro das Faíscas", "cost": 700, "tier": 5, "color": Color(1.0, 0.85, 0.55),
+			"desc": "Quando todas as faíscas de um inimigo te alcançam, a luz fere quem está perto."},
 	]
 
 
