@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/progressao6 | 68bcaea (delta de 3d13bbd: 1 commit) | APROVADO COM RESSALVAS (as 2 ressalvas antigas FECHADAS; morte só leva o ganho da tela, edições fora da área mínimas e corretas; restam comentários velhos "−20%" e a morte agora sem custo econômico real) | §3, §4, R21 |
 | dir6/chefes6 | 61645f7 (delta de 82454b2) | APROVADO (3 ressalvas fechadas; `block` 4/s no pior caso, só se reclamarem) | R5, R4, R10 |
 | dir7/cenario7 | 1b1c69f (delta de ba91602) | APROVADO COM RESSALVAS (R18 1,6-2,4 -> 2,75-2,97, ainda < 3:1; Coroa diante da estátua não confirmada; halo em movimento só no playtest) | R18, R10 |
 | dir6/chefes6 | 82454b2 (delta de 8d00636: 5eeea79, 04c46e0, 9bf99e2, 846314d, d439998, 82454b2) | APROVADO COM RESSALVAS (BodyBox do Sono/Espelho aceitável; guarda alta justa e sinalizada; falta aviso da forma que se refaz e o root no muro) | R5, R18, R21, SDT |
@@ -1063,6 +1064,42 @@ a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 ---
 
+## dir6/progressao6 — 68bcaea (delta de 3d13bbd: um commit; 20 arquivos, 8 de código)
+
+**Medido (sonda `guardiao_sonda` no 68bcaea, headless, sem som):** importação sem `SCRIPT ERROR`/`Parse Error`; **ProgQA 62 `QA PASS`, 0 falhas** (+4 novos);
+**TecnicoQA 43 PASS** (morte REAL no Arconte 19 -> antessala 18 com 100 de carteira e 30 da tela: 70 faíscas; "Continuar" do disco volta com 70; travessia 17 -> 15).
+Logs: `C:\gnosis-wt\_caps\guardiao\p8_progqa.txt`, `p8_tecnico.txt`, `p8_import.txt`. Não rodei o ProgBot (longo) nem o jogo com janela.
+
+**Ressalvas do 3d13bbd:**
+- **Chave do baú secreto: FECHADA.** `chest.gd:102` usa `"bau:%d%s" % [screen, ":s" if secret else ""]`; `secret` é o `var` do próprio baú (l. 12), definido antes de abrir. Os dois baús da mesma tela pagam.
+- **Aviso quando o `claim_once` nega: FECHADA.** `claim_once_or_notice` (baú, Selo, Adormecido) e `notice_claimed()` em `run_manager._grant_reward` (recompensa de camada). Vai pelo `toast` do HUD
+  (grupo `hud`, `hud.gd:150/341`), que enfileira se houver cena/pausa e não cobre card nem diálogo; sem HUD (mapa) tenta de novo 1x/s por até 6 s. Sem clarão nem som (R10/R21 ok).
+  Risco pequeno: se um HUD da tela ANTIGA ainda existir durante a troca de cena, o aviso pode cair nele e sumir; o caso é raro e o efeito é só o aviso não aparecer.
+
+**Morte leva SÓ as faíscas ganhas na tela (decisão do chefe): CORRETA e dentro da §3/§4.**
+- Fiação conferida: `add_orbs(+)` soma em `screen_gain` (já com a Pérola); `RunManager.screen_changed` zera, e ele é emitido em TODA troca (início de run, avançar, `choose_node`, `continue_run` e
+  `respawn_at_checkpoint`), então uma 2ª morte na mesma tela não cobra de novo o que já saiu. `death_loss()` = `clampi(screen_gain, 0, orbs)`: nunca passa da carteira, e gastar na loja primeiro só
+  reduz a perda (o gasto consome o saldo antigo; a conta bate). A recompensa do mapa é paga ANTES do `screen_changed`, então não conta como ganho da tela; o suborno do Arconte (+80) CONTA, e morrer
+  nessa tela o devolve (antes era lucro líquido, agora não). Só vale com run ativo (`level.gd:_on_player_died` já separa o fora-de-run). Não é salvo: "Continuar" abre com 0 (leniente).
+- §4: sem sorteio, sem timer, sem FOMO; a perda é anunciada, determinística e do que a própria tela rendeu. Resolve as 3 queixas do meu antecessor (não recupera, tom de checkpoint, pune quem guarda).
+- A fala da morte agora diz a regra ("A tela recomeça, e as faíscas dela também. N faíscas escorrem da tua mão aberta."). Boa. Só aparece quando `lost > 0`, e "a tela" é aproximação: o checkpoint
+  pode estar 1 a 3 telas atrás (offsets 0/4/7 do Éon), então o trecho inteiro recomeça. Aceitável.
+- **Observação (não bloqueia):** na prática a morte deixou de ter custo econômico: perde o ganho da tela e REPAGA em dobro ao refazer, e as telas de trás do checkpoint pagam inimigo de novo
+  (até ~3 telas, cerca de 840 faíscas). Morrer de propósito rende ~125/min contra ~214/min seguindo em frente, então não há incentivo a "farmar morte"; o custo da morte é só o tempo, o que é
+  exatamente a opção "mínimo risco" que eu tinha oferecido. Vale o chefe saber que a barra de balanço (BALANCE r7) foi medida com bot que não morre de verdade e fica intacta.
+
+**Edições fora da área (delegação do chefe): MÍNIMAS E CORRETAS.**
+- `level.gd`: 1 linha (`lost := Progression.death_loss()`) + comentário; o resto de `_commit_death` intacto.
+- `narrative.gd` + `01_narrative_a.tsv` + `en_table.gd`/`en.po`/csv: 1 fala, chave nova (`d0115e`), tradução em inglês fiel; a antiga só sobra em `_orfas.csv` (lista de órfãs, gerada).
+- `tecnico_qa.gd`: `screen_gain = 30` + `morte_custa_faiscas_da_tela` (70) nos 2 pontos; o teste continua exercitando a morte real (confirmei rodando). Só o cabeçalho do arquivo ainda diz "-20% de faíscas".
+- Nada de efeito colateral em combate, áudio ou arte.
+
+**Nits (consertar quando passar por lá):** comentários velhos "-20%" em `run_manager.gd:92`, no cabeçalho do `tecnico_qa.gd` e no doc `PROGRESSAO6.md` (§ do bot, "a morte custa 20% das faíscas").
+
+**Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: só os comentários velhos e a observação de que morrer agora não custa faíscas de verdade (decisão do chefe; o playtest dirá se a morte "pesa").
+
+---
+
 ## dir7/polimento7 — 28d8df7 (delta de 0ba25d8: um commit)
 
 **Medido:** li o código e as capturas `C:\gnosis-wt\_caps\polimento7\esgotado\` (telas 38 e 48, `depois` × `v1_escuro`).
@@ -1210,8 +1247,8 @@ cenario7 1b1c69f, mapa7 4e4b9cc, arte-gpt 50f807a (aprovado), todos com as ressa
 1. **Coroa (cenario7):** captura com a Sophia DIANTE da estátua dourada (tela 57/58, `HdShot x=<...> solo nohud`) para confirmar que a sombra resolve e não vira bolha. Não confirmado.
 2. **Halo (cenario7) em movimento:** só o playtest decide se lê como "nuvem escura que segue".
 3. **Borda da Sophia +0,02-0,03 (pedido do dono à Arte):** minha opinião (na seção do cenario7): subir `HERO_RIM` interno, não o halo de fora; repetir `contrast_r18.py` nas 10 telas.
-4. **Progressão:** chave do baú secreto colide com a do comum (`bau:<tela>`; corrigir com `":s"`); avisar quando o `claim_once` nega; opinião sobre os 20 % ao morrer (teto ~150 ou só as faíscas
-   da tela) entregue ao chefe; ritmo da arma (~27 telas no Nv.3).
+4. **Progressão (68bcaea APROVADO COM RESSALVAS):** chave do secreto e aviso do `claim_once` FECHADOS; morte só leva o ganho da tela (decisão do chefe). Resta: comentários velhos "-20%"; ritmo da arma (~27 telas no Nv.3);
+   ver no playtest se a morte, agora sem custo real, "pesa".
 5. **polimento7:** Arconte do Sono/Espelho (resolvido pelo chefes6 com BodyBox, 1 golpe a 55 px no Espelho aceito); BALANCE r7 foi medido com a renda de faíscas antiga.
 6. **chefes6:** `block` da guarda alta 0,25 -> 0,4 s só se o playtest reclamar; Armupiel/Coroa ainda curtos no bot agressivo (o dono admite).
 7. **audio7 / perigos7 (antigos):** `hz_tide_tick` a cada 300 ms (espaçar para ~600 ms se reclamarem); `Gnosis.boss_card("campeao")` já mudo.
