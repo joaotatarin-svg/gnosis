@@ -50,6 +50,22 @@ BossProbe (telas=all vel=3) em ec64161: lutas ~2× mais longas que o r4 do CHEFE
 Armupiel (64) e na batalha final (68). 91× "Function blocked during in/out signal (set_deferred monitoring)".
 Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
 
+## Onda 7 - Prévia 3.1 FEITA (28/10/2026)
+- Ferramenta nova: `tools/integrar.ps1 "branch sha" ... [-Repeat N] [-Push]` (merge --no-ff em lote; conflito só de i18n
+  = --ours + LF + extract + build --strict + commit; reimport 2x; validate; imprime só VERDE/VERMELHO; log em
+  `_caps\integ\integrar_*.log`). Roda em BelowNormal, Godot headless + Dummy.
+- Lote 3.1 (validate -Repeat 2, VERDE): vfx7 a63c40b -> 6d0cf90; chefes6 b0b52f0 -> 52699d2; polimento7 2d54867 -> 65f8ed4
+  (Guardião aprovou 2d54867; ressalvas menores vão em commit novo do Polimento7 na 3.2). Push: origin/integracao/onda1 = 65f8ed4.
+- BossProbe (telas=all vel=3, `_caps\integossprobe_65f8ed4.log`, UTF-16): todas as lutas terminam [ok], sem TIMEOUT.
+  Tempos: Rei 83 s, Athoth 196 s, Harmas 81, Galila 135, Yabel 160, Astaphaios 171, Belias 115, Armupiel 100, Rei+Colosso 186
+  (antes, ec64161: Armupiel e final estouravam 420 s). Athoth (196 s, 2 quase-mortes) é o mais longo: candidato a ajuste.
+- Build: `C:\gnosis-wt\_build\preview3_1\GNOSIS.exe` + LEIA-ME.txt; branch `preview/3.1` (= 65f8ed4 + cherry-pick do save
+  GNOSIS-Previa) f9e3557, push feito. SEM atalho no Desktop. Abertura headless sem erro (só "2 resources still in use at exit").
+- Fila 3.2 (aprovados): arte-gpt de546f8 (+50f807a, auditar), mapa7 8e8afc3, encenacao5 0561f28+9e1d21a, ui7 12c6643, perigos7 04afd65;
+  depois cenario7 e progressão. **Conferir ao entrar encenacao5 0561f28+9e1d21a: `champion_enter` e o cue da encenação não tocam
+  dobrado na aparição do Campeão.** Commit novo do Polimento7 (ressalvas do Guardião) entra junto.
+- Armadilha: `git checkout -- .` descarta o ruído .import antes de merge (o script já faz).
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
