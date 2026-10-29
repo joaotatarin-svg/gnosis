@@ -318,3 +318,13 @@ juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o
   `C:\gnosis-wt\_caps\chefes6\aneis68_antes_cima_depois_baixo.png` (quadros em `_caps\chefes6\aneis68\`).
 - validate: 1ª rodada teve o FlashParryProbe vermelho 1× (intermitente: passou 2×/2× aqui e na integ 0400a19);
   2ª rodada 14/14 VERDE.
+
+### BodyBox do Rei v11 (Lab3D: parada 16 + andar 12 em camadas) — 29/10, base 3993fb5
+- `rei_body_data.gd` = tabela do Lab3D (`_caps\lab3d\rei\entrega`, gerada pelo `body_slabs.py`) + os 8 quadros
+  antigos que ela não traz (`idle_1`, meios RIFE, `walk_*`), mantidos até a Arte integrar a folha nova (sem eles a
+  caixa some na parada/andar atuais). Os 16 quadros de golpe/dor/morte são IDÊNTICOS nas duas tabelas.
+- ReiProbe com a arte atual (`_caps\chefes6\rei_v11_uniao.txt`): atravessa=0, apelão=0, cobertura 96–98 %.
+- Quadros novos (`idle_a00..15`, `glide_a00..11`): só dá para sondar no jogo depois que `origin/dir2/arte-gpt`
+  publicar `boss_9_rei_idle_camadas.png` + o json. Conferência fora do jogo (folha entregue, escala estimada):
+  cobertura da metade de baixo 93–95 % (média 94,3 %), caixa fora 6–8 % — método aproximado (escala pela altura das
+  faixas), não substitui a ReiProbe.
