@@ -226,6 +226,16 @@ principal só gera na GPU; o QA (Whisper/pós/ogg) roda em paralelo numa thread.
 
 ## 6. CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 
+**R2 / REGRAS_GUARDIAO.md (29/10), conferido no lote limiar-1:**
+- **§21 R13:** −21 LUFS integrado (short-term máx. −19,1), true peak ≤ −1,6 dBTP no .ogg. O grito sai a −18, ou seja +3 LU, dentro do limite de +4.
+- **§16 legião:** a principal fica ≥ 6,5 dB acima do bus de ecos; ecos com tom e formante diferentes, atrasos de 25–58 ms e passa-altas de 150 Hz; de-esser no grito. No começo (Rei, tela 1) a legião é nível 1: só 2 ecos a −13 dB. A legião cheia fica para a final (§15).
+- **§17:** reverbs novos ≤ 1,75 s em cena; em combate o IR é trocado por 0,7 s.
+- **§9/§13:** cena ≤ 12 s (máx. 10,4 s no lote); a fala de luta é acelerada até 20% para caber em 2,5 s, ou é reprovada.
+- **Inteligibilidade:** ASR depois dos efeitos (CER ≤ 0,15; ≤ 0,20 na legião).
+- **Uma voz fixa por personagem:** similaridade de locutor ≥ 0,90 (medida 0,97–0,99).
+- **§4:** nenhum truque de recompensa; voz não é aviso de golpe (R5).
+- **Pendente** (não é da Dublagem): QA de skip, de morte e de Voz 0% (Áudio/Integrador). Gritos de combate ≤ 2 s (§12): as amostras de grito têm 4,7–7 s porque são falas de cena; ainda não foi gerado nenhum grito de combate.
+
 | Regra | Como a dublagem cumpre | Estado |
 |---|---|---|
 | **R13 volume/fadiga** | cada fala a −18 LUFS (voz fica ~4–6 LU acima da mixagem de −20/−23 do jogo = inteligível sem gritar); **true peak ≤ −1 dBTP medido no .ogg decodificado** (limitador com antecipação a −2 dBTP antes do Vorbis + conferência e recodificação — `voicelib.tp_limit/write_ogg`, `tp` no manifesto). Pedido do Guardião: 29/72 amostras antigas passavam de −1 dBTP → `tp_fix.py` corrige as amostras; o rascunho novo já sai certo (`PIPE_VER = 2` refaz o que foi gerado antes). | código pronto; amostras: rodar `tp_fix.py --fix` (foi interrompido pela pausa de CPU) |
