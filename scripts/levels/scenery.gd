@@ -620,6 +620,12 @@ func build_ground(parent: Node2D, ground_top_y: float) -> void:
 	dec.z_index = 20
 	parent.add_child(dec)
 	_integrate_platforms.call_deferred(parent)
+	# R18: o fundo logo atrás da Sophia fica mais calmo e escuro (ver LaneHalo)
+	if LANE_HALO_A[eon] > 0.0:
+		var lh := LaneHalo.new()
+		lh.setup(haze(), LANE_HALO_A[eon])
+		lh.z_index = -1
+		parent.add_child(lh)
 	# limites da arena legíveis (P2): véu nas paredes da zona + pilar nas fixas
 	var ab := ArenaBounds.new()
 	ab.eon = eon
@@ -850,6 +856,58 @@ class FloorBand extends Node2D:
 
 	func _ready() -> void:
 		queue_redraw()
+
+
+## FUNDO CALMO ATRÁS DA SOPHIA (R18 — Guardião mediu 2,06 / 2,37 / 1,71 : 1).
+## A borda da Sophia tem luminância ≈ 0,16–0,24 (pano claro, mas a borda é a
+## parte mais escura e antisserrilhada da pintura); para 3:1 o fundo IMEDIATO
+## (anel de 3–8 px em volta dela) precisa ficar ≲ 0,02–0,05. Escurecer a faixa
+## de luta inteira até aí apagaria o cenário; em vez disso, uma "sombra de
+## profundidade" macia e larga, no tom do ar do Éon muito escuro, segue a Sophia
+## ATRÁS dela (z −1: na frente do fundo e do chão, atrás dos lutadores). Miolo
+## chato (o anel cai todo nele) e borda longa e macia (não vira um recorte).
+## Alfa por Éon (determinístico), medido com tools/cenario7/ProbeBg.tscn.
+const LANE_HALO_A := [0.72, 0.66, 0.72, 0.70, 0.72, 0.68, 0.70, 0.66, 0.70]
+const LANE_HALO_R := Vector2(58.0, 84.0)   # raios da elipse (px lógicos)
+const LANE_HALO_UP := 6.0                  # centro: um pouco acima da origem da Sophia (que fica no meio do corpo)
+
+class LaneHalo extends Sprite2D:
+	static var _tex: GradientTexture2D = null
+	var _pl: Node2D = null
+
+	func setup(hz: Color, a: float) -> void:
+		texture = _halo_texture()
+		var c := hz.lerp(Color(0.1, 0.1, 0.12), 0.4).darkened(0.85)
+		modulate = Color(c.r, c.g, c.b, a)
+		scale = Scenery.LANE_HALO_R * 2.0 / 64.0
+		visible = false
+
+	## Disco radial de miolo chato: α 1 até 50 % do raio, cai suave até 0 na borda.
+	static func _halo_texture() -> GradientTexture2D:
+		if _tex == null:
+			var g := Gradient.new()
+			g.set_color(0, Color(1, 1, 1, 1))
+			g.set_color(1, Color(1, 1, 1, 0))
+			g.add_point(0.36, Color(1, 1, 1, 1))
+			g.add_point(0.62, Color(1, 1, 1, 0.55))
+			g.add_point(0.84, Color(1, 1, 1, 0.16))
+			_tex = GradientTexture2D.new()
+			_tex.gradient = g
+			_tex.fill = GradientTexture2D.FILL_RADIAL
+			_tex.fill_from = Vector2(0.5, 0.5)
+			_tex.fill_to = Vector2(1.0, 0.5)
+			_tex.width = 64
+			_tex.height = 64
+		return _tex
+
+	func _process(_delta: float) -> void:
+		if _pl == null or not is_instance_valid(_pl):
+			_pl = get_tree().get_first_node_in_group("player") as Node2D
+		if _pl == null or not _pl.is_inside_tree():
+			visible = false
+			return
+		visible = _pl.is_visible_in_tree()
+		global_position = _pl.global_position + Vector2(0.0, -Scenery.LANE_HALO_UP)
 
 
 class GroundFog extends Node2D:
