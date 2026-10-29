@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| (texto) | AMOSTRA_LIMIAR.md (Narrativa, sem código) | APROVADO COM RESSALVAS (Mentira do Rei justa e solúvel; combate ≤6 palavras; a cena seguida da tela 2 vira legenda atrasada 10 s; 5 ajustes) | REGRAS_GUARDIAO_TEXTO §1-6 |
 | (prévia) | Reescrita do texto (Narrativa) | REGRAS ESCRITAS em `C:\gnosis-wt\_caps\narrativa\REGRAS_GUARDIAO_TEXTO.md` (29 regras: ritmo, humor, gancho, enigma justo, ensinar mecânica, interrupção) | §0, §3, §4, R5, R9, R21 |
 | dir6/chefes6 (+ arte-gpt 64e92cf) | 1c4b0c7 | APROVADO COM RESSALVAS (Rei HD: parada/andar estáveis, telégrafo amarelo e glint legíveis, pés pregados; 4 de 8 trocas secas já conhecidas; +190 MB de VRAM; ReiProbe só pelos números do dono) | R5, justiça, build |
 | dir7/dublagem-lote | 4920893 (lote limiar-1: 11 falas PT) | APROVADO COM RESSALVAS (ética e licença ok: referência 100 % sintética, Apache-2.0; medidas dentro das REGRAS; caudas de reverb de 280-360 ms e A Voz do king_fall com CER 0,103 no limite) | REGRAS_GUARDIAO §6, §3, §4; ética |
@@ -1076,6 +1077,21 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## Texto — AMOSTRA_LIMIAR.md (tela 1, sem código) contra `REGRAS_GUARDIAO_TEXTO.md`
+
+**Medido:** li a amostra inteira e conferi o kit do Rei em `boss_rei.gd` (`origin/integracao/onda1`): a Mão e o Raio têm `expose: true`, o Rei se ajoelha e o olho desce `ORB_LOW` 132 px, e bater no olho já vale 1,5x (o ponto fraco já existe). Nada rodado (a amostra não tem código).
+- **Tamanho e ritmo (§1): ATENDE.** Falas de combate com 5-6 palavras (C1-C6a, 1,9-2,2 s estimados, <= 80 caracteres); fala de cena mais longa 66 caracteres (<= 140); troca de falante a cada 1-2 falas; cena A 7 falas e cena da queda 9 (<= 12 de marco). Humor ~1 em 3 na abertura (acima do 1 em 4, aceito e com os cortes sugeridos pelo autor: A4, D10-D11).
+- **Mentira do Rei: JUSTA E SOLÚVEL (§4).** A frase fica escrita no card e no Bestiário (não é só fala que se pula); 2 pistas antes: a pose de ajoelhar (forma) e o olho que desce com "dong" (posição + som), nenhuma só por cor; o Desmentido é bater no olho enquanto ele está baixo, que é o que a luta já ensina; errar não custa nada, a recompensa é fixa e declarada (8 s, 1x por luta) e ela cai sozinha na queda. É fácil de propósito (tutorial do sistema), o que o autor admite.
+- **Ressalvas na Mentira (aplicar antes de implementar):** (1) a pista 3 (C3 "Esta mão, nem você apara") NÃO aponta o ajoelhar, só o golpe; não conte como pista (as 2 reais bastam, mas elas dependem do "dong" e do rastro de luz, que são som e VFX NOVOS: sem eles sobra 1 pista só e viola a regra 11); (2) o degrau 2 (C6a) entrega a resposta em vez de uma pergunta: troque por algo como "Ele se curvou? Jamais, né?" (5 palavras) para apontar sem dizer o que fazer; (3) definir o que são os "8 s sem guarda": o Rei tem de PARAR de atacar nesse tempo (estado de atordoado) e o olho baixo não pode ficar ao alcance de um golpe dele; senão o bônus vira armadilha;
+  (4) o orçamento de combate fica exatamente em 6 (5 fixas + C6a), sem folga: a C6b sem voz está certo, e nenhuma fala nova pode entrar na tela 1; (5) C1 só toca se o jogador ainda não aparou o Leque (se já aparou, calar), e C2/C3 nascem na escolha do golpe com >= 1 s de folga antes do windup: confirmar com o chefes6 que essa gabolice não alonga a luta (`gap_by_phase`).
+- **Decisão da regra 3 (cena seguida da tela 2): VIRA LEGENDA.** `eon_intro(0)` passa a legenda (CaptionBar, sem pausar) e só dispara depois de >= 10 s de jogo na tela 2 (não na entrada); a cena da queda do Rei (9 falas) fica como está. Se o card de Éon tiver só título (sem fala), pode ficar na entrada.
+- **"Você" no jogo todo: ok para a leitura; avisos:** muda ~1380 textos e os ids do i18n, então as 11 falas dubladas do 1º lote (ids por texto) VOLTAM AO BLIP até serem regravadas; a Dublagem só grava com o texto fechado; o EN acompanha a troca. O "nós" do Rei como pista (G1, tela 64) tem 2 pistas antes (A2/A4 + "a gente" da Voz): ok.
+- **As 7 Mentiras (esboço): sinalizo antes de escrever:** Astaphaios ("o único COM sombra") e Belias ("muda verde na poça") arriscam pixel-hunt (regra 16): a pista precisa ser GRANDE e dada por forma/som, não por sombra ou detalhe pequeno; Galila ("aparar o Puxão"): conferir se o Puxão é aparável (se for vermelho, a mentira se contradiz); Harmas ("acertar pelas costas durante a Sucção") pede ficar atrás de quem puxa: arriscado, conferir o alcance; Armupiel ("derrubar um Pretoriano parado") convive com o Juízo novo: conferir com o chefes6 o que o kit tem de verdade. Cada Desmentido tem de ser possível sem mais risco que o declarado e sem tirar a luta da regra que ela já tem; o bônus de 8 s em cada chefe pede remedir o tempo de luta (as curvas do BALANCE não contam com ele).
+
+**Veredito: APROVADO COM RESSALVAS** (entra para virar código, com os 5 ajustes da Mentira e a decisão da regra 3 acima).
 
 ---
 
