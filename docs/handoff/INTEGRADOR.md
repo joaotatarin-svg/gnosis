@@ -107,6 +107,13 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
 - BossProbe 944ec41: Rei 74 s, Athoth 97, Harmas 83, Galila 123, Yabel 158, Astaphaios 91, Belias 149, Coroa 192 (4 quase-mortes),
   Rei+Colosso 140 (6 quase-mortes); sem TIMEOUT. ReiProbe atravessa=0, apelão=0.
 
+## Prévia 3.2.1 FEITA (29/10/2026)
+- Lote: chefes6 0e8d761 -> 25ae34a; polimento7 b087740 -> 337deb5; polimento7 009d40d (só doc, tela 35 conferida) -> bb30011.
+  VERDE -Repeat 2 (1 falha do FlashParryProbe, intermitente sob carga, VERDE ao repetir). Push: origin/integracao/onda1 = bb30011.
+- `preview/3.2.1` = bb30011 + cherry-pick do save GNOSIS-Previa (9366526). Build `C:\gnosis-wt\_build\preview3_2_1\GNOSIS.exe`, sem atalho.
+- BossProbe bb30011 (s): Rei 74, Athoth 97, Harmas 83, Galila 123, Yabel 158, Astaphaios 91, Belias 149, Coroa 150 (3 q.-m.), Rei+Colosso 100 (4);
+  sem TIMEOUT.
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
