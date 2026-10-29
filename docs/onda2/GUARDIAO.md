@@ -82,6 +82,8 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/polimento7 | b087740 (delta de 28d8df7; commits próprios 7652917, 0353991, b087740) | APROVADO (só RuleProbe e docs; nenhum arquivo de jogo) | R16 |
+| dir6/chefes6 | 0e8d761 (delta de 213d292: um commit próprio) | APROVADO (anéis e órbita passam abaixo do HUD; é só visual, a luta não muda) | R18, R21 |
 | dir6/chefes6 | 213d292 (delta de db14a1a: um commit) | APROVADO (a pegadinha da Réplica fechou; postura gira para a Sophia nas recapturas) | R5, §4 |
 | dir6/chefes6 | db14a1a (delta de 61645f7: d9f4aed, 8252a50, fcf0f43, db14a1a; merges ignorados) | APROVADO COM RESSALVAS (Estouro e Jorro legíveis e justos; pústulas são contáveis e não escondem nada; a Réplica é quase inevitável na 1ª vez, porque o Juízo nasce quando a Sophia já está martelando e a defesa arma a Réplica desde o 1º quadro) | R5, §4, R21 |
 | dir2/arte-gpt | 118cb99 (delta de 50f807a; base com cenario7 1b1c69f) | APROVADO COM RESSALVAS (fio de contorno funciona e a pintura se mantém; R18 3,0-3,2 em 7 de 10 telas, Coroa 2,67-2,85 e Mente 2,33 abaixo de 3:1; o cajado e as botas clareiam e perdem saturação nas telas frias) | R18, R10, §4 |
@@ -1064,6 +1066,21 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## 3.2.1 — chefes6 0e8d761 e polimento7 b087740 (reauditorias curtas)
+
+**Medido:** importação do 0e8d761 sem `SCRIPT ERROR`/`Parse Error` (`_caps\guardiao\p12_import.txt`); li os commits PRÓPRIOS (os `a...b` vêm sujos de merges da integração); vi `_caps\chefes6\aneis68_antes_cima_depois_baixo.png`.
+
+- **chefes6 0e8d761 (só `final_battle.gd` + doc): APROVADO.** `_hud_safe(p)` empurra o centro do Anel para y >= 104 (base 640x360) na faixa do medalhão, com entrada suave entre x 290 e 250, e a linha da órbita usa o mesmo desvio.
+  Só muda o Y de DESENHO: os Anéis não são alvo nem perigo; as larvas nascem em `Vector2(pos.x, arena_center.y)` (só o X do Anel vale), então a luta, o alcance e a curva não mudam. Os outros usos de `_ring_pos` são as cenas (`release_rings`, o Anel da Coroa voltando),
+  que só ficam mais limpas. Na prancha antes x depois os Anéis deixam de encostar em "Névoa do Sono" e seguem à vista, por baixo do medalhão, sem cobrir Sophia nem chefe. R18 ok (HUD legível); sem efeito em R21.
+- **polimento7 b087740: APROVADO.** Os 3 commits próprios mexem só em `tools/combate/rule_probe.gd` (a RuleProbe passa a conferir a soma da R16: mesmo alvo soma, outra cor cria, desligado não cria) e em `POLIMENTO7.md`. Nenhum arquivo de jogo.
+- **FlashParryProbe (intermitência): não vi.** Rodei 5x seguidas (headless, sem `--fixed-fps`, máquina quase parada) no 0e8d761: 5/5 `QA RESULT: 0 falhas`, 17 PASS cada (`p12_fp1..5.txt`). A falha única do dono é compatível com o que já anotei: a sonda mede flashes pelo relógio de parede
+  e fica sensível a carga da máquina (validate em paralelo). Não é regressão de código; se voltar, rodar de novo com a máquina livre.
+
+**Vereditos:** chefes6 0e8d761 APROVADO; polimento7 b087740 APROVADO.
 
 ---
 
