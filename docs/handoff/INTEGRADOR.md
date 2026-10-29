@@ -7,6 +7,27 @@ godot/gnosis_text.csv para LF + extract + build --strict = 0 faltando) → reimp
 Atenção: `core.autocrlf=true` faz o strings.csv voltar em CRLF e o extract perder traduções com quebra
 de linha (viram órfãs) — sempre normalizar para LF antes do extract.
 
+## BILHETE PARA O SUCESSOR (atualizado 30/10/2026, fim da rodada "build final")
+- **Estado:** `origin/integracao/onda1` = 37a1257 (+ commit deste bilhete). Tudo VERDE -Repeat 2 (15 etapas, VoiceProbe e HeroQA inclusos).
+  Última integração: chefes6 1c4b0c7 (contém arte-gpt 64e92cf: Rei HD + BodyBox) -> 37a1257.
+- **Prévias:** `preview/3.1` f9e3557, `3.2` c950dd8, `3.2.1` 9366526, `3.2.2` 5de1297, `3.2.3` 8fd7715, `3.2.4` fff97e5,
+  **`preview/3.3-pre` 331501f** (= 37a1257 + cherry-pick f9e3557 do save GNOSIS-Previa). Build mais nova:
+  `C:\gnosis-wt\_build\preview3_3_pre\GNOSIS.exe` (+ .pck, LEIA-ME.txt). Atalho no Desktop: o chefe faz. O jogo NUNCA é aberto por mim.
+- **Sondas em 37a1257:** ReiProbe tela 1: atravessa=0, apelão=0, BodyBox cobre 98-99 %; tela 68 (Colosso) apelão=0. BossProbe sem TIMEOUT (s, q.-m.):
+  Rei 80 (0), Athoth 167 (2), Harmas 120 (1), Galila 148 (3), Yabel 151 (2), Astaphaios 111 (2), Belias 103 (1), Coroa 142 (3), Rei+Colosso 188 (7).
+  Rei+Colosso é a luta mais dura (era 151 s em c347cd4): mandar ao Chefes6 se o João reclamar.
+- **Como integrar:** `powershell -File tools\integrar.ps1 "branch sha" ... -Repeat 2 [-Push]`; imprime só VERDE/VERMELHO. Sem itens = só validar.
+  Conflito só de i18n (strings.csv, _orfas, _descartadas, _relatorio, godot/*, scripts/i18n/en_table.gd) o script resolve; qualquer outro, aborta e
+  lista. FlashParryProbe é intermitente sob carga: repetir 1x antes de bissectar. Reimport 1 pode dar segfault (139) / queda durante troca de driver: repetir.
+  Build: worktree `C:\gnosis-wt\preview`: `git checkout -B preview/<v> origin/integracao/onda1`, `git cherry-pick f9e3557`, reimport 2x,
+  `--export-release "Windows Desktop" C:/gnosis-wt/_build/preview<v>/GNOSIS.exe` (headless, Dummy), LEIA-ME.txt, `git push -f origin preview/<v>`.
+  Probes (BossProbe/ReiProbe): scripts `_caps\integun_p5.ps1` (editar o tag/sha). Logs são UTF-16.
+- **Fila:** (1) lotes de voz 2–7 da Dublagem, encadeados em `dir7/dublagem-lote` (um commit por lote só com `assets/audio/voice/**` + manifest;
+  `integrar.ps1 "dir7/dublagem-lote <sha>"`, VoiceProbe no validate); (2) **créditos: atribuição Apache-2.0 do Qwen3-TTS ANTES de qualquer build
+  pública** (pendência do Guardião); (3) mais correções do Guardião/QA7 que o chefe mandar. Não integrar sem veredito do Guardião.
+- **Armadilhas:** `core.autocrlf=true`; `git checkout -- .` limpa o ruído .import antes de merge (o script faz); `override.cfg` nunca vai pro git;
+  não reescrever histórico de `integracao/onda1` (QA7 lê o integ).
+
 ## Integrado (18/10/2026) — todos verdes 2/2
 | Branch | Merge | Notas |
 |---|---|---|
