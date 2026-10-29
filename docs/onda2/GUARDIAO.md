@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/audio7 | b655563 (delta de 656dfc0) | APROVADO (ressalvas (a), (b) e (c) fechadas: guarda de vozes de luta, 1 aperto corta e avança, Vozes 80 %) | REGRAS_GUARDIAO §3, §9 |
 | dir7/audio7 | 656dfc0 (infra de dublagem; delta próprio 08994eb, 122aea4, 656dfc0) | APROVADO COM RESSALVAS (controle e legenda cumprem as REGRAS; faltam as travas de frequência/duração de fala em combate e o 1º aperto que só corta a voz) | R4, R9, R5, REGRAS_GUARDIAO |
 | (prévia) | Dublagem: regras do Guardião para a produção | REGRAS ESCRITAS em `C:\gnosis-wt\_caps\dublagem\REGRAS_GUARDIAO.md` (22 regras: controle, legenda, frequência, escada de intensidade, mixagem) | R4, R5, R9, R10, R11, R13, R21, §4 |
 | dir2/arte-gpt + dir6/chefes6 | 63f597a (delta de 9ad0b06) + b587064 | APROVADO (Rei a 450 px legível sem o halo; telégrafo intacto por ser outro mecanismo; ReiProbe tela 1: atravessa=0, apelão=0, 96-99 %) | R5, R18, justiça |
@@ -1072,6 +1073,16 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## dir7/audio7 — b655563 (reauditoria do delta de 656dfc0)
+
+Li o diff (não rodei o validate de novo; o dono dá VoiceProbe no `validate.ps1`, 15/15, e meu VoiceProbe no 656dfc0 já tinha dado 0 falhas).
+- **(a) Guarda de voz de luta: FECHADA.** `play_voice(..., combat)` barra fala > 2,5 s, a mesma fala 2x na tela, intervalo < 8 s desde o FIM da última voz de luta e mais de 6 por tela (8 na batalha final, via `screen_role == "final"`); contagem zera por tela (`reset_combat_voices` no hook de tela). Barrada = só legenda, sem blips (`_voice_refused`). A CaptionBar marca "luta" por combate perto (`_hot`/`_in_fight`) ou `urgent`.
+- **(b) 1 aperto: FECHADA.** Digitando: completa o texto e corta a voz (80 ms); texto completo: 1 aperto corta a voz e avança.
+- **(c) Vozes 80 %: conferido** (padrão do código e da captura nova).
+**Veredito: APROVADO.**
 
 ---
 
