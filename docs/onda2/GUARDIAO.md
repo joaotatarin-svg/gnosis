@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| (prévia) | Reescrita do texto (Narrativa) | REGRAS ESCRITAS em `C:\gnosis-wt\_caps\narrativa\REGRAS_GUARDIAO_TEXTO.md` (29 regras: ritmo, humor, gancho, enigma justo, ensinar mecânica, interrupção) | §0, §3, §4, R5, R9, R21 |
 | dir6/chefes6 (+ arte-gpt 64e92cf) | 1c4b0c7 | APROVADO COM RESSALVAS (Rei HD: parada/andar estáveis, telégrafo amarelo e glint legíveis, pés pregados; 4 de 8 trocas secas já conhecidas; +190 MB de VRAM; ReiProbe só pelos números do dono) | R5, justiça, build |
 | dir7/dublagem-lote | 4920893 (lote limiar-1: 11 falas PT) | APROVADO COM RESSALVAS (ética e licença ok: referência 100 % sintética, Apache-2.0; medidas dentro das REGRAS; caudas de reverb de 280-360 ms e A Voz do king_fall com CER 0,103 no limite) | REGRAS_GUARDIAO §6, §3, §4; ética |
 | dir7/audio7 | b655563 (delta de 656dfc0) | APROVADO (ressalvas (a), (b) e (c) fechadas: guarda de vozes de luta, 1 aperto corta e avança, Vozes 80 %) | REGRAS_GUARDIAO §3, §9 |
