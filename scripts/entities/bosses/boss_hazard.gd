@@ -33,6 +33,8 @@ var silent: bool = false           # sem som de aviso (perigos contínuos)
 var hit_air: bool = true           # false = só fere quem está no chão (onda rasteira)
 var safe: bool = false             # true = é ABRIGO (zona muda), não fere
 var vel_x: float = 0.0             # px/s: a área ANDA enquanto ativa (onda de névoa)
+var strike_sound: bool = true      # false = quem criou já tem som no impacto (pouso do salto)
+var _saw_sfx: bool = false
 var look: String = ""              # "saw" = Anel girando como serra (desenho próprio)
 var bounce: bool = false           # bate na parede e volta (serra de Anel)
 var grow: float = 0.0              # px/s: o raio CRESCE enquanto ativa (poça que se espalha)
@@ -72,6 +74,9 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if look == "saw" and not _saw_sfx:
+		_saw_sfx = true
+		_tell_sound("hz_saw")
 	_t += delta
 	if _t < delay:
 		if follow != null and is_instance_valid(follow) and delay - _t > lock_at:
@@ -81,6 +86,8 @@ func _physics_process(delta: float) -> void:
 	if not _struck:
 		_struck = true
 		struck.emit()
+		if shape == "column" and strike_sound:
+			_tell_sound("hz_column")
 		if shape == "arena":
 			Juice.shake(0.35)       # só o golpe de arena inteira treme (R3: tremor é raro)
 	if _t >= delay + active:
