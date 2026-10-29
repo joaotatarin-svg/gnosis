@@ -63,7 +63,7 @@ function G {
 }
 
 # Arquivos de i18n gerados: conflito so neles se resolve regenerando.
-$i18nRx = '^assets/i18n/(strings\.csv|_orfas\.csv|_descartadas\.txt|_relatorio\.txt|godot/.+)$'
+$i18nRx = '^(assets/i18n/(strings\.csv|_orfas\.csv|_descartadas\.txt|_relatorio\.txt|godot/.+)|scripts/i18n/en_table.gd)$'
 
 if ($Itens.Count -eq 0 -and $SemValidar) { Falha @("uso: integrar.ps1 `"branch commit`" ... [-Repeat N] [-Push]") }
 
@@ -129,7 +129,7 @@ if ($precisaI18n) {
 	if ($c1 -ne 0 -or $c2 -ne 0) {
 		Falha (@("i18n: extract/build --strict falhou (extract=$c1 build=$c2)") + (($o1 + $o2) | Select-Object -Last 8))
 	}
-	$null = G add -- assets/i18n
+	$null = G add -- assets/i18n scripts/i18n
 	$null = G commit -m "i18n regenerado apos o lote (extract + build --strict)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 }
 
