@@ -122,3 +122,35 @@ custo)`/`buy_max_mana` continuam (presentes e bot).
   para `gift_weapon_level()` (pedido feito).
 - `tools/ui_menus/menu_probe.gd` tem os preços antigos fixos (não está no validate.ps1).
 - Sem HUD da relíquia em uso nem aviso "selo aberto" (pedido ao ui5).
+
+## 9. Onda 7 — a CURVA (iteração 2) e a renda igual em todas as dificuldades
+Sucessor do diretor de Progressão, 28/10. Base: merge de `origin/integracao/onda1` = **4dad743 (3.1)**
+neste branch (8757da6). A 3.1 trouxe a renda de faíscas **igual** em todas as dificuldades (antes o
+Difícil rendia 1,5× e o Muito Difícil 2,2× — o BALANCE r7 foi medido assim).
+
+### 9.1 O que já vinha da Onda 7 (antecessor, 941e8a0 / eea11d9)
+- Arma espalhada até a reta final: custos **200/500/1100/1800**, Nv.3 após Athoth, **Nv.4 após Yabel**
+  (tela 37), **Nv.5 após Belias** (tela 55).
+- Segundo engaste (2 relíquias em uso, 1 500, após Astaphaios) e **Coro das Faíscas** (700, após
+  Astaphaios) como destino das faíscas do fim — preço fixo, sem sorteio.
+- `Progression.claim_once(chave)`: baú, Selos, Adormecido e a recompensa de cada camada do mapa pagam
+  **uma vez por run** (morrer e voltar não paga de novo). Respiro entre ondas 0,8 → 2,0 s.
+
+### 9.2 Ferramenta nova: o ProgBot joga a LOJA REAL
+`tools/progressao6/ProgBot.tscn` (cópia do QA7Bot, que não está no repo) + `dif=0|1|2` e `loja=real`:
+compra pela API da `Progression` (selos, tetos e preços de verdade) ao fim de TODA tela (a pausa abre a
+loja a qualquer hora) com o perfil `arma` (focado: arma > vida > magias > Éter, junta para o 1º item
+aberto) ou `guloso` (sempre o mais barato — o pior caso para "tudo no máximo cedo"). Lote:
+`tools/progressao6/run_bots.ps1` (BelowNormal, 4 CPUs, headless, `--audio-driver Dummy`). Leitura:
+`python tools/progressao6/curva.py <csv...>` (por Éon: ganhas/gastas, arma, vida, Éter, magias Nv.3,
+compras, maior jejum sem compra, quase-mortes, mortes reais, timeouts, maior golpe em % da vida).
+O `econ_sim.py` (Python) bate com o bot: mesma renda → mesma curva nas duas ferramentas.
+
+### 9.3 Mudança desta iteração (uma só)
+- **A 6ª compra de Éter só depois de Belias** (`MP_LAST_TIER = 6`; antes 1 + grau abria a 6ª no grau 5).
+  Motivo medido: o perfil guloso enchia o Éter na **tela 48** — a única trilha no topo antes da Praga.
+  Agora nenhuma trilha fecha antes da tela 55, igual à 10ª vida (que já esperava o 7º Arconte).
+  A loja mostra o Arconte certo na linha selada (`hp_buy_tier(n)` / `mp_buy_tier(n)` na Progression).
+- ProgQA: **58 PASS / 0** (novos: selo da última compra de Éter/vida; grau 5 para em 5/6; grau 6 abre).
+  O caso de `claim_once` passou para o fim: o `continue_run()` dele troca de cena (adiada) e tirava o QA
+  da árvore no meio do teste da loja (`process_frame` em null e o processo não fechava).

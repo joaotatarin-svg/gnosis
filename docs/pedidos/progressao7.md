@@ -49,3 +49,25 @@ arquivos são de outros donos. Diff exato do protótipo: §9.3 do PROGRESSAO6.md
 1. `QA7Bot._auto_shop` só compra arma e magias: as "faíscas sobrando" do fim do run são em parte
    artefato do bot. Para medir a loja inteira, usar `buy_health_upgrade`, `buy_mana_upgrade`,
    `buy_relic`, `buy_relic_slot`.
+
+## → chefes6 (combinado pelo aviso do chefe, 28/10) — POTÊNCIA DA SOPHIA QUE A CURVA ENTREGA
+A economia NÃO vai baixar a força do fim para "consertar" chefe leve: o desenho é o máximo chegar
+perto do fim (arma Nv.5 após Belias, 10ª vida após Armupiel). Calibrem os chefes contra ESTA tabela
+(ProgBot, run inteiro, Normal, perfil focado; igual no Difícil/Muito Difícil — a renda é igual e o que
+segura a força são os selos por Arconte, não as faíscas):
+
+| tela (chefe) | arma | vida máx. (base 120 + loja + mapa/Soter) | obs. |
+|---|---|---|---|
+| 10 Athoth | Nv.2 | ~140 | |
+| 19 Harmas | Nv.3 | ~186 | aéreos liberados |
+| 28 Galila | Nv.3 | ~242 | |
+| 37 Yabel | Nv.3 | ~276 | Nv.4 abre AQUI (compra logo depois) |
+| 46 Astaphaios | Nv.4 | ~302 | |
+| 55 Belias | Nv.4 | ~332 | Nv.5 abre AQUI (compra ~tela 59) |
+| 64 Armupiel | Nv.5 | ~372 | |
+| 65–67 Centro / 68 Mente | Nv.5 | 372–392 | Éter 3–4/6, magias Nv.3: 4 de 8 |
+
+Medido: tela 68 em **27,7 s** com arma Nv.5 (perfil focado) × **83 s** com arma Nv.3 (perfil que só compra
+o mais barato) — a arma pesa ~3× no tempo do final. Quem comprar tudo de arma chega no final no topo;
+o final precisa aguentar ISSO. Pedido: dimensionar vida/padrões de Armupiel, ecos do Centro e Mente
+para arma Nv.5 + ~380 de vida (e não para Nv.3).
