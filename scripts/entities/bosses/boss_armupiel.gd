@@ -21,6 +21,8 @@ func _on_setup() -> void:
 	keep_dist = Vector2(40.0, 100.0)
 	gap_by_phase = [0.8, 0.7, 0.6]
 	escape_hits = 4
+	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
+	guard_up(0.55, 0.35, 1.5)
 
 
 func _build_moves() -> Dictionary:

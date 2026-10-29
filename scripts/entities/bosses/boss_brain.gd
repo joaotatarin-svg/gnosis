@@ -47,6 +47,20 @@ var window_mult := {
 	Enemy.EState.WINDUP: 0.5, Enemy.EState.STRIKE: 0.5, Enemy.EState.CHASE: 0.85,
 	Enemy.EState.RECOVER: 1.1, Enemy.EState.STAGGER: 1.3, Enemy.EState.HURT: 1.0,
 }
+## GUARDA ALTA (re-teste QA7 da 3.1, 28/10): nos chefes do fim, quem só martela
+## no neutro e no meio do golpe dele fica batendo no "armado" (faísca azul, dano
+## baixo) e não quebra a postura tão fácil; a punição de verdade sai nas JANELAS
+## (recuperação, golpe exposto, atordoado, aparo) — que continuam iguais. Mexe na
+## LEITURA, não na vida: o jogador médio que espera a hora sente pouco; o que
+## aperta sem parar sente muito.
+func guard_up(k_chase: float, k_armed: float, poise_k: float) -> void:
+	window_mult[Enemy.EState.CHASE] = k_chase
+	window_mult[Enemy.EState.WINDUP] = k_armed
+	window_mult[Enemy.EState.STRIKE] = k_armed
+	_poise_max *= poise_k
+	_poise = _poise_max
+
+
 ## Escala do dano de TODOS os golpes deste chefe (balance por chefe).
 var dmg_scale: float = 1.0
 ## Distância mínima da parede ao andar (px de mundo).

@@ -9,3 +9,11 @@
   Não religue a HurtShape desses inimigos.
 - A tabela de faixas sai de `tools/chefes6/body_slabs.py <char> <saida.gd>` e pode servir a qualquer chefe por quadros.
 - Medida/prova: `tools/chefes6/body_cover.py` (todos os quadros, sem Godot) e `tools/chefes6/ReiProbe.tscn`.
+
+## Para a Progressão (curva de melhorias) — 28/10
+- A vida dos chefes sai de `BossTuning.boss_health` = golpes-alvo × dano médio da arma ESPERADA na tela
+  (`EXPECTED_WL`: 1@1, 2@10, 3@28, 4@46, 5@64). No re-teste 3.1 (QA7) o run chegou com arma 3 na 10–15, 4 na 28 e
+  5 na 46 — um nível ACIMA — e com 5–7 mil faíscas sobrando. Se a sua curva nova mudar quando cada nível chega,
+  publique `Progression.expected_weapon_level(tela)` (o BossTuning já usa se existir) — aí a vida acompanha sozinha.
+- O que fiz do meu lado (pelo padrão, não pela vida): "guarda alta" nos chefes do fim (golpe no neutro/no golpe dele
+  vale menos; as janelas de punição seguem iguais). Não mexi na economia.

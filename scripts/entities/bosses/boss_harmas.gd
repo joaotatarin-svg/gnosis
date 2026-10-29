@@ -26,6 +26,8 @@ func _on_setup() -> void:
 	gap_by_phase = [0.85, 0.75, 0.65]
 	escape_hits = 3
 	escape_id = "salto"
+	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
+	guard_up(0.7, 0.4, 1.3)
 	var pl := _player()
 	if pl != null and pl.get("health") != null:
 		pl.health.health_changed.connect(_on_player_hp)

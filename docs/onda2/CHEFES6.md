@@ -200,3 +200,23 @@ Athoth pano fora 19–25 → 10–20 px (com fiapos), golpe que atravessa 1 → 
 4–11 → 1–3 px; 1 golpe a 55 px ainda "atravessa" (a ponta do cajado toca a ponta do véu/cajado dele).
 Ressalva honesta: a área de caixa fora do desenho fica em ~33 % nos dois — o desenho deles é rendado (fiapos de
 névoa, véu em tiras); o contorno também fica em 26–28 %. Na faixa do cajado a sobra por linha é 2,6–2,8 px.
+
+## Re-teste 3.1 (QA7 N2): final e Éons altos leves — 28/10
+Causa medida: o bot do QA7 bate SEM PARAR e chega com arma um nível acima do esperado. A minha sonda no perfil
+`agressivo` com a arma do QA7 reproduz (Fome 56 s, Praga 62, Coroa 41,5, final 33 s com 0 quase-morte); no perfil
+`medio` (a meta 1,5–2,5 min) as lutas já estavam na faixa. Ou seja: quem MARTELA não era punido — o problema é de
+leitura, não de vida.
+Correção (padrão): `BossBrain.guard_up(k_neutro, k_armado, postura)` — "guarda alta" nos chefes do fim: golpe dado
+com o chefe no neutro ou no meio do golpe dele sai no "armado" (faísca azul, dano baixo) e a postura demora mais a
+quebrar; as janelas (recuperação, golpe exposto, atordoado, aparo) continuam pagando cheio. Harmas 0,7/0,4/×1,3 ·
+Yabel 0,65/0,4/×1,3 · Belias 0,7/0,45/×1,3 · Armupiel, Rei-Mentira e Colosso 0,55/0,35/×1,5. Números: Coroa 26→32
+golpes; final com dano dos golpes 0,30→0,38 (QA7: dano tomado caiu de 668–954 para 86–128).
+BossProbe (`_caps/chefes6/qa_*.txt` antes, `g1_* … g5_*.txt` depois; agressivo = arma do QA7, médio = arma esperada):
+| chefe | agressivo antes → depois | médio depois | quase-mortes (médio) |
+|---|---|---|---|
+| Harmas (19) | 56 → 58 s | 142 s | 3 |
+| Yabel (37) | 64 → 78 s | 147 s | 1 |
+| Belias (55) | 62 → 64–71 s | 92–116 s | 2 |
+| Armupiel (64) | 41,5 → 65 s | 107–117 s | 1 |
+| Final (68) | 33 → 87 s | 188 s | 7 |
+Harmas quase não mudou (ele foge/salta, a guarda pega pouco); fica para o playtest. Variação entre rodadas iguais ±25 %.

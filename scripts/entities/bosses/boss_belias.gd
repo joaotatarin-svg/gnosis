@@ -26,6 +26,8 @@ func _on_setup() -> void:
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 3
 	escape_id = "enterrar"
+	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
+	guard_up(0.7, 0.45, 1.3)
 
 
 func _build_moves() -> Dictionary:
