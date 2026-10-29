@@ -348,8 +348,9 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   Criaturas novas têm quadro de morte próprio (deitado/desfazendo); o contorno branco de 1 quadro no golpe que
   mata é do combate/juice.
 - **R18 legibilidade (19/10, auditoria do Guardião)**: Sophia ganhou luz de recorte (por dentro, só onde a borda é
-  escura) + halo de ~1 px (por fora) na cor do Éon no `painted_flex` (`HERO_RIM` 0,6, `HERO_HALO` 0,4, raio 1,6 texel).
-  Medido em jogo (ContrastProbe + contrast_r18.py): tela 3 1,68→2,03:1 · tela 30 1,97→2,36:1 · tela 57 1,42→1,71:1.
+  escura) + halo de ~1 px (por fora) na cor do Éon no `painted_flex` (`HERO_RIM` 0,6, `HERO_HALO` 0,25 só junto das partes ESCURAS —
+  sem piso: o cajado dourado ficou sem a faixa pálida que o Guardião apontou —, raio 1,6 texel).
+  Medido em jogo (ContrastProbe + contrast_r18.py): tela 3 1,76→2,06:1 · tela 30 2,02→2,37:1 · tela 57 1,45→1,71:1.
   Mais forte lava a pintura; o resto até 3:1 é do fundo (pedido em `docs/pedidos/cenario7.md`). Prancha:
   `_caps/arte-gpt/r18/r18_antes_depois.png`. Chefes/criaturas por quadros já tinham o rim do `painted_boss`.
 - **R17 tremor**: o `Juice.shake` da queda de joelhos na morte desenhada caiu de 0,7 para 0,15 (micro) — o tremor
