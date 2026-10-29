@@ -13,7 +13,6 @@ extends Node
 ## Uso: godot --headless --audio-driver Dummy --path . res://tools/map6/MapQA.tscn
 
 var errors: int = 0
-const SOTER_SCREEN := 17              # 1º Soter (Éon 1, camada 6): dá o pulo duplo
 
 
 func check(cond: bool, msg: String) -> void:
@@ -95,18 +94,21 @@ func _graph_checks() -> void:
 			poor.append("e%d=%s" % [eon, str(kinds.keys())])
 	check(poor.is_empty(), "todo Éon tem combate/perigo/escalada/santuário/Arena/segredo %s" % str(poor))
 	# mapa7 (decisão do chefe): nenhum nó que exige pulo duplo até a tela do 1º
-	# Soter (17) — antes dele o segredo é a câmara oculta, livre e com o mesmo prêmio.
+	# Soter (RunManager.double_jump_screen(), hoje 17) — antes dele o segredo é a câmara oculta, livre e com o mesmo prêmio.
 	var early: Array = []
 	for eon in 7:
 		for id in EonMap.graph(eon).nodes:
 			var n := EonMap.find(String(id))
-			if String(n.requires) == "double_jump" and int(n.screen) <= SOTER_SCREEN:
+			if String(n.requires) == "double_jump" and int(n.screen) <= RunManager.double_jump_screen():
 				early.append(id)
 	var h0 := EonMap.find("e0.6a")
 	var h1 := EonMap.find("e1.3a")
+	check(RunManager.double_jump_screen() == 17 and RunManager.soter_meeting_at(17) == 0 and RunManager.soter_meeting_at(35) == 1
+		and RunManager.soter_meeting_at(53) == 2 and RunManager.velkar_at(61) and RunManager.soter_meeting_at(16) == -1,
+		"lugar do Soter lido de RunManager.SOTER_SLOTS (17/35/53, Velkar 61)")
 	check(early.is_empty() and String(h0.kind) == "hidden" and String(h1.kind) == "hidden"
 		and String(h0.requires) == "" and str(EonMap.REWARDS["hidden"]) == str(EonMap.REWARDS["secret"]),
-		"nenhum cadeado antes do Soter (tela %d): e0.6a/e1.3a são câmaras ocultas livres, mesmo prêmio %s" % [SOTER_SCREEN, str(early)])
+		"nenhum cadeado antes do Soter (tela %d): e0.6a/e1.3a são câmaras ocultas livres, mesmo prêmio %s" % [RunManager.double_jump_screen(), str(early)])
 	# Compatibilidade dos beats: slot ↔ tela legada.
 	var bad_slot: Array = []
 	for s in range(1, RunManager.MAX_SCREEN + 1):
@@ -163,7 +165,7 @@ func _plan_checks() -> void:
 							bad.append("%s tipo %s" % [id, t])
 			# mapa7: antes do Soter (telas 2–16) nenhuma estrutura de pulo duplo
 			# no layout (saliência com baú ou sala) — nada prometido fora de alcance.
-			if int(n.screen) < SOTER_SCREEN:
+			if int(n.screen) < RunManager.double_jump_screen():
 				var lay: Dictionary = ScreenLayouts.plan(int(n.screen), plan.size())
 				for ps in lay.get("passages", []):
 					for it in ps.get("items", []):
