@@ -476,7 +476,8 @@
    ],
    "loop": true,
    "fps": 6.0,
-   "anchor": "front"
+   "anchor": "front",
+   "no_flex": true
   },
   "idle_pintado": {
    "frames": [
@@ -931,54 +932,10 @@
    ],
    "anchor": "pelvis",
    "hold": true
-  },
-  "walk3d": {
-   "frames": [
-    "s20.walk_00",
-    "s20.walk_01",
-    "s20.walk_02",
-    "s20.walk_03",
-    "s20.walk_04",
-    "s20.walk_05",
-    "s20.walk_06",
-    "s20.walk_07",
-    "s20.walk_08",
-    "s20.walk_09",
-    "s20.walk_10",
-    "s20.walk_11",
-    "s20.walk_12",
-    "s20.walk_13",
-    "s20.walk_14",
-    "s20.walk_15"
-   ],
-   "anchor": "pelvis",
-   "steps": [
-    2,
-    11
-   ],
-   "advance": [
-    8.78,
-    8.78,
-    8.78,
-    10.23,
-    9.64,
-    8.77,
-    7.37,
-    6.29,
-    6.36,
-    8.78,
-    8.78,
-    10.1,
-    10.45,
-    10.39,
-    9.07,
-    7.87
-   ],
-   "persist": true
   }
  },
  "_doc_s15": "S15: rec_light1, rec_light2 e rec_heavy FORA — o cajado troca de lado/altura em relação ao fim do golpe e à prontidão (pulo visível). Usadas: rec_light3, rec_cast, rec_air, rec_dodge, rec_hurt.",
  "_doc_s17": "S17/S18 (Fila 9): double_jump = ação tocada pelo player no 2º pulo (play_action); start_run/stop_run (nome NÃO pode começar com \"run\": run* = índice pela distância) = ações automáticas do CharacterArt (parado→corre / corre→parado). Virada (s18 q6-7) fora: não lê como giro.",
  "_doc_s19": "S19 (Fila 9, npc_soter_blessing_a, metade direita das células): ações da cena do Soter (pulo duplo) — soter_look (olha pra ele), soter_land (de pé, leve), soter_bow (agradece). hold = fica no último quadro até stop_action() ou ela sair do idle. Os quadros com a coluna de luz (células 3, 5 e 7) ficaram FORA: a luz pintada se mistura ao corpo; a coluna e a subida são FX/tween da cena.",
- "_doc_s20": "S20 (Lab3D, versão l25): locomoção 3D pré-renderizada da Sophia (alfa real, 8x7). SÓ a parada (idle) e o andar (walk3d, pose disponível p/ encenação) entram; corrida/pulo/queda/pouso 3D ficam fora (decisão do chefe/João: caminho misto). idle_pintado = a parada pintada antiga (s16), guardada para comparar. walk3d usa avanço exato do Lab (pé plantado por IK) em vez do cycle_bodies auto. walk3d: pose de encenação — character_art.play_action(\"walk3d\") fica até stop_action() e troca de quadro pela DISTÂNCIA andada (advance), como a corrida; não é ligada ao jogo (o andar do jogo continua `rund` pintado)."
+ "_doc_s20": "S20 (Lab3D, rodada r4): a PARADA é a pintura s16.breath_0 animada em camadas (respiração + vento no cabelo/abas), 12 quadros, âncora front, altura 256. SÓ o idle entra; o estado idle leva no_flex (o vento já está nos quadros: o shader não soma o dele). idle_pintado = a parada pintada antiga (s16), reserva. Andar/corrida/pulo 3D do Lab NÃO entram (decisão do chefe: estilo 3D não combina); as células walk/run/jump/fall/land da folha ficam sem uso (só quadros usados entram no atlas)."
 }

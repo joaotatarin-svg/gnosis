@@ -126,26 +126,12 @@ func _ready() -> void:
 		for f in 60:
 			pa._tick_visual(1.0 / 60.0)
 		check(pa._hero_seq(db.meta.states) != "riposte", "Contra-ataque não termina")
-		# PARADA 3D (Lab3D l25) + ANDAR 3D (pose de encenação): a parada de jogo é o 3D
-		# (a pintada fica em idle_pintado); walk3d é só play_action, persiste e anda por distância
-		for s3 in ["idle_pintado", "walk3d"]:
-			check(db.meta.states.has(s3), "Atlas sem o estado: " + s3)
-		check(String(db.meta.states.idle.frames[0].f).begins_with("s20."), "Parada não é a 3D (s20)")
-		check(db.meta.states.idle.frames.size() >= 12, "Parada 3D sem os 12 quadros")
-		var w3 := CharacterArt.new()
-		add_child(w3)
-		w3.set_profile(p)
-		w3.set_process(false)
-		w3.play_action("walk3d")
-		for f in 240:
-			w3._tick_visual(1.0 / 60.0)
-		check(w3._hero_seq(db.meta.states) == "walk3d", "Andar 3D não persiste (devia valer até stop_action)")
-		var i0: int = w3._seq_index(db.meta.states.walk3d, "walk3d")
-		w3.motion_distance += 20.0
-		check(w3._seq_index(db.meta.states.walk3d, "walk3d") != i0, "Andar 3D não troca de quadro pela distância")
-		w3.stop_action()
-		check(w3._hero_seq(db.meta.states) != "walk3d", "stop_action não encerra o andar 3D")
-		w3.visible = false
+		# PARADA r4 (Lab3D): a parada de jogo é a pintura animada em camadas (s20, 12 quadros, sem vento do
+		# shader: no_flex); a pintada antiga fica em idle_pintado
+		check(db.meta.states.has("idle_pintado"), "Atlas sem o estado: idle_pintado")
+		check(String(db.meta.states.idle.frames[0].f).begins_with("s20."), "Parada não é a r4 (s20)")
+		check(db.meta.states.idle.frames.size() >= 12, "Parada sem os 12 quadros")
+		check(bool(db.meta.states.idle.get("no_flex", false)), "Parada sem no_flex (o vento dobraria)")
 		pa.visible = false
 		# FLUIDEZ (S15/S16): parado = respiração de 8 quadros; voltando do 3º
 		# golpe leve pro parado toca a recuperação desenhada e ela termina

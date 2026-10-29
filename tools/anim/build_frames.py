@@ -453,7 +453,7 @@ def main() -> None:
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
 			print("  %s: avanço por quadro %s -> ciclo %.2f alturas" % (sname, adv, sum(adv) / body_px))
-		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support", "hold", "persist"]:
+		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support", "hold", "no_flex"]:
 			if key in st and key not in entry:
 				entry[key] = st[key]
 		out_states[sname] = entry

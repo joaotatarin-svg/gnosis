@@ -1405,6 +1405,7 @@ const MESH_ROWS := 10
 static var _frame_dbs: Dictionary = {}     # personagem → {meta, atlas, flex} (ou {} se não houver)
 static var _mesh_cache: Dictionary = {}    # chave do quadro+âncora → grade {pts, uvs, idx}
 
+var _hero_no_flex: bool = false     # a sequência mostrada já traz o vento nos quadros (estado com no_flex)
 var motion_distance: float = 0.0   # distância horizontal percorrida (fase da corrida/passo)
 var dodge_back: bool = false        # esquiva pra trás (o player liga; usa o quadro de recuo)
 var combo_step: int = 0             # golpe leve 1/2/3 do combo (o player liga; 0 = genérico)
@@ -1540,8 +1541,7 @@ func _seq_index(seq: Dictionary, seq_name: String) -> int:
 	var n: int = seq.frames.size()
 	if n <= 1:
 		return 0
-	if seq_name.begins_with("run") or seq_name == "walk3d":
-		# (walk3d = andar 3D do Lab, pose para encenação: também por distância)
+	if seq_name.begins_with("run"):
 		# fase pela DISTÂNCIA: cada quadro dura o quanto o pé apoiado recua
 		# nele (advance, px da folha) — o pé volta ao mesmo ponto a cada troca
 		var world_k: float = profile.height * 1.19 / float(frame_db("sophia").meta.body_px) if painted.get("hero", false) else 1.0
@@ -1588,6 +1588,7 @@ func _draw_painted(s: float) -> void:
 		var meta: Dictionary = db.meta
 		var seq_name: String = _hero_seq(meta.states)
 		var seq: Dictionary = meta.states[seq_name]
+		_hero_no_flex = bool(seq.get("no_flex", false))   # vento já está nos quadros (parada r4)
 		var i: int = _seq_index(seq, seq_name)
 		var e: Dictionary = seq.frames[i]
 		var fr: Dictionary = meta.frames[e.f]
@@ -1705,8 +1706,9 @@ func _draw_painted(s: float) -> void:
 		if family:
 			tint = Color.WHITE.lerp(profile.primary.lightened(0.35), 0.5)
 	else:
-		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
-		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
+		var use_flex: bool = flex_tex != null and not (hero and _hero_no_flex)
+		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if use_flex else 0.0)
+		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if use_flex else 0.0)
 		mat.set_shader_parameter("hem_wave", 2.0 if profile.body == ArtProfile.Body.WRAITH else 0.0)
 		# R18: a Sophia salta do fundo cheio — luz de recorte + halo fino na cor do Éon
 		var hero_rim: bool = hero and rim_enabled
@@ -2073,9 +2075,6 @@ func _tick_action(delta: float) -> void:
 	if seq.get("hold", false):
 		if anim_state != "idle":
 			_action = ""
-		return
-	# pose de encenação persistente (andar 3D): vale até stop_action(), mesmo com ela andando
-	if seq.get("persist", false):
 		return
 	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
 	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):

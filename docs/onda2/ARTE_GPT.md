@@ -381,7 +381,27 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
 - **R20 squash**: pulo duplo/arrancada/freada desenhados não usam squash extra do CharacterArt (o `_hero_motion`
   segue moderado: jump 0,95/1,06). O squash do player.gd é do combate6.
 
-## SOPHIA 3D NA PARADA (29/10/2026, Lab3D l25; base integracao/onda1 95ec4b3)
+## PARADA r4 DO LAB3D (29/10/2026; substitui a parada 3D l28 do commit 8916611)
+O João aprovou a r4: a parada é a PRÓPRIA pintura `s16.breath_0` animada por deformação em camadas (respiração + vento no
+cabelo e nas abas do pano). Corrida, pulo, golpes, `ready` etc. seguem pintados; o `walk3d` saiu (decisão do chefe: o estilo 3D
+não combina com a parada pintada).
+- **Folha:** `assets/painted/src/sophia_s20_loco3d.png` trocada pela de `lab3d/loco/r4/jogo` (mesma grade 8×7 e nomes; só as 12
+  `idle_*` mudaram). Receita: `idle` = `s20.idle_00..11` (6 qps, âncora `front`) com `no_flex`; `idle_pintado` (s16) fica de
+  reserva; `walk3d` REMOVIDO da receita e do HeroQA. Só os quadros usados entram no atlas (106 quadros; 2048×4096).
+- **Vento não dobra:** novo `no_flex` por estado (`build_frames.py` copia a chave; `character_art.gd` zera `hair_amp`/`cloth_amp`
+  do shader quando a sequência mostrada tem `no_flex`). O ramo `advance` do `build_frames.py` continua (genérico, sem uso agora);
+  o código do `walk3d` no `character_art.gd` foi revertido.
+- **Prova (Shot 1280×720, `--audio-driver Dummy --position 4000,4000`):** `C:\gnosis-wt\_caps\arte\loco_r4\` — `p_idle.png`
+  (sequência da parada, antes=pintada × depois=r4), `p_idle_golpe.png`, `p_idle_corrida.png`, `zoom2x_parada.png` (8 quadros da
+  parada a 2×). Pose, altura, pé e cor iguais à pintada; no zoom a deformação não vira "borracha" (rosto, braços, botas e
+  cajado estáveis; só cabelo e abas se mexem). Emenda parada→golpe e parada→corrida sem salto (a pose é a da pintura).
+- **R18 (contraste borda×fundo, rim off→on, telas 3/13/22/31/40/49/57/58/66):** 2,79→3,06 · 2,81→2,94 · 2,71→2,85 · 2,81→3,07 ·
+  2,62→2,85 · 2,70→2,95 · 2,67→2,73 · 2,73→2,68 · 2,88→3,00. Voltou ao nível da pintura (o 3D dava 3,2–3,8): ≥2,85 em 7 das 9;
+  as duas da Coroa (57/58) ficam em 2,7 — o limite é o fundo dourado. Aceito pelo chefe até ~2,8 com a pintura íntegra; Coroa pendente.
+- **CHECAGEM DE SATISFAÇÃO:** R18 como acima (sem recorte brilhante); R19/R20 não se aplicam (nada de golpe/squash novo);
+  R16 ok (parada legível, silhueta igual); §4 conferido (arte apenas). Sem salto de estilo entre parada e golpe/corrida.
+
+## (SUBSTITUÍDA pela r4 abaixo) SOPHIA 3D NA PARADA (29/10/2026, Lab3D l25; commit 8916611)
 Decisão do João (caminho MISTO): só a PARADA (`idle`) vira 3D pré-renderizado; corrida, pulo, queda, pouso, golpes, `ready`,
 esquiva etc. seguem PINTADOS. O andar 3D entra só como pose de encenação (`walk3d`), sem mudar a jogabilidade.
 - **Fonte/receita:** `assets/painted/src/sophia_s20_loco3d.png` (grade 8×7, alfa real) + fonte `s20` em
