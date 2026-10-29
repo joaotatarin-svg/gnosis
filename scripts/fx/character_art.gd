@@ -1616,6 +1616,7 @@ func _draw_painted(s: float) -> void:
 		# o mesmo espaço do boneco (colisões/_fit_body coerentes).
 		var meta: Dictionary = _boss_db.meta
 		var seq_name: String = _boss_seq(meta.states)
+		_boss_seq_shown = seq_name
 		var seq: Dictionary = meta.states[seq_name]
 		var i: int = _boss_index(seq)
 		var e: Dictionary = seq.frames[i]
@@ -1687,6 +1688,8 @@ func _draw_painted(s: float) -> void:
 	if framed_boss:
 		# chefe: só o pano/trapos de baixo (G da máscara); onda da barra por receita
 		var ca: float = float(_boss_db.meta.get("cloth_amp", 0.0))
+		if _boss_seq_shown in _boss_db.meta.get("flex_off_states", []):
+			ca = 0.0                       # a folha já ondula o manto (Rei v11: parada/andar em camadas)
 		mat.set_shader_parameter("hair_amp", 0.0)
 		mat.set_shader_parameter("cloth_amp", (ca * 1.5 if running else ca) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("hem_wave", float(_boss_db.meta.get("hem_wave", 0.0)) * (1.4 if running else 1.0))
@@ -2271,6 +2274,7 @@ func _painted_motion() -> Array:
 # dos quadros, sem girar o cartão. O BossPuppet fica de reserva (sem atlas).
 
 var _boss_db: Dictionary = {}                     # {meta, atlas, flex, sil} ou {} (= boneco)
+var _boss_seq_shown: String = ""        # sequência do chefe mostrada neste quadro (flex_off_states)
 var _boss_m: Array = [0.0, 0.0, 1.0, 1.0, 0.0, 0.0]   # [ox, rot, sx, sy, oy, bend] da mola
 var _bsp := Vector2.ZERO                          # mola: (avanço x, curvatura) atuais
 var _bsv := Vector2.ZERO
@@ -2478,7 +2482,9 @@ func _tick_boss(delta: float) -> void:
 	for _j in steps:
 		_bsv += (-2.0 * damp * w * _bsv - w * w * (_bsp - goal)) * h
 		_bsp += _bsv * h
-	_boss_m = [_bsp.x + tremor, 0.0, sx, sy, oy, _bsp.y]
+	# Rei v11: a pintura já se mexe; a mola inteira (sx/sy/curvatura) lia como "cartão de borracha"
+	var smul: float = float(_boss_db.meta.get("spring_mul", 1.0))
+	_boss_m = [_bsp.x + tremor, 0.0, 1.0 + (sx - 1.0) * smul, 1.0 + (sy - 1.0) * smul, oy, _bsp.y * smul]
 	# Telegrafo: o tom chapado que o Enemy põe na preparação vira CONTORNO
 	# pulsante (a pintura do quadro de preparação continua legível).
 	if anim_state.begins_with("windup"):
