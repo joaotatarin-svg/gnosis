@@ -17,3 +17,8 @@
   publique `Progression.expected_weapon_level(tela)` (o BossTuning já usa se existir) — aí a vida acompanha sozinha.
 - O que fiz do meu lado (pelo padrão, não pela vida): "guarda alta" nos chefes do fim (golpe no neutro/no golpe dele
   vale menos; as janelas de punição seguem iguais). Não mexi na economia.
+
+## Para o dono do tools/shot.gd (Estab/Técnico) — 28/10
+- `hurt` (tira 55 % dos chefes na metade dos quadros) acerta o Arconte ENCENADO antes do gatilho (zona inativa).
+  Agora o chefe encenado é intocável (Chefes6), então nesses casos o `hurt` não força a fase 2. Pedido: aplicar o
+  `hurt` só quando `ativa=true` (zona trancada), ou andar a Sophia até o gatilho antes.
