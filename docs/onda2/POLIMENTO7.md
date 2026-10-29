@@ -184,7 +184,7 @@ Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos
   nó) e a sonda esperava 2. Agora confere as 3 coisas: desligado não cria (0), mesmo alvo soma (1) e o padrão
   (opção ausente) segue ligado — um número de OUTRA cor cria o 2º nó (2). `RULEPROBE|numeros|off=0 on=1 soma=1
   padrao=2`, todas as QA PASS.
-- **#10 outra vez: os inimigos NÃO estão longe.** Nos logs do próprio QA7 (`_caps\qa7ot32\s1-3.log`) medi
+- **#10 outra vez: os inimigos NÃO estão longe.** Nos logs do próprio QA7 (`_caps\qa7\bot32\s1-3.log`) medi
   inimigo − Sophia no timeout: escudeiro x=4175 com a Sophia em 4253 (−78 px, em GUARDA), arauto −43, mudo +49,
   aberração +42/+115, mudo/acólito +173/+202, arauto −230 (o arauto mantém ~200 px de propósito). O x≈2000–2400
   é o x ABSOLUTO da zona 1 (a zona 0 nasce em x 620, cada zona tem 940 px + a passagem) — não é distância.
