@@ -3,7 +3,7 @@ extends "res://tools/regressao/reg_base.gd"
 ## pular_dialogos, frames…) e imprime também "QA PASS:"/"QA FAIL:" para o
 ## tools/validate.sh contar. Cobre:
 ##  1. checkpoints (backlog #3): tabela + morte REAL no Arconte (19 → antessala
-##     18) e depois do Desafio (17 → 15), −20% de faíscas, "Continuar" do disco
+##     18) e depois do Desafio (17 → 15), perde só as faíscas da tela, "Continuar" do disco
 ##     retomando da antessala;
 ##  2. tela cheia na 1ª execução (#24) e o par fullscreen/window_mode;
 ##  3. DEMO (#27): passar do Athoth emite `demo_finished` e não carrega a 11;

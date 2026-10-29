@@ -113,7 +113,7 @@ custo)`/`buy_max_mana` continuam (presentes e bot).
   `loja_*_grau1.png`, `loja_depois_grau0.png`. Ferramenta: `tools/progressao6/ShopShot.tscn`.
 
 ## 8. Limites honestos
-- A renda é a do BOT (mata tudo, não morre de verdade — a morte custa 20% das faíscas). Um
+- A renda é a do BOT (mata tudo, não morre de verdade — a morte custa as faíscas ganhas na tela, §12). Um
   humano deve ganhar um pouco menos; se o playtest achar a loja seca, o ajuste é UMA linha
   (`WEAPON_COSTS`, `HP_BASE_COST`…) — `econ_sim.py` recalcula a curva.
 - O bot (`_auto_shop`) não compra relíquias nem usa os tetos novos de vida; a curva de
@@ -203,9 +203,15 @@ Sobra no fim: ~0,1–0,7 mil no Centro; a tela 68 (Mente) rende ~2,5 mil que nã
   nova zera), validate.ps1 **TUDO VERDE (14)**, i18n strict 1456/1456.
 
 ## 11. BILHETE PARA O SUCESSOR (29/10)
-- **Estado:** curva fechada (§9.4) e Difícil/Muito Difícil conferidos com renda igual (BALANCE.md §8).
-  Último commit do branch: ver `git log -1 dir6/progressao6`. validate.ps1 **TUDO VERDE (14 etapas)**;
-  ProgQA 58/0; `econ_sim.py --checa` ok; i18n strict 1433/1433.
+- **Estado (29/10, encerrado):** curva fechada (§9.4), Difícil/Muito Difícil conferidos com renda igual
+  (BALANCE.md §8), base = integração ba91602 (merge 3d13bbd), ressalvas do Guardião e morte nova (§12)
+  APROVADAS (68bcaea) + limpeza de comentários. validate.ps1 **TUDO VERDE (14 etapas)**; ProgQA 62/0;
+  `econ_sim.py --checa` ok; i18n strict 1456/1456.
+- **Decisão do chefe (29/10):** a morte não tem custo econômico real (só as faíscas da tela, que a tela
+  devolve ao ser refeita) — o custo é TEMPO; morrer rende menos que seguir. O playtest dirá; não reabrir
+  sem dado de playtest.
+- **Combinado com o chefes6:** a economia NÃO baixa a força do fim; os chefes calibram contra a tabela de
+  potência em `docs/pedidos/progressao7.md` (arma Nv.5 + ~380 de vida no final).
 - **Arquivos-chave:** `scripts/autoload/progression_manager.gd` (constantes no topo: `WEAPON_COSTS/TIER`,
   `HP_*`, `MP_*`, `MP_LAST_TIER`, `SKILL_*`, relíquias), `scripts/ui/upgrade_menu.gd` (linha selada usa
   `hp_buy_tier`/`mp_buy_tier`), `tools/progressao6/{ProgBot.tscn, prog_bot.gd, run_bots.ps1, curva.py,
