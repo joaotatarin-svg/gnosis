@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/dublagem-lote | 4920893 (lote limiar-1: 11 falas PT) | APROVADO COM RESSALVAS (ética e licença ok: referência 100 % sintética, Apache-2.0; medidas dentro das REGRAS; caudas de reverb de 280-360 ms e A Voz do king_fall com CER 0,103 no limite) | REGRAS_GUARDIAO §6, §3, §4; ética |
 | dir7/audio7 | b655563 (delta de 656dfc0) | APROVADO (ressalvas (a), (b) e (c) fechadas: guarda de vozes de luta, 1 aperto corta e avança, Vozes 80 %) | REGRAS_GUARDIAO §3, §9 |
 | dir7/audio7 | 656dfc0 (infra de dublagem; delta próprio 08994eb, 122aea4, 656dfc0) | APROVADO COM RESSALVAS (controle e legenda cumprem as REGRAS; faltam as travas de frequência/duração de fala em combate e o 1º aperto que só corta a voz) | R4, R9, R5, REGRAS_GUARDIAO |
 | (prévia) | Dublagem: regras do Guardião para a produção | REGRAS ESCRITAS em `C:\gnosis-wt\_caps\dublagem\REGRAS_GUARDIAO.md` (22 regras: controle, legenda, frequência, escada de intensidade, mixagem) | R4, R5, R9, R10, R11, R13, R21, §4 |
@@ -1073,6 +1074,21 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## dir7/dublagem-lote — 4920893 (1º lote: prólogo, despertar, Rei do Limiar; 11 falas PT)
+
+**Medido OFFLINE (sem tocar nada), no commit:** extraí `assets/audio/voice` e rodei `ffmpeg ebur128=peak=true` + silêncios (`_caps\guardiao\lote`). Não rodei o VoiceProbe/validate (o dono dá 0 falhas e verde).
+- **Ética da voz: OK.** "Voz fixa clonada" = clonagem de uma referência SINTÉTICA: cada voz-base nasce de uma descrição em texto no Qwen3-TTS **VoiceDesign** (`job_refs.json`, `mode: design`, `instruct: "A deep, warm... baritone of an ancient being..."`), e o modo Base (`gen_qwen.py`, `create_voice_clone_prompt`) só clona
+  esse `.wav` gerado (`refs\<voz>_sNN.wav` -> `escolhidas.json`). Nenhuma referência vem de pessoa real, e as vozes de voluntários (Piper) foram descartadas pelo próprio dono por ética. O ator-base do Rei/A Voz é o mesmo ser (`demiurgo`), como o LORE pede.
+- **Licenças: OK.** Qwen3-TTS Base, VoiceDesign e Tokenizer: `license: apache-2.0` nos README locais (uso comercial livre). O ASR (faster-whisper-small) só mede o CER e não vai no jogo; XTTS/F5/Fish (sem uso comercial) ficaram de fora. Falta só o aviso de atribuição Apache-2.0 nos créditos do jogo (pedir ao Polimento/UI).
+- **Números (REGRAS §6/§21):** 11 arquivos, todos mono 24 kHz, durações 3,1-10,4 s (<= 12 s da regra 13); loudness integrada -20,8 a -21,0 LUFS (alvo -21, regra -20 a -22), true peak -1,6 a -5,1 dBTP (<= -1); início 13-78 ms (<= 80); manifesto bate com os arquivos (durações idênticas).
+- **Intensidade:** Rei com `nivel` 2 (teto da tela 1 = 1-2, regra 15) e `onde: cena`; nenhuma fala de combate neste lote, então as guardas de luta (8 s, 6/tela) ainda não foram exercitadas por voz real.
+- **Ressalvas pequenas:** (a) as 3 falas do Rei (e 2 do Narrador) têm cauda de 263-361 ms até -45 dB, acima dos 250 ms do contrato (é a cauda de reverb de catedral; a legenda segura a voz + 0,4 s, então só alonga 0,1 s); (b) `lufs_s` máx. do manifesto -19,6/-19,7 em 3 falas, ~0,4 LU acima da faixa (-20 a -22) da regra 21;
+  (c) `A Voz` do `king_fall` (1dbe2dd77839) tem CER 0,103 pós-efeito: é a mais baixa em inteligibilidade, vale ouvir (nomes próprios saem mal no ASR, como o doc admite); (d) o jogador em inglês ouve a voz PT com legenda EN (`_voice_langs`), decisão aceita até haver `en/`; (e) a IA não ouve: o veredito sobre atuação ("dark/épico, não leitura") e sobre o grito do Rei na final é do ouvido do João.
+
+**Veredito: APROVADO COM RESSALVAS** (entra o lote; ressalvas de ouvido e a atribuição Apache-2.0).
 
 ---
 
