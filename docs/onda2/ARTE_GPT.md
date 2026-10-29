@@ -381,6 +381,56 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
 - **R20 squash**: pulo duplo/arrancada/freada desenhados não usam squash extra do CharacterArt (o `_hero_motion`
   segue moderado: jump 0,95/1,06). O squash do player.gd é do combate6.
 
+## PARADA r4 DO LAB3D (29/10/2026; substitui a parada 3D l28 do commit 8916611)
+O João aprovou a r4: a parada é a PRÓPRIA pintura `s16.breath_0` animada por deformação em camadas (respiração + vento no
+cabelo e nas abas do pano). Corrida, pulo, golpes, `ready` etc. seguem pintados; o `walk3d` saiu (decisão do chefe: o estilo 3D
+não combina com a parada pintada).
+- **Folha:** `assets/painted/src/sophia_s20_loco3d.png` trocada pela de `lab3d/loco/r4/jogo` (mesma grade 8×7 e nomes; só as 12
+  `idle_*` mudaram). Receita: `idle` = `s20.idle_00..11` (6 qps, âncora `front`) com `no_flex`; `idle_pintado` (s16) fica de
+  reserva; `walk3d` REMOVIDO da receita e do HeroQA. Só os quadros usados entram no atlas (106 quadros; 2048×4096).
+- **Vento não dobra:** novo `no_flex` por estado (`build_frames.py` copia a chave; `character_art.gd` zera `hair_amp`/`cloth_amp`
+  do shader quando a sequência mostrada tem `no_flex`). O ramo `advance` do `build_frames.py` continua (genérico, sem uso agora);
+  o código do `walk3d` no `character_art.gd` foi revertido.
+- **Prova (Shot 1280×720, `--audio-driver Dummy --position 4000,4000`):** `C:\gnosis-wt\_caps\arte\loco_r4\` — `p_idle.png`
+  (sequência da parada, antes=pintada × depois=r4), `p_idle_golpe.png`, `p_idle_corrida.png`, `zoom2x_parada.png` (8 quadros da
+  parada a 2×). Pose, altura, pé e cor iguais à pintada; no zoom a deformação não vira "borracha" (rosto, braços, botas e
+  cajado estáveis; só cabelo e abas se mexem). Emenda parada→golpe e parada→corrida sem salto (a pose é a da pintura).
+- **R18 (contraste borda×fundo, rim off→on, telas 3/13/22/31/40/49/57/58/66):** 2,79→3,06 · 2,81→2,94 · 2,71→2,85 · 2,81→3,07 ·
+  2,62→2,85 · 2,70→2,95 · 2,67→2,73 · 2,73→2,68 · 2,88→3,00. Voltou ao nível da pintura (o 3D dava 3,2–3,8): ≥2,85 em 7 das 9;
+  as duas da Coroa (57/58) ficam em 2,7 — o limite é o fundo dourado. Aceito pelo chefe até ~2,8 com a pintura íntegra; Coroa pendente.
+- **CHECAGEM DE SATISFAÇÃO:** R18 como acima (sem recorte brilhante); R19/R20 não se aplicam (nada de golpe/squash novo);
+  R16 ok (parada legível, silhueta igual); §4 conferido (arte apenas). Sem salto de estilo entre parada e golpe/corrida.
+
+## (SUBSTITUÍDA pela r4 abaixo) SOPHIA 3D NA PARADA (29/10/2026, Lab3D l25; commit 8916611)
+Decisão do João (caminho MISTO): só a PARADA (`idle`) vira 3D pré-renderizado; corrida, pulo, queda, pouso, golpes, `ready`,
+esquiva etc. seguem PINTADOS. O andar 3D entra só como pose de encenação (`walk3d`), sem mudar a jogabilidade.
+- **Fonte/receita:** `assets/painted/src/sophia_s20_loco3d.png` (grade 8×7, alfa real) + fonte `s20` em
+  `tools/anim/sophia_recipe.json` (escala `auto:idle_00`, o mesmo critério das outras folhas). `idle` = `s20.idle_00..11`
+  (6 qps, âncora `front`); a parada pintada antiga ficou em `idle_pintado` (para comparar/voltar: trocar o nome).
+  `walk3d` = `s20.walk_00..15` (âncora `pelvis`, `persist`, avanço exato do Lab). Só os quadros usados entram no atlas
+  (28 quadros 3D novos): o atlas segue 2048×4096 (≈3107 px de altura usados) — sem 2048×8192.
+- **`build_frames.py`:** ramo novo `advance` já medido (pé plantado por IK no Blender) em vez do `cycle_bodies: auto`
+  (que erra com pés na mesma altura) + chave `persist` copiada para o estado.
+- **`character_art.gd`:** `walk3d` troca de quadro pela DISTÂNCIA andada (como a `rund`) e `persist` mantém a ação até
+  `stop_action()` (o `_tick_action` não a expira nem a corta quando ela anda). Uso na encenação:
+  `art.play_action("walk3d")` e mover o nó (o `motion_distance` acumula sozinho); ~28,7 px de mundo por ciclo de 16 quadros.
+  Nada no `player.gd`; `_hero_seq` intocado (andar/correr do jogo continuam `rund`).
+- **Emenda parada→golpe / parada→corrida:** os estados batem por construção e foram conferidos: altura pé→topo 256,0–256,8
+  (pintada 256,0–256,5), pé sobre a âncora (0,0), `front_x` na âncora igual (28,4 px de atlas, o mesmo de ready/windup),
+  luminância média dos pixels opacos 131,3 nos dois (RGB médio 146/130/105 × 150/128/104). A luz de recorte `HERO_RIM` vale nos
+  quadros 3D (é do shader, não do quadro): contraste borda×fundo com a parada 3D, rim off→on, telas 3/13/22/31/40/49/57/58/66 =
+  2,71–3,09 → 3,23–3,79:1 (as 9 passam de 3:1, inclusive as duas da Coroa, que com a parada pintada ficavam em 2,7–2,85).
+- **Prova (Shot, 1280×720, `--audio-driver Dummy --position 4000,4000`):** `C:\gnosis-wt\_caps\arte\loco3d\` — `p_idle.png`
+  (parada, antes×depois), `p_idle_golpe.png` (parada→1º quadro do golpe), `p_idle_corrida.png` (parada→corrida), `z_idle.png` e
+  `z_zoom.png` (zoom). Linha de cima = antes (A), de baixo = depois (D). Pés no mesmo y e mesma altura nas três; a 3D é mais
+  frontal/musculosa e tem cabelo estático (o vento do shader mexe); o contorno fino do HERO_RIM aparece igual.
+- **Fica a dizer:** a troca visual de estilo existe (pintura→3D) e o João deve julgar jogando; `ready` (até 1,8 s após lutar)
+  segue pintado, então o 3D só aparece depois disso. HeroQA ganhou checagens (parada 3D com 12 quadros, `idle_pintado`,
+  `walk3d` persiste/anda por distância/`stop_action`). Corrida/pulo/queda/pouso 3D do Lab NÃO foram ligados.
+- **CHECAGEM DE SATISFAÇÃO:** R18 atendida (contraste maior, ver acima; sem recorte brilhante); R19/R20 não se aplicam à
+  parada (nada de golpe/squash novo — `_hero_motion` respira ±0,6% como antes); R16 ok (parada legível, silhueta e altura
+  iguais); §4 conferido: nenhuma recompensa/escassez, só arte. Risco aceito: mudança de estilo parada(3D)×golpe(pintado).
+
 ## BILHETE PARA O SUCESSOR (19/10/2026, 2º integrador de arte, branch `dir2/arte-gpt`)
 
 **Estado:** TUDO da lista do chefe feito, validado (validate -Repeat 2 verde) e com push; último commit e114a52.

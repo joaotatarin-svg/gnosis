@@ -427,6 +427,10 @@ def main() -> None:
 				adv += [round(v / 2.0, 2), round(v / 2.0, 2)]
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
+		elif "advance" in st:
+			# avanço já medido (locomoção 3D: pé plantado por IK na cena) — px do atlas
+			entry["advance"] = st["advance"]
+			entry["cycle_bodies"] = round(sum(st["advance"]) / body_px, 4)
 		elif st.get("cycle_bodies") == "auto":
 			# CORRIDA: quanto o corpo avança em cada quadro = quanto o pé
 			# apoiado recua em relação à pélvis até o quadro seguinte. Trocando
@@ -449,7 +453,7 @@ def main() -> None:
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
 			print("  %s: avanço por quadro %s -> ciclo %.2f alturas" % (sname, adv, sum(adv) / body_px))
-		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support", "hold"]:
+		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support", "hold", "no_flex"]:
 			if key in st and key not in entry:
 				entry[key] = st[key]
 		out_states[sname] = entry
