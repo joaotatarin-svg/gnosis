@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir2/arte-gpt | 8916611 (delta de 118cb99; base 95ec4b3) | APROVADO COM RESSALVAS (R18 3,23-3,79 em 9 telas; reversível; o pulo de estilo parada 3D x resto pintado é REAL, pior no cabelo e na anatomia, e fica para o playtest decidir) | R18, coerência, R16 |
 | dir7/polimento7 | b087740 (delta de 28d8df7; commits próprios 7652917, 0353991, b087740) | APROVADO (só RuleProbe e docs; nenhum arquivo de jogo) | R16 |
 | dir6/chefes6 | 0e8d761 (delta de 213d292: um commit próprio) | APROVADO (anéis e órbita passam abaixo do HUD; é só visual, a luta não muda) | R18, R21 |
 | dir6/chefes6 | 213d292 (delta de db14a1a: um commit) | APROVADO (a pegadinha da Réplica fechou; postura gira para a Sophia nas recapturas) | R5, §4 |
@@ -1066,6 +1067,28 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## dir2/arte-gpt — 8916611 (delta de 118cb99: Sophia 3D na parada)
+
+**Medido:** li o diff (`character_art.gd` 6 linhas, `sophia_recipe.json`, `build_frames.py`, `hero_qa.gd`, doc) e vi `_caps\arte\loco3d\p_idle_golpe.png`, `p_idle_corrida.png` e `z_zoom.png`. Não rodei o HeroQA nem o jogo; os contrastes são os do dono.
+
+**Jogo / reversão:** a mudança de código é mínima e segura. `idle` aponta para `s20` (12 quadros, 6 qps), a pintada fica em `idle_pintado` (troca de nome = volta). `walk3d` só roda por `play_action` e `persist` até `stop_action()`; nada do `player.gd` muda.
+Risco de pose presa: se uma cena chamar `walk3d` e esquecer o `stop_action`, ela fica andando; hoje ninguém a chama no jogo (só o HeroQA), então é só para a encenação futura. `ready` (até 1,8 s depois de lutar) segue pintado, então o 3D só aparece em parada longa (entre ondas, diálogo, mapa).
+
+**R18:** atendida: 2,71-3,09 -> 3,23-3,79:1 nas 9 telas, inclusive as duas da Coroa, que antes ficavam em 2,7-2,85. É o melhor ganho de legibilidade da sequência (e sem mexer no halo).
+
+**O pulo de estilo (a pergunta do chefe): é REAL, e não é pequeno.** No zoom lado a lado: o 3D perde o cabelo branco com a mecha azulada e ondulado (fica cinza liso e parado), o rosto muda (mais liso, de render), os braços e o torso engrossam (mais frontal e musculosa), o manto fica mais rígido. A pose de corrida e de golpe seguem
+finas, de perfil, com o cabelo solto: o corpo "vira outra pessoa" na parada. Onde dói: (1) em cada começo de luta, parada (3D, 3/4 para frontal) -> `ready`/golpe (pintado, perfil); (2) ao fim da luta, `ready` pintado -> 1,8 s -> parada 3D (um pop sem transição); (3) nos diálogos e no mapa, que são onde a jogadora mais olha para ela parada.
+O que ameniza: altura e pé batem (256,0-256,8 x 256,0-256,5), luminância média igual (131), o contorno fino é o mesmo, e a parada só aparece depois de 1,8 s de calma, então não pisca durante o combate.
+**Meu juízo:** não fere a LEGIBILIDADE (silhueta, altura e contraste estão iguais ou melhores; o estado "parada" é lido). Fere a COERÊNCIA de identidade (cabelo e anatomia), que não é R18 mas é a queixa original do dono ("parece outra arte"). Como é reversível em uma linha e o ganho de R18 é concreto, **aceito para o playtest decidir**, desde que o playtest
+pergunte isso de forma explícita ("a Sophia parada parece a mesma que corre e bate?"). Se a resposta for não, a saída barata é voltar `idle` para `idle_pintado` e manter só o `walk3d`; a saída boa é repintar o cabelo do 3D (branco com mecha azulada, ondulado) e afinar o torso para casar com o resto.
+Não vi o cabelo se mexer (o vento do shader só age sobre a máscara; o doc diz que a máscara é a mesma): conferir em movimento.
+
+**§4:** nada de recompensa, tremor ou flash novo. R16 ok.
+
+**Veredito: APROVADO COM RESSALVAS** (entra). Ressalvas: pulo de estilo cabelo/anatomia, a decidir no playtest (reversível); `walk3d` sem `stop_action` prende a pose; cabelo em movimento não visto.
 
 ---
 
