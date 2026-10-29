@@ -143,3 +143,38 @@ Bot médio, vida 120 (sonda r_i, `_caps/chefes6/ri?.txt`):
 | 68 | Rei-Mentira + Colosso | 420 s TIMEOUT / 21 | 117 s (fase 3 alcançada) | 47 | 3 |
 Variação entre rodadas iguais: ±25 % (ex.: Armupiel 126–178 s; Rei 61–112 s). GIFs novos: luta + MORTE
 desenhada do Rei e do Athoth em `C:\gnosis-wt\_caps\chefes6\gif2\` (`morte\*_morte.gif`, `_sheet.png`).
+
+## PLAYTEST DO JOÃO NO REI (28/10) — manto atravessável + "quadrado"
+Print: `C:\gnosis-wt\_caps\joao\rei_hitbox_quadrado.webp`. O bug existe na prévia 3 (`origin/preview/3`) E neste
+branch: o `enemy._fit_hurtbox` é o mesmo nos dois.
+1. **Manto atravessável** — causa: a caixa genérica (`enemy._fit_hurtbox`, dono inimigos6/polimento7) é UM retângulo
+   com metade da largura do recorte em volta da pélvis; o manto do Rei abre em leque do joelho para baixo e as pontas
+   ficavam fora. Correção do lado do chefe: `scripts/entities/bosses/boss_body_box.gd` (`BossBodyBox`, uma Área só
+   com 6 faixas horizontais que seguem o QUADRO mostrado, a mola `_body_xform`, o vira-lado e o teleporte). A largura de
+   cada faixa vem da silhueta PINTADA (`tools/chefes6/body_slabs.py` → `rei_body_data.gd`): coluna só conta se opaca em
+   ≥ 30 % das linhas da faixa (franja fina não entra), 3 px de folga para dentro. Enquanto ela vale, a HurtShape
+   genérica do Rei fica DESLIGADA (uma Área = um acerto por golpe, R4). Vale também para o Rei-Mentira da final
+   (herda o `boss_rei.gd`). Pedido de coordenação ao Polimento7: `docs/pedidos/chefes6.md`.
+   Medida em TODOS os 24 quadros (`tools/chefes6/body_cover.py`, `_caps/chefes6/rei_quadros.txt/.png`):
+   | metade de baixo do corpo | cobre o desenho | caixa fora do desenho |
+   |---|---|---|
+   | ANTES (genérica) média / pior quadro | 80 % / 54 % | 6 % |
+   | DEPOIS (faixas) média / pior quadro | 96 % / 95 % | 8 % |
+   No jogo (`tools/chefes6/ReiProbe.tscn`, `_caps/chefes6/rei_antes.txt` × `rei_depois.txt`): cobertura nas poses
+   parado/preparo/golpe/recupera 76–88 % → 96–98 %, fora 0–13 % → 2–12 %; golpe leve da Sophia de 150→50 px:
+   ANTES 1 "atravessa" (cajado no manto a 70 px, sem dano), DEPOIS 0 atravessa e 0 apelão.
+2. **"Quadrado" num poder** — causa: o **Raio do olho** (`raio`/`raio_b`) era um `BossHazard` "band" desenhado com
+   `draw_rect` chapado (40×36 px bege) correndo pelo chão — lia-se como um bloco. Agora `look = "beam"`: no aviso a luz
+   se junta no chão + risco/seta do caminho + losango vermelho; ativo, ORBE de luz rente ao chão (halo → corpo → núcleo
+   branco), cauda que afina atrás, brilho no piso, faíscas girando. Mesma área que fere (o desenho não promete mais).
+   Antes/depois: `_caps/chefes6/raio_depois_cima_antes_baixo.png`.
+3. **atk_shot no voleio do Astaphaios** — já estava feito (4574a19, `_bounce_volley`: 1 som por salva).
+Balanço depois da caixa nova (BossProbe, `_caps/chefes6/r_corpo.txt`): Rei 74 s / 24 golpes / 0 quase-mortes (antes
+61–112 s); final 196 s / 7 qm (antes 117–292 s) — dentro da variação.
+
+### CHECAGEM DE SATISFAÇÃO (28/10)
+| Decisão | R atendidas | R violadas / risco | Como ficou |
+|---|---|---|---|
+| Caixa de dano = manto desenhado | R18 (o que se vê é o que vale), R4 (1 Área = 1 acerto) | apelão: faixa de cima pega o braço estendido nos quadros de golpe (até 15 % fora no corpo todo); na metade de baixo, 8 % | franjas finas e pontas fora; olho exposto continua somando (ponto fraco, já documentado) |
+| Raio vira orbe com cauda | R5 (aviso: risco/seta + losango + `tell_unblock`), R18 | — | forma de LUZ (não bloco); mesma área de dano; sem clarão novo (R10) |
+| Sem mexer em tremor/hitstop/flash | R1–R3, R10 | — | nada novo |
