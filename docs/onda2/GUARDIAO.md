@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 | 8d00636 (delta de b0b52f0: 4574a19, 42d4804, 09b7989, 8d00636) | APROVADO COM RESSALVAS (hitbox fiel sem apelão; Raio legível; resta o Raio com halo/cauda além da área e a integração com a genérica) | R5, R18, R4, R10, R21 |
 | dir7/polimento7 | 2d54867 (delta de 87290ca; 4b022a8, d5586a9, 2d54867 + merges vfx7/audio7) | APROVADO COM RESSALVAS (R3, R15, ressalva do audio7 e a do flash fechadas; cast com 3 sons; doc incompleto) | R3, R15, R4, R5, R9, §3 |
 | dir2/arte-gpt | 50f807a (delta de de546f8) | APROVADO (ressalva do halo fechada; R18 segue parcial, depende do cenário) | R18, R10 |
 | dir7/ui7 | 12c6643 FINAL | APROVADO | R16 atende, R18, R21, R4 (shop_buy) |
@@ -866,6 +867,45 @@ partes escuras) e `character_art.gd` (`HERO_HALO` 0,4 -> 0,25). Mais a nota no d
 - **R10:** o halo é estático. Atende.
 
 **Veredito: APROVADO.**
+
+---
+
+## dir6/chefes6 — 8d00636 (delta de b0b52f0: 4574a19, 42d4804, 09b7989, 8d00636)
+
+**Medido no 8d00636 (worktree de sonda, headless):** importação sem `SCRIPT ERROR`; `tools/chefes6/ReiProbe` (log
+`C:\gnosis-wt\_caps\guardiaoei_g.txt`): BodyBox cobre **96-98 %** do desenho do Rei em todas as poses e deixa **2 % (parado) a
+12 % (recuperação)** da caixa fora do desenho; golpe leve da Sophia de 150 a 50 px: esperado = real em todas as 14 distâncias,
+**0 atravessa, 0 apelão** (começa a ferir a 70 px, que é onde o cajado encosta no manto). A tabela de faixas cobre os 24
+quadros do `rei_frames.json` (conferido: nenhum quadro sem faixa, então não há instante sem caixa por falta de dados).
+
+**O que muda:** `boss_body_box.gd` + `rei_body_data.gd` (gerado): uma Área só com 6 faixas por quadro, seguindo a mola, o vira-lado e
+o teleporte; liga a HurtShape genérica OFF (um acerto por golpe, R4); herdada pelo Rei-Mentira (`boss_rei_final` chama o
+`super._on_setup`, mesma arte). `boss_hazard.gd`: `look="beam"`, o Raio vira orbe com cauda e brilho no piso; no aviso, luz que
+junta, risco + seta + losango vermelho + `tell_unblock` (inalterados). `boss_rei.gd`/`final_battle.gd`: olho e Anéis descem fora
+do HUD, recuo com margem de parede (`boss_brain.wall_margin`). `boss_astaphaios.gd`: `atk_shot` 1x por salva.
+
+**Checagem:**
+- **Justiça da caixa (R18, §5.5): ATENDE.** O que se vê é o que fere, medido nos 24 quadros e no jogo. Os 12 % fora são a faixa de
+  cima pegando o braço estendido nos golpes (o doc diz até 15 %), dentro da banda pedida; a metade de baixo fica em ~8 %. Franja
+  fina e ponta de pano não contam (coluna precisa de >= 30 % de opacidade na faixa). Os screenshots (`raio_depois_cima_antes_baixo.png`)
+  mostram as faixas verdes acompanhando a silhueta.
+- **Raio, legibilidade do aviso (R5/R11): ATENDE.** Aviso de 0,9 s (`raio_b`: 0,6 s, acima do piso de 0,45 s): luz que cresce no chão,
+  risco que avança com seta branca, losango vermelho imparável e som. Forma + som + cor, não só cor (§4.11). Ativo, o orbe tem a
+  mesma área de dano (meia largura 20 x altura 28); lê-se como luz e não como bloco (antes e depois nas capturas). Não vira
+  hazard decorativo: o orbe rasteiro continua pulável (`hit_air=false`), coerente com o que o desenho promete.
+- **Ressalva de leitura (pequena):** o halo do orbe (raio 0,75 x altura = 21 px) e a cauda (64 px atrás, alfa 0,55 -> 0) passam
+  da área de dano (14 px de meia altura; 20 de meia largura). É luz suave e a cauda fica ATRÁS do orbe em movimento, então não
+  promete dano à frente; se o playtest reclamar de "tomei dano fora da luz", encurtar a cauda para ~2 x `half_w`.
+- **R10:** sem clarão novo. O flicker do orbe é 40 rad/s x 8 % de amplitude, só no raio, sem alternar luminância cheia: atende.
+- **R21:** olho e Anéis fora da área do HUD (QA7 #24), chefe não cola na parede, teleporte com margem maior (arte larga não corta na
+  borda): atende.
+- **R4:** uma Área = um acerto; `atk_shot` do Astaphaios 1 por salva. O Rei segue somando corpo + olho (ponto fraco, preexistente).
+- **R1 a R3, R9, §3:** intocados. Balance: Rei 74 s / 0 quase-mortes e final 196 s / 7 (dentro da variação documentada).
+- **Integração:** o polimento7 já protege a caixa (`enemy.gd` do 2d54867: "nem forma, nem `disabled`" quando há `BodyBox`),
+  então as duas branches convivem; confirmar com o ReiProbe depois do merge.
+- CHECAGEM do doc presente e confere com o código.
+
+**Veredito: APROVADO COM RESSALVAS** (cauda/halo do orbe um pouco além da área de dano; reconferir o ReiProbe pós-merge).
 
 ---
 
