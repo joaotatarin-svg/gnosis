@@ -309,3 +309,12 @@ juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o
   na primeira vez, antes de conhecer a postura (R5).
 - Recaptura com o código final (postura que gira com a Sophia): `_caps\chefes6\novos2\v2_s64_juizo{.gif,_sheet.png}`,
   `v2_s64_replica*`, `v2_s64_replica_b*` — meia-cúpula do lado da Sophia, coroa sobre a cabeça.
+
+### QA7 #24 de novo (3.2.1, base 0400a19) — Anéis do Rei no canto do HUD — 29/10
+- Causa: o desvio antigo descia o Anel só até y 88 (base 640×360); com o halo de 16 px a borda ficava em 72,
+  encostada em "Névoa do Sono" (print do QA7 `_caps\qa7\p32\b68_f2.png`), e a linha da órbita não desviava.
+- Agora (`final_battle._hud_safe`): na faixa do medalhão o centro do Anel fica em y ≥ 104 (borda ≥ 88; o HUD acaba
+  em 70), entrada suave entre x 290 e 250, e a órbita desvia junto. Antes × depois (16 quadros, ~12 s):
+  `C:\gnosis-wt\_caps\chefes6\aneis68_antes_cima_depois_baixo.png` (quadros em `_caps\chefes6\aneis68\`).
+- validate: 1ª rodada teve o FlashParryProbe vermelho 1× (intermitente: passou 2×/2× aqui e na integ 0400a19);
+  2ª rodada 14/14 VERDE.

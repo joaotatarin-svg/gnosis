@@ -260,13 +260,25 @@ const HUD_ZONE := Vector2(230.0, 70.0)
 
 func _ring_pos(k: int) -> Vector2:
 	var a := _t * 0.35 + TAU * float(k) / 7.0
-	var p := arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0)
-	if is_inside_tree():
-		var ct := get_viewport().get_canvas_transform()
-		var sp: Vector2 = ct * p
-		var lim := HUD_ZONE.y + 18.0
-		if sp.x < HUD_ZONE.x + 24.0 and sp.y < lim:
-			p.y += (lim - sp.y) / maxf(0.01, ct.get_scale().y)
+	return _hud_safe(arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0))
+
+
+## Desvio do HUD (QA7 #24, 3.2.1): na faixa do medalhão o Anel (halo de 16 px)
+## passa por BAIXO dele com folga — centro em y ≥ 104 (borda ≥ 88, o HUD acaba em
+## 70). Antes descia só até 88 e o halo encostava em "Névoa do Sono". O desvio
+## entra suave entre x 290 e 250 (sem pulo) e vale também para a linha da órbita.
+func _hud_safe(p: Vector2) -> Vector2:
+	if not is_inside_tree():
+		return p
+	var ct := get_viewport().get_canvas_transform()
+	var sp: Vector2 = ct * p
+	var lim := HUD_ZONE.y + 34.0
+	if sp.y >= lim:
+		return p
+	var kx: float = clampf((HUD_ZONE.x + 60.0 - sp.x) / 40.0, 0.0, 1.0)
+	if kx <= 0.0:
+		return p
+	p.y += (lim - sp.y) * kx / maxf(0.01, ct.get_scale().y)
 	return p
 
 
@@ -301,6 +313,6 @@ func _draw() -> void:
 	var pts := PackedVector2Array()
 	for i in 48:
 		var a := TAU * float(i) / 48.0
-		pts.append(to_local(arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0)))
+		pts.append(to_local(_hud_safe(arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0))))
 	pts.append(pts[0])
 	draw_polyline(pts, Color(1, 0.9, 0.6, 0.12), 1.0)
