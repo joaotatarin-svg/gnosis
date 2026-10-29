@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| (prévia) | Dublagem: regras do Guardião para a produção | REGRAS ESCRITAS em `C:\gnosis-wt\_caps\dublagem\REGRAS_GUARDIAO.md` (22 regras: controle, legenda, frequência, escada de intensidade, mixagem) | R4, R5, R9, R10, R11, R13, R21, §4 |
 | dir2/arte-gpt + dir6/chefes6 | 63f597a (delta de 9ad0b06) + b587064 | APROVADO (Rei a 450 px legível sem o halo; telégrafo intacto por ser outro mecanismo; ReiProbe tela 1: atravessa=0, apelão=0, 96-99 %) | R5, R18, justiça |
 | dir2/arte-gpt + dir6/chefes6 | 9ad0b06 (delta de a238686) + 6c2bd29 (delta de 0e8d761; inclui a arte) | APROVADO COM RESSALVA (Rei v11: parada 16q e andar 12q estáveis, sem borracha medida; ReiProbe atravessa=0, apelão=0, cobertura 97-98 %; a troca seca parada->preparo fica até os golpes novos) | R5, R18, justiça |
 | dir2/arte-gpt | a238686 (delta de 8916611: parada r4 = a pintura s16 animada em camadas) | APROVADO (a ressalva de identidade fecha: cabelo branco com mecha azul, mesmo corpo; sem "borracha" medida; R18 volta ao nível da pintura, Coroa ~2,7 aceita) | R18, coerência |
