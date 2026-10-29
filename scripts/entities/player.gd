@@ -952,7 +952,16 @@ func _cast_skill(skill: SkillData) -> void:
 	# Polimento 7 (pedido do VFX7): "piscar" de carga na mão no instante do cast.
 	# SEM atrasar o disparo (0,2 s de preparo foi descartado: magia é a saída de
 	# emergência e o João elogiou a resposta) — só a antecipação visual.
-	VfxLibrary.charge_up(self, Vector2(18.0 * facing, -6.0), skill.color, CAST_CHARGE_FX, "light")
+	# Guardião (R4): o cast já toca cast_* (e o tiro proj_fire) neste quadro — a carga
+	# sai MUDA (silent antes do add_child: o ChargeFX toca o som no _ready).
+	if is_inside_tree():
+		var cfx := ChargeFX.new()
+		cfx.silent = true
+		cfx.color = skill.color
+		cfx.duration = CAST_CHARGE_FX
+		cfx.style = "light"
+		cfx.position = Vector2(18.0 * facing, -6.0)
+		add_child(cfx)
 
 	var total := skill.base_damage + (Progression.skill_level(skill.id) - 1) * 12   # r2: 8→12
 	var col := skill.color

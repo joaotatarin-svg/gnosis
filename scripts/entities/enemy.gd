@@ -254,8 +254,9 @@ func _ready() -> void:
 	# Campeão do Éon: o bot temático crescido — o "mini-chefe" do meio do Éon.
 	if is_champion:
 		display_name = "Campeão %s" % _eon_title(GameManager.current_screen)
-		base_health = int(base_health * 1.7)
-		attack_damage = int(attack_damage * 1.15)
+		# Progressão 7 (decisão do chefe, 28/10): Campeão mais CURTO — a dificuldade vem
+		# do repertório de elite e do letreiro, não da barra (vida ×1,7 → ×1,35, dano ×1,15 → ×1,0)
+		base_health = int(base_health * 1.35)
 		spark_reward *= 2
 		scale = Vector2(1.35, 1.35)
 		# Onda 6: repertório de elite (o do bot + brado e onda dupla), lê e
@@ -2320,11 +2321,26 @@ const HURT_W_FRAC := 0.8
 const HURT_H_FRAC := 0.92            # altura a partir dos pés (corta a ponta de chifres/cabelo)
 const HURT_LERP := 0.5               # suavização por quadro (vira-lado sem tremer)
 
+## Polimento 7 (João, 19/10: "a Sophia atravessa o manto do Rei; só o centro acerta"):
+## nos CHEFES a hurtbox é o CONTORNO do corpo desenhado (`frame_geometry().body_poly`,
+## convexo, sem cajado/fios soltos) e não um retângulo — o manto que se abre na barra
+## é acertável, o ar entre o braço e a barra não. Encolhe HURT_POLY_W na largura
+## (rumo ao centro) e corta a ponta de cima (HURT_H_FRAC), como a dos comuns.
+const HURT_POLY_W := 0.9
+var _hurt_box_shape: Shape2D = null           # retângulo original da cena (comuns/reserva)
+var _hurt_poly_shape: ConvexPolygonShape2D = null
+
 func _fit_hurtbox() -> void:
-	if visual == null or estate == EState.DEAD or not visual.has_boss_frames():
+	if visual == null or estate == EState.DEAD:
+		return
+	if not visual.has_boss_frames():
+		# chefe sem atlas → boneco articulado (reserva): contorno da malha pintada
+		if is_boss_enemy and is_instance_valid(visual.boss_puppet) and visual.boss_puppet.visible 				and visual.boss_puppet.has_method("body_polygon"):
+			_fit_hurt_poly(visual.boss_puppet.body_polygon())
 		return
 	if _fit_hurtbox_geometry():
 		return
+	_use_hurt_box()
 	var key: String = visual._shown_key
 	var cut := key.rfind(":")
 	if cut <= 0:
@@ -2369,6 +2385,16 @@ func _fit_hurtbox_geometry() -> bool:
 	var g: Dictionary = visual.frame_geometry(true)
 	if not g.has("body"):
 		return false
+	if is_boss_enemy and g.has("body_poly"):
+		# contorno + os dois cantos de baixo da caixa do corpo: a BARRA do manto que se
+		# abre no chão (o contorno de ≤ 10 pontos corta a ponta da barra)
+		var pts: PackedVector2Array = PackedVector2Array(g.body_poly)
+		var bb: Rect2 = g.body
+		pts.append(Vector2(bb.position.x, bb.end.y))
+		pts.append(bb.end)
+		if _fit_hurt_poly(pts):
+			return true
+	_use_hurt_box()
 	var body: Rect2 = g.body
 	var hb: Node2D = $Hurtbox
 	var inv: Transform2D = hb.get_global_transform().affine_inverse()
@@ -2384,4 +2410,52 @@ func _fit_hurtbox_geometry() -> bool:
 	var want_s := Vector2(r.size.x / base.x, r.size.y / base.y)
 	shp.position = shp.position.lerp(r.get_center(), HURT_LERP)
 	shp.scale = shp.scale.lerp(want_s, HURT_LERP)
+	return true
+
+
+## Volta ao retângulo da cena (comuns; chefe num quadro sem contorno).
+func _use_hurt_box() -> void:
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	if _hurt_box_shape != null and shp.shape != _hurt_box_shape:
+		shp.shape = _hurt_box_shape
+
+
+## Hurtbox = polígono convexo (pontos GLOBAIS do contorno desenhado), encolhido
+## HURT_POLY_W na largura em torno do centro e cortado no topo (HURT_H_FRAC a partir
+## dos pés). Sem suavização: segue o quadro como ele é desenhado (no hitstop o quadro
+## não troca → a caixa fica parada, R1). Devolve false se o contorno é inválido.
+func _fit_hurt_poly(pts: PackedVector2Array) -> bool:
+	if pts.size() < 3:
+		return false
+	var hb: Node2D = $Hurtbox
+	var inv: Transform2D = hb.get_global_transform().affine_inverse()
+	var local := PackedVector2Array()
+	var lb := Rect2(inv * pts[0], Vector2.ZERO)
+	for p in pts:
+		var q: Vector2 = inv * p
+		local.append(q)
+		lb = lb.expand(q)
+	if lb.size.x < 4.0 or lb.size.y < 4.0:
+		return false
+	var cx: float = lb.get_center().x
+	var foot: float = lb.end.y
+	var top: float = foot - lb.size.y * HURT_H_FRAC
+	for i in local.size():
+		var q: Vector2 = local[i]
+		local[i] = Vector2(cx + (q.x - cx) * HURT_POLY_W, maxf(q.y, top))
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	if _hurt_box_shape == null:
+		_hurt_box_shape = shp.shape
+	if _hurt_poly_shape == null:
+		_hurt_poly_shape = ConvexPolygonShape2D.new()
+	_hurt_poly_shape.set_point_cloud(local)     # casco convexo (ordem dos pontos não importa)
+	if shp.shape != _hurt_poly_shape:
+		shp.shape = _hurt_poly_shape
+	shp.position = Vector2.ZERO
+	shp.scale = Vector2.ONE
+	shp.rotation = 0.0
+	var r := Rect2(_hurt_poly_shape.points[0], Vector2.ZERO)
+	for q in _hurt_poly_shape.points:
+		r = r.expand(q)
+	hurt_rect = r
 	return true
