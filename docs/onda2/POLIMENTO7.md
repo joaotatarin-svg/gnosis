@@ -179,6 +179,21 @@ Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos
   (58/59 subiram 18–28 s: ruído de sorteio). Timeouts 9 → 7 (saem 38 e 39; a 43 fica — arauto). Run 93,6 → 88,8
   min, quase-mortes 208 → 189.
 
+## 17. 3.2.1 (base integracao/onda1 0400a19): RuleProbe e #10 de novo
+- **RuleProbe** (`tools/combate/rule_probe.gd`, autorizado): com a R16 o 2º número no MESMO alvo soma (não cria
+  nó) e a sonda esperava 2. Agora confere as 3 coisas: desligado não cria (0), mesmo alvo soma (1) e o padrão
+  (opção ausente) segue ligado — um número de OUTRA cor cria o 2º nó (2). `RULEPROBE|numeros|off=0 on=1 soma=1
+  padrao=2`, todas as QA PASS.
+- **#10 outra vez: os inimigos NÃO estão longe.** Nos logs do próprio QA7 (`_caps\qa7ot32\s1-3.log`) medi
+  inimigo − Sophia no timeout: escudeiro x=4175 com a Sophia em 4253 (−78 px, em GUARDA), arauto −43, mudo +49,
+  aberração +42/+115, mudo/acólito +173/+202, arauto −230 (o arauto mantém ~200 px de propósito). O x≈2000–2400
+  é o x ABSOLUTO da zona 1 (a zona 0 nasce em x 620, cada zona tem 940 px + a passagem) — não é distância.
+  Bot na base 3.2.1 (`botun321_s1`): 4 timeouts no run inteiro (14, 35, 43, 49; nenhum de chefe); 14 e 49 com
+  o inimigo a ≤ 75 px; 35 sem ninguém vivo no instante (intervalo entre ondas — o tempo da zona conta o total);
+  43 com o invocador a 427 px porque o BOT estava correndo para o outro lado (estado RUN), larvas recém-chamadas
+  ao lado dele. Não há posição para corrigir: o que sobra é duração de luta (guarda do escudeiro, que o bot não
+  quebra; arauto, que é a identidade dele). Nada mudado no enemy.gd/level.gd por isso.
+
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop)**: flash continua instantâneo e ≤ 100 ms reais; só a intensidade mudou. A
   hurtbox segue o quadro desenhado, mas no hitstop (time_scale 0,05) o quadro não troca → caixas paradas no

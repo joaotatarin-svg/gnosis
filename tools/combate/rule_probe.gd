@@ -135,10 +135,14 @@ class P extends Node:
 		DamageNumber.spawn(holder, Vector2(100, 100), 12, Color.WHITE)
 		var n_on := holder.get_child_count()
 		GameManager.settings.erase("damage_numbers")
-		DamageNumber.spawn(holder, Vector2(100, 100), 12, Color.WHITE)
+		DamageNumber.spawn(holder, Vector2(100, 100), 12, Color.WHITE)   # mesmo alvo: SOMA (R16)
+		var n_sum := holder.get_child_count()
+		DamageNumber.spawn(holder, Vector2(100, 100), 12, Color(1.0, 0.5, 0.5))   # outra cor: cria (padrão = ligado)
 		var n_def := holder.get_child_count()
-		print("RULEPROBE|numeros|off=%d on=%d padrao=%d" % [n_off, n_on, n_def])
-		check(n_off == 0 and n_on == 1 and n_def == 2, "números de dano: desligado não cria, ligado/ausente cria")
+		print("RULEPROBE|numeros|off=%d on=%d soma=%d padrao=%d" % [n_off, n_on, n_sum, n_def])
+		# R16: o 2º número no mesmo alvo e no mesmo instante SOMA no que está vivo (n_sum = 1);
+		# o padrão (opção ausente) segue LIGADO: um número de outra cor cria o 2º nó.
+		check(n_off == 0 and n_on == 1 and n_sum == 1 and n_def == 2, "números de dano: desligado não cria, ligado/ausente cria, mesmo alvo soma")
 		GameManager.settings["damage_numbers"] = true
 
 		# --- 5. Sombra de contato presa ao chão e contorno ---
