@@ -10,7 +10,7 @@ signal won
 
 ## 28/10 (curva da Progressão: Sophia chega com arma Nv.5): 14 → 9 s — derrubar as
 ## duas JUNTAS virou a leitura da luta (baixar as duas, depois fechar), não martelar uma.
-const REVIVE_AFTER := 9.0
+const REVIVE_AFTER := 11.0     # 29/10: 9 → 11 s (na integração 34a55dd o médio dava 187–278 s, presa em ciclos de refazer)
 ## Últimos s antes de a forma caída se refazer: brilho crescente nela + som (aviso).
 const REVIVE_WARN := 2.5
 var _warned: Dictionary = {}

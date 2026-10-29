@@ -46,6 +46,7 @@ func _ready() -> void:
 			"vida": w.force_hp = int(v)
 			"curva": w.curve = true
 			"semente": w.seed_k = int(v)
+			"capmv": w.cap_moves = Array(v.split(","))
 	get_tree().root.add_child.call_deferred(w)
 
 
@@ -58,6 +59,8 @@ class ProbeWorker extends Node:
 	var curve: bool = false
 	## semente=N: muda o sorteio do bot (0 = o de sempre, comparável com as rodadas antigas)
 	var seed_k: int = 0
+	## capmv=id1,id2: com cap=, filma ~2,6 s na 1ª vez que o chefe começa cada um desses golpes
+	var cap_moves: Array = []
 	const CURVE := {1: [1, 120], 10: [2, 140], 19: [3, 186], 28: [3, 242], 37: [3, 276], 46: [4, 302], 55: [4, 332], 64: [5, 372], 68: [5, 392]}
 	var out_base: String = "user://boss_probe"
 	var skill: float = 0.65            # chance de rolar do vermelho (o resto escala daqui)
@@ -230,6 +233,11 @@ class ProbeWorker extends Node:
 				if b.estate == Enemy.EState.WINDUP and int(_prev_st.get(bid, -1)) != Enemy.EState.WINDUP:
 					var mid: String = str(b.brain.mv.get("id", "?"))
 					_moves_n[mid] = int(_moves_n.get(mid, 0)) + 1
+					if cap_moves.has(mid) and not _phase_seen.has(mid) and _cap_left <= 0.0:
+						_start_capture(mid)
+						_cap_left = 2.6
+						_cap_name = "s%d_%s" % [screens[_idx], mid]
+						_cap_n = 0
 				_prev_st[bid] = b.estate
 		# fases
 		for b in _bosses:

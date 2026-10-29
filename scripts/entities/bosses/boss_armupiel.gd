@@ -152,7 +152,7 @@ func no_touch() -> bool:
 
 
 func _filter(dmg: int, attacker: Node) -> int:
-	if _in_stance():
+	if _in_stance() and _from_front(attacker):
 		# defendido: faísca DOURADA no espadão (forma diferente da azul do "armado")
 		var fx_pos := e.global_position + Vector2(18.0 * e.atk_dir * e._art_scale, -20.0 * e._art_scale)
 		ImpactBurst.spawn(e.get_parent(), fx_pos, GOLD)
@@ -166,6 +166,15 @@ func _filter(dmg: int, attacker: Node) -> int:
 	if e.estate in [Enemy.EState.CHASE, Enemy.EState.WINDUP, Enemy.EState.STRIKE] and not e.armored:
 		_pressure += 1
 	return dmg
+
+
+## A postura defende só o lado da meia-cúpula (quem passa por trás dele acerta).
+func _from_front(attacker: Node) -> bool:
+	if attacker == null or not is_instance_valid(attacker) or not (attacker is Node2D):
+		return true
+	var dx: float = (attacker as Node2D).global_position.x - e.global_position.x
+	var d: float = _stance_fx.dir if _stance_fx != null and is_instance_valid(_stance_fx) else float(e.atk_dir)
+	return dx == 0.0 or signf(dx) == signf(d)
 
 
 ## A Réplica: a postura vira um corte largo imparável já (o aviso foi a postura).
@@ -313,8 +322,14 @@ class JudgeStance extends Node2D:
 		# meia-cúpula na frente (o lado que defende)
 		var a0: float = -PI * 0.5 if dir > 0.0 else PI * 0.5
 		var r: float = size * (0.8 + 0.2 * grow)
-		draw_arc(Vector2(dir * size * 0.25, 0), r, a0, a0 + PI * dir, 24, Color(c, 0.55 * pulse * grow), 4.0, true)
-		draw_arc(Vector2(dir * size * 0.25, 0), r * 0.82, a0, a0 + PI * dir, 20, Color(c, 0.25 * grow), 2.0, true)
+		var ctr := Vector2(dir * size * 0.25, 0)
+		var pts := PackedVector2Array([ctr])
+		for k in 17:
+			var a: float = a0 + PI * float(k) / 16.0
+			pts.append(ctr + Vector2(cos(a), sin(a)) * r)
+		draw_colored_polygon(pts, Color(c, 0.12 * grow))
+		draw_arc(ctr, r, a0, a0 + PI, 24, Color(c, 0.75 * pulse * grow), 5.0, true)
+		draw_arc(ctr, r * 0.82, a0, a0 + PI, 20, Color(c, 0.3 * grow), 2.0, true)
 		# lâmina cravada de pé, à frente
 		var bx: float = dir * size * 0.62
 		var top := Vector2(bx, -size * 0.9)
@@ -323,9 +338,9 @@ class JudgeStance extends Node2D:
 		draw_line(Vector2(bx - 7.0, -size * 0.45), Vector2(bx + 7.0, -size * 0.45), Color(c, 0.95 * grow), 3.0, true)
 		draw_colored_polygon(PackedVector2Array([top + Vector2(0, -6), top + Vector2(3, 0), top + Vector2(-3, 0)]), Color(1, 1, 0.9, grow))
 		# 3 pontas de coroa sobre a cabeça
-		var cy: float = -size * 1.25
+		var cy: float = -size * 0.5
 		for k in 3:
 			var x: float = (float(k) - 1.0) * 9.0
-			var h: float = 9.0 if k == 1 else 6.0
+			var h: float = 12.0 if k == 1 else 8.0
 			draw_colored_polygon(PackedVector2Array([Vector2(x - 4.0, cy), Vector2(x + 4.0, cy), Vector2(x, cy - h * pulse)]), c)
 		draw_line(Vector2(-14.0, cy), Vector2(14.0, cy), c, 2.0, true)

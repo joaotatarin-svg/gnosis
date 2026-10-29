@@ -36,6 +36,7 @@ var _was_stag: bool = false
 func _on_setup() -> void:
 	dmg_scale = 0.55          # 28/10: curva da Progressão (~330 de vida na tela 55)
 	keep_dist = Vector2(60.0, 160.0)
+	wall_margin = 120.0       # fera larga: não encosta na borda da câmera
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 3
 	escape_id = "recuo"       # 29/10: acuado, ele SALTA PARA TRÁS e dá o Bote (era se enterrar)
@@ -175,13 +176,15 @@ func _on_windup(m: Dictionary) -> void:
 			if _blisters != null and is_instance_valid(_blisters):
 				_blisters.swell = true
 		"jorro":
-			# bile à frente: faixa no chão, do focinho até ~150 px
-			var j := hazard(e.global_position.x + e.atk_dir * 80.0, "band", 70.0, m.wind, 0.45, ROT)
-			j.height = 44.0
-			j.active = float(m.strike)
-			j.tick = 0.35
-			j.effect = "poison"
-			j.knockback = 120.0
+			# bile à frente: 3 respingos no chão, do focinho até ~170 px, um depois do
+			# outro (forma de cuspe, não um bloco — lição do Raio do Rei)
+			for i in 3:
+				var j := hazard(e.global_position.x + e.atk_dir * (48.0 + 58.0 * float(i)), "circle", 32.0, float(m.wind) + 0.1 * float(i), 0.45, ROT)
+				j.active = float(m.strike) - 0.1 * float(i)
+				j.tick = 0.35
+				j.effect = "poison"
+				j.knockback = 120.0
+				j.silent = i > 0          # um aviso sonoro por golpe (R4)
 		"esporos", "esporos5":
 			var b := arena_bounds()
 			var n: int = int(m.n)
@@ -234,7 +237,8 @@ func _strike_tick(m: Dictionary, delta: float) -> void:
 	if m.id == "recuo":
 		var b := arena_bounds()
 		var vx: float = -float(e.atk_dir) * 460.0
-		if (vx < 0.0 and e.global_position.x < b.x + 70.0) or (vx > 0.0 and e.global_position.x > b.y - 70.0):
+		# fera larga: para antes da borda da câmera (não fica cortada)
+		if (vx < 0.0 and e.global_position.x < b.x + 140.0) or (vx > 0.0 and e.global_position.x > b.y - 140.0):
 			vx = 0.0
 		e.velocity.x = vx
 	# o Bote deixa rastro de veneno
@@ -325,8 +329,9 @@ class PusBlisters extends Node2D:
 		var spd: float = 14.0 if (full or swell) else 5.0
 		for k in count:
 			# arco nas costas: da anca ao ombro, do lado oposto à Sophia
-			var a: float = lerpf(-0.2, 1.1, float(k) / 3.0)
-			var p := Vector2(-dir * size * (0.35 + 0.25 * cos(a)), -size * (0.05 + 0.45 * sin(a)))
+			# fileira ao longo do dorso: da cernelha à anca, do lado oposto à Sophia
+			var f: float = float(k) / 3.0
+			var p := Vector2(-dir * size * lerpf(-0.1, 0.75, f), -size * (0.32 + 0.08 * sin(f * PI)))
 			var r: float = 4.0 + 1.2 * float(k)
 			r *= 1.0 + 0.12 * sin(_t * spd + float(k))
 			if swell:
