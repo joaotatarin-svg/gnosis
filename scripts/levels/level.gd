@@ -811,11 +811,15 @@ func _champion_card_when_visible(champ: Node2D) -> void:
 func _champion_card() -> void:
 	if CodexSession.active:
 		return
+	# Polimento7 (delegação do chefe, QA7 N1): card do Campeão SEM o stinger de chefe —
+	# o `champion_enter` do enemy.gd é o único som (R4) e a música de chefe não sai (R9).
 	var c: Dictionary = Narrative.champion_card(RunManager.eon_index(screen))
 	if c.is_empty():
-		Gnosis.boss_card("campeao", screen)
+		var n := RunManager.eon_name(screen)
+		var fem := n in ["Fome", "Corrente", "Praga", "Coroa"]
+		Cinematic.boss_card("O CAMPEÃO", "Guardião do santuário %s %s" % ["da" if fem else "do", n], false)
 		return
-	Cinematic.boss_card(String(c.name), String(c.title))
+	Cinematic.boss_card(String(c.name), String(c.title), false)
 
 
 ## Invocações (invocador, Coroa, Espelho) contam na wave: precisam morrer também.

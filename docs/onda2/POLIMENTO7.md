@@ -148,6 +148,37 @@ Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos
   e LONGE (x > 2190): o bot passa pela fenda e eles ficam vivos para trás. Não é dano/vida — é posição. Pedido ao
   QA7/Mapa em `docs/pedidos/polimento7.md`.
 
+## 16. Re-teste da 3.1 (QA7 d67a51b): N1 e #10
+- **N1 — Campeão com 2 stingers** (`boss_appear` do card + `champion_enter`): `level.gd` e `cinematic.gd` editados
+  por DELEGAÇÃO DO CHEFE, só neste ponto. `Cinematic.boss_card(nome, título, sting=true)`; o card do Campeão
+  (`Level._champion_card`, inclusive a reserva "O CAMPEÃO", antes via `Gnosis.boss_card("campeao")`) passa
+  `sting=false`; o ramo órfão `Gnosis.boss_card("campeao")` também passa `sting=false` (ressalva do Guardião). Decisão pela NEURO: Campeão não é chefe → R4 (um evento = um som: só `champion_enter`) e R9 (o
+  stinger de chefe é que solta a música de chefe; o Campeão fica na música do Éon). Prova: bot na tela 15 com
+  `GNOSIS_AUDIO_LOG` → `champion_enter=1`, `boss_appear` ausente (`_caps\polimento7\bot\audio_t15.json`).
+- **#10 — "inimigo longe" nas telas de timeout: NÃO é coleira.** Medi a distância inimigo × Sophia no instante do
+  timeout nos logs do próprio QA7 (`_caps\qa7\bot31\s1-3.log`) e no meu run: em todos os casos de inimigo comum
+  ele está a ≤ 160 px da Sophia (o invocador a ≤ 275, que é o alcance dele, 260). x ≈ 2000–2800 é só onde fica a
+  ZONA 1/2 da tela — a luta está acontecendo, só é longa. Causas: invocador repõe larvas sem teto TOTAL (teto de 3
+  vivas, `_summon` a cada 6 s), reflexo que salta para trás a cada golpe, arauto que mantém 240 px. Não mexi: é
+  balance de inimigo (proposta ao chefe: teto total de invocações por invocador, ex. 3 chamadas = 6 larvas).
+- **Teto de invocações (decisão do chefe, 28/10)**: `enemy.gd` `_summon_larvae()` (função de invocação, não-kit):
+  3 chamadas por invocador (até 6 larvas no total; o teto de 3 vivas continua). Na 3ª ele fica ESGOTADO.
+  1ª versão (0ba25d8): escurecia 38 % e parava só o recuo da IA. Ressalvas do Guardião: no ramo `shooter` do
+  `_desired_x` ele ainda se afastava a pé (175 px) e o escuro sumia no fundo escuro (tela 48).
+  Agora: `_process_chase` sai na hora se esgotado → PARADO, virado para a Sophia, SEM golpe nenhum (não anda, não
+  recua, não atira — esgotado = janela de punição clara). Leitura: o corpo DESSATURA para cinza CLARO (graduação do
+  contorno, sat 0,08 × 2,0 de luz), solta um sopro na hora e uma fumaça cinza leve e contínua. Nenhum multiplicador
+  de dano/vida. Reflexo e arauto intocados. Capturas (tela 48 fundo escuro, 38 fundo claro):
+  `C:\gnosis-wt\_caps\polimento7\esgotado\{antes,depois,depois_sopro}_tela{48,38}[_zoom].png` (`v1_escuro_*` = 1ª versão).
+  A fumaça contínua é discreta (lê melhor no zoom); quem carrega a leitura é o cinza claro.
+  Bot com a versão nova (`botun34_s1`): telas com invocador 1928,6 → 1783,5 s (−7,5 %; v1 dava −9 %), dano
+  tomado nelas 7740 → 6637; 38 e 39 seguem fora do timeout. A 35 passou a dar timeout por um CORNUDO colado na
+  Sophia (hp 18, x 2831 × 2871) — sorteio, não o invocador. Run 93,6 → 89,6 min, quase-mortes 208 → 179.
+  Bot (run inteiro, seed 1, mesmo código salvo o teto; `botun32_s1` × `botun33_s1`): nas 16 telas com
+  invocador o tempo somado cai 1928,6 → 1754,1 s (−9 %); 38: 131 → 65 s, 48: 181 → 118 s, 57: 172 → 124 s
+  (58/59 subiram 18–28 s: ruído de sorteio). Timeouts 9 → 7 (saem 38 e 39; a 43 fica — arauto). Run 93,6 → 88,8
+  min, quase-mortes 208 → 189.
+
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop)**: flash continua instantâneo e ≤ 100 ms reais; só a intensidade mudou. A
   hurtbox segue o quadro desenhado, mas no hitstop (time_scale 0,05) o quadro não troca → caixas paradas no
@@ -182,6 +213,11 @@ Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos
 - **Campeão ×1,35 (3.2)**: R5/R21 — luta mais curta, a ameaça vem do repertório legível (telegrafo, brado) e não
   de barra inflada; recompensa do Campeão intocada (sem perda artificial).
 - **R4 (3.2)**: carga do cast muda — um evento (cast) = um som.
+- **Invocador esgotado (3.2)**: justiça/R18 — a zona tem FIM previsível (máx. 6 larvas) e o estado é lido no corpo
+  (cinza CLARO + fumaça + parado sem golpe: janela de punição); recompensa por persistir sem número escondido (nenhum bônus de dano
+  invisível). R21: menos fuga = menos perseguição para fora do enquadramento. §4: sem aleatoriedade nova.
+- **R4/R9 (Campeão, 3.2)**: aparição do Campeão = 1 som (`champion_enter`), sem stinger nem música de chefe —
+  o Campeão é mini-chefe do Éon, a 'entrada de chefe' fica reservada aos Arcontes e ao Rei (contraste preservado).
 
 ## O que NÃO ficou bom / não testei
 - Feel do flash novo e do alcance: só medido (atlas/sonda), sem captura em janela nem playtest humano.

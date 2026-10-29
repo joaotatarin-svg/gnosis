@@ -411,7 +411,9 @@ func boss_card(id: String, screen: int) -> void:
 	if id == "campeao":
 		var n := RunManager.eon_name(screen)
 		var fem := n in ["Fome", "Corrente", "Praga", "Coroa"]
-		Cinematic.boss_card("O CAMPEÃO", "Guardião do santuário %s %s" % ["da" if fem else "do", n])
+		# Polimento7 (Guardião): Campeão não é chefe — card SEM o stinger (R4/R9). O Level já
+		# monta este card direto; o ramo fica só como reserva, mudo.
+		Cinematic.boss_card("O CAMPEÃO", "Guardião do santuário %s %s" % ["da" if fem else "do", n], false)
 		return
 	var t: Dictionary = BOSS_TITLES.get(id, {})
 	if t.is_empty():
