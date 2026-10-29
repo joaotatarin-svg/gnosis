@@ -36,6 +36,11 @@ const MP_STEP := 15
 const MP_BASE_COST := 80
 const MP_MAX_BUYS := 6
 const MP_FREE_BUYS := 1
+## Progressão 7 (curva, iteração 2): a 6ª compra de Éter só depois de Belias
+## (grau 6). Medido no ProgBot: quem compra sempre o mais barato enchia o Éter
+## na tela 48 — a trilha mais cedo no topo; agora nenhuma trilha fecha antes da
+## Praga (tela 55), igual à 10ª vida, que espera o 7º Arconte.
+const MP_LAST_TIER := 6
 ## Magias: Nv.2 = 150 + 40·k, Nv.3 = 400 + 80·k (k = nº do Anel, 0 = Esfera
 ## Solar). O Nv.3 pede 2 Arcontes depois do Anel (a Esfera, 2 Arcontes).
 const SKILL_COST_L2 := 150
@@ -438,6 +443,11 @@ func hp_buy_cap() -> int:
 	return mini(HP_MAX_BUYS, HP_FREE_BUYS + progress_tier())
 
 
+## Grau que abre a (n+1)-ésima compra de vida (a loja mostra "vença <Arconte>").
+static func hp_buy_tier(n: int) -> int:
+	return maxi(0, n - HP_FREE_BUYS + 1)
+
+
 ## Compras de Éter feitas (save antigo: deduzidas do bônus, 15 cada).
 func mp_buys() -> int:
 	if _flag_has("eter"):
@@ -449,9 +459,23 @@ static func mp_cost_for(n: int) -> int:
 	return MP_BASE_COST * (n + 1)
 
 
-## Compras de Éter liberadas pelo grau atual (1 + grau, teto 6).
+## Grau que abre a (n+1)-ésima compra de Éter: 1 + grau, e a última (a 6ª)
+## só no grau MP_LAST_TIER.
+static func mp_buy_tier(n: int) -> int:
+	var t := maxi(0, n - MP_FREE_BUYS + 1)
+	if n >= MP_MAX_BUYS - 1:
+		t = maxi(t, MP_LAST_TIER)
+	return t
+
+
+## Compras de Éter liberadas pelo grau atual (1 + grau, teto 6; a 6ª pede o
+## grau 6).
 func mp_buy_cap() -> int:
-	return mini(MP_MAX_BUYS, MP_FREE_BUYS + progress_tier())
+	var tier := progress_tier()
+	var cap := 0
+	while cap < MP_MAX_BUYS and mp_buy_tier(cap) <= tier:
+		cap += 1
+	return cap
 
 
 ## Compra da loja: +20 de vida máx. com preço crescente e teto pelo grau.

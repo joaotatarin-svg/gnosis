@@ -139,7 +139,7 @@ func _rebuild() -> void:
 	if n >= HP_MAX_BUYS:
 		_add(hp_title, "no máximo", -1, false, Callable(), CodexStyle.LIFE_HI)
 	elif n >= Progression.hp_buy_cap():
-		_add_sealed(hp_title, n - Progression.HP_FREE_BUYS + 1, hp_cost_for(n), CodexStyle.LIFE_HI)
+		_add_sealed(hp_title, Progression.hp_buy_tier(n), hp_cost_for(n), CodexStyle.LIFE_HI)
 	else:
 		var hp_cost := hp_cost_for(n)
 		_add(hp_title, "", hp_cost, Progression.orbs >= hp_cost, _buy_hp, CodexStyle.LIFE_HI)
@@ -148,7 +148,7 @@ func _rebuild() -> void:
 	if m >= Progression.MP_MAX_BUYS:
 		_add(mp_title, "no máximo", -1, false, Callable(), CodexStyle.ETHER_HI)
 	elif m >= Progression.mp_buy_cap():
-		_add_sealed(mp_title, m - Progression.MP_FREE_BUYS + 1, Progression.mp_cost_for(m), CodexStyle.ETHER_HI)
+		_add_sealed(mp_title, Progression.mp_buy_tier(m), Progression.mp_cost_for(m), CodexStyle.ETHER_HI)
 	else:
 		var mp_cost := Progression.mp_cost_for(m)
 		_add(mp_title, "", mp_cost, Progression.orbs >= mp_cost, _buy_mp, CodexStyle.ETHER_HI)

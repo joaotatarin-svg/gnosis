@@ -24,9 +24,11 @@ func _ready() -> void:
 	_cases_gates()
 	_cases_tracks()
 	_cases_relics()
-	_cases_claims()
 	await _cases_shop_ui()
 	await _cases_double_jump_save()
+	# por último: o continue_run() daqui troca de cena (adiada) e tiraria o QA da
+	# árvore no meio da loja (o erro de 'process_frame' em null da onda 7)
+	_cases_claims()
 	print("QA RESULT: ", errors, " falhas")
 	get_tree().quit(0 if errors == 0 else 1)
 
@@ -79,6 +81,14 @@ func _cases_tracks() -> void:
 	check(Progression.skill_next_tier("r_fome") == 2, "Anel 2 Nv.2 sai junto com o Anel")
 	check(Progression.hp_buy_cap() == 5 and Progression.mp_buy_cap() == 3, "tetos sobem com o grau (vida 5, Éter 3)")
 	check(Progression.heal_cost() == 50 + 15 * 2, "Restauração escala com o grau (80)")
+	# Progressão 7: a 6ª compra de Éter só depois de Belias (grau 6); a 10ª vida, do 7º.
+	check(Progression.mp_buy_tier(4) == 4 and Progression.mp_buy_tier(5) == 6 and Progression.hp_buy_tier(9) == 7,
+		"selo da última compra: Éter 6ª no grau 6, vida 10ª no grau 7")
+	for i in range(2, 5):
+		Progression.add_ring(str(Bestiary.bosses[i].get("id", "")), "r_qa%d" % i)
+	check(Progression.progress_tier() == 5 and Progression.mp_buy_cap() == 5, "grau 5: Éter para em 5/6 (%d)" % Progression.mp_buy_cap())
+	Progression.add_ring(str(Bestiary.bosses[5].get("id", "")), "r_qa5")
+	check(Progression.progress_tier() == 6 and Progression.mp_buy_cap() == 6, "grau 6 (Belias): Éter 6/6 aberto")
 	# Presentes (mapa +4/+6/+8, Soter +25) não contam como compra num run novo.
 	_new_run()
 	Progression.buy_max_health(6, 0)
