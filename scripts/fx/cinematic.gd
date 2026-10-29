@@ -156,9 +156,11 @@ static func prologue() -> Cinematic:
 
 
 ## Letterbox + nome grande + título; congela ~1,8 s.
-static func boss_card(p_name: String, p_title: String) -> Cinematic:
+static func boss_card(p_name: String, p_title: String, sting: bool = true) -> Cinematic:
 	var c := _spawn()
-	c.boss = {"name": p_name, "title": p_title}
+	# sting=false (Campeão): o card não toca `boss_appear` — o Campeão tem o stinger
+	# próprio (`champion_enter`, enemy.gd) e não solta a música de chefe (R4/R9).
+	c.boss = {"name": p_name, "title": p_title, "sting": sting}
 	return c
 
 
@@ -512,7 +514,8 @@ func _build_boss() -> void:
 
 
 func _run_boss() -> void:
-	Audio.play_sfx("boss_appear")
+	if bool(boss.get("sting", true)):
+		Audio.play_sfx("boss_appear")
 	var tw := create_tween()
 	tw.set_ignore_time_scale(true)
 	tw.set_parallel(true)
