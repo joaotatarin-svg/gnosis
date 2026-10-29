@@ -273,4 +273,29 @@ func _run() -> void:
 	if tot_old.n > 0:
 		var ko: float = 1.0 / float(tot_old.n)
 		print("HURTPROBE_MEDIA|antiga|cobre=%.0f|vazio=%.0f|gap_faixa=%.1f|fora_faixa=%.1f" % [tot_old.cobre * ko, tot_old.vazio * ko, tot_old.gap * ko, tot_old.fora * ko])
-	get_tree().quit(0)
+	# Chefes6 (BossBodyBox): chefe com nó `BodyBox` → a hurtbox genérica não mexe
+	# na HurtShape (forma nem `disabled`) — senão o golpe conta 2× ou desfaz a caixa dele.
+	var ok := await _check_bodybox(scn)
+	print("HURTPROBE_BODYBOX|%s" % ("PASS" if ok else "FAIL"))
+	get_tree().quit(0 if ok else 1)
+
+
+func _check_bodybox(scn) -> bool:
+	var v := _make_vp()
+	var e = scn.instantiate()
+	e.type_id = "rei"
+	v.add_child(e)
+	e.position = FOOT + Vector2(0, -24)
+	e.set_physics_process(false)
+	var bb := Node2D.new()
+	bb.name = "BodyBox"
+	e.add_child(bb)
+	var shp: CollisionShape2D = e.get_node("Hurtbox/HurtShape")
+	shp.disabled = true
+	var before: Shape2D = shp.shape
+	for i in 12:
+		await get_tree().process_frame
+		e._fit_hurtbox()
+	var ok: bool = shp.shape == before and shp.disabled
+	v.queue_free()
+	return ok

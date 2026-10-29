@@ -2333,6 +2333,11 @@ var _hurt_poly_shape: ConvexPolygonShape2D = null
 func _fit_hurtbox() -> void:
 	if visual == null or estate == EState.DEAD:
 		return
+	# Chefes6 (BossBodyBox, Rei e Rei-Mentira): o chefe com caixa PRÓPRIA por faixas
+	# desliga a HurtShape genérica — aqui não se mexe nela (nem forma, nem `disabled`),
+	# senão o golpe conta 2× ou a caixa dele é desfeita.
+	if has_node("BodyBox"):
+		return
 	if not visual.has_boss_frames():
 		# chefe sem atlas → boneco articulado (reserva): contorno da malha pintada
 		if is_boss_enemy and is_instance_valid(visual.boss_puppet) and visual.boss_puppet.visible 				and visual.boss_puppet.has_method("body_polygon"):
