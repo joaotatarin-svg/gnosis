@@ -91,8 +91,8 @@ class Old(Rules):
 
 class New(Rules):
 	name = "DEPOIS"
-	WEAPON_COSTS = [0, 0, 200, 450, 900, 1500]
-	WEAPON_TIER = [0, 0, 0, 1, 3, 5]
+	WEAPON_COSTS = [0, 0, 200, 500, 1100, 1800]
+	WEAPON_TIER = [0, 0, 0, 1, 4, 6]
 
 	def weapon_cost(self, lvl):
 		return self.WEAPON_COSTS[lvl + 1]
@@ -116,7 +116,8 @@ class New(Rules):
 		return 80 * (n + 1)
 
 	def mp_cap(self, t):
-		return min(6, 1 + t)
+		# a 6ª compra só no grau 6 (Belias) — Progressão 7, MP_LAST_TIER
+		return min(6 if t >= 6 else 5, 1 + t)
 
 
 def simulate(rows, rules: Rules, perfil: str, perola: bool):
@@ -196,7 +197,7 @@ def total_cost(rules: Rules) -> int:
 	c += sum(rules.mp_cost(n) for n in range(6))
 	c += sum(rules.skill_cost(k, l) for k in range(SKILLS) for l in (1, 2))
 	if isinstance(rules, New):
-		c += 350 + 350 + 500
+		c += 350 + 350 + 500 + 700 + 1500   # 4 relíquias + segundo engaste
 	return c
 
 
@@ -206,9 +207,9 @@ def checa() -> None:
 	def const(name):
 		m = re.search(r"const %s := (.+)" % name, gd)
 		return m.group(1).strip() if m else None
-	assert const("WEAPON_COSTS") == "[0, 0, 200, 450, 900, 1500]", const("WEAPON_COSTS")
-	assert const("WEAPON_TIER") == "[0, 0, 0, 1, 3, 5]", const("WEAPON_TIER")
-	for n, v in (("HP_BASE_COST", "90"), ("HP_FREE_BUYS", "3"), ("MP_BASE_COST", "80"), ("MP_FREE_BUYS", "1"),
+	assert const("WEAPON_COSTS") == "[0, 0, 200, 500, 1100, 1800]", const("WEAPON_COSTS")
+	assert const("WEAPON_TIER") == "[0, 0, 0, 1, 4, 6]", const("WEAPON_TIER")
+	for n, v in (("HP_BASE_COST", "90"), ("HP_FREE_BUYS", "3"), ("MP_BASE_COST", "80"), ("MP_FREE_BUYS", "1"), ("MP_LAST_TIER", "6"),
 			("SKILL_COST_L2", "150"), ("SKILL_COST_L2_RING", "40"), ("SKILL_COST_L3", "400"),
 			("SKILL_COST_L3_RING", "80"), ("SKILL_L3_TIER_GAP", "2")):
 		assert const(n) == v, (n, const(n))
