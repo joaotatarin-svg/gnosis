@@ -178,3 +178,25 @@ Balanço depois da caixa nova (BossProbe, `_caps/chefes6/r_corpo.txt`): Rei 74 s
 | Caixa de dano = manto desenhado | R18 (o que se vê é o que vale), R4 (1 Área = 1 acerto) | apelão: faixa de cima pega o braço estendido nos quadros de golpe (até 15 % fora no corpo todo); na metade de baixo, 8 % | franjas finas e pontas fora; olho exposto continua somando (ponto fraco, já documentado) |
 | Raio vira orbe com cauda | R5 (aviso: risco/seta + losango + `tell_unblock`), R18 | — | forma de LUZ (não bloco); mesma área de dano; sem clarão novo (R10) |
 | Sem mexer em tremor/hitstop/flash | R1–R3, R10 | — | nada novo |
+
+## BodyBox do SONO (Athoth) e do ESPELHO (Astaphaios) — 28/10 (pedido do chefe após o Guardião aprovar 8d00636)
+Com a hurtbox genérica do Polimento7 (contorno `body_poly`), o Athoth deixava 15–27 px de pano fora na altura do
+cajado e o Astaphaios cobria 50–76 % do desenho. Agora os dois usam `BossBodyBox` (como o Rei). Tabelas:
+`body_slabs.py bosses/<id> ... --abrir 3 --fill 0.3`: antes de medir, uma ABERTURA leve (3 px) + maior peça conexa
+tira o que está SOLTO (cacos flutuando do Espelho, o espelho que se separa) e fiapos de 1–2 px; o resto é o
+critério do Rei. Os ecos/clones do Astaphaios (inimigos comuns) seguem na genérica.
+Medida em todos os quadros (`body_cover.py ... --abrir 3 --mundo 0.34`, `_caps/chefes6/{athoth,astaphaios}_quadros.*`;
+azul = contorno do Polimento7 reproduzido em Python, verde = faixas). "Pano fora" = px de mundo por linha, dos pés
+até 1 Sophia, desenho BRUTO (com fiapos), 2 lados — a métrica da BossHurtProbe:
+| | ½ recorte (prévia 3) | contorno (Polimento7) | FAIXAS |
+|---|---|---|---|
+| Athoth: pano fora / sobra (média) | 22,7 / 3,5 | 25,5 / 2,6 | **7,0 / 2,8** |
+| Athoth: pano fora no pior quadro | 46,6 | 40,3 | **11,3** |
+| Astaphaios: pano fora / sobra | 15,9 / 3,8 | 18,9 / 1,3 | **7,8 / 2,6** |
+| Astaphaios: pano fora no pior quadro | 62,2 | 29,5 | **12,6** |
+| metade de baixo: cobre (Athoth / Astaphaios) | 77 % / 79 % | 77 % / 78 % | **95 % / 94 %** |
+No jogo (ReiProbe `tela=10/46`, `_caps/chefes6/arc{10,46}_{antes,depois}.log`, antes = ½ recorte deste branch):
+Athoth pano fora 19–25 → 10–20 px (com fiapos), golpe que atravessa 1 → 0; Astaphaios 5–14 → 7–12 px com sobra
+4–11 → 1–3 px; 1 golpe a 55 px ainda "atravessa" (a ponta do cajado toca a ponta do véu/cajado dele).
+Ressalva honesta: a área de caixa fora do desenho fica em ~33 % nos dois — o desenho deles é rendado (fiapos de
+névoa, véu em tiras); o contorno também fica em 26–28 %. Na faixa do cajado a sobra por linha é 2,6–2,8 px.

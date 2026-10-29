@@ -83,7 +83,7 @@ class Runner extends Node:
 			return
 		if boss == null:
 			for e in get_tree().get_nodes_in_group("enemy"):
-				if e is Enemy and e.is_boss_enemy and e.brain != null and e.process_mode != Node.PROCESS_MODE_DISABLED:
+				if e is Enemy and e.is_boss_enemy and e.brain != null and e.can_process() and not get_tree().paused:
 					boss = e
 			if boss == null:
 				Input.action_press("move_right")
@@ -128,6 +128,16 @@ class Runner extends Node:
 	# --- roteiro ---------------------------------------------------------
 	func _run() -> void:
 		await _wait(2.5)                       # entrada do chefe/diálogo
+		# Arcontes: carta do chefe/encenação pausam a árvore — espera a luta valer
+		# (tentação: o Arconte fica DESLIGADO até a Sophia cruzar o gatilho)
+		var tw := 0
+		while (get_tree().paused or not boss.can_process()) and tw < 1800:
+			if not get_tree().paused:
+				Input.action_press("move_right")
+			await get_tree().physics_frame
+			tw += 1
+		Input.action_release("move_right")
+		await _wait(1.0)
 		_frozen = true
 		boss.move_speed = 0.0
 		var lv := boss.get_parent()
@@ -149,10 +159,16 @@ class Runner extends Node:
 		overlay.z_index = 200
 		overlay.z_as_relative = false
 		lv.add_child(overlay)
-		_log("REI|INFO|tag=%s|bodybox=%s|art_scale=%.2f" % [tag, str(not no_body and boss.get_node_or_null("BodyBox") != null), boss._art_scale])
+		_log("REI|INFO|pm=%d|cp=%s|pp=%s|pausado=%s|estado=%d|tag=%s|bodybox=%s|art_scale=%.2f" % [boss.process_mode, str(boss.can_process()), str(boss.is_physics_processing()), str(get_tree().paused), boss.estate, tag, str(not no_body and boss.get_node_or_null("BodyBox") != null), boss._art_scale])
 		# 1) caixa × desenho em várias poses
 		await _measure("parado")
-		for mv_id in ["gesto", "mao", "leque"]:
+		var ids: Array = ["gesto", "mao", "leque"]
+		if boss.kit != "rei":
+			ids = []
+			for m in boss.brain.moves.get(1, []):
+				if ids.size() < 3 and bool(m.get("tell", true)) and String(m.get("kind", "")) != "leap":
+					ids.append(String(m.id))
+		for mv_id in ids:
 			boss.brain._start(boss.brain._find(mv_id))
 			await _wait(boss.wind_up * 0.5)
 			await _measure(mv_id + "_preparo")
@@ -169,7 +185,7 @@ class Runner extends Node:
 		# 2) esperado × real (golpe leve da Sophia, de fora para dentro)
 		await _hits()
 		# 3) os poderes (fotos)
-		if photos:
+		if photos and boss.kit == "rei":
 			await _moves()
 		_finish()
 
@@ -210,6 +226,42 @@ class Runner extends Node:
 			if lo < INF:
 				edges.append([Vector2(lo, y), Vector2(hi, y)])
 		overlay.edges = edges
+		# FAIXA DO CAJADO (como a BossHurtProbe do Polimento7): dos pés até 62 px
+		# (1 Sophia), por linha: pano desenhado FORA da caixa (gap, 2 lados) e caixa
+		# fora do desenho (sobra). Desenho = alpha bruto (inclui fiapos/cacos).
+		var g_main := 0.0
+		var g_body := 0.0
+		var o_main := 0.0
+		var o_body := 0.0
+		var nr := 0
+		for hh in range(2, 63, 3):
+			var yy: float = gy - float(hh)
+			var dl := INF
+			var dr2 := -INF
+			var ml := INF
+			var mr := -INF
+			var bl := INF
+			var br2 := -INF
+			for xi in range(-260, 261, 1):
+				var q := Vector2(boss.global_position.x + float(xi), yy)
+				if _drawn(q):
+					dl = minf(dl, q.x)
+					dr2 = maxf(dr2, q.x)
+				if _in_main(q):
+					ml = minf(ml, q.x)
+					mr = maxf(mr, q.x)
+				if _in_body(q):
+					bl = minf(bl, q.x)
+					br2 = maxf(br2, q.x)
+			if dl == INF:
+				continue
+			nr += 1
+			g_main += (dr2 - dl) if ml == INF else maxf(0.0, ml - dl) + maxf(0.0, dr2 - mr)
+			g_body += (dr2 - dl) if bl == INF else maxf(0.0, bl - dl) + maxf(0.0, dr2 - br2)
+			o_main += 0.0 if ml == INF else maxf(0.0, dl - ml) + maxf(0.0, mr - dr2)
+			o_body += 0.0 if bl == INF else maxf(0.0, dl - bl) + maxf(0.0, br2 - dr2)
+		var kn: float = 1.0 / maxf(1.0, float(nr))
+		_log("REI|FAIXA|%s|generica: pano fora %.1f px sobra %.1f px|bodybox: pano fora %.1f px sobra %.1f px" % [label, g_main * kn, o_main * kn, g_body * kn, o_body * kn])
 		var main_n: int = tot.main_in + tot.main_out
 		var body_n: int = tot.body_in + tot.body_out
 		_log("REI|CAIXA|%s|quadro=%s|desenho=%d|generica: cobre %d%% fora %d%%|bodybox: cobre %d%% fora %d%%" % [label, boss.visual._shown_key, tot.drawn,
