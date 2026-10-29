@@ -5111,17 +5111,17 @@ msgid "Siga em frente  →"
 msgstr "Keep going  →"
 
 #. level._open_exit.141467  [toast]
-#: scripts/levels/level.gd:882
+#: scripts/levels/level.gd:921
 msgid "A fenda abriu no alto: suba."
 msgstr "The rift opened up high: climb."
 
 #. level._on_player_died.f920d1  [ui]
-#: scripts/levels/level.gd:982
+#: scripts/levels/level.gd:1021
 msgid "Você caiu no Kenoma"
 msgstr "You fell in the Kenoma"
 
 #. level._on_player_died.ba60d8  [ui]
-#: scripts/levels/level.gd:983
+#: scripts/levels/level.gd:1022
 msgid "Chegou até a Tela %d."
 msgstr "Reached Screen %d."
 

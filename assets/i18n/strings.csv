@@ -1050,9 +1050,9 @@ level._play_narrative_beats.8eb3bb,Ceder,Yield,ui,,,scripts/levels/level.gd:357,
 level._arm_objective.42e14a,Um totem chama reforços: quebre-o.,A totem calls reinforcements: break it.,ui,,,scripts/levels/level.gd:614,
 level._arm_objective.84d7c0,Proteja a luz do Adormecido: lute longe dela.,Protect the Sleeper's light: fight away from it.,ui,,,scripts/levels/level.gd:615,
 level._on_zone_cleared.5e6b69,Siga em frente  →,Keep going  →,toast,,60,scripts/levels/level.gd:696,
-level._open_exit.141467,A fenda abriu no alto: suba.,The rift opened up high: climb.,toast,,60,scripts/levels/level.gd:882,
-level._on_player_died.f920d1,Você caiu no Kenoma,You fell in the Kenoma,ui,,,scripts/levels/level.gd:982,
-level._on_player_died.ba60d8,Chegou até a Tela %d.,Reached Screen %d.,ui,,,scripts/levels/level.gd:983,format string: manter os %
+level._open_exit.141467,A fenda abriu no alto: suba.,The rift opened up high: climb.,toast,,60,scripts/levels/level.gd:921,
+level._on_player_died.f920d1,Você caiu no Kenoma,You fell in the Kenoma,ui,,,scripts/levels/level.gd:1021,
+level._on_player_died.ba60d8,Chegou até a Tela %d.,Reached Screen %d.,ui,,,scripts/levels/level.gd:1022,format string: manter os %
 eon_map.KINDS.d144c4,Chegada,Arrival,ui,,,scripts/levels/map/eon_map.gd:91,
 eon_map.KINDS.5ddace,A porta do Éon. Checkpoint.,The gate of the Aeon. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:91,
 eon_map.KINDS.c51361,Travessia,Crossing,ui,,,scripts/levels/map/eon_map.gd:92,
