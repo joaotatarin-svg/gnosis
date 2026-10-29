@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/mapa7 | 4e4b9cc (delta de 8e8afc3) | APROVADO (a observação do SOTER_SCREEN fixo fecha; sem mudança de som no world_map) | §3/§4, R4 |
 | dir7/polimento7 | 0ba25d8 (delta de 2854fc0: 222dc38, 0ba25d8) | APROVADO COM RESSALVAS (Campeão com 1 som: ok; teto do invocador ok; o "esgotado" é discreto e ele AINDA recua andando, ao contrário do que o doc diz) | R4, R9, R18, R5/§5 |
 | dir7/polimento7 | 2854fc0 (delta de 2d54867: d639053, 4305f1d, 5898825, 2854fc0) | APROVADO COM RESSALVAS (cast mudo e proj_fire hostil FECHADOS; contorno dos chefes melhora, mas o Arconte do Sono ainda tem pano de 15-27 px sem dano; Astaphaios fica mudo sem o 4574a19 do chefes6) | R4, R5/§5.5, §3, R1 |
 | dir6/chefes6 | 8d00636 (delta de b0b52f0: 4574a19, 42d4804, 09b7989, 8d00636) | APROVADO COM RESSALVAS (hitbox fiel sem apelão; Raio legível; resta o Raio com halo/cauda além da área e a integração com a genérica) | R5, R18, R4, R10, R21 |
@@ -987,6 +988,33 @@ x0,62 no corpo, um sopro, sem o golpe `recuo`).
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: (1) `_desired_x` não respeita o esgotado (o doc exagera); (2) o cinza escuro
 atrapalha a leitura em fundo escuro.
+
+---
+
+## dir7/mapa7 — 4e4b9cc (delta de 8e8afc3: um commit)
+
+**Medido no 4e4b9cc (worktree de sonda, headless):** importação sem `SCRIPT ERROR`; MapQA 29 `QA PASS` (inclui a nova "lugar do Soter lido de
+`SOTER_SLOTS` (17/35/53, Velkar 61)", "nenhum cadeado antes do Soter" e "o bot sem pulo duplo nunca entra em segredo"); LayoutQA
+`QA PASS`, 1246 verificações em 129 telas. Logs em `C:\gnosis-wt\_caps\guardiao\p7g_*.log`.
+
+**O que muda:** `RunManager` ganha `SOTER_SLOTS = [[1,6],[3,6],[5,6]]`, `VELKAR_SLOT = [6,5]`, `soter_meeting_at()`, `velkar_at()` e
+`double_jump_screen()`. `screen_layouts.gd` (`npc_on_screen`, `_high_cache`), `level.gd` (`reserved_spans`, `_spawn_extras`) e a
+MapQA leem dali em vez do número 17 fixo e das condições `off == 6 and eon in [1,3,5]` copiadas em 3 lugares.
+
+**Checagem:**
+- **§3 / §4 (nenhuma isca impossível): continua ATENDENDO, e a minha observação do 8e8afc3 fecha.** Eu pedi que a regra não dependesse do
+  número 17 solto. Agora é uma fonte só: mudar o Soter de lugar muda juntos o encontro, o espaço reservado, o layout (torre de pulo
+  simples antes dele, saliência de pulo duplo depois) e a QA. Conferi a equivalência com o código antigo: os pares (Éon, camada) são
+  os mesmos, o índice do encontro (`meeting`) sai da posição na tabela como antes (`[1,3,5].find(eon)`), e o 1º slot concede o pulo
+  duplo como antes. A MapQA confirma 17/35/53, Velkar 61 e a tela 16 sem encontro. Saída do LayoutQA idêntica.
+- **Resto da observação (não bloqueia):** a tabela continua posicional, não por `has_double_jump()`. É aceitável: o pulo duplo só vem do
+  slot 0 e a MapQA prova que nenhum nó o exige antes dele.
+- **Sons do world_map: sem mudança neste delta.** `world_map.gd` não foi tocado desde o 26d28b3 (já auditado): `ui_move`,
+  `ui_confirm`, `ui_back`, e o segredo fechado dá "voltar" com o texto do requisito, sem punição nem tremor (§4.1). Um som por ação (R4).
+- **Justiça / previsibilidade:** nenhuma regra de jogo, recompensa, dano ou sorteio mudou; é refatoração com o mesmo comportamento.
+- MAPA7.md ganhou a seção 1d com a validação (confere com o que medi).
+
+**Veredito: APROVADO.**
 
 ---
 
