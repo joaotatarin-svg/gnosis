@@ -17,15 +17,15 @@ var _court_cd: float = 0.0
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.5
+	dmg_scale = 0.27
 	keep_dist = Vector2(40.0, 100.0)
 	gap_by_phase = [0.8, 0.7, 0.6]
 	escape_hits = 4
 
 
 func _build_moves() -> Dictionary:
-	var espadao := {"id": "espadao", "kind": "slam", "anim": "slam", "wind": 0.9, "strike": 0.25, "recover": 1.0,
-		"off": 34.0, "sx": 2.6, "sy": 1.4, "nova": 100.0, "waves": 1, "wave_dmg": 0.55, "wave_speed": 250.0,
+	var espadao := {"id": "espadao", "kind": "slam", "anim": "slam", "wind": 0.85, "strike": 0.25, "recover": 1.25,
+		"off": 34.0, "sx": 2.6, "sy": 1.4, "nova": 100.0, "waves": 1, "wave_dmg": 0.4, "wave_speed": 210.0,
 		"dmg": 1.1, "rmax": 140.0, "w": 2.0, "cd": 1.0}
 	var varredura := {"id": "varredura", "kind": "cast", "anim": "melee", "wind": 0.75, "strike": 0.25, "recover": 0.8,
 		"unblock": true, "rmax": 150.0, "w": 1.4, "cd": 2.5}
@@ -33,7 +33,7 @@ func _build_moves() -> Dictionary:
 		"unblock": true, "rmin": 120.0, "rmax": 9999.0, "w": 1.2, "cd": 4.0, "aa": true}
 	var investida := {"id": "investida", "kind": "charge", "anim": "charge", "wind": 0.8, "strike": 0.55,
 		"recover": 1.0, "unblock": true, "speed": 360.0, "dmg": 1.1, "rmin": 160.0, "rmax": 9999.0, "w": 1.0, "cd": 4.0}
-	var corte_real := {"id": "corte_real", "kind": "cast", "anim": "ranged", "wind": 0.9, "strike": 0.4, "recover": 0.8,
+	var corte_real := {"id": "corte_real", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.9, "strike": 0.4, "recover": 0.8,
 		"rmin": 0.0, "rmax": 9999.0, "w": 3.0, "cd": 18.0}
 	var dupla := espadao.duplicate()
 	dupla.id = "dupla"
@@ -43,7 +43,7 @@ func _build_moves() -> Dictionary:
 	dupla.cd = 3.0
 	var dupla_b := espadao.duplicate()
 	dupla_b.id = "dupla_b"
-	dupla_b.wind = 0.55
+	dupla_b.wind = 0.7
 	dupla_b.rmax = 9999.0
 	dupla_b.w = 0.0
 	dupla_b.cd = 0.0
@@ -71,7 +71,7 @@ func _build_moves() -> Dictionary:
 	return {
 		1: [espadao, varredura, decreto, investida],
 		2: [espadao, dupla, dupla_b, varredura, decreto, corte_real],
-		3: [dupla, dupla_b, varredura, decreto, coroacao, triplo, triplo_b, triplo_c, corte_real],
+		3: [dupla, dupla_b, varredura, decreto, coroacao, triplo, triplo_b, triplo_c],
 	}
 
 
@@ -80,6 +80,14 @@ func _pick(dist: float, high: float) -> Dictionary:
 	e._prune_minions()
 	if not e._minions.is_empty() or _court_cd > 0.0:
 		_cd["corte_real"] = maxf(float(_cd.get("corte_real", 0.0)), 1.0)
+	# CORTE DE PÉ: o rei recua e só COMANDA (Decreto, devagar) — a luta é com
+	# os Pretorianos; derrubados, a armadura cai e ele volta ao espadão.
+	if not e._minions.is_empty():
+		_gap_t = 1.6
+		if float(_cd.get("decreto", 0.0)) > 0.0:
+			return {}
+		var d := _find("decreto")
+		return d
 	return super._pick(dist, high)
 
 
@@ -90,7 +98,7 @@ func _on_windup(m: Dictionary) -> void:
 	match m.id:
 		"varredura":
 			# baixa e larga, à frente: só pulando
-			var h := hazard(e.global_position.x + e.atk_dir * 70.0, "band", 85.0, m.wind, 0.9, GOLD)
+			var h := hazard(e.global_position.x + e.atk_dir * 70.0, "band", 85.0, m.wind, 0.7, GOLD)
 			h.height = 30.0
 			h.hit_air = false
 			h.active = 0.15
@@ -114,15 +122,30 @@ func _on_windup(m: Dictionary) -> void:
 
 func _on_strike(m: Dictionary) -> void:
 	if m.id == "corte_real":
-		var n := 2 if phase == 2 else 1
+		var n := 1
+		var before: Array = e._minions.duplicate()
 		e._summon("pretoriano", n)
+		# a guarda tem vida de ~6 golpes cada (não um segundo chefe)
+		for g in e._minions:
+			if g in before or not is_instance_valid(g):
+				continue
+			g.health.setup(maxi(30, int(BossTuning.expected_hit(BossTuning.expected_weapon_level(screen)) * 4.0)))
+			g.spark_reward = 0
+			g.attack_hitbox.damage = maxi(1, g.attack_hitbox.damage / 2)   # guarda que segura, não que mata
+			g.contact_hitbox.damage = maxi(1, g.contact_hitbox.damage / 2)
 		e.armored = true
-		_court_cd = 22.0
+		_court_cd = 9999.0          # a corte vem UMA vez por fase (a fase 3 rearma)
 		AoeNova.spawn(e.get_parent(), e.global_position, 0, 160.0, GOLD)
+
+
+func _on_phase(_n: int) -> void:
+	_court_cd = 0.0
+	_cd["corte_real"] = 0.0
 
 
 func _signature(delta: float) -> void:
 	_court_cd = maxf(0.0, _court_cd - delta)
+	keep_dist = Vector2(170.0, 260.0) if e.armored else Vector2(40.0, 100.0)
 	if e.armored:
 		e._prune_minions()
 		if e._minions.is_empty():

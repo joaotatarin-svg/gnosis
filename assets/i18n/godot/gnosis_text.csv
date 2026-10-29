@@ -800,6 +800,7 @@ Tantas vezes provou os presentes deles. O trono só lhe pareceu familiar.,So man
 "Na cidade das cinzas aprendeu os nomes. Ina, que cantava errado. Merou, do poço. Tasso, do telhado. Disse cada um em voz alta.","In the city of ash she learned the names. Ina, who sang off-key. Merou, of the well. Tasso, of the roof. She said each one aloud."
 "Não eram a gente dela. Agora são. E dentro dela, pequeno, alguém aprendia a ver.","They were not her people. Now they are. And inside her, small, someone was learning to see."
 A faísca lembrou. O resto é silêncio.,The spark remembered. The rest is silence.
+no:%d.%d,no:%d.%d
 O arquivo de save estava ilegível e foi ignorado.,The save file was unreadable and has been ignored.
 O save principal estava danificado; o progresso foi recuperado da cópia de segurança.,The main save was damaged; your progress was recovered from the backup copy.
 "Um progresso de versão anterior foi descartado (o mapa mudou). Faíscas totais, finais e opções foram preservados.","Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept."
@@ -860,6 +861,9 @@ Rápida: espere a investida passar e responda.,"Fast: let the lunge pass, then a
 Forjado em hyle e obediência pelo Demiurgo.,Forged from hyle and obedience by the Demiurge.
 Carrega a lâmina como quem carrega uma ordem.,It carries its blade the way one carries an order.
 Apare o golpe dourado e puna a abertura.,Parry the golden strike and punish the opening.
+Acende fogos-fátuos para que ninguém ache o caminho de volta.,Lights will-o'-the-wisps so that no one finds the way back.
+Nunca deixa a presa chegar perto: atira e recua.,Never lets its prey come close: it shoots and retreats.
+Ele foge quando você se aproxima: esquive das setas e feche a distância.,It flees as you approach: dodge the bolts and close the distance.
 Uma larva que guardou fogo demais.,A larva that kept too much fire.
 Corre até a luz mais próxima e se desfaz em chamas.,It runs to the nearest light and bursts into flame.
 A explosão não pode ser aparada: esquive.,The blast cannot be parried: dodge.
@@ -875,6 +879,9 @@ Apare o golpe dourado e responda com o combo.,Parry the golden strike and answer
 Guarda o Selo com um escudo que não conhece cansaço.,It guards the Seal with a shield that knows no weariness.
 "Atrás dele, a ordem; à frente, ninguém.","Behind it, order; before it, no one."
 O golpe leve bate no escudo: use o forte ou uma magia.,Light strikes hit the shield: use a heavy strike or a spell.
+Um eco que não aprendeu a pousar.,An echo that never learned to land.
+Paira em silêncio e cai sobre quem olha para baixo.,It hovers in silence and falls on whoever looks down.
+"Ao pousar do mergulho, fica um instante no chão: golpeie aí.",After a dive it stays on the ground for a moment: strike then.
 Vigia dos céus baixos do Kenoma.,A watcher of the Kenoma's low skies.
 "Do alto, aponta e dispara.","From on high, it aims and fires."
 Atira de longe: aproxime-se entre um disparo e outro.,It shoots from afar: close in between one shot and the next.
@@ -965,6 +972,7 @@ Criatura do Kenoma,Creature of the Kenoma
 z,z
 BossBrain,BossBrain
 OrbRig,OrbRig
+bau:%d,bau:%d
 Segredo encontrado,Secret found
 Arconte,Archon
 %s (Elite),%s (Elite)
@@ -977,6 +985,8 @@ A luz resistiu: o Adormecido te devolve forças.,The light held: the Sleeper res
 A luz se apagou.,The light went out.
 OS TRÊS SELOS,THE THREE SEALS
 selos abertos,seals opened
+selo:%d,selo:%d
+adormecido:%d,adormecido:%d
 %s · ler a Estela,%s · read the Stele
 Crônica desbloqueada: %s  (%d/%d),Chronicle unlocked: %s  (%d/%d)
 ESTELA  ·  %s,STELE  ·  %s

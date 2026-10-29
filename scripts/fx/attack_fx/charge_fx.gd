@@ -20,11 +20,11 @@ var _circle: Sprite2D
 var _motes: CPUParticles2D
 var _gone: bool = false
 
-## Sons opcionais (só tocam se existirem no CATÁLOGO do Áudio — pedido em
-## docs/pedidos/vfx7.md); sem eles, um "proj_fire" grave e baixo faz as vezes.
-const SND_LIGHT := "charge_light"
-const SND_DARK := "charge_dark"
-const SND_FALLBACK := "proj_fire"
+## Som da carga (Áudio7): "charge_light" (Sophia) · "charge_dark" (criaturas e
+## Arcontes) · "charge_king" (o Rei). Um som por EVENTO (R4): a carga soa aqui,
+## o disparo soa no Projectile ("proj_fire"). Sem o nome no CATÁLOGO, a carga
+## fica muda (antes caía num "proj_fire" grave — som dobrado no mesmo tiro).
+const SND := {"light": "charge_light", "dark": "charge_dark", "king": "charge_king"}
 
 
 func _ready() -> void:
@@ -75,11 +75,9 @@ func _sound() -> void:
 		return
 	var cat = Audio.get("CATALOG")
 	var sfx: Array = cat.get("sfx", []) if cat is Dictionary else []
-	var want := SND_LIGHT if style == "light" else SND_DARK
+	var want: String = String(SND.get(style, "charge_dark"))
 	if sfx.has(want):
 		Audio.play_sfx_at(want, global_position)
-	elif sfx.has(SND_FALLBACK):
-		Audio.play_sfx_pitched(SND_FALLBACK, 0.55 if style != "light" else 0.75, -9.0, global_position)
 
 
 func _process(delta: float) -> void:
@@ -89,7 +87,7 @@ func _process(delta: float) -> void:
 	var k := clampf(_t / maxf(duration, 0.01), 0.0, 1.0)
 	var e := k * k                          # brilho cresce acelerando
 	var big := style == "king"
-	var core_s := (0.3 if big else 0.2) * (0.25 + 0.75 * e)
+	var core_s := (0.3 if big else (0.2 if style == "light" else 0.15)) * (0.25 + 0.75 * e)
 	_core.scale = Vector2.ONE * core_s * (1.0 + sin(_t * 40.0) * 0.06 * k)
 	_core.modulate.a = minf(1.0, 0.3 + k)
 	_glow.scale = Vector2.ONE * (0.25 + 0.45 * e) * (1.5 if big else 1.0)

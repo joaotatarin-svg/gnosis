@@ -27,6 +27,14 @@ class_name EnemyMoves
 ## distância preferida e para a ordem na fila de agressão (EnemyAggro).
 
 
+## QA7 #9 (R5): quem APARECE atrás da Sophia (fantasma/reflexo) avisa por
+## 0,6 s (0,51 s com Elite fúria, que corta 15 %) — antes eram 0,25 s, golpe
+## nascendo fora da visão. A EnemyOverlay ainda marca a aparição (clarão + anel).
+const BLINK_WIND := 0.6
+## QA7 #15: a "repulsa" do Arauto (nova de perto) vale até 90 px — com 60 ela
+## nunca cabia (o atirador mantém 175–200 px e a Sophia bate de ~50–80 px).
+
+
 static func _m(id: String, kind: String, rmin: float, rmax: float, wind: float, extra: Dictionary = {}) -> Dictionary:
 	var d := {"id": id, "kind": kind, "rmin": rmin, "rmax": rmax, "wind": wind,
 		"dmg": 1.0, "w": 1.0, "cd": 0.0, "hits": 1, "reach": 1.0, "lunge": 0.0,
@@ -116,12 +124,12 @@ static func for_type(id: String) -> Dictionary:
 			return _kit("shooter", 0.0, 0.15, [
 				_m("orbe", "shot", 90, 260, 0.5),
 				_m("pilar", "pillar", 0, 280, 0.6, {"cd": 3.0, "count": 2, "dmg": 1.0}),
-				_m("repulsa", "nova", 0, 60, 0.55, {"unb": true, "cd": 3.5, "dmg": 0.8}),
+				_m("repulsa", "nova", 0, 90, 0.55, {"unb": true, "cd": 3.5, "dmg": 0.8}),
 			])
 		"fantasma":
 			return _kit("skirm", 0.0, 0.2, [
 				_m("garra", "swing", 0, 50, 0.45),
-				_m("aparicao", "blink", 110, 320, 0.25, {"cd": 3.0}),
+				_m("aparicao", "blink", 110, 320, BLINK_WIND, {"cd": 3.0}),
 				_m("abraco", "grab", 0, 60, 0.55, {"cd": 4.0, "dmg": 0.6}),
 			], 24.0)
 		"invocador":
@@ -167,7 +175,7 @@ static func for_type(id: String) -> Dictionary:
 			return _kit("skirm", 0.0, 0.45, [
 				_m("tres_cortes", "combo", 0, 52, 0.4, {"hits": 3, "dmg": 0.7}),
 				_m("estocada", "swing", 55, 110, 0.5, {"lunge": 280.0, "reach": 1.3, "cd": 2.0}),
-				_m("espelhar", "blink", 100, 300, 0.25, {"cd": 3.0}),
+				_m("espelhar", "blink", 100, 300, BLINK_WIND, {"cd": 3.0}),
 			])
 		"esporos":
 			return _kit("melee", 0.0, 0.1, [

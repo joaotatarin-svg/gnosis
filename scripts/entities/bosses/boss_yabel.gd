@@ -40,7 +40,7 @@ func _build_moves() -> Dictionary:
 	var laminas := {"id": "laminas", "kind": "shot", "anim": "ranged", "wind": 0.75, "strike": 0.6, "recover": 0.6,
 		"offs": [0.0, -30.0, 0.0, -30.0], "stagger": 0.2, "speed": 260.0, "dmg": 0.5, "color": PALE,
 		"rmin": 80.0, "rmax": 9999.0, "w": 1.0, "cd": 3.0, "aa": true}
-	var pisca := {"id": "pisca", "kind": "cast", "anim": "ranged", "wind": 0.35, "strike": 0.12, "recover": 0.1,
+	var pisca := {"id": "pisca", "tell": false, "kind": "cast", "anim": "ranged", "wind": 0.35, "strike": 0.12, "recover": 0.1,
 		"rmin": 0.0, "rmax": 9999.0, "w": 0.9, "cd": 5.0, "chain": ["asas_b"]}
 	var asas_b := asas.duplicate()
 	asas_b.id = "asas_b"

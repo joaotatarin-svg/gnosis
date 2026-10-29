@@ -17,9 +17,74 @@ var _t: float = 0.0
 static var debug_boxes: bool = false
 
 
+## VFX7: a camada da FRENTE também observa o golpe do inimigo (sem mexer no
+## enemy.gd): no começo do wind-up de TIRO liga a antecipação
+## (VfxLibrary.charge_up, estala no disparo; cancela se o golpe morrer) e, a cada
+## vez que a caixa do golpe CORPO A CORPO liga, desenha o rastro do golpe
+## (VfxLibrary.melee_slash).
+const SHOT_KINDS := ["shot", "burst", "lob"]
+const SLASH_KINDS := ["swing", "combo", "grab", "blink", "rush", "leap", "slam", "dive", "glide"]
+var _charge: ChargeFX = null
+var _was_wind: bool = false
+var _was_box: bool = false
+
+
 func _process(delta: float) -> void:
 	_t += delta
+	if front:
+		_watch_attack()
 	queue_redraw()
+
+
+## QA7 #9: o fantasma/reflexo acabou de APARECER atrás da Sophia — marca o
+## lugar (fumaça escura se abrindo, anel deitado e clarão na cor do aviso) e
+## toca o aviso sonoro do telegrafo, para a aparição ser lida mesmo de costas.
+func _blink_mark(e: Node2D) -> void:
+	var par := e.get_parent()
+	if par == null:
+		return
+	var tell: Color = Color(1.0, 0.32, 0.25) if bool(e.attack_hitbox.unblockable) else Color(1.0, 0.9, 0.35)
+	var at := e.global_position + Vector2(0, -14.0 * float(e._art_scale))
+	VfxLibrary.shock_ring(par, e.global_position + Vector2(0, 20.0 * float(e._art_scale)), 34.0, Color(tell.r, tell.g, tell.b, 0.8), 0.45, true, 0.32, 0.14)
+	VfxLibrary.attack_fizzle(par, at, e.eye_color, "dark")
+	VfxLibrary._flash_sprite(par, at, "twirl", Color(e.eye_color.r, e.eye_color.g, e.eye_color.b, 0.8), 0.6, 0.15, 0.35, true, -7.0)
+	var cat = Audio.get("CATALOG")
+	var snd := "tell_unblock" if bool(e.attack_hitbox.unblockable) else "tell_parry"
+	if cat is Dictionary and (cat.get("sfx", []) as Array).has(snd):
+		Audio.play_sfx_at(snd, at)
+
+
+func _watch_attack() -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	var e = enemy
+	var st: int = int(e.estate)
+	var wind: bool = st == Enemy.EState.WINDUP
+	var mv: Dictionary = e._mv if e._mv is Dictionary else {}
+	var kind: String = String(mv.get("kind", ""))
+	if wind and not _was_wind:
+		if kind == "blink":
+			_blink_mark(e)
+		if kind in SHOT_KINDS or (mv.is_empty() and String(e.attack_style) == "ranged"):
+			var dirx: float = float(e.atk_dir)
+			var off := Vector2(16.0 * dirx, -8.0 * float(e._art_scale))
+			_charge = VfxLibrary.charge_up(e, off, e.eye_color, maxf(0.12, float(e.attack_timer)), "dark")
+	elif not wind and _was_wind and _charge != null:
+		if is_instance_valid(_charge):
+			if st == Enemy.EState.STRIKE:
+				_charge.release()
+			else:
+				_charge.cancel()            # parry, atordoado, morreu: some sem estalo
+		_charge = null
+	_was_wind = wind
+	# caixa do golpe ligou (borda de subida): rastro do golpe corpo a corpo
+	var hb = e.attack_hitbox
+	var box_on: bool = hb != null and bool(hb.get("_active"))
+	if box_on and not _was_box and st == Enemy.EState.STRIKE:
+		if kind in SLASH_KINDS or (mv.is_empty() and String(e.attack_style) in ["melee", "charge", "slam"]):
+			var k := kind if kind != "" else ("rush" if String(e.attack_style) == "charge" else ("slam" if String(e.attack_style) == "slam" else "swing"))
+			VfxLibrary.melee_slash(e, hb.position, hb.box_size() * hb.scale.abs(), int(e.atk_dir), e.eye_color, k, bool(hb.unblockable))
+	_was_box = box_on
 
 
 func _draw() -> void:
