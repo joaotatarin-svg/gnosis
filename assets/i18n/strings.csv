@@ -339,7 +339,7 @@ narrative.death_revive.e7931e,"Quantas vezes forem precisas, faísca perdida. N�
 narrative.death_revive.1685c6,"Tu cais, e eu refaço-te. Já fizemos isto antes, tu e eu. Muito antes.","You fall, and I remake you. We have done this before, you and I. Long before.",dialogo,A Voz,115,scripts/autoload/narrative.gd:184,
 narrative.death_revive.f6d94f,Eu refaria o mundo inteiro para te pôr de pé.,I would remake the whole world to set you back on your feet.,dialogo,A Voz,115,scripts/autoload/narrative.gd:185,
 narrative.death_revive.6b1f20,...Não me olhes assim. É modo de dizer.,...Do not look at me like that. It is a figure of speech.,dialogo,A Voz,115,scripts/autoload/narrative.gd:186,
-narrative.death_revive.efe9f1,(A luz te costura de volta. %s da tua mão aberta.),(The light stitches you back together. %s from your open hand.),dialogo,(narrador),115,scripts/autoload/narrative.gd:190,format string: manter os %
+narrative.death_revive.d0115e,"(A luz te costura de volta. A tela recomeça, e as faíscas dela também. %s da tua mão aberta.)","(The light stitches you back together. The screen starts over, and so do its sparks. %s from your open hand.)",dialogo,(narrador),115,scripts/autoload/narrative.gd:190,format string: manter os %
 narrative.intro.0178c1,"(Escuro. Um coração batendo. Depois, cinza na boca.)","(Darkness. A heart beating. Then, ash in the mouth.)",dialogo,(narrador),115,scripts/autoload/narrative.gd:203,
 narrative.intro.b35d30,Acorda. ...Isso. Devagar. Eu estou aqui.,Wake. ...That is it. Slowly. I am here.,dialogo,A Voz,115,scripts/autoload/narrative.gd:204,
 narrative.king_intro.d2dbd2,"Olha: alguém vem da névoa. Não temas, eu o conheço. É um rei antigo, e gentil. Não te quer mal.","Look: someone comes out of the mist. Do not fear, I know him. An ancient king, and kind. He means you no harm.",dialogo,A Voz,115,scripts/autoload/narrative.gd:214,
@@ -800,6 +800,7 @@ narrative.epilogue_cards.6dd24b,"Ela desceu de porta em porta, batendo à casa d
 narrative.epilogue_cards.e04b2f,"Na cidade das cinzas aprendeu os nomes. Ina, que cantava errado. Merou, do poço. Tasso, do telhado. Disse cada um em voz alta.","In the city of ash she learned the names. Ina, who sang off-key. Merou, of the well. Tasso, of the roof. She said each one aloud.",card_cinema,,240,scripts/autoload/narrative.gd:1086,
 narrative.epilogue_cards.245d54,"Não eram a gente dela. Agora são. E dentro dela, pequeno, alguém aprendia a ver.","They were not her people. Now they are. And inside her, small, someone was learning to see.",card_cinema,,240,scripts/autoload/narrative.gd:1087,
 narrative.epilogue_cards.e1f163,A faísca lembrou. O resto é silêncio.,The spark remembered. The rest is silence.,card_cinema,,240,scripts/autoload/narrative.gd:1089,
+progression_manager.notice_claimed.32fc7d,Recompensa já recolhida neste run,Reward already collected this run,toast,,60,scripts/autoload/progression_manager.gd:247,
 run_manager._grant_reward.2d0bd4,no:%d.%d,no:%d.%d,ui,,,scripts/autoload/run_manager.gd:625,format string: manter os %
 save_manager.load_game.bd4bd0,O arquivo de save estava ilegível e foi ignorado.,The save file was unreadable and has been ignored.,ui,,,scripts/autoload/save_manager.gd:101,
 save_manager.load_game.17684a,O save principal estava danificado; o progresso foi recuperado da cópia de segurança.,The main save was damaged; your progress was recovered from the backup copy.,ui,,,scripts/autoload/save_manager.gd:107,
@@ -973,8 +974,9 @@ boss_athoth._draw.395df8,z,z,ui,,,scripts/entities/bosses/boss_athoth.gd:264,
 boss_brain.setup.392d87,BossBrain,BossBrain,ui,,,scripts/entities/bosses/boss_brain.gd:102,
 boss_rei._setup_eye.185f11,OrbRig,OrbRig,ui,,,scripts/entities/bosses/boss_rei.gd:96,
 boss_rei._setup_eye.38fe31,HudPush,HudPush,ui,,,scripts/entities/bosses/boss_rei.gd:99,
-chest._give_reward.872913,bau:%d,bau:%d,ui,,,scripts/entities/chest.gd:101,format string: manter os %
-chest._give_reward.0b11f5,Segredo encontrado,Secret found,toast,,60,scripts/entities/chest.gd:109,
+chest._give_reward.3faeaa,bau:%d%s,bau:%d%s,ui,,,scripts/entities/chest.gd:102,format string: manter os %
+chest._give_reward.0518b3,:s,:s,ui,,,scripts/entities/chest.gd:102,
+chest._give_reward.0b11f5,Segredo encontrado,Secret found,toast,,60,scripts/entities/chest.gd:110,
 enemy.display_name.cef7da,Arconte,Archon,ui,,,scripts/entities/enemy.gd:32 scripts/entities/enemy.gd:192,
 enemy._ready.93c65e,%s (Elite),%s (Elite),ui,,,scripts/entities/enemy.gd:247,format string: manter os %
 enemy._ready.5fbd7f,Campeão %s,Champion %s,ui,,,scripts/entities/enemy.gd:256,format string: manter os %

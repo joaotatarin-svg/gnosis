@@ -625,6 +625,7 @@ func _grant_reward(id: String) -> Dictionary:
 	var layer_key := "no:%d.%d" % [int(n.get("eon", 0)), int(n.get("layer", 0))]
 	if not Progression.claim_once(layer_key):
 		rw = {"heal": true} if bool(rw.get("heal", false)) else {}
+		Progression.notice_claimed()      # avisa em vez de pagar 0 calado
 	if int(rw.get("orbs", 0)) > 0:
 		Progression.add_orbs(int(rw.orbs))
 	if int(rw.get("hp", 0)) > 0:

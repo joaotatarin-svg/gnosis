@@ -42,7 +42,7 @@ func _on_body_entered(body: Node) -> void:
 	queue_redraw()
 	# Guardião §3: cada Adormecido conta e paga UMA vez por run (morrer e
 	# despertá-lo de novo contava 2× para o final "Semente").
-	if Progression.claim_once("adormecido:%d" % screen):
+	if Progression.claim_once_or_notice("adormecido:%d" % screen):
 		Progression.sleepers_freed += 1
 		Progression.add_orbs(10 + screen)
 

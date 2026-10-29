@@ -1048,7 +1048,9 @@ func _commit_death() -> void:
 		return
 	_resolved = true
 	RunManager.deaths_this_run += 1
-	var lost := int(Progression.orbs * 0.2)
+	# Decisão do chefe (29/10, delegada à Progressão): a morte leva SÓ as
+	# faíscas ganhas nesta tela (era 20% da carteira) — a tela recomeça.
+	var lost := Progression.death_loss()
 	if lost > 0:
 		Progression.add_orbs(-lost)
 	SaveManager.save_game()

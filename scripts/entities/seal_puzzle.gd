@@ -84,7 +84,7 @@ func _solve() -> void:
 	AoeNova.spawn(get_parent(), global_position + Vector2(0, -10), 0, 90.0, gold)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -30), gold)
 	# Guardião §3: os Selos pagam UMA vez por run.
-	if Progression.claim_once("selo:%d" % screen):
+	if Progression.claim_once_or_notice("selo:%d" % screen):
 		Progression.add_orbs(30 + screen * 3)
 	Juice.shake(0.4)
 

@@ -187,7 +187,7 @@ func death_revive(screen: int, deaths: int, lost: int) -> Array:
 			]
 		lines = tier[(d - 1) % tier.size()].duplicate()
 	if lost > 0:
-		lines.append(_l(NARRADOR, "(A luz te costura de volta. %s da tua mão aberta.)" % _faiscas(lost)))
+		lines.append(_l(NARRADOR, "(A luz te costura de volta. A tela recomeça, e as faíscas dela também. %s da tua mão aberta.)" % _faiscas(lost)))
 	return lines
 
 

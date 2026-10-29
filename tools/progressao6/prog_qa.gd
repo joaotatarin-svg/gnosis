@@ -141,6 +141,18 @@ func _cases_claims() -> void:
 	_new_run()
 	check(Progression.claim_once("bau:12") and not Progression.claim_once("bau:12"), "baú paga uma vez por run")
 	check(Progression.was_claimed("bau:12") and not Progression.was_claimed("selo:12"), "registro por chave")
+	# Guardião 29/10: baú secreto tem chave própria; recompensa negada avisa (não fica calada).
+	check(Progression.claim_once_or_notice("bau:12:s") and not Progression.claim_once_or_notice("bau:12:s"),
+		"baú secreto paga 1× com chave própria (bau:12:s); a 2ª vez é negada com aviso")
+	# Morte: perde SÓ as faíscas ganhas nesta tela (decisão do chefe).
+	Progression.orbs = 500
+	Progression.screen_gain = 0
+	Progression.add_orbs(40)
+	check(Progression.death_loss() == 40, "morte leva só o ganho da tela (40 de 540)")
+	Progression.spend_orbs(530)
+	check(Progression.death_loss() == 10, "morte nunca leva mais que a carteira (10)")
+	RunManager.screen_changed.emit(RunManager.current_screen)
+	check(Progression.screen_gain == 0 and Progression.death_loss() == 0, "tela nova zera o ganho da tela")
 	var snap: Dictionary = JSON.parse_string(JSON.stringify(RunManager.run_snapshot()))
 	RunManager.saved_run = snap
 	RunManager.continue_run()

@@ -129,13 +129,16 @@ func _tabela_checkpoints() -> void:
 func _morte_no_arconte() -> void:
 	var lv := await _nivel(19)
 	Progression.orbs = 100
+	# Progressão 7 (decisão do chefe, 29/10): a morte leva SÓ as faíscas ganhas
+	# nesta tela (era 20% da carteira). 30 das 100 vieram desta tela.
+	Progression.screen_gain = 30
 	RunManager.deaths_this_run = 0
 	await wait(0.5)
 	lv.player.health.take_damage(99999)
 	var ok := await _esperar_respawn(19)
 	check("morte_arconte_volta_para_antessala", ok and RunManager.current_screen == 18,
 		"tela=%d (esperado 18; antes voltava para 11)" % RunManager.current_screen)
-	check("morte_custa_20pct_faiscas", Progression.orbs == 80 and RunManager.deaths_this_run == 1,
+	check("morte_custa_faiscas_da_tela", Progression.orbs == 70 and RunManager.deaths_this_run == 1,
 		"faíscas=%d mortes=%d" % [Progression.orbs, RunManager.deaths_this_run])
 	# "Continuar" depois de fechar o jogo: grava, esquece, lê do disco, retoma.
 	SaveManager.persist_enabled = true
@@ -157,7 +160,7 @@ func _morte_no_arconte() -> void:
 			pronto = (cs as Level).screen == 18
 			if pronto:
 				break
-	check("continuar_retoma_da_antessala", pronto and RunManager.current_screen == 18 and Progression.orbs == 80,
+	check("continuar_retoma_da_antessala", pronto and RunManager.current_screen == 18 and Progression.orbs == 70,
 		"tela=%d faíscas=%d" % [RunManager.current_screen, Progression.orbs])
 
 
