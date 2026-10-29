@@ -92,21 +92,22 @@ e folhas `..._sheet.png`.
 - Projéteis ainda usam o `Projectile` padrão; quando sair a API do VFX7 (dir7/vfx7), trocar o visual em
   `BossBrain._fire` / `ground_wave` (um ponto só).
 
-## BILHETE PARA O SUCESSOR (atualizado 29/10 — CHEFES6 sucessor, Coroa/Praga pelo PADRÃO)
-- Estado: branch `dir6/chefes6` com a integração `34a55dd` (merge cfe6ac3). validate 14/14 VERDE.
-- Feito agora (ver seção "Coroa e Praga pelo PADRÃO — 29/10"): Armupiel ganhou o JUÍZO DA COROA (postura que
-  defende + Réplica imparável se baterem nela; quem espera pega ele EXPOSTO); Belias ganhou PÚSTULAS (bolhas
-  contáveis de golpe fora da janela → Estouro), RECUO+Bote (resposta a quem cola) e JORRO (3 respingos). BossBrain
-  ganhou `guard_rec` (recuperação de golpe-resposta não é janela). Ajuste leve: Galila 38→34 golpes, Yabel 28→25,
-  final refaz em 11 s (era 9).
-- Ferramentas: BossProbe ganhou `semente=N`, `capmv=id1,id2` (filma ~2,6 s na 1ª vez de cada golpe) e imprime
-  `estados=` (dano por estado do chefe), `golpes_chefe=` e `tempo_estado=`. Runner com BelowNormal + 4 CPUs:
-  `C:\gnosis-wt\_caps\chefes6\run_probe.ps1` e `batch.ps1 -Tag x -N 6 -Telas "55,64"` (médias por perfil).
-- ARMADILHA: a sonda NÃO é determinística (mesma semente varia ±15–25 %): use ≥ 6 sementes antes de concluir.
-- PENDENTE: Praga no agressivo subiu menos (65→76 s) e o médio subiu mais (92→118 s) — o bot médio respeita as
-  bolhas cheias (`no_touch`) e espera o Estouro. Final (68) médio ainda 139–207 s com 1–3 quase-mortes (só 3
-  sementes). Som próprio da postura/bolhas pedido ao Áudio (`docs/pedidos/chefes6.md`). Espelho a 55 px (pendente 2
-  antigo) segue igual. Playtest humano do Juízo (o timing da Réplica, 0,32 s depois do golpe dado na postura).
+## BILHETE PARA O SUCESSOR (atualizado 29/10 noite — PAUSA antes da build final)
+- Estado: branch `dir6/chefes6`, último commit = o do "Rei HD" (ver git log); contém integração `3993fb5` + Arte
+  `64e92cf` (Rei HD h07: parada 16q, deslizar 12q, golpes 17q, atlas próprio 2048×8192). validate 14/14 VERDE.
+- BodyBox do Rei = `body_slabs.py bosses/rei ... --faixas 16 --fill 0.30` (folga padrão 3) — idêntica à entrega do
+  Lab3D (`_caps\lab3d\rei_hd\entrega`). ReiProbe `_caps\chefes6\reihd_final.txt`: atravessa=0, apelão=0, cobre
+  97–99 %, fora 2–8 %. `body_slabs.py` agora tem `--faixas`, `--folga`, `--fill`, `--abrir`, `--bruto`.
+  Se a Arte mudar o Rei de novo: regenere com o MESMO comando e rode a ReiProbe (headless).
+- Feito nesta sessão (seções abaixo): Juízo da Coroa (Armupiel) e Pústulas/Recuo/Jorro (Belias) — Coroa agr
+  57→75 s / méd 151→146; Praga agr 65→76 / méd 92→118 (6 sementes); Réplica só arma com a postura acesa e a 1ª é
+  0,45 s (Guardião); ajuste leve Galila 34 / Yabel 25 golpes, final refaz em 11 s; Anéis do Rei abaixo do HUD (#24).
+- Ferramentas: BossProbe `semente=`, `capmv=`, `estados=`/`golpes_chefe=`/`tempo_estado=`; runners
+  `_caps\chefes6\run_probe.ps1` e `batch.ps1 -Tag x -N 6 -Telas "55,64"` (BelowNormal, 4 CPUs).
+- ARMADILHAS: a BossProbe NÃO é determinística (±15–25 % com a mesma semente; use ≥ 6 sementes). O FlashParryProbe do
+  validate falhou 1× intermitente (passou 2/2 depois). Os .import mudam sozinhos (fim de linha) — não commitar.
+- PENDENTE: Praga — o médio subiu mais que o agressivo; final (68) no médio 139–207 s com 1–3 quase-mortes (3
+  sementes só); sons próprios da postura/bolhas com o Áudio; playtest humano do Juízo (Réplica) e das Pústulas.
 
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 | Decisão das lutas | R atendidas | R violadas / risco | Como ficou |
@@ -338,3 +339,7 @@ juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o
   ReiProbe dava apelão=1 a 75 px (sobra 6 px na faixa do cajado); folga 4 (~3 px antigos) → atravessa=0, apelão=0.
   Golpes fill 0,30, parada/andar fill 0,26. `body_cover`: metade de baixo média 97 % / pior 96 %, caixa fora 8 %.
   ReiProbe (`_caps\chefes6\rei450_final.txt`): parado 96 %, golpes 98–99 %.
+- 29/10 noite (Arte 64e92cf, Rei HD h07): tabela regenerada com `body_slabs.py bosses/rei ... --faixas 16 --fill 0.30`
+  (opção `--faixas` portada da cópia do Lab3D; a minha `--folga` ficou), 56 quadros, idêntica à entrega do Lab3D.
+  Testei folga 3 e 4: as duas com atravessa=0/apelão=0; fiquei com 3 (o pedido; cobre 97–99 %, fora 2–8 %).
+  `body_cover` (`_caps\chefes6\reihd_quadros_f3.*`): metade de baixo média 98 % / pior 97 %, faixa do cajado 2,2 px fora.

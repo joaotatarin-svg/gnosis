@@ -12,7 +12,7 @@
 # --abrir N: antes de medir, ABRE a máscara (erode+dilata com disco de N px) e fica só
 # com a maior peça — some com o que é FINO ou SOLTO e não é corpo: fiapos de névoa
 # (Athoth), cajado/espelho na ponta do braço e cacos flutuando (Astaphaios). O Rei
-# (manto maciço) usa o padrão (sem abrir). --fill F troca o COL_FILL. --folga N troca o SHRINK. --bruto G: coluna
+# (manto maciço) usa o padrão (sem abrir). --fill F troca o COL_FILL. --folga N troca o SHRINK. --faixas N troca o N_SLABS. --bruto G: coluna
 # do desenho BRUTO opaca em >= G das linhas da faixa também conta (barra em pontas).
 import json
 import sys
@@ -43,7 +43,7 @@ def solid_mask(crop: np.ndarray, k: int) -> np.ndarray:
 
 
 def main() -> None:
-	global COL_FILL, SHRINK
+	global COL_FILL, SHRINK, N_SLABS
 	root = Path(__file__).resolve().parents[2]
 	args = [x for x in sys.argv[1:]]
 	opts = {}
@@ -60,6 +60,8 @@ def main() -> None:
 	out = Path(pos[1]) if len(pos) > 1 else root / "scripts/entities/bosses/rei_body_data.gd"
 	k_open = int(opts.get("abrir", 0))
 	raw_fill = float(opts.get("bruto", 0.0))
+	# --faixas N (Lab3D, Rei HD 29/10): manto que abre perto do chão pede faixas mais finas (o Rei HD usa 16)
+	N_SLABS = int(opts.get("faixas", N_SLABS))
 	if "fill" in opts:
 		COL_FILL = float(opts["fill"])
 	# --folga N: px do recorte para dentro (atlas maior = mais px por px de mundo; o Rei de 450 px usa 5)
@@ -101,9 +103,9 @@ def main() -> None:
 	lines = [
 		"extends RefCounted",
 		"## GERADO por tools/chefes6/body_slabs.py (não editar à mão) — %s." % char,
-		"## Faixas do corpo DESENHADO por quadro: [y0, y1, x0, x1] em px do recorte.",
+		"## Faixas do corpo DESENHADO por quadro (%d faixas): [y0, y1, x0, x1] em px do recorte." % N_SLABS,
 		"## Coluna conta só se opaca em >= %d %% da faixa; %d px de folga para dentro; abertura %d px." % (int(COL_FILL * 100), SHRINK, k_open),
-		"## Gerar de novo: python -I tools/chefes6/body_slabs.py %s <saida.gd>%s" % (char, (" --abrir %d --fill %s --bruto %s" % (k_open, COL_FILL, raw_fill)) if k_open > 0 else ""),
+		"## Gerar de novo: python -I tools/chefes6/body_slabs.py %s <saida.gd> --faixas %d --fill %s --folga %d%s" % (char, N_SLABS, COL_FILL, SHRINK, (" --abrir %d --bruto %s" % (k_open, raw_fill)) if k_open > 0 else ""),
 		"",
 		"const SLABS := {",
 	]
