@@ -85,6 +85,15 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
   Correção sugerida: `boss_card(..., silencioso)` para o card do Campeão não tocar `boss_appear` (o stinger do Campeão é
   o champion_enter; a música de chefe precisa de outro gatilho se for o caso).
 
+## Onda 7 - Lote 3.2 parte 2 (29/10/2026) - SEM prévia/build ainda
+- VERDE -Repeat 1 por passo e -Repeat 2 no fim: mapa7 4e4b9cc -> 0e41397; progressao6 3d13bbd -> 3c88daa;
+  chefes6 82454b2 -> 6c4a528; polimento7 28d8df7 -> 3203a9a; cenario7 1b1c69f -> 9cda737. Push: origin/integracao/onda1 = 9cda737.
+- Sondas em 9cda737 (`_caps/integ/*_9cda737*`): ReiProbe atravessa=0, apelao=0 (BodyBox cobre 96 %); BossHurtProbe Arcontes 70-91 %,
+  Rei/Rei-final 32-46 % (hurtbox genérica; vale a BodyBox); BossProbe todas [ok], sem TIMEOUT: Rei+Colosso 94 s (38 s em ba91602, 186 s
+  na 3.1), Corrente 179 s (4 quase-mortes), Silêncio 183 s (3), Coroa 121 s, final 4 quase-mortes: cenário mais duro que em ba91602.
+- Áudio do Campeão (BalanceBot tela 15, GNOSIS_AUDIO_LOG, `audio_t15_9cda737.json`): champion_enter=1, champion_fury=1,
+  boss_appear AUSENTE: o som dobrado foi corrigido (polimento7 222dc38, sting=false no card).
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
