@@ -12,13 +12,13 @@ const TARGET_HITS := {
 	"rei": 27,                 # tutorial: ~1:15 de luta
 	"arconte_sono": 21,
 	"arconte_fome": 26,
-	"arconte_corrente": 38,
-	"arconte_silencio": 28,
+	"arconte_corrente": 34,      # 29/10: 38 → 34 (médio 140–210 s, 39–47 golpes: era vida, não padrão)
+	"arconte_silencio": 25,      # 29/10: 28 → 25 (guarda alta já pede 37–41 golpes; médio 135–192 s)
 	"arconte_espelho": 28,
-	"arconte_praga": 26,
-	"arconte_coroa": 26,
-	"rei_final": 16,           # batalha dupla: cada forma (e elas se refazem)
-	"colosso": 18,
+	"arconte_praga": 26,          # 28/10: fica 26 — a guarda alta (boss_belias) já segura quem martela
+	"arconte_coroa": 34,          # 28/10: idem
+	"rei_final": 20,           # batalha dupla: cada forma (e elas se refazem)
+	"colosso": 22,               # 28/10: final pela curva (arma Nv.5, ~390 de vida)
 }
 
 ## Nível de arma ESPERADO ao chegar em cada chefe (economia da Onda 6 — o

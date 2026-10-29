@@ -254,8 +254,9 @@ func _ready() -> void:
 	# Campeão do Éon: o bot temático crescido — o "mini-chefe" do meio do Éon.
 	if is_champion:
 		display_name = "Campeão %s" % _eon_title(GameManager.current_screen)
-		base_health = int(base_health * 1.7)
-		attack_damage = int(attack_damage * 1.15)
+		# Progressão 7 (decisão do chefe, 28/10): Campeão mais CURTO — a dificuldade vem
+		# do repertório de elite e do letreiro, não da barra (vida ×1,7 → ×1,35, dano ×1,15 → ×1,0)
+		base_health = int(base_health * 1.35)
 		spark_reward *= 2
 		scale = Vector2(1.35, 1.35)
 		# Onda 6: repertório de elite (o do bot + brado e onda dupla), lê e
@@ -602,6 +603,15 @@ func _process_chase(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, 300.0 * delta)
 		return
 
+	# Invocador ESGOTADO (teto de invocações): PARADO e sem golpe nenhum (nem tiro,
+	# nem recuo a pé) — a janela de punição fica clara (Guardião, 0ba25d8).
+	if _summon_exhausted:
+		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
+		var fdx := player.global_position.x - global_position.x
+		if visual and fdx != 0.0:
+			visual.scale.x = absf(visual.scale.x) * signf(fdx)
+		return
+
 	if not moves.is_empty():
 		_chase_moves(delta)
 		return
@@ -622,8 +632,8 @@ func _process_chase(delta: float) -> void:
 			if _special_timer <= 0.0:
 				_special_timer = 6.0
 				_prune_minions()
-				if _minions.size() < 3:
-					_summon("larva", 2)
+				if _minions.size() < 3 and not _summon_spent():
+					_summon_larvae()
 		"dodger":
 			# Reflexo: no instante em que a Sophia golpeia perto, ele recua num salto.
 			if _special_timer <= 0.0 and absf(dx) < 80.0 and player is Player and player.state == Player.State.ATTACK:
@@ -646,7 +656,8 @@ func _process_chase(delta: float) -> void:
 
 	var dir := signf(dx)
 	# Atirador/invocador mantém distância: recua se o player chegar perto demais.
-	if (attack_style == "ranged" or behavior == "summoner") and absf(dx) < 130.0:
+	# (o invocador ESGOTADO não recua mais: fica ao alcance do cajado)
+	if (attack_style == "ranged" or behavior == "summoner") and absf(dx) < 130.0 and not _summon_exhausted:
 		dir = -dir
 	var spd := move_speed * (0.5 if slow_timer > 0.0 else 1.0)
 	velocity.x = dir * spd + _separation()
@@ -964,6 +975,66 @@ func _summon(id: String, count: int) -> void:
 		ImpactBurst.spawn(get_parent(), m.global_position, eye_color)
 		_minions.append(m)
 		minion_spawned.emit(m)
+
+
+## Polimento 7 (decisão do chefe, 28/10 — QA7 #10): teto TOTAL de invocações por
+## invocador. Antes ele repunha larvas sem fim (só o teto de 3 vivas) e a zona não
+## acabava. Agora: 3 chamadas (até 6 larvas). Na 3ª ele fica ESGOTADO — à vista
+## (cinza claro + fumaça contínua + um sopro na hora) e PARADO sem golpe nenhum
+## (`_process_chase`): não anda, não recua, não atira. Nenhum multiplicador escondido.
+const SUMMON_MAX_CALLS := 3
+const SUMMON_SPENT_SAT := 0.08         # corpo quase sem cor (a graduação do contorno)
+const SUMMON_SPENT_LIFT := Color(2.0, 2.0, 2.1, 1.0)   # e mais CLARO: cinza claro (lê no fundo escuro)
+var _summon_calls: int = 0
+var _summon_exhausted: bool = false
+
+func _summon_spent() -> bool:
+	return _summon_calls >= SUMMON_MAX_CALLS
+
+
+func _summon_larvae() -> void:
+	_summon("larva", 2)
+	_summon_calls += 1
+	if _summon_spent() and not _summon_exhausted:
+		_summon_exhausted = true
+		# leitura: o corpo DESBOTA para cinza CLARO (graduação do CanvasGroup do contorno)
+		if _rim_mat != null:
+			if _rim_mat.shader == null or _rim_mat.shader.resource_path != GRADE_SHADER:
+				var rc: Color = _rim_mat.get_shader_parameter("rim_color")
+				_rim_mat.shader = load(GRADE_SHADER)
+				_rim_mat.set_shader_parameter("rim_color", rc)
+				_rim_mat.set_shader_parameter("rim_px", 1.0)
+			_rim_mat.set_shader_parameter("grade_sat", SUMMON_SPENT_SAT)
+			_rim_mat.set_shader_parameter("grade_tint", SUMMON_SPENT_LIFT)
+		_spent_smoke()
+		if is_inside_tree():
+			ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), Color(0.6, 0.6, 0.65))
+
+
+## Fumaça cinza leve e CONTÍNUA saindo do corpo enquanto ele estiver esgotado.
+func _spent_smoke() -> void:
+	if not is_inside_tree():
+		return
+	var sm := CPUParticles2D.new()
+	sm.name = "SpentSmoke"
+	sm.texture = VfxLibrary.tex("smoke")
+	sm.amount = 10
+	sm.lifetime = 1.3
+	sm.local_coords = false
+	sm.position = Vector2(0, -26.0 * _art_scale)
+	sm.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	sm.emission_rect_extents = Vector2(9.0, 16.0) * _art_scale
+	sm.direction = Vector2(0, -1)
+	sm.spread = 25.0
+	sm.gravity = Vector2(0, -12.0)
+	sm.initial_velocity_min = 6.0
+	sm.initial_velocity_max = 16.0
+	sm.scale_amount_min = 0.16
+	sm.scale_amount_max = 0.3
+	sm.color = Color(0.88, 0.88, 0.92, 0.5)
+	sm.z_index = 1
+	add_child(sm)
+	sm.emitting = true
 
 
 func _prune_minions() -> void:
@@ -1770,8 +1841,10 @@ func _pick_move(adx: float, dyv: float, as_intent: bool = false) -> Dictionary:
 			return m                      # golpe de reação que já cabe: é ele
 		if kind == "summon":
 			_prune_minions()
-			if _minions.size() >= 3:
+			if _minions.size() >= 3 or _summon_spent():
 				continue
+		if kind == "retreat" and _summon_exhausted:
+			continue                      # esgotado: não foge mais
 		pool.append(m)
 		total += _move_weight(m)
 	if pool.is_empty():
@@ -1941,7 +2014,8 @@ func _strike_move() -> void:
 			velocity.x = atk_dir * 330.0
 			strike_time = 0.8
 		"summon":
-			_summon("larva", 2)
+			if not _summon_spent():
+				_summon_larvae()
 			strike_time = 0.25
 		"explode":
 			_explode()
@@ -2337,11 +2411,31 @@ const HURT_W_FRAC := 0.8
 const HURT_H_FRAC := 0.92            # altura a partir dos pés (corta a ponta de chifres/cabelo)
 const HURT_LERP := 0.5               # suavização por quadro (vira-lado sem tremer)
 
+## Polimento 7 (João, 19/10: "a Sophia atravessa o manto do Rei; só o centro acerta"):
+## nos CHEFES a hurtbox é o CONTORNO do corpo desenhado (`frame_geometry().body_poly`,
+## convexo, sem cajado/fios soltos) e não um retângulo — o manto que se abre na barra
+## é acertável, o ar entre o braço e a barra não. Encolhe HURT_POLY_W na largura
+## (rumo ao centro) e corta a ponta de cima (HURT_H_FRAC), como a dos comuns.
+const HURT_POLY_W := 0.9
+var _hurt_box_shape: Shape2D = null           # retângulo original da cena (comuns/reserva)
+var _hurt_poly_shape: ConvexPolygonShape2D = null
+
 func _fit_hurtbox() -> void:
-	if visual == null or estate == EState.DEAD or not visual.has_boss_frames():
+	if visual == null or estate == EState.DEAD:
+		return
+	# Chefes6 (BossBodyBox, Rei e Rei-Mentira): o chefe com caixa PRÓPRIA por faixas
+	# desliga a HurtShape genérica — aqui não se mexe nela (nem forma, nem `disabled`),
+	# senão o golpe conta 2× ou a caixa dele é desfeita.
+	if has_node("BodyBox"):
+		return
+	if not visual.has_boss_frames():
+		# chefe sem atlas → boneco articulado (reserva): contorno da malha pintada
+		if is_boss_enemy and is_instance_valid(visual.boss_puppet) and visual.boss_puppet.visible 				and visual.boss_puppet.has_method("body_polygon"):
+			_fit_hurt_poly(visual.boss_puppet.body_polygon())
 		return
 	if _fit_hurtbox_geometry():
 		return
+	_use_hurt_box()
 	var key: String = visual._shown_key
 	var cut := key.rfind(":")
 	if cut <= 0:
@@ -2386,6 +2480,16 @@ func _fit_hurtbox_geometry() -> bool:
 	var g: Dictionary = visual.frame_geometry(true)
 	if not g.has("body"):
 		return false
+	if is_boss_enemy and g.has("body_poly"):
+		# contorno + os dois cantos de baixo da caixa do corpo: a BARRA do manto que se
+		# abre no chão (o contorno de ≤ 10 pontos corta a ponta da barra)
+		var pts: PackedVector2Array = PackedVector2Array(g.body_poly)
+		var bb: Rect2 = g.body
+		pts.append(Vector2(bb.position.x, bb.end.y))
+		pts.append(bb.end)
+		if _fit_hurt_poly(pts):
+			return true
+	_use_hurt_box()
 	var body: Rect2 = g.body
 	var hb: Node2D = $Hurtbox
 	var inv: Transform2D = hb.get_global_transform().affine_inverse()
@@ -2401,4 +2505,52 @@ func _fit_hurtbox_geometry() -> bool:
 	var want_s := Vector2(r.size.x / base.x, r.size.y / base.y)
 	shp.position = shp.position.lerp(r.get_center(), HURT_LERP)
 	shp.scale = shp.scale.lerp(want_s, HURT_LERP)
+	return true
+
+
+## Volta ao retângulo da cena (comuns; chefe num quadro sem contorno).
+func _use_hurt_box() -> void:
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	if _hurt_box_shape != null and shp.shape != _hurt_box_shape:
+		shp.shape = _hurt_box_shape
+
+
+## Hurtbox = polígono convexo (pontos GLOBAIS do contorno desenhado), encolhido
+## HURT_POLY_W na largura em torno do centro e cortado no topo (HURT_H_FRAC a partir
+## dos pés). Sem suavização: segue o quadro como ele é desenhado (no hitstop o quadro
+## não troca → a caixa fica parada, R1). Devolve false se o contorno é inválido.
+func _fit_hurt_poly(pts: PackedVector2Array) -> bool:
+	if pts.size() < 3:
+		return false
+	var hb: Node2D = $Hurtbox
+	var inv: Transform2D = hb.get_global_transform().affine_inverse()
+	var local := PackedVector2Array()
+	var lb := Rect2(inv * pts[0], Vector2.ZERO)
+	for p in pts:
+		var q: Vector2 = inv * p
+		local.append(q)
+		lb = lb.expand(q)
+	if lb.size.x < 4.0 or lb.size.y < 4.0:
+		return false
+	var cx: float = lb.get_center().x
+	var foot: float = lb.end.y
+	var top: float = foot - lb.size.y * HURT_H_FRAC
+	for i in local.size():
+		var q: Vector2 = local[i]
+		local[i] = Vector2(cx + (q.x - cx) * HURT_POLY_W, maxf(q.y, top))
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	if _hurt_box_shape == null:
+		_hurt_box_shape = shp.shape
+	if _hurt_poly_shape == null:
+		_hurt_poly_shape = ConvexPolygonShape2D.new()
+	_hurt_poly_shape.set_point_cloud(local)     # casco convexo (ordem dos pontos não importa)
+	if shp.shape != _hurt_poly_shape:
+		shp.shape = _hurt_poly_shape
+	shp.position = Vector2.ZERO
+	shp.scale = Vector2.ONE
+	shp.rotation = 0.0
+	var r := Rect2(_hurt_poly_shape.points[0], Vector2.ZERO)
+	for q in _hurt_poly_shape.points:
+		r = r.expand(q)
+	hurt_rect = r
 	return true

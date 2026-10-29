@@ -810,3 +810,27 @@ func _draw_bones() -> void:
 		var target: Vector2 = to_local(b.to_global(ends[id]-points[id]))
 		debug_layer.draw_line(origin,target,Color(0.4,1.0,0.85,0.8),0.5,true)
 		debug_layer.draw_circle(origin,1.0,Color("fff0b4"))
+
+## Polimento 7 — CONTORNO DO CORPO para a hurtbox do chefe (reserva sem atlas):
+## casco convexo dos vértices da malha pintada (só células com pixel visível), em
+## coordenadas GLOBAIS, levado pelo balanço do quadril (o resto dos ossos mexe
+## pouco a silhueta). Vazio enquanto a malha não foi montada.
+var _hull_rest := PackedVector2Array()
+
+func body_polygon() -> PackedVector2Array:
+	if skin == null:
+		return PackedVector2Array()
+	if _hull_rest.is_empty():
+		var cloud := PackedVector2Array(skin.polygon)
+		for limb in limb_layers:
+			cloud.append_array(limb.polygon)
+		_hull_rest = Geometry2D.convex_hull(cloud)
+	var hip: Bone2D = bones.get("hip")
+	var sway := Transform2D.IDENTITY
+	if hip != null:
+		sway = skeleton.transform * hip.transform * hip.rest.affine_inverse() * skeleton.transform.affine_inverse()
+	var xf: Transform2D = get_global_transform() * sway
+	var out := PackedVector2Array()
+	for q in _hull_rest:
+		out.append(xf * q)
+	return out

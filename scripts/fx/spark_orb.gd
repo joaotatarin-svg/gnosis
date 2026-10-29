@@ -110,8 +110,8 @@ func _arrive() -> void:
 	queue_free()
 
 
-## Relíquia em uso (Onda 6): a faísca que CHEGA alimenta a Sophia — a Brasa
-## Viva cura, a Lâmpada de Óleo devolve Éter. Só na chegada (o orbe que se
+## Relíquias em uso (Onda 6/7): a faísca que CHEGA alimenta a Sophia — a Brasa
+## Viva cura, a Lâmpada de Óleo devolve Éter, o Coro fere quem está perto. Só na chegada (o orbe que se
 ## perde sem Sophia não conta) e nunca num corpo caído.
 func _relic_touch(player: Node) -> void:
 	if player == null or not is_instance_valid(player):
@@ -119,17 +119,30 @@ func _relic_touch(player: Node) -> void:
 	var hc = player.get("health")
 	if hc == null or hc.is_dead():
 		return
-	match Progression.equipped_relic():
-		"brasa":
-			hc.heal(Progression.RELIC_HEAL_PER_SPARK)
-		"lampada":
-			if "mana" in player and "max_mana_total" in player:
-				var top := float(player.get("max_mana_total"))
-				var cur := float(player.get("mana"))
-				if cur < top:
-					player.set("mana", minf(top, cur + float(Progression.RELIC_ETHER_PER_SPARK)))
-					if player.has_signal("mana_changed"):
-						player.emit_signal("mana_changed", int(player.get("mana")), int(top))
+	if Progression.relic_active("brasa"):
+		hc.heal(Progression.RELIC_HEAL_PER_SPARK)
+	if Progression.relic_active("lampada") and "mana" in player and "max_mana_total" in player:
+		var top := float(player.get("max_mana_total"))
+		var cur := float(player.get("mana"))
+		if cur < top:
+			player.set("mana", minf(top, cur + float(Progression.RELIC_ETHER_PER_SPARK)))
+			if player.has_signal("mana_changed"):
+				player.emit_signal("mana_changed", int(player.get("mana")), int(top))
+	if Progression.relic_active("coro") and index == count - 1 and player is Node2D:
+		_choir(player)
+
+
+## Coro das Faíscas: a última faísca de um inimigo que chega solta um anel de
+## luz em volta da Sophia (dano fixo, raio fixo; sem tremor nem som próprio —
+## a faísca já toca a nota dela e o acerto no inimigo dá o resto).
+func _choir(player: Node2D) -> void:
+	var at := player.global_position + Vector2(0, -10)
+	VfxLibrary.nova_ring(get_parent(), at, Progression.RELIC_CHOIR_RADIUS, Color(1.0, 0.85, 0.55))
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if not is_instance_valid(e) or not e.has_method("apply_damage"):
+			continue
+		if (e.global_position - at).length() <= Progression.RELIC_CHOIR_RADIUS:
+			e.apply_damage(Progression.RELIC_CHOIR_DAMAGE, at, 120.0)
 
 
 func _draw() -> void:

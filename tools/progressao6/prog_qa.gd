@@ -26,6 +26,9 @@ func _ready() -> void:
 	_cases_relics()
 	await _cases_shop_ui()
 	await _cases_double_jump_save()
+	# por último: o continue_run() daqui troca de cena (adiada) e tiraria o QA da
+	# árvore no meio da loja (o erro de 'process_frame' em null da onda 7)
+	_cases_claims()
 	print("QA RESULT: ", errors, " falhas")
 	get_tree().quit(0 if errors == 0 else 1)
 
@@ -48,8 +51,11 @@ func _cases_gates() -> void:
 	check(not Progression.gift_weapon_level() and Progression.weapon_level == 2, "presente do Soter respeita o selo")
 	Progression.add_ring("arconte_sono", "r_torpor")
 	check(Progression.progress_tier() == 1 and Progression.tier_gate_name(1) == "Athoth", "Athoth vencido: grau 1 (nome curto)")
-	check(Progression.weapon_upgrade_cost() == 450 and Progression.upgrade_weapon() and Progression.weapon_level == 3, "arma Nv.3: 450 depois de Athoth")
-	check(Progression.weapon_next_tier() == 3 and Progression.weapon_sealed(), "arma Nv.4 pede 3 Arcontes")
+	check(Progression.weapon_upgrade_cost() == 500 and Progression.upgrade_weapon() and Progression.weapon_level == 3, "arma Nv.3: 500 depois de Athoth")
+	check(Progression.weapon_next_tier() == 4 and Progression.weapon_sealed(), "arma Nv.4 pede 4 Arcontes (Yabel)")
+	Progression.weapon_level = 4
+	check(Progression.weapon_next_tier() == 6 and Progression.weapon_upgrade_cost() == 1800, "arma Nv.5: 1800 e só depois de Belias (6 Arcontes)")
+	Progression.weapon_level = 3
 	Progression.steal_rings()
 	check(Progression.progress_tier() == 1, "o roubo não tira o grau")
 
@@ -75,6 +81,14 @@ func _cases_tracks() -> void:
 	check(Progression.skill_next_tier("r_fome") == 2, "Anel 2 Nv.2 sai junto com o Anel")
 	check(Progression.hp_buy_cap() == 5 and Progression.mp_buy_cap() == 3, "tetos sobem com o grau (vida 5, Éter 3)")
 	check(Progression.heal_cost() == 50 + 15 * 2, "Restauração escala com o grau (80)")
+	# Progressão 7: a 6ª compra de Éter só depois de Belias (grau 6); a 10ª vida, do 7º.
+	check(Progression.mp_buy_tier(4) == 4 and Progression.mp_buy_tier(5) == 6 and Progression.hp_buy_tier(9) == 7,
+		"selo da última compra: Éter 6ª no grau 6, vida 10ª no grau 7")
+	for i in range(2, 5):
+		Progression.add_ring(str(Bestiary.bosses[i].get("id", "")), "r_qa%d" % i)
+	check(Progression.progress_tier() == 5 and Progression.mp_buy_cap() == 5, "grau 5: Éter para em 5/6 (%d)" % Progression.mp_buy_cap())
+	Progression.add_ring(str(Bestiary.bosses[5].get("id", "")), "r_qa5")
+	check(Progression.progress_tier() == 6 and Progression.mp_buy_cap() == 6, "grau 6 (Belias): Éter 6/6 aberto")
 	# Presentes (mapa +4/+6/+8, Soter +25) não contam como compra num run novo.
 	_new_run()
 	Progression.buy_max_health(6, 0)
@@ -109,7 +123,44 @@ func _cases_relics() -> void:
 	check(o - Progression.orbs == 40, "Pérola não mexe em perdas")
 	check(Progression.equip_relic("brasa") and Progression.equipped_relic() == "brasa", "troca de graça para a Brasa")
 	check(not Progression.equip_relic("lampada"), "não usa relíquia que não tem")
+	# Onda 7: segundo engaste (2 em uso) e o Coro das Faíscas.
+	check(Progression.relic_slots() == 1 and Progression.relic_slot_sealed() and not Progression.buy_relic_slot(), "segundo engaste selado até Astaphaios")
+	Progression.add_ring("arconte_silencio", "r_silencio")
+	Progression.add_ring("arconte_espelho", "r_espelho")
+	var o2 := Progression.orbs
+	check(Progression.buy_relic_slot() and o2 - Progression.orbs == 1500 and Progression.relic_slots() == 2, "segundo engaste: 1500, duas em uso")
+	check(not Progression.buy_relic_slot(), "engaste não se compra duas vezes")
+	Progression.equip_relic("perola")
+	check(Progression.relic_active("brasa") and Progression.relic_active("perola"), "Brasa e Pérola em uso juntas")
+	check(Progression.buy_relic("coro") and Progression.relic_active("coro") and Progression.relic_active("perola") and not Progression.relic_active("brasa"), "Coro entra e sai a mais antiga (Brasa)")
+	check(Progression.unequip_relic("perola") and Progression.equipped_relics().size() == 1 and Progression.equipped_relic() == "coro", "tirar de uso libera o engaste")
 	check(not Progression.item_features().has("#reliquias=brasa,perola") and Progression.item_features().is_empty(), "arte não vê as entradas '#'")
+
+
+func _cases_claims() -> void:
+	_new_run()
+	check(Progression.claim_once("bau:12") and not Progression.claim_once("bau:12"), "baú paga uma vez por run")
+	check(Progression.was_claimed("bau:12") and not Progression.was_claimed("selo:12"), "registro por chave")
+	# Guardião 29/10: baú secreto tem chave própria; recompensa negada avisa (não fica calada).
+	check(Progression.claim_once_or_notice("bau:12:s") and not Progression.claim_once_or_notice("bau:12:s"),
+		"baú secreto paga 1× com chave própria (bau:12:s); a 2ª vez é negada com aviso")
+	# Morte: perde SÓ as faíscas ganhas nesta tela (decisão do chefe).
+	Progression.orbs = 500
+	Progression.screen_gain = 0
+	Progression.add_orbs(40)
+	check(Progression.death_loss() == 40, "morte leva só o ganho da tela (40 de 540)")
+	Progression.spend_orbs(530)
+	check(Progression.death_loss() == 10, "morte nunca leva mais que a carteira (10)")
+	RunManager.screen_changed.emit(RunManager.current_screen)
+	check(Progression.screen_gain == 0 and Progression.death_loss() == 0, "tela nova zera o ganho da tela")
+	var snap: Dictionary = JSON.parse_string(JSON.stringify(RunManager.run_snapshot()))
+	RunManager.saved_run = snap
+	RunManager.continue_run()
+	check(not Progression.claim_once("bau:12"), "o registro sobrevive ao Continuar")
+	_new_run()
+	check(Progression.claim_once("bau:12"), "run novo paga de novo")
+	RunManager.run_active = false
+	check(Progression.claim_once("bau:12") and Progression.claim_once("bau:12"), "fora do run (Provação/testes) sempre paga")
 
 
 func _cases_shop_ui() -> void:

@@ -63,8 +63,12 @@ func _draw() -> void:
 		draw_circle(Vector2(bx, BEAM_Y), 3.0, Color(glass, 0.6))
 	var st := _state()
 	if st == 1:
-		var flick := 0.3 + 0.3 * sin(_t * 40.0)
-		draw_line(Vector2(-hw, BEAM_Y), Vector2(hw, BEAM_Y), Color(WARN_COL, flick), 1.0, true)
+		# AVISO (Onda 7): linha com sublinhado escuro pulsando a 2 Hz (antes:
+		# fio de 1 px piscando a ~6 Hz — R10/R18) + brilho nos dois cacos (forma)
+		var pk := HazardArt.pulse(_t)
+		warn_line(Vector2(-hw, BEAM_Y), Vector2(hw, BEAM_Y), Color(WARN_COL, 0.45 + 0.4 * pk), 1.6)
+		for sx in [-1.0, 1.0]:
+			draw_circle(Vector2(sx * hw, BEAM_Y), 4.0 + 3.0 * pk, Color(WARN_COL, 0.35 + 0.3 * pk))
 	elif st == 2:
 		draw_line(Vector2(-hw, BEAM_Y), Vector2(hw, BEAM_Y), Color(glass, 0.25), 12.0, true)
 		draw_line(Vector2(-hw, BEAM_Y), Vector2(hw, BEAM_Y), Color(glass, 0.6), 5.0, true)

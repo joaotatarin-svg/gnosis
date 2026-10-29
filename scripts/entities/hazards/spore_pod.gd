@@ -43,9 +43,11 @@ func _on_hit(_d: int, _s: Vector2, _k: float, _u: bool = false, _a: Node = null)
 	if _dead:
 		return
 	_hp -= 1
-	Audio.play_sfx_at("enemy_hurt", global_position, 0.1)
+	if _hp > 0:
+		Audio.play_sfx_at("enemy_hurt", global_position, 0.1)
 	if _hp <= 0:
 		_dead = true
+		Audio.play_sfx_at("hz_spore_pop", global_position, 0.05)
 		_hurt.set_deferred("monitorable", false)
 		_hurt.set_deferred("monitoring", false)
 		_cloud = CLOUD_TIME * 0.5
@@ -66,7 +68,7 @@ func _tick(delta: float) -> void:
 			_cloud_weak = false
 			var p0 := _player()
 			if p0 != null and absf(p0.global_position.x - global_position.x) < 300.0:
-				Audio.play_sfx_at("cast_praga", global_position, 0.1)
+				Audio.play_sfx_at("hz_spore_burst", global_position, 0.1)
 	if _cloud <= 0.0:
 		return
 	_cloud -= delta
@@ -81,6 +83,53 @@ func _tick(delta: float) -> void:
 
 
 func _draw() -> void:
+	if HazardArt.has("spore_pod"):
+		_draw_art()
+	else:
+		_draw_code()
+
+
+## Nuvem de esporos (código, sobre a pintura também).
+func _draw_cloud() -> void:
+	var green := Color(0.55, 0.85, 0.35)
+	if _cloud > 0.0:
+		var k := clampf(_cloud / CLOUD_TIME, 0.0, 1.0)
+		for i in 7:
+			var a := TAU * float(i) / 7.0 + _t * 0.4
+			var rr := RADIUS * (0.4 + 0.5 * (1.0 - k)) * (0.8 + 0.2 * sin(_t * 3.0 + i))
+			draw_circle(Vector2(cos(a) * rr * 0.9, -30.0 + sin(a) * rr * 0.5), 18.0 + 6.0 * (1.0 - k), Color(green, 0.12 * k + 0.04))
+
+
+## PINTURA (Onda 7): fechado (respira) → INCHANDO no aviso (as veias verdes
+## acendem, cresce e treme, contorno vermelho pulsante) → ESTOURADO enquanto
+## a nuvem sai → volta a crescer. Morto (2 golpes): a casca estourada, apagada.
+func _draw_art() -> void:
+	if _dead:
+		HazardArt.draw(self, "spore_pod", 2, Vector2.ZERO, 0.0, Vector2.ONE * 0.9, Color(0.45, 0.45, 0.4))
+		_draw_cloud()
+		return
+	var c := _cycle(PERIOD)
+	var swell := 0.0
+	if c >= SWELL_AT and c < BURST_AT:
+		swell = (c - SWELL_AT) / (BURST_AT - SWELL_AT)
+	var f := 1 if swell > 0.3 else 0
+	var s := 1.0 + 0.08 * swell + sin(_t * (5.0 + 14.0 * swell)) * (0.01 + 0.025 * swell)
+	var mod := Color.WHITE
+	if _cloud > CLOUD_TIME * 0.5 and not _cloud_weak:
+		f = 2                                # estourado enquanto a nuvem sai
+		s = 1.0
+	elif _cloud > 0.0 and not _cloud_weak:
+		var g := 1.0 - (_cloud / (CLOUD_TIME * 0.5))
+		s = 0.7 + 0.3 * g                    # volta a crescer
+		mod.a = 0.5 + 0.5 * g
+	var sc := Vector2(1.0 + (s - 1.0) * 0.6, s)
+	warn_outline("spore_pod", f, Vector2.ZERO, swell, 0.0, sc)
+	HazardArt.draw(self, "spore_pod", f, Vector2.ZERO, 0.0, sc, mod)
+	_draw_cloud()
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var green := Color(0.55, 0.85, 0.35)
 	if _cloud > 0.0:
 		var k := clampf(_cloud / CLOUD_TIME, 0.0, 1.0)

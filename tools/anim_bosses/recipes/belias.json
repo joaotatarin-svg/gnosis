@@ -137,5 +137,9 @@
    "ref": "d_stagger0",
    "main_ref": "hurt"
   }
- ]
+ ],
+ "fit_override": {
+  "foot_gap": 0.0
+ },
+ "_doc_pes": "QA7 #18: foot_gap herdado do boneco antigo deixava os pés desenhados 6,7 px acima da colisão (FeetProbe). Zerado."
 }

@@ -97,7 +97,10 @@ func _give_reward() -> void:
 		sparks = int(sparks * 0.5)
 	if secret:
 		sparks *= 2
-	Progression.add_orbs(sparks)
+	# Guardião §3: o baú paga UMA vez por run (morrer e voltar não paga de novo).
+	# O secreto tem chave própria (":s"): os dois baús da mesma tela pagam.
+	if Progression.claim_once_or_notice("bau:%d%s" % [screen, ":s" if secret else ""]):
+		Progression.add_orbs(sparks)
 	# cura leve de bônus (o secreto cura 20 % da vida)
 	var p := get_tree().get_first_node_in_group("player")
 	if p != null and p.health != null:

@@ -20,9 +20,15 @@ const ORB_LOW := 132.0          # px que o olho desce (fica na altura do peito)
 const EYE_MULT := 1.3
 
 var _rig: Node2D = null
+var _push: Node2D = null            # desce o olho quando ele entraria na área do HUD
+## Área do medalhão/vida do HUD na tela base 640×360 (QA7 #24): nada de chefe ali.
+const HUD_ZONE := Vector2(230.0, 70.0)
 var _eye_box: Hurtbox = null
 var _low: bool = false
 var _summons_cd: float = 0.0
+## Caixa de dano do MANTO desenhado (playtest 28/10: "a Sophia atravessa o manto").
+const BODY_TABLE := preload("res://scripts/entities/bosses/rei_body_data.gd")
+var _body: BossBodyBox = null
 
 
 func _on_setup() -> void:
@@ -30,7 +36,10 @@ func _on_setup() -> void:
 	keep_dist = Vector2(100.0, 210.0)
 	gap_by_phase = [1.0, 0.9, 0.8]
 	escape_hits = 5
+	wall_margin = 120.0
 	_setup_eye()
+	if e.hurtbox != null:
+		_body = BossBodyBox.attach(e, BODY_TABLE)
 
 
 func _build_moves() -> Dictionary:
@@ -86,7 +95,10 @@ func _setup_eye() -> void:
 	_rig = Node2D.new()
 	_rig.name = "OrbRig"
 	e.add_child(_rig)
-	e._orb.reparent(_rig, false)
+	_push = Node2D.new()
+	_push.name = "HudPush"
+	_rig.add_child(_push)
+	e._orb.reparent(_push, false)
 	_eye_box = Hurtbox.new()
 	_eye_box.team = "enemy"
 	_eye_box.collision_layer = e.hurtbox.collision_layer
@@ -96,15 +108,24 @@ func _setup_eye() -> void:
 	circ.radius = 20.0
 	cs.shape = circ
 	_eye_box.add_child(cs)
-	_rig.add_child(_eye_box)
+	_push.add_child(_eye_box)
 	_eye_box.owner = e
 	_eye_box.monitorable = false
 	_eye_box.hit_received.connect(_on_eye_hit)
 
 
-func _process(_d: float) -> void:
+func _process(d: float) -> void:
 	if _eye_box != null and e._orb != null and is_instance_valid(e._orb):
 		_eye_box.position = e._orb.position
+	# QA7 #24: o olho não passa por trás do medalhão do HUD (canto de cima à esquerda)
+	if _push != null and e._orb != null and is_instance_valid(e._orb):
+		var ct := get_viewport().get_canvas_transform()
+		var base_pos: Vector2 = e._orb.global_position - Vector2(0, _push.position.y)
+		var sp: Vector2 = ct * base_pos
+		var need := 0.0
+		if sp.x < HUD_ZONE.x + 20.0 and sp.y < HUD_ZONE.y + 16.0:
+			need = (HUD_ZONE.y + 16.0 - sp.y) / maxf(0.01, ct.get_scale().y)
+		_push.position.y = move_toward(_push.position.y, need, 220.0 * d)
 
 
 func _set_low(v: bool) -> void:
@@ -144,6 +165,7 @@ func _on_windup(m: Dictionary) -> void:
 			var b := arena_bounds()
 			var dir := e.atk_dir
 			var h := hazard(e.global_position.x + dir * 40.0, "band", 20.0, m.wind, 0.8, LIGHT)
+			h.look = "beam"          # orbe de luz rente ao chão (era uma faixa chapada: "quadrado")
 			h.height = 28.0
 			h.hit_air = false
 			h.active = 2.2
@@ -196,7 +218,7 @@ func _on_strike(m: Dictionary) -> void:
 			if pl != null:
 				# o manto é largo: nunca cola na parede (não fica cortado na borda)
 				var b2 := arena_bounds()
-				e._blink_to(clampf(pl.global_position.x - float(pl.get("facing")) * 50.0, b2.x + 110.0, b2.y - 110.0))
+				e._blink_to(clampf(pl.global_position.x - float(pl.get("facing")) * 50.0, b2.x + 150.0, b2.y - 150.0))
 
 
 func _on_defeated(x) -> void:

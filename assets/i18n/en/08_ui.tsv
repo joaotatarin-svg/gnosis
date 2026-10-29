@@ -112,7 +112,6 @@ moves_screen._fill.569ddb	Block / Parry
 moves_screen._fill.dfc732	Equipped Ring
 moves_screen._fill.53acee	Switch Ring
 moves_screen._fill.77b70c	Pause
-moves_screen._fill.55ae3a	YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you.
 moves_screen._fill.f6e4fd	Squires only fall to heavy strikes or magic.   A dodge snaps the Chain of the Law.
 moves_screen._combo_row.c769a7	%s   ·   %s
 moves_screen._combo_row.f9974b	launcher

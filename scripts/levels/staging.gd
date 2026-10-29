@@ -753,12 +753,19 @@ func _b_sink() -> void:
 		if is_instance_valid(g):
 			t.parallel().tween_property(g, "modulate:a", 0.0, 0.45)
 	t.tween_property(_black, "color:a", 1.0, 0.8)
+	# O chão abre JUNTO com o som da rachadura do Áudio (`crack_open`, CRACK_DELAY
+	# depois do cue `sink`): até lá, só o colapso e o silêncio que a música deixa
+	# ao parar (R9: o vazio antes do grande momento).
+	var crack_at: float = Audio.CRACK_DELAY
 	var opening := _tw()
-	opening.tween_interval(0.15)
+	opening.tween_interval(crack_at)
 	opening.tween_property(crack, "open", 1.0, 1.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	# O momento é épico: luz âmbar forte saindo do chão, tremor crescente, poeira.
+	# O momento é épico: luz âmbar forte saindo do chão, tremor crescente, poeira;
+	# cada pulso com o passo pesado do Áudio (pedido do audio7), baixo.
 	var quake := _tw()
+	quake.tween_interval(crack_at)
 	for k in 6:
+		quake.tween_callback(Audio.play_sfx.bind("boss_step", -1.0, -6.0))
 		quake.tween_callback(Juice.shake.bind(0.3 + 0.05 * float(k)))
 		quake.tween_callback(VfxLibrary.dust.bind(self, feet + Vector2((float(k) - 2.5) * 30.0, -2.0)))
 		quake.tween_callback(VfxLibrary._flash_sprite.bind(self, feet + Vector2(0, -10), "halo", Color(1.0, 0.72, 0.3, 0.75), 0.6, 2.2 + 0.3 * float(k), 0.5))

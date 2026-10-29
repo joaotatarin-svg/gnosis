@@ -25,12 +25,19 @@ var _misty: bool = false
 const MIST_CASTS := ["bocejo", "bocejo2", "cancao", "chuva"]
 
 
+## Caixa de dano do corpo desenhado (Guardião/coordenação 28/10: a genérica deixava pano de fora).
+const BODY_TABLE := preload("res://scripts/entities/bosses/athoth_body_data.gd")
+
+
 func _on_setup() -> void:
 	dmg_scale = 0.7
 	keep_dist = Vector2(130.0, 230.0)
 	gap_by_phase = [1.25, 1.0, 0.8]
 	escape_id = "fuga"
 	escape_hits = 3
+	# caixa de dano = corpo MACIÇO desenhado por quadro (BossBodyBox; sem fiapos/cacos soltos)
+	if e.hurtbox != null:
+		BossBodyBox.attach(e, BODY_TABLE)
 
 
 func _build_moves() -> Dictionary:

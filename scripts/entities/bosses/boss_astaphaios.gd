@@ -17,12 +17,19 @@ var _ring: Node2D = null
 var _clones: Array = []
 
 
+## Caixa de dano do corpo desenhado (Guardião/coordenação 28/10: a genérica deixava pano de fora).
+const BODY_TABLE := preload("res://scripts/entities/bosses/astaphaios_body_data.gd")
+
+
 func _on_setup() -> void:
 	dmg_scale = 0.42
 	keep_dist = Vector2(50.0, 110.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 4
 	escape_id = "guarda"
+	# caixa de dano = corpo MACIÇO desenhado por quadro (BossBodyBox; sem fiapos/cacos soltos)
+	if e.hurtbox != null:
+		BossBodyBox.attach(e, BODY_TABLE)
 
 
 func _build_moves() -> Dictionary:
@@ -156,6 +163,7 @@ func _swap_with_clone() -> void:
 
 func _bounce_volley() -> void:
 	var b := arena_bounds()
+	sfx("atk_shot", e.global_position)      # 1 som por salva (R4), não por caco
 	for i in 3:
 		var p := Projectile.new()
 		var from_left: bool = i % 2 == 0

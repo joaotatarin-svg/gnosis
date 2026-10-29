@@ -47,8 +47,27 @@ var window_mult := {
 	Enemy.EState.WINDUP: 0.5, Enemy.EState.STRIKE: 0.5, Enemy.EState.CHASE: 0.85,
 	Enemy.EState.RECOVER: 1.1, Enemy.EState.STAGGER: 1.3, Enemy.EState.HURT: 1.0,
 }
+## GUARDA ALTA (re-teste QA7 da 3.1, 28/10): nos chefes do fim, quem só martela
+## no neutro e no meio do golpe dele fica batendo no "armado" (faísca azul, dano
+## baixo) e não quebra a postura tão fácil; a punição de verdade sai nas JANELAS
+## (recuperação, golpe exposto, atordoado, aparo) — que continuam iguais. Mexe na
+## LEITURA, não na vida: o jogador médio que espera a hora sente pouco; o que
+## aperta sem parar sente muito.
+var _armed_sfx_t: float = -9.0
+
+
+func guard_up(k_chase: float, k_armed: float, poise_k: float) -> void:
+	window_mult[Enemy.EState.CHASE] = k_chase
+	window_mult[Enemy.EState.WINDUP] = k_armed
+	window_mult[Enemy.EState.STRIKE] = k_armed
+	_poise_max *= poise_k
+	_poise = _poise_max
+
+
 ## Escala do dano de TODOS os golpes deste chefe (balance por chefe).
 var dmg_scale: float = 1.0
+## Distância mínima da parede ao andar (px de mundo).
+var wall_margin: float = 50.0
 ## Golpe com `expose`: na recuperação ele fica EXPOSTO (ajoelha, o ponto fraco
 ## desce) e sente muito mais.
 const EXPOSED_MULT := 1.35
@@ -183,6 +202,18 @@ func chase(delta: float) -> bool:
 		dir = -signf(dx)
 	if e.rooted_timer > 0.0:
 		dir = 0.0
+	# não recua até colar na parede (arte larga fica cortada na borda da câmera)
+	var wb := arena_bounds()
+	if (dir < 0.0 and e.global_position.x < wb.x + wall_margin) or (dir > 0.0 and e.global_position.x > wb.y - wall_margin):
+		dir = 0.0
+	# colado na parede (depois de uma investida/empurrão): sai dela andando para o
+	# meio — arte larga cortada na borda da câmera (QA7 3.1: Colosso na tela 68)
+	# (preso pela Corrente da Lei, fica: o root da Sophia vale — Guardião)
+	if e.rooted_timer <= 0.0:
+		if e.global_position.x < wb.x + wall_margin - 12.0:
+			dir = 1.0
+		elif e.global_position.x > wb.y - wall_margin + 12.0:
+			dir = -1.0
 	var spd: float = e.move_speed * (0.5 if e.slow_timer > 0.0 else 1.0)
 	e.velocity.x = dir * spd + e._separation()
 	if _gap_t <= 0.0 and not _partner_busy():
@@ -265,6 +296,12 @@ func strike_tick(delta: float) -> void:
 func filter_damage(dmg: int, attacker: Node) -> int:
 	if _roar_t > 0.0 or _dying >= 0 or _airborne:
 		return 0
+	# Arconte ENCENADO (tentação: congelado até a Sophia cruzar o gatilho) é
+	# intocável — senão um tiro de longe (ou o `hurt` do Shot) troca a fase com ele
+	# parado fora da luta: as gaiolas da fase 2 descem e a Galila fica congelada
+	# fora do quadro (QA7 #11).
+	if not e.can_process():
+		return 0
 	dmg = _filter(dmg, attacker)
 	if dmg <= 0:
 		return dmg
@@ -273,8 +310,17 @@ func filter_damage(dmg: int, attacker: Node) -> int:
 	var k: float = float(window_mult.get(e.estate, 1.0))
 	if e.estate == Enemy.EState.RECOVER and bool(mv.get("expose", false)):
 		k = EXPOSED_MULT
+	# golpe-RESPOSTA (Réplica do Juízo, estouro por toque): volta já em guarda —
+	# não é janela; a janela é de quem esperou (29/10)
+	elif e.estate == Enemy.EState.RECOVER and bool(mv.get("guard_rec", false)):
+		k = minf(k, float(window_mult.get(Enemy.EState.CHASE, 0.85)))
 	if k < 1.0:
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -18.0 * e._art_scale), Color(0.85, 0.9, 1.0))
+		# 2º sinal do "armado" (Guardião, R5/R11: forma + SOM, não só cor): um "block"
+		# metálico curto, no máximo 1 a cada 0,25 s (combo rápido não vira metralhadora)
+		if _t - _armed_sfx_t >= 0.25:
+			_armed_sfx_t = _t
+			sfx("block", e.global_position)
 	return maxi(1, int(round(float(dmg) * k)))
 
 

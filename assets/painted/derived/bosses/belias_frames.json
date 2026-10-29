@@ -7,7 +7,7 @@
  "kind": "beast",
  "fit": {
   "body_frac": 0.69979,
-  "foot_gap": 0.09091,
+  "foot_gap": 0.0,
   "dx": 0.02066,
   "rect_px": [
    427,

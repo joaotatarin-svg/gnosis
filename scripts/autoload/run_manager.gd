@@ -89,7 +89,7 @@ const CHECKPOINT_OFFSETS := [0, 4, 7]
 ## na travessia 14 → 11; no Desafio 15 ou depois dele → 15) · Centro → 65 ·
 ## Mente → 68. Como o run é linear, "a última tela de checkpoint alcançada" é
 ## função só da tela atual: o "Continuar" (run_snapshot) usa a mesma conta.
-## O custo da morte continua no Level (−20% de faíscas).
+## O custo da morte continua no Level: só as faíscas ganhas na tela (Progression.death_loss).
 func checkpoint_for(screen: int) -> int:
 	if screen <= KING_SCREEN:
 		return KING_SCREEN
@@ -298,7 +298,7 @@ func screen_role(screen: int) -> String:
 func zone_count(screen: int) -> int:
 	# Nós de mapa com tipo próprio têm sempre 2 zonas: as legendas de zona
 	# (Z0/Z1 do ROTEIRO) tocam em qualquer rota.
-	if node_kind(screen) in ["hazard", "platform", "sanctuary", "challenge", "secret"]:
+	if node_kind(screen) in ["hazard", "platform", "sanctuary", "challenge", "secret", "hidden"]:
 		return 2
 	match screen_role(screen):
 		"arrival": return 2
@@ -376,7 +376,7 @@ func zone_plan(screen: int) -> Array:
 	# MAPA (Onda 6): telas de escolha com tipo próprio. "combat" (o nó padrão)
 	# segue o plano legado abaixo — a rota do meio é o jogo de antes.
 	var kind := node_kind(screen)
-	if kind in ["hazard", "platform", "sanctuary", "challenge", "secret"]:
+	if kind in ["hazard", "platform", "sanctuary", "challenge", "secret", "hidden"]:
 		return _kind_plan(kind, screen, eon, bot, ids, allies)
 	# arrival / travel — r5 (18/09): o bot media 300–800 de dano por tela com
 	# 2 waves × 3 inimigos em cada zona. Agora a densidade sobe com o Éon:
@@ -420,7 +420,7 @@ func _kind_plan(kind: String, screen: int, eon: int, bot: String, ids: Array, _a
 	match kind:
 		"hazard":
 			size = maxi(2, per_wave - 1)
-		"sanctuary", "secret":
+		"sanctuary", "secret", "hidden":
 			size = 2
 		"challenge":
 			waves_by_zone = [2, 3]
@@ -532,6 +532,35 @@ func node_available(id: String) -> bool:
 	return true
 
 
+## ENCONTROS DA HISTÓRIA no mapa — fonte ÚNICA (Level, layouts e mapa leem
+## daqui): Soter em (Éon, camada); o 1º encontro concede o PULO DUPLO
+## (npc_encounter, meeting 0). Velkar no Éon 6, camada 5. Mudou o lugar do
+## Soter? Mude só aqui: o layout das fases (sem pulo duplo antes dele) e a QA
+## do mapa (nenhuma sala de asas antes dele) acompanham.
+const SOTER_SLOTS := [[1, 6], [3, 6], [5, 6]]
+const VELKAR_SLOT := [6, 5]
+
+
+## Índice do encontro de Soter nesta tela (0..2); -1 se não houver.
+func soter_meeting_at(screen: int) -> int:
+	if screen < FIRST_EON_SCREEN or screen > LAST_ARCHON_SCREEN:
+		return -1
+	var here := [eon_index(screen), eon_offset(screen)]
+	for i in SOTER_SLOTS.size():
+		if str(SOTER_SLOTS[i]) == str(here):
+			return i
+	return -1
+
+
+func velkar_at(screen: int) -> bool:
+	return screen >= FIRST_EON_SCREEN and screen <= LAST_ARCHON_SCREEN 		and eon_index(screen) == int(VELKAR_SLOT[0]) and eon_offset(screen) == int(VELKAR_SLOT[1])
+
+
+## Tela em que o pulo duplo chega (o 1º Soter). Antes dela nada pode exigi-lo.
+func double_jump_screen() -> int:
+	return EonMap.screen_of(int(SOTER_SLOTS[0][0]), int(SOTER_SLOTS[0][1]))
+
+
 ## Contrato com a Progressão/Combate (Onda 6): Progression.has_double_jump().
 ## Sem o método (branch sem a mecânica ainda), ninguém tem o pulo duplo.
 func has_double_jump() -> bool:
@@ -558,7 +587,7 @@ func node_at(screen: int) -> Dictionary:
 
 
 ## TIPO da tela para o layout (level6) e a narrativa: "king" · "arrival" ·
-## "combat" · "hazard" · "platform" · "sanctuary" · "challenge" · "secret" ·
+## "combat" · "hazard" · "platform" · "sanctuary" · "challenge" · "secret" · "hidden" ·
 ## "trial" · "antechamber" · "archon" · "center" · "final". Sem argumento = tela atual.
 func node_kind(screen: int = -1) -> String:
 	if screen < 0:
@@ -576,7 +605,7 @@ func node_title(screen: int = -1) -> String:
 
 ## A tela é um nó OPCIONAL (Arena ou segredo)? Útil pra HUD/narrativa.
 func is_optional_node(screen: int = -1) -> bool:
-	return node_kind(screen) in ["challenge", "secret"]
+	return node_kind(screen) in ["challenge", "secret", "hidden"]
 
 
 ## Slot de compatibilidade dos beats ("e1.L6" = tela 17). Fora dos Éons: "s<tela>".
@@ -619,6 +648,13 @@ func _grant_reward(id: String) -> Dictionary:
 	if n.is_empty() or CodexSession.active:
 		return {}
 	var rw: Dictionary = n.reward
+	# Guardião §3 (progressao7): a recompensa de cada CAMADA paga uma vez por
+	# run — morrer, voltar ao checkpoint e refazer (ou trocar de trilha) não
+	# paga de novo. A cura do santuário continua valendo (não acumula).
+	var layer_key := "no:%d.%d" % [int(n.get("eon", 0)), int(n.get("layer", 0))]
+	if not Progression.claim_once(layer_key):
+		rw = {"heal": true} if bool(rw.get("heal", false)) else {}
+		Progression.notice_claimed()      # avisa em vez de pagar 0 calado
 	if int(rw.get("orbs", 0)) > 0:
 		Progression.add_orbs(int(rw.orbs))
 	if int(rw.get("hp", 0)) > 0:

@@ -38,7 +38,7 @@ func _tick(delta: float) -> void:
 		# acorda quando ela passa do ponto de partida (sem zona trancada)
 		if not locked and p.global_position.x > start_x + 140.0:
 			_running = true
-			Audio.play_sfx_at("fog_swell", p.global_position, 0.05)
+			Audio.play_sfx_at("hz_tide_wake", p.global_position, 0.05)
 		return
 	if _done:
 		_fade = maxf(0.0, _fade - delta * 1.5)
@@ -62,6 +62,44 @@ func _tick(delta: float) -> void:
 func _draw() -> void:
 	if not _running and not _done:
 		return
+	if HazardArt.has("tide_wave"):
+		_draw_art()
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): a parede de breu (código) recua um pouco e a ONDA
+## pintada quebra na frente — a crista (a parte mais alta) fica exatamente na
+## frente da maré (`_front`, onde o dano começa). 3 quadros em vaivém.
+func _draw_art() -> void:
+	var fx := _front - global_position.x
+	var dark := Color(0.03, 0.02, 0.06, 0.94 * _fade)
+	var wall := fx - 46.0
+	draw_rect(Rect2(wall - 1400.0, -420.0, 1400.0, 520.0), dark)
+	var pts := PackedVector2Array()
+	pts.append(Vector2(wall, -420.0))
+	for i in 24:
+		var y := -420.0 + float(i) * 22.0
+		var wob := sin(_t * 3.0 + float(i) * 0.9) * 10.0 + sin(_t * 7.0 + float(i) * 2.3) * 4.0
+		pts.append(Vector2(wall + 18.0 + wob, y))
+	pts.append(Vector2(wall, 100.0))
+	draw_colored_polygon(pts, dark)
+	for i in 4:
+		var ey := -110.0 - float(i) * 56.0 + sin(_t + i) * 6.0
+		var ex := wall - 10.0 - float(i % 2) * 24.0
+		var blink := 1.0 if fmod(_t * 0.7 + float(i) * 0.31, 2.6) > 0.1 else 0.0
+		for sx in [-3.0, 3.0]:
+			draw_circle(Vector2(ex + sx, ey), 1.6, Color(0.9, 0.4, 1.0, 0.9 * blink * _fade))
+	var seq := [0, 1, 2, 1]
+	var f: int = seq[int(_t * 5.0) % 4]
+	var sc := Vector2.ONE * 0.8
+	HazardArt.draw(self, "tide_wave", f, Vector2(fx + 10.0, 46.0), 0.0, sc, Color(1, 1, 1, _fade))
+	# borda de névoa violeta na crista (lê a FRENTE em fundo escuro — R18)
+	draw_rect(Rect2(fx + 6.0, -420.0, 40.0, 520.0), Color(0.35, 0.2, 0.55, 0.16 * _fade))
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var fx := _front - global_position.x
 	var dark := Color(0.03, 0.02, 0.06, 0.94 * _fade)
 	# corpo da maré: retângulo até a frente, com borda em tentáculos
