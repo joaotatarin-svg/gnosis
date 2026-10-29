@@ -114,6 +114,13 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
 - BossProbe bb30011 (s): Rei 74, Athoth 97, Harmas 83, Galila 123, Yabel 158, Astaphaios 91, Belias 149, Coroa 150 (3 q.-m.), Rei+Colosso 100 (4);
   sem TIMEOUT.
 
+## Prévia 3.2.2 FEITA (29/10/2026)
+- arte-gpt a238686 (+8916611: parada da Sophia = pintura animada em camadas, walk3d removido) -> b14f7d6, VERDE -Repeat 2 (HeroQA incluso).
+  Push: origin/integracao/onda1 = b14f7d6. Durante a atualização do driver AMD do João o reimport 1 do worktree de build deu
+  segfault (139); validate refeito 14:25-14:30 (depois da atualização) VERDE 2/2 e export refeito.
+- `preview/3.2.2` = b14f7d6 + cherry-pick do save GNOSIS-Previa (5de1297); build `C:\gnosis-wt\_build\preview3_2_2\GNOSIS.exe`, sem atalho.
+- BossProbe b14f7d6: Rei 74 s, Coroa 148, Rei+Colosso 79 (3 q.-m.), Galila 123, Yabel 158, Praga 149; sem TIMEOUT.
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
