@@ -986,11 +986,14 @@ func _integrate_platforms(level: Node) -> void:
 		# sombra no chão (mais alta = mais larga e mais fraca)
 		var fsh := _contact_shadow(body, Vector2(0.0, h_above + 1.0), w * 0.42 * (1.0 + h_above / 260.0), clampf(0.5 - h_above / 300.0, 0.18, 0.45))
 		fsh.z_index = -1
-		# halo da borda de cima
-		var rim := Polygon2D.new()
-		rim.polygon = PackedVector2Array([Vector2(-w * 0.48, -7), Vector2(w * 0.48, -7), Vector2(w * 0.48, -1), Vector2(-w * 0.48, -1)])
-		rim.vertex_colors = PackedColorArray([Color(g.r, g.g, g.b, 0.0), Color(g.r, g.g, g.b, 0.0), Color(g.r, g.g, g.b, 0.22), Color(g.r, g.g, g.b, 0.22)])
+		# halo da borda de cima — elipse macia aditiva (o retângulo de antes tinha
+		# pontas duras e, em fundo claro como o Espelho, virava um bloco claro)
+		var rim := Sprite2D.new()
+		rim.texture = _blob_texture()
 		rim.material = VfxLibrary._additive()
+		rim.position = spr.position + Vector2(0.0, -4.0)
+		rim.scale = Vector2(w * 1.0 / 64.0, 12.0 / 64.0)
+		rim.modulate = Color(g.r, g.g, g.b, 0.20)
 		body.add_child(rim)
 		# poeira caindo da pedra
 		var dust := CPUParticles2D.new()

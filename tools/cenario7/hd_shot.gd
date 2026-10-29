@@ -6,6 +6,9 @@ extends Node
 ## Uso: godot --audio-driver Dummy --fixed-fps 60 --path . --resolution 320x180 --position 4000,4000 \
 ##        res://tools/cenario7/HdShot.tscn -- <tela> <saida.png> [frames] [opções do Shot] [nohud] [x=<x>] [face=<-1|1>] [oldbg]
 ##   oldbg   = desliga os fundos novos (HD) e usa as camadas antigas — para o ANTES.
+##   perf    = mede o custo: a partir do 120º quadro com a fase pronta, 600 quadros de
+##             tempo de GPU do SubViewport 1280×720, tempo de processo e memória de
+##             textura/vídeo (Performance), e imprime "HDPERF ...". Use sem --fixed-fps.
 ##   blink   = a Sophia pisca (some 1 quadro sim, 1 não): com seq=2 every=1 sai um
 ##             par com/sem ela → máscara exata da Sophia (contraste R18, contrast.py).
 ## Todas as opções do tools/shot.gd valem (seq=N every=K act=walk solo hold...).
@@ -55,6 +58,7 @@ func _ready() -> void:
 	mv.vp = _vp
 	mv.nohud = args.has("nohud")
 	mv.blink = args.has("blink")
+	mv.perf = args.has("perf")
 	for a in args:
 		if a.begins_with("x="):
 			mv.pin_x = float(a.substr(2))
@@ -76,7 +80,11 @@ class Mover extends Node:
 	var pin_x: float = INF
 	var face: int = 0
 	var blink: bool = false
+	var perf: bool = false
 	var level: Node = null
+	var _pf: int = 0
+	var _gpu: Array = []
+	var _cpu: Array = []
 
 	func _process(_delta: float) -> void:
 		var cs := get_tree().current_scene
@@ -98,3 +106,32 @@ class Mover extends Node:
 			pl.set("facing", face)
 		if blink:
 			(pl as CanvasItem).visible = Engine.get_process_frames() % 2 == 0
+		if perf:
+			_measure()
+
+	func _measure() -> void:
+		_pf += 1
+		var rid := vp.get_viewport_rid()
+		if _pf == 1:
+			RenderingServer.viewport_set_measure_render_time(rid, true)
+			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+			Engine.max_fps = 0
+		if _pf < 120:
+			return
+		_gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(rid))
+		_cpu.append(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+		if _gpu.size() >= 600:
+			_gpu.sort()
+			_cpu.sort()
+			var g := 0.0
+			for v in _gpu:
+				g += float(v)
+			var c := 0.0
+			for v in _cpu:
+				c += float(v)
+			print("HDPERF gpu_ms med=%.3f p95=%.3f | process_ms med=%.3f | tex_MB=%.1f vid_MB=%.1f | fps=%.0f" % [
+				g / _gpu.size(), float(_gpu[int(_gpu.size() * 0.95)]), c / _cpu.size(),
+				Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) / 1048576.0,
+				Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
+				Engine.get_frames_per_second()])
+			get_tree().quit()
