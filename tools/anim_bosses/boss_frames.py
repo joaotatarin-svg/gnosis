@@ -299,7 +299,7 @@ def build(name: str, use_rife: bool = True) -> None:
 		"sil": rp + "_frames_sil.png",
 		"body_px": body_px, "kind": R.get("kind", "biped"), "fit": fit,
 		"cloth_amp": R.get("flex", {}).get("cloth_amp", 0.0), "hem_wave": R.get("hem_wave", 0.0),
-		"spring_mul": R.get("spring_mul", 1.0), "flex_off_states": R.get("flex_off_states", []),
+		"spring_mul": R.get("spring_mul", 1.0), "rim_mul": R.get("rim_mul", 1.0), "rim_px_mul": R.get("rim_px_mul", 1.0), "outline_mul": R.get("outline_mul", 1.0), "flex_off_states": R.get("flex_off_states", []),
 		"atlas_size": [2048, atlas_h], "frames": out_frames, "states": states}
 	with open(os.path.join(OUT, name + "_frames.json"), "w", encoding="utf-8") as fp:
 		json.dump(meta, fp, indent=1, ensure_ascii=False)

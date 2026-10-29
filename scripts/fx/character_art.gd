@@ -1696,13 +1696,14 @@ func _draw_painted(s: float) -> void:
 		# contorno de luz na cor do Éon (inimigos; NPCs não): mais forte na preparação
 		var rim: float = 0.0
 		if rim_enabled and String(_boss_db.meta.get("kind", "")) != "npc":
-			rim = RIM_BASE * (2.0 if anim_state.begins_with("windup") else 1.0)
+			rim = RIM_BASE * float(_boss_db.meta.get("rim_mul", 1.0)) * (2.0 if anim_state.begins_with("windup") else 1.0)   # Rei: rim_mul 0,2 (sem halo claro em volta)
 		if _death_t >= 0.0:
 			rim = _death_rim()                  # a luz vaza pela borda antes de quebrar
 			tint = tint * _death_tint()
 		mat.set_shader_parameter("rim_amt", rim)
 		mat.set_shader_parameter("rim_color", _death_col if _death_t >= 0.0 else eon_light())
-		mat.set_shader_parameter("rim_px", 6.0 if _death_t >= DEATH_FALL else 4.0)
+		# raio em texels do atlas (rim_px_mul da receita acompanha um atlas de resolução maior: Rei 1,5)
+		mat.set_shader_parameter("rim_px", (6.0 if _death_t >= DEATH_FALL else 4.0) * float(_boss_db.meta.get("rim_px_mul", 1.0)))
 		# família do Arconte SEM arte própria (interino #7): dessatura + tinta da criatura
 		var family: bool = painted.get("family", false)
 		mat.set_shader_parameter("sat_mul", 0.45 if family else 1.0)
@@ -2413,8 +2414,32 @@ func _silhouette_tex(tex: Texture2D) -> Texture2D:
 	return _boss_db.get("sil", tex)
 
 
+## O contorno de leitura do Enemy (CanvasGroup "Rim", 1 px na cor do Éon, α 0,5) lê como HALO claro em volta de um chefe
+## de manto claro e borra a silhueta (Rei, João 3.2.3). A receita pode pedir `outline_mul` (Rei 0,2): multiplica o alfa
+## dele UMA vez. Só mexe no material do grupo-pai; o Enemy continua dono do contorno (o telégrafo e o flash são outros).
+var _outline_tamed: bool = false
+
+
+func _tame_enemy_outline() -> void:
+	if _outline_tamed:
+		return
+	var mul: float = float(_boss_db.meta.get("outline_mul", 1.0))
+	var g := get_parent()
+	if g == null or not (g is CanvasGroup) or g.name != "Rim":
+		return                       # ainda não reparentado pelo Enemy (tenta no próximo quadro)
+	_outline_tamed = true
+	var mat := (g as CanvasGroup).material as ShaderMaterial
+	if mat == null or mul >= 1.0:
+		return
+	var rc = mat.get_shader_parameter("rim_color")
+	if rc is Color:
+		mat.set_shader_parameter("rim_color", Color(rc.r, rc.g, rc.b, rc.a * mul))
+
+
+
 ## Mola + poses de corpo inteiro dos chefes por quadros (chamada por _tick_visual).
 func _tick_boss(delta: float) -> void:
+	_tame_enemy_outline()
 	var entered: bool = anim_state != _boss_state_seen
 	_boss_state_seen = anim_state
 	var t: float = anim_time

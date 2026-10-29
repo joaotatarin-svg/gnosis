@@ -333,3 +333,8 @@ juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o
   mais rala); `--fill 0.26` SÓ nesses 28 quadros → 96 % no pior quadro, caixa fora 7,3 % (era 6,8 %; golpes 6–14 %).
   `body_cover.py` (44 quadros, `_caps\chefes6\rei_v11_quadros.*`): metade de baixo média 96 % / pior 96 %, faixa do
   cajado 2,1 px fora. ReiProbe (`_caps\chefes6\rei_v11_v11b.txt`): atravessa=0, apelão=0, parado 97 %, golpes 97–98 %.
+- 29/10 (Arte 63f597a: atlas do Rei a 450 px de corpo): a tabela ×1,5 provisória da Arte foi trocada pela REGENERADA
+  (`body_slabs.py` ganhou `--folga N`). Com a folga antiga de 3 px do recorte (= 2 px de mundo no atlas maior) a
+  ReiProbe dava apelão=1 a 75 px (sobra 6 px na faixa do cajado); folga 4 (~3 px antigos) → atravessa=0, apelão=0.
+  Golpes fill 0,30, parada/andar fill 0,26. `body_cover`: metade de baixo média 97 % / pior 96 %, caixa fora 8 %.
+  ReiProbe (`_caps\chefes6\rei450_final.txt`): parado 96 %, golpes 98–99 %.

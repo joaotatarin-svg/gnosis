@@ -8,7 +8,7 @@
  "old_body": "assets/painted/derived/puppets/rei_body.png",
  "old_flip": false,
  "kind": "king",
- "body_px": 300,
+ "body_px": 450,
  "size_fix": 1.0,
  "anchors": {
   "d_collapse": "lying"
@@ -347,5 +347,9 @@
   "idle",
   "walk"
  ],
- "_doc_v11": "Rei v11 (Lab3D): idle e walk = pintura idle_0 animada em camadas (o manto já ondula na folha): o vento do shader fica desligado nesses estados (flex_off_states) e a mola do cartão (sx/sy/bend) vale 30% (spring_mul) — a mola inteira lia como 'cartão de borracha'."
+ "_doc_v11": "Rei v11 (Lab3D): idle e walk = pintura idle_0 animada em camadas (o manto já ondula na folha): o vento do shader fica desligado nesses estados (flex_off_states) e a mola do cartão (sx/sy/bend) vale 30% (spring_mul) — a mola inteira lia como 'cartão de borracha'.",
+ "rim_mul": 0.2,
+ "_doc_nitido": "Nitidez (29/10): body_px 300 -> 450. O Rei é desenhado a ~440 px na janela 1280x720; com 300 o atlas era ampliado ×1,47 (macio). A pintura de origem tem ~450 px: 450 = 1:1 (sem upscale por IA). outline_mul 0,2: o halo claro-azulado em volta do Rei é o contorno de leitura do Enemy (CanvasGroup Rim, α 0,5); o CharacterArt multiplica o alfa dele por 0,2 (só no Rei). rim_mul 0,2: o contorno de luz azulado do shader (RIM_BASE) vira só 20% no Rei — era o halo claro em volta da silhueta (o telégrafo do golpe é o contorno do Enemy, não isto).",
+ "rim_px_mul": 1.5,
+ "outline_mul": 0.2
 }
