@@ -139,6 +139,11 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
   (sugestão: `dir7/dublagem-lote`, sem o WIP/ferramentas do `dir7/dublagem`), depois de rodar VoiceProbe verde. Integração:
   `tools/integrar.ps1 "dir7/dublagem-lote <sha>" -Repeat 2` (+ push). Conflito esperado: só no manifest.json se dois lotes saírem da mesma base.
 
+## 1º lote de vozes integrado (29/10/2026) - SEM build
+- dublagem-lote 4920893 (11 falas PT: prólogo, despertar, Rei do Limiar) -> ca72f1e, VERDE -Repeat 2 (VoiceProbe incluso). Push: origin/integracao/onda1 = ca72f1e.
+  A build final sai junto com o Rei HD (Lab3D ainda terminando).
+- PENDÊNCIA DO GUARDIÃO: pôr nos créditos a atribuição Apache-2.0 do Qwen3-TTS (modelo que gerou as vozes) antes de qualquer build pública.
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
