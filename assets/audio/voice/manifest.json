@@ -1,5 +1,160 @@
 {
 	"version": 1,
-	"lufs": -18.0,
-	"lines": {}
+	"lufs": -21.0,
+	"lines": {
+		"0619bb873132": {
+			"speaker": "Narrador",
+			"source": "cinematic.prologue",
+			"lote": "limiar-1",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/0619bb873132.ogg",
+				"dur": 8.98,
+				"cer": 0.0,
+				"tp": -2.52,
+				"lufs_s": -20.1
+			}
+		},
+		"1dbe2dd77839": {
+			"speaker": "A Voz",
+			"source": "narrative.king_fall",
+			"lote": "limiar-1",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/1dbe2dd77839.ogg",
+				"dur": 6.69,
+				"cer": 0.103,
+				"tp": -2.46,
+				"lufs_s": -19.7
+			}
+		},
+		"2f9b136846b9": {
+			"speaker": "O Rei",
+			"source": "narrative.king_intro",
+			"lote": "limiar-1",
+			"nivel": 2,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/2f9b136846b9.ogg",
+				"dur": 3.12,
+				"cer": 0.0,
+				"tp": -2.51,
+				"lufs_s": -21.0
+			}
+		},
+		"74cef0c0db9c": {
+			"speaker": "A Voz",
+			"source": "narrative.king_fall",
+			"lote": "limiar-1",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/74cef0c0db9c.ogg",
+				"dur": 6.34,
+				"cer": 0.014,
+				"tp": -2.02,
+				"lufs_s": -20.4
+			}
+		},
+		"7fa70621d46a": {
+			"speaker": "O Rei",
+			"source": "narrative.king_intro",
+			"lote": "limiar-1",
+			"nivel": 2,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/7fa70621d46a.ogg",
+				"dur": 7.28,
+				"cer": 0.01,
+				"tp": -1.58,
+				"lufs_s": -19.6
+			}
+		},
+		"84cd59c6303b": {
+			"speaker": "Narrador",
+			"source": "cinematic.prologue",
+			"lote": "limiar-1",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/84cd59c6303b.ogg",
+				"dur": 10.37,
+				"cer": 0.0,
+				"tp": -1.76,
+				"lufs_s": -19.2
+			}
+		},
+		"a4f2a4baab4a": {
+			"speaker": "Narrador",
+			"source": "cinematic.prologue",
+			"lote": "limiar-1",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/a4f2a4baab4a.ogg",
+				"dur": 9.36,
+				"cer": 0.018,
+				"tp": -2.59,
+				"lufs_s": -19.4
+			}
+		},
+		"b11e212a6e27": {
+			"speaker": "Narrador",
+			"source": "narrative.intro",
+			"lote": "limiar-1",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/b11e212a6e27.ogg",
+				"dur": 6.31,
+				"cer": 0.0,
+				"tp": -2.89,
+				"lufs_s": -19.9
+			}
+		},
+		"d1fabecf95f1": {
+			"speaker": "A Voz",
+			"source": "narrative.king_intro",
+			"lote": "limiar-1",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/d1fabecf95f1.ogg",
+				"dur": 9.73,
+				"cer": 0.0,
+				"tp": -3.71,
+				"lufs_s": -19.4
+			}
+		},
+		"d6059a40ad2f": {
+			"speaker": "A Voz",
+			"source": "narrative.intro",
+			"lote": "limiar-1",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/d6059a40ad2f.ogg",
+				"dur": 5.6,
+				"cer": 0.0,
+				"tp": -2.21,
+				"lufs_s": -19.1
+			}
+		},
+		"dfd612dc0c7e": {
+			"speaker": "O Rei",
+			"source": "narrative.king_fall",
+			"lote": "limiar-1",
+			"nivel": 2,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/dfd612dc0c7e.ogg",
+				"dur": 4.47,
+				"cer": 0.0,
+				"tp": -5.14,
+				"lufs_s": -20.1
+			}
+		}
+	}
 }
