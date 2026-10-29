@@ -198,11 +198,51 @@ Não reverifiquei: #7, #14, #20, #22, #23, #25, #26, #27, #29.
   e `"band"` (o "raio": `draw_rect` retangular de borda dura em toda a arena, linha 254). Os dois são retângulos chapados sem máscara/gradiente; é onde eu procuraria. Não capturei o instante do poder.
 - Verificar com o João qual poder foi (mão ou raio) antes de mexer.
 
+## RE-TESTE 3.2 (origin/integracao/onda1 0400a19, código em 944ec41)
+Rodado em `dir7/qa7` com merge exato do 944ec41 (a11ba3c). Saídas em `C:\gnosis-wt\_caps\qa7\bot32\` (bot, 3 sementes) e `...\p32\` (sondas, capturas, áudio).
+Import limpo (zero `SCRIPT ERROR`). Bot: 68 telas nas 3 sementes, 0 mortes reais, 0 travas, **0 erros de console** (só o aviso da Camera2D), 80–89 min de jogo.
+
+### Foco do chefe
+- **Campeão com som único: CORRIGIDO.** Log de áudio na tela 15 e na tela 6: `champion_enter`=1 e nenhum `boss_appear` (na 3.1 eram os dois). Arconte (tela 10) segue com `boss_appear` 1x.
+- **#12 Campeão nascendo fora da tela: CORRIGIDO.** EnemyDump na tela 6: o Campeão aparece no chão em x=240 (visível) no quadro 480; antes ficava em x=888 no ar.
+- **Invocador esgotado: OK.** EnemyProbe verde (invocador: 4 golpes, hurtbox segue o corpo, sem dano de contato). No bot os timeouts por invocador sumiram (eram 2 na 3.1) e o dano
+  do tiro dele caiu de 435–516 para 176–371 por semente.
+- **Baús e morte: OK.** ProgQA 0 falhas: "baú paga uma vez por run", "baú secreto paga 1x com chave própria (bau:12:s) e a 2a vez é negada com aviso",
+  "morte leva só o ganho da tela (40 de 540)", "morte nunca leva mais que a carteira". TecnicoQA 43/43, SaveQA 0 falha.
+- **Coroa (Juízo/Réplica) e Praga (pústulas): sem regressão, mas só por número.** BossProbe (bot médio, `curva=1`): Coroa 131 s com 1 quase-morte, Praga 144 s com 1; todos os 9 chefes fecham ([ok]) em 64–190 s.
+  No bot do QA7 (sem aparo) a Praga cai de 39–52 s para 47–69 s e a Coroa de 45–50 s para 54–83 s, com dano de 113–300 (antes 57–109): a guarda alta funciona. Não capturei o Juízo/Réplica/pústula em ação.
+- **Tempos do fim:** a 68 passou de 35–48 s e 86–128 de dano para 39–62 s e 188–274, quase-mortes 3,0 no Centro+Final (era 2,3). Mais respeitável, ainda é o trecho mais leve do run (0,6 min/tela).
+
+### Curva por Éon (quase-mortes, média de 3 sementes) 3.1 -> 3.2
+Torpor 11,7->11,3 · Fome 20,0->17,0 · Corrente 31,0->29,3 · Silêncio 36,3->33,0 · Espelho 40,3->**31,7** · Praga 22,0->**28,3** · Coroa 27,0->23,3 · Centro+Final 2,3->3,0.
+A queda na Praga fechou (era -45%, agora -11%), mas o pico do Espelho sumiu e a Coroa (23,3) fica abaixo da Praga. Arma nv. 5 só na tela 47–55 (antes 46).
+Timeouts: 18 -> 9 (nenhum de chefe). Restam inimigos de longe: arauto@2000–2330 (telas 31, 43), aberração@2400 (49), mudo@2400 (32, 33), fantasma@2479 (35), escudeiro@4175 (14).
+
+### Corrigido desde a 3.1 (medido)
+N1 stinger dobrado do Campeão · #12 Campeão fora da tela · #4 lore do Bestiário em EN (captura `p32\en_Gallery.png`: as duas linhas saem em inglês) ·
+#16 loja EN ("opens: Arcane Rift, Arcane Ascent") · #6 placa dos Selos (entrada "golpeie na ordem em que brilham" na tabela EN, por leitura) ·
+#3 tela 68: Rei e Colosso inteiros no quadro, a Sophia visível (`p32\b68_f2.png`) · #10 parcial (30 -> 18 -> 9 timeouts).
+
+### Continua
+- **#10** inimigos de longe (acima, 9 timeouts). **#13** faíscas sobrando na 68: 4,9–6,7 mil (antes 5,5–7,5).
+- **#24** anéis do Rei da 68 desenhados sobre o HUD (círculos laranja/azul no canto superior, `p32\b68_f2.png`).
+- **N2** parcial: a Galila segue como outlier (82–93 s, 4–5 quase-mortes); o fim do run ainda é mais fácil que o meio.
+- #11/#18 (Galila fase 2, pés da Belias): NÃO consegui reverificar. O `hurt` do Shot não força mais a fase 2 (chefe encenado é intocável, 846314d/9bf99e2); as capturas mostram a Galila pendurada
+  e a Belias/Armupiel nas posições de entrada (`p32\b28_f2.png`, `b55_f2.png`, `b64_f2.png`), a Belias bem acima da linha da Sophia (provável posição encenada).
+
+### NOVO
+- **Sonda velha: RuleProbe falha** ("números de dano: desligado não cria, ligado/ausente cria"; off=0 on=1 padrao=1, esperava 2). Reproduzido 2x. Causa: R16 passou a SOMAR números no mesmo alvo em 0,3 s
+  (0daadb7, veio no merge do ui7), então o 3o número entra no 2o. Não é bug de jogo; a sonda `tools/combate/rule_probe.gd:141` espera `n_def == 2` e deve esperar 1. Dono: UI7/Combate (a sonda é do Combate). Está no `validate`? Conferir.
+- Nenhuma regressão de jogo encontrada. MenuProbe 112/0, LangQA 12/0, EnFit 0, HitboxProbe (atravessa 0%), FeelProbe, LayoutQA, MapQA, CodexQA, DeathProbe, EnemyProbe: verdes.
+
+### Rei / Demiurgo
+Tela 68: o Rei (manto) e o Colosso estão inteiros no quadro e já não colam na borda; o contorno do Rei ficou rosado. A hurtbox do manto não foi medida (ReiProbe/BossHurtProbe existem em `tools/chefes6` e `tools/combate`; não rodei, pedem renderer). O "quadrado" do poder: candidatos continuam `column`/`band` em `boss_hazard.gd:_draw`; não capturei.
+
 ## BILHETE PARA O SUCESSOR
-Estado: re-teste da 3.1 (4dad743) feito, seção acima. Branch dir7/qa7 já tem o merge 1876106. Resultados em `_caps\qa7ot31\` e `p31\`.
-Próximo: re-teste da 3.2 (quando o chefe avisar): `git merge <sha>` no qa7 (antes `git stash` nos `.import` que o Godot reescreve), importar, rodar
-`powershell -File tools/qa7/reteste.ps1 -Out C:\gnosis-wt\_caps\qa7ot32` e comparar com `bot31nalise.md`. Leva ~10 min reais (não 50).
-Armadilhas: chamar o reteste.ps1 pelo PowerShell (via bash o `\` do -Out some e o bot grava em lugar errado); o bot cura a 45% e não apara; "TRAVOU" precisa de confirmação;
-descida da 65 dispara "zona forçada" (cinemática); `_real_wait` roda em tempo real (variação 5–10%); BossSizeProbe/Shot precisam de renderer (320x180 fora da tela).
-Pendências para checar na 3.2: N1 (stinger dobrado do Campeão), N2 (final leve, Galila), #4/#6/#16 (EN), #10/#12/#11/#24.
+Estado: re-testes 3.1 (4dad743) e 3.2 (944ec41) feitos, seções acima. Branch dir7/qa7 tem os merges; resultados em `_caps\qa7\bot31\`, `bot32\`, `p31\`, `p32\`.
+Próximo: re-teste da 3.3 quando o chefe avisar: `git stash` nos `.import` que o Godot reescreve, `git merge <sha>`, importar (`--headless --editor --quit`), e rodar
+`Start-Process powershell -File tools/qa7/reteste.ps1 -Out C:\gnosis-wt\_caps\qa7\bot33` PELO POWERSHELL (via bash a barra some e o bot grava no lugar errado). ~10 min reais.
+Compare com `bot32\analise.md`. Sondas: EnemyProbe, MenuProbe, LangQA, EnFit, HitboxProbe, FeelProbe, RuleProbe (velha: espera n_def==2), LayoutQA, MapQA, CodexQA, SaveQA, DeathProbe, ProgQA, TecnicoQA,
+BossProbe `telas=all vel=4 curva=1` (headless). Áudio: `GNOSIS_AUDIO_LOG=<arq.json>` + Shot grava os sons tocados. O `hurt` do Shot não força mais a fase 2 dos chefes.
+Pendências: #10 (inimigos de longe), #13 (faíscas sobrando), #24 (anéis sobre o HUD), N2 (Galila, fim do run leve), RuleProbe velha, #7/#14/#20/#22/#23/#25/#26/#27/#29 (nunca reverificados).
 
