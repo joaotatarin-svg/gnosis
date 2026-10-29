@@ -55,3 +55,48 @@ mesmo com `_premium`, impactos com `Juice.hit_stop`) — ver `tools/VfxShowcase7
 ## combate6 (hitbox.gd) — fase 2
 - R15 completo no acerto de inimigo: se o `ImpactBurst.spawn` receber o lado do golpe (ex.: um
   parâmetro `dirx`), o `claw_impact` passa a soltar as faíscas no sentido do golpe. Hoje sai em 360°.
+
+## QA7 (19/10) — o que o VFX7 já fez e o que depende de outros
+
+Feito nos meus arquivos: #8 (poça arma 0,5 s, `hazard_zone.gd`), #9 (`BLINK_WIND` 0,6 s em
+`enemy_moves.gd` + marca visível/sonora da aparição na `EnemyOverlay`), #15 (repulsa até 90 px — ainda
+não basta, ver polimento7 item 2), coleira pronta em `EnemyAggro.leash_x/retreat_dir` (#10, falta a chamada).
+
+### polimento7 (`enemy.gd`) — patches exatos
+1. **#10 coleira (R21).** Em `_desired_x`, ramo `"shooter"` e ramo `"flyer"`: embrulhar o retorno em
+   `EnemyAggro.leash_x(self, …)`. Ex.: `return EnemyAggro.leash_x(self, px + side * 175.0)`; no
+   `return global_position.x` do atirador também (`EnemyAggro.leash_x(self, global_position.x)`: puxa de
+   volta quem já está fora). No RECUO (`_start_move`, `kind == "retreat"`): depois de calcular `away`,
+   `away = EnemyAggro.retreat_dir(self, away)`.
+2. **#15 repulsa nunca sai.** O atirador guarda a INTENÇÃO (`_intent`, 2,5 s) escolhida de longe ("orbe");
+   quando a Sophia cola, o orbe não cabe e ele só foge. Em `_chase_moves`, no bloco
+   `if role == "shooter" and adx < 70.0:` acrescentar `_intent = {}` (o `_pick_move(…, true)` devolve o
+   golpe de reação "nova" na hora). Medido com `tools/inimigos6/EnemyProbe.tscn`: `repulsa=0` em 40 s.
+3. **#19 Elite fúria corta o aviso abaixo de 0,4 s (R5).** Em `_start_move`:
+   `wind_up = float(mv.wind) * (0.85 if fast else 1.0)` →
+   `wind_up = maxf(float(mv.wind) * 0.85, minf(float(mv.wind), 0.42)) if fast else float(mv.wind)`.
+4. **R15 (Guardião) — direção do golpe no impacto.** `ImpactBurst.spawn(parent, pos, col, heavy, dir)`
+   ganhou `dir: Vector2` (quem bate → quem apanha). No `hitbox.gd` (linha do `ImpactBurst.spawn`):
+   passar `Vector2(signf(area.global_position.x - owner.global_position.x), 0.0)` (ou a direção que vocês
+   já calculam, com y para o launcher/mergulho). Sem `dir`, o ImpactBurst DEDUZ pelo lado da Sophia (já
+   funciona para golpes no chão), mas a direção certa é a de vocês. O mesmo vale para
+   `VfxLibrary.hit(parent, pos, true, cor, dir)` em `player.register_hit` (pesado) e em
+   `enemy._on_hit_received` (pesado/magia): passem a direção do golpe.
+5. **Arte (baixa prioridade):** quando `visual.has_own_art()` for verdadeiro, pular a tinta do tipo e a
+   graduação (`GRADE_SHADER`) do interino — hoje o CharacterArt desfaz sozinho.
+6. Avisem se mudarem `attack_hitbox._active`, `box_size()`, os estados WINDUP/STRIKE ou `_mv`: a
+   `EnemyOverlay._watch_attack` lê esses campos (carga dos tiros, rastro dos golpes, marca da aparição).
+
+### level6 (`level.gd`) + narrativa6 — #12 Campeão fora da tela
+- O Campeão é o `eon_bot` da última wave do Desafio; da 2ª wave em diante a wave nasce na BORDA
+  (`from_edge`: `c + ZONE_TRIGGER − 10 − i·34`) ou, se voa, em `AIR_SPAWN_Y` com ±200 px — por isso
+  x≈888 no ar, >4 s para entrar. E o `_champion_card()` é chamado no MESMO quadro do spawn.
+  Pedido: (a) o Campeão nasce DENTRO do enquadramento (ex.: `c ± 120`, no chão, mesmo voador) e
+  (b) o card só sai quando ele estiver na tela (ou atrasar o card ~0,6 s e entrar com `VfxLibrary.boss_appear`).
+
+### Áudio7 — um som por evento nos tiros (FEITO na fonte, 19/10, merge de 6df9411)
+- Seguindo o `docs/pedidos/audio7.md` (decisão do chefe): `projectile.gd` toca `proj_fire` SÓ no tiro da
+  Sophia; o tiro hostil soa pelo `atk_*` do observador no strike; a carga soa `charge_light`/`charge_dark`/
+  `charge_king` no INÍCIO (ChargeFX, sem fallback). Durações reais da carga: criaturas = o wind-up do golpe
+  de tiro (0,5–0,6 s); Sophia/Rei só quando combate6/chefes6 ligarem (pedido: Rei ~0,9 s). O pedido
+  anterior "tirar atk_* dos tiros" fica CANCELADO.

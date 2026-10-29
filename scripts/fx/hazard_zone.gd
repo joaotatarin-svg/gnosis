@@ -16,6 +16,11 @@ var hostile_to: String = "player"   # "player" (zona de Arconte) ou "enemy" (mag
 var damage: int = 0                 # dano por tick quando hostil a inimigos
 
 var warn: float = 0.8               # pillar: tempo de aviso antes da coluna
+## QA7 #8 (R5): poça HOSTIL À SOPHIA não fere/prende no quadro em que nasce —
+## ARMA em `arm` s: cresce do centro até o raio com a borda pulsando forte
+## (o aviso), e só então vale. As da Sophia (hostis a inimigos) valem na hora.
+const ARM_TIME := 0.5
+var arm: float = ARM_TIME
 var _t: float = 0.0
 var _tick: float = 0.0
 var _struck: bool = false
@@ -29,6 +34,8 @@ static func spawn(parent: Node, pos: Vector2, p_kind: String, p_radius: float, p
 	z.color = p_color
 	z.hostile_to = p_hostile_to
 	z.damage = p_damage
+	if p_hostile_to == "enemy":
+		z.arm = 0.0             # magia da Sophia: vale na hora
 	z.z_index = -1          # fica atrás dos personagens (é chão)
 	parent.add_child(z)
 	z.global_position = pos
@@ -168,7 +175,8 @@ func _physics_process(delta: float) -> void:
 					e.apply_damage(damage, global_position, 30.0)
 		return
 	var p := get_tree().get_first_node_in_group("player")
-	if kind == "pillar":
+	if kind != "pillar" and _t < arm:
+		return                          # armando: ainda é só aviso
 		if not _struck and _t >= warn:
 			_struck = true
 			_pillar_strike_fx()
@@ -197,24 +205,33 @@ func _draw() -> void:
 	var life := 1.0 - _t / duration
 	var fade := minf(1.0, life * 3.0) * minf(1.0, _t * 5.0)    # acende rápido, apaga suave
 	var pulse := 0.5 + sin(_t * 4.0) * 0.5
-	var ry := radius * 0.32
+	# armando (QA7 #8): a poça CRESCE do centro e a borda pisca rápido — é o aviso
+	var arming: bool = arm > 0.0 and _t < arm
+	var grow: float = clampf(_t / arm, 0.0, 1.0) if arm > 0.0 else 1.0
+	var rad := radius * (0.25 + 0.75 * grow)
+	var ry := rad * 0.32
+	if arming:
+		pulse = 0.5 + sin(_t * 18.0) * 0.5     # 2,9 Hz (R10: ≤ 3 Hz)
 	# chão: 3 elipses concêntricas (luz macia no meio, some na borda)
 	for layer in 3:
 		var k := 1.0 - float(layer) * 0.28
-		draw_colored_polygon(_ellipse(radius * k, ry * k), Color(color.r, color.g, color.b, (0.1 + 0.05 * pulse) * fade))
+		draw_colored_polygon(_ellipse(rad * k, ry * k), Color(color.r, color.g, color.b, (0.1 + 0.05 * pulse) * fade))
+	if arming:
+		# contorno do tamanho FINAL (onde vai valer) + borda viva
+		draw_polyline(_ellipse(radius, radius * 0.32) + PackedVector2Array([Vector2(radius, 0)]), Color(color.r, color.g, color.b, 0.35 + 0.45 * pulse), 1.5, true)
 	# borda que cintila: segmentos com brilho correndo em volta
 	var seg := 32
 	for i in seg:
 		var a0 := TAU * float(i) / float(seg)
 		var a1 := TAU * float(i + 1) / float(seg)
 		var shine := 0.5 + 0.5 * sin(a0 * 3.0 - _t * (2.0 if kind == "sleep" else 5.0))
-		draw_line(Vector2(cos(a0) * radius, sin(a0) * ry), Vector2(cos(a1) * radius, sin(a1) * ry),
+		draw_line(Vector2(cos(a0) * rad, sin(a0) * ry), Vector2(cos(a1) * rad, sin(a1) * ry),
 			Color(color.r, color.g, color.b, (0.25 + 0.5 * shine) * fade), 1.5, true)
 	# runas da Sophia (zona dela, hostil aos inimigos): 6 pontos de luz girando
 	if hostile_to == "enemy":
 		for i in 6:
 			var a := TAU * float(i) / 6.0 + _t * 0.6
-			draw_circle(Vector2(cos(a) * radius * 0.8, sin(a) * ry * 0.8), 1.6, Color(1, 1, 1, 0.6 * fade))
+			draw_circle(Vector2(cos(a) * rad * 0.8, sin(a) * ry * 0.8), 1.6, Color(1, 1, 1, 0.6 * fade))
 
 
 func _ellipse(rx: float, ry: float) -> PackedVector2Array:

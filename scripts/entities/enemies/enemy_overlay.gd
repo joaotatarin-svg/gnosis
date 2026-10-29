@@ -36,6 +36,24 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## QA7 #9: o fantasma/reflexo acabou de APARECER atrás da Sophia — marca o
+## lugar (fumaça escura se abrindo, anel deitado e clarão na cor do aviso) e
+## toca o aviso sonoro do telegrafo, para a aparição ser lida mesmo de costas.
+func _blink_mark(e: Node2D) -> void:
+	var par := e.get_parent()
+	if par == null:
+		return
+	var tell: Color = Color(1.0, 0.32, 0.25) if bool(e.attack_hitbox.unblockable) else Color(1.0, 0.9, 0.35)
+	var at := e.global_position + Vector2(0, -14.0 * float(e._art_scale))
+	VfxLibrary.shock_ring(par, e.global_position + Vector2(0, 20.0 * float(e._art_scale)), 34.0, Color(tell.r, tell.g, tell.b, 0.8), 0.45, true, 0.32, 0.14)
+	VfxLibrary.attack_fizzle(par, at, e.eye_color, "dark")
+	VfxLibrary._flash_sprite(par, at, "twirl", Color(e.eye_color.r, e.eye_color.g, e.eye_color.b, 0.8), 0.6, 0.15, 0.35, true, -7.0)
+	var cat = Audio.get("CATALOG")
+	var snd := "tell_unblock" if bool(e.attack_hitbox.unblockable) else "tell_parry"
+	if cat is Dictionary and (cat.get("sfx", []) as Array).has(snd):
+		Audio.play_sfx_at(snd, at)
+
+
 func _watch_attack() -> void:
 	if enemy == null or not is_instance_valid(enemy):
 		return
@@ -45,6 +63,8 @@ func _watch_attack() -> void:
 	var mv: Dictionary = e._mv if e._mv is Dictionary else {}
 	var kind: String = String(mv.get("kind", ""))
 	if wind and not _was_wind:
+		if kind == "blink":
+			_blink_mark(e)
 		if kind in SHOT_KINDS or (mv.is_empty() and String(e.attack_style) == "ranged"):
 			var dirx: float = float(e.atk_dir)
 			var off := Vector2(16.0 * dirx, -8.0 * float(e._art_scale))

@@ -232,15 +232,30 @@ static func screen_flash(parent: Node, col: Color = Color(1, 1, 1, 0.55), dur: f
 # ===========================================================================
 
 ## Golpe acerta: fagulhas + clarão. `heavy` = mais fagulhas, corte e fumaça.
-static func hit(parent: Node, pos: Vector2, heavy: bool = false, col: Color = Color(1.0, 0.9, 0.55)) -> void:
+## `dir` (R15): direção do golpe — fagulhas num cone de ±50° nesse sentido
+## (+20 % em 360°) e talho do pesado alinhado (±15°). ZERO = 360° (antigo).
+static func hit(parent: Node, pos: Vector2, heavy: bool = false, col: Color = Color(1.0, 0.9, 0.55), dir: Vector2 = Vector2.ZERO) -> void:
 	if not _ok(parent, heavy):
 		return
 	if _claimed(pos):
 		return                 # VFX7: o impacto premium deste ponto já tocou (R4)
 	var n := 16 if heavy else 9
+	var aimed := dir != Vector2.ZERO
+	if aimed:
+		# 20 % soltas em 360° (não vira "jato"); o resto vai no cone
+		var o := _burst(parent, pos, "spark", maxi(2, n / 5), 0.3)
+		o.spread = 180.0
+		o.gravity = Vector2(0, 520.0)
+		o.initial_velocity_min = 60.0
+		o.initial_velocity_max = 140.0
+		o.scale_amount_min = 0.04
+		o.scale_amount_max = 0.07
+		o.scale_amount_curve = _shrink_curve()
+		o.color = col.lightened(0.35)
+		n -= maxi(2, n / 5)
 	var p := _burst(parent, pos, "spark", n, 0.38 if heavy else 0.28)
-	p.direction = Vector2(0, -1)
-	p.spread = 180.0
+	p.direction = (dir.normalized() + Vector2(0, -0.25)).normalized() if aimed else Vector2(0, -1)
+	p.spread = 50.0 if aimed else 180.0
 	p.gravity = Vector2(0, 520.0)
 	p.initial_velocity_min = 110.0 if heavy else 70.0
 	p.initial_velocity_max = 260.0 if heavy else 170.0
@@ -256,7 +271,8 @@ static func hit(parent: Node, pos: Vector2, heavy: bool = false, col: Color = Co
 	if heavy:
 		# talho de luz atravessando o alvo
 		var s := _flash_sprite(parent, pos, "slash", Color(1, 1, 1, 0.95), 0.25, 0.7, 0.2)
-		s.rotation = randf_range(-0.7, 0.7)
+		# alinhado ao golpe (±15°, R15); sem direção, o antigo ±40°
+		s.rotation = dir.angle() + randf_range(-0.26, 0.26) if aimed else randf_range(-0.7, 0.7)
 		# poeira do impacto
 		var d := _burst(parent, pos + Vector2(0, 6), "smoke", 5, 0.5, false)
 		d.direction = Vector2(0, -1)
@@ -333,9 +349,37 @@ static func dodge_perfect(parent: Node, pos: Vector2) -> void:
 # ===========================================================================
 
 ## Criatura comum morre: a faísca escapa (luz), o corpo vira fumaça escura.
+## R17 (VFX7): CONFIRMAÇÃO DE MORTE — o golpe que mata tem um estalo próprio,
+## curto e diferente do acerto comum: estrela branca de 4 pontas em X (o acerto
+## é fagulha/clarão redondo), anel fino que abre rápido e um risco vertical de
+## luz (a faísca "sai" do corpo). ~120 ms; no orçamento de flashes (R10).
+static func kill_confirm(parent: Node, pos: Vector2, col: Color = Color(1.0, 0.85, 0.5)) -> void:
+	if not _ok(parent, true):
+		return
+	var fb := flash_budget()
+	var x := _flash_sprite(parent, pos, "star", Color(1, 1, 1, 0.95 * fb), 0.5, 0.12, 0.12)
+	x.rotation = PI * 0.25
+	x.z_index = Z + 2
+	shock_ring(parent, pos, 26.0, Color(1, 1, 1, 0.75 * fb), 0.14, false, 1.0, 0.05)
+	var r := Sprite2D.new()
+	r.texture = tex("light")
+	r.material = _additive()
+	r.modulate = Color(col.r, col.g, col.b, 0.9 * fb)
+	r.z_index = Z + 1
+	r.scale = Vector2(0.06, 0.5)
+	r.add_to_group(GROUP)
+	parent.add_child(r)
+	r.global_position = pos + Vector2(0, -10)
+	var tw := r.create_tween().set_parallel(true)
+	tw.tween_property(r, "scale", Vector2(0.02, 1.1), 0.12).set_ease(Tween.EASE_OUT)
+	tw.tween_property(r, "modulate:a", 0.0, 0.12).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(r.queue_free)
+
+
 static func enemy_death(parent: Node, pos: Vector2, col: Color = Color(1.0, 0.85, 0.5)) -> void:
 	if not _ok(parent, true):
 		return
+	kill_confirm(parent, pos, col)          # R17: o golpe que mata se distingue do acerto
 	_flash_sprite(parent, pos, "glow", Color(col.r, col.g, col.b, 0.85), 0.15, 0.5, 0.3)
 	var s := _burst(parent, pos, "spark", 14, 0.55)
 	s.spread = 180.0
@@ -1057,7 +1101,7 @@ static func melee_slash(host: Node2D, center: Vector2, size: Vector2, dir: int, 
 ## VFX7: impacto de golpe CORPO A CORPO de inimigo na Sophia (ImpactBurst
 ## reconhece pela cor do hitbox.gd): três garras de luz cruzando, borrifo
 ## escuro, anel curto e faíscas — no orçamento de flashes.
-static func claw_impact(parent: Node, pos: Vector2, heavy: bool = false) -> void:
+static func claw_impact(parent: Node, pos: Vector2, heavy: bool = false, dir: Vector2 = Vector2.ZERO) -> void:
 	if not _ok(parent, true):
 		return
 	_claim(pos)
@@ -1069,15 +1113,18 @@ static func claw_impact(parent: Node, pos: Vector2, heavy: bool = false) -> void
 		s.rotation = -0.9 + float(i) * 0.12
 	_flash_sprite(parent, pos, "light", Color(1, 0.6, 0.5, 0.7 * fb), 0.1, 0.4, 0.1)
 	shock_ring(parent, pos, 20.0 if heavy else 15.0, Color(col.r, col.g, col.b, 0.75), 0.2, true, 1.0, 0.14)
-	var p := _burst(parent, pos, "spark", 12 if heavy else 8, 0.36)
-	p.spread = 180.0
-	p.gravity = Vector2(0, 460.0)
-	p.initial_velocity_min = 90.0
-	p.initial_velocity_max = 220.0
-	p.scale_amount_min = 0.04
-	p.scale_amount_max = 0.09
-	p.scale_amount_curve = _shrink_curve()
-	p.color_ramp = _ramp(Color(1, 1, 1, 1), Color(col.r, col.g, col.b, 0.0))
+	if dir != Vector2.ZERO:
+		_spray(parent, pos, col, 12 if heavy else 8, signf(dir.x) if dir.x != 0.0 else 1.0, "spark", 1.0)
+	else:
+		var p := _burst(parent, pos, "spark", 12 if heavy else 8, 0.36)
+		p.spread = 180.0
+		p.gravity = Vector2(0, 460.0)
+		p.initial_velocity_min = 90.0
+		p.initial_velocity_max = 220.0
+		p.scale_amount_min = 0.04
+		p.scale_amount_max = 0.09
+		p.scale_amount_curve = _shrink_curve()
+		p.color_ramp = _ramp(Color(1, 1, 1, 1), Color(col.r, col.g, col.b, 0.0))
 	var k := _burst(parent, pos, "smoke2", 4, 0.45, false)
 	k.spread = 180.0
 	k.initial_velocity_min = 15.0
