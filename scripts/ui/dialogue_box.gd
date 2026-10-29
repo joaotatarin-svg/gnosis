@@ -29,8 +29,9 @@ class_name DialogueBox
 ## `Audio.play_voice(fala, self)`. Com voz: sem blips, e a máquina de escrever
 ## anda no ritmo da voz (texto e voz terminam juntos, ±0,3 s). Regras do Guardião
 ## (_caps/dublagem/REGRAS_GUARDIAO.md §2-3): avanço livre desde o 1º quadro;
-## apertar com a voz soando completa o texto e corta a voz (fade 80 ms); o aperto
-## seguinte avança. Fala dublada ignora o `wait_2s` (a voz já dá a pausa). Sem
+## aperto com o texto digitando completa o texto e corta a voz (fade 80 ms); com o
+## texto completo, UM aperto corta a voz e avança (decisão do chefe, 29/10). Fala
+## dublada ignora o `wait_2s` (a voz já dá a pausa). Sem
 ## arquivo de voz ou Vozes em 0 %: tudo como antes.
 ## RUBRICA (backlog #22) — modo `narration`: fala SEM falante cujo texto é só uma
 ## rubrica entre parênteses (ou com `mode: "narration"`) não usa a caixa: o texto
@@ -820,17 +821,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if _waiting():
 			return                 # cue wait_2s: 2 s de silêncio, nenhum aperto vale
-		var voiced: bool = _voice_dur > 0.0 and Audio.has_method("is_voice_playing") \
-			and bool(Audio.call("is_voice_playing", self))
-		if _typing or voiced:
-			reveal_all()           # 1º aperto: a fala inteira…
-			if voiced:
-				_stop_voice(VOICE_CUT)   # …e a voz sai (Guardião §2: fade de 80 ms)
+		if _typing:
+			reveal_all()           # aperto com o texto digitando: a fala inteira…
+			_stop_voice(VOICE_CUT) # …e a voz sai (Guardião §2: fade de 80 ms)
 			return
 		if _locked:
 			return                 # a Encenação segura o avanço
+		# Texto completo: UM aperto corta a voz (80 ms) E avança (decisão do chefe,
+		# 29/10: nenhum aperto "perdido" só para calar a voz).
 		Audio.play_sfx("ui_advance")
-		_stop_voice()
+		_stop_voice(VOICE_CUT)
 		idx += 1
 		_show_line()
 

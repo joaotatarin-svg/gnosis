@@ -22,6 +22,11 @@ extends Node
 
 const SAMPLES := "C:/gnosis-wt/_caps/dublagem/amostras/"
 const TEST_MANIFEST := "user://voice_probe_manifest.json"
+const WATCHDOG_S := 150.0
+## Falas curtas do roteiro (amostras ≤ 2,5 s) para a guarda de frequência da luta.
+const SHORT_A := {"speaker": "Sophia", "text": "Eu também queria deitar. ...Não vou."}
+const SHORT_B := {"speaker": "Velkar", "text": "Todo dia. Era meu pai."}
+const SHORT_C := {"speaker": "Harmas", "text": "Dá-me uma! Uma lembrança que seja minha!"}
 
 var fails: int = 0
 var _dir: String = SAMPLES
@@ -29,6 +34,11 @@ var _dir: String = SAMPLES
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# rede de segurança: um erro no meio de um await não deixa a sonda pendurada
+	get_tree().create_timer(WATCHDOG_S, true, false, true).timeout.connect(func() -> void:
+		push_error("VOICE FAIL: sonda passou de %d s (travou)" % int(WATCHDOG_S))
+		print("VOICE PROBE: TEMPO ESGOTADO")
+		get_tree().quit(1))
 	_run.call_deferred()
 
 
@@ -72,6 +82,11 @@ func _run() -> void:
 	if env_dir != "":
 		_dir = env_dir.replace("\\", "/").trim_suffix("/") + "/"
 	_check_real_manifest()
+	# (c) padrão 80 %: save sem `vol_voice` (ou sem save) carrega 0,8
+	var saved = SaveManager.read_json_safe(SaveManager.SAVE_PATH).data if SaveManager.has_method("read_json_safe") else null
+	var has_saved_voice: bool = saved is Dictionary and (saved as Dictionary).has("vol_voice")
+	check(has_saved_voice or is_equal_approx(Audio.voice_vol, 0.8),
+		"Vozes no boot = %d %% (save %s vol_voice; padrão 80 %%)" % [int(round(Audio.voice_vol * 100.0)), "COM" if has_saved_voice else "sem"])
 	var voz: Dictionary = _find(Narrative.intro(), "Acorda. ...Isso.")
 	var rei: Dictionary = _find(Narrative.king_intro(), "Faísca perdida")
 	var cap: Dictionary = _find(Narrative.walk_arrival(1), "Uma pedra escrita")
@@ -92,10 +107,14 @@ func _run() -> void:
 
 	# manifesto de TESTE (formato do contrato) apontando para as amostras
 	var files := {"voz": _dir + "a_voz_pt_1.ogg", "rei": _dir + "o_rei_pt_1.ogg",
-		"cap": _dir + "sophia_pt_3.ogg", "card": _dir + "narrador_pt_1.ogg"}
+		"cap": _dir + "sophia_pt_3.ogg", "card": _dir + "narrador_pt_1.ogg",
+		"sa": _dir + "sophia_pt_1.ogg", "sb": _dir + "velkar_pt_2.ogg", "sc": _dir + "velkar_pt_2.ogg"}   # sc: arquivo emprestado (só id distinto importa)
+	check(Audio.voice_id("Sophia", String(SHORT_A["text"])) == "a250454c1893" and Audio.voice_id("Velkar", String(SHORT_B["text"])) == "baf76ea82434",
+		"falas curtas de luta com os ids do roteiro (a250454c1893, baf76ea82434)")
 	for k in files:
 		if not FileAccess.file_exists(String(files[k])):
-			check(false, "amostra existe: %s" % files[k])
+			# outra máquina / amostras apagadas: só o manifesto real e os ids valem
+			print("VOICE INFO: sem a amostra %s — testes com voz PULADOS (só manifesto real e ids)" % files[k])
 			_end()
 			return
 	var man := {"version": 1, "lufs": -18.0, "lines": {
@@ -103,6 +122,9 @@ func _run() -> void:
 		Audio.voice_id(String(rei["speaker"]), String(rei["text"])): {"speaker": rei["speaker"], "pt": {"file": files["rei"]}},
 		Audio.voice_id(String(cap["speaker"]), String(cap["text"])): {"speaker": cap["speaker"], "pt": {"file": files["cap"]}},
 		Audio.voice_id("card", card_text): {"speaker": "card", "pt": {"file": files["card"]}},
+		Audio.voice_id("Sophia", String(SHORT_A["text"])): {"speaker": "Sophia", "pt": {"file": files["sa"]}},
+		Audio.voice_id("Velkar", String(SHORT_B["text"])): {"speaker": "Velkar", "pt": {"file": files["sb"]}},
+		Audio.voice_id("Harmas", String(SHORT_C["text"])): {"speaker": "Harmas", "pt": {"file": files["sc"]}},
 	}}
 	var f := FileAccess.open(TEST_MANIFEST, FileAccess.WRITE)
 	f.store_string(JSON.stringify(man, "\t"))
@@ -110,7 +132,7 @@ func _run() -> void:
 	OS.set_environment("GNOSIS_VOICE_MANIFEST", ProjectSettings.globalize_path(TEST_MANIFEST))
 	Audio.reload_voice_manifest()
 	Audio.set("_log_path", ProjectSettings.globalize_path("user://voice_probe_log.json"))   # conta os blips
-	check(Audio.voice_manifest().size() == 4, "manifesto de teste lido (4 falas → amostras)")
+	check(Audio.voice_manifest().size() == 7, "manifesto de teste lido (7 falas → amostras)")
 	check(not Audio.voice_entry(voz).is_empty() and Audio.voice_entry({"speaker": "A Voz", "text": "fala que não existe"}).is_empty(),
 		"voice_entry acha a fala mapeada e devolve {} para fala sem arquivo")
 	check(AudioServer.get_bus_send(AudioServer.get_bus_index("Voice")) == "Master", "bus Voice direto no Master")
@@ -119,6 +141,7 @@ func _run() -> void:
 	await _check_caption(cap)
 	await _check_card()
 	await _check_tell(rei)
+	await _check_combat_guard(rei)
 	await _check_off(voz)
 	_end()
 
@@ -201,6 +224,17 @@ func _check_dialogue(voz: Dictionary) -> void:
 	await _press(box)
 	await get_tree().process_frame
 	check(box.idx == 1 and not box.has_voice(), "2º aperto: avança para a fala seguinte (sem arquivo → sem voz)")
+	box.queue_free()
+	await _wait_real(0.6)
+	# (b) DECISÃO DO CHEFE: texto já completo e a voz ainda soando → UM aperto corta a voz E avança
+	box = DialogueBox.play([voz, nov])
+	await _wait_real(0.3)
+	box.reveal_all()            # texto completo (instantâneo), voz no meio
+	var still: bool = Audio.is_voice_playing(box)
+	await _press(box)
+	await _wait_real(0.12)
+	check(still and box.idx == 1 and not Audio.is_voice_playing(box),
+		"texto completo + voz soando: UM aperto corta a voz (80 ms) E avança (idx %d)" % box.idx)
 	await _wait_real(1.0)
 	check(int(Audio.played_counts.get("blip_voz", 0)) > blips0, "fala sem voz: blips de sempre (%d)" % (int(Audio.played_counts.get("blip_voz", 0)) - blips0))
 	for i in 3:                # completa (se ainda digitava) e fecha
@@ -360,6 +394,66 @@ func _check_tell(rei: Dictionary) -> void:
 	bar.queue_free()
 	print("VOICE INFO: voz do Rei %.2f s" % d)
 	await _wait_real(0.8)
+
+
+## (a) guarda de frequência das vozes de LUTA (Guardião §9)
+func _check_combat_guard(rei: Dictionary) -> void:
+	var bar := Node.new()
+	add_child(bar)
+	Audio.reset_combat_voices()
+	await _wait_real(0.6)        # sem aviso/golpe/stinger no ar
+	Audio.set("_danger_until_us", 0)
+	Audio.set("_tell_until_us", 0)
+	var lens: Array = []
+	for l in [SHORT_A, SHORT_B, SHORT_C]:
+		var st: AudioStream = Audio.call("_voice_stream", String(Audio.voice_entry(l).get("file", "")))
+		lens.append(st.get_length() if st != null else 99.0)
+	check(float(lens.max()) <= 2.5, "amostras curtas ≤ 2,5 s (%s)" % str(lens))
+	# fala de luta longa (> 2,5 s): só legenda
+	check(Audio.play_voice(rei, bar, true) == 0.0 and not Audio.is_voice_playing(),
+		"voz de LUTA de 7,7 s (> 2,5 s): não toca, só legenda")
+	check(Audio.play_voice(rei, bar, false) > 2.5, "a mesma fala FORA da luta (cena) toca normalmente")
+	Audio.stop_voice(bar, 0.0)
+	Audio.reset_combat_voices()
+	check(Audio.play_voice(SHORT_A, bar, true) > 0.0, "voz de luta curta toca")
+	Audio.stop_voice(bar, 0.0)
+	check(Audio.play_voice(SHORT_B, bar, true) == 0.0, "outra voz de luta logo depois: barrada (≥ 8 s de silêncio)")
+	var now := Time.get_ticks_usec()
+	Audio.set("_combat_voice_end_us", now - 7900000)
+	check(Audio.play_voice(SHORT_B, bar, true) == 0.0, "7,9 s depois: ainda barrada")
+	Audio.set("_combat_voice_end_us", now - 8100000)
+	check(Audio.play_voice(SHORT_B, bar, true) > 0.0, "8,1 s depois: toca")
+	Audio.stop_voice(bar, 0.0)
+	Audio.set("_combat_voice_end_us", now - 9000000)
+	check(Audio.play_voice(SHORT_A, bar, true) == 0.0, "a mesma fala 2x na mesma luta: barrada")
+	Audio.set("_combat_voices", 6)
+	check(Audio.combat_voices_left() == 0 and Audio.play_voice(SHORT_C, bar, true) == 0.0,
+		"7ª voz de luta na tela: barrada (máx. 6 por luta)")
+	var keep_screen: int = RunManager.current_screen
+	RunManager.current_screen = RunManager.MAX_SCREEN
+	var left_final: int = Audio.combat_voices_left()
+	RunManager.current_screen = keep_screen
+	check(RunManager.screen_role(RunManager.MAX_SCREEN) == "final" and left_final == 2,
+		"batalha final: até 8 vozes de luta (sobram %d de 8 depois de 6)" % left_final)
+	Audio.reset_combat_voices()
+	check(Audio.play_voice(SHORT_C, bar, true) > 0.0, "tela nova (reset): a contagem zera")
+	Audio.stop_voice(bar, 0.0)
+	# legenda de luta cuja voz foi barrada: só legenda (sem voz e sem blips)
+	var cb := CaptionBar.new()
+	add_child(cb)
+	await get_tree().process_frame
+	cb.set_process(false)
+	cb.set("_hot", true)
+	var b0 := int(Audio.played_counts.get("blip_sophia", 0))
+	cb.call("_show", SHORT_A)   # logo depois de outra voz de luta → barrada
+	for i in 20:
+		cb.call("_type", 0.05)
+	check(float(cb.get("_voice_dur")) == 0.0 and bool(cb.get("_voice_refused")) and int(Audio.played_counts.get("blip_sophia", 0)) == b0,
+		"legenda de luta com voz barrada: só o texto (sem voz, sem blips)")
+	cb.queue_free()
+	bar.queue_free()
+	Audio.reset_combat_voices()
+	await _wait_real(0.5)
 
 
 ## (v7) vozes desligadas

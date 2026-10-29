@@ -160,11 +160,11 @@ O 2º pulo, a carga da Queda e o golpe do contra-ataque saíram do observador po
 | **R13** loudness | Arquivos no alvo por categoria; pico verdadeiro ≤ −1 dBTP. NÃO medi os 10 min de combate gravado (alvo −20 a −23 LUFS integrados): exige captura de áudio do jogo rodando, e o driver é Dummy. | parcial (honesto) |
 | **R14** estéreo discreto | Inimigos, chefes e perigos tocam por `play_sfx_at` (pan ±50 %, atenuação pela distância). Perigo a > 720 px da câmera não toca. Sophia e UI no centro. | atendido |
 | **R22** vida baixa | Não mexi. Nenhum som novo é "bip" contínuo; as presenças (`hz_altar_hum`, `hz_ward_drain`) têm anti-spam e 1 voz. | — |
-| **R4** (dublagem) sem poluição sonora | Fala dublada NÃO toca blips (um evento de voz por fala). Só uma voz por vez: a nova corta a velha; a legenda seguinte só entra depois da voz + 0,4 s; voz de luta sem folga por 4 s é DESCARTADA (nunca empilha — Guardião §22). Nenhuma voz de dor/esforço nova. | atendido (VoiceProbe) |
+| **R4** (dublagem) sem poluição sonora | Fala dublada NÃO toca blips (um evento de voz por fala). Só uma voz por vez: a nova corta a velha; a legenda seguinte só entra depois da voz + 0,4 s; voz de luta sem folga por 4 s é DESCARTADA (nunca empilha — Guardião §22). Guarda de frequência das vozes de LUTA (§9, legenda com combate por perto): fala ≤ 2,5 s (mais longa = só legenda, sem voz nem blips), ≥ 8 s de silêncio desde a última, ≤ 6 por tela (8 na batalha final), nunca a mesma fala 2x na tela. Nenhuma voz de dor/esforço nova. | atendido (VoiceProbe) |
 | **R5** (dublagem) aviso acima da voz | Durante um `tell_*` a voz desce 8 dB e perde graves (passa-altas 250 Hz, 10/300 ms); voz de luta não COMEÇA nos 400 ms depois de um aviso, com golpe avisado no ar (windup→strike + 0,3 s, lido pelo observador) nem até 0,5 s depois do stinger/morte do chefe (Guardião §10/§20). Nenhuma informação só por voz. | atendido (VoiceProbe) |
 | **R9** (dublagem) ducking | Voz soando: música em −8 dB, ambiência em −6 dB, ataque 80 ms / release 700 ms, "vale o maior" (com o diálogo já em −9 a voz não soma: medido −9, não −12). Efeitos de gameplay e Tell NÃO baixam (medido: intocados). | atendido (VoiceProbe) |
 | **R13** (dublagem) volume | Contrato: fala −20 a −22 LUFS short-term, grito ≤ +4 LU, ≤ −1 dBTP (Guardião §21). Bus Voice direto no Master, slider próprio (padrão 80 %), fora do −6 dB do SFX e do abafado do slow-mo. NÃO medi a mixagem com voz (driver Dummy). | parcial (honesto) |
-| **R21** (dublagem) ritmo de leitura / controle | A caixa NUNCA avança sozinha e nunca segura o jogador: avanço livre desde o 1º quadro (fala dublada ignora o `wait_2s`); apertar com a voz soando completa o texto e corta a voz (80 ms); o seguinte avança. Texto e voz terminam juntos (medido 0,09 s; regra ±0,3). Nenhuma fala pausa o mundo em combate (legenda não bloqueante). Pausa congela a voz da legenda; morte, troca de cena e pular cortam (0,12 s); dono apagado = voz some. | atendido (VoiceProbe) |
+| **R21** (dublagem) ritmo de leitura / controle | A caixa NUNCA avança sozinha e nunca segura o jogador: avanço livre desde o 1º quadro (fala dublada ignora o `wait_2s`); aperto com o texto digitando completa o texto e corta a voz (80 ms); com o texto completo, UM aperto corta a voz E avança (decisão do chefe: nenhum aperto "perdido"). Texto e voz terminam juntos (medido 0,09 s; regra ±0,3). Nenhuma fala pausa o mundo em combate (legenda não bloqueante). Pausa congela a voz da legenda; morte, troca de cena e pular cortam (0,12 s); dono apagado = voz some. | atendido (VoiceProbe) |
 | **§3/§4** sem cassino | Nada de moeda, caça-níquel, arpejo "jackpot" nem som que cresce com sorte. Conquista, selo, relíquia, altar e dom do Soter são coro, sino e vidro em Mi maior, de duração fixa e independentes do valor ganho. A conquista em rajada toca 1 vez. O `shop_buy` (moedas, antigo) não foi tocado nem ampliado. | atendido |
 
 ## Dublagem (29/10/2026)
@@ -204,12 +204,17 @@ precisou mudar (o id sai do texto). Estelas: o painel mostra tudo de uma vez —
 depois (botão novo no `stela.gd`, outro dono).
 
 **Verificação (`--audio-driver Dummy`, nada tocado no PC):**
-`godot --headless --audio-driver Dummy --path . res://tools/audio/VoiceProbe.tscn` → `VOICE PROBE: 0 falhas`.
+`godot --headless --audio-driver Dummy --path . res://tools/audio/VoiceProbe.tscn` → `VOICE PROBE: 0 falhas`
+(também no `tools/validate.ps1`; sem as amostras em `_caps`, roda só o manifesto real e os ids; vigia de 150 s).
 Monta um manifesto de teste ligando 4 falas REAIS às amostras da Dublagem (intro da Voz `d6059a40ad2f`,
 legenda da Sophia no Limiar, chegada do Rei, card 1 do prólogo `a4f2a4baab4a`). Resultados medidos:
 caixa com voz 4,02 s, música −4,4 → −13,4 dB (−9 do diálogo, a voz não empilha), ambiência −6; fala
 dublada sem blips; texto termina 0,09 s antes da voz; a caixa espera o jogador; aperto no 2º quadro completa
-o texto e corta a voz (80 ms), o seguinte avança; fala sem arquivo volta aos blips; `wait_2s` não trava fala
+o texto e corta a voz (80 ms), o seguinte avança; texto completo + voz soando: UM aperto corta e avança;
+guarda de luta: fala de 7,7 s barrada (a mesma toca fora da luta), 2ª voz em < 8 s barrada (7,9 s barra,
+8,1 s toca), repetida barrada, 7ª da tela barrada, final permite 8, reset por tela, legenda barrada sem blips;
+Vozes no boot = 80 % (save sem `vol_voice`; captura `C:\gnosis-wt\_caps\audio7\opcoes_vozes_80.png` — a de
+100 % era de antes do padrão 0,8); fala sem arquivo volta aos blips; `wait_2s` não trava fala
 dublada; dono apagado = voz some; legenda 5,94 s fica 6,62 s no ar, música −8, efeitos e Tell intocados,
 pausa congela e retoma; card do prólogo segura 8,1 s de voz (tempo do card 5,9 s); `tell_unblock` → voz
 −8 dB + passa-altas 250 Hz; voz logo após o aviso espera 0,67 s; golpe avisado no ar segura a voz e ela

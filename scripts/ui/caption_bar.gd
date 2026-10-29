@@ -71,6 +71,7 @@ const VOICE_TAIL := 0.4           # dublagem: a legenda fica no ar a voz + isto 
 var _voice_dur: float = 0.0       # duração da voz da legenda atual (0 = blips)
 var _cps: float = CPS             # letras/s da legenda atual
 var _voice_synced: bool = false   # a voz já começou e o ritmo do texto foi acertado
+var _voice_refused: bool = false  # a fala tem voz, mas a guarda de frequência da luta barrou
 
 
 func _ready() -> void:
@@ -269,8 +270,8 @@ func _type(delta: float) -> void:
 	var now := total if is_inf(_shown) else mini(int(_shown), total)
 	var txt := _text.text
 	for i in range(before, now):
-		if is_inf(_shown) or _voice_dur > 0.0:
-			break                  # instantâneo ou dublada: sem blips
+		if is_inf(_shown) or _voice_dur > 0.0 or _voice_refused:
+			break                  # instantâneo, dublada ou voz barrada na luta: sem blips
 		if i < txt.length() and txt[i] != " ":
 			_blips += 1
 			if _blips % 2 == 1:
@@ -319,7 +320,10 @@ func _show(l: Dictionary) -> void:
 	# Dublagem: com voz, a legenda dura pelo menos a voz e o texto anda com ela.
 	var sp := DialogueBox.text_speed()
 	_cps = CPS * (1.0 if is_inf(sp) else sp)
-	_voice_dur = Audio.play_voice(l, self)
+	# combate por perto / fala da luta = voz de LUTA (guarda de frequência, Guardião §9)
+	_voice_dur = Audio.play_voice(l, self, _hot or _in_fight or bool(l.get("urgent", false)))
+	# fala que TEM voz mas a guarda da luta barrou: só legenda (nem voz, nem blips)
+	_voice_refused = _voice_dur <= 0.0 and Audio.voices_enabled() and not Audio.voice_entry(l).is_empty()
 	_voice_synced = false
 	if _voice_dur > 0.0:
 		_time_left = maxf(_time_left, _voice_dur + VOICE_TAIL)

@@ -76,6 +76,13 @@ const VOICE_DEFAULT_VOL := 0.8    # §18: slider Vozes padrão 80 %
 const DANGER_TAIL_MS := 300
 const BOSS_STING_GAP_MS := 500
 const VOICE_WAIT_MAX := 4.0          # cobre o stinger mais longo (2,6 s) + 0,5 s
+## §9: frequência das vozes de LUTA — fala ≤ 2,5 s (mais longa: só legenda), ≥ 8 s
+## de silêncio entre elas, no máximo 6 por tela (luta) e 8 na batalha final, e
+## nunca a mesma fala duas vezes na mesma tela.
+const COMBAT_VOICE_MAX_S := 2.5
+const COMBAT_VOICE_GAP_S := 8.0
+const COMBAT_VOICES_MAX := 6
+const COMBAT_VOICES_FINAL := 8
 ## Proteção do aviso (pedido do Guardião): enquanto um tell_* toca, a voz desce
 ## 8 dB e perde os graves (passa-altas 250 Hz; ataque 10 ms, soltura 300 ms) e
 ## nenhuma voz de LUTA começa nos 400 ms seguintes ao aviso.
@@ -418,6 +425,11 @@ var _vtell_t0: int = 0
 var _tell_until_us: int = 0          # fim do último tell_* (µs)
 var _voice_hpf: AudioEffectHighPassFilter
 var voice_last_id: String = ""       # QA/sonda: id da última voz tocada
+var voice_last_refused: String = ""  # QA/sonda: id da última voz de luta barrada pela guarda
+var _dub_combat: bool = false        # a voz atual (ou a que espera) é de luta
+var _combat_voices: int = 0          # vozes de luta tocadas nesta tela
+var _combat_voice_end_us: int = 0    # fim (µs) da última voz de luta
+var _combat_ids: Dictionary = {}     # ids de voz de luta já tocados nesta tela
 var _cache: Dictionary = {}          # caminho base -> AudioStream ou null (cache negativa)
 var _variants: Dictionary = {}       # nome -> Array de streams (nome, nome_2, ...)
 var _last_variant: Dictionary = {}   # nome -> índice tocado por último
@@ -1368,6 +1380,7 @@ func _update_center_music() -> void:
 
 func _on_screen_changed(screen: int) -> void:
 	_boss_seen = false                # tela nova (ou recomeço): o chefe ainda não apareceu
+	reset_combat_voices()             # dublagem: a guarda de frequência conta por luta/tela
 	boss_pending = ""
 	if CodexSession.active:
 		return                        # a Provação escolhe pelo estado (abaixo)
@@ -1823,8 +1836,11 @@ func _voice_stream(path: String) -> AudioStream:
 
 
 ## Toca a voz da fala. Devolve a duração (s) contando a espera da folga do aviso;
-## 0 = sem voz (quem chamou usa os blips).
-func play_voice(line: Dictionary, who: Object = null) -> float:
+## 0 = sem voz (quem chamou usa os blips / só a legenda).
+## `combat` = fala DURANTE a luta (legenda com combate por perto): passa pela guarda
+## de frequência do Guardião (§9): fala ≤ 2,5 s, ≥ 8 s de silêncio desde a última
+## voz de luta, no máximo 6 por tela (8 na batalha final). Fora disso: só legenda.
+func play_voice(line: Dictionary, who: Object = null, combat: bool = false) -> float:
 	if not voices_enabled():
 		return 0.0
 	var e := voice_entry(line)
@@ -1836,6 +1852,9 @@ func play_voice(line: Dictionary, who: Object = null) -> float:
 	var dur := stream.get_length()
 	if dur <= 0.0:
 		dur = float(e.get("dur", 0.0))
+	if combat and not combat_voice_allowed(dur, String(e["id"])):
+		voice_last_refused = String(e["id"])
+		return 0.0
 	# a velha some (fade curto) e a nova entra no outro player
 	for k in 2:
 		if _dub[k].playing:
@@ -1847,6 +1866,7 @@ func play_voice(line: Dictionary, who: Object = null) -> float:
 	p.volume_db = 0.0
 	p.stream_paused = false
 	_dub_owner[_dub_cur] = who.get_instance_id() if who != null else 0
+	_dub_combat = combat
 	voice_last_id = String(e["id"])
 	# Voz de LUTA (mundo rodando) não nasce colada num aviso (400 ms), com golpe
 	# avisado no ar nem por cima do stinger/morte do chefe: espera a folga.
@@ -1860,10 +1880,46 @@ func play_voice(line: Dictionary, who: Object = null) -> float:
 	else:
 		_dub_due_us = 0
 		p.play()
+		_note_combat_start(now, dur)
 	_set_vduck(1.0)
 	if _log_path != "":
 		played_counts["voice:" + voice_last_id] = int(played_counts.get("voice:" + voice_last_id, 0)) + 1
 	return dur + wait
+
+
+## Guarda de frequência das vozes de LUTA (Guardião §9). Conta só as que TOCARAM.
+func combat_voice_allowed(dur: float, id: String = "") -> bool:
+	if dur > COMBAT_VOICE_MAX_S:
+		return false
+	if id != "" and _combat_ids.has(id):
+		return false                  # nunca a mesma fala 2x na mesma luta
+	if _combat_voice_end_us > 0 and Time.get_ticks_usec() < _combat_voice_end_us + int(COMBAT_VOICE_GAP_S * 1000000.0):
+		return false
+	return combat_voices_left() > 0
+
+
+## Quantas vozes de luta ainda cabem nesta tela (6; 8 na batalha final).
+func combat_voices_left() -> int:
+	var cap := COMBAT_VOICES_MAX
+	var rm := get_node_or_null("/root/RunManager")
+	if rm != null and rm.has_method("screen_role") and String(rm.call("screen_role", int(rm.get("current_screen")))) == "final":
+		cap = COMBAT_VOICES_FINAL
+	return maxi(0, cap - _combat_voices)
+
+
+func _note_combat_start(now: int, dur: float) -> void:
+	if not _dub_combat:
+		return
+	_combat_voices += 1
+	_combat_ids[voice_last_id] = true
+	_combat_voice_end_us = now + int(dur * 1000000.0)
+
+
+## Tela nova (ou recomeço): a contagem de vozes de luta zera.
+func reset_combat_voices() -> void:
+	_combat_voices = 0
+	_combat_ids.clear()
+	_combat_voice_end_us = 0
 
 
 ## Quando uma voz de LUTA pode começar (µs). Cena pausada (caixa, card): já.
@@ -2023,6 +2079,7 @@ func _voice_tick(now: int) -> bool:
 			_dub_due_us = 0
 			if not _shut_down and _dub[_dub_cur].stream != null:
 				_dub[_dub_cur].play()
+				_note_combat_start(now, _dub[_dub_cur].stream.get_length())
 		elif float(now - _dub_wait_t0) / 1000000.0 > VOICE_WAIT_MAX:
 			# a luta não deu folga: desiste da voz (a legenda segue só com texto)
 			_dub_due_us = 0
