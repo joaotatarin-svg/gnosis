@@ -301,3 +301,11 @@ Astaphaios 96 s no médio — não mexi.
 §4 conferido: 1 tremor (Réplica usa o tremor padrão de pancada 0,35, sem novo) · 3 sem empilhar VFX novo além do
 desenho da postura/bolhas · 4 sem clarão · 5 sem câmera lenta nova · 11 forma+som · 13 risco: dois chefes mexidos
 juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o Juízo da pressão é regra fixa).
+
+### Ressalva do Guardião sobre db14a1a (Réplica "pegadinha") — 29/10
+- A Réplica só arma depois que a postura está ACESA (`STANCE_LIT` 0,3 s, o tempo do desenho acender); golpe dado
+  antes disso entra como no "armado" (faísca azul, dano baixo) e não conta para a pressão.
+- A 1ª Réplica de cada luta tem preparo de 0,45 s (`FIRST_REPLICA_WIND`; as seguintes 0,32 s) — dá para rolar
+  na primeira vez, antes de conhecer a postura (R5).
+- Recaptura com o código final (postura que gira com a Sophia): `_caps\chefes6\novos2\v2_s64_juizo{.gif,_sheet.png}`,
+  `v2_s64_replica*`, `v2_s64_replica_b*` — meia-cúpula do lado da Sophia, coroa sobre a cabeça.

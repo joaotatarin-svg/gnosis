@@ -13,9 +13,10 @@ extends BossBrain
 ## JUÍZO DA COROA (29/10, chefes6 — resposta a quem só martela): ele CRAVA o
 ## espadão de pé à frente e a coroa acende (lâmina dourada vertical + meia-cúpula
 ## de luz virada para a Sophia + 3 pontas sobre a cabeça + som de luz). Enquanto
-## a postura dura, todo golpe que chega é DEFENDIDO (faísca dourada, sem dano) —
+## a postura dura (depois de ACESA, 0,3 s), todo golpe que chega é DEFENDIDO (faísca dourada, sem dano) —
 ## e bater nela pede a RÉPLICA: corte largo vermelho (imparável) que joga a
-## Sophia longe (fase 3: + ondas rasteiras para os dois lados). Quem ESPERA a
+## Sophia longe (fase 3: + ondas rasteiras para os dois lados); a 1ª Réplica da luta
+## tem preparo de 0,45 s (aprende-se sem pegadinha), as outras 0,32 s. Quem ESPERA a
 ## postura acabar ganha a janela boa: ele arranca o espadão do chão e fica
 ## EXPOSTO (1,1 s). Vem no repertório e como RESPOSTA À PRESSÃO: 3 golpes dados
 ## nele fora das janelas (no neutro ou no meio do golpe dele) e a próxima
@@ -28,6 +29,12 @@ const PRESSURE_MAX := 3
 var _court_cd: float = 0.0
 var _pressure: int = 0
 var _riposte_armed: bool = false
+## Réplicas já dadas nesta luta: a 1ª tem preparo mais longo (Guardião, db14a1a: na 1ª vez
+## o jogador ainda não conhece a postura — sem pegadinha)
+var _replicas_done: int = 0
+## A postura só DEFENDE e arma a Réplica depois de ACESA (o desenho leva 0,3 s para acender)
+const STANCE_LIT := 0.3
+const FIRST_REPLICA_WIND := 0.45
 var _stance_fx: JudgeStance = null
 
 
@@ -152,8 +159,13 @@ func no_touch() -> bool:
 	return _in_stance() or super.no_touch()
 
 
+## Postura ACESA: a luz terminou de acender (antes disso o golpe entra como no "armado").
+func _stance_lit() -> bool:
+	return _in_stance() and _stance_fx != null and is_instance_valid(_stance_fx) and _stance_fx.lit_t() >= STANCE_LIT
+
+
 func _filter(dmg: int, attacker: Node) -> int:
-	if _in_stance() and _from_front(attacker):
+	if _stance_lit() and _from_front(attacker):
 		# defendido: faísca DOURADA no espadão (forma diferente da azul do "armado")
 		var fx_pos := e.global_position + Vector2(18.0 * e.atk_dir * e._art_scale, -20.0 * e._art_scale)
 		ImpactBurst.spawn(e.get_parent(), fx_pos, GOLD)
@@ -164,7 +176,7 @@ func _filter(dmg: int, attacker: Node) -> int:
 			_replica.call_deferred()      # fora do sinal de acerto
 		return 0
 	# golpe fora da janela (neutro / no meio do golpe dele) enche a PRESSÃO
-	if e.estate in [Enemy.EState.CHASE, Enemy.EState.WINDUP, Enemy.EState.STRIKE] and not e.armored:
+	if e.estate in [Enemy.EState.CHASE, Enemy.EState.WINDUP, Enemy.EState.STRIKE] and not e.armored and not _in_stance():
 		_pressure += 1
 	return dmg
 
@@ -186,6 +198,10 @@ func _replica() -> void:
 	var r := _find("replica_b" if cur == "juizo_b" else ("replica3" if phase >= 3 else "replica"))
 	if r.is_empty():
 		return
+	if _replicas_done == 0:
+		r = r.duplicate()
+		r.wind = FIRST_REPLICA_WIND
+	_replicas_done += 1
 	_chain.clear()
 	_hide_stance()
 	_start(r)
@@ -309,6 +325,8 @@ class JudgeStance extends Node2D:
 	var dir := 1.0
 	var _left := 0.0
 	var _t := 0.0
+	func lit_t() -> float:
+		return _t if _left > 0.0 else 0.0
 	func show_for(t: float) -> void:
 		_left = t
 		_t = 0.0
