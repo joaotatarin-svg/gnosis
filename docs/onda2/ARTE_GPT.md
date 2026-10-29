@@ -353,6 +353,20 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   Medido em jogo (ContrastProbe + contrast_r18.py): tela 3 1,76→2,06:1 · tela 30 2,02→2,37:1 · tela 57 1,45→1,71:1.
   Mais forte lava a pintura; o resto até 3:1 é do fundo (pedido em `docs/pedidos/cenario7.md`). Prancha:
   `_caps/arte-gpt/r18/r18_antes_depois.png`. Chefes/criaturas por quadros já tinham o rim do `painted_boss`.
+- **R18 fechamento com os fundos HD (29/10, Cenário7 1b1c69f na base) — REFEITO como fio de contorno**: o contraste
+  borda×fundo da Sophia estava em 2,6–2,9:1. 1ª tentativa (`HERO_RIM` 0,9, raio 6 texels) bateu 3,0 mas lavou pernas/botas
+  (creme em vez de marrom/azul-petróleo) — REPROVADA pelo chefe: a pintura vale mais que o número. Versão final: o
+  `painted_flex.gdshader` pondera a luz em dois raios (70% no meio raio, 30% no raio cheio: cai rápido para dentro) e
+  `HERO_RIM` 1,6 com `HERO_RIM_PX` 3,0 (~1 px de tela a 1280×720); halo de FORA inalterado (`HERO_HALO` 0,25, `halo_px` 1,6).
+  Interior de botas/calça/manto idêntico ao "antes" (zoom 2× nas botas). Medido (ProbeBg, rim off→on): 3 Torpor 2,76→3,16 ·
+  13 Fome 2,87→3,11 · 22 Corrente 2,86→3,15 · 31 Silêncio 2,77→3,11 · 40 Espelho 2,74→3,01 · 49 Praga 2,76→3,10 ·
+  57 Coroa 2,76→2,85 · 58 Coroa 2,62→2,67 · 66 Centro 2,85→3,19 · 68 Mente 2,08→2,33. Coroa e Mente NÃO chegam a 3:1 (fundo
+  dourado/roxo claro atrás, borda média baixa) — aceito pelo chefe até ~2,8 se a pintura ficar íntegra; 58 e 68 ficam um
+  pouco abaixo (o resto é do fundo/Cenário). `contrast_probe.gd` pula diálogo (tela 68).
+  Capturas: `C:\gnosis-wt\_caps\arte\r18\` (`r18_antes_depois_v2.png` = 58_x450, 58_x180 (Sophia diante dos
+  pedestais/estátuas dourados da Coroa), 40 Espelho, 3 Torpor; `r18_botas_2x_v2.png`; probes `fin2_*`).
+  CHECAGEM: R18 atendida em 7 de 10 telas (≥3:1), Coroa 2,7–2,85 e Mente 2,3 pendentes e sinalizadas; R16 ok (fio
+  discreto, sem pulso/flash); §4 conferido (sem truque, sem aviso por cor); cor REAL da pintura preservada.
 - **R17 tremor**: o `Juice.shake` da queda de joelhos na morte desenhada caiu de 0,7 para 0,15 (micro) — o tremor
   grande é UM, no golpe final (combate/chefes6).
 - **QA7 #18 pés**: `tools/FeetProbe.tscn` mede pé desenhado × base da colisão nas 7 telas de Arconte: todos ≤ 3 px,

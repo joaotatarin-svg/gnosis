@@ -26,6 +26,7 @@ uniform vec4 glow_color : source_color = vec4(1.0, 0.9, 0.6, 1.0);
 uniform vec4 rim_color : source_color = vec4(0.8, 0.9, 1.0, 1.0);
 uniform float rim_amt = 0.0;
 uniform float halo_amt = 0.0;
+uniform float halo_px = 0.0;   // raio do halo de fora (texels); 0 = usa rim_px
 uniform float rim_px = 3.0;
 
 varying vec2 body_pos;                 // posição no corpo (0..1 de altura), pra o ruído
@@ -71,12 +72,16 @@ void fragment() {
 	vec4 c = texture(TEXTURE, uv);
 	if (rim_amt > 0.0 || halo_amt > 0.0) {
 		float mn = 1.0;
+		float mn2 = 1.0;   // metade do raio: a luz cai rápido para dentro
 		float mx = 0.0;
 		vec3 ncol = vec3(1.0);
+		float hpx = halo_px > 0.0 ? halo_px : rim_px;
 		for (int i = 0; i < 8; i++) {
 			float ang = float(i) * 0.785398;
-			vec4 nb = texture(TEXTURE, uv + vec2(cos(ang), sin(ang)) * texel * rim_px);
-			mn = min(mn, nb.a);
+			vec2 dir = vec2(cos(ang), sin(ang)) * texel;
+			mn = min(mn, texture(TEXTURE, uv + dir * rim_px).a);
+			mn2 = min(mn2, texture(TEXTURE, uv + dir * rim_px * 0.5).a);
+			vec4 nb = texture(TEXTURE, uv + dir * hpx);
 			if (nb.a > mx) {
 				mx = nb.a;
 				ncol = nb.rgb;
@@ -86,7 +91,8 @@ void fragment() {
 			// só acende onde a borda é ESCURA (botas, calça, cabelo na sombra): o
 			// branco do manto já salta; luz nele só lavaria a pintura
 			float dark = 1.0 - clamp(dot(c.rgb, vec3(0.299, 0.587, 0.114)) * 1.4, 0.0, 1.0);
-			c.rgb += rim_color.rgb * clamp(c.a - mn, 0.0, 1.0) * rim_amt * dark;
+			float edge = clamp(c.a - mn2, 0.0, 1.0) * 0.7 + clamp(c.a - mn, 0.0, 1.0) * 0.3;   // fio de ~1 px; o interior fica intacto
+			c.rgb += rim_color.rgb * edge * rim_amt * dark;
 		}
 		// halo mais forte junto das partes escuras (onde ela some no fundo escuro)
 		float ndark = 1.0 - clamp(dot(ncol, vec3(0.299, 0.587, 0.114)) * 1.4, 0.0, 1.0);
