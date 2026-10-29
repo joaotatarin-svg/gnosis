@@ -783,11 +783,10 @@ func _champion_x(c: float) -> float:
 
 
 ## QA7 #12: o letreiro do Campeão só sai quando ele JÁ está na tela — ele surge
-## com o brilho de aparição e, ~0,6 s depois (ou quando entra no quadro, até 2 s),
-## vem o card.
+## (o brilho de aparição é do Enemy) e, ~0,6 s depois (ou quando entra no quadro,
+## até 2 s), vem o card.
 func _champion_card_when_visible(champ: Node2D) -> void:
-	if champ != null and is_instance_valid(champ):
-		VfxLibrary.boss_appear(self, champ.global_position + Vector2(0, -20))
+	# (O brilho de aparição é do próprio Enemy._boss_intro_fx — aqui não repete: R4.)
 	var t := 0.0
 	while t < 2.0:
 		await get_tree().process_frame
