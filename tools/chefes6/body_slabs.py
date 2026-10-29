@@ -12,7 +12,7 @@
 # --abrir N: antes de medir, ABRE a máscara (erode+dilata com disco de N px) e fica só
 # com a maior peça — some com o que é FINO ou SOLTO e não é corpo: fiapos de névoa
 # (Athoth), cajado/espelho na ponta do braço e cacos flutuando (Astaphaios). O Rei
-# (manto maciço) usa o padrão (sem abrir). --fill F troca o COL_FILL. --bruto G: coluna
+# (manto maciço) usa o padrão (sem abrir). --fill F troca o COL_FILL. --folga N troca o SHRINK. --bruto G: coluna
 # do desenho BRUTO opaca em >= G das linhas da faixa também conta (barra em pontas).
 import json
 import sys
@@ -43,7 +43,7 @@ def solid_mask(crop: np.ndarray, k: int) -> np.ndarray:
 
 
 def main() -> None:
-	global COL_FILL
+	global COL_FILL, SHRINK
 	root = Path(__file__).resolve().parents[2]
 	args = [x for x in sys.argv[1:]]
 	opts = {}
@@ -62,6 +62,9 @@ def main() -> None:
 	raw_fill = float(opts.get("bruto", 0.0))
 	if "fill" in opts:
 		COL_FILL = float(opts["fill"])
+	# --folga N: px do recorte para dentro (atlas maior = mais px por px de mundo; o Rei de 450 px usa 5)
+	if "folga" in opts:
+		SHRINK = int(opts["folga"])
 	meta = json.loads((root / f"assets/painted/derived/{char}_frames.json").read_text(encoding="utf-8"))
 	atlas = Image.open(root / meta["atlas"].replace("res://", "")).convert("RGBA")
 	a = np.asarray(atlas)[:, :, 3]
