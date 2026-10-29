@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 (+ arte-gpt 64e92cf) | 1c4b0c7 | APROVADO COM RESSALVAS (Rei HD: parada/andar estáveis, telégrafo amarelo e glint legíveis, pés pregados; 4 de 8 trocas secas já conhecidas; +190 MB de VRAM; ReiProbe só pelos números do dono) | R5, justiça, build |
 | dir7/dublagem-lote | 4920893 (lote limiar-1: 11 falas PT) | APROVADO COM RESSALVAS (ética e licença ok: referência 100 % sintética, Apache-2.0; medidas dentro das REGRAS; caudas de reverb de 280-360 ms e A Voz do king_fall com CER 0,103 no limite) | REGRAS_GUARDIAO §6, §3, §4; ética |
 | dir7/audio7 | b655563 (delta de 656dfc0) | APROVADO (ressalvas (a), (b) e (c) fechadas: guarda de vozes de luta, 1 aperto corta e avança, Vozes 80 %) | REGRAS_GUARDIAO §3, §9 |
 | dir7/audio7 | 656dfc0 (infra de dublagem; delta próprio 08994eb, 122aea4, 656dfc0) | APROVADO COM RESSALVAS (controle e legenda cumprem as REGRAS; faltam as travas de frequência/duração de fala em combate e o 1º aperto que só corta a voz) | R4, R9, R5, REGRAS_GUARDIAO |
@@ -1077,6 +1078,17 @@ a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 ---
 
+## Rei HD — chefes6 1c4b0c7 (contém arte-gpt 64e92cf)
+
+**Medido:** importação do 1c4b0c7 sem `SCRIPT ERROR` (`_caps\guardiao\p16_import.txt`); li `new_sec.txt`, vi `prancha_rei_hd.png` e `windup36.png`; medi o atlas publicado (`rei_frames.json/png`, 2048x8192, 450 px de corpo). **O ReiProbe do 1c4b0c7 que eu lancei não terminou a tempo do relatório** (log em `p16_rei1.txt`, se existir): os números 97-99 %, atravessa=0, apelão=0 são os do dono.
+- **Nada "borracha":** parada 16q: capuz 0,9 px, tronco 1,8, barra 7,1 de 457 px (1,6 %), base 3 px; andar 12q: capuz 0,8, tronco 3,4, barra 6,1; nos golpes a base fica em 0-1 px (pés pregados) e o topo sobe até 98 px só no `windup` (é o braço/olho se erguendo: o gesto do telégrafo).
+- **Telégrafo legível:** no windup o contorno amarelo brilhante (`telegraph_color`, mecanismo próprio, não o `rim_mul`) e o glint de 180 ms antes aparecem nítidos sobre o azul-petróleo, com o manto creme e o olho erguido bem separados do fundo. A pose de preparo (braço no alto + a outra mão aberta) agora é a mesma em todos os quadros do `windup`, então o gesto é mais claro que no v11.
+- **Justiça:** BodyBox de 16 faixas (fill 0,30) regenerada nos 56 quadros; o dono mede atravessa=0, apelão=0, cobertura 97-99 %. As trocas secas (4 de 8) não mexem em tempo nem em alcance: o golpe segue os timers do Enemy.
+- **Ressalvas (build):** +~190 MB de VRAM sem compressão (página própria 2048x8192 x3 texturas): conferir em máquina de 4 GB; dano/morte/cenas do Rei ainda usam a pintura antiga (estilo diferente dentro da mesma luta); 4 de 8 trocas de pose secas.
+**Veredito: APROVADO COM RESSALVAS.**
+
+---
+
 ## dir7/dublagem-lote — 4920893 (1º lote: prólogo, despertar, Rei do Limiar; 11 falas PT)
 
 **Medido OFFLINE (sem tocar nada), no commit:** extraí `assets/audio/voice` e rodei `ffmpeg ebur128=peak=true` + silêncios (`_caps\guardiao\lote`). Não rodei o VoiceProbe/validate (o dono dá 0 falhas e verde).
@@ -1430,51 +1442,32 @@ e a saia branca contra o céu do Espelho. (4) +0,02-0,03 de luminância é peque
 
 ---
 
-## BILHETE PARA O SUCESSOR (29/10)
+## BILHETE PARA O SUCESSOR (atualizado 29/10, antes da pausa)
 
-**Quem sou:** Guardião da Satisfação. Worktree `C:\gnosis-wt\guardiao` (branch `dir7/guardiao`, push em `origin/dir7/guardiao`). Reporto SÓ ao chefe (relatório curto, o
-limite que ele pedir, normalmente ≤ 5 linhas). Mensagem de commit em português, termina com `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+**Quem sou:** Guardião da Satisfação. Worktree `C:\gnosis-wt\guardiao` (branch `dir7/guardiao`, push em `origin/dir7/guardiao`). Reporto SÓ ao chefe (relatório curto, o limite que ele pedir, normalmente <= 3 linhas). Commit em português, termina com `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+**Ler ao começar:** `C:\gnosis-wt\_REGRAS.md`; `docs/handoff/NEURO_SATISFACAO.md` (R1-R22, §3, §4); `C:\gnosis-wt\_caps\dublagem\REGRAS_GUARDIAO.md` (dublagem, 22 regras); este doc (índice no topo, o mais novo em cima).
 
-**Leitura obrigatória ao começar:** `C:\gnosis-wt\_REGRAS.md`; `docs/handoff/NEURO_SATISFACAO.md` (§2 R1-R22, §3, §4); este doc (índice de vereditos no topo, o mais novo em cima).
+**Método:** (1) `git fetch`; auditar o delta PRÓPRIO (`git show <commits do dono>`; `a...b` vem sujo de merge da integração). (2) ler código e doc do dono. (3) rodar só o indispensável, headless, `--audio-driver Dummy`, sem janela. (4) escrever a seção, a linha no índice, commit e push. (5) relatório curto. Honesto: "li" x "rodei"; a IA não ouve (áudio só por análise de arquivo).
+**Sonda:** worktree destacado `C:\gnosis-wt\guardiao_sonda`: `git checkout -q -f --detach <commit>`, importar com `Godot --headless --audio-driver Dummy --path ... --editor --quit` (3-10 min com atlas grandes; rode em segundo plano), depois a sonda. Godot em `C:\Users\jmtat\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.7.1-stable_win64_console.exe`.
+Sondas: `tools/progressao6/ProgQA` (62 PASS), `tools/tecnico/TecnicoQA` (43 PASS), `tools/combate/FlashParryProbe` (SEM `--fixed-fps`; 5/5 PASS, sensível a carga), `tools/chefes6/ReiProbe -- out=<p> tag=<x> tela=<N>` (na tela 68 mede o Colosso, não o Rei), `tools/audio/VoiceProbe` (0 falhas), `tools/cenario7/HdShot`.
+Medidas de atlas: ler `assets/painted/derived/{sophia_frames,bosses/rei_frames}.json/png` e alinhar os quadros pela âncora (capuz/tronco/barra/base) para provar "sem borracha".
+Pastas: capturas e logs meus em `C:\gnosis-wt\_caps\guardiao\` (`p7-p16_*`, `lote\`, `atl\`).
 
-**Como audito um branch (padrão que o chefe espera):**
-1. `git fetch`; diff contra o commit anterior que já aprovei (use `git show <commits PRÓPRIOS>`; `a...b` vem sujo quando o branch fez merge da integração).
-2. Ler código e o doc do dono (CHECAGEM DE SATISFAÇÃO). Conferir se a CHECAGEM confere com o código.
-3. Rodar só o indispensável, em headless e sem som. Resultado: APROVADO / APROVADO COM RESSALVAS / REPROVADO + R atendidas/violadas + item de §4.
-4. Escrever a seção no doc (ordem: sondas medidas, o que muda, checagem por R, veredito), acrescentar a linha no índice do topo, commit e push.
-5. Relatório ao chefe no limite de linhas dele. Depois do relatório, terminar o turno.
-
-**Sondas que uso** (worktree de sonda destacado `C:\gnosis-wt\guardiao_sonda`, `.godot` já importado):
-- Trocar de commit: `git -C C:\gnosis-wt\guardiao_sonda checkout -q -f --detach <commit>` (o `-f` descarta o lixo de `.import` gerado), depois importar:
-  `Godot --headless --audio-driver Dummy --path C:\gnosis-wt\guardiao_sonda --editor --quit` (conferir ZERO `SCRIPT ERROR|Parse Error`; o segfault ao sair é normal).
-- Combate: `tools/combate/FeelProbe.tscn`, `HitboxProbe.tscn -- <json> rapido` (ambas `--fixed-fps 60`), `FlashParryProbe.tscn` (SEM `--fixed-fps`; o Juice mede flashes pelo relógio).
-- Chefes: `tools/chefes6/ReiProbe.tscn -- out=<prefixo> tag=<x> tela=<N>` (headless; mede cobertura da caixa e golpe esperado × real em qualquer chefe por tela);
-  `tools/chefes6/BossProbe` (longa; li os números do dono); `tools/combate/BossHurtProbe` (precisa de janela; li o log do dono).
-- Mapa: `tools/map6/MapQA.tscn` (29 PASS no 4e4b9cc), `tools/level6/LayoutQA.tscn`. Progressão: `tools/progressao6/ProgQA.tscn` (58 PASS).
-- Visual: `tools/cenario7/HdShot.tscn -- <tela> <png> 150 nohud x=<x> [solo]` com `--resolution 320x180 --position 4000,4000` (janela mínima fora da vista; imagem sai 1280x720).
-  `--script` NÃO carrega autoloads (não dá para chamar `RunManager`/`EonMap` assim).
-- Áudio: só offline (`ffmpeg -af "apad=pad_dur=0.6,ebur128=peak=true"`); medidas de base em `_caps\guardiao\audio\`.
-- Logs e capturas do Guardião: `C:\gnosis-wt\_caps\guardiao\` (prefixos `p7*_`, `c7*`, `arc_*`).
-
-**Estado (29/10):** todos os branches da Onda 7 têm veredito no índice do topo. Últimos: polimento7 28d8df7 APROVADO, chefes6 61645f7 APROVADO, progressao6 3d13bbd,
-cenario7 1b1c69f, mapa7 4e4b9cc, arte-gpt 50f807a (aprovado), todos com as ressalvas listadas nas respectivas seções.
+**Estado (29/10):** todos os branches da Onda 7 e 3.2.x têm veredito no índice. Entrou/aprova: progressao6 68bcaea, arte-gpt 118cb99/8916611/a238686 (parada r4), Rei v11/nítido/HD (9ad0b06, 63f597a, 64e92cf), chefes6 213d292/0e8d761/b587064/1c4b0c7, polimento7 b087740, audio7 b655563 (infra de dublagem), dublagem-lote 4920893 (11 falas).
 
 **PENDENTES que eu cobraria:**
-1. **Coroa (cenario7):** captura com a Sophia DIANTE da estátua dourada (tela 57/58, `HdShot x=<...> solo nohud`) para confirmar que a sombra resolve e não vira bolha. Não confirmado.
-2. **Halo (cenario7) em movimento:** só o playtest decide se lê como "nuvem escura que segue".
-3. **Borda da Sophia (arte-gpt 118cb99, APROVADO COM RESSALVAS):** feita como fio; 7/10 telas em 3,0-3,2; Coroa 2,67-2,85 e Mente 2,33 abaixo; cajado clareia nas telas frias; conferir em movimento.
-4. **Progressão (68bcaea APROVADO COM RESSALVAS):** chave do secreto e aviso do `claim_once` FECHADOS; morte só leva o ganho da tela (decisão do chefe). Resta: comentários velhos "-20%"; ritmo da arma (~27 telas no Nv.3);
-   ver no playtest se a morte, agora sem custo real, "pesa".
-5. **polimento7:** Arconte do Sono/Espelho (resolvido pelo chefes6 com BodyBox, 1 golpe a 55 px no Espelho aceito); BALANCE r7 foi medido com a renda de faíscas antiga.
-6. **chefes6:** `block` da guarda alta 0,25 -> 0,4 s só se o playtest reclamar; Armupiel/Coroa ainda curtos no bot agressivo (o dono admite).
-7. **audio7 / perigos7 (antigos):** `hz_tide_tick` a cada 300 ms (espaçar para ~600 ms se reclamarem); `Gnosis.boss_card("campeao")` já mudo.
-8. **Integração:** conferir que o chefes6 `4574a19` (som do voleio do Astaphaios) entra junto do polimento7 2854fc0 (senão esse tiro fica mudo) e que `champion_enter` não dobra com o cue do encenacao5.
+1. **R18:** Coroa 2,67-2,85 e Mente 2,33 abaixo de 3:1 (fundo; Cenário). Halo do Cenário em movimento e a borda da Sophia: só o playtest.
+2. **Rei HD:** +190 MB de VRAM (testar em 4 GB), 4 de 8 trocas de pose secas, dano/morte/cenas na pintura antiga; Rei da tela 68 ao lado do Colosso.
+3. **Chefes:** Réplica 0,32 s (playtest humano); sons próprios da postura/bolhas/Estouro (Áudio); `block` 0,25 -> 0,4 s só se reclamarem; Estouro por toque 0,45 s.
+4. **Dublagem:** atribuição Apache-2.0 do Qwen3-TTS nos créditos; caudas de reverb 263-361 ms (> 250 ms do contrato); `A Voz` do king_fall CER 0,103; vozes EN (hoje voz PT + legenda EN); nenhuma fala de COMBATE gravada ainda (guardas de 8 s/6 por tela só foram testadas pela sonda); o Rei da final com legião 4-5 e grito é do ouvido do João.
+5. **Progressão:** a morte agora só leva o ganho da tela (sem custo real): ver no playtest se "pesa"; ritmo da arma (~27 telas no Nv.3).
+6. **audio7/perigos7 (antigos):** `hz_tide_tick` a 300 ms (espaçar para ~600 ms se reclamarem).
+7. **FlashParryProbe:** falhou 1x para o dono (carga); não vi em 5 rodadas.
 
 **Armadilhas:**
-- O `claim_once` e o `LaneHalo` só se avaliam bem no jogo; sem rodar o jogo marque "provável, conferir".
+- `claim_once` e `LaneHalo` só se avaliam bem rodando o jogo; sem rodar, marque "provável, conferir".
 - Tabelas de atlas estáticas (`LUMA_K`) pedem `tools/combate/flash_luma.py` de novo se a Arte repintar atlas.
-- Não existe pasta `esgotado`/capturas dos outros diretores até eles gerarem; se ainda não existir, audite o resto e marque a leitura visual como pendente.
-- Chefes: nunca chame de "aprovado" sem ver o delta PRÓPRIO do branch.
+- Nunca chame de "aprovado" sem ver o delta PRÓPRIO. Capturas do dono podem ser anteriores a uma correção (aconteceu com a postura do Juízo): confira o horário do commit.
+- Não toque no worktree do dono nem faça merge; não deixe processo Godot rodando.
 
 ---
-
