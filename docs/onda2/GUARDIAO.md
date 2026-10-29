@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir2/arte-gpt + dir6/chefes6 | 9ad0b06 (delta de a238686) + 6c2bd29 (delta de 0e8d761; inclui a arte) | APROVADO COM RESSALVA (Rei v11: parada 16q e andar 12q estáveis, sem borracha medida; ReiProbe atravessa=0, apelão=0, cobertura 97-98 %; a troca seca parada->preparo fica até os golpes novos) | R5, R18, justiça |
 | dir2/arte-gpt | a238686 (delta de 8916611: parada r4 = a pintura s16 animada em camadas) | APROVADO (a ressalva de identidade fecha: cabelo branco com mecha azul, mesmo corpo; sem "borracha" medida; R18 volta ao nível da pintura, Coroa ~2,7 aceita) | R18, coerência |
 | dir2/arte-gpt | 8916611 (delta de 118cb99; base 95ec4b3) | APROVADO COM RESSALVAS (R18 3,23-3,79 em 9 telas; reversível; o pulo de estilo parada 3D x resto pintado é REAL, pior no cabelo e na anatomia, e fica para o playtest decidir) | R18, coerência, R16 |
 | dir7/polimento7 | b087740 (delta de 28d8df7; commits próprios 7652917, 0353991, b087740) | APROVADO (só RuleProbe e docs; nenhum arquivo de jogo) | R16 |
@@ -1068,6 +1069,23 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## Rei v11 — arte-gpt 9ad0b06 (delta de a238686) e chefes6 6c2bd29 (delta de 0e8d761)
+
+**Medido (sonda `guardiao_sonda` no 6c2bd29, headless, sem som):** importação sem `SCRIPT ERROR`/`Parse Error` (`_caps\guardiao\p13_import.txt`). **ReiProbe na tela 1** (`p13_rei1.txt`): `atravessa=0`, `apelao=0`; golpe esperado x real batem em todas as distâncias (nenhum toque a >= 75 px, acerta de 70 a 50 px, dano 7);
+caixa do BodyBox: cobre 97-98 % do desenho e fica 6-14 % fora (o dono dá 7,3 % de média); pano fora da faixa do cajado 2,7-4,0 px, sobra 6,6-8,0 px. Medi o atlas publicado do Rei (`rei_frames.json/png`, quadros alinhados pela âncora): **parada 16 quadros** (6 fps): capuz 1,1 px, tronco 1,2 px, topo 1 px, base 2 px,
+barra 5,0 px (1,6 % da altura de 303); **andar "deslizar" 12 quadros**: capuz 1,0 px, tronco 1,2 px, barra 4,2 px. Vi `luta_andar_golpe.png` e o zoom do capuz.
+
+- **"Borracha": não há.** O corpo e o capuz quase não saem do lugar (~1 px); só a barra do manto ondula (4-5 px), que é o que se quer de um manto. Duas chaves do dono ajudam e estão corretas no código: `spring_mul 0,3` (a mola `sx/sy/curvatura` dos golpes passa a valer 30 %: era o que esticava o cartão) e
+  `flex_off_states` idle/walk (`ca = 0` quando a sequência mostrada é uma delas: a folha já ondula o manto, o vento do shader não dobra). Só vale para quem tem as chaves no JSON (o Rei); os outros chefes leem 1,0 e `[]` por padrão, então não mudam.
+- **Legibilidade/justiça (chefes6 6c2bd29): ok.** A caixa nova casa com os 28 quadros de parada/andar (fill 0,26 só neles) e os golpes seguem iguais; o golpe só fere quando o cajado de fato toca o pano (nenhum "acerta o ar"), e o "esperado=false" a >= 75 px confere com o desenho. R5 (telegrafo do Rei) não mudou.
+- **Ressalva (já conhecida do dono): a troca parada -> preparo ainda é SECA.** Na `luta_andar_golpe.png` o Rei passa de braços junto ao corpo (parada/andar) para o gesto de preparo (braço levantado, manto aberto) sem quadro de transição; não atrapalha a leitura (o telegrafo amarelo/vermelho e o
+  `tell` seguem na hora certa), mas é o único ponto onde o Rei lê como "troca de cartão". Espera os golpes em produção; baixa prioridade.
+- §4: nada de recompensa, flash ou tremor novo.
+
+**Veredito: APROVADO COM RESSALVA** (a troca seca, que o dono já listou).
 
 ---
 
