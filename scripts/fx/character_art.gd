@@ -1707,6 +1707,12 @@ func _draw_painted(s: float) -> void:
 		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("hem_wave", 2.0 if profile.body == ArtProfile.Body.WRAITH else 0.0)
+		# R18: a Sophia salta do fundo cheio — luz de recorte + halo fino na cor do Éon
+		var hero_rim: bool = hero and rim_enabled
+		mat.set_shader_parameter("rim_amt", HERO_RIM if hero_rim else 0.0)
+		mat.set_shader_parameter("halo_amt", HERO_HALO if hero_rim else 0.0)
+		mat.set_shader_parameter("rim_px", 1.6)
+		mat.set_shader_parameter("rim_color", eon_light().lerp(Color(1, 0.96, 0.88), 0.35))
 	mat.set_shader_parameter("texel", Vector2(1.0 / tex.get_width(), 1.0 / tex.get_height()))
 	mat.set_shader_parameter("dissolve", _dissolve_amount())
 	mat.set_shader_parameter("glow_color", profile.eye)
@@ -2275,6 +2281,8 @@ const _TELEGRAPH_TINTS := [Color(1.0, 0.85, 0.2, 1.0), Color(1.0, 0.25, 0.25, 1.
 
 
 const RIM_BASE := 0.32              # contorno de luz dos inimigos (≈0,3; ×2 na preparação)
+const HERO_RIM := 0.6               # Sophia: luz de recorte por dentro da borda (R18)
+const HERO_HALO := 0.4              # Sophia: halo de ~1 px por fora (R18)
 static var rim_override: int = -1   # QA: força o Éon da cor do contorno (-1 = tela atual)
 var rim_enabled: bool = true        # QA/cenas: desliga o contorno deste personagem
 var weapon_level_override: int = -1 # QA: força o nível da arma da Sophia (-1 = Progression)
@@ -2522,8 +2530,9 @@ func _tick_death(delta: float) -> void:
 	_death_t += delta
 	if before < DEATH_STAGGER and _death_t >= DEATH_STAGGER:
 		_impact = 1.0                       # cai de joelhos
+		# micro-tremor: o tremor GRANDE é um só, no golpe final (combate/chefes6)
 		if is_inside_tree():
-			Juice.shake(0.7)
+			Juice.shake(0.15)
 	if before < DEATH_BREAK and _death_t >= DEATH_BREAK:
 		_shatter()
 	if before < DEATH_END and _death_t >= DEATH_END:
