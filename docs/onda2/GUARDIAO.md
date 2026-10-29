@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/audio7 | 656dfc0 (infra de dublagem; delta próprio 08994eb, 122aea4, 656dfc0) | APROVADO COM RESSALVAS (controle e legenda cumprem as REGRAS; faltam as travas de frequência/duração de fala em combate e o 1º aperto que só corta a voz) | R4, R9, R5, REGRAS_GUARDIAO |
 | (prévia) | Dublagem: regras do Guardião para a produção | REGRAS ESCRITAS em `C:\gnosis-wt\_caps\dublagem\REGRAS_GUARDIAO.md` (22 regras: controle, legenda, frequência, escada de intensidade, mixagem) | R4, R5, R9, R10, R11, R13, R21, §4 |
 | dir2/arte-gpt + dir6/chefes6 | 63f597a (delta de 9ad0b06) + b587064 | APROVADO (Rei a 450 px legível sem o halo; telégrafo intacto por ser outro mecanismo; ReiProbe tela 1: atravessa=0, apelão=0, 96-99 %) | R5, R18, justiça |
 | dir2/arte-gpt + dir6/chefes6 | 9ad0b06 (delta de a238686) + 6c2bd29 (delta de 0e8d761; inclui a arte) | APROVADO COM RESSALVA (Rei v11: parada 16q e andar 12q estáveis, sem borracha medida; ReiProbe atravessa=0, apelão=0, cobertura 97-98 %; a troca seca parada->preparo fica até os golpes novos) | R5, R18, justiça |
@@ -1071,6 +1072,19 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## dir7/audio7 — 656dfc0 (infraestrutura de dublagem contra `REGRAS_GUARDIAO.md`)
+
+**Medido:** li o código (`audio_manager.gd`, `dialogue_box.gd`, `caption_bar.gd`, `cinematic.gd`, `options_menu.gd`, `save_manager.gd`) e a captura `_caps\audio7\opcoes_vozes_640.png`. O VoiceProbe do dono (0 falhas) NÃO foi refeito por mim no fechamento deste relatório (import do worktree de sonda ainda rodando; log em `_caps\guardiao\p15_*`).
+- **Controle: cumpre (regras 1-5).** Nada pausa nem trava o mundo por voz: a `CaptionBar` (combate) só segura o TEXTO enquanto a voz espera a folga e desiste em 4 s (`VOICE_WAIT_MAX`), sem `lock_advance` nem DialogueBox. Em cena, o aperto completa o texto e corta a voz em 80 ms; a fala dublada ignora o `wait_2s`; morte, troca de cena, `_finish`/`_exit_tree`, legenda que sai e cinemática cortam em 120 ms. Sem arquivo ou Vozes 0 %: `play_voice` devolve 0 e tudo volta como antes.
+- **Legenda sempre: cumpre (regra 6).** As Opções só têm TAMANHO (P/M/G, `% 3`), não há "desligada"; o `DialogueBox` e a `CaptionBar` mostram o texto de qualquer jeito, com ou sem voz.
+- **Janelas e mixagem: cumprem (10, 19, 20).** Voz de luta não nasce com golpe avisado no ar (+300 ms), nem colada num `tell_*` (+400 ms), nem sobre o stinger (+500 ms); ducking -8/-6 dB "vale o maior", ataque 80 ms, release 700 ms, e os efeitos não baixam; ao soar um `tell_*` a voz desce 8 dB e perde graves (passa-altas 250 Hz).
+- **Ressalvas:** (a) a infra NÃO impõe as regras de frequência de combate (>= 8 s entre falas, <= 6 por luta, <= 2,5 s, grito <= 1,2/2,0 s): hoje só valem pelo manifesto; antes da 1ª fala de combate entrar, pôr um guarda no `play_voice` (intervalo mínimo e contador por luta, só com o mundo rodando). (b) o 1º aperto com a voz soando COMPLETA o texto e corta a voz, mas não avança mesmo que o texto já esteja inteiro (a cauda de até 0,3 s): preferível que, com o texto completo, 1 aperto corte a voz e avance. (c) a captura das Opções mostra Vozes em 100 %, e o padrão do código é 80 %: conferir se é só a captura. (d) uma fala nova corta a anterior (sem prioridade cena > Rei > Arconte): ok enquanto o manifesto está vazio.
+- Manifesto vazio = jogo igual a hoje. Edições fora da área (dialogue_box, caption_bar, cinematic, options_menu, save_manager, en_table) são aditivas e protegidas por `has_method`/`_voice_dur > 0`.
+
+**Veredito: APROVADO COM RESSALVAS** (a infraestrutura entra; as travas (a) e o ajuste (b) antes de entrar fala de combate).
 
 ---
 
