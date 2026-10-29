@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/polimento7 | 0ba25d8 (delta de 2854fc0: 222dc38, 0ba25d8) | APROVADO COM RESSALVAS (Campeão com 1 som: ok; teto do invocador ok; o "esgotado" é discreto e ele AINDA recua andando, ao contrário do que o doc diz) | R4, R9, R18, R5/§5 |
 | dir7/polimento7 | 2854fc0 (delta de 2d54867: d639053, 4305f1d, 5898825, 2854fc0) | APROVADO COM RESSALVAS (cast mudo e proj_fire hostil FECHADOS; contorno dos chefes melhora, mas o Arconte do Sono ainda tem pano de 15-27 px sem dano; Astaphaios fica mudo sem o 4574a19 do chefes6) | R4, R5/§5.5, §3, R1 |
 | dir6/chefes6 | 8d00636 (delta de b0b52f0: 4574a19, 42d4804, 09b7989, 8d00636) | APROVADO COM RESSALVAS (hitbox fiel sem apelão; Raio legível; resta o Raio com halo/cauda além da área e a integração com a genérica) | R5, R18, R4, R10, R21 |
 | dir7/polimento7 | 2d54867 (delta de 87290ca; 4b022a8, d5586a9, 2d54867 + merges vfx7/audio7) | APROVADO COM RESSALVAS (R3, R15, ressalva do audio7 e a do flash fechadas; cast com 3 sons; doc incompleto) | R3, R15, R4, R5, R9, §3 |
@@ -948,6 +949,44 @@ no topo; chefe com `BodyBox` é pulado, sem tocar na forma nem no `disabled`; Ca
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: (1) integrar com o chefes6 4574a19 (Astaphaios), (2) Arconte do Sono/Espelho
 ainda com pano sem dano de 15-27 px, (3) reconferir a BossHurtProbe depois do merge com a BodyBox.
+
+---
+
+## dir7/polimento7 — 0ba25d8 (delta de 2854fc0: 222dc38, 0ba25d8)
+
+**Medido no 0ba25d8 (worktree de sonda, headless):** importação sem `SCRIPT ERROR`; FeelProbe `QA PASS`. O log do dono
+(`C:\gnosis-wt\_caps\polimento7otudio_t15.json`) mostra `champion_enter` = 1 e nenhum `boss_appear` na tela do Campeão. Li as
+capturas `C:\gnosis-wt\_caps\polimento7\esgotado\` (antes, depois e sopro, telas 38 e 48).
+
+**O que muda:** `cinematic.gd` (`boss_card(..., sting = true)`, o `boss_appear` só toca se `sting`), `level.gd` (`_champion_card` passa
+`sting = false`, inclusive a reserva "O CAMPEÃO"), `enemy.gd` (invocador: teto total de 3 chamadas, 2 larvas cada = 6; ESGOTADO = cinza
+x0,62 no corpo, um sopro, sem o golpe `recuo`).
+
+**Checagem:**
+- **R4 / R9, Campeão: ATENDE.** A aparição fica com `champion_enter` e sem o stinger de chefe, então a música do Éon não vira música
+  de chefe e o Rei e os Arcontes mantêm a "entrada de chefe" só para eles. Prova no log de áudio. Também tira de cena o risco que eu
+  tinha anotado de a aparição do Campeão dobrar com o cue do encenacao5. Observação: o ramo `"campeao"` do `Gnosis.boss_card` ficou
+  sem chamador e ainda toca o stinger (código morto; se alguém o religar, dobra).
+- **§3 / §4, teto do invocador: ATENDE.** A zona passa a ter fim previsível (no máximo 6 larvas), sem número escondido e sem
+  multiplicador de dano. É alívio ao jogador, não escassez. O bot (doc §16) mostra o tempo nas 16 telas com invocador 1928,6 -> 1754,1 s,
+  timeouts 9 -> 7 e quase-mortes 208 -> 189. O estado esgotado não muda o dano.
+- **R5 / clareza, RESSALVA (o doc promete mais do que o código faz):** o doc diz "para de recuar, fica ao alcance do cajado". O
+  invocador usa o repertório (`moves`), então anda por `_chase_moves` -> `_desired_x`, e no papel `shooter` essa função continua o
+  empurrando para `px + lado * 175` quando a Sophia chega a menos de 120 px. O `_summon_exhausted` só entra em dois lugares: o ramo
+  legado de `_process_chase` (linha 651), que o invocador não usa porque tem `moves`, e o filtro do golpe `retreat` em `_pick_move`.
+  Resultado: ele perde o salto de recuo, mas continua se afastando a pé (velocidade baixa, e a coleira da arena o limita). Correção
+  mínima: em `_desired_x`, no ramo `shooter`, `if _summon_exhausted: return px + side * 60.0` (ou o `ring` melee). Não bloqueia: o
+  teto, sozinho, já encurta a luta (bot).
+- **R18 / leitura visual: RESSALVA leve.** Nas capturas o esgotado é só um corpo ~38 % mais escuro (`self_modulate` x 0,62) e um sopro
+  cinza de 1 quadro. No fundo claro (tela 38) lê como "apagado"; no fundo escuro (tela 48) a capa verde-escura quase some no
+  cenário, só o contorno de luz de recorte a salva, e é o inimigo que ainda atira (orbe e semente). Escurecer o inimigo perigoso
+  pesa contra o R18 ("sempre salta do fundo"). Sugestão: dessaturar para cinza em vez de escurecer (manter a luminância, ou clarear
+  um pouco o tom), e/ou deixar um sinal contínuo (fumaça fina) em vez de só o sopro de 1 quadro. A mudança é pequena, por isso
+  não reprovo.
+- **R1 a R3, R10, §3 (economia):** intocados neste delta.
+
+**Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: (1) `_desired_x` não respeita o esgotado (o doc exagera); (2) o cinza escuro
+atrapalha a leitura em fundo escuro.
 
 ---
 
