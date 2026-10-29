@@ -72,3 +72,20 @@ Nenhum truque de cassino: nada aleatório, nada com prazo ou perda; o degrau fic
 | Faíscas do Soter em orbes | **R6** (entrega sensorial: orbe + nota que sobe + contador 1 a 1), quantidade fixa | — | 12 (sem sorteio) |
 | Card do chefe não repete | R18/R21 (leitura limpa, sem congelar duas vezes) | — | 13 |
 | Quebra equilibrada nos cards | R18 (leitura) | — | — |
+
+## Sons das cenas (merge de dir7/audio7 6df9411) e QA7 #12 (20/10)
+- **Roubo**: a fenda do chão abre EXATAMENTE com o `crack_open` do Áudio (`Audio.CRACK_DELAY` = 0,5 s depois
+  do cue `sink`); o tremor também espera esse instante e cada um dos 6 pulsos leva `boss_step` (−6 dB). Antes da
+  fenda: só o colapso e a música parando (R9).
+- **Soter**: na fala das mãos a música desce a −24 dB (já estava a −14 no encontro); o `soter_gift` do Áudio (no
+  sinal `double_jump_granted`) entra no quase-silêncio na fala seguinte. A Staging solta o abafamento no fim.
+- **QA7 #12 Campeão**: nasce no chão, 150 px à frente da Sophia, dentro da zona e do quadro (mesmo voador), com o
+  brilho de aparição; o card só sai ~0,6 s depois e com ele na tela. `tools/encenacao/ChampionProbe`: nasce na
+  tela (x 419 de 640), card 0,58 s depois, visível no card — 0 falhas (antes: x≈888 no ar, > 4 s, card no mesmo quadro).
+
+### CHECAGEM DE SATISFAÇÃO (estas decisões)
+| Decisão | R atendidas | R violadas / justificativa | §4 |
+|---|---|---|---|
+| Fenda + som sincronizados no roubo | **R9** (silêncio da música parando antes da fenda), R4 (um som por evento: o tremor usa o passo baixo, não um som novo por pulso) | 6 pulsos de tremor: momento único do run (§4.1 permite no raro) | 1, 3 |
+| Hush antes do dom do Soter | **R9** (o som importante entra no vazio) | — | — |
+| Campeão no quadro, card depois | R5/R18 (o jogador vê quem é anunciado), R9 (o brilho de aparição antecede o card) | — | 13 |

@@ -721,6 +721,7 @@ func _start_wave() -> void:
 	# Da 2ª wave em diante os inimigos ENTRAM pela borda direita da zona.
 	var from_edge := zone_active and wave_index >= 1
 	var c := zone_center(maxi(0, zone_index))
+	var champion: Node2D = null
 	alive = 0
 	# Em tela normal, o último inimigo da última wave da ÚLTIMA zona é um Elite —
 	# menos o Invocador (Balance P4): Invocador Elite (×2,2 de vida, recua e chama
@@ -747,7 +748,12 @@ func _start_wave() -> void:
 		if is_trial and is_last_wave and wave[i] == eon_bot:
 			e.is_champion = true
 		add_child(e)
-		if _is_flyer(e):
+		if e.is_champion:
+			# QA7 #12: o CAMPEÃO nasce DENTRO do quadro, no chão, à frente da Sophia
+			# (mesmo voador) — antes vinha da borda/do alto e levava > 4 s para entrar.
+			e.global_position = Vector2(_champion_x(c), 250.0)
+			champion = e as Node2D
+		elif _is_flyer(e):
 			# voadores nascem NO ALTO da arena (verticalidade: use as plataformas)
 			e.global_position = Vector2(c + (float(i % 3) - 1.0) * 200.0, AIR_SPAWN_Y)
 		elif from_edge:
@@ -764,7 +770,41 @@ func _start_wave() -> void:
 		if is_boss and wave_index == 0:
 			Gnosis.boss_card(RunManager.boss_id_for(screen), screen)
 		elif is_trial and is_last_wave and wave.has(eon_bot):
-			_champion_card()
+			_champion_card_when_visible(champion)
+
+
+## Onde o Campeão nasce: 150 px à frente da Sophia, para o lado da zona com mais
+## espaço, dentro da zona e do quadro (a câmera mostra ±266 px dela).
+func _champion_x(c: float) -> float:
+	if player == null:
+		return _spawn_x(c + 120.0, c)
+	var dir := 1.0 if player.global_position.x <= c else -1.0
+	return _spawn_x(player.global_position.x + dir * 150.0, c)
+
+
+## QA7 #12: o letreiro do Campeão só sai quando ele JÁ está na tela — ele surge
+## com o brilho de aparição e, ~0,6 s depois (ou quando entra no quadro, até 2 s),
+## vem o card.
+func _champion_card_when_visible(champ: Node2D) -> void:
+	if champ != null and is_instance_valid(champ):
+		VfxLibrary.boss_appear(self, champ.global_position + Vector2(0, -20))
+	var t := 0.0
+	while t < 2.0:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return
+		if get_tree().paused:
+			continue
+		t += get_process_delta_time()
+		if champ == null or not is_instance_valid(champ):
+			break
+		var sp: Vector2 = champ.get_global_transform_with_canvas().origin
+		var vr := get_viewport().get_visible_rect()
+		if t >= 0.6 and vr.grow(-20.0).has_point(sp):
+			break
+	if champ != null and is_instance_valid(champ) and "estate" in champ and int(champ.get("estate")) == Enemy.EState.DEAD:
+		return
+	_champion_card()
 
 
 ## Card do Campeão com o NOME do bot do Éon (#20): "O GLUTÃO · Guardião do
