@@ -150,7 +150,9 @@ func _run() -> void:
 		if AudioServer.get_bus_effect(mi, i) is AudioEffectHardLimiter:
 			ceiling = (AudioServer.get_bus_effect(mi, i) as AudioEffectHardLimiter).ceiling_db
 	check(buses_ok and lim and ceiling <= -1.0, "buses Music/Ambience/SFX/UI/Voice + limitador no Master (teto %.1f dB)" % ceiling)
-	check(AudioServer.get_bus_send(AudioServer.get_bus_index("UI")) == "SFX" and AudioServer.get_bus_send(AudioServer.get_bus_index("Voice")) == "SFX", "UI e Voz seguem o slider de SFX")
+	check(AudioServer.get_bus_send(AudioServer.get_bus_index("UI")) == "SFX", "UI (e os blips) seguem o slider de SFX")
+	# Dublagem (Onda 7): a voz gravada vai direto ao Master, com slider próprio.
+	check(AudioServer.get_bus_send(AudioServer.get_bus_index("Voice")) == "Master", "bus Voice (dublagem) direto no Master")
 
 	# (b5) vozes por falante.
 	check(Audio.blip_for_speaker("Sophia") == "blip_sophia" and Audio.blip_for_speaker("O Rei") == "blip_rei"
@@ -908,6 +910,11 @@ func _check_onda7(sfx_names: Array) -> void:
 	# (h12) R9 — abaixada curta da música nos momentos (−7 dB) e no aparo (−3 dB);
 	#       não atropela uma abaixada maior ativa.
 	await _wait_real(1.5)
+	# a abaixada de um teste anterior ainda no ar barra a do momento (de propósito): espera soltar
+	var lcw_t0 := Time.get_ticks_msec()
+	while Audio._td_active and Time.get_ticks_msec() - lcw_t0 < 8000:
+		await get_tree().process_frame
+	print("QA INFO: R9 abaixada anterior solta em %d ms" % (Time.get_ticks_msec() - lcw_t0))
 	Audio._last_play_ms.erase("level_clear")
 	Audio.play_sfx("level_clear")
 	await _wait_real(0.15)

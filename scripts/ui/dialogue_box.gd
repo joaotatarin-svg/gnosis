@@ -25,6 +25,11 @@ class_name DialogueBox
 ## aperto acidental de quem vinha pulando falas).
 ## Voz: a cada 2 letras visíveis `Audio.play_blip(falante)` (se existir; senão o
 ## blip antigo por `play_sfx`). Sem arquivo de som, fica mudo.
+## DUBLAGEM (Onda 7 — edição do Áudio por delegação do chefe): cada fala pede
+## `Audio.play_voice(fala, self)`. Com voz: sem blips, e a máquina de escrever
+## anda no ritmo da voz (o texto termina junto com ~90% dela). 1º aperto mostra a
+## fala inteira (a voz segue), 2º corta a voz com fade curto e avança. Sem
+## arquivo de voz: tudo como antes.
 ## RUBRICA (backlog #22) — modo `narration`: fala SEM falante cujo texto é só uma
 ## rubrica entre parênteses (ou com `mode: "narration"`) não usa a caixa: o texto
 ## aparece centralizado, em itálico, sem os parênteses, sobre um véu.
@@ -125,6 +130,9 @@ var _mode_tween: Tween
 var _mode_set: bool = false       # já houve a 1ª fala (sem fade cruzado nela)
 var _cont: _Cont                  # rodapé "continuar" (fica fora de _box)
 var _speed: float = 1.0           # text_speed() lido ao abrir
+var _voice_dur: float = 0.0       # dublagem: duração da voz da fala atual (0 = blips)
+var _cps: float = CPS             # letras/s da fala atual (com voz: o ritmo da voz)
+var _pause_k: float = 1.0         # escala dos respiros de pontuação da fala atual
 var _scene: Node                  # cena dona da fala (QA7 #14: troca de cena fecha a caixa)
 
 
@@ -382,11 +390,59 @@ func _show_line() -> void:
 	_deco.queue_redraw()
 	if String(l.get("cue", "")) == WAIT_CUE:
 		_wait_until = _clock + WAIT_SECONDS
+	_start_voice(l)
 	# Texto instantâneo (Opções): a fala já nasce inteira.
 	if is_inf(_speed):
 		reveal_all()
 	# No INÍCIO da fala (antes da 1ª letra): a Encenação reage ao `cue` já aqui.
 	line_shown.emit(idx, l)
+
+
+## Dublagem: toca a voz da fala (se houver) e acerta o ritmo da digitação.
+func _start_voice(l: Dictionary) -> void:
+	_cps = CPS * _speed
+	_pause_k = 1.0 / _speed
+	_voice_dur = 0.0
+	if not Audio.has_method("play_voice"):
+		return
+	_voice_dur = float(Audio.call("play_voice", l, self))
+	if _voice_dur <= 0.0:
+		return
+	_cps = voice_cps(_label().text, _voice_dur, _speed)
+	_pause_k = voice_pause_k(_label().text, _voice_dur)
+
+
+## Letras/s para o texto terminar com ~90% da voz (respiros incluídos); nunca mais
+## lento que 0,6× o normal, e quem escolheu texto rápido (2×) continua rápido.
+static func voice_cps(txt: String, dur: float, speed: float = 1.0, base: float = CPS) -> float:
+	var total := 0
+	for ch in txt:
+		if ch != "\n":
+			total += 1
+	var pauses := _pause_total(txt) * voice_pause_k(txt, dur)
+	var needed := maxf(0.4, dur * 0.9 - pauses)
+	return maxf(float(total) / needed, base * minf(speed, 1.0) * 0.6) * maxf(1.0, speed)
+
+
+## Respiros de pontuação encolhem se somariam mais que metade da voz.
+static func voice_pause_k(txt: String, dur: float) -> float:
+	var p := _pause_total(txt)
+	return 1.0 if p <= dur * 0.5 or p <= 0.0 else dur * 0.5 / p
+
+
+static func _pause_total(txt: String) -> float:
+	var p := 0.0
+	for ch in txt:
+		if ch in [".", "!", "?", "…"]:
+			p += 0.2
+		elif ch in [",", ";", ":", "—"]:
+			p += 0.08
+	return p
+
+
+## Fala atual tem voz gravada? (QA/sonda)
+func has_voice() -> bool:
+	return _voice_dur > 0.0
 
 
 ## A fala é uma RUBRICA (modo narration)? Sem falante e o texto todo entre
@@ -556,23 +612,23 @@ func _process(delta: float) -> void:
 	var lab := _label()
 	var total := lab.get_total_character_count()
 	var before := int(_shown)
-	_shown += delta * CPS * _speed
+	_shown += delta * _cps
 	var now := mini(int(_shown), total)
 	var txt := lab.text
 	for i in range(before, now):
 		var ch := txt[i] if i < txt.length() else ""
-		if ch != " " and ch != "\n" and not _narr_on:
+		if ch != " " and ch != "\n" and not _narr_on and _voice_dur <= 0.0:
 			_blip_count += 1
 			if _blip_count % 2 == 1:
 				_play_blip()
 		# respiro na pontuação
 		if ch in [".", "!", "?", "…"]:
-			_pause = 0.2 / _speed
+			_pause = 0.2 * _pause_k
 			_shown = float(i + 1)
 			now = i + 1
 			break
 		elif ch in [",", ";", ":", "—"]:
-			_pause = 0.08 / _speed
+			_pause = 0.08 * _pause_k
 			_shown = float(i + 1)
 			now = i + 1
 			break
@@ -679,6 +735,7 @@ func _on_choice(i: int) -> void:
 
 
 func _finish() -> void:
+	_stop_voice()
 	_release_pause()
 	finished.emit()
 	queue_free()
@@ -696,6 +753,7 @@ func _scene_gone() -> bool:
 ## Fecha sem escolher: solta a pausa, avisa quem espera `finished` e some.
 func _abort() -> void:
 	set_process(false)
+	_stop_voice()
 	_release_pause()
 	finished.emit()
 	queue_free()
@@ -707,8 +765,16 @@ func _release_pause() -> void:
 		PauseStack.pop(self)
 
 
+## Dublagem: corta a voz DESTA caixa (fade curto).
+func _stop_voice() -> void:
+	if _voice_dur > 0.0 and Audio.has_method("stop_voice"):
+		Audio.call("stop_voice", self)
+	_voice_dur = 0.0
+
+
 ## Caixa apagada sem passar por _finish (troca de cena): não segura a pausa.
 func _exit_tree() -> void:
+	_stop_voice()
 	_release_pause()
 
 
@@ -744,6 +810,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _locked:
 			return                 # a Encenação segura o avanço
 		Audio.play_sfx("ui_advance")
+		_stop_voice()              # avançar corta a voz (fade curto)
 		idx += 1
 		_show_line()
 
