@@ -144,8 +144,65 @@ travessia 2,23 · segredo 1,75 · perigo 1,63 · antessala 1,52 · escalada 1,20
 `analisa_bot.py`. Para a visual, `tools/qa7/visual/run_caps.sh` + `tools/qa7/ui/run_ui.sh` / `run_cenas.sh`.
 Atenção: `_real_wait` (morte de chefe, staging) roda em tempo REAL, então duas rodadas da mesma semente variam ~5–10% no dano.
 
+## RE-TESTE 3.1 (origin/integracao/onda1 4dad743 = lote vfx7 + chefes6 + polimento7)
+Rodado em `dir7/qa7` com merge exato do 4dad743 (1876106; o jogo fora de `tools/qa7`, `docs` e `tools/qa_visual` é idêntico).
+Saídas em `C:\gnosis-wt\_caps\qa7ot31\` (bot, 3 sementes, BelowNormal) e `...\p31\` (sondas, capturas, áudio).
+Validação do projeto: zero `SCRIPT ERROR`. Bot: 68 telas nas 3 sementes, 0 mortes reais, 0 travas, 79–85 min de jogo (antes 89–91).
+
+### Sondas (3.1)
+VERDE: EnemyProbe (a repulsa do arauto agora sai; era vermelho), MenuProbe 112 ok/0 falha (era vermelho: lore do acólito/espectro),
+LangQA 12/12, EnFit 0 falha, HitboxProbe (atravessa 0%, apelão 10%; corpo desenhado: sem dano 0,0%), FeelProbe, RuleProbe, LayoutQA
+(1252 verificações/129 telas), MapQA, CodexQA, SaveQA, DeathProbe. BossSizeProbe não roda headless (precisa de renderer): não medi o manto do Rei.
+Erros de console do bot: de 62+6 (hitbox bloqueada e Tween vazio) para **0**. Restam só os avisos de saída (Camera2D, ObjectDB).
+
+### Corrigido (medido)
+1. #1 hitbox viva após o aparo: 62 `Function blocked` -> 0 nas 3 sementes.
+2. #2 duração dos Arcontes: de 91–159 s (21 de 24 estouravam 100 s) para 35–102 s; só 1 timeout em 24 (Galila, semente 3). Ver "novo" N2: passou para o outro lado.
+3. #5 fichas do acólito/espectro: MenuProbe verde.
+4. #15 repulsa do arauto: EnemyProbe verde.
+5. #21 hurtbox do corpo desenhado: EnemyProbe "Hurtbox segue o corpo" e HitboxProbe com 0% sem dano.
+6. #28 Tween vazio no Staging: 0 ocorrências.
+7. #3 (parcial) tela 68: a Sophia agora é desenhada NA FRENTE do Rei (`_caps\qa7\p31\c68_31.png`). O Colosso continua cortado na borda esquerda.
+
+### Corrigido só pelo que o commit diz (não medi em execução)
+#8 poças armam 0,5 s antes de ferir (9d9d353) · #9 aparição com 0,6 s de aviso (9d9d353) · #17 card de chefe sem repetir em 8 s (ab957ac) ·
+#19 aviso da fúria >= 0,4 s (4b022a8) · #30 viúvas nos cards EN (WidowProbe não rodei) · descida ao Centro ~8 s -> ~5 s (ab957ac).
+
+### Continua
+- **#4** Bestiário em EN com o lore em português (`gallery.gd:182` igual; captura `p31\en_Gallery.png`, a dica já sai em inglês e o lore não).
+- **#16** Loja em EN: "opens: Fenda Arcana, Arcane Ascent" (nome de combo sem tradução; `p31\en_UpgradeMenu.png`).
+- **#6** placa dos Selos: a string de 2 linhas (`seal_puzzle.gd:34`) segue sem entrada na tabela EN (por leitura do código).
+- **#10** inimigo de longe: a coleira `EnemyAggro.leash_x` agora é chamada (enemy.gd:1718-1724), mas ainda há 18 timeouts (antes 30):
+  arauto@2000–2500 (tela 43, 34), aberração@2100 (49), reflexo@2800 (39), esporos@2500 (49), mudo@1800 (32). Atenuou, não resolveu (R21).
+- **#12** Campeão (tela 6): nasce em x=888 no ar e só desce a ~x=786 no quadro 600 (EnemyDump idêntico ao antigo) com o card já na tela.
+- **#11** Galila fase 2: no Shot 28 `hurt` (400 quadros) só aparecem as gaiolas e a barra; a Galila não está no quadro (`p3128_f2_31.png`).
+- **#18** pés da Belias bem acima da Sophia (`p3155_f2_31.png`; pode ser o apoio do PNG ou uma plataforma).
+- **#24** anéis de chefe sobre o HUD (tela 68, canto superior; `c68_31.png`).
+- **#13** economia: 5,5–7,5 mil faíscas sobrando na 68 (s1 7183, s2 7498, s3 5529; antes 6,4–7,4 mil).
+Não reverifiquei: #7, #14, #20, #22, #23, #25, #26, #27, #29.
+
+### NOVO (regressões e efeitos colaterais)
+- **N1 Campeão toca DOIS stingers na aparição.** Log de áudio (`GNOSIS_AUDIO_LOG`) na tela 15: `boss_appear`=1 **e** `champion_enter`=1 no mesmo instante.
+  Origem: `level.gd:777-780` abre o card (`Cinematic._run_boss`, cinematic.gd:546, toca `boss_appear`) e `enemy.gd:339` toca `champion_enter`.
+  O comentário do `enemy.gd` diz que o stinger de chefe não toca para Campeão (R9), mas o card toca. Efeito extra: `boss_appear` solta a música de chefe
+  (`audio_manager.gd:1231`). Arconte (tela 10) e Rei final (68) tocam `boss_appear` 1x (o anti-spam por nome protege). Dono: Áudio7/Polimento7 (card sem som no Campeão, ou `_run_boss` com flag).
+- **N2 Final e Éons altos agora leves demais; Galila fica de fora.** Arcontes: 35–55 s e 0–1 quase-morte nos Éons 2, 4, 6, 7 e na 68 (final: 35–48 s, dano 86–128, antes 668–954);
+  Galila (28) 83–102 s e 3–5 quase-mortes; Athoth (10) 54–72 s. Curva por Éon (quase-mortes, média 3 sementes): Torpor 11,7 · Fome 20,0 · Corrente 31,0 · Silêncio 36,3 ·
+  **Espelho 40,3** · Praga 22,0 · Coroa 27,0 · **Centro+Final 2,3** (antes 9,0). O pico do Éon 5 segue, a queda na Praga segue e o clímax enfraqueceu (o bot não aparo, humano pode sentir diferente).
+  Dono: Chefes6 (vida/dano da 68 e da Galila) + Progressão (Praga/Coroa).
+- N3 O Rei da tela 1 cai em 39 s com 20 de dano (antes 79–85 s, 124–149): tutorial ok, mas é só 1 golpe de aviso. Observação, não bug.
+
+### Rei / Demiurgo (só o estado; correções em curso no Chefes6/Polimento7)
+- Manto: no 3.1 o Rei da tela 68 segue largo (o corpo cobre ~120 px do quadro 640 e fica colado à borda esquerda com o Colosso). Não medi a hurtbox (BossSizeProbe pede renderer).
+- "Quadrado" visível: os candidatos, por leitura de `boss_hazard.gd:_draw`, são `shape=="column"` (a "mão" do Rei: `draw_rect` de 68 px x 428 px, translúcido com miolo branco, linhas 262/265)
+  e `"band"` (o "raio": `draw_rect` retangular de borda dura em toda a arena, linha 254). Os dois são retângulos chapados sem máscara/gradiente; é onde eu procuraria. Não capturei o instante do poder.
+- Verificar com o João qual poder foi (mão ou raio) antes de mexer.
+
 ## BILHETE PARA O SUCESSOR
-Estado: entrega 3.0.1 feita (este doc). Run final em `_caps\qa7\bot2\`.
-Próximo: modo re-teste quando o chefe avisar da 3.1/3.2. Repita os itens 1–3 só no que mudou e compare com
-`bot2\analise.md`. Armadilhas: o bot cura a 45% e não apara; o "TRAVOU" precisa de confirmação (a sonda já faz isso);
-a descida da 65 dispara "zona forçada" no bot (é a cinemática, não é trava).
+Estado: re-teste da 3.1 (4dad743) feito, seção acima. Branch dir7/qa7 já tem o merge 1876106. Resultados em `_caps\qa7ot31\` e `p31\`.
+Próximo: re-teste da 3.2 (quando o chefe avisar): `git merge <sha>` no qa7 (antes `git stash` nos `.import` que o Godot reescreve), importar, rodar
+`powershell -File tools/qa7/reteste.ps1 -Out C:\gnosis-wt\_caps\qa7ot32` e comparar com `bot31nalise.md`. Leva ~10 min reais (não 50).
+Armadilhas: chamar o reteste.ps1 pelo PowerShell (via bash o `\` do -Out some e o bot grava em lugar errado); o bot cura a 45% e não apara; "TRAVOU" precisa de confirmação;
+descida da 65 dispara "zona forçada" (cinemática); `_real_wait` roda em tempo real (variação 5–10%); BossSizeProbe/Shot precisam de renderer (320x180 fora da tela).
+Pendências para checar na 3.2: N1 (stinger dobrado do Campeão), N2 (final leve, Galila), #4/#6/#16 (EN), #10/#12/#11/#24.
+
