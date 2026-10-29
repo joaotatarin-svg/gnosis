@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir2/arte-gpt | 118cb99 (delta de 50f807a; base com cenario7 1b1c69f) | APROVADO COM RESSALVAS (fio de contorno funciona e a pintura se mantém; R18 3,0-3,2 em 7 de 10 telas, Coroa 2,67-2,85 e Mente 2,33 abaixo de 3:1; o cajado e as botas clareiam e perdem saturação nas telas frias) | R18, R10, §4 |
 | dir6/progressao6 | 68bcaea (delta de 3d13bbd: 1 commit) | APROVADO COM RESSALVAS (as 2 ressalvas antigas FECHADAS; morte só leva o ganho da tela, edições fora da área mínimas e corretas; restam comentários velhos "−20%" e a morte agora sem custo econômico real) | §3, §4, R21 |
 | dir6/chefes6 | 61645f7 (delta de 82454b2) | APROVADO (3 ressalvas fechadas; `block` 4/s no pior caso, só se reclamarem) | R5, R4, R10 |
 | dir7/cenario7 | 1b1c69f (delta de ba91602) | APROVADO COM RESSALVAS (R18 1,6-2,4 -> 2,75-2,97, ainda < 3:1; Coroa diante da estátua não confirmada; halo em movimento só no playtest) | R18, R10 |
@@ -1064,6 +1065,31 @@ a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 ---
 
+## dir2/arte-gpt — 118cb99 (delta próprio de 1b1c69f: a3569eb, e9746eb, 99b4d08, 118cb99; 4 arquivos de código/doc)
+
+**Medido:** li o diff (`painted_flex.gdshader`, `character_art.gd`, `contrast_probe.gd`) e as capturas do dono (`_capsrte18in2_*_off/on.png`, 640x360, rim desligado x ligado). Recortes 5x meus:
+`C:\gnosis-wt\_caps\guardiao\p9_fin2_{3,40,58,68}.png`. Não rodei o ContrastProbe de novo (os números 3,0-3,2 são os do dono); não vi em movimento.
+
+**O que muda:** o rim interno da Sophia pondera dois raios (70 % no meio raio, 30 % no raio cheio): `HERO_RIM` 1,6, `HERO_RIM_PX` 3,0 (~1 px de tela); halo de fora igual (`HERO_HALO` 0,25, `halo_px` 1,6).
+A 1ª tentativa (0,9 com raio 6) lavava as botas e o chefe a reprovou: o dono refez como fio. Boa decisão (a pintura vale mais que o número).
+
+**R18:** 7 de 10 telas em 3,0-3,2 (3 Torpor 3,16, 13 3,11, 22 3,15, 31 3,11, 40 3,01, 49 3,10, 66 3,19); **Coroa 57/58 2,85/2,67 e Mente 68 2,33 abaixo de 3:1** (fundo claro dourado/roxo atrás). Evolução
+(1b1c69f 2,75-2,97 -> 3,0-3,2) é real e a leitura nas capturas confirma a silhueta separada. Aceito abaixo da meta (o resto é do fundo, não da Sophia); mantém-se como pendência do Cenário.
+
+**Faixa pálida / pintura:**
+- Corpo, manto, cabelo: **sem lavagem.** O fator `dark` apaga o rim onde a pintura é clara; interior das botas e da calça igual ao "antes" no zoom 2x do dono e nos meus recortes.
+- **Cajado: clareia, e nas telas frias dessatura.** Como ele tem 1-2 px de largura, TODO o miolo cai no "fio" e é escuro (ocre), então recebe a luz cheia: tela 3 (Torpor) (81,67,32) -> (148,145,109);
+  tela 58 (73,52,16) -> (171,139,72); tela 40 (86,66,29) -> (174,154,117). Não é uma "faixa" larga, é uma linha de 1 px que passa de ocre escuro a ouro pálido (na tela fria, quase cinza-dourado). Lê como luz
+  batendo no metal e separa o cajado do fundo (bom para R18), mas é o ponto onde a cor da pintura mais muda. Ressalva menor: se o playtest achar o cajado "branco", limitar o rim por
+  largura local (por ex., reduzir quando `c.a - mn` já satura nos 2 raios) ou tingir menos o rim nas telas de Éon frio. Botas ganham um contorno creme discreto (visível a 5x, discreto a 1x).
+- **Tremulação:** pela leitura do shader, não há termo temporal além do vento do cabelo/manto, que desloca o `uv` do pixel central e dos vizinhos juntos; o fio acompanha a malha. Cor do rim fixa por tela
+  (`eon_light`). Sem pulso, sem flash (R10 ok). "Provável sem tremulação, conferir em movimento": linha de 1 px pode cintilar um pouco no subpixel como qualquer arte 1 px, e só o jogo mostra.
+- §4: sem truque, sem aviso por cor, nada de recompensa; R16 não afetada.
+
+**Veredito: APROVADO COM RESSALVAS** (entra). Ressalvas: Coroa 2,67-2,85 e Mente 2,33 < 3:1 (fundo; Cenário), cajado mais pálido nas telas frias (conferir no playtest), movimento não verificado.
+
+---
+
 ## dir6/progressao6 — 68bcaea (delta de 3d13bbd: um commit; 20 arquivos, 8 de código)
 
 **Medido (sonda `guardiao_sonda` no 68bcaea, headless, sem som):** importação sem `SCRIPT ERROR`/`Parse Error`; **ProgQA 62 `QA PASS`, 0 falhas** (+4 novos);
@@ -1246,7 +1272,7 @@ cenario7 1b1c69f, mapa7 4e4b9cc, arte-gpt 50f807a (aprovado), todos com as ressa
 **PENDENTES que eu cobraria:**
 1. **Coroa (cenario7):** captura com a Sophia DIANTE da estátua dourada (tela 57/58, `HdShot x=<...> solo nohud`) para confirmar que a sombra resolve e não vira bolha. Não confirmado.
 2. **Halo (cenario7) em movimento:** só o playtest decide se lê como "nuvem escura que segue".
-3. **Borda da Sophia +0,02-0,03 (pedido do dono à Arte):** minha opinião (na seção do cenario7): subir `HERO_RIM` interno, não o halo de fora; repetir `contrast_r18.py` nas 10 telas.
+3. **Borda da Sophia (arte-gpt 118cb99, APROVADO COM RESSALVAS):** feita como fio; 7/10 telas em 3,0-3,2; Coroa 2,67-2,85 e Mente 2,33 abaixo; cajado clareia nas telas frias; conferir em movimento.
 4. **Progressão (68bcaea APROVADO COM RESSALVAS):** chave do secreto e aviso do `claim_once` FECHADOS; morte só leva o ganho da tela (decisão do chefe). Resta: comentários velhos "-20%"; ritmo da arma (~27 telas no Nv.3);
    ver no playtest se a morte, agora sem custo real, "pesa".
 5. **polimento7:** Arconte do Sono/Espelho (resolvido pelo chefes6 com BodyBox, 1 golpe a 55 px no Espelho aceito); BALANCE r7 foi medido com a renda de faíscas antiga.
