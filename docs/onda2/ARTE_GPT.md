@@ -363,7 +363,7 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   57 Coroa 2,76→2,85 · 58 Coroa 2,62→2,67 · 66 Centro 2,85→3,19 · 68 Mente 2,08→2,33. Coroa e Mente NÃO chegam a 3:1 (fundo
   dourado/roxo claro atrás, borda média baixa) — aceito pelo chefe até ~2,8 se a pintura ficar íntegra; 58 e 68 ficam um
   pouco abaixo (o resto é do fundo/Cenário). `contrast_probe.gd` pula diálogo (tela 68).
-  Capturas: `C:\gnosis-wt\_capsrte18\` (`r18_antes_depois_v2.png` = 58_x450, 58_x180 (Sophia diante dos
+  Capturas: `C:\gnosis-wt\_caps\arte\r18\` (`r18_antes_depois_v2.png` = 58_x450, 58_x180 (Sophia diante dos
   pedestais/estátuas dourados da Coroa), 40 Espelho, 3 Torpor; `r18_botas_2x_v2.png`; probes `fin2_*`).
   CHECAGEM: R18 atendida em 7 de 10 telas (≥3:1), Coroa 2,7–2,85 e Mente 2,3 pendentes e sinalizadas; R16 ok (fio
   discreto, sem pulso/flash); §4 conferido (sem truque, sem aviso por cor); cor REAL da pintura preservada.
