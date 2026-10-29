@@ -972,6 +972,7 @@ Criatura do Kenoma,Creature of the Kenoma
 z,z
 BossBrain,BossBrain
 OrbRig,OrbRig
+HudPush,HudPush
 bau:%d,bau:%d
 Segredo encontrado,Secret found
 Arconte,Archon
@@ -984,6 +985,7 @@ Totem quebrado: os reforços cessam.,Totem shattered: no more reinforcements.
 A luz resistiu: o Adormecido te devolve forças.,The light held: the Sleeper restores your strength.
 A luz se apagou.,The light went out.
 OS TRÊS SELOS,THE THREE SEALS
+golpeie na ordem em que brilham,strike them in the order they glow
 selos abertos,seals opened
 selo:%d,selo:%d
 adormecido:%d,adormecido:%d
@@ -1028,6 +1030,7 @@ Sounds and effects CC0/CC-BY — see assets/LICENSES.md
 Inspired by the Nag Hammadi texts, the Pistis Sophia
 and the accounts of Irenaeus, Hippolytus and Clement."
 ...mãe?,...mother?
+ArtBack,ArtBack
 I  ·  A FAÍSCA DESPERTA,I  ·  THE SPARK AWAKENS
 II  ·  QUEBRE A GUARDA,II  ·  BREAK THE GUARD
 III  ·  ENCARE O ARCONTE,III  ·  FACE THE ARCHON
@@ -1073,6 +1076,8 @@ Arena,Arena
 Opcional e dura: ondas pesadas. Grande recompensa.,Optional and hard: heavy waves. Great reward.
 Sala secreta,Secret room
 Só se alcança com o pulo duplo. Um tesouro escondido.,Only the double jump reaches it. A hidden treasure.
+Câmara oculta,Hidden chamber
+"Um esconderijo no alto, ao alcance de pulos simples. Um tesouro escondido.","A hideaway up high, within reach of single jumps. A hidden treasure."
 O Desafio,The Challenge
 O Campeão guarda o santuário do Éon. Checkpoint.,The Champion guards the shrine of the Aeon. Checkpoint.
 Antessala,Antechamber
@@ -1230,6 +1235,18 @@ Música: Kevin MacLeod (incompetech.com) — Licensed under Creative Commons: By
 "Efeitos sonoros: ""Fantasy Sound Effects Library"" — Little Robot Sound Factory (www.littlerobotsoundfactory.com) — CC-BY 3.0 — https://creativecommons.org/licenses/by/3.0/","Sound effects: ""Fantasy Sound Effects Library"" — Little Robot Sound Factory (www.littlerobotsoundfactory.com) — CC-BY 3.0 — https://creativecommons.org/licenses/by/3.0/"
 Efeitos CC0: Kenney (kenney.nl) e autores CC0 do OpenGameArt.org,CC0 effects: Kenney (kenney.nl) and CC0 authors at OpenGameArt.org
 Partículas: Kenney Particle Pack (CC0),Particles: Kenney Particle Pack (CC0)
+Música:,Music:
+Faixas:,Tracks:
+Efeitos sonoros:,Sound effects:
+Efeitos CC0:,CC0 effects:
+Partículas:,Particles:
+"Ambiências, magias, vozes e camadas sintetizadas:","Ambiences, spells, voices and synthesized layers:"
+e outros autores CC0 do,and other CC0 authors at
+feitas para GNOSIS,made for GNOSIS
+anônimo,anonymous
+multi-licença; usada a CC0,multi-licensed; used as CC0
+e colaboradores,and contributors
+licença MIT,MIT license
 O DESPERTAR,THE AWAKENING
 Criação e direção,Created and directed by
 João Tatarin,João Tatarin
@@ -1275,7 +1292,7 @@ golpe forte,heavy strike
 "bloquear · no tempo, apara","block · on time, parries"
 sequência do cajado,staff combo
 Esfera Solar (gasta Éter),Sun Orb (costs Aether)
-telegrafo amarelo:,yellow tell:
+telégrafo amarelo:,yellow tell:
 vermelho:,red:
 pausa · Golpes & Controles,pause · Moves & Controls
 usar o Anel equipado (gasta Éter),use the equipped Ring (costs Aether)
@@ -1305,6 +1322,7 @@ Botão %d,Button %d
 LT,LT
 RT,RT
 Eixo %d,Axis %d
+Siga em frente,Keep going
 Arma Nv. %d,Weapon Lv. %d
 FASE III,PHASE III
 FASE II,PHASE II
@@ -1333,7 +1351,7 @@ LS,LS
 R3,R3
 RS,RS
 Create,Create
-View,View
+Exibir,View
 Options,Options
 PS,PS
 Home,Home
@@ -1401,7 +1419,7 @@ Trocar Anel,Switch Ring
 %s / %s  ·  1–7,%s / %s  ·  1–7
 %s / %s,%s / %s
 Pausa,Pause
-Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.,YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you.
+Telégrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva.,YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you.
 Escudeiros só caem com golpe forte ou magia.   A esquiva arrebenta a Corrente da Lei.,Squires only fall to heavy strikes or magic.   A dodge snaps the Chain of the Law.
 %s   ·   %s,%s   ·   %s
 lançador,launcher
@@ -1485,12 +1503,15 @@ Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short
 Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades
 selado  ·  vença %s,sealed  ·  defeat %s
 escolhem o caminho,choose the path
+"Com as asas, as salas secretas se abrem.","With wings, the secret rooms open."
 Prévia do mapa — o caminho do Éon,Map preview — the path of the Aeon
 O caminho se divide. Escolha por onde subir.,The path splits. Choose your way up.
 Recompensa: %s,Reward: %s
-Selado: exige o pulo duplo. Quem dá asas não luta.,Sealed: needs the double jump. The one who gives wings does not fight.
-O pulo duplo abre esta passagem.,The double jump opens this passage.
+Recompensa: escondida,Reward: hidden
+"Precisa de asas: só o pulo duplo alcança esta sala. Mais adiante, alguém te dá asas.","Needs wings: only the double jump reaches this room. Further on, someone will give you wings."
+"Aberta: com as asas, esta sala está ao alcance.","Open: with wings, this room is within reach."
 "Há uma Estela nesta camada, em qualquer caminho.","There is a Stele on this layer, on any path."
+precisa de asas,needs wings
 Estela,Stele
 Menu,Menu
 PAUSA,PAUSED

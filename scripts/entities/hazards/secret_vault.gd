@@ -9,6 +9,8 @@ var room_w: float = 260.0
 var room_y: float = -170.0         # topo da câmara em relação ao chão (local)
 var hazard_kind: String = "vault"
 var _t: float = 0.0
+var _door: int = -1           # quadro da porta (0 selada, 1 reage, 2 aberta)
+var _door_cd: float = 0.0
 
 
 func _enter_tree() -> void:
@@ -17,11 +19,36 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	z_index = -2
+	HazardArt.setup(self)
 
 
 func _process(delta: float) -> void:
 	_t += delta
+	_door_cd -= delta
+	if _door_cd <= 0.0:
+		_door_cd = 0.25
+		var f := _door_frame()
+		if f == 2 and _door >= 0 and _door < 2:
+			Audio.play_sfx_at("hz_secret_open", global_position, 0.05)
+		_door = f
 	queue_redraw()
+
+
+func _door_frame() -> int:
+	var lv := get_parent()
+	if lv != null:
+		var total := 0
+		var open := 0
+		for c in lv.get_children():
+			if c is Chest and c.secret:
+				total += 1
+				if c.opened:
+					open += 1
+		if total > 0 and open >= total:
+			return 2
+	if Progression.has_method("has_double_jump") and bool(Progression.call("has_double_jump")):
+		return 1
+	return 0
 
 
 func _draw() -> void:
@@ -38,7 +65,12 @@ func _draw() -> void:
 	draw_polyline(arch, Color(gold, 0.35), 1.2, true)
 	# brilho do tesouro lá dentro
 	draw_circle(Vector2(0, room_y - 30.0), 46.0, Color(gold, 0.05 + 0.03 * sin(_t * 2.0)))
-	# a porta selada no chão: arco fechado com correntes em X e o selo de asas
+	# a porta selada no chão (pintura, Onda 7): selada → o selo REAGE quando a
+	# Sophia já tem o pulo duplo (o caminho por cima existe) → ABERTA quando os
+	# baús secretos da tela foram abertos (só desenho: a porta não é passagem)
+	if HazardArt.has("vault_door"):
+		HazardArt.draw(self, "vault_door", maxi(0, _door), Vector2.ZERO)
+		return
 	var dw := 30.0
 	draw_rect(Rect2(-dw, -78.0, dw * 2.0, 78.0), Color(0.06, 0.06, 0.08, 0.95))
 	draw_rect(Rect2(-dw, -78.0, dw * 2.0, 78.0), Color(gold, 0.25), false, 1.2)

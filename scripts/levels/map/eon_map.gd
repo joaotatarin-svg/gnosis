@@ -27,19 +27,22 @@ const ROWS := 3                    # trilhas: 0 alta · 1 meio · 2 baixa
 const ROW_LETTER := ["a", "b", "c"]
 
 ## Tipos de nó das camadas de escolha, por Éon e camada: [alta, meio, baixa]
-## ("" = sem nó nessa trilha). Nós "secret" exigem o PULO DUPLO (Soter).
+## ("" = sem nó nessa trilha). Nós "secret" exigem o PULO DUPLO (Soter) e só
+## existem DEPOIS da tela 17 (1º Soter), onde abrem no mesmo run. Antes dele o
+## segredo é "hidden" (câmara oculta, sem pulo duplo, mesmo prêmio) — decisão do
+## chefe (mapa7, 19/10): o jogador nunca vê um cadeado que, na prática, não abre.
 const LANES := {
-	0: {   # TORPOR — ensina o mapa: três trilhas claras, segredo à vista (selado)
+	0: {   # TORPOR — ensina o mapa: três trilhas claras e uma câmara oculta
 		1: ["hazard", "combat", "sanctuary"],
 		2: ["platform", "combat", "combat"],
 		3: ["hazard", "combat", "sanctuary"],
 		5: ["platform", "combat", "sanctuary"],
-		6: ["secret", "combat", "challenge"],
+		6: ["hidden", "combat", "challenge"],
 	},
 	1: {   # FOME — a Arena aparece no meio; Soter (camada 6) vem em qualquer trilha
 		1: ["platform", "combat", "sanctuary"],
 		2: ["hazard", "challenge", "combat"],
-		3: ["secret", "combat", "sanctuary"],
+		3: ["hidden", "combat", "sanctuary"],
 		5: ["hazard", "combat", "sanctuary"],
 		6: ["platform", "combat", "challenge"],
 	},
@@ -92,6 +95,7 @@ const KINDS := {
 	"sanctuary": {"name": "Santuário", "desc": "Luta leve e um lugar de repouso. Cura inteira.", "role": "travel"},
 	"challenge": {"name": "Arena", "desc": "Opcional e dura: ondas pesadas. Grande recompensa.", "role": "travel"},
 	"secret": {"name": "Sala secreta", "desc": "Só se alcança com o pulo duplo. Um tesouro escondido.", "role": "travel"},
+	"hidden": {"name": "Câmara oculta", "desc": "Um esconderijo no alto, ao alcance de pulos simples. Um tesouro escondido.", "role": "travel"},
 	"trial": {"name": "O Desafio", "desc": "O Campeão guarda o santuário do Éon. Checkpoint.", "role": "trial"},
 	"antechamber": {"name": "Antessala", "desc": "A última prova antes do trono. Checkpoint.", "role": "antechamber"},
 	"archon": {"name": "O Arconte", "desc": "O senhor deste Éon.", "role": "archon"},
@@ -112,6 +116,7 @@ const REWARDS := {
 	"sanctuary": {"heal": true},
 	"challenge": {"orbs": 30, "per_eon": 10, "hp": 6},
 	"secret": {"orbs": 20, "per_eon": 6, "hp": 8, "mp": 8},
+	"hidden": {"orbs": 20, "per_eon": 6, "hp": 8, "mp": 8},   # = secret (mesmo prêmio)
 }
 
 ## Requisito de cada tipo ("" = livre).

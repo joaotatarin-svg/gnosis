@@ -42,7 +42,7 @@ func _tick(delta: float) -> void:
 		_last_side = side
 		var p0 := _player()
 		if p0 != null and absf(p0.global_position.x - global_position.x) < 260.0:
-			Audio.play_sfx_at("swing_heavy", tip, 0.08)
+			Audio.play_sfx_at("hz_chain_swing" if style == "chain" else "hz_bell_toll", tip, 0.08)
 	if _hit_cd > 0.0:
 		return
 	var area := Rect2(tip.x - HIT_R - 10.0, tip.y - HIT_R - 26.0, (HIT_R + 10.0) * 2.0, (HIT_R + 26.0) * 2.0)
@@ -59,10 +59,41 @@ func _tick(delta: float) -> void:
 			if style == "bell":
 				p.mana = 0.0
 				p.mana_changed.emit(0, p.max_mana_total)
+				Audio.play_sfx("hz_ether_drain")
 		_hit_cd = 0.6
 
 
 func _draw() -> void:
+	var piece := "bell_body" if style == "bell" else "pend_blade"
+	if HazardArt.has(piece):
+		_draw_art(piece)
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): suporte no teto, corrente de elos ladrilhados e a peça
+## (lâmina em meia-lua / sino mudo) GIRANDO pelo ponto de pendurar — o mesmo
+## ângulo da lógica. A leitura é o próprio movimento + o rastro do arco; a
+## luz de contorno (R18) destaca a peça que fere em qualquer fundo.
+func _draw_art(piece: String) -> void:
+	var pivot := Vector2(0, -length - 14.0)
+	var a := _angle()
+	var u := Vector2(sin(a), cos(a))
+	var tip := _tip_local()
+	# rastro do arco (lê o caminho da lâmina)
+	draw_arc(pivot, length, PI * 0.5 - SWING, PI * 0.5 + SWING, 32, Color(1, 1, 1, 0.06), 6.0, true)
+	# ponto de pendurar: a peça é desenhada com o CENTRO na ponta da lógica
+	var hang_d := HazardArt.point(piece, "center").y - HazardArt.anchor(piece).y
+	var hang := tip - u * hang_d
+	HazardArt.draw_chain(self, "pend_chain", pivot, hang)
+	HazardArt.draw_outline(self, piece, 0, hang, RIM_COL, 1.0, -a)
+	HazardArt.draw(self, piece, 0, hang, -a)
+	var bracket := "bell_bracket" if style == "bell" else "pend_bracket"
+	HazardArt.draw(self, bracket, 0, pivot)
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var pivot := Vector2(0, -length - 14.0)
 	var tip := _tip_local()
 	var dir := tip - pivot

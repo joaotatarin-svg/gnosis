@@ -10,19 +10,19 @@ Sem apocalipse e sem prisão: liberdade lenta, a única que dura.","Sophia refus
 No apocalypse and no prison: a slow freedom, the only kind that lasts.",card_cinema,,240,scripts/autoload/narrative.gd:743,
 cinematic.prologue.56bd6b,"No princípio havia o Um. Dele emanaram os Éons, aos pares,
 como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
-like overflowing light. There nothing slept. Nothing forgot.",card_cinema,,240,scripts/fx/cinematic.gd:151,
+like overflowing light. There nothing slept. Nothing forgot.",card_cinema,,240,scripts/fx/cinematic.gd:152,
 cinematic.prologue.c37f5c,"A mais jovem, Sophia, quis alcançar a Fonte sozinha.
 Do desejo sem par nasceu um filho sem forma,
 e ela o escondeu numa nuvem.","The youngest, Sophia, sought to reach the Source alone.
 From that unpartnered desire a formless son was born,
-and she hid him in a cloud.",card_cinema,,240,scripts/fx/cinematic.gd:152,
+and she hid him in a cloud.",card_cinema,,240,scripts/fx/cinematic.gd:153,
 cinematic.prologue.c1bdfa,"Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.
 No barro dormem as faíscas que ele levou da mãe.
 
 Uma delas acaba de sentir dor.","Blind to the Light, he believed himself the only god and made the Kenoma.
 In the clay sleep the sparks he took from his mother.
 
-One of them has just felt pain.",card_cinema,,240,scripts/fx/cinematic.gd:153,
+One of them has just felt pain.",card_cinema,,240,scripts/fx/cinematic.gd:154,
 cinematic.epilogue.622c86,"João Tatarin — direção, produção e escolhas
 Arte ilustrada gerada por IA sob direção do autor
 Código escrito com Claude (Anthropic) e Codex (OpenAI)
@@ -35,7 +35,7 @@ Code written with Claude (Anthropic) and Codex (OpenAI)
 Sounds and effects CC0/CC-BY — see assets/LICENSES.md
 
 Inspired by the Nag Hammadi texts, the Pistis Sophia
-and the accounts of Irenaeus, Hippolytus and Clement.",card_cinema,,240,scripts/fx/cinematic.gd:188,
+and the accounts of Irenaeus, Hippolytus and Clement.",card_cinema,,240,scripts/fx/cinematic.gd:189,
 character_atelier.NOTES.a674f1,"A memória da luz tomou forma.
 Seis poses ilustradas, túnica bipartida
 e bracelete da Mônada.","The memory of light took shape.

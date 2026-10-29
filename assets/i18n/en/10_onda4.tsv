@@ -256,7 +256,6 @@ hud._queue_screen_hints.df3f2e	heavy strike
 hud._queue_screen_hints.3c90a7	block · on time, parries
 hud._queue_screen_hints.6b344d	staff combo
 hud._queue_screen_hints.61dfe8	Sun Orb (costs Aether)
-hud._queue_screen_hints.f4f473	yellow tell:
 hud._queue_screen_hints.e9b353	red:
 hud._queue_screen_hints.bd84ff	pause · Moves & Controls
 hud._check_ring_hints.385e09	use the equipped Ring (costs Aether)
@@ -301,7 +300,6 @@ input_glyphs.pad_button_name.5bd2f7	LS
 input_glyphs.pad_button_name.09ffce	R3
 input_glyphs.pad_button_name.54561f	RS
 input_glyphs.pad_button_name.6e157c	Create
-input_glyphs.pad_button_name.69bd4e	View
 input_glyphs.pad_button_name.02543e	PS
 input_glyphs.pad_button_name.70f8bb	Home
 input_glyphs.pad_button_name.61f07c	Guide

@@ -156,6 +156,7 @@ func _swap_with_clone() -> void:
 
 func _bounce_volley() -> void:
 	var b := arena_bounds()
+	sfx("atk_shot", e.global_position)      # 1 som por salva (R4), não por caco
 	for i in 3:
 		var p := Projectile.new()
 		var from_left: bool = i % 2 == 0

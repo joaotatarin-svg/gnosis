@@ -43,6 +43,7 @@ var _bar_top: ColorRect
 var _bar_bottom: ColorRect
 var _boss_name: Label
 var _boss_title: Label
+var _boss_band: TextureRect       # faixa escura macia sob nome+título (QA7 #17/#23: legível sobre qualquer arte)
 var _vig: ColorRect
 var _art_box: Control              # as ilustrações (duas camadas para a troca)
 var _art_a: TextureRect
@@ -500,6 +501,36 @@ func _build_boss() -> void:
 	_bar_bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bar_bottom)
 
+	# Faixa de leitura: elipse escura que esfuma nas pontas, atrás do nome e do
+	# subtítulo. Sem ela o subtítulo (12 px) caía sobre o Colosso, plataformas e
+	# chefes claros e sumia (QA7 #17 e #23).
+	_boss_band = TextureRect.new()
+	var g := Gradient.new()
+	g.set_color(0, Color(0.0, 0.01, 0.02, 0.82))
+	g.set_color(1, Color(0.0, 0.01, 0.02, 0.0))
+	g.add_point(0.6, Color(0.0, 0.01, 0.02, 0.62))
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill = GradientTexture2D.FILL_RADIAL
+	gt.fill_from = Vector2(0.5, 0.5)
+	gt.fill_to = Vector2(0.5, 0.0)
+	gt.width = 128
+	gt.height = 32
+	_boss_band.texture = gt
+	_boss_band.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_boss_band.stretch_mode = TextureRect.STRETCH_SCALE
+	_boss_band.anchor_left = 0.5
+	_boss_band.anchor_right = 0.5
+	_boss_band.anchor_top = 0.5
+	_boss_band.anchor_bottom = 0.5
+	_boss_band.offset_left = -340.0
+	_boss_band.offset_right = 340.0
+	_boss_band.offset_top = -96.0
+	_boss_band.offset_bottom = 6.0
+	_boss_band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_boss_band.modulate.a = 0.0
+	add_child(_boss_band)
+
 	_boss_name = Label.new()
 	_boss_name.text = String(boss.get("name", ""))
 	_boss_name.anchor_left = 0.5
@@ -535,7 +566,9 @@ func _build_boss() -> void:
 	_boss_title.add_theme_font_size_override("font_size", 12)
 	_boss_title.add_theme_color_override("font_color", CodexStyle.PAPER)
 	_boss_title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
-	_boss_title.add_theme_constant_override("outline_size", 4)
+	_boss_title.add_theme_constant_override("outline_size", 5)
+	_boss_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # título longo (EN) quebra em vez de vazar
+	_boss_title.offset_bottom = 6.0
 	_boss_title.add_theme_font_override("font", Cinematic.title_font())
 	_boss_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_boss_title.modulate.a = 0.0
@@ -550,6 +583,7 @@ func _run_boss() -> void:
 	tw.tween_property(_bar_top, "offset_bottom", 44.0, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_bar_bottom, "offset_top", -44.0, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_boss_name, "modulate:a", 1.0, 0.35)
+	tw.tween_property(_boss_band, "modulate:a", 1.0, 0.3)
 	tw.tween_property(_boss_title, "modulate:a", 1.0, 0.5).set_delay(0.15)
 	_boss_name.scale = Vector2(1.18, 1.18)
 	_boss_name.pivot_offset = Vector2(300.0, 40.0)
@@ -562,6 +596,7 @@ func _run_boss() -> void:
 	out.tween_property(_bar_bottom, "offset_top", 0.0, 0.25)
 	out.tween_property(_boss_name, "modulate:a", 0.0, 0.22)
 	out.tween_property(_boss_title, "modulate:a", 0.0, 0.22)
+	out.tween_property(_boss_band, "modulate:a", 0.0, 0.22)
 	await out.finished
 	_finish()
 

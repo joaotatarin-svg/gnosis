@@ -20,6 +20,9 @@ var _warned: bool = false
 func _ready() -> void:
 	hazard_kind = "guillotine"
 	z_index = 4
+	if HazardArt.has("gu_frame"):
+		# a MOLDURA fica atrás da Sophia (ela passa por dentro); a lâmina, na frente
+		_back = HazardArt.back_layer(self, _draw_back)
 
 
 ## Altura da BASE da lâmina (local; 0 = chão).
@@ -57,12 +60,64 @@ func _tick(_delta: float) -> void:
 			hurt_player(hazard_damage(5), global_position + Vector2(0, -60), 120.0, true)
 		var p := _player()
 		if p != null and absf(p.global_position.x - global_position.x) < 320.0:
-			Audio.play_sfx_at("hit_heavy", global_position, 0.05)
+			Audio.play_sfx_at("hz_guillotine", global_position, 0.05)
 			Juice.shake(0.18)
 			VfxLibrary.dust(get_parent(), global_position)
 
 
+## Moldura pintada (camada de trás).
+func _draw_back(layer: Node2D) -> void:
+	if HazardArt.has("gu_frame"):
+		HazardArt.draw(layer, "gu_frame", 0, Vector2.ZERO)
+
+
 func _draw() -> void:
+	if HazardArt.has("gu_frame") and HazardArt.has("gu_blade"):
+		_draw_art()
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): a lâmina pintada desce pelos trilhos da moldura no
+## MESMO tempo da lógica (o curso pintado é um pouco mais curto que o da
+## lógica: a altura é mapeada em proporção — a queda dura 0,1 s, não se nota).
+## AVISO por cima, por código: sombra crescendo no chão + linha vermelha +
+## contorno vermelho pulsante (2 Hz) na lâmina + tremor (já na altura).
+func _draw_art() -> void:
+	var by := _blade_y()
+	var c := _cycle(PERIOD)
+	var open_base := HazardArt.num("gu_frame", "blade_open_base", TOP)
+	var vy := by * (open_base / TOP)
+	var bsz := HazardArt.size("gu_blade")
+	var ban := HazardArt.anchor("gu_blade")
+	var blade_top := vy - ban.y
+	# haste da lâmina (da travessa até o topo da lâmina)
+	var rod_top := HazardArt.num("gu_frame", "rod_top", TOP - 30.0)
+	if HazardArt.has("gu_rod") and blade_top > rod_top:
+		var rw := HazardArt.size("gu_rod").x
+		draw_texture_rect(HazardArt.tex("gu_rod"), Rect2(-rw * 0.5, rod_top, rw, blade_top - rod_top), false)
+	# sombra no chão (cresce no aviso — a leitura principal)
+	var warn := 0.0
+	if c >= WARN_AT and c < DROP_AT + DROP_TIME:
+		warn = clampf((c - WARN_AT) / (DROP_AT - WARN_AT), 0.0, 1.0)
+		draw_set_transform(Vector2(0, 2), 0, Vector2(1, 0.22))
+		draw_circle(Vector2.ZERO, HALF_W * (0.5 + 0.7 * warn), Color(0, 0, 0, 0.25 + 0.35 * warn))
+		draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
+		warn_line(Vector2(-HALF_W, 3), Vector2(HALF_W, 3), Color(WARN_COL, 0.4 + 0.6 * warn), 2.0)
+	var at := Vector2(0, vy)
+	if c >= WARN_AT and c < DROP_AT:
+		warn_outline("gu_blade", 0, at, warn)
+	else:
+		HazardArt.draw_outline(self, "gu_blade", 0, at, RIM_COL, 1.0)
+	HazardArt.draw(self, "gu_blade", 0, at)
+	if c >= WARN_AT and c < DROP_AT:
+		# brilho no gume (forma + cor; 2 Hz)
+		var g := HazardArt.pulse(_t) * HazardArt.flash_k()
+		draw_circle(Vector2(0, vy - bsz.y * 0.45), 9.0 + 3.0 * g, Color(WARN_COL, 0.18 + 0.12 * g))
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var by := _blade_y()
 	var c := _cycle(PERIOD)
 	var gold := Color(0.85, 0.7, 0.35)

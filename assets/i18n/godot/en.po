@@ -4831,14 +4831,19 @@ msgid "z"
 msgstr "z"
 
 #. boss_brain.setup.392d87  [ui]
-#: scripts/entities/bosses/boss_brain.gd:100
+#: scripts/entities/bosses/boss_brain.gd:102
 msgid "BossBrain"
 msgstr "BossBrain"
 
 #. boss_rei._setup_eye.185f11  [ui]
-#: scripts/entities/bosses/boss_rei.gd:87
+#: scripts/entities/bosses/boss_rei.gd:96
 msgid "OrbRig"
 msgstr "OrbRig"
+
+#. boss_rei._setup_eye.38fe31  [ui]
+#: scripts/entities/bosses/boss_rei.gd:99
+msgid "HudPush"
+msgstr "HudPush"
 
 #. chest._give_reward.872913  [ui]
 #: scripts/entities/chest.gd:101
@@ -4866,32 +4871,32 @@ msgid "Campeão %s"
 msgstr "Champion %s"
 
 #. enemy._eon_title.5101be  [ui]
-#: scripts/entities/enemy.gd:347
+#: scripts/entities/enemy.gd:348
 msgid "da "
 msgstr "of "
 
 #. enemy._eon_title.ce4410  [ui]
-#: scripts/entities/enemy.gd:347
+#: scripts/entities/enemy.gd:348
 msgid "do "
 msgstr "of "
 
 #. sanctuary_altar._physics_process.4adce9  [toast]
-#: scripts/entities/hazards/sanctuary_altar.gd:41
+#: scripts/entities/hazards/sanctuary_altar.gd:42
 msgid "O altar te acalma."
 msgstr "The altar soothes you."
 
 #. summon_totem._crumble.e73a89  [toast]
-#: scripts/entities/hazards/summon_totem.gd:91
+#: scripts/entities/hazards/summon_totem.gd:92
 msgid "Totem quebrado: os reforços cessam."
 msgstr "Totem shattered: no more reinforcements."
 
 #. ward_light.finish.72dceb  [toast]
-#: scripts/entities/hazards/ward_light.gd:45
+#: scripts/entities/hazards/ward_light.gd:46
 msgid "A luz resistiu: o Adormecido te devolve forças."
 msgstr "The light held: the Sleeper restores your strength."
 
 #. ward_light.finish.0498ad  [toast]
-#: scripts/entities/hazards/ward_light.gd:47
+#: scripts/entities/hazards/ward_light.gd:48
 msgid "A luz se apagou."
 msgstr "The light went out."
 
@@ -4900,13 +4905,18 @@ msgstr "The light went out."
 msgid "OS TRÊS SELOS"
 msgstr "THE THREE SEALS"
 
+#. seal_puzzle._build_hint.0a08b8  [ui]
+#: scripts/entities/seal_puzzle.gd:34
+msgid "golpeie na ordem em que brilham"
+msgstr "strike them in the order they glow"
+
 #. seal_puzzle._solve.b16c6d  [ui]
-#: scripts/entities/seal_puzzle.gd:79
+#: scripts/entities/seal_puzzle.gd:78
 msgid "selos abertos"
 msgstr "seals opened"
 
 #. seal_puzzle._solve.1dd1f5  [ui]
-#: scripts/entities/seal_puzzle.gd:88
+#: scripts/entities/seal_puzzle.gd:87
 msgid "selo:%d"
 msgstr "selo:%d"
 
@@ -4956,49 +4966,54 @@ msgid "ProjectileFX"
 msgstr "ProjectileFX"
 
 #. cinematic.prologue.56bd6b  [card_cinema]
-#: scripts/fx/cinematic.gd:151
+#: scripts/fx/cinematic.gd:152
 msgid "No princípio havia o Um. Dele emanaram os Éons, aos pares,\ncomo luz que transborda. Ali nada dormia. Nada esquecia."
 msgstr "In the beginning there was the One. From it the Aeons emanated, in pairs,\nlike overflowing light. There nothing slept. Nothing forgot."
 
 #. cinematic.prologue.c37f5c  [card_cinema]
-#: scripts/fx/cinematic.gd:152
+#: scripts/fx/cinematic.gd:153
 msgid "A mais jovem, Sophia, quis alcançar a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma,\ne ela o escondeu numa nuvem."
 msgstr "The youngest, Sophia, sought to reach the Source alone.\nFrom that unpartnered desire a formless son was born,\nand she hid him in a cloud."
 
 #. cinematic.prologue.c1bdfa  [card_cinema]
-#: scripts/fx/cinematic.gd:153
+#: scripts/fx/cinematic.gd:154
 msgid "Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.\nNo barro dormem as faíscas que ele levou da mãe.\n\nUma delas acaba de sentir dor."
 msgstr "Blind to the Light, he believed himself the only god and made the Kenoma.\nIn the clay sleep the sparks he took from his mother.\n\nOne of them has just felt pain."
 
 #. cinematic.epilogue.4ab9df  [card_cinema]
-#: scripts/fx/cinematic.gd:185
+#: scripts/fx/cinematic.gd:186
 msgid "Todas as pedras foram lidas. A faísca lembra por inteiro."
 msgstr "Every stone has been read. The spark remembers in full."
 
 #. cinematic.epilogue.8e89d7  [card_cinema]
-#: scripts/fx/cinematic.gd:186
+#: scripts/fx/cinematic.gd:187
 msgid "Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas."
 msgstr "%d Stelae were left unread in the Kenoma. The Chronicles keep the ones that were read."
 
 #. cinematic.epilogue.2f5ff6  [card_cinema]
-#: scripts/fx/cinematic.gd:187
+#: scripts/fx/cinematic.gd:188
 msgid "CRÔNICAS  %d / %d"
 msgstr "CHRONICLES  %d / %d"
 
 #. cinematic.epilogue.863da2  [card_cinema]
-#: scripts/fx/cinematic.gd:188
+#: scripts/fx/cinematic.gd:189
 msgid "GNOSIS"
 msgstr "GNOSIS"
 
 #. cinematic.epilogue.622c86  [card_cinema]
-#: scripts/fx/cinematic.gd:188
+#: scripts/fx/cinematic.gd:189
 msgid "João Tatarin — direção, produção e escolhas\nArte ilustrada gerada por IA sob direção do autor\nCódigo escrito com Claude (Anthropic) e Codex (OpenAI)\nSons e efeitos CC0/CC-BY — ver assets/LICENSES.md\n\nInspirado nos textos de Nag Hammadi, na Pistis Sophia\ne nos relatos de Irineu, Hipólito e Clemente."
 msgstr "João Tatarin — direction, production and choices\nIllustrated art generated by AI under the author's direction\nCode written with Claude (Anthropic) and Codex (OpenAI)\nSounds and effects CC0/CC-BY — see assets/LICENSES.md\n\nInspired by the Nag Hammadi texts, the Pistis Sophia\nand the accounts of Irenaeus, Hippolytus and Clement."
 
 #. cinematic.epilogue.17a290  [card_cinema]
-#: scripts/fx/cinematic.gd:191
+#: scripts/fx/cinematic.gd:192
 msgid "...mãe?"
 msgstr "...mother?"
+
+#. hazard_art.back_layer.5786e2  [ui]
+#: scripts/fx/hazard_art.gd:194
+msgid "ArtBack"
+msgstr "ArtBack"
 
 #. codex_trial._ready.7dcce7  [toast]
 #: scripts/levels/codex_trial.gd:79
@@ -5141,142 +5156,152 @@ msgid "Siga em frente  →"
 msgstr "Keep going  →"
 
 #. level._open_exit.141467  [toast]
-#: scripts/levels/level.gd:885
+#: scripts/levels/level.gd:924
 msgid "A fenda abriu no alto: suba."
 msgstr "The rift opened up high: climb."
 
 #. level._on_player_died.f920d1  [ui]
-#: scripts/levels/level.gd:985
+#: scripts/levels/level.gd:1024
 msgid "Você caiu no Kenoma"
 msgstr "You fell in the Kenoma"
 
 #. level._on_player_died.ba60d8  [ui]
-#: scripts/levels/level.gd:986
+#: scripts/levels/level.gd:1025
 msgid "Chegou até a Tela %d."
 msgstr "Reached Screen %d."
 
 #. eon_map.KINDS.d144c4  [ui]
-#: scripts/levels/map/eon_map.gd:88
+#: scripts/levels/map/eon_map.gd:91
 msgid "Chegada"
 msgstr "Arrival"
 
 #. eon_map.KINDS.5ddace  [ui]
-#: scripts/levels/map/eon_map.gd:88
+#: scripts/levels/map/eon_map.gd:91
 msgid "A porta do Éon. Checkpoint."
 msgstr "The gate of the Aeon. Checkpoint."
 
 #. eon_map.KINDS.c51361  [ui]
-#: scripts/levels/map/eon_map.gd:89
+#: scripts/levels/map/eon_map.gd:92
 msgid "Travessia"
 msgstr "Crossing"
 
 #. eon_map.KINDS.313d02  [ui]
-#: scripts/levels/map/eon_map.gd:89
+#: scripts/levels/map/eon_map.gd:92
 msgid "Zonas de combate cheias. Mais faíscas."
 msgstr "Packed combat zones. More sparks."
 
 #. eon_map.KINDS.cf1f77  [ui]
-#: scripts/levels/map/eon_map.gd:90
+#: scripts/levels/map/eon_map.gd:93
 msgid "Passagem perigosa"
 msgstr "Perilous passage"
 
 #. eon_map.KINDS.5623f7  [ui]
-#: scripts/levels/map/eon_map.gd:90
+#: scripts/levels/map/eon_map.gd:93
 msgid "Menos inimigos, chão traiçoeiro. Fortalece a vida."
 msgstr "Fewer enemies, treacherous ground. Strengthens life."
 
 #. eon_map.KINDS.e2fcea  [ui]
-#: scripts/levels/map/eon_map.gd:91
+#: scripts/levels/map/eon_map.gd:94
 msgid "Escalada"
 msgstr "Ascent"
 
 #. eon_map.KINDS.a1019c  [ui]
-#: scripts/levels/map/eon_map.gd:91
+#: scripts/levels/map/eon_map.gd:94
 msgid "Plataformas e altura. Fortalece o Éter."
 msgstr "Platforms and heights. Strengthens the Aether."
 
 #. eon_map.KINDS.d50f02  [ui]
-#: scripts/levels/map/eon_map.gd:92
+#: scripts/levels/map/eon_map.gd:95
 msgid "Santuário"
 msgstr "Shrine"
 
 #. eon_map.KINDS.4e6061  [ui]
-#: scripts/levels/map/eon_map.gd:92
+#: scripts/levels/map/eon_map.gd:95
 msgid "Luta leve e um lugar de repouso. Cura inteira."
 msgstr "A light fight and a place of rest. Full healing."
 
 #. eon_map.KINDS.1a4ba8  [ui]
-#: scripts/levels/map/eon_map.gd:93
+#: scripts/levels/map/eon_map.gd:96
 msgid "Arena"
 msgstr "Arena"
 
 #. eon_map.KINDS.d67188  [ui]
-#: scripts/levels/map/eon_map.gd:93
+#: scripts/levels/map/eon_map.gd:96
 msgid "Opcional e dura: ondas pesadas. Grande recompensa."
 msgstr "Optional and hard: heavy waves. Great reward."
 
 #. eon_map.KINDS.026944  [ui]
-#: scripts/levels/map/eon_map.gd:94
+#: scripts/levels/map/eon_map.gd:97
 msgid "Sala secreta"
 msgstr "Secret room"
 
 #. eon_map.KINDS.7ce718  [ui]
-#: scripts/levels/map/eon_map.gd:94
+#: scripts/levels/map/eon_map.gd:97
 msgid "Só se alcança com o pulo duplo. Um tesouro escondido."
 msgstr "Only the double jump reaches it. A hidden treasure."
 
+#. eon_map.KINDS.157542  [ui]
+#: scripts/levels/map/eon_map.gd:98
+msgid "Câmara oculta"
+msgstr "Hidden chamber"
+
+#. eon_map.KINDS.e88a8d  [ui]
+#: scripts/levels/map/eon_map.gd:98
+msgid "Um esconderijo no alto, ao alcance de pulos simples. Um tesouro escondido."
+msgstr "A hideaway up high, within reach of single jumps. A hidden treasure."
+
 #. eon_map.KINDS.4eba1b  [ui]
-#: scripts/levels/map/eon_map.gd:95
+#: scripts/levels/map/eon_map.gd:99
 msgid "O Desafio"
 msgstr "The Challenge"
 
 #. eon_map.KINDS.c139d6  [ui]
-#: scripts/levels/map/eon_map.gd:95
+#: scripts/levels/map/eon_map.gd:99
 msgid "O Campeão guarda o santuário do Éon. Checkpoint."
 msgstr "The Champion guards the shrine of the Aeon. Checkpoint."
 
 #. eon_map.KINDS.7c4ddf  [ui]
-#: scripts/levels/map/eon_map.gd:96
+#: scripts/levels/map/eon_map.gd:100
 msgid "Antessala"
 msgstr "Antechamber"
 
 #. eon_map.KINDS.6976d8  [ui]
-#: scripts/levels/map/eon_map.gd:96
+#: scripts/levels/map/eon_map.gd:100
 msgid "A última prova antes do trono. Checkpoint."
 msgstr "The last trial before the throne. Checkpoint."
 
 #. eon_map.KINDS.cd8ae5  [ui]
-#: scripts/levels/map/eon_map.gd:97
+#: scripts/levels/map/eon_map.gd:101
 msgid "O Arconte"
 msgstr "The Archon"
 
 #. eon_map.KINDS.72079d  [ui]
-#: scripts/levels/map/eon_map.gd:97
+#: scripts/levels/map/eon_map.gd:101
 msgid "O senhor deste Éon."
 msgstr "The lord of this Aeon."
 
 #. eon_map.reward_text.b23cae  [ui]
-#: scripts/levels/map/eon_map.gd:169
+#: scripts/levels/map/eon_map.gd:174
 msgid "+%d faíscas"
 msgstr "+%d sparks"
 
 #. eon_map.reward_text.dcf4ab  [ui]
-#: scripts/levels/map/eon_map.gd:171
+#: scripts/levels/map/eon_map.gd:176
 msgid "+%d vida máx."
 msgstr "+%d max life"
 
 #. eon_map.reward_text.2d5b9d  [ui]
-#: scripts/levels/map/eon_map.gd:173
+#: scripts/levels/map/eon_map.gd:178
 msgid "+%d Éter máx."
 msgstr "+%d max Aether"
 
 #. eon_map.reward_text.cf629f  [ui]
-#: scripts/levels/map/eon_map.gd:175
+#: scripts/levels/map/eon_map.gd:180
 msgid "cura inteira"
 msgstr "full healing"
 
 #. eon_map.slot.ad28c6  [ui]
-#: scripts/levels/map/eon_map.gd:281
+#: scripts/levels/map/eon_map.gd:286
 msgid "e%d.L%d"
 msgstr "e%d.L%d"
 
@@ -5820,93 +5845,153 @@ msgstr "CC0 effects: Kenney (kenney.nl) and CC0 authors at OpenGameArt.org"
 msgid "Partículas: Kenney Particle Pack (CC0)"
 msgstr "Particles: Kenney Particle Pack (CC0)"
 
+#. credits.CREDIT_HEADS.1638c2  [ui]
+#: scripts/ui/credits.gd:29
+msgid "Música:"
+msgstr "Music:"
+
+#. credits.CREDIT_HEADS.836c88  [ui]
+#: scripts/ui/credits.gd:29
+msgid "Faixas:"
+msgstr "Tracks:"
+
+#. credits.CREDIT_HEADS.d7e62d  [ui]
+#: scripts/ui/credits.gd:29
+msgid "Efeitos sonoros:"
+msgstr "Sound effects:"
+
+#. credits.CREDIT_HEADS.2f2d73  [ui]
+#: scripts/ui/credits.gd:29
+msgid "Efeitos CC0:"
+msgstr "CC0 effects:"
+
+#. credits.CREDIT_HEADS.4083e0  [ui]
+#: scripts/ui/credits.gd:29
+msgid "Partículas:"
+msgstr "Particles:"
+
+#. credits.CREDIT_HEADS.c66302  [ui]
+#: scripts/ui/credits.gd:30
+msgid "Ambiências, magias, vozes e camadas sintetizadas:"
+msgstr "Ambiences, spells, voices and synthesized layers:"
+
+#. credits.CREDIT_FRAGMENTS.d78110  [ui]
+#: scripts/ui/credits.gd:33
+msgid "e outros autores CC0 do"
+msgstr "and other CC0 authors at"
+
+#. credits.CREDIT_FRAGMENTS.261cfd  [ui]
+#: scripts/ui/credits.gd:33
+msgid "feitas para GNOSIS"
+msgstr "made for GNOSIS"
+
+#. credits.CREDIT_FRAGMENTS.96c11e  [ui]
+#: scripts/ui/credits.gd:33
+msgid "anônimo"
+msgstr "anonymous"
+
+#. credits.CREDIT_FRAGMENTS.130bb9  [ui]
+#: scripts/ui/credits.gd:34
+msgid "multi-licença; usada a CC0"
+msgstr "multi-licensed; used as CC0"
+
+#. credits.CREDIT_FRAGMENTS.14c151  [ui]
+#: scripts/ui/credits.gd:34
+msgid "e colaboradores"
+msgstr "and contributors"
+
+#. credits.CREDIT_FRAGMENTS.bdfd67  [ui]
+#: scripts/ui/credits.gd:34
+msgid "licença MIT"
+msgstr "MIT license"
+
 #. credits._fill.7d8bc6  [ui]
-#: scripts/ui/credits.gd:92
+#: scripts/ui/credits.gd:104
 msgid "O DESPERTAR"
 msgstr "THE AWAKENING"
 
 #. credits._fill.73bef1  [ui]
-#: scripts/ui/credits.gd:94
+#: scripts/ui/credits.gd:106
 msgid "Criação e direção"
 msgstr "Created and directed by"
 
 #. credits._fill.7c4483  [ui]
-#: scripts/ui/credits.gd:95
+#: scripts/ui/credits.gd:107
 msgid "João Tatarin"
 msgstr "João Tatarin"
 
 #. credits._fill.ca7bd6  [ui]
-#: scripts/ui/credits.gd:97
+#: scripts/ui/credits.gd:109
 msgid "Desenvolvido com"
 msgstr "Developed with"
 
 #. credits._fill.f60dab  [ui]
-#: scripts/ui/credits.gd:98
+#: scripts/ui/credits.gd:110
 msgid "Claude"
 msgstr "Claude"
 
 #. credits._fill.6f5d62  [ui]
-#: scripts/ui/credits.gd:99
+#: scripts/ui/credits.gd:111
 msgid "(Anthropic)  ·  e Codex (OpenAI)"
 msgstr "(Anthropic)  ·  and Codex (OpenAI)"
 
 #. credits._fill.07907f  [ui]
-#: scripts/ui/credits.gd:100
+#: scripts/ui/credits.gd:112
 msgid "Arte ilustrada gerada por IA sob direção do autor"
 msgstr "Illustrated art generated by AI under the author's direction"
 
 #. credits._fill.dce7b1  [ui]
-#: scripts/ui/credits.gd:104
+#: scripts/ui/credits.gd:116
 msgid "Música e sons"
 msgstr "Music and sound"
 
 #. credits._fill.a27bc5  [ui]
-#: scripts/ui/credits.gd:114
+#: scripts/ui/credits.gd:126
 msgid "Pacotes de sons e partículas"
 msgstr "Sound and particle packs"
 
 #. credits._fill.8c17f1  [ui]
-#: scripts/ui/credits.gd:118
+#: scripts/ui/credits.gd:130
 msgid "Fontes"
 msgstr "Fonts"
 
 #. credits._fill.ab46e4  [ui]
-#: scripts/ui/credits.gd:119
+#: scripts/ui/credits.gd:131
 msgid "Cinzel e Cinzel Decorative  —  Natanael Gama"
 msgstr "Cinzel and Cinzel Decorative  —  Natanael Gama"
 
 #. credits._fill.f9346e  [ui]
-#: scripts/ui/credits.gd:120
+#: scripts/ui/credits.gd:132
 msgid "Alegreya  —  Juan Pablo del Peral / Huerta Tipográfica"
 msgstr "Alegreya  —  Juan Pablo del Peral / Huerta Tipográfica"
 
 #. credits._fill.bf8dd2  [ui]
-#: scripts/ui/credits.gd:121
+#: scripts/ui/credits.gd:133
 msgid "SIL Open Font License 1.1  (assets/fonts/*/OFL.txt)"
 msgstr "SIL Open Font License 1.1  (assets/fonts/*/OFL.txt)"
 
 #. credits._fill.ceaed7  [ui]
-#: scripts/ui/credits.gd:123
+#: scripts/ui/credits.gd:135
 msgid "Motor"
 msgstr "Engine"
 
 #. credits._fill.2ea63c  [ui]
-#: scripts/ui/credits.gd:124
+#: scripts/ui/credits.gd:136
 msgid "Godot Engine  —  © Juan Linietsky, Ariel Manzur e colaboradores (licença MIT)"
 msgstr "Godot Engine  —  © Juan Linietsky, Ariel Manzur and contributors (MIT license)"
 
 #. credits._fill.2a9b2b  [ui]
-#: scripts/ui/credits.gd:127
+#: scripts/ui/credits.gd:139
 msgid "Obrigado por despertar."
 msgstr "Thank you for waking."
 
 #. credits._read_licenses.0f74a4  [ui]
-#: scripts/ui/credits.gd:151
+#: scripts/ui/credits.gd:163
 msgid "%s  —  %s  (%s)"
 msgstr "%s  —  %s  (%s)"
 
 #. dialogue_box._reason_text.d9cd37  [ui]
-#: scripts/ui/dialogue_box.gd:645
+#: scripts/ui/dialogue_box.gd:652
 msgid "%s: %s"
 msgstr "%s: %s"
 
@@ -5976,227 +6061,232 @@ msgid "AINDA NÃO ENCONTRADO"
 msgstr "NOT YET FOUND"
 
 #. hud._on_weapon.3b2ee9  [ui]
-#: scripts/ui/hud.gd:291
+#: scripts/ui/hud.gd:304
 msgid "lança o inimigo para o alto"
 msgstr "launches the enemy into the air"
 
 #. hud._on_weapon.d40c9a  [ui]
-#: scripts/ui/hud.gd:293
+#: scripts/ui/hud.gd:306
 msgid "golpe no ar"
 msgstr "air strike"
 
 #. hud._on_achievement.87fa2b  [toast]
-#: scripts/ui/hud.gd:438
+#: scripts/ui/hud.gd:467
 msgid "Conquista  ·  %s"
 msgstr "Achievement  ·  %s"
 
 #. hud.seal_text.c9c856  [ui]
-#: scripts/ui/hud.gd:881
+#: scripts/ui/hud.gd:910
 msgid "Arma Nv. %d na loja"
 msgstr "Weapon Lv. %d in the shop"
 
 #. hud.seal_text.117cdc  [ui]
-#: scripts/ui/hud.gd:887
+#: scripts/ui/hud.gd:916
 msgid "%s na loja"
 msgstr "%s in the shop"
 
 #. hud.seal_text.3e2d6c  [ui]
-#: scripts/ui/hud.gd:890
+#: scripts/ui/hud.gd:919
 msgid "mais Vida e Éter na loja"
 msgstr "more Life and Aether in the shop"
 
 #. hud.seal_text.3e9499  [ui]
-#: scripts/ui/hud.gd:891
+#: scripts/ui/hud.gd:920
 msgid "Selo aberto"
 msgstr "Seal opened"
 
 #. hud._queue_screen_hints.97ec4f  [ui]
-#: scripts/ui/hud.gd:970
+#: scripts/ui/hud.gd:999
 msgid "golpe leve"
 msgstr "light strike"
 
 #. hud._queue_screen_hints.df3f2e  [ui]
-#: scripts/ui/hud.gd:970
+#: scripts/ui/hud.gd:999
 msgid "golpe forte"
 msgstr "heavy strike"
 
 #. hud._queue_screen_hints.3c90a7  [ui]
-#: scripts/ui/hud.gd:971
+#: scripts/ui/hud.gd:1000
 msgid "bloquear · no tempo, apara"
 msgstr "block · on time, parries"
 
 #. hud._queue_screen_hints.6b344d  [ui]
-#: scripts/ui/hud.gd:973
+#: scripts/ui/hud.gd:1002
 msgid "sequência do cajado"
 msgstr "staff combo"
 
 #. hud._queue_screen_hints.61dfe8  [ui]
-#: scripts/ui/hud.gd:974
+#: scripts/ui/hud.gd:1003
 msgid "Esfera Solar (gasta Éter)"
 msgstr "Sun Orb (costs Aether)"
 
-#. hud._queue_screen_hints.f4f473  [ui]
-#: scripts/ui/hud.gd:976
-msgid "telegrafo amarelo:"
+#. hud._queue_screen_hints.336d16  [ui]
+#: scripts/ui/hud.gd:1005
+msgid "telégrafo amarelo:"
 msgstr "yellow tell:"
 
 #. hud._queue_screen_hints.e9b353  [ui]
-#: scripts/ui/hud.gd:976
+#: scripts/ui/hud.gd:1005
 msgid "vermelho:"
 msgstr "red:"
 
 #. hud._queue_screen_hints.bd84ff  [ui]
-#: scripts/ui/hud.gd:977
+#: scripts/ui/hud.gd:1006
 msgid "pausa · Golpes & Controles"
 msgstr "pause · Moves & Controls"
 
 #. hud._check_ring_hints.385e09  [ui]
-#: scripts/ui/hud.gd:989
+#: scripts/ui/hud.gd:1018
 msgid "usar o Anel equipado (gasta Éter)"
 msgstr "use the equipped Ring (costs Aether)"
 
 #. hud._check_ring_hints.beab08  [ui]
-#: scripts/ui/hud.gd:991
+#: scripts/ui/hud.gd:1020
 msgid "trocar de Anel"
 msgstr "switch Ring"
 
 #. hud.key_label.84c4c5  [ui]
-#: scripts/ui/hud.gd:1099
+#: scripts/ui/hud.gd:1128
 msgid "Analógico"
 msgstr "Stick"
 
 #. hud.key_label.f999e2  [ui]
-#: scripts/ui/hud.gd:1099
+#: scripts/ui/hud.gd:1128
 msgid "%s  %s"
 msgstr "%s  %s"
 
 #. hud._key_name.f61d6e  [ui]
-#: scripts/ui/hud.gd:1144
+#: scripts/ui/hud.gd:1173
 msgid "Espaço"
 msgstr "Space"
 
 #. hud._key_name.1f7a4f  [ui]
-#: scripts/ui/hud.gd:1145
+#: scripts/ui/hud.gd:1174
 msgid "Esc"
 msgstr "Esc"
 
 #. hud._key_name.469d5b  [ui]
-#: scripts/ui/hud.gd:1146
+#: scripts/ui/hud.gd:1175
 msgid "Shift"
 msgstr "Shift"
 
 #. hud._key_name.2b9ece  [ui]
-#: scripts/ui/hud.gd:1147
+#: scripts/ui/hud.gd:1176
 msgid "Enter"
 msgstr "Enter"
 
 #. hud._key_name.71815f  [ui]
-#: scripts/ui/hud.gd:1148
+#: scripts/ui/hud.gd:1177
 msgid "Esq."
 msgstr "Left"
 
 #. hud._key_name.72acb3  [ui]
-#: scripts/ui/hud.gd:1149
+#: scripts/ui/hud.gd:1178
 msgid "Dir."
 msgstr "Right"
 
 #. hud._key_name.4effab  [ui]
-#: scripts/ui/hud.gd:1150
+#: scripts/ui/hud.gd:1179
 msgid "Cima"
 msgstr "Up"
 
 #. hud._key_name.74fd00  [ui]
-#: scripts/ui/hud.gd:1151
+#: scripts/ui/hud.gd:1180
 msgid "Baixo"
 msgstr "Down"
 
 #. hud._pad_button_name.6dcd4c  [ui]
-#: scripts/ui/hud.gd:1157
+#: scripts/ui/hud.gd:1186
 msgid "A"
 msgstr "A"
 
 #. hud._pad_button_name.ae4f28  [ui]
-#: scripts/ui/hud.gd:1158
+#: scripts/ui/hud.gd:1187
 msgid "B"
 msgstr "B"
 
 #. hud._pad_button_name.c032ad  [ui]
-#: scripts/ui/hud.gd:1159
+#: scripts/ui/hud.gd:1188
 msgid "X"
 msgstr "X"
 
 #. hud._pad_button_name.23eb4d  [ui]
-#: scripts/ui/hud.gd:1160
+#: scripts/ui/hud.gd:1189
 msgid "Y"
 msgstr "Y"
 
 #. hud._pad_button_name.2d1958  [ui]
-#: scripts/ui/hud.gd:1161
+#: scripts/ui/hud.gd:1190
 msgid "LB"
 msgstr "LB"
 
 #. hud._pad_button_name.38026d  [ui]
-#: scripts/ui/hud.gd:1162
+#: scripts/ui/hud.gd:1191
 msgid "RB"
 msgstr "RB"
 
 #. hud._pad_button_name.952f37  [ui]
-#: scripts/ui/hud.gd:1164
+#: scripts/ui/hud.gd:1193
 msgid "Start"
 msgstr "Start"
 
 #. hud._pad_button_name.53157e  [ui]
-#: scripts/ui/hud.gd:1165
+#: scripts/ui/hud.gd:1194
 msgid "D-pad Esq."
 msgstr "D-pad Left"
 
 #. hud._pad_button_name.b7d05d  [ui]
-#: scripts/ui/hud.gd:1166
+#: scripts/ui/hud.gd:1195
 msgid "D-pad Dir."
 msgstr "D-pad Right"
 
 #. hud._pad_button_name.442f4a  [ui]
-#: scripts/ui/hud.gd:1167
+#: scripts/ui/hud.gd:1196
 msgid "D-pad Cima"
 msgstr "D-pad Up"
 
 #. hud._pad_button_name.237b1b  [ui]
-#: scripts/ui/hud.gd:1168
+#: scripts/ui/hud.gd:1197
 msgid "D-pad Baixo"
 msgstr "D-pad Down"
 
 #. hud._pad_button_name.67c850  [ui]
-#: scripts/ui/hud.gd:1169
+#: scripts/ui/hud.gd:1198
 msgid "Botão %d"
 msgstr "Button %d"
 
 #. hud._pad_axis_name.6c62fb  [ui]
-#: scripts/ui/hud.gd:1174
+#: scripts/ui/hud.gd:1203
 msgid "LT"
 msgstr "LT"
 
 #. hud._pad_axis_name.bc410c  [ui]
-#: scripts/ui/hud.gd:1175
+#: scripts/ui/hud.gd:1204
 msgid "RT"
 msgstr "RT"
 
 #. hud._pad_axis_name.e39ae1  [ui]
-#: scripts/ui/hud.gd:1177
+#: scripts/ui/hud.gd:1206
 msgid "Eixo %d"
 msgstr "Axis %d"
 
+#. hud._draw_go.70bdc3  [ui]
+#: scripts/ui/hud.gd:1295
+msgid "Siga em frente"
+msgstr "Keep going"
+
 #. hud._draw_counters.a602bb  [ui]
-#: scripts/ui/hud.gd:1348
+#: scripts/ui/hud.gd:1422
 msgid "Arma Nv. %d"
 msgstr "Weapon Lv. %d"
 
 #. hud._draw_one_boss.dbb588  [ui]
-#: scripts/ui/hud.gd:1628
+#: scripts/ui/hud.gd:1702
 msgid "FASE III"
 msgstr "PHASE III"
 
 #. hud._draw_one_boss.794201  [ui]
-#: scripts/ui/hud.gd:1628
+#: scripts/ui/hud.gd:1702
 msgid "FASE II"
 msgstr "PHASE II"
 
@@ -6321,132 +6411,132 @@ msgid "RS"
 msgstr "RS"
 
 #. input_glyphs.pad_button_name.6e157c  [ui]
-#: scripts/ui/input_glyphs.gd:260
+#: scripts/ui/input_glyphs.gd:262
 msgid "Create"
 msgstr "Create"
 
-#. input_glyphs.pad_button_name.69bd4e  [ui]
-#: scripts/ui/input_glyphs.gd:260
-msgid "View"
+#. input_glyphs.pad_button_name.46b613  [ui]
+#: scripts/ui/input_glyphs.gd:262
+msgid "Exibir"
 msgstr "View"
 
 #. input_glyphs.pad_button_name.6bf5da  [ui]
-#: scripts/ui/input_glyphs.gd:261
+#: scripts/ui/input_glyphs.gd:263
 msgid "Options"
 msgstr "Options"
 
 #. input_glyphs.pad_button_name.02543e  [ui]
-#: scripts/ui/input_glyphs.gd:262
+#: scripts/ui/input_glyphs.gd:264
 msgid "PS"
 msgstr "PS"
 
 #. input_glyphs.pad_button_name.70f8bb  [ui]
-#: scripts/ui/input_glyphs.gd:262
+#: scripts/ui/input_glyphs.gd:264
 msgid "Home"
 msgstr "Home"
 
 #. input_glyphs.pad_button_name.61f07c  [ui]
-#: scripts/ui/input_glyphs.gd:262
+#: scripts/ui/input_glyphs.gd:264
 msgid "Guia"
 msgstr "Guide"
 
 #. input_glyphs.pad_button_name.9c9976  [ui]
-#: scripts/ui/input_glyphs.gd:263
+#: scripts/ui/input_glyphs.gd:265
 msgid "D-pad ←"
 msgstr "D-pad ←"
 
 #. input_glyphs.pad_button_name.3a513e  [ui]
-#: scripts/ui/input_glyphs.gd:264
+#: scripts/ui/input_glyphs.gd:266
 msgid "D-pad →"
 msgstr "D-pad →"
 
 #. input_glyphs.pad_button_name.fb562a  [ui]
-#: scripts/ui/input_glyphs.gd:265
+#: scripts/ui/input_glyphs.gd:267
 msgid "D-pad ↑"
 msgstr "D-pad ↑"
 
 #. input_glyphs.pad_button_name.c1a617  [ui]
-#: scripts/ui/input_glyphs.gd:266
+#: scripts/ui/input_glyphs.gd:268
 msgid "D-pad ↓"
 msgstr "D-pad ↓"
 
 #. input_glyphs.pad_button_name.09ca55  [ui]
-#: scripts/ui/input_glyphs.gd:267
+#: scripts/ui/input_glyphs.gd:269
 msgid "Share"
 msgstr "Share"
 
 #. input_glyphs.pad_button_name.dea937  [ui]
-#: scripts/ui/input_glyphs.gd:267
+#: scripts/ui/input_glyphs.gd:269
 msgid "Mic"
 msgstr "Mic"
 
 #. input_glyphs.pad_axis_name.a58b12  [ui]
-#: scripts/ui/input_glyphs.gd:275
+#: scripts/ui/input_glyphs.gd:277
 msgid "L2"
 msgstr "L2"
 
 #. input_glyphs.pad_axis_name.5e26d9  [ui]
-#: scripts/ui/input_glyphs.gd:275
+#: scripts/ui/input_glyphs.gd:277
 msgid "ZL"
 msgstr "ZL"
 
 #. input_glyphs.pad_axis_name.c857f4  [ui]
-#: scripts/ui/input_glyphs.gd:276
+#: scripts/ui/input_glyphs.gd:278
 msgid "R2"
 msgstr "R2"
 
 #. input_glyphs.pad_axis_name.684bd5  [ui]
-#: scripts/ui/input_glyphs.gd:276
+#: scripts/ui/input_glyphs.gd:278
 msgid "ZR"
 msgstr "ZR"
 
 #. input_glyphs.pad_axis_name.9b6056  [ui]
-#: scripts/ui/input_glyphs.gd:277
+#: scripts/ui/input_glyphs.gd:279
 msgid "Analógico ←"
 msgstr "Stick ←"
 
 #. input_glyphs.pad_axis_name.0299fa  [ui]
-#: scripts/ui/input_glyphs.gd:277
+#: scripts/ui/input_glyphs.gd:279
 msgid "Analógico →"
 msgstr "Stick →"
 
 #. input_glyphs.pad_axis_name.039f2a  [ui]
-#: scripts/ui/input_glyphs.gd:278
+#: scripts/ui/input_glyphs.gd:280
 msgid "Analógico ↑"
 msgstr "Stick ↑"
 
 #. input_glyphs.pad_axis_name.b94b4e  [ui]
-#: scripts/ui/input_glyphs.gd:278
+#: scripts/ui/input_glyphs.gd:280
 msgid "Analógico ↓"
 msgstr "Stick ↓"
 
 #. input_glyphs.pad_axis_name.a979cb  [ui]
-#: scripts/ui/input_glyphs.gd:279
+#: scripts/ui/input_glyphs.gd:281
 msgid "Analógico dir."
 msgstr "Right stick"
 
 #. input_glyphs._ps_face.fa0035  [ui]
-#: scripts/ui/input_glyphs.gd:290
+#: scripts/ui/input_glyphs.gd:292
 msgid "Cruz"
 msgstr "Cross"
 
 #. input_glyphs._ps_face.3053b7  [ui]
-#: scripts/ui/input_glyphs.gd:290
+#: scripts/ui/input_glyphs.gd:292
 msgid "Círculo"
 msgstr "Circle"
 
 #. input_glyphs._ps_face.4ada0c  [ui]
-#: scripts/ui/input_glyphs.gd:290
+#: scripts/ui/input_glyphs.gd:292
 msgid "Quadrado"
 msgstr "Square"
 
 #. input_glyphs._ps_face.41660a  [ui]
-#: scripts/ui/input_glyphs.gd:290
+#: scripts/ui/input_glyphs.gd:292
 msgid "Triângulo"
 msgstr "Triangle"
 
 #. input_glyphs.card_hint.9f320c  [ui]
-#: scripts/ui/input_glyphs.gd:319
+#: scripts/ui/input_glyphs.gd:321
 msgid "avança"
 msgstr "continue"
 
@@ -6665,9 +6755,9 @@ msgstr "%s / %s"
 msgid "Pausa"
 msgstr "Pause"
 
-#. moves_screen._fill.55ae3a  [ui]
+#. moves_screen._fill.08f519  [ui]
 #: scripts/ui/moves_screen.gd:158
-msgid "Telegrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva."
+msgid "Telégrafo AMARELO = dá para aparar (atordoa).   VERMELHO = imparável — só a esquiva salva."
 msgstr "YELLOW tell = can be parried (stuns).   RED = unstoppable — only a dodge saves you."
 
 #. moves_screen._fill.f6e4fd  [ui]
@@ -6676,37 +6766,37 @@ msgid "Escudeiros só caem com golpe forte ou magia.   A esquiva arrebenta a Cor
 msgstr "Squires only fall to heavy strikes or magic.   A dodge snaps the Chain of the Law."
 
 #. moves_screen._combo_row.c769a7  [ui]
-#: scripts/ui/moves_screen.gd:166
+#: scripts/ui/moves_screen.gd:168
 msgid "%s   ·   %s"
 msgstr "%s   ·   %s"
 
 #. moves_screen._combo_row.f9974b  [ui]
-#: scripts/ui/moves_screen.gd:173
+#: scripts/ui/moves_screen.gd:175
 msgid "lançador"
 msgstr "launcher"
 
 #. moves_screen._combo_row.bf7102  [ui]
-#: scripts/ui/moves_screen.gd:175
+#: scripts/ui/moves_screen.gd:177
 msgid "%d golpes"
 msgstr "%d hits"
 
 #. moves_screen._combo_row.c3b1be  [ui]
-#: scripts/ui/moves_screen.gd:177
+#: scripts/ui/moves_screen.gd:179
 msgid "área"
 msgstr "area"
 
 #. moves_screen._combo_row.60e3a8  [ui]
-#: scripts/ui/moves_screen.gd:178
+#: scripts/ui/moves_screen.gd:180
 msgid "dano %d"
 msgstr "damage %d"
 
 #. moves_screen._archon_name.70dc6e  [ui]
-#: scripts/ui/moves_screen.gd:196
+#: scripts/ui/moves_screen.gd:198
 msgid "o Arconte de %s"
 msgstr "the Archon of %s"
 
 #. moves_screen._archon_name.465f62  [ui]
-#: scripts/ui/moves_screen.gd:197
+#: scripts/ui/moves_screen.gd:199
 msgid "o Arconte"
 msgstr "the Archon"
 
@@ -6856,47 +6946,47 @@ msgid "Desligada"
 msgstr "Off"
 
 #. pause_menu._ready.6867e6  [ui]
-#: scripts/ui/pause_menu.gd:44
+#: scripts/ui/pause_menu.gd:45
 msgid "Relic"
 msgstr "Relic"
 
 #. pause_menu._role_text.352f78  [ui]
-#: scripts/ui/pause_menu.gd:74
+#: scripts/ui/pause_menu.gd:75
 msgid "Provação  ·  encontro %d / 3"
 msgstr "Trial  ·  encounter %d / 3"
 
 #. pause_menu._open_map.412f13  [ui]
-#: scripts/ui/pause_menu.gd:120
+#: scripts/ui/pause_menu.gd:121
 msgid "O caminho do Éon até aqui. Só para olhar."
 msgstr "The Aeon's path so far. Just for looking."
 
 #. pause_menu._open_map.8b07a2  [ui]
-#: scripts/ui/pause_menu.gd:123
+#: scripts/ui/pause_menu.gd:124
 msgid "passeiam pelas saídas"
 msgstr "browse the exits"
 
 #. pause_menu._lock_upgrades_in_combat.da279d  [ui]
-#: scripts/ui/pause_menu.gd:161
+#: scripts/ui/pause_menu.gd:162
 msgid "Disponível fora de combate"
 msgstr "Available outside combat"
 
 #. pause_menu._ask_quit.0c5877  [ui]
-#: scripts/ui/pause_menu.gd:252
+#: scripts/ui/pause_menu.gd:253
 msgid "Você volta ao menu. O ponto de retorno salvo permanece: %s, tela %d."
 msgstr "You'll return to the menu. Your saved return point remains: %s, screen %d."
 
 #. pause_menu._ask_quit.9e31c8  [ui]
-#: scripts/ui/pause_menu.gd:254
+#: scripts/ui/pause_menu.gd:255
 msgid "Você volta ao menu. A Provação não grava progresso."
 msgstr "You'll return to the menu. The Trial doesn't save progress."
 
 #. pause_menu._ask_quit.d7932f  [ui]
-#: scripts/ui/pause_menu.gd:255
+#: scripts/ui/pause_menu.gd:256
 msgid "Abandonar a jornada?"
 msgstr "Abandon the journey?"
 
 #. pause_menu._ask_quit.a2f17f  [ui]
-#: scripts/ui/pause_menu.gd:255
+#: scripts/ui/pause_menu.gd:256
 msgid "Abandonar"
 msgstr "Abandon"
 
@@ -6971,152 +7061,167 @@ msgid "fuja da maré"
 msgstr "flee the tide"
 
 #. upgrade_menu._ready.ef0a9f  [ui]
-#: scripts/ui/upgrade_menu.gd:43
+#: scripts/ui/upgrade_menu.gd:44
 msgid "Santuário de Ascensão"
 msgstr "Shrine of Ascension"
 
 #. upgrade_menu._ready.87090a  [ui]
-#: scripts/ui/upgrade_menu.gd:81
+#: scripts/ui/upgrade_menu.gd:82
 msgid "Voltar ao jogo"
 msgstr "Back to game"
 
 #. upgrade_menu._ready.fc9a7c  [ui]
-#: scripts/ui/upgrade_menu.gd:81
+#: scripts/ui/upgrade_menu.gd:82
 msgid "Seguir caminho"
 msgstr "Move on"
 
 #. upgrade_menu._rebuild.8a9815  [ui]
-#: scripts/ui/upgrade_menu.gd:110
+#: scripts/ui/upgrade_menu.gd:111
 msgid "abre: "
 msgstr "opens: "
 
 #. upgrade_menu._rebuild.782524  [ui]
-#: scripts/ui/upgrade_menu.gd:111
+#: scripts/ui/upgrade_menu.gd:112
 msgid "Arma Nv. %d → %d"
 msgstr "Weapon Lv. %d → %d"
 
 #. upgrade_menu._rebuild.ac6d4d  [ui]
-#: scripts/ui/upgrade_menu.gd:117
+#: scripts/ui/upgrade_menu.gd:118
 msgid "Arma no nível máximo"
 msgstr "Weapon at max level"
 
 #. upgrade_menu._rebuild.3efade  [ui]
-#: scripts/ui/upgrade_menu.gd:127
+#: scripts/ui/upgrade_menu.gd:128
 msgid "%s  ·  Nv. %d (máx.)"
 msgstr "%s  ·  Lv. %d (max.)"
 
 #. upgrade_menu._rebuild.25f367  [ui]
-#: scripts/ui/upgrade_menu.gd:130
+#: scripts/ui/upgrade_menu.gd:131
 msgid "%s  ·  Nv. %d → %d"
 msgstr "%s  ·  Lv. %d → %d"
 
 #. upgrade_menu._rebuild.c03253  [ui]
-#: scripts/ui/upgrade_menu.gd:138
+#: scripts/ui/upgrade_menu.gd:139
 msgid "+20 de vida máx.  ·  %d / %d"
 msgstr "+20 max health  ·  %d / %d"
 
 #. upgrade_menu._rebuild.29a2f3  [ui]
-#: scripts/ui/upgrade_menu.gd:140
+#: scripts/ui/upgrade_menu.gd:141
 msgid "no máximo"
 msgstr "maxed out"
 
 #. upgrade_menu._rebuild.591292  [ui]
-#: scripts/ui/upgrade_menu.gd:147
+#: scripts/ui/upgrade_menu.gd:148
 msgid "+15 de Éter máx.  ·  %d / %d"
 msgstr "+15 max Aether  ·  %d / %d"
 
 #. upgrade_menu._rebuild.8ffaef  [ui]
-#: scripts/ui/upgrade_menu.gd:166
+#: scripts/ui/upgrade_menu.gd:167
 msgid "%s  ·  em uso"
 msgstr "%s  ·  in use"
 
 #. upgrade_menu._rebuild.fe513f  [ui]
-#: scripts/ui/upgrade_menu.gd:168
+#: scripts/ui/upgrade_menu.gd:169
 msgid "%s  ·  usar"
 msgstr "%s  ·  use"
 
 #. upgrade_menu._rebuild.58c64b  [ui]
-#: scripts/ui/upgrade_menu.gd:170
+#: scripts/ui/upgrade_menu.gd:171
 msgid "Relíquia  ·  %s"
 msgstr "Relic  ·  %s"
 
 #. upgrade_menu._rebuild.d44d45  [ui]
-#: scripts/ui/upgrade_menu.gd:177
+#: scripts/ui/upgrade_menu.gd:178
 msgid "Segundo engaste  ·  duas relíquias em uso"
 msgstr "Second setting  ·  two relics in use"
 
 #. upgrade_menu._rebuild.df1a37  [ui]
-#: scripts/ui/upgrade_menu.gd:188
+#: scripts/ui/upgrade_menu.gd:189
 msgid "Restauração  ·  cura completa"
 msgstr "Restoration  ·  full heal"
 
 #. upgrade_menu._rebuild.3c4a13  [ui]
-#: scripts/ui/upgrade_menu.gd:188
+#: scripts/ui/upgrade_menu.gd:189
 msgid "a vida já está cheia"
 msgstr "health is already full"
 
 #. upgrade_menu._rebuild.8ac00e  [ui]
-#: scripts/ui/upgrade_menu.gd:190
+#: scripts/ui/upgrade_menu.gd:191
 msgid "só no santuário e depois do Arconte"
 msgstr "only at the shrine and after the Archon"
 
 #. upgrade_menu._update_status.74cd2e  [ui]
-#: scripts/ui/upgrade_menu.gd:212
+#: scripts/ui/upgrade_menu.gd:213
 msgid "Selado  ·  vença %s para abrir"
 msgstr "Sealed  ·  defeat %s to open"
 
 #. upgrade_menu._update_status.deb328  [ui]
-#: scripts/ui/upgrade_menu.gd:216
+#: scripts/ui/upgrade_menu.gd:217
 msgid "Faíscas insuficientes  ·  faltam %d"
 msgstr "Not enough sparks  ·  %d short"
 
 #. upgrade_menu._update_status.cdab2e  [ui]
-#: scripts/ui/upgrade_menu.gd:231
+#: scripts/ui/upgrade_menu.gd:232
 msgid "Faíscas insuficientes para as melhorias"
 msgstr "Not enough sparks for the upgrades"
 
 #. upgrade_menu._add_sealed.3e1bec  [ui]
-#: scripts/ui/upgrade_menu.gd:238
+#: scripts/ui/upgrade_menu.gd:239
 msgid "selado  ·  vença %s"
 msgstr "sealed  ·  defeat %s"
 
 #. world_map._build_ui.1d8158  [ui]
-#: scripts/ui/world_map.gd:136
+#: scripts/ui/world_map.gd:143
 msgid "escolhem o caminho"
 msgstr "choose the path"
 
+#. world_map._subtitle.5840f1  [ui]
+#: scripts/ui/world_map.gd:152
+msgid "Com as asas, as salas secretas se abrem."
+msgstr "With wings, the secret rooms open."
+
 #. world_map._subtitle.4d3e17  [ui]
-#: scripts/ui/world_map.gd:145
+#: scripts/ui/world_map.gd:154
 msgid "Prévia do mapa — o caminho do Éon"
 msgstr "Map preview — the path of the Aeon"
 
 #. world_map._subtitle.b71987  [ui]
-#: scripts/ui/world_map.gd:146
+#: scripts/ui/world_map.gd:155
 msgid "O caminho se divide. Escolha por onde subir."
 msgstr "The path splits. Choose your way up."
 
 #. world_map._refresh_info.acebcb  [ui]
-#: scripts/ui/world_map.gd:250
+#: scripts/ui/world_map.gd:288
 msgid "Recompensa: %s"
 msgstr "Reward: %s"
 
-#. world_map._refresh_info.592a8f  [ui]
-#: scripts/ui/world_map.gd:253
-msgid "Selado: exige o pulo duplo. Quem dá asas não luta."
-msgstr "Sealed: needs the double jump. The one who gives wings does not fight."
+#. world_map._refresh_info.eb4a3b  [ui]
+#: scripts/ui/world_map.gd:294
+msgid "Recompensa: escondida"
+msgstr "Reward: hidden"
 
-#. world_map._refresh_info.f50600  [ui]
-#: scripts/ui/world_map.gd:255
-msgid "O pulo duplo abre esta passagem."
-msgstr "The double jump opens this passage."
+#. world_map._refresh_info.6ad01a  [ui]
+#: scripts/ui/world_map.gd:295
+msgid "Precisa de asas: só o pulo duplo alcança esta sala. Mais adiante, alguém te dá asas."
+msgstr "Needs wings: only the double jump reaches this room. Further on, someone will give you wings."
+
+#. world_map._refresh_info.1956f9  [ui]
+#: scripts/ui/world_map.gd:297
+msgid "Aberta: com as asas, esta sala está ao alcance."
+msgstr "Open: with wings, this room is within reach."
 
 #. world_map._refresh_info.30330f  [ui]
-#: scripts/ui/world_map.gd:258
+#: scripts/ui/world_map.gd:300
 msgid "Há uma Estela nesta camada, em qualquer caminho."
 msgstr "There is a Stele on this layer, on any path."
 
+#. world_map._draw_graph.35236c  [ui]
+#: scripts/ui/world_map.gd:386
+msgid "precisa de asas"
+msgstr "needs wings"
+
 #. world_map._draw_legend.35b777  [ui]
-#: scripts/ui/world_map.gd:356
+#: scripts/ui/world_map.gd:408
 msgid "Estela"
 msgstr "Stele"
 
@@ -7377,6 +7482,10 @@ msgstr "ARCHON   ·   PALETTE %d / 3"
 #. composto (montado pelo código)
 msgid "segue"
 msgstr "continue"
+
+#. composto (montado pelo código)
+msgid "aberta"
+msgstr "open"
 
 #. composto (montado pelo código)
 msgid "fechar"

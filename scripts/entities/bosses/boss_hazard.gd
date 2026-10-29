@@ -35,7 +35,7 @@ var safe: bool = false             # true = é ABRIGO (zona muda), não fere
 var vel_x: float = 0.0             # px/s: a área ANDA enquanto ativa (onda de névoa)
 var strike_sound: bool = true      # false = quem criou já tem som no impacto (pouso do salto)
 var _saw_sfx: bool = false
-var look: String = ""              # "saw" = Anel girando como serra (desenho próprio)
+var look: String = ""              # "saw" = Anel girando como serra · "beam" = orbe-feixe rasteiro (desenhos próprios)
 var bounce: bool = false           # bate na parede e volta (serra de Anel)
 var grow: float = 0.0              # px/s: o raio CRESCE enquanto ativa (poça que se espalha)
 var max_w: float = INF
@@ -231,6 +231,11 @@ func _draw() -> void:
 	if look == "saw":
 		_draw_saw()
 		return
+	if look == "beam":
+		_draw_beam()
+		if _t < delay and not safe:
+			_draw_unblock_mark()
+		return
 	var warn: bool = _t < delay
 	var k: float = clampf(_t / maxf(delay, 0.01), 0.0, 1.0)
 	var pulse: float = 0.5 + 0.5 * sin(_t * TAU * 2.0)
@@ -264,14 +269,72 @@ func _draw() -> void:
 			if not warn:
 				draw_rect(Rect2(-w * 0.4, top, w * 0.8, -top + 8.0), Color(1, 1, 1, 0.5 * a_fill))
 	if warn and not safe:
-		# losango vermelho = imparável (forma + som, não só cor — NEURO R5)
-		var y := -height - 14.0 if shape == "band" else -26.0
-		if shape == "column":
-			y = -60.0
-		var s := 5.0 + 2.0 * pulse
-		var dpts := PackedVector2Array([Vector2(0, y - s), Vector2(s, y), Vector2(0, y + s), Vector2(-s, y)])
-		draw_colored_polygon(dpts, Color(1.0, 0.25, 0.25, 0.6 + 0.4 * k))
-		draw_polyline(dpts + PackedVector2Array([dpts[0]]), Color(1, 1, 1, 0.8), 1.0)
+		_draw_unblock_mark()
+
+
+## Losango vermelho = imparável (forma + som, não só cor — NEURO R5).
+func _draw_unblock_mark() -> void:
+	var k: float = clampf(_t / maxf(delay, 0.01), 0.0, 1.0)
+	var pulse: float = 0.5 + 0.5 * sin(_t * TAU * 2.0)
+	var y := -height - 14.0 if shape == "band" else -26.0
+	if shape == "column":
+		y = -60.0
+	var s := 5.0 + 2.0 * pulse
+	var dpts := PackedVector2Array([Vector2(0, y - s), Vector2(s, y), Vector2(0, y + s), Vector2(-s, y)])
+	draw_colored_polygon(dpts, Color(1.0, 0.25, 0.25, 0.6 + 0.4 * k))
+	draw_polyline(dpts + PackedVector2Array([dpts[0]]), Color(1, 1, 1, 0.8), 1.0)
+
+
+## FEIXE RASTEIRO DO OLHO (Raio do Rei) — playtest do João (28/10): a faixa
+## chapada (`draw_rect`) que corria pelo chão lia-se como um QUADRADO bege.
+## Agora é luz: no aviso, a luz se junta no chão e um risco mostra para onde
+## vai; ativo, um ORBE de luz rente ao chão com cauda afinando atrás, brilho
+## no piso e faíscas girando. Ocupa a mesma área que fere (meia-largura ×
+## altura da faixa) — o desenho não promete nem mais nem menos que o golpe.
+func _draw_beam() -> void:
+	var warn: bool = _t < delay
+	var k: float = clampf(_t / maxf(delay, 0.01), 0.0, 1.0)
+	var c := color
+	var dir: float = signf(vel_x) if vel_x != 0.0 else 1.0
+	var h: float = height
+	var cy: float = -h * 0.5
+	var flick: float = 1.0 + 0.08 * sin(_t * 40.0)
+	var floor_pts := _ellipse(half_w * 1.1, 3.5)
+	for i in floor_pts.size():
+		floor_pts[i].y += 3.0
+	if warn:
+		# a luz se junta onde o feixe nasce; o risco no chão aponta o caminho
+		var r: float = (3.0 + h * 0.3 * k) * flick
+		draw_colored_polygon(floor_pts, Color(c.r, c.g, c.b, 0.12 + 0.2 * k))
+		draw_circle(Vector2(0, cy), r * 2.0, Color(c.r, c.g, c.b, 0.14 * k))
+		draw_circle(Vector2(0, cy), r, Color(c.r, c.g, c.b, 0.55 + 0.35 * k))
+		draw_circle(Vector2(0, cy), r * 0.45, Color(1, 1, 1, 0.85 * k))
+		var reach: float = 26.0 + 70.0 * k
+		draw_line(Vector2(0, 3), Vector2(dir * reach, 3), Color(c.r, c.g, c.b, 0.55), 2.0, true)
+		draw_colored_polygon(PackedVector2Array([Vector2(dir * (reach + 6.0), 3), Vector2(dir * reach, -1), Vector2(dir * reach, 7)]), Color(1, 1, 1, 0.7))
+		return
+	var life: float = clampf((_t - delay) / maxf(active, 0.01), 0.0, 1.0)
+	var a: float = 1.0 - 0.55 * life * life
+	# cauda (fita que afina atrás do orbe, do brilho ao nada)
+	var tail: float = -dir * half_w * 3.2
+	var hh: float = h * 0.42
+	draw_polygon(PackedVector2Array([Vector2(0, cy - hh), Vector2(tail, cy - 1.5), Vector2(tail, cy + 1.5), Vector2(0, cy + hh)]),
+		PackedColorArray([Color(c.r, c.g, c.b, 0.55 * a), Color(c.r, c.g, c.b, 0.0), Color(c.r, c.g, c.b, 0.0), Color(c.r, c.g, c.b, 0.55 * a)]))
+	draw_polygon(PackedVector2Array([Vector2(0, cy - hh * 0.4), Vector2(tail * 0.6, cy), Vector2(0, cy + hh * 0.4)]),
+		PackedColorArray([Color(1, 1, 1, 0.7 * a), Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.7 * a)]))
+	# brilho no piso
+	draw_colored_polygon(floor_pts, Color(c.r, c.g, c.b, 0.3 * a))
+	# orbe: halo → corpo → núcleo branco
+	draw_circle(Vector2(0, cy), h * 0.75 * flick, Color(c.r, c.g, c.b, 0.16 * a))
+	draw_circle(Vector2(0, cy), h * 0.52 * flick, Color(c.r, c.g, c.b, 0.42 * a))
+	draw_circle(Vector2(0, cy), h * 0.34, Color(c.lightened(0.2), 0.95 * a))
+	draw_circle(Vector2(0, cy), h * 0.17, Color(1, 1, 1, a))
+	# faíscas girando em volta (lê-se como energia, não como bloco)
+	for j in 4:
+		var ang: float = _t * 7.0 * dir + TAU * float(j) / 4.0
+		var p0 := Vector2(0, cy) + Vector2.from_angle(ang) * h * 0.4
+		var p1 := Vector2(0, cy) + Vector2.from_angle(ang) * h * 0.7
+		draw_line(p0, p1, Color(1, 1, 1, 0.6 * a), 1.2, true)
 
 
 func _ellipse(rx: float, ry: float) -> PackedVector2Array:
