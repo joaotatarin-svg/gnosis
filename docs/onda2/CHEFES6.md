@@ -328,3 +328,8 @@ juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o
   publicar `boss_9_rei_idle_camadas.png` + o json. Conferência fora do jogo (folha entregue, escala estimada):
   cobertura da metade de baixo 93–95 % (média 94,3 %), caixa fora 6–8 % — método aproximado (escala pela altura das
   faixas), não substitui a ReiProbe.
+- 29/10 (Arte 9ad0b06 integrada no branch): tabela regenerada com os quadros PUBLICADOS. Os 8 antigos de parada/andar
+  saíram, entraram os 28 novos; golpes iguais. Com `--fill 0.30` a parada/andar ficava em 95 % (manto em camadas, barra
+  mais rala); `--fill 0.26` SÓ nesses 28 quadros → 96 % no pior quadro, caixa fora 7,3 % (era 6,8 %; golpes 6–14 %).
+  `body_cover.py` (44 quadros, `_caps\chefes6\rei_v11_quadros.*`): metade de baixo média 96 % / pior 96 %, faixa do
+  cajado 2,1 px fora. ReiProbe (`_caps\chefes6\rei_v11_v11b.txt`): atravessa=0, apelão=0, parado 97 %, golpes 97–98 %.
