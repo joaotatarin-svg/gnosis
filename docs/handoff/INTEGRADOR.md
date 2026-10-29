@@ -56,7 +56,7 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
   `_caps\integ\integrar_*.log`). Roda em BelowNormal, Godot headless + Dummy.
 - Lote 3.1 (validate -Repeat 2, VERDE): vfx7 a63c40b -> 6d0cf90; chefes6 b0b52f0 -> 52699d2; polimento7 2d54867 -> 65f8ed4
   (Guardião aprovou 2d54867; ressalvas menores vão em commit novo do Polimento7 na 3.2). Push: origin/integracao/onda1 = 65f8ed4.
-- BossProbe (telas=all vel=3, `_caps\integossprobe_65f8ed4.log`, UTF-16): todas as lutas terminam [ok], sem TIMEOUT.
+- BossProbe (telas=all vel=3, `_caps/integ/bossprobe_65f8ed4.log`, UTF-16): todas as lutas terminam [ok], sem TIMEOUT.
   Tempos: Rei 83 s, Athoth 196 s, Harmas 81, Galila 135, Yabel 160, Astaphaios 171, Belias 115, Armupiel 100, Rei+Colosso 186
   (antes, ec64161: Armupiel e final estouravam 420 s). Athoth (196 s, 2 quase-mortes) é o mais longo: candidato a ajuste.
 - Build: `C:\gnosis-wt\_build\preview3_1\GNOSIS.exe` + LEIA-ME.txt; branch `preview/3.1` (= 65f8ed4 + cherry-pick do save
