@@ -171,13 +171,28 @@ Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos
   de dano/vida. Reflexo e arauto intocados. Capturas (tela 48 fundo escuro, 38 fundo claro):
   `C:\gnosis-wt\_caps\polimento7\esgotado\{antes,depois,depois_sopro}_tela{48,38}[_zoom].png` (`v1_escuro_*` = 1ª versão).
   A fumaça contínua é discreta (lê melhor no zoom); quem carrega a leitura é o cinza claro.
-  Bot com a versão nova (`botun34_s1`): telas com invocador 1928,6 → 1783,5 s (−7,5 %; v1 dava −9 %), dano
+  Bot com a versão nova (`bot\run34_s1`): telas com invocador 1928,6 → 1783,5 s (−7,5 %; v1 dava −9 %), dano
   tomado nelas 7740 → 6637; 38 e 39 seguem fora do timeout. A 35 passou a dar timeout por um CORNUDO colado na
   Sophia (hp 18, x 2831 × 2871) — sorteio, não o invocador. Run 93,6 → 89,6 min, quase-mortes 208 → 179.
-  Bot (run inteiro, seed 1, mesmo código salvo o teto; `botun32_s1` × `botun33_s1`): nas 16 telas com
+  Bot (run inteiro, seed 1, mesmo código salvo o teto; `bot\run32_s1` × `bot\run33_s1`): nas 16 telas com
   invocador o tempo somado cai 1928,6 → 1754,1 s (−9 %); 38: 131 → 65 s, 48: 181 → 118 s, 57: 172 → 124 s
   (58/59 subiram 18–28 s: ruído de sorteio). Timeouts 9 → 7 (saem 38 e 39; a 43 fica — arauto). Run 93,6 → 88,8
   min, quase-mortes 208 → 189.
+
+## 17. 3.2.1 (base integracao/onda1 0400a19): RuleProbe e #10 de novo
+- **RuleProbe** (`tools/combate/rule_probe.gd`, autorizado): com a R16 o 2º número no MESMO alvo soma (não cria
+  nó) e a sonda esperava 2. Agora confere as 3 coisas: desligado não cria (0), mesmo alvo soma (1) e o padrão
+  (opção ausente) segue ligado — um número de OUTRA cor cria o 2º nó (2). `RULEPROBE|numeros|off=0 on=1 soma=1
+  padrao=2`, todas as QA PASS.
+- **#10 outra vez: os inimigos NÃO estão longe.** Nos logs do próprio QA7 (`_caps\qa7\bot32\s1-3.log`) medi
+  inimigo − Sophia no timeout: escudeiro x=4175 com a Sophia em 4253 (−78 px, em GUARDA), arauto −43, mudo +49,
+  aberração +42/+115, mudo/acólito +173/+202, arauto −230 (o arauto mantém ~200 px de propósito). O x≈2000–2400
+  é o x ABSOLUTO da zona 1 (a zona 0 nasce em x 620, cada zona tem 940 px + a passagem) — não é distância.
+  Bot na base 3.2.1 (`_caps\polimento7\bot\run321_s1`): 4 timeouts no run inteiro (14, 35, 43, 49; nenhum de chefe); 14 e 49 com
+  o inimigo a ≤ 75 px; 35 sem ninguém vivo no instante (intervalo entre ondas — o tempo da zona conta o total);
+  43 com o invocador a 427 px porque o BOT estava correndo para o outro lado (estado RUN), larvas recém-chamadas
+  ao lado dele. Não há posição para corrigir: o que sobra é duração de luta (guarda do escudeiro, que o bot não
+  quebra; arauto, que é a identidade dele). Nada mudado no enemy.gd/level.gd por isso.
 
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop)**: flash continua instantâneo e ≤ 100 ms reais; só a intensidade mudou. A
