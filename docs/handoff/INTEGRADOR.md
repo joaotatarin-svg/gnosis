@@ -66,6 +66,25 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
   dobrado na aparição do Campeão.** Commit novo do Polimento7 (ressalvas do Guardião) entra junto.
 - Armadilha: `git checkout -- .` descarta o ruído .import antes de merge (o script já faz).
 
+## Onda 7 - Lote 3.2 montado (28-29/10/2026) - SEM prévia/build ainda
+- Ordem (todas VERDE -Repeat 1 por passo; final -Repeat 2 VERDE em bc4b171): arte-gpt de546f8+50f807a -> 54e84ce;
+  mapa7 8e8afc3 -> def1728 (conflito só em scripts/i18n/en_table.gd, gerado pelo build.py: agora o integrar.ps1 trata);
+  encenacao5 0561f28+9e1d21a -> b247e07; ui7 12c6643 -> 7ab9a71; perigos7 04afd65 -> 1faa330;
+  chefes6 8d00636 -> 1586c99; polimento7 2854fc0 -> bc4b171 (conflito de código em scripts/fx/projectile.gd: as duas
+  versões faziam a mesma coisa - proj_fire só no tiro da Sophia - e só o comentário diferia; ficou o do HEAD/VFX7).
+  Push: origin/integracao/onda1 = bc4b171. Não integrar mapa7 4e4b9cc nem chefes6 42d4804 sem ordem.
+- Sondas em bc4b171 (logs UTF-16 em `_caps/integ/`): ReiProbe (`rei_bc4b171.txt`): BodyBox cobre 96-98 % do desenho,
+  "atravessa"=0, "apelão"=0, golpes a ≤70 px acertam. BossProbe: todas [ok], sem TIMEOUT; Rei 74 s, Athoth 165, Harmas 125,
+  Galila 148 (4 quase-mortes), Yabel 95, Astaphaios 104, Belias 106, Armupiel 92, Rei+Colosso 38 s (era 186 s na 3.1:
+  provável efeito da BodyBox maior, conferir se não ficou curta demais). BossHurtProbe (`hurtprobe_bc4b171.log`,
+  `hurt_bc4b171/`): Arcontes/Colosso cobre 50-89 %, vazio <=29 %; Rei/Rei-final só 32-46 % - a sonda mede a Hurtbox
+  genérica e o Rei usa a BodyBox (pulada no _fit_hurtbox, como o POLIMENTO7.md manda), então vale o ReiProbe.
+- SOM DOBRADO NO CAMPEÃO (aberto, quem corrige: Encenação5/Áudio7): ao nascer o Campeão toca `champion_enter`
+  (enemy.gd _boss_intro_fx, Áudio7 R9) e ~0,6-2 s depois o card do Campeão (level.gd _champion_card_when_visible ->
+  Cinematic.boss_card -> scripts/fx/cinematic.gd `_run_boss`) toca `boss_appear` de novo (e solta a música de chefe).
+  Correção sugerida: `boss_card(..., silencioso)` para o card do Campeão não tocar `boss_appear` (o stinger do Campeão é
+  o champion_enter; a música de chefe precisa de outro gatilho se for o caso).
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
