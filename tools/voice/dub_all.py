@@ -120,6 +120,7 @@ def pipeline(cb, batch: list, lang: str, refs: Path, man: dict, duty: float) -> 
 
 def main() -> int:
 	sys.stdout.reconfigure(encoding="utf-8")
+	V.low_priority()
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--lang", default="pt,en")
 	ap.add_argument("--speaker", default="")

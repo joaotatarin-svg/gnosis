@@ -33,6 +33,15 @@ CAST = json.loads((HERE / "cast.json").read_text(encoding="utf-8"))
 TARGET_LUFS = -18.0
 
 
+def low_priority() -> None:
+	"""Regra do PC: lote de voz SEMPRE em BelowNormal (o venv lança um python
+	filho — o PriorityClass do processo pai não chega nele; por isso aqui)."""
+	if os.name == "nt":
+		import ctypes
+		k = ctypes.windll.kernel32
+		k.SetPriorityClass(k.GetCurrentProcess(), 0x00004000)  # BELOW_NORMAL_PRIORITY_CLASS
+
+
 # --- utilidades de áudio -------------------------------------------------------
 def ffmpeg_af(x: np.ndarray, af: str, sr: int = SR) -> np.ndarray:
 	"""Passa o áudio por um filtro do ffmpeg (ex.: rubberband)."""

@@ -85,6 +85,7 @@ def pick_lines(root: Path) -> list[dict]:
 
 def main() -> int:
 	sys.stdout.reconfigure(encoding="utf-8")
+	V.low_priority()
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--lang", default="pt,en")
 	ap.add_argument("--only", default="")
