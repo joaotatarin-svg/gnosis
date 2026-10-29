@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 | db14a1a (delta de 61645f7: d9f4aed, 8252a50, fcf0f43, db14a1a; merges ignorados) | APROVADO COM RESSALVAS (Estouro e Jorro legíveis e justos; pústulas são contáveis e não escondem nada; a Réplica é quase inevitável na 1ª vez, porque o Juízo nasce quando a Sophia já está martelando e a defesa arma a Réplica desde o 1º quadro) | R5, §4, R21 |
 | dir2/arte-gpt | 118cb99 (delta de 50f807a; base com cenario7 1b1c69f) | APROVADO COM RESSALVAS (fio de contorno funciona e a pintura se mantém; R18 3,0-3,2 em 7 de 10 telas, Coroa 2,67-2,85 e Mente 2,33 abaixo de 3:1; o cajado e as botas clareiam e perdem saturação nas telas frias) | R18, R10, §4 |
 | dir6/progressao6 | 68bcaea (delta de 3d13bbd: 1 commit) | APROVADO COM RESSALVAS (as 2 ressalvas antigas FECHADAS; morte só leva o ganho da tela, edições fora da área mínimas e corretas; restam comentários velhos "−20%" e a morte agora sem custo econômico real) | §3, §4, R21 |
 | dir6/chefes6 | 61645f7 (delta de 82454b2) | APROVADO (3 ressalvas fechadas; `block` 4/s no pior caso, só se reclamarem) | R5, R4, R10 |
@@ -1065,9 +1066,48 @@ a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 ---
 
+## dir6/chefes6 — db14a1a (delta de 61645f7: Juízo da Coroa, Pústulas/Estouro/Recuo/Jorro, Galila/Yabel, final 11 s)
+
+**Medido:** importação do db14a1a sem `SCRIPT ERROR`/`Parse Error` (`C:\gnosis-wt\_caps\guardiao\p10_import.txt`); li o diff completo de `boss_armupiel.gd`, `boss_belias.gd`, `boss_brain.gd`, `boss_tuning.gd`, `final_battle.gd` e o
+CHEFES6.md; vi as folhas `_caps\chefes6\novos2\*_sheet.png`. **As capturas são das 00:59 (estado do fcf0f43); o db14a1a (01:05) é que faz a postura girar com a Sophia.** Nas folhas do Juízo a lâmina e a
+meia-cúpula aparecem do lado OPOSTO à Sophia, que é o bug que o db14a1a corrige. Pelo código a correção está certa (`_signature` vira `_stance_fx.dir` e o `scale.x` para o lado da Sophia, e `_from_front` usa esse `dir`),
+mas o desenho final eu NÃO vi. Não rodei BossProbe (longo, não determinístico, o dono avisa ±15-25 %); os tempos (Coroa 57->75 s agressivo, Praga 65->76 s) são os do dono.
+
+**Juízo / Réplica (Armupiel): legível, mas com uma pegadinha de 1ª vez.**
+- Aviso: bom. Forma própria (lâmina dourada de pé + meia-cúpula + 3 pontas de coroa), faísca DOURADA ao defender (diferente da azul do "armado"), som `mask_light` (emprestado até o Áudio entregar o próprio) e 1,85 s de postura antes de qualquer perigo.
+  Quem espera ganha ele exposto 1,1 s (x1,35): recompensa por leitura, determinística (§3 ok).
+- Punição: proporcional (`dmg` 1,0 x base 0,38, tremor 0,35 padrão, joga longe 460; fase 3 soma 2 ondas de 0,45). A recuperação da Réplica é guarda (`guard_rec`), então quem apanhou não ganha janela de graça. Volta à postura 1x, máx. 2 Réplicas. Sem sorteio.
+- **RESSALVA principal (justiça):** (a) a defesa e o gatilho da Réplica valem desde o INÍCIO da `wind` de 0,35 s, mas o brilho leva 0,3 s para acender; (b) o Juízo é escolhido exatamente quando a Sophia está colada e martelando (3 golpes
+  fora da janela, ou `escape_hits` 4) e o golpe seguinte dela já está no buffer (o hitstop guarda a entrada, de propósito); (c) a Réplica sai 0,32 s depois, imparável, contra uma esquiva de 0,24 s de i-frames e um tempo de reação humano de
+  ~0,2-0,25 s. Resultado: na primeira vez é quase certo apanhar sem ter tido chance de ler, e depois dela ainda é difícil de esquivar; o jogo ensina por castigo. É o risco que o próprio doc anota ("parecer contra-ataque injusto").
+  **Correção barata:** só armar a Réplica depois da postura acesa (>= 0,3 s do início); golpe que cai antes disso é só defendido (faísca dourada, sem Réplica) e já vira o aviso. Ou `wind` da 1ª Réplica 0,32 -> ~0,45 s.
+  O restante (a postura, o expor, o `guard_rec`) pode ficar.
+- O contador `_pressure` (3 golpes fora da janela) é escondido, mas só escolhe O QUE ele faz (a postura), que se anuncia sozinha; não pune por si. Aceito (não é o tipo de §4 "contador punitivo escondido").
+
+**Pústulas / Estouro / Recuo / Jorro (Belias): LEGÍVEL E JUSTO.**
+- Pústulas: 1 bolha por golpe fora da janela, de 1 a 4, desenhadas no dorso (forma, não só cor); a 4ª e o inchaço pulsam rápido. Teto fixo, sem prazo, sem sorteio; as janelas (recuperação, atordoado, murcho) não enchem nada.
+  Não decaem com o tempo, mas só sobem por escolha da jogadora e ficam À VISTA. §4 ok: não é contador escondido.
+- Estouro: `wind` 0,65 com contorno de 100 px no chão (sair dele = salvo), dano 0,9 + veneno + empurrão 320, uma vez; depois ele fica MURCHO exposto 1,3 s: aviso claro, punição proporcional, recompensa por esperar.
+  O Estouro NA HORA (bater com as bolhas cheias): `wind` 0,45, mesmo contorno, sem murcho e peste 1,4 s em volta dele. Mais apertado (colada, ela precisa sair de 100 px em ~0,2 s úteis ou esquivar), mas o aviso é longo e visível
+  (4ª bolha pulsando, `no_touch`) e o jogador que viu já parou. Aceito; se o playtest reclamar, 0,45 -> 0,55 s.
+- Recuo + Bote: acionado por 3 golpes em 2,5 s (padrão visível), salta para trás deixando uma poça de 28 px (onde ele estava) e emenda o Bote vermelho de 0,7 s: justo. Poça sem som (`silent`), sem aviso próprio, mas de raio pequeno e
+  tique de 0,7 s, não pega quem está a ~60 px.
+- Jorro: 3 círculos de 32 px com 0,7/0,8/0,9 s de aviso, dano 0,45: justo (e é a lição do Raio do Rei).
+- Som próprio (`pus_grow`/`pus_burst`, `stance_crown`) ainda pendente; R11 fica parcial (forma ok, som emprestado).
+
+**Galila/Yabel, final:** Galila 38->34 e Yabel 28->25 golpes-alvo (o próprio doc diz que era vida, não padrão); forma caída da final se refaz em 11 s (era 9; o aviso de 2,5 s fica). R21 ok (menos preso em ciclos de refazer;
+médio da final 218 -> 169 s). Tudo determinístico, sem golpe novo.
+
+**§4:** sem sorteio, sem timer, sem clarão novo, sem câmera lenta; 1 tremor padrão na Réplica; dois chefes mexidos juntos (§4.13): só o playtest do João fecha.
+
+**Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: (1) Réplica quase inevitável na 1ª vez (armar só depois da postura acesa); (2) capturas anteriores à correção da postura que gira, desenho final não visto; (3) sons próprios pendentes; (4) Estouro por toque a 0,45 s, ajustar se o playtest reclamar.
+
+---
+
 ## dir2/arte-gpt — 118cb99 (delta próprio de 1b1c69f: a3569eb, e9746eb, 99b4d08, 118cb99; 4 arquivos de código/doc)
 
-**Medido:** li o diff (`painted_flex.gdshader`, `character_art.gd`, `contrast_probe.gd`) e as capturas do dono (`_capsrte18in2_*_off/on.png`, 640x360, rim desligado x ligado). Recortes 5x meus:
+**Medido:** li o diff (`painted_flex.gdshader`, `character_art.gd`, `contrast_probe.gd`) e as capturas do dono (`_capsrte
+18in2_*_off/on.png`, 640x360, rim desligado x ligado). Recortes 5x meus:
 `C:\gnosis-wt\_caps\guardiao\p9_fin2_{3,40,58,68}.png`. Não rodei o ContrastProbe de novo (os números 3,0-3,2 são os do dono); não vi em movimento.
 
 **O que muda:** o rim interno da Sophia pondera dois raios (70 % no meio raio, 30 % no raio cheio): `HERO_RIM` 1,6, `HERO_RIM_PX` 3,0 (~1 px de tela); halo de fora igual (`HERO_HALO` 0,25, `halo_px` 1,6).
