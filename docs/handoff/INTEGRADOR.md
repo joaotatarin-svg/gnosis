@@ -132,6 +132,13 @@ Log: `C:\gnosis-wt\_caps\integ\bossprobe_ec64161.log`.
 - ReiProbe tela 1: atravessa=0, apelão=0, BodyBox cobre 96-98 %. Tela 68 (Colosso): atravessa=0, apelão=0 nesta rodada (o apelão=1 a 55 px
   citado pelo chefe não reproduziu; logs `_caps/integ/rei68_c347cd4.txt`). BossProbe sem TIMEOUT: Coroa 154 s (3 q.-m.), Rei+Colosso 151 s (7).
 
+## Infraestrutura de vozes integrada (29/10/2026) - SEM prévia/build
+- audio7 b655563 (bus Voice, voz por id, manifest vazio, VoiceProbe no validate.ps1) -> 0377c69, VERDE -Repeat 2 (15 etapas). Push: origin/integracao/onda1 = 0377c69.
+- COMO ENTRA UM LOTE DE VOZES (CONTRATO_AUDIO.md §6): a Dublagem entrega um commit com SÓ `assets/audio/voice/pt/*.ogg`, `en/*.ogg`,
+  os `.ogg.import` gerados e `assets/audio/voice/manifest.json` (append-only), em branch próprio saído do `origin/integracao/onda1` mais recente
+  (sugestão: `dir7/dublagem-lote`, sem o WIP/ferramentas do `dir7/dublagem`), depois de rodar VoiceProbe verde. Integração:
+  `tools/integrar.ps1 "dir7/dublagem-lote <sha>" -Repeat 2` (+ push). Conflito esperado: só no manifest.json se dois lotes saírem da mesma base.
+
 ## Próximo
 - Prévia 3.1: chefes6 aprovado → integrar → BossProbe → auditoria do Guardião → `preview/3.1` + `_build\preview3_1` (sem atalho).
 - Prévia 4: quando chefes6 + narrativa fecharem de vez.
