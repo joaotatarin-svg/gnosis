@@ -65,7 +65,7 @@ function G {
 # Arquivos de i18n gerados: conflito so neles se resolve regenerando.
 $i18nRx = '^assets/i18n/(strings\.csv|_orfas\.csv|_descartadas\.txt|_relatorio\.txt|godot/.+)$'
 
-if ($Itens.Count -eq 0 -and -not $SemValidar) { Falha @("uso: integrar.ps1 `"branch commit`" ... [-Repeat N] [-Push]") }
+if ($Itens.Count -eq 0 -and $SemValidar) { Falha @("uso: integrar.ps1 `"branch commit`" ... [-Repeat N] [-Push]") }
 
 # 1) worktree limpo? (so ruido de .import/.uid pode ser descartado)
 $sujo = @(G status --porcelain --untracked-files=no)
