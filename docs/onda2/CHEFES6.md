@@ -220,3 +220,10 @@ BossProbe (`_caps/chefes6/qa_*.txt` antes, `g1_* … g5_*.txt` depois; agressivo
 | Armupiel (64) | 41,5 → 65 s | 107–117 s | 1 |
 | Final (68) | 33 → 87 s | 188 s | 7 |
 Harmas quase não mudou (ele foge/salta, a guarda pega pouco); fica para o playtest. Variação entre rodadas iguais ±25 %.
+
+## QA7 3.1 — Colosso cortado na borda esquerda (tela 68) — 28/10
+Causa: a INVESTIDA do Colosso passa da Sophia e para colada na parede; depois, com a Sophia a 40–110 px (dentro
+do `keep_dist`), ele não anda mais — fica ali com metade do corpo fora da câmera (Shot 68 seq: centro a 61–87 px
+da borda da imagem). Correção: `BossBrain.chase` — colado na parede (dentro de `wall_margin`) o chefe SAI andando
+para o meio; Colosso com `wall_margin` 115 (o Rei já tinha 120). Depois: centro a 113–124 px.
+Antes/depois: `_caps/chefes6/colosso68_antes_esq_depois_dir.png` (`c68a/` × `c68d/` com o `_meta.json`).

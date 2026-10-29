@@ -203,6 +203,12 @@ func chase(delta: float) -> bool:
 	var wb := arena_bounds()
 	if (dir < 0.0 and e.global_position.x < wb.x + wall_margin) or (dir > 0.0 and e.global_position.x > wb.y - wall_margin):
 		dir = 0.0
+	# colado na parede (depois de uma investida/empurrão): sai dela andando para o
+	# meio — arte larga cortada na borda da câmera (QA7 3.1: Colosso na tela 68)
+	if e.global_position.x < wb.x + wall_margin - 12.0:
+		dir = 1.0
+	elif e.global_position.x > wb.y - wall_margin + 12.0:
+		dir = -1.0
 	var spd: float = e.move_speed * (0.5 if e.slow_timer > 0.0 else 1.0)
 	e.velocity.x = dir * spd + e._separation()
 	if _gap_t <= 0.0 and not _partner_busy():
