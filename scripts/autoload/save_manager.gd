@@ -24,8 +24,8 @@ const SAVE_VERSION := 2
 
 ## Volumes da 1ª execução (sem save) e de save sem a chave: Master 0,7 e
 ## Música 0,6 — a mixagem nova vem forte; 100% de cara assustava.
-## "Voice" = dublagem (Onda 7, linha do Áudio por delegação do chefe).
-const DEFAULT_VOLUMES := {"Master": 0.7, "SFX": 0.9, "Music": 0.6, "Voice": 1.0}
+## "Voice" = dublagem (Onda 7, linha do Áudio por delegação do chefe; 80 % = regra do Guardião).
+const DEFAULT_VOLUMES := {"Master": 0.7, "SFX": 0.9, "Music": 0.6, "Voice": 0.8}
 
 ## Ferramentas de dev (shot/balance_bot/combat_test) desligam isto pra não
 ## sujarem o save real do jogador com runs sintéticos.

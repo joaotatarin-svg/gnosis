@@ -59,18 +59,23 @@ const MAX_VARIANTS := 6           # procura nome_2 .. nome_6
 # --- Dublagem (Onda 7) ---
 const VOICE_DIR := "res://assets/audio/voice/"
 const VOICE_MANIFEST := "res://assets/audio/voice/manifest.json"
-const VOICE_FADE := 0.12          # avançar a fala corta a voz com este fade (s)
-const VOICE_DUCK_IN := 0.15       # envelope do ducking por voz (s)
-const VOICE_DUCK_OUT := 0.5
-## Enquanto uma voz soa: com a caixa de diálogo aberta (música já −9) a música
-## desce mais 3 dB; numa LEGENDA (jogo rodando, sem caixa) desce 9 no total.
-const VOICE_MUSIC_DB := -3.0
-const VOICE_MUSIC_SOLO_DB := -9.0
-const VOICE_AMB_DB := -2.0
-const VOICE_AMB_SOLO_DB := -6.0
-## …e os efeitos de luta descem 3 dB (continuam soando, sem cobrir a voz). O bus
-## Tell (avisos R5) NÃO desce.
-const VOICE_SFX_DB := -3.0
+## Regras do Guardião para a dublagem (_caps/dublagem/REGRAS_GUARDIAO.md, 29/10):
+const VOICE_FADE := 0.12          # corte (morte, troca de cena, pular, legenda que sai) — §4: 100-150 ms
+const VOICE_FADE_ADVANCE := 0.08  # avançar a fala — §2: 80 ms
+const VOICE_DUCK_IN := 0.08       # §19: ataque 80 ms…
+const VOICE_DUCK_OUT := 0.7       # …release 700 ms
+## §19: com voz, a música fica em −8 dB e a ambiência em −6 dB — "vale o maior":
+## se o diálogo/momento já abaixou mais, a voz não soma (nunca −14 empilhado).
+## Os EFEITOS de gameplay (golpes, aparo, avisos, chefe) NÃO baixam: são informação.
+const VOICE_MUSIC_DB := -8.0
+const VOICE_AMB_DB := -6.0
+const VOICE_DEFAULT_VOL := 0.8    # §18: slider Vozes padrão 80 %
+## §10/§20: voz de luta não COMEÇA com golpe avisado no ar (windup→strike + 0,3 s),
+## nem por cima do stinger/morte do chefe (+0,5 s). Espera no máximo isto; depois
+## desiste da voz (a legenda segue só com texto).
+const DANGER_TAIL_MS := 300
+const BOSS_STING_GAP_MS := 500
+const VOICE_WAIT_MAX := 4.0          # cobre o stinger mais longo (2,6 s) + 0,5 s
 ## Proteção do aviso (pedido do Guardião): enquanto um tell_* toca, a voz desce
 ## 8 dB e perde os graves (passa-altas 250 Hz; ataque 10 ms, soltura 300 ms) e
 ## nenhuma voz de LUTA começa nos 400 ms seguintes ao aviso.
@@ -392,12 +397,14 @@ var _pl_start: Array[int] = []       # quando (ms) — pra roubar a voz mais vel
 var _next: int = 0
 var _voice: AudioStreamPlayer        # blips: monofônico (bus UI)
 # --- Dublagem ---
-var voice_vol: float = 1.0           # slider "Vozes" (0 = sem dublagem: volta o blip)
+var voice_vol: float = VOICE_DEFAULT_VOL   # slider "Vozes" (0 = sem dublagem: volta o blip)
 var _dub: Array[AudioStreamPlayer] = []   # 2 players: a fala nova entra enquanto a velha some
 var _dub_cur: int = 0
 var _dub_owner: Array[int] = [0, 0]  # instance_id do dono de cada player (0 = ninguém)
 var _dub_tw: Array = [null, null]    # fade de corte de cada player
-var _dub_due_us: int = 0             # voz de luta esperando a folga do aviso (0 = nada)
+var _dub_due_us: int = 0             # voz de luta esperando a folga (0 = nada)
+var _dub_wait_t0: int = 0            # quando ela começou a esperar (µs)
+var _danger_until_us: int = 0        # golpe avisado no ar / stinger do chefe até aqui (µs)
 var _vmanifest: Dictionary = {}      # id -> entrada do manifesto
 var _vmanifest_ok: bool = false      # manifesto já lido
 var _vduck: float = 0.0              # 0 = sem voz, 1 = voz soando (ducking)
@@ -677,6 +684,10 @@ func _play(real_name: String, pitch: float, volume_db: float, world_pos: Vector2
 	p.play()
 	if real_name.begins_with("tell_"):
 		_note_tell(stream, pitch)     # dublagem: a voz abre espaço para o aviso
+	elif real_name == "boss_appear" or real_name == "boss_die":
+		# dublagem (Guardião §20): nenhuma voz começa por cima do stinger/morte, nem 0,5 s depois
+		var sl: float = (stream as AudioStream).get_length() if stream is AudioStream else 1.0
+		_danger_until_us = maxi(_danger_until_us, Time.get_ticks_usec() + int(sl * 1000000.0) + BOSS_STING_GAP_MS * 1000)
 	if _log_path != "":
 		played_counts[real_name] = int(played_counts.get(real_name, 0)) + 1
 		# R13 offline: [tempo de JOGO (s), arquivo, dB do player, tom, bus]
@@ -1837,14 +1848,15 @@ func play_voice(line: Dictionary, who: Object = null) -> float:
 	p.stream_paused = false
 	_dub_owner[_dub_cur] = who.get_instance_id() if who != null else 0
 	voice_last_id = String(e["id"])
-	# Voz de LUTA (mundo rodando) não nasce colada num aviso: espera 400 ms.
+	# Voz de LUTA (mundo rodando) não nasce colada num aviso (400 ms), com golpe
+	# avisado no ar nem por cima do stinger/morte do chefe: espera a folga.
 	var wait := 0.0
 	var now := Time.get_ticks_usec()
-	var tree := get_tree()
-	var fighting := tree != null and not tree.paused
-	if fighting and now < _tell_until_us + TELL_GAP_MS * 1000:
-		wait = float(_tell_until_us + TELL_GAP_MS * 1000 - now) / 1000000.0
-		_dub_due_us = now + int(wait * 1000000.0)
+	var free_at := _voice_free_at()
+	if now < free_at:
+		wait = float(free_at - now) / 1000000.0
+		_dub_due_us = free_at
+		_dub_wait_t0 = now
 	else:
 		_dub_due_us = 0
 		p.play()
@@ -1852,6 +1864,31 @@ func play_voice(line: Dictionary, who: Object = null) -> float:
 	if _log_path != "":
 		played_counts["voice:" + voice_last_id] = int(played_counts.get("voice:" + voice_last_id, 0)) + 1
 	return dur + wait
+
+
+## Quando uma voz de LUTA pode começar (µs). Cena pausada (caixa, card): já.
+func _voice_free_at() -> int:
+	var tree := get_tree()
+	if tree == null or tree.paused:
+		return 0
+	return maxi(_tell_until_us + TELL_GAP_MS * 1000, _danger_until_us)
+
+
+## O observador viu um golpe avisado (windup/strike) perto da câmera.
+func _mark_danger(pos: Vector2) -> void:
+	var cam := get_viewport().get_camera_2d() if get_viewport() != null else null
+	if cam != null and absf(pos.x - cam.get_screen_center_position().x) > _Watch.WATCH_FAR:
+		return
+	_danger_until_us = maxi(_danger_until_us, Time.get_ticks_usec() + DANGER_TAIL_MS * 1000)
+	if _dub_due_us > 0:
+		_wake()
+
+
+## A voz desse dono está esperando a folga para começar? (a legenda não digita)
+func is_voice_pending(who: Object = null) -> bool:
+	if _dub_due_us <= 0:
+		return false
+	return who == null or _dub_owner[_dub_cur] == who.get_instance_id()
 
 
 ## Corta a voz (com fade). `who` = só a voz desse dono; null = qualquer uma.
@@ -1893,6 +1930,22 @@ func is_voice_playing(who: Object = null) -> bool:
 		if (_dub[k].playing and not _dub[k].stream_paused) or (k == _dub_cur and _dub_due_us > 0):
 			return true
 	return false
+
+
+## Segundos que faltam da voz desse dono (0 = nenhuma; a que ainda espera a
+## folga conta inteira).
+func voice_time_left(who: Object) -> float:
+	if who == null:
+		return 0.0
+	var oid := who.get_instance_id()
+	for k in _dub.size():
+		if _dub_owner[k] != oid or _dub[k].stream == null:
+			continue
+		if _dub[k].playing or _dub[k].stream_paused:
+			return maxf(0.0, _dub[k].stream.get_length() - _dub[k].get_playback_position())
+		if k == _dub_cur and _dub_due_us > 0:
+			return _dub[k].stream.get_length()
+	return 0.0
 
 
 ## Volume do player de voz que está tocando (QA: fade de corte).
@@ -1965,10 +2018,25 @@ func _voice_tick(now: int) -> bool:
 	var busy := false
 	if _dub_due_us > 0:
 		busy = true
-		if now >= _dub_due_us:
+		var free_at := _voice_free_at()
+		if now >= free_at:
 			_dub_due_us = 0
 			if not _shut_down and _dub[_dub_cur].stream != null:
 				_dub[_dub_cur].play()
+		elif float(now - _dub_wait_t0) / 1000000.0 > VOICE_WAIT_MAX:
+			# a luta não deu folga: desiste da voz (a legenda segue só com texto)
+			_dub_due_us = 0
+			_dub_owner[_dub_cur] = 0
+		else:
+			_dub_due_us = free_at
+	# dono sumiu (caixa/legenda/card apagados sem cortar): nada vaza para a próxima tela
+	for k in _dub.size():
+		if _dub_owner[k] != 0 and not is_instance_id_valid(_dub_owner[k]):
+			_dub_owner[k] = 0
+			if k == _dub_cur:
+				_dub_due_us = 0
+			if _dub[k].playing:
+				_fade_out_dub(k, VOICE_FADE)
 	# a voz acabou sozinha: o dono some do player
 	for k in _dub.size():
 		if not _dub[k].playing and not _dub[k].stream_paused and _dub_owner[k] != 0 and not (k == _dub_cur and _dub_due_us > 0):
@@ -2020,14 +2088,15 @@ func set_volume(bus_name: String, linear: float) -> void:
 
 
 func _apply_volumes() -> void:
-	# Voz soando (0..1) e quanto dela vale "sozinha" (legenda, sem caixa aberta).
-	var solo := 1.0 - _duck
+	# Dublagem (§19 do Guardião): com voz, música −8 / ambiência −6 — "vale o maior"
+	# (só completa o que as outras abaixadas não abaixaram). Efeitos intocados.
+	var m_duck := DUCK_MUSIC_DB * _duck * _duck_scale + _temp_duck_db
+	var a_duck := DUCK_AMB_DB * _duck
 	_set_bus("Master", master_vol, 0.0)
-	_set_bus("SFX", sfx_vol, SFX_TRIM_DB + VOICE_SFX_DB * _vduck * solo)
+	_set_bus("SFX", sfx_vol, SFX_TRIM_DB)
 	_set_bus(TELL_BUS, sfx_vol, 0.0)
-	_set_bus("Music", music_vol, DUCK_MUSIC_DB * _duck * _duck_scale + _temp_duck_db + _layer_now + SLOW_MUSIC_DB * _slow
-		+ _vduck * lerpf(VOICE_MUSIC_SOLO_DB, VOICE_MUSIC_DB, _duck))
-	_set_bus("Ambience", music_vol, DUCK_AMB_DB * _duck + _vduck * lerpf(VOICE_AMB_SOLO_DB, VOICE_AMB_DB, _duck))
+	_set_bus("Music", music_vol, m_duck + _layer_now + SLOW_MUSIC_DB * _slow + _vduck * minf(0.0, VOICE_MUSIC_DB - m_duck))
+	_set_bus("Ambience", music_vol, a_duck + _vduck * minf(0.0, VOICE_AMB_DB - a_duck))
 	_set_bus("Voice", voice_vol, TELL_VOICE_DB * _vtell)
 
 
@@ -2215,6 +2284,9 @@ class _Watch extends Node:
 		var boss: bool = brain != null and is_instance_valid(brain)
 		var pos: Vector2 = (e as Node2D).global_position
 		var mv = brain.get("mv") if boss else e.get("_mv")
+		# Dublagem (Guardião §10): golpe avisado no ar = nenhuma voz de luta COMEÇA.
+		if st == Enemy.EState.WINDUP or st == Enemy.EState.STRIKE:
+			audio._mark_danger(pos)
 		if r.init and st != int(r.st) and mv is Dictionary and not (mv as Dictionary).is_empty():
 			if st == Enemy.EState.WINDUP:
 				audio.move_sfx(mv, "wind", pos, boss)

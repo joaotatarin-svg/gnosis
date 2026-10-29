@@ -3,15 +3,17 @@ extends Node
 ## Monta um manifesto de TESTE (user://voice_probe_manifest.json) que liga 4 falas
 ## reais do roteiro às amostras da Dublagem e confere, pelo estado do Audio:
 ##   (v1) id da fala = sha1(falante|texto)[:12] igual ao do pipeline;
-##   (v2) DialogueBox: fala com voz toca, sem blips, texto no ritmo da voz,
-##        espera o jogador (não avança sozinha), 1º aperto mostra tudo, 2º corta
-##        a voz com fade e avança; fala sem voz volta ao blip sem erro;
-##   (v3) ducking: música/ambiência descem com voz e voltam sem ela;
+##   (v2) DialogueBox: fala com voz toca, sem blips, texto e voz terminam juntos
+##        (±0,3 s), espera o jogador (não avança sozinha), avanço livre desde o 1º
+##        quadro: 1º aperto completa o texto e corta a voz (80 ms), 2º avança; fala
+##        sem voz volta ao blip; wait_2s não trava fala dublada; dono apagado = voz some;
+##   (v3) ducking: música −8 / ambiência −6 "vale o maior", e voltam sem voz;
 ##   (v4) legenda (CaptionBar): dura ≥ voz + 0,4 s, sem blips, sair corta a voz;
 ##        escondida (pausa) = voz congelada;
 ##   (v5) card do prólogo: segura o card enquanto a voz fala; avançar corta;
 ##   (v6) aviso tell_unblock: voz −8 dB + passa-altas; voz de luta nova espera
-##        400 ms depois do aviso; efeitos (SFX) descem 3 dB na legenda, o Tell não;
+##        400 ms depois do aviso, golpe avisado no ar (+0,3 s) e o stinger do chefe
+##        (+0,5 s); sem folga por 3 s = descartada; efeitos de luta NÃO baixam;
 ##   (v7) slider Vozes = 0 desliga a dublagem (volta o blip); bus Voice → Master.
 ## Uso (SEMPRE com o driver mudo):
 ##   godot --headless --audio-driver Dummy --path . res://tools/audio/VoiceProbe.tscn
@@ -159,32 +161,46 @@ func _check_dialogue(voz: Dictionary) -> void:
 	check(box.has_voice() and dur > 0.5 and Audio.is_voice_playing(box), "caixa: fala com voz TOCA (%.2f s)" % dur)
 	await _wait_real(0.6)
 	var music1 := _bus_db("Music")
-	check(Audio.voice_duck_amount() > 0.95 and music1 < music0 - 11.0 and _bus_db("Ambience") < amb0 - 6.0,
-		"caixa + voz: música %.1f → %.1f dB (−9 do diálogo −3 da voz), ambiência %.1f → %.1f" % [music0, music1, amb0, _bus_db("Ambience")])
+	var amb1 := _bus_db("Ambience")
+	# Guardião §19 "vale o maior": o diálogo já tira 9 dB da música (> 8 da voz) → a voz não soma;
+	# ambiência: diálogo −5, voz −6 → fica em −6.
+	check(Audio.voice_duck_amount() > 0.95 and absf((music1 - music0) + 9.0) < 0.3 and absf((amb1 - amb0) + 6.0) < 0.3,
+		"caixa + voz: música %.1f → %.1f dB (−9, sem empilhar), ambiência %.1f → %.1f (−6)" % [music0, music1, amb0, amb1])
 	check(int(Audio.played_counts.get("blip_voz", 0)) == blips0, "caixa: fala dublada NÃO toca blips")
 	check(box.is_typing(), "caixa: texto ainda digitando aos 0,6 s (anda no ritmo da voz)")
-	# espera a voz quase acabar: o texto terminou junto, a caixa NÃO avança sozinha
-	await _wait_real(maxf(0.1, dur - 0.6))
-	check(not box.is_typing(), "caixa: texto completo antes do fim da voz")
-	await _wait_real(0.8)
+	# texto e voz terminam juntos (±0,3 s — Guardião §3); a caixa NÃO avança sozinha
+	var t_type := -1.0
+	var t_voice := -1.0
+	var t0 := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t0 < int((dur + 1.0) * 1000.0) and (t_type < 0.0 or t_voice < 0.0):
+		await get_tree().process_frame
+		var tt := float(Time.get_ticks_msec() - t0) / 1000.0 + 0.6
+		if t_type < 0.0 and not box.is_typing():
+			t_type = tt
+		if t_voice < 0.0 and not Audio.is_voice_playing(box):
+			t_voice = tt
+	check(t_type > 0.0 and t_voice > 0.0 and absf(t_type - t_voice) <= 0.3,
+		"caixa: texto termina %.2f s, voz %.2f s (diferença %.2f ≤ 0,3)" % [t_type, t_voice, absf(t_type - t_voice)])
+	await _wait_real(0.5)
 	check(not Audio.is_voice_playing(box) and is_instance_valid(box) and box.idx == 0,
 		"caixa: voz acabou e a caixa ESPERA o jogador (fala 0 ainda na tela)")
-	await _wait_real(0.7)
+	await _wait_real(0.8)
 	check(Audio.voice_duck_amount() < 0.05, "caixa: ducking da voz solta quando a voz acaba (%.2f)" % Audio.voice_duck_amount())
 	box.queue_free()
 	await _wait_real(1.2)
 
-	# de novo, agora AVANÇANDO no meio da voz: 1º aperto mostra tudo, 2º corta e avança
+	# de novo, AVANÇANDO no meio da voz: 1º aperto completa o texto E corta a voz (80 ms), 2º avança
 	box = DialogueBox.play([voz, nov])
-	await _wait_real(0.4)
-	await _press(box)
-	check(not box.is_typing() and Audio.is_voice_playing(box), "1º aperto: fala inteira na tela, voz CONTINUA")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await _press(box)           # avanço livre desde o 1º quadro (Guardião §2)
+	var db_mid: float = Audio.voice_player_db()
+	await _wait_real(0.12)
+	check(not box.is_typing() and not Audio.is_voice_playing(box) and box.idx == 0,
+		"1º aperto (no 2º quadro): fala inteira na tela e a voz sai (fade %.2f s; no meio %.1f dB)" % [box.VOICE_CUT, db_mid])
 	await _press(box)
 	await get_tree().process_frame
-	var db_mid: float = Audio.voice_player_db()
 	check(box.idx == 1 and not box.has_voice(), "2º aperto: avança para a fala seguinte (sem arquivo → sem voz)")
-	await _wait_real(0.25)
-	check(not Audio.is_voice_playing(), "avançar corta a voz (fade de %.2f s; volume no meio do fade %.1f dB)" % [Audio.VOICE_FADE, db_mid])
 	await _wait_real(1.0)
 	check(int(Audio.played_counts.get("blip_voz", 0)) > blips0, "fala sem voz: blips de sempre (%d)" % (int(Audio.played_counts.get("blip_voz", 0)) - blips0))
 	for i in 3:                # completa (se ainda digitava) e fecha
@@ -192,6 +208,22 @@ func _check_dialogue(voz: Dictionary) -> void:
 			await _press(box)
 	await _wait_real(0.3)
 	check(not is_instance_valid(box) or box.is_queued_for_deletion(), "caixa fecha normalmente depois da fala sem voz")
+	# fala dublada com cue wait_2s: o avanço NÃO fica travado
+	var w := voz.duplicate()
+	w["cue"] = "wait_2s"
+	box = DialogueBox.play([w])
+	await _wait_real(0.2)
+	check(not bool(box.call("_waiting")), "fala dublada ignora o wait_2s (avanço livre)")
+	box.queue_free()
+	# dono apagado sem cortar: a voz não vaza
+	var tmp := Node.new()
+	add_child(tmp)
+	await _wait_real(0.8)
+	Audio.play_voice(voz, tmp)
+	await _wait_real(0.2)
+	tmp.free()
+	await _wait_real(0.3)
+	check(not Audio.is_voice_playing(), "dono apagado (troca de cena): a voz some com fade")
 	await _wait_real(1.0)
 
 
@@ -217,8 +249,8 @@ func _check_caption(cap: Dictionary) -> void:
 		bar.call("_type", 0.05)
 	check(int(Audio.played_counts.get("blip_sophia", 0)) == blips0, "legenda dublada: sem blips")
 	await _wait_real(0.6)
-	check(_bus_db("Music") < music0 - 8.0 and _bus_db("SFX") < sfx0 - 2.5 and absf(_bus_db("Tell") - tell0) < 0.1,
-		"legenda + voz: música %.1f→%.1f, SFX %.1f→%.1f (luta continua), Tell intocado %.1f" % [music0, _bus_db("Music"), sfx0, _bus_db("SFX"), _bus_db("Tell")])
+	check(absf(_bus_db("Music") - music0 + 8.0) < 0.3 and absf(_bus_db("SFX") - sfx0) < 0.1 and absf(_bus_db("Tell") - tell0) < 0.1,
+		"legenda + voz: música %.1f→%.1f (−8), efeitos %.1f→%.1f e Tell %.1f INTOCADOS (Guardião §19)" % [music0, _bus_db("Music"), sfx0, _bus_db("SFX"), _bus_db("Tell")])
 	Audio.pause_voice(bar, true)
 	await _wait_real(0.1)
 	check(not Audio.is_voice_playing(bar), "legenda escondida (pausa): voz congelada")
@@ -286,6 +318,45 @@ func _check_tell(rei: Dictionary) -> void:
 	await _wait_real(0.8)
 	check(Audio.voice_tell_guard() < 0.05, "fim do aviso: a voz volta ao volume")
 	Audio.stop_voice(bar, 0.0)
+	await _wait_real(0.6)
+	# golpe avisado no ar (windup→strike): a voz de luta espera; acaba o golpe → +0,3 s e começa
+	var t1 := Time.get_ticks_msec()
+	Audio._mark_danger(Vector2.ZERO)
+	Audio.play_voice(rei, bar)
+	while Time.get_ticks_msec() - t1 < 1000:
+		Audio._mark_danger(Vector2.ZERO)
+		await get_tree().process_frame
+	var held: bool = Audio.is_voice_pending(bar) and not Audio._dub[Audio._dub_cur].playing
+	var t2 := Time.get_ticks_msec()
+	while Audio.is_voice_pending(bar) and Time.get_ticks_msec() - t2 < 2000:
+		await get_tree().process_frame
+	var lag := Time.get_ticks_msec() - t2
+	check(held and Audio._dub[Audio._dub_cur].playing and lag >= 250 and lag <= 450,
+		"golpe avisado no ar: a voz espera (1 s) e começa %d ms depois do golpe (Guardião §10)" % lag)
+	Audio.stop_voice(bar, 0.0)
+	await _wait_real(0.5)
+	# luta sem folga por > 3 s: desiste da voz (a legenda fica só com texto)
+	Audio._mark_danger(Vector2.ZERO)
+	Audio.play_voice(rei, bar)
+	var t3 := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t3 < 4500:
+		Audio._mark_danger(Vector2.ZERO)
+		await get_tree().process_frame
+	check(not Audio.is_voice_pending(bar) and not Audio.is_voice_playing(bar), "luta sem folga por 4 s: a voz é descartada (nunca empilha)")
+	await _wait_real(0.5)
+	# stinger do chefe: nenhuma voz por cima nem 0,5 s depois
+	Audio._last_play_ms.erase("boss_appear")
+	var stung: bool = Audio.play_sfx("boss_appear")
+	Audio.play_voice(rei, bar)
+	var t4 := Time.get_ticks_msec()
+	while Audio.is_voice_pending(bar) and Time.get_ticks_msec() - t4 < 6000:
+		await get_tree().process_frame
+	var sting_len := 99.0
+	for v in Audio.variants_of("boss_appear"):
+		sting_len = minf(sting_len, (v as AudioStream).get_length())   # a variação tocada pode ser a menor
+	var waited := float(Time.get_ticks_msec() - t4) / 1000.0
+	check(not stung or (waited >= sting_len + 0.45 and Audio.is_voice_playing(bar)), "stinger do chefe (%.2f s): a voz espera %.2f s (≥ stinger + 0,5)" % [sting_len, waited])
+	Audio.stop_voice(bar, 0.0)
 	bar.queue_free()
 	print("VOICE INFO: voz do Rei %.2f s" % d)
 	await _wait_real(0.8)
@@ -303,6 +374,8 @@ func _check_off(voz: Dictionary) -> void:
 	Audio.set_volume("Voice", keep)
 	await _wait_real(0.3)
 	check(absf(_bus_db("Voice") - linear_to_db(keep)) < 0.2, "slider Vozes volta (%.1f dB)" % _bus_db("Voice"))
+	check(is_equal_approx(float(SaveManager.DEFAULT_VOLUMES.get("Voice", -1.0)), 0.8) and is_equal_approx(Audio.VOICE_DEFAULT_VOL, 0.8),
+		"slider Vozes: padrão 80 %% (Guardião §18), salvo como vol_voice")
 
 
 func _end() -> void:

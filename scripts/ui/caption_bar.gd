@@ -70,6 +70,7 @@ const MIN_FS := 11                # menor corpo aceito ao apertar para 1 linha
 const VOICE_TAIL := 0.4           # dublagem: a legenda fica no ar a voz + isto (s)
 var _voice_dur: float = 0.0       # duração da voz da legenda atual (0 = blips)
 var _cps: float = CPS             # letras/s da legenda atual
+var _voice_synced: bool = false   # a voz já começou e o ritmo do texto foi acertado
 
 
 func _ready() -> void:
@@ -180,6 +181,7 @@ func _process(delta: float) -> void:
 			_queue.push_front(again)
 			_hide()
 			return
+		_voice_step()
 		_type(delta)
 		_time_left -= delta
 		_shown_t += delta
@@ -229,9 +231,37 @@ func is_holding() -> bool:
 	return _calm_t < CALM_NEED and not _queue.is_empty()
 
 
+## Dublagem, a cada quadro da legenda no ar: a voz que espera a folga da luta
+## (golpe avisado, aviso, stinger — Guardião §10/§20) segura o texto; quando ela
+## começa, o texto anda no ritmo dela (termina junto, §3); se a luta não deu folga
+## e o Audio desistiu da voz, a legenda segue só com texto. Voz soando = a
+## legenda não sai antes dela + VOICE_TAIL.
+func _voice_step() -> void:
+	if _voice_dur <= 0.0:
+		return
+	if Audio.is_voice_pending(self):
+		_time_left = maxf(_time_left, VOICE_TAIL)
+		return
+	if not _voice_synced:
+		_voice_synced = true
+		var left: float = Audio.voice_time_left(self)
+		if left <= 0.0:
+			_voice_dur = 0.0           # desistiu (ou já acabou): texto no ritmo de sempre
+			return
+		var sp := DialogueBox.text_speed()
+		if not is_inf(sp):
+			var rest := maxi(1, _text.get_total_character_count() - int(_shown))
+			_cps = float(rest) / maxf(0.3, left - 0.15)
+		_time_left = maxf(_time_left, left + VOICE_TAIL)
+	if Audio.is_voice_playing(self):
+		_time_left = maxf(_time_left, VOICE_TAIL)
+
+
 func _type(delta: float) -> void:
 	if not _typing:
 		return
+	if _voice_dur > 0.0 and not _voice_synced:
+		return                     # a voz ainda espera a folga: o texto também
 	var total := _text.get_total_character_count()
 	var before := int(_shown)
 	var sp := DialogueBox.text_speed()
@@ -290,10 +320,10 @@ func _show(l: Dictionary) -> void:
 	var sp := DialogueBox.text_speed()
 	_cps = CPS * (1.0 if is_inf(sp) else sp)
 	_voice_dur = Audio.play_voice(l, self)
+	_voice_synced = false
 	if _voice_dur > 0.0:
 		_time_left = maxf(_time_left, _voice_dur + VOICE_TAIL)
-		if not is_inf(sp):
-			_cps = maxf(float(text.length()) / maxf(0.4, _voice_dur * 0.9), CPS * minf(sp, 1.0) * 0.6) * maxf(1.0, sp)
+		_voice_step()              # sem espera: já sincroniza o ritmo do texto
 	_strip.queue_redraw()
 	_kill_tween()
 	_tween = create_tween()
