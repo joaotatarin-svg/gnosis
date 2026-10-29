@@ -240,9 +240,21 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## Área do medalhão/vida do HUD na tela base 640×360 (QA7 #24): os Anéis
+## descem quando passariam por trás dela.
+const HUD_ZONE := Vector2(230.0, 70.0)
+
+
 func _ring_pos(k: int) -> Vector2:
 	var a := _t * 0.35 + TAU * float(k) / 7.0
-	return arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0)
+	var p := arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0)
+	if is_inside_tree():
+		var ct := get_viewport().get_canvas_transform()
+		var sp: Vector2 = ct * p
+		var lim := HUD_ZONE.y + 18.0
+		if sp.x < HUD_ZONE.x + 24.0 and sp.y < lim:
+			p.y += (lim - sp.y) / maxf(0.01, ct.get_scale().y)
+	return p
 
 
 ## Os 7 Anéis girando em volta da arena (glifo por Arconte, brilho pulsante).
