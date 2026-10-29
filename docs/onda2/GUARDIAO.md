@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/polimento7 | 2854fc0 (delta de 2d54867: d639053, 4305f1d, 5898825, 2854fc0) | APROVADO COM RESSALVAS (cast mudo e proj_fire hostil FECHADOS; contorno dos chefes melhora, mas o Arconte do Sono ainda tem pano de 15-27 px sem dano; Astaphaios fica mudo sem o 4574a19 do chefes6) | R4, R5/§5.5, §3, R1 |
 | dir6/chefes6 | 8d00636 (delta de b0b52f0: 4574a19, 42d4804, 09b7989, 8d00636) | APROVADO COM RESSALVAS (hitbox fiel sem apelão; Raio legível; resta o Raio com halo/cauda além da área e a integração com a genérica) | R5, R18, R4, R10, R21 |
 | dir7/polimento7 | 2d54867 (delta de 87290ca; 4b022a8, d5586a9, 2d54867 + merges vfx7/audio7) | APROVADO COM RESSALVAS (R3, R15, ressalva do audio7 e a do flash fechadas; cast com 3 sons; doc incompleto) | R3, R15, R4, R5, R9, §3 |
 | dir2/arte-gpt | 50f807a (delta de de546f8) | APROVADO (ressalva do halo fechada; R18 segue parcial, depende do cenário) | R18, R10 |
@@ -873,7 +874,8 @@ partes escuras) e `character_art.gd` (`HERO_HALO` 0,4 -> 0,25). Mais a nota no d
 ## dir6/chefes6 — 8d00636 (delta de b0b52f0: 4574a19, 42d4804, 09b7989, 8d00636)
 
 **Medido no 8d00636 (worktree de sonda, headless):** importação sem `SCRIPT ERROR`; `tools/chefes6/ReiProbe` (log
-`C:\gnosis-wt\_caps\guardiaoei_g.txt`): BodyBox cobre **96-98 %** do desenho do Rei em todas as poses e deixa **2 % (parado) a
+`C:\gnosis-wt\_caps\guardiao
+ei_g.txt`): BodyBox cobre **96-98 %** do desenho do Rei em todas as poses e deixa **2 % (parado) a
 12 % (recuperação)** da caixa fora do desenho; golpe leve da Sophia de 150 a 50 px: esperado = real em todas as 14 distâncias,
 **0 atravessa, 0 apelão** (começa a ferir a 70 px, que é onde o cajado encosta no manto). A tabela de faixas cobre os 24
 quadros do `rei_frames.json` (conferido: nenhum quadro sem faixa, então não há instante sem caixa por falta de dados).
@@ -906,6 +908,46 @@ do HUD, recuo com margem de parede (`boss_brain.wall_margin`). `boss_astaphaios.
 - CHECAGEM do doc presente e confere com o código.
 
 **Veredito: APROVADO COM RESSALVAS** (cauda/halo do orbe um pouco além da área de dano; reconferir o ReiProbe pós-merge).
+
+---
+
+## dir7/polimento7 — 2854fc0 (delta de 2d54867: d639053, 4305f1d, 5898825, 2854fc0)
+
+**Medido no 2854fc0 (worktree de sonda, headless):** importação sem `SCRIPT ERROR`; FeelProbe `QA PASS`; FlashParryProbe 17 `QA PASS`, 0 falhas;
+HitboxProbe `QA PASS (atravessa 0 %, apelão 9 %; corpo desenhado: sem dano 0.0 %, apelão 1.3 %)` (era 8 % e 0,6 % no 2d54867; ruído,
+dentro do limite). A BossHurtProbe precisa de janela; li o log do dono (`C:\gnosis-wt\_caps\polimento7\hurt_chefes\{antes,depois}	odos.log`)
+e não abri janela.
+
+**O que muda:** `enemy.gd` (hurtbox dos chefes = casco convexo do `body_poly` + 2 cantos de baixo, encolhido 0,9 em largura e cortado
+no topo; chefe com `BodyBox` é pulado, sem tocar na forma nem no `disabled`; Campeão vida x1,7 -> x1,35 e dano x1,15 -> x1,0);
+`boss_puppet.gd` (casco da malha para o boneco de reserva); `player.gd` (carga do cast com `silent = true`); `projectile.gd`
+(`proj_fire` só quando `target_team == "enemy"`, o tiro da Sophia).
+
+**Checagem:**
+- **R4, cast: FECHADA.** O `ChargeFX` nasce com `silent = true` antes do `add_child` (o som tocava no `_ready`). Cast = `cast_*` +
+  `proj_fire` do tiro da Sophia: 2 sons de eventos diferentes (conjurar e disparar).
+- **R4, `proj_fire` hostil: FECHADA, com UMA dependência.** Conferi todos os `Projectile.new()` hostis: o caminho legado e o kit já têm
+  `atk_shot` (2d54867); `_fire_shots`, `_lob`, `_wave_pair`, `_ground_spike` e os tiros de `boss_brain` (`_fire`, `ground_wave`) saem de golpes
+  com som de golpe (`atk_*`, `BOSS_MOVE_SFX`). A exceção é o **voleio que quica do Astaphaios** (`boss_astaphaios.gd:153`): neste branch ele
+  não tem som nenhum, e agora também perdeu o `proj_fire`. O `atk_shot` dele está no chefes6 `4574a19` (que está no 8d00636, aprovado antes).
+  **Condição de integração:** integrar o chefes6 ANTES ou JUNTO deste commit; sozinho, o tiro de Astaphaios fica mudo.
+- **R5 / §5.5 (justiça nos chefes): PARCIAL, melhora.** Da BossHurtProbe (média dos 10 chefes, poses parado/andar/preparo/golpe/dor,
+  faixa do cajado): pano desenhado sem dano 25,1 -> 12,5 px; cobertura da silhueta 73 -> 79 %; caixa que acerta o ar 22 -> 15 %.
+  Rei sozinho sem a BodyBox: 30,2 -> 9,2 px/linha. Com a BodyBox do chefes6 o Rei fica em 96-98 % (auditado). Mas **o Arconte do Sono
+  (`arconte_sono`) continua com pano que o cajado atravessa: 15,6 a 27,1 px à esquerda em todas as poses** (caixa 36-51 px para
+  uma silhueta de 75-110; cobertura 62-71 %), e o do Espelho cobre só 50-76 %. O `body_poly` é o corpo, não a cauda de pano. É o
+  caso que o João reclamou do Rei, agora no Sono. Pedido (combate/polimento7, não bloqueia): para os Arcontes sem BodyBox, ou
+  estender o casco com as bordas do recorte opaco (como a barra do manto), ou gerar a tabela de faixas do chefes6
+  (`tools/chefes6/body_slabs.py <char>`) para o Sono e o Espelho.
+- **R1:** a caixa não é suavizada e segue o quadro; no hitstop o quadro não troca, a caixa fica parada. Atende.
+- **§3 (Campeão x1,35, dano x1,0):** luta mais curta, recompensa intocada (`spark_reward *= 2`), repertório e letreiro iguais. É um
+  alívio ao jogador, sem escassez nem sorteio. O bot (doc §15) mostra os timeouts 13 -> 9 e menos dano tomado. Atende. §3 (renda igual) já
+  está na CHECAGEM e confere com o código. Observação: o dano x1,0 vale também nas Provações do Campeão; o balance de ritmo é do chefe.
+- **Doc:** §12 a §15 existem agora (a ressalva do "§12 que não existe" fecha) e a CHECAGEM lista renda, chefes, Campeão e R4. O doc não
+  menciona o Sono; a frase "o manto que se vê é acertável" vale para o Rei, não para todos os Arcontes.
+
+**Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: (1) integrar com o chefes6 4574a19 (Astaphaios), (2) Arconte do Sono/Espelho
+ainda com pano sem dano de 15-27 px, (3) reconferir a BossHurtProbe depois do merge com a BodyBox.
 
 ---
 
