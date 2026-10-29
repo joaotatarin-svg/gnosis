@@ -29,8 +29,14 @@ world_map._build_ui.1d8158	choose the path
 world_map._subtitle.4d3e17	Map preview — the path of the Aeon
 world_map._subtitle.b71987	The path splits. Choose your way up.
 world_map._refresh_info.acebcb	Reward: %s
-world_map._refresh_info.592a8f	Sealed: needs the double jump. The one who gives wings does not fight.
-world_map._refresh_info.f50600	The double jump opens this passage.
 world_map._refresh_info.30330f	There is a Stele on this layer, on any path.
 world_map._draw_legend.35b777	Stele
 =segue	continue
+world_map._subtitle.5840f1	With wings, the secret rooms open.
+world_map._refresh_info.eb4a3b	Reward: hidden
+world_map._refresh_info.6ad01a	Needs wings: only the double jump reaches this room. Further on, someone will give you wings.
+world_map._refresh_info.1956f9	Open: with wings, this room is within reach.
+world_map._draw_graph.35236c	needs wings
+=aberta	open
+eon_map.KINDS.157542	Hidden chamber
+eon_map.KINDS.e88a8d	A hideaway up high, within reach of single jumps. A hidden treasure.

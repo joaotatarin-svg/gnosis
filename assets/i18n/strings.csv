@@ -1053,31 +1053,33 @@ level._on_zone_cleared.5e6b69,Siga em frente  →,Keep going  →,toast,,60,scri
 level._open_exit.141467,A fenda abriu no alto: suba.,The rift opened up high: climb.,toast,,60,scripts/levels/level.gd:882,
 level._on_player_died.f920d1,Você caiu no Kenoma,You fell in the Kenoma,ui,,,scripts/levels/level.gd:982,
 level._on_player_died.ba60d8,Chegou até a Tela %d.,Reached Screen %d.,ui,,,scripts/levels/level.gd:983,format string: manter os %
-eon_map.KINDS.d144c4,Chegada,Arrival,ui,,,scripts/levels/map/eon_map.gd:88,
-eon_map.KINDS.5ddace,A porta do Éon. Checkpoint.,The gate of the Aeon. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:88,
-eon_map.KINDS.c51361,Travessia,Crossing,ui,,,scripts/levels/map/eon_map.gd:89,
-eon_map.KINDS.313d02,Zonas de combate cheias. Mais faíscas.,Packed combat zones. More sparks.,ui,,,scripts/levels/map/eon_map.gd:89,
-eon_map.KINDS.cf1f77,Passagem perigosa,Perilous passage,ui,,,scripts/levels/map/eon_map.gd:90,
-eon_map.KINDS.5623f7,"Menos inimigos, chão traiçoeiro. Fortalece a vida.","Fewer enemies, treacherous ground. Strengthens life.",ui,,,scripts/levels/map/eon_map.gd:90,
-eon_map.KINDS.e2fcea,Escalada,Ascent,ui,,,scripts/levels/map/eon_map.gd:91,
-eon_map.KINDS.a1019c,Plataformas e altura. Fortalece o Éter.,Platforms and heights. Strengthens the Aether.,ui,,,scripts/levels/map/eon_map.gd:91,
-eon_map.KINDS.d50f02,Santuário,Shrine,ui,,,scripts/levels/map/eon_map.gd:92,
-eon_map.KINDS.4e6061,Luta leve e um lugar de repouso. Cura inteira.,A light fight and a place of rest. Full healing.,ui,,,scripts/levels/map/eon_map.gd:92,
-eon_map.KINDS.1a4ba8,Arena,Arena,ui,,,scripts/levels/map/eon_map.gd:93,
-eon_map.KINDS.d67188,Opcional e dura: ondas pesadas. Grande recompensa.,Optional and hard: heavy waves. Great reward.,ui,,,scripts/levels/map/eon_map.gd:93,
-eon_map.KINDS.026944,Sala secreta,Secret room,ui,,,scripts/levels/map/eon_map.gd:94,
-eon_map.KINDS.7ce718,Só se alcança com o pulo duplo. Um tesouro escondido.,Only the double jump reaches it. A hidden treasure.,ui,,,scripts/levels/map/eon_map.gd:94,
-eon_map.KINDS.4eba1b,O Desafio,The Challenge,ui,,,scripts/levels/map/eon_map.gd:95,
-eon_map.KINDS.c139d6,O Campeão guarda o santuário do Éon. Checkpoint.,The Champion guards the shrine of the Aeon. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:95,
-eon_map.KINDS.7c4ddf,Antessala,Antechamber,ui,,,scripts/levels/map/eon_map.gd:96,
-eon_map.KINDS.6976d8,A última prova antes do trono. Checkpoint.,The last trial before the throne. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:96,
-eon_map.KINDS.cd8ae5,O Arconte,The Archon,ui,,,scripts/levels/map/eon_map.gd:97,
-eon_map.KINDS.72079d,O senhor deste Éon.,The lord of this Aeon.,ui,,,scripts/levels/map/eon_map.gd:97,
-eon_map.reward_text.b23cae,+%d faíscas,+%d sparks,ui,,,scripts/levels/map/eon_map.gd:169,format string: manter os %
-eon_map.reward_text.dcf4ab,+%d vida máx.,+%d max life,ui,,,scripts/levels/map/eon_map.gd:171,format string: manter os %
-eon_map.reward_text.2d5b9d,+%d Éter máx.,+%d max Aether,ui,,,scripts/levels/map/eon_map.gd:173,format string: manter os %
-eon_map.reward_text.cf629f,cura inteira,full healing,ui,,,scripts/levels/map/eon_map.gd:175,
-eon_map.slot.ad28c6,e%d.L%d,e%d.L%d,ui,,,scripts/levels/map/eon_map.gd:281,format string: manter os %
+eon_map.KINDS.d144c4,Chegada,Arrival,ui,,,scripts/levels/map/eon_map.gd:91,
+eon_map.KINDS.5ddace,A porta do Éon. Checkpoint.,The gate of the Aeon. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:91,
+eon_map.KINDS.c51361,Travessia,Crossing,ui,,,scripts/levels/map/eon_map.gd:92,
+eon_map.KINDS.313d02,Zonas de combate cheias. Mais faíscas.,Packed combat zones. More sparks.,ui,,,scripts/levels/map/eon_map.gd:92,
+eon_map.KINDS.cf1f77,Passagem perigosa,Perilous passage,ui,,,scripts/levels/map/eon_map.gd:93,
+eon_map.KINDS.5623f7,"Menos inimigos, chão traiçoeiro. Fortalece a vida.","Fewer enemies, treacherous ground. Strengthens life.",ui,,,scripts/levels/map/eon_map.gd:93,
+eon_map.KINDS.e2fcea,Escalada,Ascent,ui,,,scripts/levels/map/eon_map.gd:94,
+eon_map.KINDS.a1019c,Plataformas e altura. Fortalece o Éter.,Platforms and heights. Strengthens the Aether.,ui,,,scripts/levels/map/eon_map.gd:94,
+eon_map.KINDS.d50f02,Santuário,Shrine,ui,,,scripts/levels/map/eon_map.gd:95,
+eon_map.KINDS.4e6061,Luta leve e um lugar de repouso. Cura inteira.,A light fight and a place of rest. Full healing.,ui,,,scripts/levels/map/eon_map.gd:95,
+eon_map.KINDS.1a4ba8,Arena,Arena,ui,,,scripts/levels/map/eon_map.gd:96,
+eon_map.KINDS.d67188,Opcional e dura: ondas pesadas. Grande recompensa.,Optional and hard: heavy waves. Great reward.,ui,,,scripts/levels/map/eon_map.gd:96,
+eon_map.KINDS.026944,Sala secreta,Secret room,ui,,,scripts/levels/map/eon_map.gd:97,
+eon_map.KINDS.7ce718,Só se alcança com o pulo duplo. Um tesouro escondido.,Only the double jump reaches it. A hidden treasure.,ui,,,scripts/levels/map/eon_map.gd:97,
+eon_map.KINDS.157542,Câmara oculta,Hidden chamber,ui,,,scripts/levels/map/eon_map.gd:98,
+eon_map.KINDS.e88a8d,"Um esconderijo no alto, ao alcance de pulos simples. Um tesouro escondido.","A hideaway up high, within reach of single jumps. A hidden treasure.",ui,,,scripts/levels/map/eon_map.gd:98,
+eon_map.KINDS.4eba1b,O Desafio,The Challenge,ui,,,scripts/levels/map/eon_map.gd:99,
+eon_map.KINDS.c139d6,O Campeão guarda o santuário do Éon. Checkpoint.,The Champion guards the shrine of the Aeon. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:99,
+eon_map.KINDS.7c4ddf,Antessala,Antechamber,ui,,,scripts/levels/map/eon_map.gd:100,
+eon_map.KINDS.6976d8,A última prova antes do trono. Checkpoint.,The last trial before the throne. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:100,
+eon_map.KINDS.cd8ae5,O Arconte,The Archon,ui,,,scripts/levels/map/eon_map.gd:101,
+eon_map.KINDS.72079d,O senhor deste Éon.,The lord of this Aeon.,ui,,,scripts/levels/map/eon_map.gd:101,
+eon_map.reward_text.b23cae,+%d faíscas,+%d sparks,ui,,,scripts/levels/map/eon_map.gd:174,format string: manter os %
+eon_map.reward_text.dcf4ab,+%d vida máx.,+%d max life,ui,,,scripts/levels/map/eon_map.gd:176,format string: manter os %
+eon_map.reward_text.2d5b9d,+%d Éter máx.,+%d max Aether,ui,,,scripts/levels/map/eon_map.gd:178,format string: manter os %
+eon_map.reward_text.cf629f,cura inteira,full healing,ui,,,scripts/levels/map/eon_map.gd:180,
+eon_map.slot.ad28c6,e%d.L%d,e%d.L%d,ui,,,scripts/levels/map/eon_map.gd:286,format string: manter os %
 scenery.build_foreground.f7745e,Foreground,Foreground,ui,,,scripts/levels/scenery.gd:879,
 scenery._add_column.cce016,FgColumn%d,FgColumn%d,ui,,,scripts/levels/scenery.gd:1094,format string: manter os %
 scenery._crop_x.90b7b7,%s:%d,%s:%d,ui,,,scripts/levels/scenery.gd:1104,format string: manter os %
@@ -1477,14 +1479,17 @@ upgrade_menu._update_status.74cd2e,Selado  ·  vença %s para abrir,Sealed  ·  
 upgrade_menu._update_status.deb328,Faíscas insuficientes  ·  faltam %d,Not enough sparks  ·  %d short,ui,,,scripts/ui/upgrade_menu.gd:206,format string: manter os %
 upgrade_menu._update_status.cdab2e,Faíscas insuficientes para as melhorias,Not enough sparks for the upgrades,ui,,,scripts/ui/upgrade_menu.gd:221,
 upgrade_menu._add_sealed.3e1bec,selado  ·  vença %s,sealed  ·  defeat %s,ui,,,scripts/ui/upgrade_menu.gd:228,format string: manter os %
-world_map._build_ui.1d8158,escolhem o caminho,choose the path,ui,,,scripts/ui/world_map.gd:136,
-world_map._subtitle.4d3e17,Prévia do mapa — o caminho do Éon,Map preview — the path of the Aeon,ui,,,scripts/ui/world_map.gd:145,
-world_map._subtitle.b71987,O caminho se divide. Escolha por onde subir.,The path splits. Choose your way up.,ui,,,scripts/ui/world_map.gd:146,
-world_map._refresh_info.acebcb,Recompensa: %s,Reward: %s,ui,,,scripts/ui/world_map.gd:250,format string: manter os %
-world_map._refresh_info.592a8f,Selado: exige o pulo duplo. Quem dá asas não luta.,Sealed: needs the double jump. The one who gives wings does not fight.,ui,,,scripts/ui/world_map.gd:253,
-world_map._refresh_info.f50600,O pulo duplo abre esta passagem.,The double jump opens this passage.,ui,,,scripts/ui/world_map.gd:255,
-world_map._refresh_info.30330f,"Há uma Estela nesta camada, em qualquer caminho.","There is a Stele on this layer, on any path.",ui,,,scripts/ui/world_map.gd:258,
-world_map._draw_legend.35b777,Estela,Stele,ui,,,scripts/ui/world_map.gd:356,
+world_map._build_ui.1d8158,escolhem o caminho,choose the path,ui,,,scripts/ui/world_map.gd:143,
+world_map._subtitle.5840f1,"Com as asas, as salas secretas se abrem.","With wings, the secret rooms open.",ui,,,scripts/ui/world_map.gd:152,
+world_map._subtitle.4d3e17,Prévia do mapa — o caminho do Éon,Map preview — the path of the Aeon,ui,,,scripts/ui/world_map.gd:154,
+world_map._subtitle.b71987,O caminho se divide. Escolha por onde subir.,The path splits. Choose your way up.,ui,,,scripts/ui/world_map.gd:155,
+world_map._refresh_info.acebcb,Recompensa: %s,Reward: %s,ui,,,scripts/ui/world_map.gd:288,format string: manter os %
+world_map._refresh_info.eb4a3b,Recompensa: escondida,Reward: hidden,ui,,,scripts/ui/world_map.gd:294,
+world_map._refresh_info.6ad01a,"Precisa de asas: só o pulo duplo alcança esta sala. Mais adiante, alguém te dá asas.","Needs wings: only the double jump reaches this room. Further on, someone will give you wings.",ui,,,scripts/ui/world_map.gd:295,
+world_map._refresh_info.1956f9,"Aberta: com as asas, esta sala está ao alcance.","Open: with wings, this room is within reach.",ui,,,scripts/ui/world_map.gd:297,
+world_map._refresh_info.30330f,"Há uma Estela nesta camada, em qualquer caminho.","There is a Stele on this layer, on any path.",ui,,,scripts/ui/world_map.gd:300,
+world_map._draw_graph.35236c,precisa de asas,needs wings,ui,,,scripts/ui/world_map.gd:386,
+world_map._draw_legend.35b777,Estela,Stele,ui,,,scripts/ui/world_map.gd:408,
 EndScreen.Menu.57f5f5,Menu,Menu,ui_cena,,,scenes/ui/EndScreen.tscn:80,
 PauseMenu.Title.241b4a,PAUSA,PAUSED,ui_cena,,,scenes/ui/PauseMenu.tscn:30,
 PauseMenu.Resume.b8cb6f,Continuar,Continue,ui_cena,,,scenes/ui/PauseMenu.tscn:40,
