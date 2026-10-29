@@ -92,29 +92,21 @@ e folhas `..._sheet.png`.
 - Projéteis ainda usam o `Projectile` padrão; quando sair a API do VFX7 (dir7/vfx7), trocar o visual em
   `BossBrain._fire` / `ground_wave` (um ponto só).
 
-## BILHETE PARA O SUCESSOR (atualizado 29/10 — Chefes6 sai por contexto cheio)
-- Estado: branch `dir6/chefes6` com a integração `ba91602` (merge 463c148). Guardião aprovou 8d00636 e 82454b2
-  (com ressalvas, todas atendidas nos commits seguintes, menos a do Espelho — ver abaixo).
-- Feito no fim de out.: BodyBox (caixa de dano = silhueta pintada por quadro, `boss_body_box.gd` + tabelas
-  `<id>_body_data.gd` geradas por `tools/chefes6/body_slabs.py`) no Rei/Rei-Mentira, Athoth e Astaphaios; Raio do Rei
-  vira orbe (`look = "beam"`); guarda alta (`BossBrain.guard_up`) com faísca azul + som "block"; final: forma caída
-  se refaz em 9 s com aviso de 2,5 s (luz + som); chefe encenado intocável; chefe colado na parede sai (respeita root);
-  dano/vida do fim pela curva da Progressão (arma Nv.5, ~390 de vida).
-- Ferramentas: `tools/chefes6/ReiProbe.tscn` (`tela=N`, `sem_caixa`, `fase2`, `fotos`: caixa × desenho, faixa do
-  cajado, esperado × real, fase 2 no quadro), `BossProbe.tscn` (`perfil=agressivo`, `curva=1`, `vida=N`, `wl=N`),
-  `body_cover.py` (todos os quadros: ½ recorte × contorno do Polimento7 × faixas).
-- PENDENTE 1 (padrão, não vida): Coroa (Armupiel, 64) e Praga (Belias, 55) seguem curtas para quem MARTELA —
-  ~57–60 s no agressivo com a curva (médio 87–163 s). O bot agressivo acerta >1 golpe/s quase sem punição. Ideia:
-  Armupiel com resposta à pressão (contra-golpe imparável de área quando a Sophia emenda 4+ golpes, ou postura que
-  só quebra no aparo) — medir agressivo × médio na curva (`BossProbe ... curva=1 perfil=agressivo`).
-- PENDENTE 2: Espelho — 1 golpe a 55 px ainda "atravessa": o cajado raspa 4 pontos (grade 2 px ≈ 16 px²) da ponta
-  do véu. Fechar exigiria pôr a franja do véu na caixa (testei `--fill 0.22`: não fecha e a sobra sobe 2,6→3,8 px);
-  deixei como está (sem inflar). Decisão de design: véu rendado não é corpo.
-- PENDENTE 3: `e78feb4` da Progressão conflita em `upgrade_menu.gd`/i18n (não são meus) — medi num worktree
-  descartável; a integração resolve. Pedidos abertos em `docs/pedidos/chefes6.md` (Polimento7 ok; Shot `hurt` só
-  com zona ativa; Progressão publicar `expected_weapon_level`).
-- Erro visto 1x no BossProbe ao trocar de tela (68→64): `process_frame` em árvore nula — vem de level/staging na
-  troca de cena da sonda, não reproduziu na tela sozinha.
+## BILHETE PARA O SUCESSOR (atualizado 29/10 — CHEFES6 sucessor, Coroa/Praga pelo PADRÃO)
+- Estado: branch `dir6/chefes6` com a integração `34a55dd` (merge cfe6ac3). validate 14/14 VERDE.
+- Feito agora (ver seção "Coroa e Praga pelo PADRÃO — 29/10"): Armupiel ganhou o JUÍZO DA COROA (postura que
+  defende + Réplica imparável se baterem nela; quem espera pega ele EXPOSTO); Belias ganhou PÚSTULAS (bolhas
+  contáveis de golpe fora da janela → Estouro), RECUO+Bote (resposta a quem cola) e JORRO (3 respingos). BossBrain
+  ganhou `guard_rec` (recuperação de golpe-resposta não é janela). Ajuste leve: Galila 38→34 golpes, Yabel 28→25,
+  final refaz em 11 s (era 9).
+- Ferramentas: BossProbe ganhou `semente=N`, `capmv=id1,id2` (filma ~2,6 s na 1ª vez de cada golpe) e imprime
+  `estados=` (dano por estado do chefe), `golpes_chefe=` e `tempo_estado=`. Runner com BelowNormal + 4 CPUs:
+  `C:\gnosis-wt\_caps\chefes6\run_probe.ps1` e `batch.ps1 -Tag x -N 6 -Telas "55,64"` (médias por perfil).
+- ARMADILHA: a sonda NÃO é determinística (mesma semente varia ±15–25 %): use ≥ 6 sementes antes de concluir.
+- PENDENTE: Praga no agressivo subiu menos (65→76 s) e o médio subiu mais (92→118 s) — o bot médio respeita as
+  bolhas cheias (`no_touch`) e espera o Estouro. Final (68) médio ainda 139–207 s com 1–3 quase-mortes (só 3
+  sementes). Som próprio da postura/bolhas pedido ao Áudio (`docs/pedidos/chefes6.md`). Espelho a 55 px (pendente 2
+  antigo) segue igual. Playtest humano do Juízo (o timing da Réplica, 0,32 s depois do golpe dado na postura).
 
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 | Decisão das lutas | R atendidas | R violadas / risco | Como ficou |
@@ -261,3 +253,51 @@ Antes/depois: `_caps/chefes6/colosso68_antes_esq_depois_dir.png` (`c68a/` × `c6
 3. Chefe que sai da parede só anda se `rooted_timer <= 0` (o root da Corrente da Lei vale).
 4. Espelho a 55 px: o cajado raspa 4 pontos da ponta do véu (`arc46_depois2.txt`, `toque=4`); com `--fill 0.22` não
    fecha e a sobra sobe — mantido sem inflar (ver BILHETE, pendente 2).
+
+## Coroa e Praga pelo PADRÃO (não pela vida) — 29/10 (sucessor)
+Diagnóstico (BossProbe com `estados=`): o bot agressivo tira 55–65 % do dano nas RECUPERAÇÕES (que são janelas
+legítimas) e o resto no neutro/no meio do golpe — sem nunca sair de perto. Inflar vida alongaria o médio junto
+(a Coroa já estava em 151 s no médio). Então o que mudou é o que acontece com QUEM COLA:
+- **Armupiel — JUÍZO DA COROA** (fases 1–3; e é a resposta quando a Sophia acerta 4 golpes em 2,5 s, no lugar do
+  empurrão, ou 3 golpes fora da janela): crava o espadão de pé, meia-cúpula dourada virada para a Sophia (gira com
+  ela) e 3 pontas de coroa sobre a cabeça + som de luz. Golpe na postura = faísca dourada, 0 de dano, e a RÉPLICA
+  (corte largo imparável, losango vermelho, joga longe; fase 3 + ondas para os dois lados), que volta à postura UMA
+  vez. Recuperação da Réplica = guarda (`guard_rec`, não é janela). Quem ESPERA a postura (1,5 s) ganha ele
+  arrancando o espadão, EXPOSTO 1,1 s (×1,35). Capturas: `_caps\chefes6\novos2\s64_juizo_sheet.png`/`.gif`,
+  `s64_replica.gif`.
+- **Belias — PÚSTULAS / ESTOURO**: cada golpe dado FORA da janela faz brotar uma bolha verde no dorso (contável, até
+  4; cheias pulsam rápido). Cheio, ele se encolhe (contorno no chão + losango) e ESTOURA (fere + veneno) e fica
+  MURCHO exposto 1,3 s. Encostar nas bolhas cheias estoura NA HORA (sem murcho; peste em volta dele 1,4 s).
+  **RECUO + BOTE** (resposta a 3 golpes em 2,5 s, no lugar de se enterrar): salta para trás deixando uma poça onde
+  estava e emenda o Bote (vermelho, 0,7 s). **JORRO** (fases 2–3): 3 respingos de bile à frente, um depois do outro
+  (círculos, não um bloco — lição do Raio do Rei). Guarda alta igual à da Coroa (0,55/0,35/×1,5: coerente no fim).
+  Capturas: `novos2\s55_estouro_toque.gif`, `s55_recuo.gif`, `s55_jorro.gif` (+ `_sheet.png`); 1ª versão em `novos\`.
+- Belias e Armupiel não encostam mais na borda da câmera (`wall_margin` 120/110; o Recuo para a 140 px da parede).
+
+BossProbe, curva da Progressão, integração 34a55dd + estes commits (`_caps\chefes6\b0_*` antes, `f2_*` depois;
+antes = 3 sementes, depois = 6; tempo médio e faixa):
+| chefe | agressivo antes → depois | médio antes → depois | quase-mortes (médio, depois) |
+|---|---|---|---|
+| Praga (55) | 65 s (57–70) → **76 s** (61–90) | 92 s (91–93) → **118 s** (96–146) | 0–1 |
+| Coroa (64) | 57 s (55–62) → **75 s** (65–83) | 151 s (135–164) → **146 s** (119–189) | 0–1 |
+Leitura honesta: na Coroa o padrão fez o que devia (agressivo +32 %, médio igual). Na Praga o agressivo subiu
+17 % e o médio 28 % — o médio também paga (espera as bolhas), mas segue dentro de 1,5–2,5 min.
+Ajuste leve pedido pelo chefe (integração 34a55dd, `_caps\chefes6\all_*` → `fin_*`, 3 sementes, médio):
+Galila 166 s (39–47 golpes: vida) → 141 s com 34 golpes-alvo; Yabel 158 → 142 s com 25; final 218 s (187–278,
+preso em ciclos de refazer) → 169 s (139–207) com a forma caída refazendo em 11 s. Rei 71, Athoth 118, Harmas 96,
+Astaphaios 96 s no médio — não mexi.
+
+### CHECAGEM DE SATISFAÇÃO (29/10)
+| Decisão | R atendidas | R violadas / risco | Como ficou |
+|---|---|---|---|
+| Juízo (postura que defende) | R5 (forma própria: lâmina+meia-cúpula+coroa, + som desde o início), R18 | som emprestado (`mask_light`) até o Áudio entregar `stance_crown` (R11 parcial) | utilitário: sem contorno amarelo (não é aparável); faísca DOURADA ≠ azul do "armado" |
+| Réplica 0,32 s depois do golpe na postura | R5 (o aviso é a postura de 1,5 s; a Réplica ainda tem losango + `tell_unblock`) | risco: parecer "contra-ataque injusto" — playtest | só nasce de golpe DADO na postura; volta à postura 1× (máx. 2 Réplicas) |
+| Janela de quem espera (exposto) | R21 (respiro), recompensa por leitura (§3 sem sorte) | — | ×1,35 por 1,1 s (Juízo) e 1,3 s (Estouro); determinístico |
+| `guard_rec` (resposta não é janela) | R4/R5 (o "armado" mostra faísca azul + `block`) | — | só nos golpes-resposta (Réplica, Estouro por toque, Recuo) |
+| Pústulas contáveis | R5 (forma: bolhas 1–4, pulso rápido cheio), R11 (sem só cor) | sons pedidos (`pus_grow`/`pus_burst`) | 4 = teto fixo; janelas não enchem (nada escondido) |
+| Recuo + Bote | R5 (Bote: 0,7 s com losango) | — | substitui o "enterrar" como resposta (o enterrar segue no repertório) |
+| Jorro em 3 respingos | R5 (contorno que se fecha ≥0,45 s), R4 (1 aviso sonoro por golpe) | 3 losangos na tela (§4.13 tela cheia) — aceitável, são 3 áreas | círculos, não bloco (playtest do Rei 28/10) |
+| Galila/Yabel/final | R21 | — | menos vida/mais tempo para derrubar as duas; nenhum golpe novo |
+§4 conferido: 1 tremor (Réplica usa o tremor padrão de pancada 0,35, sem novo) · 3 sem empilhar VFX novo além do
+desenho da postura/bolhas · 4 sem clarão · 5 sem câmera lenta nova · 11 forma+som · 13 risco: dois chefes mexidos
+juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o Juízo da pressão é regra fixa).

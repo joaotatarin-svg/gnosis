@@ -34,6 +34,7 @@ var _stance_fx: JudgeStance = null
 func _on_setup() -> void:
 	dmg_scale = 0.38          # 28/10: curva da Progressão (~370 de vida na tela 64)
 	keep_dist = Vector2(40.0, 100.0)
+	wall_margin = 110.0       # armadura larga: não encosta na borda da câmera
 	gap_by_phase = [0.8, 0.7, 0.6]
 	escape_hits = 4
 	escape_id = "juizo"       # 29/10: quem cola e martela encontra o JUÍZO (não mais o empurrão)
@@ -168,7 +169,7 @@ func _filter(dmg: int, attacker: Node) -> int:
 	return dmg
 
 
-## A postura defende só o lado da meia-cúpula (quem passa por trás dele acerta).
+## A postura defende o lado da meia-cúpula (que gira com a Sophia — ver _signature).
 func _from_front(attacker: Node) -> bool:
 	if attacker == null or not is_instance_valid(attacker) or not (attacker is Node2D):
 		return true
@@ -273,6 +274,15 @@ func _signature(delta: float) -> void:
 		if e._minions.is_empty():
 			e.armored = false
 			e._flash(Color(2.5, 2.2, 1.4, 1), Enemy.VIB_HEAVY)   # a armadura cai
+	# na postura ele GIRA o espadão para o lado da Sophia (a meia-cúpula a acompanha):
+	# não há "por trás" — a leitura é uma só: não bata na coroa acesa
+	var plr := _player()
+	if _in_stance() and plr != null and _stance_fx != null and is_instance_valid(_stance_fx):
+		var sd: float = signf(plr.global_position.x - e.global_position.x)
+		if sd != 0.0 and sd != _stance_fx.dir:
+			_stance_fx.dir = sd
+			if e.visual:
+				e.visual.scale.x = absf(e.visual.scale.x) * sd
 	# a postura caiu (aparo, postura quebrada, fase): a luz apaga junto
 	if _stance_fx != null and is_instance_valid(_stance_fx) and _stance_fx.visible and not _in_stance():
 		_hide_stance()

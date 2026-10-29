@@ -15,8 +15,11 @@ extends BossBrain
 ## encolhe (losango vermelho + contorno no chão) e ESTOURA: nuvem de peste em
 ## volta de si que fere e envenena. Quem bate nas janelas não enche nada; quem
 ## sai do contorno volta a tempo de pegar ele MURCHO (exposto, 1,3 s).
-## JORRO (fases 2–3): ergue a cabeça, o pescoço incha e cospe bile à frente
-## (faixa no chão, vermelha) — saia da frente ou passe por trás dele.
+## Bolhas CHEIAS: encostar nelas estoura na hora (sem janela depois, e a peste fica
+## em volta dele 1,4 s). RECUO (quem cola e martela 3 golpes em 2,5 s): ele salta para
+## trás rente ao chão, deixa uma poça onde estava e emenda o Bote (vermelho).
+## JORRO (fases 2–3): cospe bile à frente — 3 respingos no chão, um depois do outro
+## (vermelhos) — saia da frente.
 
 const ROT := Color(0.7, 1.0, 0.5)
 const POOL_TICK := 0.7
