@@ -40,6 +40,17 @@ class Worker extends Node:
 		get_tree().change_scene_to_file.call_deferred("res://scenes/levels/Level01.tscn")
 
 	func _process(_d: float) -> void:
+		# pula diálogos (ex.: tela 68 abre com fala) — o quadro só conta sem caixa na tela
+		var had_dialog := false
+		for c in get_tree().root.get_children():
+			if c is DialogueBox:
+				if c.choices.size() > 0:
+					c._on_choice(0)
+				else:
+					c._finish()
+				had_dialog = true
+		if had_dialog and _step == 0:
+			return
 		_n += 1
 		if _n < at:
 			return

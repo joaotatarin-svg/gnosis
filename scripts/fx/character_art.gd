@@ -1711,7 +1711,8 @@ func _draw_painted(s: float) -> void:
 		var hero_rim: bool = hero and rim_enabled
 		mat.set_shader_parameter("rim_amt", HERO_RIM if hero_rim else 0.0)
 		mat.set_shader_parameter("halo_amt", HERO_HALO if hero_rim else 0.0)
-		mat.set_shader_parameter("rim_px", 1.6)
+		mat.set_shader_parameter("rim_px", HERO_RIM_PX)
+		mat.set_shader_parameter("halo_px", HERO_HALO_PX)
 		mat.set_shader_parameter("rim_color", eon_light().lerp(Color(1, 0.96, 0.88), 0.35))
 	mat.set_shader_parameter("texel", Vector2(1.0 / tex.get_width(), 1.0 / tex.get_height()))
 	mat.set_shader_parameter("dissolve", _dissolve_amount())
@@ -2281,7 +2282,9 @@ const _TELEGRAPH_TINTS := [Color(1.0, 0.85, 0.2, 1.0), Color(1.0, 0.25, 0.25, 1.
 
 
 const RIM_BASE := 0.32              # contorno de luz dos inimigos (≈0,3; ×2 na preparação)
-const HERO_RIM := 0.6               # Sophia: luz de recorte por dentro da borda (R18)
+const HERO_RIM := 0.9               # Sophia: luz de recorte por dentro da borda (R18; era 0,6 com raio de 1,6 texel — fino demais na tela)
+const HERO_RIM_PX := 6.0            # raio da luz de recorte (texels da folha ≈ 1 px de tela)
+const HERO_HALO_PX := 1.6           # raio do halo de fora (inalterado)
 const HERO_HALO := 0.25             # Sophia: halo de ~1 px por fora (R18)
 static var rim_override: int = -1   # QA: força o Éon da cor do contorno (-1 = tela atual)
 var rim_enabled: bool = true        # QA/cenas: desliga o contorno deste personagem

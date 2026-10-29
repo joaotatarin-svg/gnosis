@@ -353,6 +353,25 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
   Medido em jogo (ContrastProbe + contrast_r18.py): tela 3 1,76→2,06:1 · tela 30 2,02→2,37:1 · tela 57 1,45→1,71:1.
   Mais forte lava a pintura; o resto até 3:1 é do fundo (pedido em `docs/pedidos/cenario7.md`). Prancha:
   `_caps/arte-gpt/r18/r18_antes_depois.png`. Chefes/criaturas por quadros já tinham o rim do `painted_boss`.
+- **R18 fechamento com os fundos HD (29/10, Cenário7 1b1c69f na base)**: o contraste borda×fundo da Sophia estava em
+  2,64–2,93:1 (Cenário7). A luz de recorte interna (`HERO_RIM` 0,6) era fina demais na tela: o raio de 1,6 texel da folha
+  (2048×4096) vale ~0,25 px de tela, então quase não tocava os 2 px de borda que o olho (e o `contrast_r18.py`) usam.
+  Agora `HERO_RIM` 0,9 com raio próprio `HERO_RIM_PX` 6,0 (~1 px de tela); o halo de FORA ficou como era (`HERO_HALO` 0,25
+  e novo uniform `halo_px` 1,6 no `painted_flex.gdshader`, para o raio maior não alargar o halo/faixa pálida do cajado).
+  Medido (ProbeBg, quadro 150, rim desligado → ligado): 3 Torpor 2,77→3,72 · 13 Fome 2,87→3,65 · 22 Corrente 2,86→3,71 ·
+  31 Silêncio 2,77→3,67 · 40 Espelho 2,74→3,54 · 49 Praga 2,75→3,65 · 57 Coroa 2,75→3,19 · 58 Coroa 2,66→3,05 ·
+  66 Centro 2,85→3,77 · 68 Mente 2,04→2,55 (NÃO chega: a Sophia fica no canto esquerdo escuro com a borda em 0,13 de
+  luminância; a pose varia entre rodadas — a de 150 quadros é o agachado de chegada; parte do ganho é limitado pelo fundo
+  roxo; deixado assim para não lavar a pintura). A tela 68 agora é medida de verdade: o `contrast_probe.gd` pula diálogo.
+  Varredura: raio 1,6 → rim até 2,0 só chega a 3,0–3,15 e nas Coroa/Mente nada; raio 4–6 com 0,6–1,0 resolve. Escolhido o
+  par mais suave que passa 3:1 também na Coroa. Cajado/saia/botas: no 1280×720 o recorte vira um fio dourado claro nas
+  botas e no cajado, sem lavar o manto (a luz só entra onde a borda é escura); saia branca contra o céu claro do Espelho
+  não precisa de luz (já salta; o contraste vem do LaneHalo do Cenário). Capturas: `C:\gnosis-wt\_capsrte18\`
+  (`antes_*`/`depois_*` 3, 40, 58_x180, 58_x450 — Sophia diante dos pedestais/estátuas dourados da Coroa —, `cmp_1x1.png`,
+  `r18_antes_depois.png`, probes `final_*`).
+  CHECAGEM: R18 atendida (>=3:1 em 9 de 10 telas; 68 em 2,55 — pendente, sinalizado); R16 (clareza) ok: recorte discreto,
+  sem pulso/flash; §4 conferido: nenhum truque, nenhuma recompensa/aviso por cor; a Sophia continua com a cor real da
+  pintura (R18 antiga). Risco aceito: botas/cajado levemente mais claros que a pintura.
 - **R17 tremor**: o `Juice.shake` da queda de joelhos na morte desenhada caiu de 0,7 para 0,15 (micro) — o tremor
   grande é UM, no golpe final (combate/chefes6).
 - **QA7 #18 pés**: `tools/FeetProbe.tscn` mede pé desenhado × base da colisão nas 7 telas de Arconte: todos ≤ 3 px,

@@ -26,6 +26,7 @@ uniform vec4 glow_color : source_color = vec4(1.0, 0.9, 0.6, 1.0);
 uniform vec4 rim_color : source_color = vec4(0.8, 0.9, 1.0, 1.0);
 uniform float rim_amt = 0.0;
 uniform float halo_amt = 0.0;
+uniform float halo_px = 0.0;   // raio do halo de fora (texels); 0 = usa rim_px
 uniform float rim_px = 3.0;
 
 varying vec2 body_pos;                 // posição no corpo (0..1 de altura), pra o ruído
@@ -73,10 +74,12 @@ void fragment() {
 		float mn = 1.0;
 		float mx = 0.0;
 		vec3 ncol = vec3(1.0);
+		float hpx = halo_px > 0.0 ? halo_px : rim_px;
 		for (int i = 0; i < 8; i++) {
 			float ang = float(i) * 0.785398;
-			vec4 nb = texture(TEXTURE, uv + vec2(cos(ang), sin(ang)) * texel * rim_px);
-			mn = min(mn, nb.a);
+			vec2 dir = vec2(cos(ang), sin(ang)) * texel;
+			mn = min(mn, texture(TEXTURE, uv + dir * rim_px).a);
+			vec4 nb = texture(TEXTURE, uv + dir * hpx);
 			if (nb.a > mx) {
 				mx = nb.a;
 				ncol = nb.rgb;
