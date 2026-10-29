@@ -82,6 +82,8 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/polimento7 | 2d54867 (delta de 87290ca; 4b022a8, d5586a9, 2d54867 + merges vfx7/audio7) | APROVADO COM RESSALVAS (R3, R15, ressalva do audio7 e a do flash fechadas; cast com 3 sons; doc incompleto) | R3, R15, R4, R5, R9, §3 |
+| dir2/arte-gpt | 50f807a (delta de de546f8) | APROVADO (ressalva do halo fechada; R18 segue parcial, depende do cenário) | R18, R10 |
 | dir7/ui7 | 12c6643 FINAL | APROVADO | R16 atende, R18, R21, R4 (shop_buy) |
 | dir7/perigos7 | 04afd65 FINAL (delta de a1c0e4c) | APROVADO | R5, R18 (≥ 3,5:1), R4 |
 | dir2/arte-gpt | e3966e6 + de546f8 (delta de 2c219b4) | APROVADO COM RESSALVAS | R18 (melhora, ainda < 3:1; halo leve no cajado), R3 fechado |
@@ -793,6 +795,75 @@ para ler em fundo de luminância média, onde nem o escuro nem o vermelho passam
   baixar 3 dB.
 - **R10:** pulso de 2 Hz; o feixe deixou de piscar a ~6 Hz; decorativo × 0,5 com "Reduzir flashes", e o aviso não reduz. Atende.
 - A CHECAGEM do doc confere com o código.
+
+**Veredito: APROVADO.**
+
+---
+
+## dir7/polimento7 — 2d54867 (delta de 87290ca: d5586a9, 4b022a8, 2d54867; 46d525c/2a7cf2c são merges de vfx7/audio7)
+
+**Medido no 2d54867 (worktree de sonda, headless, `--audio-driver Dummy`):** importação sem `SCRIPT ERROR`;
+FeelProbe `QA PASS` com `tremor leve=0.00 pesado=0.30 inimigo_comum=0.12 sophia_ferida=0.35`; HitboxProbe `QA PASS (atravessa 0 %,
+apelão 8 %; corpo desenhado: sem dano 0.0 %, apelão 0.6 %)`; FlashParryProbe (SEM `--fixed-fps`) todos `PASS`, inclusive
+"<= 3 flashes cheios por segundo", "o contra-ataque acerta quem foi aparado" e "chefe não se parte na hora". Logs em
+`C:\gnosis-wt\_caps\guardiao\p7c_*.log`.
+
+**O que muda (código próprio):**
+- `enemy.gd`: `_shake_routine` limita o tremor de golpe de rotina de inimigo COMUM a 0,12 (chefe segue); coleira
+  (`EnemyAggro.leash_x`/`retreat_dir`) em atirador e voador; atirador colado esquece a intenção de longe; aviso da fúria nunca
+  abaixo de ~0,42 s; arte própria sem tinta/graduação; `champion_enter` no lugar de `boss_appear` para Campeão;
+  `atk_shot` (1 por salva) nos tiros legados e no kit (corrente, colosso, coroa/rei fase 2); renda de faíscas igual em
+  todas as dificuldades (`_reward_mult` só pela tela).
+- `hitbox.gd`: direção do golpe (quem bate -> quem apanha; lançador sobe, Queda desce) vai para o `ImpactBurst`.
+- `player.gd`: sons próprios direto na fonte; `charge_up` de 0,12 s no cast (não atrasa o disparo); contra-ataque mira onde o
+  aparado vai estar (`RIPOSTE_LEAD` 0,2 s).
+- `enemy_overlay.gd` (vindo do vfx7): carga nos tiros e rastro nos golpes corpo a corpo, lendo o estado do inimigo.
+
+**Checagem:**
+- **R3: ATENDE.** Os golpes de rotina de inimigo comum (pancada, explosão, pouso, salto, agarrão, fúria) caem para <= 0,12; o
+  que sobra é raro: fase 2 de chefe (0,7+), morte desenhada de chefe (0,9), quebra de guarda (0,25) e de barreira (0,3). Confere
+  com o `grep` de `Juice.shake` em `enemy.gd` e com a FeelProbe. §4.1 e §4.2 ok.
+- **R15: ATENDE.** `hitbox.gd` passa a direção; `VfxLibrary.hit` e `ImpactBurst.spawn` têm o parâmetro `dir`. O acerto corpo a
+  corpo mais comum deixa de sair em 360 graus (era a minha violação do início).
+- **R4 / §4.3: ressalva nova, pequena.** (a) O cast da Sophia agora soa `cast_*` + `charge_light` (o ChargeFX toca o próprio som
+  no `_ready`) + `proj_fire` do projétil, tudo no mesmo quadro. O doc diz "um som por evento". Correção mínima: passar
+  `silent = true` no `charge_up` do cast (a carga é de 0,12 s; o `cast_*` já anuncia) ou tirar o `proj_fire` do projétil da Sophia.
+  (b) O `atk_shot` novo nos tiros legados fecha o "tiro hostil mudo" do vfx7, mas esses tiros continuam com o `proj_fire`
+  do `projectile.gd:55` por cima: o item antigo (trocar o `proj_fire` hostil) segue aberto, agora como camada dupla em vez de
+  tiro mudo. Não bloqueia. A ressalva do 87290ca fecha: o `_Watch` do audio7 (801f46e) já não toca `double_jump`,
+  `star_charge` nem `riposte`.
+- **R5 / §5.5 (justiça):** fúria com piso de 0,42 s de aviso (a conta `maxf(wind*0.85, minf(wind, 0.42))` não encurta aviso
+  menor que 0,42 e nunca passa de -15 %): atende. O contra-ataque que mira o recuo do aparado (FlashParryProbe: acerta; o doc
+  diz 4 de 4, eram 0 de 3) premia o aparo certo, que é competência (SDT). Atende.
+- **R9:** `champion_enter` no lugar do stinger de chefe para Campeão: atende. Lembrete de integração: o encenacao5 também toca
+  o seu cue na aparição do Campeão (ressalva R4 dele, 0561f28); conferir que não dobra quando os dois entrarem.
+- **R10:** `charge_up` solta um clarão pequeno ao fim (0,3 de tamanho, 0,1 s); a FlashParryProbe confirma <= 3 cheios/s e o
+  `flash_strength` do `Juice` é o mesmo. Atende.
+- **R21:** coleira impede o atirador de fugir da arena fechada. Atende.
+- **§3 (economia): ATENDE e melhora.** Faíscas iguais em todas as dificuldades tira o ganho extra de 1,5x e 2,2x do Difícil e do
+  Muito Difícil: a dificuldade escolhida deixa de ser atalho de economia e não há escassez artificial (a renda segue
+  `Bestiary.screen_multiplier`, determinística por tela). Observação para o chefe: o Difícil rende menos que antes por
+  inimigo de HP maior; o balance (BALANCE.md r7) foi medido com a regra antiga e pede um olhar rápido.
+- **Doc:** a CHECAGEM está presente e confere com o código, mas (1) o doc cita "ver §12" (bot QA7 das telas de timeout e
+  `validate.ps1 -Repeat 2`) que NÃO existe: resultado não registrado; (2) a CHECAGEM não lista a mudança de economia nem o
+  `atk_shot`; (3) os commits são "WIP". Pedido: fechar o §12 com os números reais antes do FINAL.
+
+**Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: cast com 3 sons (`silent = true` na carga), `proj_fire` hostil ainda
+por trocar, §12 do doc por registrar.
+
+---
+
+## dir2/arte-gpt — 50f807a (delta de de546f8; a51ea97 é merge da integração)
+
+**O que muda:** `painted_flex.gdshader` (o halo por fora deixa de ter o piso de 0,3 e passa a valer `halo_amt * ndark`: só junto das
+partes escuras) e `character_art.gd` (`HERO_HALO` 0,4 -> 0,25). Mais a nota no doc. Nada de combate, som, tremor nem economia.
+- **Ressalva do de546f8: FECHADA nas duas formas que pedi.** Baixou o halo para 0,25 E tirou o piso, então o cajado dourado
+  (claro e fino) fica praticamente sem halo, que era a faixa pálida de 3 a 4 px. O halo continua nas botas e no manto escuro, onde
+  separa a silhueta do fundo escuro. `halo_amt` só é ligado para o herói (`hero_rim`), então os inimigos não mudam.
+- **R18: segue PARCIAL**, mas não regride: o dono mediu tela 3: 1,76 -> 2,06; tela 30: 2,02 -> 2,37; tela 57: 1,45 -> 1,71 : 1
+  (antes do halo novo e depois dele, contra a integração atual). Abaixo de 3:1; o resto depende do pedido ao cenario7. Correto
+  não forçar mais luz na Sophia. Não refiz a medida.
+- **R10:** o halo é estático. Atende.
 
 **Veredito: APROVADO.**
 
