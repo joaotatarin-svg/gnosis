@@ -16,6 +16,11 @@
  },
  "cloth_amp": 1.5,
  "hem_wave": 0.0,
+ "spring_mul": 0.3,
+ "flex_off_states": [
+  "idle",
+  "walk"
+ ],
  "atlas_size": [
   2048,
   2048

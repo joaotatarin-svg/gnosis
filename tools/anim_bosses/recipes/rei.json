@@ -341,5 +341,11 @@
    "ref": "idle_a00",
    "main_ref": "idle_0"
   }
- ]
+ ],
+ "spring_mul": 0.3,
+ "flex_off_states": [
+  "idle",
+  "walk"
+ ],
+ "_doc_v11": "Rei v11 (Lab3D): idle e walk = pintura idle_0 animada em camadas (o manto já ondula na folha): o vento do shader fica desligado nesses estados (flex_off_states) e a mola do cartão (sx/sy/bend) vale 30% (spring_mul) — a mola inteira lia como 'cartão de borracha'."
 }
