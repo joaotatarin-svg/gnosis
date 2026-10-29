@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir2/arte-gpt | a238686 (delta de 8916611: parada r4 = a pintura s16 animada em camadas) | APROVADO (a ressalva de identidade fecha: cabelo branco com mecha azul, mesmo corpo; sem "borracha" medida; R18 volta ao nível da pintura, Coroa ~2,7 aceita) | R18, coerência |
 | dir2/arte-gpt | 8916611 (delta de 118cb99; base 95ec4b3) | APROVADO COM RESSALVAS (R18 3,23-3,79 em 9 telas; reversível; o pulo de estilo parada 3D x resto pintado é REAL, pior no cabelo e na anatomia, e fica para o playtest decidir) | R18, coerência, R16 |
 | dir7/polimento7 | b087740 (delta de 28d8df7; commits próprios 7652917, 0353991, b087740) | APROVADO (só RuleProbe e docs; nenhum arquivo de jogo) | R16 |
 | dir6/chefes6 | 0e8d761 (delta de 213d292: um commit próprio) | APROVADO (anéis e órbita passam abaixo do HUD; é só visual, a luta não muda) | R18, R21 |
@@ -1067,6 +1068,22 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## dir2/arte-gpt — a238686 (delta de 8916611: parada r4)
+
+**Medido:** li o diff de `character_art.gd` (`_hero_no_flex`, remoção do `walk3d`/`persist`), `hero_qa.gd` e a receita; vi `_caps\arte\loco_r4\zoom2x_parada.png`, `p_idle_golpe.png`, `p_idle_corrida.png`. Medi o atlas publicado (`_caps\guardiao\atl\`, 12 quadros `s20.idle_00..11`, alinhados pela âncora do pé): botas 0,00 px de deslocamento, pernas 0,34 px (diferença de cor
+entre quadros 0,7-2,4 em 255), cajado com ponta fixa (0,0 px), tronco 1,3 px e cabeça/cabelo 1,9 px (em px de atlas, escala 0,78). Não rodei o HeroQA nem o jogo.
+
+- **Identidade (minha ressalva do 8916611): FECHADA.** Cabelo branco-violeta ondulado com a mecha azul, rosto, torso fino e manto são a mesma pintura que corre e golpeia; a parada não é mais "outra pessoa". No par parada -> golpe e parada -> corrida a transição some (mesma silhueta, mesmo manto, de 3/4 para perfil só pelo ângulo do próprio atlas).
+- **"Borracha": não há.** Só o que deve se mexer se mexe: tronco respira ~1 px e cabelo/abas ondulam ~2 px; botas, pernas e cajado ficam pregados (0 a 0,3 px), então os pés não deslizam e o cajado não balança. O `no_flex` desliga o vento do shader na parada, então não dobra o vento já pintado nos quadros (o `_hero_no_flex` vale por sequência, e as outras seguem com o vento do shader).
+  Ciclo de 12 quadros a 6 qps = 2 s, sem pulo de laço visível na folha. Se o playtest achar o cabelo "degrau" a 6 qps, subir para 8 qps (o doc já tem a opção).
+- **Código:** o `walk3d` e o `persist` saíram (some o risco de pose presa que eu tinha apontado); `idle_pintado` continua de reserva; HeroQA agora confere `idle_pintado`, `s20`, 12 quadros e `no_flex`.
+- **R18:** volta ao nível da pintura (Coroa 2,68-2,73, abaixo de 3:1 pelo fundo dourado, já aceita e anotada como pendência do Cenário); o ganho extra da 3D, que vinha de ser mais clara, se foi, mas valia menos que a identidade.
+- §4: nada de recompensa, flash ou tremor.
+
+**Veredito: APROVADO.**
 
 ---
 
