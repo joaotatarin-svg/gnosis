@@ -106,11 +106,11 @@ func _do_soter(player: Node) -> void:
 			if player.health:
 				player.health.heal(player.health.max_health)
 		1:
-			if Progression.weapon_level < Progression.MAX_WEAPON_LEVEL:
-				Progression.weapon_level += 1
-				Progression.weapon_level_changed.emit(Progression.weapon_level)
-			else:
-				Progression.add_orbs(120)     # arma já desperta: faíscas no lugar
+			# O presente respeita o selo de nível da arma (Progressão); selada ou
+			# no máximo, vêm faíscas no lugar — entregues como orbes (R6).
+			if not Progression.gift_weapon_level():
+				Progression.add_orbs(120)
+				SparkOrb.burst(get_parent(), global_position + Vector2(0, -30), 9)
 		2:
 			Progression.bonus_max_health += 25
 			Progression.stats_changed.emit()
@@ -142,14 +142,21 @@ func _soter_lightness(player: Node) -> void:
 	_player = player as Node2D
 	var d := _dialog(Narrative.soter_lightness(), [], "soter")
 	d.line_shown.connect(_on_lightness_line)
-	_art.set_anim("bless")
+	_art.set_anim("lift")
 	await d.finished
 	if not is_inside_tree():
 		return
 	_grant_double_jump()
 	if _ledge == null:
 		_spawn_ledge()
+	_sophia_light(false)
+	_sophia_action("")                         # a pose de cena solta: ela anda
 	_art.set_anim("idle")
+	# RESPIRO (R21): um instante de silêncio antes do prompt — a cena assenta, o
+	# jogador olha o degrau aceso antes de a dica aparecer.
+	await get_tree().create_timer(0.9, true, false, true).timeout
+	if not is_inside_tree():
+		return
 	_hint_double_jump()
 	var waited := 0.0
 	var done := false
@@ -168,11 +175,18 @@ func _soter_lightness(player: Node) -> void:
 		return
 	if done:
 		Audio.play_sfx("stele_unlock", -1.0, -4.0)
+		# As 30 faíscas entram como TODAS as outras (R6): creditadas e entregues em
+		# orbes que voam do degrau até ela, com a nota que sobe em escala.
 		Progression.add_orbs(30)
 		if _ledge != null and is_instance_valid(_ledge):
 			_ledge.reward()
+			SparkOrb.burst(get_parent(), _ledge.global_position + Vector2(0, -20), 9)
 		Gnosis.captions(Narrative.soter_lightness_done())
-		await get_tree().create_timer(1.2, true, false, true).timeout
+		_art.set_anim("rest")                  # mãos juntas, em paz — antes de partir
+		await get_tree().create_timer(1.6, true, false, true).timeout
+	else:
+		_art.set_anim("rest")
+		await get_tree().create_timer(0.8, true, false, true).timeout
 	_clear_glow()
 
 
@@ -181,14 +195,27 @@ func _on_lightness_line(index: int, _line: Dictionary) -> void:
 		return
 	match index:
 		0:
-			# As mãos nos ombros: uma coluna de luz morna desce sobre ela.
-			_art.set_anim("bless")
-			var col := _glow_sprite("glow", Vector2(0.9, 2.6), Color(1.0, 0.92, 0.65, 0.0))
-			col.global_position = _player.global_position + Vector2(0, -40)
-			create_tween().tween_property(col, "modulate:a", 0.55, 0.9)
+			# As mãos dele se erguem (lift); ela olha para ele, cajado em pé
+			# (soter_look); a coluna de luz morna desce sobre ela (bless_light).
+			_art.set_anim("lift")
+			_sophia_action("soter_look")
+			# R9: a música, já baixa no encontro, quase some — o dom (`soter_gift`,
+			# tocado pelo Áudio quando o pulo duplo é concedido, na fala seguinte)
+			# entra no silêncio. A Staging solta o abafamento ao fim da cena.
+			Audio.duck_music(600.0, -24.0)
+			if not _sophia_light(true):
+				var col := _glow_sprite("glow", Vector2(0.9, 2.6), Color(1.0, 0.92, 0.65, 0.0))
+				col.global_position = _player.global_position + Vector2(0, -40)
+				create_tween().tween_property(col, "modulate:a", 0.55, 0.9)
 		1:
-			# Leve: ela sobe um palmo e desce devagar; o chão "pesa menos".
+			# Leve: ela sobe um palmo e desce devagar (pousa: soter_land); a luz
+			# se recolhe quando ela toca o chão de novo.
 			_grant_double_jump()
+			var land := create_tween()
+			land.tween_interval(0.6)
+			land.tween_callback(_sophia_action.bind("soter_land"))
+			land.tween_interval(1.2)
+			land.tween_callback(_sophia_light.bind(false))
 			var halo := _glow_sprite("halo", Vector2.ONE * 0.6, Color(1.0, 0.9, 0.6, 0.9))
 			halo.global_position = _player.global_position + Vector2(0, 10)
 			var t := create_tween()
@@ -201,8 +228,46 @@ func _on_lightness_line(index: int, _line: Dictionary) -> void:
 				var lift := create_tween()
 				lift.tween_property(v, "position:y", y0 - 7.0, 0.6).set_trans(Tween.TRANS_SINE)
 				lift.tween_property(v, "position:y", y0, 1.2).set_trans(Tween.TRANS_SINE)
+		2:
+			_art.set_anim("talk")
+		3:
+			# "(Leve. Como antes de cair.)" — ela agradece com a cabeça.
+			_sophia_action("soter_bow")
+			_art.set_anim("idle")
 		4:
+			# "Vê aquela luz no alto?" — ele estende a mão para o degrau que acende.
+			_art.set_anim("offer")
 			_spawn_ledge()
+
+
+## Pose de CENA da Sophia (arte, Fila 9): "soter_look" / "soter_land" /
+## "soter_bow" ficam paradas até `stop_action()` ou ela se mexer; "" solta.
+func _sophia_action(action: String) -> void:
+	if _player == null or not is_instance_valid(_player):
+		return
+	var vis = _player.get("visual")
+	if not (vis is CharacterArt):
+		return
+	var art := vis as CharacterArt
+	if action == "":
+		if art.has_method("stop_action"):
+			art.stop_action()
+		return
+	if art.has_method("has_action") and not art.has_action(action):
+		return
+	art.play_action(action)
+
+
+## Coluna de luz sobre ela (FX da arte: `bless_light`, anima com o mundo pausado).
+## Devolve false se o Visual não tiver o efeito (cai no sprite antigo).
+func _sophia_light(on: bool) -> bool:
+	if _player == null or not is_instance_valid(_player):
+		return false
+	var vis = _player.get("visual")
+	if vis is Object and (vis as Object).has_method("bless_light"):
+		(vis as Object).call("bless_light", on)
+		return true
+	return false
 
 
 ## Concede o pulo duplo (contrato da Onda 6: Progression.grant_double_jump()).
@@ -270,6 +335,7 @@ func _glow_sprite(tex: String, sc: Vector2, col: Color) -> Sprite2D:
 
 
 func _clear_glow() -> void:
+	_sophia_light(false)
 	for s in _glow_fx:
 		if is_instance_valid(s):
 			var t := create_tween()

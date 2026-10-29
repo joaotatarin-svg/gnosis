@@ -14,7 +14,7 @@ extends Node
 
 const SCREEN := 3
 const TYPES := ["larva", "servo", "canino", "bruto"]
-const MOVES := [["m_L", [], "light"], ["m_LLL", ["light", "light"], "light"], ["m_H", [], "heavy"], ["m_LH", ["light"], "heavy"], ["m_HHH", ["heavy", "heavy"], "heavy"]]
+const MOVES := [["m_L", [], "light"], ["m_LL", ["light"], "light"], ["m_LLL", ["light", "light"], "light"], ["m_H", [], "heavy"], ["m_LH", ["light"], "heavy"], ["m_HHH", ["heavy", "heavy"], "heavy"]]
 const DISTS := [8.0, 16.0, 24.0, 32.0, 40.0, 48.0, 56.0, 64.0]
 const STAFF_R := 1.5          # meia espessura do cajado desenhado (px de mundo)
 
@@ -25,12 +25,14 @@ func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() >= 1:
 		r.out_json = args[0]
+	r.fast = "rapido" in args          # sem a bateria da caixa antiga (calibração)
 	get_tree().root.add_child.call_deferred(r)
 
 
 class Runner extends Node:
 	var pl: Player
 	var out_json: String = "user://hitbox_probe.json"
+	var fast: bool = false
 	var frames_dump: Array = []
 	var hurt_vs_drawn: Dictionary = {}
 	var x0: float = 0.0
@@ -77,10 +79,11 @@ class Runner extends Node:
 		x0 = pl.global_position.x
 		y0 = pl.global_position.y
 		var res_new: Dictionary = await _battery(false)
-		var res_old: Dictionary = await _battery(true)
+		var res_old: Dictionary = {} if fast else await _battery(true)
 		var contact_ok: bool = await _contact_test()
 		_report("NOVA (cajado desenhado)", res_new)
-		_report("ANTIGA (caixa 34x42 fixa)", res_old)
+		if not fast:
+			_report("ANTIGA (caixa 34x42 fixa)", res_old)
 		for t in hurt_vs_drawn:
 			print("HITBOX|inimigo %s: %s" % [t, hurt_vs_drawn[t]])
 		var f := FileAccess.open(out_json, FileAccess.WRITE)
@@ -95,10 +98,14 @@ class Runner extends Node:
 		var cheat: float = float(real_n - tp) / maxf(1.0, float(real_n))
 		if not contact_ok:
 			push_error("QA FAIL: HitboxProbe — encostar no inimigo feriu a Sophia")
-		if through <= 0.10 and cheat <= 0.10 and contact_ok:
-			print("QA PASS: HitboxProbe (atravessa %.0f %%, apelão %.0f %%)" % [through * 100.0, cheat * 100.0])
+		# Polimento 7: contra o corpo DESENHADO (frame_geometry da Arte) — meta
+		# 0 atravessa, ≤ 2 % encosta sem dano, sem apelão (≤ 10 % dos acertos)
+		var miss_g: float = float(res_new.miss_g) / maxf(1.0, float(res_new.exp_g))
+		var cheat_g: float = float(res_new.cheat_g) / maxf(1.0, float(real_n))
+		if through <= 0.01 and cheat <= 0.10 and miss_g <= 0.02 and cheat_g <= 0.10 and contact_ok:
+			print("QA PASS: HitboxProbe (atravessa %.0f %%, apelão %.0f %%; corpo desenhado: sem dano %.1f %%, apelão %.1f %%)" % [through * 100.0, cheat * 100.0, miss_g * 100.0, cheat_g * 100.0])
 		else:
-			push_error("QA FAIL: HitboxProbe — atravessa %.0f %%, apelão %.0f %%" % [through * 100.0, cheat * 100.0])
+			push_error("QA FAIL: HitboxProbe — atravessa %.0f %%, apelão %.0f %%; corpo desenhado: sem dano %.1f %%, apelão %.1f %%" % [through * 100.0, cheat * 100.0, miss_g * 100.0, cheat_g * 100.0])
 		get_tree().quit()
 
 	## Playtest 2: encostar/atacar colado no inimigo NÃO fere (sem dano de contato).
@@ -127,13 +134,14 @@ class Runner extends Node:
 	func _report(label: String, r: Dictionary) -> void:
 		print("HITBOX|%s: esperados=%d reais=%d certos=%d atravessa=%d apelão=%d alcance_max_real=%.0f px alcance_max_desenho=%.0f px" % [label, r.exp, r.real, r.tp, r.exp - r.tp, r.real - r.tp, r.max_real, r.max_exp])
 		print("HITBOX|%s contra o CORPO DESENHADO: cajado encostou no desenho %d vezes, sem dano em %d (%.0f %%) — hurtbox estreita" % [label, r.exp_d, r.miss_d, 100.0 * r.miss_d / maxf(1.0, r.exp_d)])
+		print("HITBOX|%s contra o CORPO (frame_geometry): cajado encostou %d vezes, sem dano em %d (%.1f %%); dano sem encostar no corpo %d (%.1f %% dos acertos)" % [label, r.exp_g, r.miss_g, 100.0 * r.miss_g / maxf(1.0, r.exp_g), r.cheat_g, 100.0 * r.cheat_g / maxf(1.0, r.real)])
 		for line in r.lines:
 			print("HITBOX|  " + line)
 
 	## Uma bateria completa (5 golpes × 4 tipos × 7 distâncias).
 	func _battery(legacy: bool) -> Dictionary:
 		pl.set("debug_legacy_hitbox", legacy)
-		var r := {"exp": 0, "real": 0, "tp": 0, "exp_d": 0, "miss_d": 0, "max_real": 0.0, "max_exp": 0.0, "lines": []}
+		var r := {"exp": 0, "real": 0, "tp": 0, "exp_d": 0, "miss_d": 0, "exp_g": 0, "miss_g": 0, "cheat_g": 0, "max_real": 0.0, "max_exp": 0.0, "lines": []}
 		for mv in MOVES:
 			for t in TYPES:
 				var cells: Array[String] = []
@@ -145,13 +153,19 @@ class Runner extends Node:
 					r.exp += int(e)
 					r.exp_d += int(o.exp_drawn)
 					r.miss_d += int(o.exp_drawn and not h)
+					r.exp_g += int(o.exp_geo)
+					r.miss_g += int(o.exp_geo and not h)
+					r.cheat_g += int(h and not o.exp_geo)
 					r.real += int(h)
 					r.tp += int(e and h)
 					if h:
 						r.max_real = maxf(r.max_real, d)
 					if e:
 						r.max_exp = maxf(r.max_exp, d)
-					cells.append("%d:%s" % [int(d), ("ok" if h else "ATRAVESSA") if e else ("APELAO" if h else "-")])
+					var cell: String = ("ok" if h else "ATRAVESSA") if e else ("APELAO" if h else "-")
+					if o.exp_geo and not h and not e:
+						cell = "SEMDANO"      # encostou no corpo desenhado (API), sem dano
+					cells.append("%d:%s" % [int(d), cell])
 				r.lines.append("%s x %-7s %s" % [mv[0], t, " ".join(cells)])
 		pl.set("debug_legacy_hitbox", false)
 		return r
@@ -183,6 +197,11 @@ class Runner extends Node:
 		en.health.max_health = 99999
 		en.health.current_health = 99999
 		en.global_position = Vector2(x0 + d, y0)
+		# Polimento 7: com a física do inimigo parada, a sonda faz o que o
+		# _physics_process faria — a hurtbox segue o quadro desenhado a cada passo
+		for k in 8:
+			en._fit_hurtbox()
+			await _step()
 		var hp0: int = en.health.current_health
 		# o golpe: prefixo da string + o botão
 		pl.combo_sequence.assign(prefix)
@@ -193,6 +212,9 @@ class Runner extends Node:
 			push_warning("HITBOX: golpe %s não saiu (saiu %s)" % [move_id, pl.current_move.id if pl.current_move else "-"])
 		var expected := false
 		var expected_drawn := false
+		var expected_geo := false
+		var geo_w := -1.0
+		var geo_note := ""
 		var drawn_w := -1.0
 		var n := 0
 		while pl.state == Player.State.ATTACK and n < 120:
@@ -201,10 +223,14 @@ class Runner extends Node:
 			if not is_instance_valid(en):
 				break
 			en.global_position.x = x0 + d          # parado (o golpe empurra)
+			en._fit_hurtbox()
 			var g: Dictionary = StaffReach.current(pl.visual)
 			var hurt: Rect2 = _hurt_rect(en)
 			var touch := false
-			if pl.hit_started and g.has("tip"):
+			# Polimento 7: só conta toque na JANELA do golpe (hitbox ativa: do
+			# impacto ao fim do golpe) — o cajado parado na pose de volta (ready,
+			# rec_*) encostando no inimigo não é golpe.
+			if pl.hit_started and pl.hitbox._active and g.has("tip"):
 				var hand: Vector2 = pl.to_global(Vector2(g.hand.x * pl.facing, g.hand.y))
 				var tip: Vector2 = pl.to_global(Vector2(g.tip.x * pl.facing, g.tip.y))
 				var segs: Array = [[hand, tip]]
@@ -213,17 +239,38 @@ class Runner extends Node:
 					var pv: Vector2 = pl.to_global(Vector2(g.prev.x * pl.facing, g.prev.y))
 					segs.append([pv, tip])
 					segs.append([hand, pv])
+				# Polimento 7: acompanhamento do golpe descendente (eixo do cajado
+				# prolongado até o chão — StaffReach._follow_through)
+				if g.get("follow") != null:
+					var fw: Vector2 = pl.to_global(Vector2(g.follow.x * pl.facing, g.follow.y))
+					segs.append([tip, fw])
 				touch = _segs_hit(segs, hurt.grow(STAFF_R))
 				expected = expected or touch
 				var dr: Rect2 = _drawn_rect(en, hurt)
 				if dr.size.x > 0.0 and _segs_hit(segs, dr):
 					expected_drawn = true
+				# Polimento 7: corpo pela API oficial da Arte (silhueta medida por quadro)
+				var gb: Rect2 = _geo_body(en)
+				if gb.size.x > 0.0:
+					geo_w = gb.size.x
+					if _segs_hit(segs, gb):
+						if not expected_geo:
+							var hb0 := pl.hitbox
+							geo_note = "%s:%s %s vivo=%s ponta=%s corpo=%s hurt=%s caixa=%s" % [g.get("seq", ""), g.get("i", -1), g.get("source", ""), hb0.monitoring,
+									tip - pl.global_position, Rect2(gb.position - pl.global_position, gb.size), Rect2(hurt.position - pl.global_position, hurt.size),
+									Rect2(hb0.global_position - pl.global_position - hb0.box_size() * 0.5, hb0.box_size())]
+						expected_geo = true
 			if drawn_w < 0.0:
 				drawn_w = _drawn_width(en)
 			if dump:
 				var hb := pl.hitbox
+				var api: Dictionary = pl.visual.frame_geometry() if pl.visual.has_method("frame_geometry") else {}
 				frames_dump.append({
 					"move": move_id, "seq": g.get("seq", ""), "i": g.get("i", -1),
+					"shown": pl.visual._shown_key, "src": g.get("source", ""),
+					"api_staff": [_v(api.staff[0]), _v(api.staff[1])] if api.has("staff") else [],
+					"api_body": [api.body.position.x, api.body.position.y, api.body.size.x, api.body.size.y] if api.has("body") else [],
+					"front": g.get("front", 0.0),
 					"hand": _v(g.get("hand", Vector2.INF)), "tip": _v(g.get("tip", Vector2.INF)),
 					"hit_rect": [hb.position.x, hb.position.y, hb.box_size().x, hb.box_size().y],
 					"live": hb.monitoring,
@@ -231,12 +278,22 @@ class Runner extends Node:
 					"touch": touch,
 				})
 		var hit: bool = is_instance_valid(en) and en.health.current_health < hp0
+		if expected_geo and not hit:
+			print("HITBOX|  sem dano: %s × %s a %.0f px — 1º toque no corpo: %s" % [move_id, type_id, d, geo_note])
 		if is_instance_valid(en):
 			en.queue_free()
 		await _step(2)
 		if not hurt_vs_drawn.has(type_id):
-			hurt_vs_drawn[type_id] = "hurtbox %.0f px × desenho %s" % [_hurt_rect_size(type_id), ("%.0f px" % drawn_w) if drawn_w > 0.0 else "n/d (sem _draw no headless)"]
-		return {"exp": expected, "hit": hit, "exp_drawn": expected_drawn}
+			hurt_vs_drawn[type_id] = "hurtbox %.0f px × corpo (frame_geometry) %s × malha %s" % [_hurt_rect_size(type_id), ("%.0f px" % geo_w) if geo_w > 0.0 else "n/d", ("%.0f px" % drawn_w) if drawn_w > 0.0 else "n/d (sem _draw no headless)"]
+		return {"exp": expected, "hit": hit, "exp_drawn": expected_drawn, "exp_geo": expected_geo}
+
+	## Corpo DESENHADO pela API da Arte: `visual.frame_geometry(true).body` (mundo).
+	func _geo_body(en: Node) -> Rect2:
+		var art = en.get("visual")
+		if art == null or not art.has_method("frame_geometry"):
+			return Rect2()
+		var g: Dictionary = art.frame_geometry(true)
+		return g.get("body", Rect2())
 
 	func _segs_hit(segs: Array, r: Rect2) -> bool:
 		for sg in segs:

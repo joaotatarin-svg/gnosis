@@ -32,6 +32,7 @@ func _tick(_delta: float) -> void:
 			_warned = true
 			if _near_player(320.0):
 				Audio.play_sfx_at("tell_unblock", global_position, 0.05)
+				Audio.play_sfx_at("hz_maw_warn", global_position, 0.05)
 		return
 	if c < BITE_END and not _bit:
 		_bit = true
@@ -40,7 +41,7 @@ func _tick(_delta: float) -> void:
 		if _live() and player_in(area) and player_grounded_low():
 			hurt_player(int(hazard_damage(4) * 1.5), global_position + Vector2(0, 30), 200.0, true)
 		if _near_player(320.0):
-			Audio.play_sfx_at("hit_heavy", global_position, 0.1)
+			Audio.play_sfx_at("hz_maw_bite", global_position, 0.1)
 			Juice.shake(0.12)
 
 
@@ -50,6 +51,42 @@ func _near_player(d: float) -> bool:
 
 
 func _draw() -> void:
+	if HazardArt.has("maw"):
+		_draw_art()
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): fechada (só a carne na fenda) → no AVISO treme, a
+## rachadura acende e ganha contorno vermelho; na 2ª metade do aviso ela
+## ABRE (os dentes aparecem: a forma avisa, não só a cor) → MORDE (as
+## mandíbulas sobem) → fecha.
+func _draw_art() -> void:
+	var c := _cycle(PERIOD)
+	var hw := width * 0.5
+	var warn := 0.0
+	var f := 0
+	if c >= WARN_AT and c < BITE_AT:
+		warn = (c - WARN_AT) / (BITE_AT - WARN_AT)
+		f = 1 if warn >= 0.45 else 0
+	elif c >= BITE_AT and c < BITE_END:
+		f = 2
+	elif c >= BITE_END:
+		f = 1 if (c - BITE_END) / (PERIOD - BITE_END) < 0.5 else 0
+	var sc := Vector2.ONE * (width / maxf(1.0, HazardArt.size("maw").x))
+	var shake := Vector2(sin(_t * 50.0) * 1.0 * warn, 0.0)
+	warn_outline("maw", f, shake, warn, 0.0, sc)
+	HazardArt.draw(self, "maw", f, shake, 0.0, sc)
+	if warn > 0.0:
+		# a fenda acende e a poeira treme (por cima da pintura)
+		warn_line(Vector2(-hw * 0.8, -1), Vector2(hw * 0.8, -1), Color(WARN_COL, 0.35 + 0.65 * warn), 1.6)
+		for i in 5:
+			var px := (float(i) - 2.0) * hw * 0.4 + sin(_t * 50.0 + i) * 2.0
+			draw_circle(Vector2(px, -4.0 - warn * 7.0 * float(i % 2)), 1.6, Color(0.8, 0.7, 0.55, 0.6 * warn))
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var c := _cycle(PERIOD)
 	var hw := width * 0.5
 	var open := 0.0                     # 0 = fechada · 1 = escancarada

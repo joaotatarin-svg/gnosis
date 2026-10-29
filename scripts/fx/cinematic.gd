@@ -43,6 +43,7 @@ var _bar_top: ColorRect
 var _bar_bottom: ColorRect
 var _boss_name: Label
 var _boss_title: Label
+var _boss_band: TextureRect       # faixa escura macia sob nome+título (QA7 #17/#23: legível sobre qualquer arte)
 var _vig: ColorRect
 var _art_box: Control              # as ilustrações (duas camadas para a troca)
 var _art_a: TextureRect
@@ -319,6 +320,7 @@ func _run_cards() -> void:
 		var keep: bool = not arts.is_empty() and arts == _art_cur
 		_title.text = String(card.get("title", ""))
 		_text.text = String(card.get("text", ""))
+		_balance_text()
 		_layout(not arts.is_empty())
 		var bg_i: int = int(card.get("bg", -1))
 		_bg.texture = PaintedLibrary.background(bg_i) if bg_i >= 0 and arts.is_empty() else null
@@ -349,6 +351,36 @@ func _card_art(card: Dictionary) -> Array:
 ## Card ILUSTRADO: pintura cheia, faixa escura embaixo, título + texto no terço
 ## inferior (o texto cresce para cima a partir da base). Card de pintura do Éon:
 ## o layout antigo, centrado, com a vinheta.
+## Quebra EQUILIBRADA (QA7 #30: "viúvas" — uma palavra sozinha na última linha,
+## em PT e EN): a caixa do texto encolhe até a menor largura que ainda dá o
+## mesmo número de linhas, e as linhas ficam parecidas. Mede o texto exibido
+## (traduzido) com a fonte do card.
+func _balance_text() -> void:
+	var shown: String = _text.atr(_text.text) if _text.auto_translate_mode != Node.AUTO_TRANSLATE_MODE_DISABLED else _text.text
+	var w := TEXT_W
+	var n := _lines_at(shown, TEXT_W)
+	if n >= 2:
+		var lo := TEXT_W * 0.45
+		var hi := TEXT_W
+		for _k in 10:
+			var mid := (lo + hi) * 0.5
+			if _lines_at(shown, mid) <= n:
+				hi = mid
+			else:
+				lo = mid
+		w = minf(TEXT_W, hi + 8.0)       # folga: o Label quebra um pouco antes da conta
+	_text.offset_left = -w * 0.5
+	_text.offset_right = w * 0.5
+
+
+func _lines_at(t: String, width: float) -> int:
+	var font: Font = CodexStyle.serif()
+	var fs := 13
+	var sz := font.get_multiline_string_size(t, HORIZONTAL_ALIGNMENT_CENTER, width, fs, -1,
+		TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND)
+	return maxi(1, int(round(sz.y / maxf(1.0, font.get_height(fs)))))
+
+
 func _layout(illustrated: bool) -> void:
 	_shade.visible = illustrated
 	_vig.color.a = 0.08 if illustrated else 0.38
@@ -469,6 +501,36 @@ func _build_boss() -> void:
 	_bar_bottom.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bar_bottom)
 
+	# Faixa de leitura: elipse escura que esfuma nas pontas, atrás do nome e do
+	# subtítulo. Sem ela o subtítulo (12 px) caía sobre o Colosso, plataformas e
+	# chefes claros e sumia (QA7 #17 e #23).
+	_boss_band = TextureRect.new()
+	var g := Gradient.new()
+	g.set_color(0, Color(0.0, 0.01, 0.02, 0.82))
+	g.set_color(1, Color(0.0, 0.01, 0.02, 0.0))
+	g.add_point(0.6, Color(0.0, 0.01, 0.02, 0.62))
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill = GradientTexture2D.FILL_RADIAL
+	gt.fill_from = Vector2(0.5, 0.5)
+	gt.fill_to = Vector2(0.5, 0.0)
+	gt.width = 128
+	gt.height = 32
+	_boss_band.texture = gt
+	_boss_band.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_boss_band.stretch_mode = TextureRect.STRETCH_SCALE
+	_boss_band.anchor_left = 0.5
+	_boss_band.anchor_right = 0.5
+	_boss_band.anchor_top = 0.5
+	_boss_band.anchor_bottom = 0.5
+	_boss_band.offset_left = -340.0
+	_boss_band.offset_right = 340.0
+	_boss_band.offset_top = -96.0
+	_boss_band.offset_bottom = 6.0
+	_boss_band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_boss_band.modulate.a = 0.0
+	add_child(_boss_band)
+
 	_boss_name = Label.new()
 	_boss_name.text = String(boss.get("name", ""))
 	_boss_name.anchor_left = 0.5
@@ -504,7 +566,9 @@ func _build_boss() -> void:
 	_boss_title.add_theme_font_size_override("font_size", 12)
 	_boss_title.add_theme_color_override("font_color", CodexStyle.PAPER)
 	_boss_title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
-	_boss_title.add_theme_constant_override("outline_size", 4)
+	_boss_title.add_theme_constant_override("outline_size", 5)
+	_boss_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART   # título longo (EN) quebra em vez de vazar
+	_boss_title.offset_bottom = 6.0
 	_boss_title.add_theme_font_override("font", Cinematic.title_font())
 	_boss_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_boss_title.modulate.a = 0.0
@@ -519,6 +583,7 @@ func _run_boss() -> void:
 	tw.tween_property(_bar_top, "offset_bottom", 44.0, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_bar_bottom, "offset_top", -44.0, 0.28).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_boss_name, "modulate:a", 1.0, 0.35)
+	tw.tween_property(_boss_band, "modulate:a", 1.0, 0.3)
 	tw.tween_property(_boss_title, "modulate:a", 1.0, 0.5).set_delay(0.15)
 	_boss_name.scale = Vector2(1.18, 1.18)
 	_boss_name.pivot_offset = Vector2(300.0, 40.0)
@@ -531,6 +596,7 @@ func _run_boss() -> void:
 	out.tween_property(_bar_bottom, "offset_top", 0.0, 0.25)
 	out.tween_property(_boss_name, "modulate:a", 0.0, 0.22)
 	out.tween_property(_boss_title, "modulate:a", 0.0, 0.22)
+	out.tween_property(_boss_band, "modulate:a", 0.0, 0.22)
 	await out.finished
 	_finish()
 

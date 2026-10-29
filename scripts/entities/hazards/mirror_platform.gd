@@ -36,6 +36,8 @@ func _ready() -> void:
 	_spr.modulate = Color(0.8, 0.95, 1.05)
 	_body.add_child(_spr)
 	add_child(_body)
+	if HazardArt.has("mirror_plat"):
+		_spr.texture = null          # a plataforma pintada é desenhada no _draw
 	_apply(_want_solid(), true)
 
 
@@ -71,6 +73,37 @@ func _tick(_delta: float) -> void:
 
 
 func _draw() -> void:
+	if HazardArt.has("mirror_plat") and _spr != null and _spr.texture == null:
+		_draw_art()
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): a plataforma de vidro pintada. FIRME = opaca; 0,6 s
+## antes de sumir ela pisca (2 Hz) com contorno de vidro. REFLEXO = a MESMA
+## pintura, translúcida, azulada e tremendo (a folha pintada do fantasma saiu
+## rosada: o fantasma é por código, decisão do chefe).
+func _draw_art() -> void:
+	var glass := Color(0.75, 0.95, 1.0)
+	var sc := Vector2.ONE * (width / maxf(1.0, HazardArt.num("mirror_plat", "ref_w", width)))
+	var at := Vector2(0.0, -6.0)
+	if not _solid:
+		var a := 0.3 + 0.08 * sin(_t * 3.0)
+		var wob := Vector2(sin(_t * 9.0) * 1.2, sin(_t * 5.3) * 0.8)
+		HazardArt.draw_outline(self, "mirror_plat", 0, at + wob, Color(glass, a * 0.8), 1.0, 0.0, sc)
+		HazardArt.draw(self, "mirror_plat", 0, at + wob, 0.0, sc, Color(0.6, 0.85, 1.1, a))
+		draw_rect(Rect2(-width * 0.5, -6.0, width, 12.0), Color(glass, a + 0.05), false, 1.0)
+		return
+	var w := _warning()
+	var blink := 1.0 - 0.55 * w * HazardArt.pulse(_t)
+	if w > 0.0:
+		var oa := (0.3 + 0.6 * w) * (0.55 + 0.45 * HazardArt.pulse(_t))
+		HazardArt.draw_outline(self, "mirror_plat", 0, at, Color(glass, oa), 1.5, 0.0, sc)
+	HazardArt.draw(self, "mirror_plat", 0, at, 0.0, sc, Color(1, 1, 1, blink))
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var glass := Color(0.75, 0.95, 1.0)
 	if not _solid:
 		# o reflexo: contorno e brilho de vidro onde a pedra vai aparecer

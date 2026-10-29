@@ -22,6 +22,18 @@ const FALLBACK_ATTRIBUTION := [
 	"Partículas: Kenney Particle Pack (CC0)",
 ]
 
+## i18n (QA7 #16): o LICENSES.md não passa pelo extrator e muda quando entra som
+## novo. A linha é traduzida inteira se houver chave; senão o RÓTULO ("Efeitos CC0:")
+## e os TRECHOS conhecidos abaixo são traduzidos um a um (o resto é nome próprio).
+const CREDIT_HEADS := [
+	"Música:", "Faixas:", "Efeitos sonoros:", "Efeitos CC0:", "Partículas:",
+	"Ambiências, magias, vozes e camadas sintetizadas:",
+]
+const CREDIT_FRAGMENTS := [
+	"e outros autores CC0 do", "feitas para GNOSIS", "anônimo",
+	"multi-licença; usada a CC0", "e colaboradores", "licença MIT",
+]
+
 ## Para onde "Voltar" leva (a tela de fim manda pro menu também).
 static var return_to: String = "res://scenes/ui/MainMenu.tscn"
 
@@ -154,7 +166,8 @@ func _read_licenses() -> Dictionary:
 
 func _line(text: String, size: int, col: Color, font: Font) -> Label:
 	var l := Label.new()
-	l.text = text
+	l.text = _tr_credit(text)
+	l.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED   # já vem traduzido
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.add_theme_font_override("font", font)
 	l.add_theme_font_size_override("font_size", size)
@@ -163,6 +176,22 @@ func _line(text: String, size: int, col: Color, font: Font) -> Label:
 	l.custom_minimum_size.x = 400
 	_roll.add_child(l)
 	return l
+
+
+## Texto de crédito no idioma atual (ver CREDIT_HEADS/CREDIT_FRAGMENTS).
+static func _tr_credit(text: String) -> String:
+	if not I18n.is_en():
+		return text
+	var out := I18n.t(text)      # chave inteira (ou padrão "%s: %s" parcial)
+	for h in CREDIT_HEADS:       # rótulo que ficou em português (padrão parcial ou linha nova)
+		if out.begins_with(h):
+			out = I18n.t(h) + out.substr(String(h).length())
+			break
+	# trechos em português que sobraram (padrão parcial ou linha nova)
+	for frag in CREDIT_FRAGMENTS:
+		if out.contains(frag):
+			out = out.replace(frag, I18n.t(frag))
+	return out
 
 
 func _head(text: String) -> void:

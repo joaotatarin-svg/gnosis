@@ -244,6 +244,9 @@ const BOSS_TITLES: Dictionary = {
 var unlocked: Array = []          # ids das Crônicas lidas (persistem entre runs)
 var persist_enabled: bool = true  # ferramentas (QA/shot) desligam para não sujar o disco
 var _caption: CaptionBar
+var _last_card_id: String = ""
+var _last_card_screen: int = -1
+var _last_card_ms: int = -100000
 var _by_screen: Dictionary = {}   # tela -> Estela
 
 
@@ -397,6 +400,14 @@ func captions(lines: Array) -> void:
 func boss_card(id: String, screen: int) -> void:
 	if _sandbox():
 		return
+	# O mesmo card não repete na mesma tela em seguida (QA7 #17: "YALDABAOTH" 2×
+	# na luta final — a batalha dupla e a wave pediam o card juntas).
+	var now := Time.get_ticks_msec()
+	if id == _last_card_id and screen == _last_card_screen and now - _last_card_ms < 8000:
+		return
+	_last_card_id = id
+	_last_card_screen = screen
+	_last_card_ms = now
 	if id == "campeao":
 		var n := RunManager.eon_name(screen)
 		var fem := n in ["Fome", "Corrente", "Praga", "Coroa"]

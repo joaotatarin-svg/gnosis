@@ -52,10 +52,55 @@ func _impact(x: float) -> void:
 	if _live() and player_in(area):
 		hurt_player(hazard_damage(4), at + Vector2(0, -60), 100.0, true)
 	ImpactBurst.spawn(get_parent(), at + Vector2(0, -6), Color(0.85, 0.9, 1.0))
-	Audio.play_sfx_at("shard", at, 0.1)
+	Audio.play_sfx_at("hz_shard_impact", at, 0.1)
 
 
 func _draw() -> void:
+	if HazardArt.has("shard_1"):
+		_draw_art()
+	else:
+		_draw_code()
+
+
+## PINTURA (Onda 7): a SOMBRA no chão e o anel vermelho continuam por código
+## (o aviso, 0,8 s); o caco que cai é a pintura (3 tamanhos, pela posição),
+## com o BRILHO por efeito (a folha trouxe um brilho rosado: refeito aqui).
+func _draw_art() -> void:
+	var glass := Color(0.82, 0.88, 1.0)
+	var warm := Color(1.0, 0.85, 0.55)
+	for d in _drops:
+		var x: float = d.x
+		var t: float = d.t
+		if t < WARN + FALL:
+			var k := clampf(t / WARN, 0.0, 1.0)
+			draw_set_transform(Vector2(x, 2), 0, Vector2(1, 0.25))
+			draw_circle(Vector2.ZERO, HIT_R * (0.4 + 0.6 * k), Color(0, 0, 0, 0.2 + 0.4 * k))
+			draw_arc(Vector2.ZERO, HIT_R, 0, TAU, 20, Color(INK, 0.5 + 0.3 * k), 5.0, true)
+			draw_arc(Vector2.ZERO, HIT_R, 0, TAU, 20, Color(WARN_COL, 0.4 + 0.6 * k), 2.2, true)
+			draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
+			var piece := "shard_%d" % (int(absf(x) * 0.37) % 3)
+			if t >= WARN:
+				var f := (t - WARN) / FALL
+				var y := lerpf(-320.0, 0.0, f * f)
+				# rastro de luz atrás do caco + halo
+				draw_line(Vector2(x, y - 70.0), Vector2(x, y - 20.0), Color(warm, 0.35 * HazardArt.flash_k()), 3.0, true)
+				draw_circle(Vector2(x, y - 18.0), 12.0, Color(warm, 0.14 * HazardArt.flash_k()))
+				HazardArt.draw_outline(self, piece, 0, Vector2(x, y), Color(warm, 0.55), 1.0)
+				HazardArt.draw(self, piece, 0, Vector2(x, y))
+			else:
+				# o caco se soltando lá em cima: pendurado, tremendo e acendendo
+				var sh := sin(_t * 40.0) * 1.2 * k
+				draw_circle(Vector2(x, -300.0), 4.0 + 5.0 * k, Color(warm, (0.12 + 0.25 * k) * HazardArt.flash_k()))
+				HazardArt.draw(self, piece, 0, Vector2(x + sh, -290.0), 0.0, Vector2.ONE * 0.8, Color(1, 1, 1, 0.4 + 0.6 * k))
+		else:
+			var a := 1.0 - (t - WARN - FALL) / 0.35
+			for i in 5:
+				var ang := -PI * float(i + 1) / 6.0
+				draw_line(Vector2(x, -2), Vector2(x, -2) + Vector2(cos(ang), sin(ang)) * (8.0 + 18.0 * (1.0 - a)), Color(glass, a), 1.2)
+
+
+## Desenho por CÓDIGO (fallback sem a pintura; também a prancha "antes").
+func _draw_code() -> void:
 	var glass := Color(0.82, 0.88, 1.0)
 	for d in _drops:
 		var x: float = d.x

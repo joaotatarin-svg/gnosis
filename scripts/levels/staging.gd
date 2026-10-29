@@ -753,12 +753,19 @@ func _b_sink() -> void:
 		if is_instance_valid(g):
 			t.parallel().tween_property(g, "modulate:a", 0.0, 0.45)
 	t.tween_property(_black, "color:a", 1.0, 0.8)
+	# O chão abre JUNTO com o som da rachadura do Áudio (`crack_open`, CRACK_DELAY
+	# depois do cue `sink`): até lá, só o colapso e o silêncio que a música deixa
+	# ao parar (R9: o vazio antes do grande momento).
+	var crack_at: float = Audio.CRACK_DELAY
 	var opening := _tw()
-	opening.tween_interval(0.15)
+	opening.tween_interval(crack_at)
 	opening.tween_property(crack, "open", 1.0, 1.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	# O momento é épico: luz âmbar forte saindo do chão, tremor crescente, poeira.
+	# O momento é épico: luz âmbar forte saindo do chão, tremor crescente, poeira;
+	# cada pulso com o passo pesado do Áudio (pedido do audio7), baixo.
 	var quake := _tw()
+	quake.tween_interval(crack_at)
 	for k in 6:
+		quake.tween_callback(Audio.play_sfx.bind("boss_step", -1.0, -6.0))
 		quake.tween_callback(Juice.shake.bind(0.3 + 0.05 * float(k)))
 		quake.tween_callback(VfxLibrary.dust.bind(self, feet + Vector2((float(k) - 2.5) * 30.0, -2.0)))
 		quake.tween_callback(VfxLibrary._flash_sprite.bind(self, feet + Vector2(0, -10), "halo", Color(1.0, 0.72, 0.3, 0.75), 0.6, 2.2 + 0.3 * float(k), 0.5))
@@ -787,23 +794,26 @@ func descend() -> void:
 	var cm := CanvasModulate.new()
 	cm.color = Color(1.25, 1.0, 0.6)
 	add_child(cm)
+	# ~5 s sem controle (QA7/chefe: eram 8–10 s): o peso fica na ilustração da
+	# queda, na câmera que desce devagar e na Sophia caindo de joelhos (R21: uma
+	# pausa que conta), sem o preto longo entre uma coisa e outra.
 	var t := _tw()
 	if Cinematic.art_texture(8) != null:
 		# A queda em ILUSTRAÇÃO (08): do preto, ela cai de cabeça entre os cacos
 		# (a deriva desce com ela); volta ao preto e o jogo segue a descida.
-		t.tween_interval(0.3)
-		t.tween_callback(_show_art.bind(8, 0.7, Vector2(0.0, -0.9), 4.0))
-		t.tween_interval(3.0)
-		t.tween_callback(_hide_art.bind(0.6))
-		t.tween_interval(0.7)
+		t.tween_interval(0.2)
+		t.tween_callback(_show_art.bind(8, 0.5, Vector2(0.0, -0.9), 2.6))
+		t.tween_interval(1.9)
+		t.tween_callback(_hide_art.bind(0.4))
+		t.tween_interval(0.35)
 	else:
-		t.tween_interval(1.0)
-	t.tween_property(_black, "color:a", 0.0, 0.6)
+		t.tween_interval(0.6)
+	t.tween_property(_black, "color:a", 0.0, 0.5)
 	if _cam != null:
-		t.parallel().tween_property(_cam, "base_offset", Vector2(_cam_saved.base_offset), 2.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	t.parallel().tween_property(cm, "color", Color(0.86, 0.84, 0.96), 2.5)
+		t.parallel().tween_property(_cam, "base_offset", Vector2(_cam_saved.base_offset), 1.6).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	t.parallel().tween_property(cm, "color", Color(0.86, 0.84, 0.96), 1.6)
 	t.tween_callback(_kneel)
-	t.tween_interval(1.5)
+	t.tween_interval(0.85)
 	await t.finished
 	_descending = false
 	if not is_inside_tree():
@@ -1400,6 +1410,7 @@ class _King extends Node2D:
 			# deslizando em relação ao corpo.
 			pose("mask_crack")
 			_painted_reveal = true
+			t.tween_interval(dur)          # o Tween da cena não pode ficar vazio (QA7 #28)
 			return
 		t.tween_property(self, "_crack", 1.0, dur)
 

@@ -61,3 +61,14 @@ corpo; a coluna agora é FX). Em `npc_encounter.gd`:
   `_glow_sprite("glow", ...)` da fala 0, e `bless_light(false)` quando ela fica leve / no `_clear_glow()`.
 Tudo protegido com `has_method` se quiserem (`has_action`, `bless_light`). Prova: `C:\gnosis-wt\_caps\arte-gpt\fila9\soter_board_crop.png`
 (AnimQA `-- soter_board`).
+
+## UI7 — painel da Estela PAUSA o jogo (decisão do chefe, QA7)
+- Do lado da narrativa nada muda: a `CaptionBar` já some e congela com a árvore pausada (ou `PauseStack`), e
+  a Crônica é desbloqueada no `open()`. Peço só que o painel use `PauseStack.push(self)`/`pop(self)` (como a
+  descida do Centro) em vez de `get_tree().paused` direto, para não brigar com caixa de diálogo/card que
+  também pausam. Se a Estela abrir com legenda no ar, a legenda volta depois (a fila espera).
+
+## UI — card "YALDABAOTH" (QA7 #17)
+- O card repetido saiu do meu lado (`Gnosis.boss_card` não repete o mesmo id na mesma tela por 8 s). O
+  subtítulo EN que invade o Colosso é layout do card (Cinematic.boss_card) — se precisarem, encurto o
+  título em `Gnosis.BOSS_TITLES["demiurgo"]`.

@@ -30,7 +30,12 @@ const FLASH_FADE := 0.11         # R1: flash ESCURO (modulate) some em 110 ms RE
 # do corpo (FlashLayer): a pintura continua legível e só "acende".
 const FLASH_TIME := 0.10         # F1: o flash inteiro dura ≤ 100 ms REAIS
 const FLASH_HOLD := 0.035        # cheio nos primeiros 35 ms, depois apaga
-const FLASH_ADD := 0.6           # brilho somado no pico (0..1, × força do Juice)
+## brilho somado no pico (0..1, × força do Juice). Polimento 7: era 0,6 com a
+## pintura na cor AO QUADRADO (painted_flex antigo, luminância média 0,39); na
+## cor real (0,53) 0,42 dá o mesmo pico (0,84 de luminância média no atlas) com
+## 35 % do corpo estourado em branco (antes 30 %) — 0,6 estouraria 47 %.
+const FLASH_ADD := 0.42
+const CAST_CHARGE_FX := 0.12      # carga visual do cast (s; não atrasa o disparo)
 const VIB_AMP := 1.5             # R1: vibração da vítima (px) durante o hitstop
 const VIB_STEP_MS := 33          # troca de lado a cada ~33 ms reais
 const HURT_TINT := Color(2.2, 1.95, 1.85, 1) # F1: dano = branco quente (antes 2,2/0,9/0,9 → laranja chapado)
@@ -40,6 +45,7 @@ const RIPOSTE_DMG := 1.5         # × o dano do pesado simples
 const RIPOSTE_WINDUP := 0.06     # sai quase na hora (o inimigo está atordoado)
 const RIPOSTE_REACH := 26.0      # px: distância de contato do golpe (hitbox em x=20, ±17)
 const RIPOSTE_DASH := 560.0      # teto do avanço (px/s)
+const RIPOSTE_LEAD := 0.2        # s: quanto do recuo do aparado o avanço antecipa
 const DEAD_DECEL := 600.0        # morta: freia o deslize até parar
 
 var data: CharacterData
@@ -429,7 +435,7 @@ func _double_jump() -> void:
 	var d := Input.get_axis("move_left", "move_right")
 	if d != 0.0:
 		velocity.x = d * data.move_speed * (0.45 if status_slow > 0.0 else 1.0)
-	Audio.play_sfx("jump")
+	Audio.play_sfx("double_jump")   # Áudio7 (R4): o anel de luz do Soter tem som próprio
 	var col := data.sprite_color.lerp(Color(1.0, 0.95, 0.75), 0.6)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, 20), col, false)
 	_squash(Vector2(facing * 0.9, 1.12))
@@ -539,7 +545,8 @@ func _do_move(move: ComboData) -> void:
 
 	var heavy := move.is_heavy()
 	if move.air:
-		Audio.play_sfx("dive" if heavy else "swing_air")   # golpes aéreos soam ao sair
+		# golpes aéreos soam ao sair; a Queda Estelar tem a carga própria (Áudio7, R4)
+		Audio.play_sfx("star_charge" if heavy else "swing_air")
 	velocity.x = facing * move.lunge * (1.35 if heavy else 1.0)
 	pending_dmg = move_damage(move)
 	hitbox.position.x = 20.0 * facing
@@ -625,7 +632,8 @@ func _process_attack(delta: float) -> void:
 			_sync_anim()                       # o Visual já mostra o quadro do golpe
 			_update_staff_hitbox()
 			if not air_move:
-				Audio.play_sfx(_swing_sfx())   # o corte sai do wind-up
+				# o corte sai do wind-up; o contra-ataque tem a lâmina própria (Áudio7, R4)
+				Audio.play_sfx("riposte" if riposting else _swing_sfx())
 				velocity.x = facing * current_move.lunge * (1.35 if current_move.is_heavy() else 1.0)
 			if dive:
 				velocity.y = 760.0
@@ -673,8 +681,7 @@ func _process_attack(delta: float) -> void:
 		if hit_timer <= 0.0:
 			hits_left -= 1
 			hit_timer = current_move.duration / float(maxi(1, current_move.hits))
-			hitbox.deactivate()
-			hitbox.activate(pending_dmg)
+			hitbox.rearm(pending_dmg)
 			_squash(Vector2(facing * 1.15, 0.9))
 
 	# A caixa segue o cajado DESENHADO no quadro atual (só nos quadros de impacto),
@@ -752,7 +759,14 @@ func _riposte_lunge() -> float:
 	if tgt == null or not is_instance_valid(tgt) or not (tgt is Node2D):
 		return base
 	var gap: float = absf((tgt as Node2D).global_position.x - global_position.x) - RIPOSTE_REACH
-	return clampf(gap / 0.16, base, RIPOSTE_DASH)
+	# Polimento 7: o aparado ainda VOA para trás (empurrão do stagger, ~200 px/s);
+	# mirar onde ele vai estar daqui a RIPOSTE_LEAD s, não onde está — com a caixa
+	# do cajado desenhado (alcance ~26 px) o avanço antigo chegava curto.
+	if tgt is CharacterBody2D:
+		var away: float = (tgt as CharacterBody2D).velocity.x * float(facing)
+		gap += maxf(0.0, away) * RIPOSTE_LEAD
+	# a frenagem do golpe (600 px/s²) come ~8 px do avanço em 0,16 s
+	return clampf((gap + 8.0) / 0.16, base, RIPOSTE_DASH)
 
 
 ## Chamado pelo Hitbox quando um golpe do herói acerta — alimenta o combo.
@@ -935,6 +949,19 @@ func _cast_skill(skill: SkillData) -> void:
 	Audio.play_sfx(_cast_sfx(skill))
 	cast_anim_timer = 0.3
 	VfxLibrary.cast(get_parent(), global_position + Vector2(14.0 * facing, -18.0), skill.color)
+	# Polimento 7 (pedido do VFX7): "piscar" de carga na mão no instante do cast.
+	# SEM atrasar o disparo (0,2 s de preparo foi descartado: magia é a saída de
+	# emergência e o João elogiou a resposta) — só a antecipação visual.
+	# Guardião (R4): o cast já toca cast_* (e o tiro proj_fire) neste quadro — a carga
+	# sai MUDA (silent antes do add_child: o ChargeFX toca o som no _ready).
+	if is_inside_tree():
+		var cfx := ChargeFX.new()
+		cfx.silent = true
+		cfx.color = skill.color
+		cfx.duration = CAST_CHARGE_FX
+		cfx.style = "light"
+		cfx.position = Vector2(18.0 * facing, -6.0)
+		add_child(cfx)
 
 	var total := skill.base_damage + (Progression.skill_level(skill.id) - 1) * 12   # r2: 8→12
 	var col := skill.color
