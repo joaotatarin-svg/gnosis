@@ -161,6 +161,14 @@ Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos
   ZONA 1/2 da tela — a luta está acontecendo, só é longa. Causas: invocador repõe larvas sem teto TOTAL (teto de 3
   vivas, `_summon` a cada 6 s), reflexo que salta para trás a cada golpe, arauto que mantém 240 px. Não mexi: é
   balance de inimigo (proposta ao chefe: teto total de invocações por invocador, ex. 3 chamadas = 6 larvas).
+- **Teto de invocações (decisão do chefe, 28/10)**: `enemy.gd` `_summon_larvae()` (função de invocação, não-kit):
+  3 chamadas por invocador (até 6 larvas no total; o teto de 3 vivas continua). Na 3ª ele fica ESGOTADO: corpo
+  apagado em cinza (`self_modulate` × 0,62), um sopro de cinza na hora, e para de recuar (nem o recuo da IA, nem o
+  golpe "recuo") — fica ao alcance do cajado. Nenhum multiplicador de dano/vida. Reflexo e arauto intocados.
+  Bot (run inteiro, seed 1, mesmo código salvo o teto; `botun32_s1` × `botun33_s1`): nas 16 telas com
+  invocador o tempo somado cai 1928,6 → 1754,1 s (−9 %); 38: 131 → 65 s, 48: 181 → 118 s, 57: 172 → 124 s
+  (58/59 subiram 18–28 s: ruído de sorteio). Timeouts 9 → 7 (saem 38 e 39; a 43 fica — arauto). Run 93,6 → 88,8
+  min, quase-mortes 208 → 189.
 
 ## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
 - **R1 (alvo pisca/treme no hitstop)**: flash continua instantâneo e ≤ 100 ms reais; só a intensidade mudou. A
@@ -196,6 +204,9 @@ Antes = 2d54867 (`_caps\polimento7\bot\run_s1.*`), depois = 3.2 com contorno dos
 - **Campeão ×1,35 (3.2)**: R5/R21 — luta mais curta, a ameaça vem do repertório legível (telegrafo, brado) e não
   de barra inflada; recompensa do Campeão intocada (sem perda artificial).
 - **R4 (3.2)**: carga do cast muda — um evento (cast) = um som.
+- **Invocador esgotado (3.2)**: justiça/R18 — a zona tem FIM previsível (máx. 6 larvas) e o estado é lido no corpo
+  (cinza + sopro + ele para de fugir); recompensa por persistir sem número escondido (nenhum bônus de dano
+  invisível). R21: menos fuga = menos perseguição para fora do enquadramento. §4: sem aleatoriedade nova.
 - **R4/R9 (Campeão, 3.2)**: aparição do Campeão = 1 som (`champion_enter`), sem stinger nem música de chefe —
   o Campeão é mini-chefe do Éon, a 'entrada de chefe' fica reservada aos Arcontes e ao Rei (contraste preservado).
 

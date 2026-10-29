@@ -623,8 +623,8 @@ func _process_chase(delta: float) -> void:
 			if _special_timer <= 0.0:
 				_special_timer = 6.0
 				_prune_minions()
-				if _minions.size() < 3:
-					_summon("larva", 2)
+				if _minions.size() < 3 and not _summon_spent():
+					_summon_larvae()
 		"dodger":
 			# Reflexo: no instante em que a Sophia golpeia perto, ele recua num salto.
 			if _special_timer <= 0.0 and absf(dx) < 80.0 and player is Player and player.state == Player.State.ATTACK:
@@ -647,7 +647,8 @@ func _process_chase(delta: float) -> void:
 
 	var dir := signf(dx)
 	# Atirador/invocador mantém distância: recua se o player chegar perto demais.
-	if (attack_style == "ranged" or behavior == "summoner") and absf(dx) < 130.0:
+	# (o invocador ESGOTADO não recua mais: fica ao alcance do cajado)
+	if (attack_style == "ranged" or behavior == "summoner") and absf(dx) < 130.0 and not _summon_exhausted:
 		dir = -dir
 	var spd := move_speed * (0.5 if slow_timer > 0.0 else 1.0)
 	velocity.x = dir * spd + _separation()
@@ -965,6 +966,31 @@ func _summon(id: String, count: int) -> void:
 		ImpactBurst.spawn(get_parent(), m.global_position, eye_color)
 		_minions.append(m)
 		minion_spawned.emit(m)
+
+
+## Polimento 7 (decisão do chefe, 28/10 — QA7 #10): teto TOTAL de invocações por
+## invocador. Antes ele repunha larvas sem fim (só o teto de 3 vivas) e a zona não
+## acabava. Agora: 3 chamadas (até 6 larvas). Na 3ª ele fica ESGOTADO — à vista:
+## o corpo apaga (cinza), solta um sopro de cinza e para de recuar/fugir (fica ao
+## alcance do cajado). Nenhum multiplicador de dano escondido.
+const SUMMON_MAX_CALLS := 3
+const SUMMON_SPENT_TINT := Color(0.62, 0.62, 0.68, 1.0)
+var _summon_calls: int = 0
+var _summon_exhausted: bool = false
+
+func _summon_spent() -> bool:
+	return _summon_calls >= SUMMON_MAX_CALLS
+
+
+func _summon_larvae() -> void:
+	_summon("larva", 2)
+	_summon_calls += 1
+	if _summon_spent() and not _summon_exhausted:
+		_summon_exhausted = true
+		if visual != null:
+			visual.self_modulate = visual.self_modulate * SUMMON_SPENT_TINT
+		if is_inside_tree():
+			ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), Color(0.6, 0.6, 0.65))
 
 
 func _prune_minions() -> void:
@@ -1754,8 +1780,10 @@ func _pick_move(adx: float, dyv: float, as_intent: bool = false) -> Dictionary:
 			return m                      # golpe de reação que já cabe: é ele
 		if kind == "summon":
 			_prune_minions()
-			if _minions.size() >= 3:
+			if _minions.size() >= 3 or _summon_spent():
 				continue
+		if kind == "retreat" and _summon_exhausted:
+			continue                      # esgotado: não foge mais
 		pool.append(m)
 		total += _move_weight(m)
 	if pool.is_empty():
@@ -1925,7 +1953,8 @@ func _strike_move() -> void:
 			velocity.x = atk_dir * 330.0
 			strike_time = 0.8
 		"summon":
-			_summon("larva", 2)
+			if not _summon_spent():
+				_summon_larvae()
 			strike_time = 0.25
 		"explode":
 			_explode()
