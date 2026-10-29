@@ -355,6 +355,30 @@
     "-",
     "-"
    ]
+  },
+  "s19": {
+   "file": "assets/painted/src/sophia_s19.png",
+   "grid": [
+    6,
+    2
+   ],
+   "scale": "auto:land",
+   "strip_glow": true,
+   "cells": [
+    "-",
+    "look_up",
+    "-",
+    "-",
+    "-",
+    "-",
+    "-",
+    "-",
+    "-",
+    "land",
+    "-",
+    "bow"
+   ],
+   "min_part": 400
   }
  },
  "frame_fix": {
@@ -801,8 +825,30 @@
     0.1
    ],
    "anchor": "front"
+  },
+  "soter_look": {
+   "frames": [
+    "s19.look_up"
+   ],
+   "anchor": "pelvis",
+   "hold": true
+  },
+  "soter_land": {
+   "frames": [
+    "s19.land"
+   ],
+   "anchor": "pelvis",
+   "hold": true
+  },
+  "soter_bow": {
+   "frames": [
+    "s19.bow"
+   ],
+   "anchor": "pelvis",
+   "hold": true
   }
  },
  "_doc_s15": "S15: rec_light1, rec_light2 e rec_heavy FORA — o cajado troca de lado/altura em relação ao fim do golpe e à prontidão (pulo visível). Usadas: rec_light3, rec_cast, rec_air, rec_dodge, rec_hurt.",
- "_doc_s17": "S17/S18 (Fila 9): double_jump = ação tocada pelo player no 2º pulo (play_action); start_run/stop_run (nome NÃO pode começar com \"run\": run* = índice pela distância) = ações automáticas do CharacterArt (parado→corre / corre→parado). Virada (s18 q6-7) fora: não lê como giro."
+ "_doc_s17": "S17/S18 (Fila 9): double_jump = ação tocada pelo player no 2º pulo (play_action); start_run/stop_run (nome NÃO pode começar com \"run\": run* = índice pela distância) = ações automáticas do CharacterArt (parado→corre / corre→parado). Virada (s18 q6-7) fora: não lê como giro.",
+ "_doc_s19": "S19 (Fila 9, npc_soter_blessing_a, metade direita das células): ações da cena do Soter (pulo duplo) — soter_look (olha pra ele), soter_land (de pé, leve), soter_bow (agradece). hold = fica no último quadro até stop_action() ou ela sair do idle. Os quadros com a coluna de luz (células 3, 5 e 7) ficaram FORA: a luz pintada se mistura ao corpo; a coluna e a subida são FX/tween da cena."
 }

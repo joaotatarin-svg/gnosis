@@ -36,6 +36,11 @@ const ENTRIES := {
 		"Carrega a lâmina como quem carrega uma ordem.",
 		"Apare o golpe dourado e puna a abertura.",
 	],
+	"acolito": [
+		"Acende fogos-fátuos para que ninguém ache o caminho de volta.",
+		"Nunca deixa a presa chegar perto: atira e recua.",
+		"Ele foge quando você se aproxima: esquive das setas e feche a distância.",
+	],
 	"larva_ardente": [
 		"Uma larva que guardou fogo demais.",
 		"Corre até a luz mais próxima e se desfaz em chamas.",
@@ -60,6 +65,11 @@ const ENTRIES := {
 		"Guarda o Selo com um escudo que não conhece cansaço.",
 		"Atrás dele, a ordem; à frente, ninguém.",
 		"O golpe leve bate no escudo: use o forte ou uma magia.",
+	],
+	"espectro": [
+		"Um eco que não aprendeu a pousar.",
+		"Paira em silêncio e cai sobre quem olha para baixo.",
+		"Ao pousar do mergulho, fica um instante no chão: golpeie aí.",
 	],
 	"alado": [
 		"Vigia dos céus baixos do Kenoma.",

@@ -51,3 +51,46 @@ static func _prune() -> void:
 		if is_instance_valid(h) and h.is_inside_tree() and not (h is Enemy and h.estate == Enemy.EState.DEAD):
 			keep.append(h)
 	_holders = keep
+
+
+# --- QA7 #10 (R21): COLEIRA dos inimigos de longe ---------------------------
+## Atirador/voador não foge para a borda: o x que ele quer fica a no máximo
+## LEASH px da Sophia e dentro da arena (bordas − MARGIN); quem já está fora
+## (fugiu antes de a zona trancar) é puxado de volta. O enemy.gd chama em
+## `_desired_x` (pedido ao polimento7 em docs/pedidos/vfx7.md).
+const LEASH := 230.0
+const MARGIN := 48.0
+
+
+static func leash_x(e: Node2D, want_x: float) -> float:
+	if e == null or not e.is_inside_tree():
+		return want_x
+	var x := want_x
+	var pl := e.get_tree().get_first_node_in_group("player")
+	if pl is Node2D:
+		var px: float = (pl as Node2D).global_position.x
+		x = clampf(x, px - LEASH, px + LEASH)
+	var b := arena_of(e)
+	if b != Vector2.ZERO:
+		x = clampf(x, b.x + MARGIN, b.y - MARGIN)
+	return x
+
+
+## Lado do salto de RECUO: se o lado de "fuga" bate na borda (ou na coleira),
+## recua para o outro lado — nunca para fora da arena.
+static func retreat_dir(e: Node2D, away: float) -> float:
+	if e == null or not e.is_inside_tree():
+		return away
+	var probe := e.global_position.x + away * 90.0
+	return away if is_equal_approx(leash_x(e, probe), probe) else -away
+
+
+## (x mín, x máx) da arena atual (Level.arena_bounds), ou ZERO se não houver.
+static func arena_of(e: Node) -> Vector2:
+	var n: Node = e.get_parent()
+	while n != null:
+		if n.has_method("arena_bounds"):
+			var b = n.call("arena_bounds")
+			return b if b is Vector2 else Vector2.ZERO
+		n = n.get_parent()
+	return Vector2.ZERO

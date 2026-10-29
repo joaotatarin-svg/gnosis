@@ -32,6 +32,13 @@ class P extends Node:
 		for i in n:
 			await get_tree().process_frame
 
+	## Passos de FÍSICA (o Input é lido no _physics_process): sem --fixed-fps o
+	## headless roda muitos quadros de processo por passo de física e um aperto de
+	## 2 quadros de processo podia sumir entre dois passos (falso negativo).
+	func pframes(n: int) -> void:
+		for i in n:
+			await get_tree().physics_frame
+
 	func check(ok: bool, msg: String) -> void:
 		if ok:
 			print("QA PASS: ", msg)
@@ -145,9 +152,9 @@ class P extends Node:
 		foe.estate = Enemy.EState.CHASE
 		var hp_foe: int = foe.health.current_health
 		Input.action_press("block")          # bloqueio (aparo = golpe dentro de 0,18 s)
-		await frames(3)
+		await pframes(3)
 		pl._on_hit_received(10, foe.global_position, 120.0, false, foe)
-		await frames(1)
+		await pframes(1)
 		var act: String = str(pl.visual.get("_action"))
 		print("FPPROBE|aparo|estado=%d acao=%s janela=%.2f vida=%d/%d" % [pl.state, act, pl._riposte_t, pl.health.current_health, pl.health.max_health])
 		check(act == "parry", "aparo toca os quadros 'parry' (play_action)")
@@ -155,13 +162,21 @@ class P extends Node:
 		await snap("aparo", pl.global_position + Vector2(0, -30))
 		await wait(0.1)
 		Input.action_press("attack_light")   # ataque dentro da janela → contra-ataque
-		await frames(2)
+		await pframes(2)
 		Input.action_release("attack_light")
 		Input.action_release("block")
 		act = str(pl.visual.get("_action"))
-		print("FPPROBE|contra|estado=%d acao=%s riposting=%s dano=%d" % [pl.state, act, str(pl.riposting), pl.pending_dmg])
+		print("FPPROBE|contra|estado=%d acao=%s riposting=%s dano=%d dx=%.0f foe_estado=%d" % [pl.state, act, str(pl.riposting), pl.pending_dmg, foe.global_position.x - pl.global_position.x if is_instance_valid(foe) else -1.0, foe.estate if is_instance_valid(foe) else -1])
 		check(pl.state == Player.State.ATTACK and pl.riposting, "ataque na janela vira contra-ataque")
 		check(act == "riposte", "contra-ataque toca os quadros 'riposte'")
+		if OS.get_environment("FP_DEBUG") != "":
+			for k in 30:
+				await pframes(1)
+				if not is_instance_valid(foe):
+					break
+				var hb: Hitbox = pl.hitbox
+				var cs: CollisionShape2D = foe.get_node("Hurtbox/HurtShape")
+				print("FPDBG|%d st=%d dx=%.1f vx=%.0f mon=%s act=%s live=%s box=%s hurt_cx=%.1f hurt_w=%.1f seq=%s" % [k, pl.state, foe.global_position.x - pl.global_position.x, pl.velocity.x, hb.monitoring, hb._active, hb._live, Rect2(hb.global_position - pl.global_position - hb.box_size() * 0.5, hb.box_size()), cs.global_position.x - pl.global_position.x, (cs.shape as RectangleShape2D).size.x * absf(cs.global_scale.x), str(pl.visual.get("_shown_key"))])
 		await wait(0.12)
 		await snap("contra_ataque", pl.global_position + Vector2(0, -30))
 		await wait(0.5)
@@ -202,12 +217,21 @@ class P extends Node:
 		var alive_mid: bool = is_instance_valid(boss)
 		var anim_mid: String = str(boss.visual.anim_state) if alive_mid else "-"
 		print("FPPROBE|morte|0,2s vivo=%s anim=%s gibs=%d" % [str(alive_mid), anim_mid, Gib.live_pieces() - gibs0])
-		check(alive_mid and anim_mid == "dead" and Gib.live_pieces() == gibs0, "chefe segura a pose 'dead' antes de se partir")
-		await snap("morte_pose", bpos + Vector2(0, -90), Vector2(170, 170))
-		await wait(0.45)
-		print("FPPROBE|morte|0,65s vivo=%s gibs=%d" % [str(is_instance_valid(boss)), Gib.live_pieces() - gibs0])
-		check(not is_instance_valid(boss) and Gib.live_pieces() > gibs0, "depois da pose, desmembra")
-		await snap("morte_gibs", bpos + Vector2(0, -60), Vector2(170, 170))
+		# Polimento 7: com cérebro (chefes6), a morte de chefe virou um MOMENTO
+		# (BossBrain.death_sequence: dor → morte, mais longo) — o tempo e os pedaços
+		# são do chefes6; aqui só confere que ele NÃO se parte na hora.
+		var has_brain: bool = alive_mid and boss.get("brain") != null
+		if has_brain:
+			check(Gib.live_pieces() == gibs0, "chefe (death_sequence do chefes6) não se parte na hora")
+			print("FPPROBE|morte|com cérebro: o resto da morte é medido pelas ferramentas do chefes6")
+			await snap("morte_pose", bpos + Vector2(0, -90), Vector2(170, 170))
+		else:
+			check(alive_mid and anim_mid == "dead" and Gib.live_pieces() == gibs0, "chefe segura a pose 'dead' antes de se partir")
+			await snap("morte_pose", bpos + Vector2(0, -90), Vector2(170, 170))
+			await wait(0.45)
+			print("FPPROBE|morte|0,65s vivo=%s gibs=%d" % [str(is_instance_valid(boss)), Gib.live_pieces() - gibs0])
+			check(not is_instance_valid(boss) and Gib.live_pieces() > gibs0, "depois da pose, desmembra")
+			await snap("morte_gibs", bpos + Vector2(0, -60), Vector2(170, 170))
 
 		# --- C1: número de dano some quando o mundo pausa ------------------------
 		await wait(0.5)

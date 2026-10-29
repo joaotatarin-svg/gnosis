@@ -21,7 +21,7 @@ var _was_stag: bool = false
 
 
 func _on_setup() -> void:
-	dmg_scale = 0.55
+	dmg_scale = 0.45
 	keep_dist = Vector2(60.0, 160.0)
 	gap_by_phase = [0.9, 0.8, 0.7]
 	escape_hits = 3

@@ -45,6 +45,8 @@ func _ready() -> void:
 		"weapon_board": await _weapon_board()
 		"bot_board": await _bot_board()
 		"own_board": await _own_board(args.size() >= 3 and args[2] == "champ")
+		"soter_board": await _soter_board()
+		"death_board": await _death_board()
 		"film_walk": _film_walk(args.slice(2))
 		"film_death": _film_death(args.slice(2), false)
 		"film_death_old": _film_death(args.slice(2), true)
@@ -629,6 +631,78 @@ func _own_board(champ: bool) -> void:
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	_save(out if out != "" else "user://own_board.png")
+	get_tree().quit()
+
+
+## Fila 9 bloco 4: a cena da bênção. ANTES = o que a cena tinha (Soter
+## `bless`, Sophia parada); DEPOIS = Soter lift/offer/rest + Sophia
+## soter_look/soter_land/soter_bow e a coluna de luz por FX (bless_light).
+func _soter_board() -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	RenderingServer.set_default_clear_color(Color("2b3440"))
+	var pairs := [["ANTES", "bless", "", false], ["fala 0", "lift", "soter_look", true], ["fala 1", "lift", "soter_look", true],
+		["fala 4", "offer", "soter_land", false], ["parte", "rest", "soter_bow", false]]
+	for i in pairs.size():
+		var cx: float = 140.0 + i * 250.0
+		var so := CharacterArt.new()
+		add_child(so)
+		so.set_profile(Bestiary.soter_profile())
+		so.scale = Vector2(2.0, 2.0)
+		so.position = Vector2(cx - 50, 520) - Vector2(0, CharacterArt.GROUND_Y * so.profile.height / 44.0 * 2.0)
+		so.set_process(false)
+		so.set_anim(String(pairs[i][1]))
+		var hero := _sophia(Vector2(cx + 45, 520), 2.0)
+		hero.scale.x = -hero.scale.x        # olha pra ele
+		hero.set_process(false)
+		hero.set_anim("idle")
+		if String(pairs[i][2]) != "":
+			hero.play_action(String(pairs[i][2]))
+		if pairs[i][3] and i == 2:
+			hero.bless_light(true)
+		for f in 50:
+			so._process(1.0 / 60.0)
+			hero._process(1.0 / 60.0)
+		_label(String(pairs[i][0]) + " — " + String(pairs[i][1]) + (" / " + String(pairs[i][2]) if String(pairs[i][2]) != "" else ""), Vector2(cx - 110, 300))
+	await get_tree().create_timer(1.0).timeout
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://soter_board.png")
+	get_tree().quit()
+
+
+## FILA 10: morte de chefe em 4 etapas. Coluna por chefe; 1ª linha = ANTES
+## (sem o estado `dying`: hurt → quadro de queda, no meio da morte); demais =
+## DEPOIS no relógio da morte (tranco, cambaleio, joelhos, tombado).
+func _death_board() -> void:
+	get_window().size = Vector2i(1280, 720)
+	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	RenderingServer.set_default_clear_color(Color("2b3440"))
+	var ids := ["arconte_sono", "arconte_fome", "arconte_corrente", "arconte_silencio", "arconte_espelho", "arconte_praga", "arconte_coroa", "colosso", "rei_final"]
+	var times := [0.5, 0.08, 0.25, 0.48, 0.95]
+	var colw: float = 1240.0 / ids.size()
+	for b in ids.size():
+		var cx: float = 40.0 + colw * (b + 0.5)
+		for r in times.size():
+			var gy: float = 150.0 + r * 135.0
+			var art := _boss(String(ids[b]), Vector2(cx, gy), 0.42)
+			art.set_process(false)
+			if r == 0 and not art._boss_db.is_empty():
+				var db: Dictionary = art._boss_db.duplicate()
+				var meta: Dictionary = db.meta.duplicate()
+				var st: Dictionary = meta.states.duplicate()
+				st.erase("dying")
+				meta["states"] = st
+				db["meta"] = meta
+				art._boss_db = db
+			art.play_boss_death()
+			art._death_t = float(times[r])
+			art._process(0.0)
+			if b == 0:
+				_label(("ANTES" if r == 0 else "t=%.2f s" % times[r]), Vector2(2, gy - 110))
+		_label(String(ids[b]).trim_prefix("arconte_"), Vector2(cx - 40, 4))
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	_save(out if out != "" else "user://death_board.png")
 	get_tree().quit()
 
 

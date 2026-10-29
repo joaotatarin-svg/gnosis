@@ -30,3 +30,10 @@ narrative.node_arrival.0f6cee	An arena. They come in waves, and pay well whoever
 narrative.node_arrival.582c60	(Up high, a chamber. The only way in is stepping on the air.)
 narrative.node_arrival.b3f737	The ground here bites. Watch your step.
 narrative.node_arrival.537b3a	(The path climbs. Step by step.)
+# QA7 #5 (19/10/2026): fichas do bestiário dos voadores/atiradores novos (acólito, espectro).
+bestiary_lore.ENTRIES.f15e96	Lights will-o'-the-wisps so that no one finds the way back.
+bestiary_lore.ENTRIES.57c8a1	Never lets its prey come close: it shoots and retreats.
+bestiary_lore.ENTRIES.466d77	It flees as you approach: dodge the bolts and close the distance.
+bestiary_lore.ENTRIES.091177	An echo that never learned to land.
+bestiary_lore.ENTRIES.88f184	It hovers in silence and falls on whoever looks down.
+bestiary_lore.ENTRIES.5d9829	After a dive it stays on the ground for a moment: strike then.

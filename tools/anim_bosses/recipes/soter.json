@@ -72,6 +72,24 @@
    "dur": [
     0.4
    ]
+  },
+  "lift": {
+   "frames": [
+    "lift_0",
+    "lift_1"
+   ],
+   "loop": true,
+   "fps": 1.2
+  },
+  "offer": {
+   "frames": [
+    "offer"
+   ]
+  },
+  "rest": {
+   "frames": [
+    "rest"
+   ]
   }
  },
  "recolor": {
@@ -83,5 +101,33 @@
  },
  "raw_alpha_cells": [
   "fade"
- ]
+ ],
+ "extra_sheets": [
+  {
+   "sheet": "artes/gpt/npc_soter_blessing_a.png",
+   "grid": [
+    6,
+    2
+   ],
+   "cells": [
+    "lift_0",
+    "-",
+    "lift_1",
+    "-",
+    "-",
+    "-",
+    "-",
+    "-",
+    "offer",
+    "-",
+    "rest",
+    "-"
+   ],
+   "scale": "auto",
+   "ref": "rest",
+   "main_ref": "idle_0",
+   "strip_glow": true
+  }
+ ],
+ "_doc_fila9": "Fila 9: npc_soter_blessing_a (metade esquerda das células 0, 2, 8, 10) → lift (mãos erguidas, segura), offer (estende a mão), rest (mãos juntas, em paz). Pedido à narrativa6: usar na cena da leveza."
 }
