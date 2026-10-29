@@ -455,6 +455,30 @@ morte e cenas seguem com as pinturas atuais (os quadros intermediários de braç
   continua legível com o brilho/rim); R19 (golpe sem "peça girando": menos mola); R4/R5 não se aplicam (nenhum dado de combate
   mudou, hitbox só pelo `rei_body_data` do Chefes6); §4 conferido (arte apenas, sem recompensa/escassez).
 
+## REI NÍTIDO (29/10/2026; feedback do João na 3.2.3: "o Rei ainda parece meio não nítido")
+Duas causas, as duas tratadas só no Rei:
+- **Resolução:** o atlas tinha o corpo a 300 px (`body_px`) e o Rei é desenhado a ~440 px na janela 1280×720 (×1,47: macio).
+  `rei.json` agora `body_px` 450 — a pintura de origem tem ~450 px, então fica 1:1 SEM upscale por IA (Real-ESRGAN não
+  foi instalado: não há o que ampliar; só reduziria a fidelidade). Escala em mundo e âncora iguais (`fit` idêntico, `body_frac` 0,9707);
+  o atlas passou de 2048×2048 para 2048×4096 (44 quadros, 4013 px usados; ~+24 MB de VRAM por atlas, mipmaps ligados nos 3 PNG).
+  Redução com Lanczos em alfa pré-multiplicado (sem franja escura).
+- **Halo claro-azulado:** NÃO era franja do recorte (conferido: as bordas semitransparentes do atlas são vermelho-escuras,
+  sem azul) e sim o contorno de leitura do `Enemy` (CanvasGroup "Rim": 1 px na cor do Éon, α 0,5), mais o rim do shader do
+  chefe (`RIM_BASE` 0,32). Novas chaves de receita lidas pelo `character_art.gd`: `outline_mul` (Rei 0,2: multiplica o alfa
+  do contorno do Enemy UMA vez, pelo material do grupo-pai — `enemy.gd` não foi tocado), `rim_mul` (Rei 0,2: rim do shader) e
+  `rim_px_mul` (Rei 1,5: o raio do rim em texels acompanha o atlas maior). O telégrafo do golpe (contorno/flash do Enemy)
+  segue igual. Outros chefes: tudo 1,0 (nada muda).
+- **BodyBox (Chefes6): AVISO.** A silhueta é a MESMA (mesmos quadros, escala em mundo), mas as faixas de `rei_body_data.gd`
+  estão em px do recorte e o recorte agora tem 1,5× mais pixels. Para a caixa não quebrar, reescalei as faixas ×1,5 (margem
+  PAD=6 fixa: `v' = 6 + (v−6)·1,5`) — o arquivo é do Chefes6: pedido para REGENERAR com `body_slabs.py` (mesmas opções, `--fill 0.26`
+  nos quadros `idle_a*`/`glide_a*`, 0,30 nos golpes) quando puder. ReiProbe depois: cobertura 96–99 %, fora 6–14 % (antes 96 % / 5 %).
+- **Prova (Shot na luta do Limiar, tela 1, mesmo quadro 400, 1280×720):** `C:\gnosis-wt\_caps\arte\rei_nitido\` —
+  `antes.png`/`depois.png`, `prancha_antes_depois.png`, `zoom2x_capuz.png` e `zoom2x_barra.png` (esquerda = antes, direita = depois),
+  `rim0.png`/`cmp_rim.png` (diagnóstico: o halo persistia com o rim do shader em 0 → era o contorno do Enemy).
+- **CHECAGEM DE SATISFAÇÃO:** R18 (o Rei de manto claro salta do fundo escuro sem o halo; Sophia continua distinta, 3D/pintura da Sophia
+  intocada) e R16 (silhueta e telégrafo preservados; o aviso do golpe não depende do halo); R19 (nada de mola nova); R4/R5 (hitbox
+  mantida: ReiProbe); §4 conferido (arte apenas). Risco aceito: +VRAM; o feel/nitidez final é do olho do João.
+
 ## BILHETE PARA O SUCESSOR (19/10/2026, 2º integrador de arte, branch `dir2/arte-gpt`)
 
 **Estado:** TUDO da lista do chefe feito, validado (validate -Repeat 2 verde) e com push; último commit e114a52.
