@@ -9,16 +9,16 @@ class_name BossTuning
 
 ## Golpes-alvo por chefe (jogador médio, sem magia). Sobe ao longo do run.
 const TARGET_HITS := {
-	"rei": 36,                 # tutorial: ~1:15 de luta
-	"arconte_sono": 28,
-	"arconte_fome": 40,
-	"arconte_corrente": 38,
-	"arconte_silencio": 34,
-	"arconte_espelho": 42,
-	"arconte_praga": 38,
-	"arconte_coroa": 48,
-	"rei_final": 34,           # batalha dupla: cada forma (e elas se refazem)
-	"colosso": 42,
+	"rei": 27,                 # tutorial: ~1:15 de luta
+	"arconte_sono": 21,
+	"arconte_fome": 26,
+	"arconte_corrente": 34,      # 29/10: 38 → 34 (médio 140–210 s, 39–47 golpes: era vida, não padrão)
+	"arconte_silencio": 25,      # 29/10: 28 → 25 (guarda alta já pede 37–41 golpes; médio 135–192 s)
+	"arconte_espelho": 28,
+	"arconte_praga": 26,          # 28/10: fica 26 — a guarda alta (boss_belias) já segura quem martela
+	"arconte_coroa": 34,          # 28/10: idem
+	"rei_final": 20,           # batalha dupla: cada forma (e elas se refazem)
+	"colosso": 22,               # 28/10: final pela curva (arma Nv.5, ~390 de vida)
 }
 
 ## Nível de arma ESPERADO ao chegar em cada chefe (economia da Onda 6 — o
@@ -26,9 +26,6 @@ const TARGET_HITS := {
 ## existir, ele manda).
 const EXPECTED_WL := {1: 1, 10: 2, 19: 2, 28: 3, 37: 3, 46: 4, 55: 4, 64: 5, 68: 5}
 
-## Bônus de dano por nível de arma (player.gd: `(weapon_level - 1) * 6`). Se o
-## combate6 expuser `Player.WEAPON_DMG_STEP`, vale o dele.
-const WEAPON_STEP_FALLBACK := 6.0
 
 ## Limiares de fase (fração da vida): fase 2 a 66 %, fase 3 a 33 %.
 const PHASE_MARKS := [0.66, 0.33]
@@ -48,24 +45,18 @@ static func expected_weapon_level(screen: int) -> int:
 ## golpes liberados; golpe de vários acertos conta por acerto).
 static func expected_hit(wl: int) -> float:
 	var ch: CharacterData = GameContent.characters[0] if not GameContent.characters.is_empty() else null
-	var step: float = WEAPON_STEP_FALLBACK
-	var pscript = load("res://scripts/entities/player.gd")
-	if pscript is Script:
-		var consts: Dictionary = (pscript as Script).get_script_constant_map()
-		if consts.has("WEAPON_DMG_STEP"):
-			step = float(consts["WEAPON_DMG_STEP"])
 	if ch == null:
-		return 16.0 + step * float(wl - 1)
+		return float(SophiaTuning.move_damage(18, wl))
 	var tot := 0.0
 	var n := 0
 	for mv in ch.combos:
 		var c: ComboData = mv
 		if c.air or c.required_weapon_level > wl:
 			continue
-		tot += float(c.damage)
+		# o dano REAL que o golpe dá (combate6: SophiaTuning, base × 0,65 × +17 %/nível)
+		tot += float(SophiaTuning.move_damage(c.damage, wl))
 		n += 1
-	var base: float = tot / float(maxi(1, n))
-	return base + step * float(wl - 1)
+	return tot / float(maxi(1, n))
 
 
 ## Vida do chefe nesta tela (já com a dificuldade).

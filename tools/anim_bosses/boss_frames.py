@@ -11,6 +11,8 @@ Cada chefe tem uma RECEITA em tools/anim_bosses/recipes/<nome>.json:
                (colisões e _fit_body continuam coerentes)
   old_flip     a pintura antiga era espelhada no jogo (archons: true)
   body_px      altura do corpo do quadro de referência (idle_0) no atlas
+  grid_only    recorta cada célula só dentro da grade (quadros que se tocam)
+  erase        [[x0,y0,x1,y1], ...] px da folha apagados antes (efeito pintado → FX)
   anchors      modo de âncora por célula: pelvis (padrão) | top | lying
                top   = cabeça estável (espectros: a barra dos trapos varia)
                lying = corpo caído: centro do corpo, ponto mais baixo no chão
@@ -147,7 +149,7 @@ def build(name: str, use_rife: bool = True) -> None:
 	R = json.load(open(os.path.join(HERE, "recipes", name + ".json"), encoding="utf-8-sig"))
 	sheet = os.path.join(ROOT, R["sheet"])
 	cells = R.get("cells", ["idle_0", "idle_1", "walk_0", "walk_1", "windup", "strike", "hurt", "death"])
-	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []))
+	raw = slice_sheet(sheet, R.get("grid", [4, 2]), cells, R.get("raw_alpha_cells", []), R.get("grid_only", False), R.get("erase", []), R.get("strip_glow", False), R.get("min_part", 0), R.get("despill_full", False))
 	# recolorir células (ex.: o "fade" do Soter veio rosado: o GPT pintou o
 	# fantasma já misturado ao magenta) — mantém a luminância, troca a cor
 	for cn, col in R.get("recolor", {}).items():
@@ -188,7 +190,7 @@ def build(name: str, use_rife: bool = True) -> None:
 	# extra × `ref` da folha principal) → mesma escala e mesma linha de pés.
 	sheet_scale = {}
 	for ex in R.get("extra_sheets", []):
-		exr = slice_sheet(os.path.join(ROOT, ex["sheet"]), ex.get("grid", [4, 2]), ex["cells"], ex.get("raw_alpha_cells", []))
+		exr = slice_sheet(os.path.join(ROOT, ex["sheet"]), ex.get("grid", [4, 2]), ex["cells"], ex.get("raw_alpha_cells", []), ex.get("grid_only", False), ex.get("erase", []), ex.get("strip_glow", False))
 		sc = ex.get("scale", "auto")
 		if sc == "auto":
 			# compara POSES EQUIVALENTES: `ref` da extra × `main_ref` da principal
@@ -245,7 +247,7 @@ def build(name: str, use_rife: bool = True) -> None:
 		if not seq:
 			continue
 		entry = {"frames": [{"f": f, "anchor": [round(v, 2) for v in frames[f]["anchor"]]} for f in seq]}
-		for k in ["loop", "fps", "dur", "at", "cycle_bodies", "impact_at", "hold"]:
+		for k in ["loop", "fps", "dur", "at", "cycle_bodies", "impact_at", "hold", "puff"]:
 			if k in st:
 				entry[k] = st[k]
 		states[sname] = entry
@@ -297,6 +299,7 @@ def build(name: str, use_rife: bool = True) -> None:
 		"sil": rp + "_frames_sil.png",
 		"body_px": body_px, "kind": R.get("kind", "biped"), "fit": fit,
 		"cloth_amp": R.get("flex", {}).get("cloth_amp", 0.0), "hem_wave": R.get("hem_wave", 0.0),
+		"spring_mul": R.get("spring_mul", 1.0), "flex_off_states": R.get("flex_off_states", []),
 		"atlas_size": [2048, atlas_h], "frames": out_frames, "states": states}
 	with open(os.path.join(OUT, name + "_frames.json"), "w", encoding="utf-8") as fp:
 		json.dump(meta, fp, indent=1, ensure_ascii=False)

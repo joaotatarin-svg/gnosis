@@ -12,11 +12,15 @@ const STONE := Color(1.0, 0.75, 0.4)
 
 func _on_setup() -> void:
 	marks = []
-	dmg_scale = 0.45
+	dmg_scale = 0.48          # 28/10: curva da Progressão (~390 de vida)
 	keep_dist = Vector2(40.0, 110.0)
 	gap_by_phase = [1.2, 1.0, 0.85]
 	escape_hits = 4
 	escape_id = "pisotear"
+	# corpo largo: não cola na parede (QA7 3.1: cortado na borda esquerda da tela 68)
+	wall_margin = 115.0
+	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
+	guard_up(0.55, 0.35, 1.5)
 
 
 func _build_moves() -> Dictionary:
@@ -51,7 +55,7 @@ func _build_moves() -> Dictionary:
 
 func _on_strike(m: Dictionary) -> void:
 	if m.id == "desabamento":
-		Juice.shake(0.8)
+		Juice.shake(0.5)
 		var b := arena_bounds()
 		var w := b.y - b.x
 		var skip := rng.randi() % 6

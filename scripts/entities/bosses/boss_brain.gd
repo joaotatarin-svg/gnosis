@@ -47,8 +47,27 @@ var window_mult := {
 	Enemy.EState.WINDUP: 0.5, Enemy.EState.STRIKE: 0.5, Enemy.EState.CHASE: 0.85,
 	Enemy.EState.RECOVER: 1.1, Enemy.EState.STAGGER: 1.3, Enemy.EState.HURT: 1.0,
 }
+## GUARDA ALTA (re-teste QA7 da 3.1, 28/10): nos chefes do fim, quem só martela
+## no neutro e no meio do golpe dele fica batendo no "armado" (faísca azul, dano
+## baixo) e não quebra a postura tão fácil; a punição de verdade sai nas JANELAS
+## (recuperação, golpe exposto, atordoado, aparo) — que continuam iguais. Mexe na
+## LEITURA, não na vida: o jogador médio que espera a hora sente pouco; o que
+## aperta sem parar sente muito.
+var _armed_sfx_t: float = -9.0
+
+
+func guard_up(k_chase: float, k_armed: float, poise_k: float) -> void:
+	window_mult[Enemy.EState.CHASE] = k_chase
+	window_mult[Enemy.EState.WINDUP] = k_armed
+	window_mult[Enemy.EState.STRIKE] = k_armed
+	_poise_max *= poise_k
+	_poise = _poise_max
+
+
 ## Escala do dano de TODOS os golpes deste chefe (balance por chefe).
 var dmg_scale: float = 1.0
+## Distância mínima da parede ao andar (px de mundo).
+var wall_margin: float = 50.0
 ## Golpe com `expose`: na recuperação ele fica EXPOSTO (ajoelha, o ponto fraco
 ## desce) e sente muito mais.
 const EXPOSED_MULT := 1.35
@@ -183,6 +202,18 @@ func chase(delta: float) -> bool:
 		dir = -signf(dx)
 	if e.rooted_timer > 0.0:
 		dir = 0.0
+	# não recua até colar na parede (arte larga fica cortada na borda da câmera)
+	var wb := arena_bounds()
+	if (dir < 0.0 and e.global_position.x < wb.x + wall_margin) or (dir > 0.0 and e.global_position.x > wb.y - wall_margin):
+		dir = 0.0
+	# colado na parede (depois de uma investida/empurrão): sai dela andando para o
+	# meio — arte larga cortada na borda da câmera (QA7 3.1: Colosso na tela 68)
+	# (preso pela Corrente da Lei, fica: o root da Sophia vale — Guardião)
+	if e.rooted_timer <= 0.0:
+		if e.global_position.x < wb.x + wall_margin - 12.0:
+			dir = 1.0
+		elif e.global_position.x > wb.y - wall_margin + 12.0:
+			dir = -1.0
 	var spd: float = e.move_speed * (0.5 if e.slow_timer > 0.0 else 1.0)
 	e.velocity.x = dir * spd + e._separation()
 	if _gap_t <= 0.0 and not _partner_busy():
@@ -207,7 +238,7 @@ func strike() -> bool:
 		"slam":
 			var rad: float = float(mv.get("nova", 120.0))
 			AoeNova.spawn(e.get_parent(), e.global_position + Vector2(0, 14), 0, rad, e.eye_color)
-			Juice.shake(0.5)
+			Juice.shake(0.35)
 			e.attack_hitbox.position.x = float(mv.get("off", 0.0)) * dir
 			e.attack_hitbox.scale = Vector2(float(mv.get("sx", 3.6)), float(mv.get("sy", 1.0)))
 			e.attack_hitbox.activate()
@@ -250,7 +281,12 @@ func strike_tick(delta: float) -> void:
 	if String(mv.get("kind", "")) == "charge":
 		e.velocity.x = e.atk_dir * float(mv.get("speed", 420.0))
 		var b := arena_bounds()
-		if (e.atk_dir > 0 and e.global_position.x > b.y - 40.0) or (e.atk_dir < 0 and e.global_position.x < b.x + 40.0):
+		var past: float = 0.0
+		var pl := _player()
+		if pl != null:
+			past = (e.global_position.x - pl.global_position.x) * float(e.atk_dir)
+		# para na parede OU logo depois de passar por ela (fica no quadro da câmera)
+		if (e.atk_dir > 0 and e.global_position.x > b.y - 40.0) or (e.atk_dir < 0 and e.global_position.x < b.x + 40.0) or past > 130.0:
 			e.velocity.x = 0.0
 			e.attack_timer = minf(e.attack_timer, 0.0)
 	_strike_tick(mv, delta)
@@ -260,6 +296,12 @@ func strike_tick(delta: float) -> void:
 func filter_damage(dmg: int, attacker: Node) -> int:
 	if _roar_t > 0.0 or _dying >= 0 or _airborne:
 		return 0
+	# Arconte ENCENADO (tentação: congelado até a Sophia cruzar o gatilho) é
+	# intocável — senão um tiro de longe (ou o `hurt` do Shot) troca a fase com ele
+	# parado fora da luta: as gaiolas da fase 2 descem e a Galila fica congelada
+	# fora do quadro (QA7 #11).
+	if not e.can_process():
+		return 0
 	dmg = _filter(dmg, attacker)
 	if dmg <= 0:
 		return dmg
@@ -268,8 +310,17 @@ func filter_damage(dmg: int, attacker: Node) -> int:
 	var k: float = float(window_mult.get(e.estate, 1.0))
 	if e.estate == Enemy.EState.RECOVER and bool(mv.get("expose", false)):
 		k = EXPOSED_MULT
+	# golpe-RESPOSTA (Réplica do Juízo, estouro por toque): volta já em guarda —
+	# não é janela; a janela é de quem esperou (29/10)
+	elif e.estate == Enemy.EState.RECOVER and bool(mv.get("guard_rec", false)):
+		k = minf(k, float(window_mult.get(Enemy.EState.CHASE, 0.85)))
 	if k < 1.0:
 		ImpactBurst.spawn(e.get_parent(), e.global_position + Vector2(0, -18.0 * e._art_scale), Color(0.85, 0.9, 1.0))
+		# 2º sinal do "armado" (Guardião, R5/R11: forma + SOM, não só cor): um "block"
+		# metálico curto, no máximo 1 a cada 0,25 s (combo rápido não vira metralhadora)
+		if _t - _armed_sfx_t >= 0.25:
+			_armed_sfx_t = _t
+			sfx("block", e.global_position)
 	return maxi(1, int(round(float(dmg) * k)))
 
 
@@ -331,6 +382,11 @@ func passive(delta: float) -> void:
 		_self_stagger = false
 	if e.estate == Enemy.EState.CHASE and _prev_estate != Enemy.EState.CHASE:
 		mv = {}
+	# tiro interrompido (aparo, postura, fase, morte): a carga apaga
+	if _charge != null and is_instance_valid(_charge) and e.estate in [Enemy.EState.STAGGER, Enemy.EState.HURT, Enemy.EState.DEAD]:
+		if _charge.has_method("cancel"):
+			_charge.cancel()
+		_charge = null
 	_prev_estate = e.estate
 	# SEM DANO DE CONTATO no corpo: só nas investidas (golpe explícito)
 	var touch: bool = e.estate == Enemy.EState.STRIKE and String(mv.get("kind", "")) == "charge"
@@ -414,6 +470,19 @@ func _start(m: Dictionary) -> void:
 	e.attack_hitbox.unblockable = bool(m.get("unblock", false))
 	_gap_t = float(gap_by_phase[clampi(phase - 1, 0, gap_by_phase.size() - 1)]) * float(m.get("gap", 1.0))
 	e._begin_windup()
+	if not bool(m.get("tell", true)):
+		# golpe utilitário (piscar, guarda, chamar a corte): NADA para aparar ou
+		# rolar — sem tinta/contorno/brilho/som de telegrafo (R5: amarelo = aparável).
+		e._tint_base = Color(1, 1, 1, 1)
+		e._glint_done = true
+		if e.visual:
+			e.visual.modulate = Color(1, 1, 1, e.visual.modulate.a)
+			e.visual.set("telegraph_color", Color(0, 0, 0, 0))
+	if String(m.get("kind", "")) == "shot":
+		# VFX7: a luz se junta onde o tiro vai sair (cancela se for interrompido)
+		var col: Color = m.get("color", e.eye_color)
+		var off := Vector2(24.0 * e.atk_dir * e._art_scale, ground_y() - e.global_position.y - 34.0)
+		_charge = _charge_fx(off, col, e.wind_up, e.kit == "rei")
 	_on_windup(m)
 
 
@@ -438,6 +507,7 @@ func _leap_start() -> void:
 	h.follow = pl
 	h.lock_at = 0.45
 	h.knockback = 300.0
+	h.strike_sound = false          # o pouso já soa (bs_land, pelo Áudio)
 	h.struck.connect(_leap_land.bind(h))
 
 
@@ -467,6 +537,34 @@ func _on_land(_m: Dictionary) -> void:
 ## Batalha dupla: a outra forma (FinalBattle liga). Uma ataca de cada vez —
 ## justiça: a Sophia nunca lê dois telegrafos ao mesmo tempo.
 var partner: BossBrain = null
+var _charge = null
+var _wave_sfx_ms: int = -100000                    # antecipação visual (VFX7) do tiro em preparo
+
+
+## Carga do tiro (VFX7 ChargeFX) com SOM PRÓPRIO (R11: não é o mesmo
+## "proj_fire" do disparo): "charge_king" no Rei, "charge_dark" nos Arcontes.
+func _charge_fx(off: Vector2, col: Color, dur: float, king: bool) -> Node:
+	var c := ChargeFX.new()
+	c.color = col
+	c.duration = dur
+	c.style = "king" if king else "dark"
+	c.position = off
+	c.silent = true
+	e.add_child(c)
+	sfx("charge_king" if king else "charge_dark", e.global_position + off)
+	return c
+
+
+## Chama a API visual do VFX7 se existir (sem ela, nada — não quebra).
+static var _vfx_methods: Dictionary = {}
+func _vfx(fn: String, args: Array):
+	if _vfx_methods.is_empty():
+		for m in (VfxLibrary as Script).get_script_method_list():
+			_vfx_methods[String(m.name)] = true
+		_vfx_methods["_ok"] = true
+	if not _vfx_methods.has(fn):
+		return null
+	return (VfxLibrary as Script).callv(fn, args)
 
 
 ## Batalha final: a forma se refez (`me`) ou a outra se refez — fase da luta.
@@ -549,6 +647,12 @@ func ground_wave(dir: int, dmg_mult: float, speed: float = 240.0) -> Projectile:
 	p.target_team = "player"
 	p.color = e.eye_color
 	p.lifetime = 2.2
+	p.set("look", "spike")          # VFX7: lâmina rasteira (lê-se como "pule")
+	# um som por evento (R4): duas ondas no mesmo golpe soam uma vez só
+	var now := Time.get_ticks_msec()
+	if now - _wave_sfx_ms > 120:
+		_wave_sfx_ms = now
+		sfx("atk_wave", e.global_position)
 	e.get_parent().add_child(p)
 	p.global_position = e.global_position + Vector2(30.0 * dir, 12.0)
 	return p
@@ -664,40 +768,72 @@ func hold_death() -> bool:
 
 
 func _death_sequence() -> void:
-	# 0 — IMPACTO: o último golpe pesa (hitstop longo + câmera lenta curta)
+	var v = e.visual
+	var art: bool = v != null and v.has_method("play_boss_death") and v.has_method("has_boss_frames") and v.has_boss_frames()
+	# 0 — IMPACTO: o golpe final pesa. É o ÚNICO tremor grande da morte (R3/§4.1);
+	# as etapas seguintes só têm micro-tremor.
+	e.estate = Enemy.EState.DEAD
 	e.boss_dying.emit(0)
 	Juice.hit_stop(0.2)
-	Juice.slow_mo(0.3, 1.0)
+	Juice.slow_mo(0.3, 0.8)
 	Juice.shake(0.8)
 	Juice.rumble(0.6, 0.8, 0.4)
 	e._flash(Color(3.2, 3.2, 3.2, 1), Enemy.VIB_HEAVY)
 	Audio.duck_music(3.0, -14.0)
-	await _real_wait(DEATH_STEPS[0])
-	# 1 — CAMBALEIA: o quadro de dor segurado, tremendo
-	_dying = 1
-	e.boss_dying.emit(1)
-	e._flash(Color(2.2, 2.0, 1.8, 1), Enemy.VIB_HEAVY)
-	await _real_wait(DEATH_STEPS[1])
-	# 2 — COLAPSO: os quadros de morte (de joelhos / desmoronando)
-	_dying = 2
-	e.boss_dying.emit(2)
-	e.estate = Enemy.EState.DEAD
-	Juice.shake(0.5)
-	await _real_wait(DEATH_STEPS[2])
-	# 3 — PAUSA: um instante de silêncio com o corpo caído
-	_dying = 3
-	e.boss_dying.emit(3)
-	await _real_wait(DEATH_STEPS[3])
-	# 4 — DESINTEGRAÇÃO: libera a morte normal (recompensa, defeated, gibs)
+	if art:
+		# a ARTE conduz a linha do tempo (cambaleio 0,34 · queda 0,62 · estilhaço
+		# 1,08 · fim 1,9 s); o cérebro só marca as etapas e espera o fim
+		v.play_boss_death(e.eye_color)
+		await _until_death_t(v, 0.34)
+		_dying = 1
+		e.boss_dying.emit(1)
+		await _until_death_t(v, 0.62)
+		_dying = 2
+		e.boss_dying.emit(2)
+		Juice.shake(0.15)
+		await _until_death_t(v, 1.08)
+		_dying = 3
+		e.boss_dying.emit(3)
+		if e._orb != null:
+			e._orb.visible = false
+		if is_inside_tree() and is_instance_valid(v) and v.is_dying():
+			await v.death_finished
+	else:
+		await _real_wait(DEATH_STEPS[0])
+		_dying = 1
+		e.boss_dying.emit(1)
+		e._flash(Color(2.2, 2.0, 1.8, 1), Enemy.VIB_HEAVY)
+		await _real_wait(DEATH_STEPS[1])
+		_dying = 2
+		e.boss_dying.emit(2)
+		Juice.shake(0.15)
+		await _real_wait(DEATH_STEPS[2])
+		_dying = 3
+		e.boss_dying.emit(3)
+		await _real_wait(DEATH_STEPS[3])
+	# 4 — FIM: libera a morte normal (recompensa, defeated); com a arte, o corpo
+	# já estilhaçou — o Enemy não faz o segundo final (is_dying)
 	_dying = 4
+	if not is_inside_tree() or not is_instance_valid(e):
+		return                      # a cena trocou no meio (ferramenta/saída)
 	e.boss_dying.emit(4)
 	if is_instance_valid(e):
 		e.estate = Enemy.EState.STAGGER
 		e._on_died()
 
 
+## Espera o relógio da morte desenhada chegar em t (s), com teto de segurança.
+func _until_death_t(v, t: float) -> void:
+	var guard := 0
+	while is_inside_tree() and is_instance_valid(v) and v.is_dying() and float(v.get("_death_t")) < t and guard < 600:
+		guard += 1
+		await get_tree().process_frame
+
+
 ## Espera em tempo REAL (ignora câmera lenta e hitstop; corre com o jogo pausado).
 func _real_wait(t: float) -> void:
+	if not is_inside_tree():
+		return
 	await get_tree().create_timer(t, true, false, true).timeout
 
 

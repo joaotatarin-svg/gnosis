@@ -48,9 +48,31 @@ static func region(file: String, rect: Rect2) -> AtlasTexture:
 		regions[key] = tex
 	return regions[key]
 
-static func character(p: ArtProfile) -> Dictionary:
+## Inimigos com ARTE PRÓPRIA (Fila 9): tipo do Bestiary → atlas em creatures/.
+## O Bestiary ainda troca o painted_id deles por uma pintura de outra criatura
+## (o interino da Onda 6), então a escolha vem do TIPO (`ctx.type`, lido do
+## Enemy dono do desenho). Espectro = mariposa, Vigia Alado = sentinela-olho,
+## Acólito = alado de besta (en_alado_a), Cornudo e Fantasma (fundo verde).
+const OWN_ART := {"espectro": "en_espectro", "alado": "en_alado", "acolito": "en_acolito",
+	"cornudo": "en_cornudo", "fantasma": "en_fantasma"}
+const EON_BOT_IDS := ["sonambulo", "glutao", "carcereiro", "mudo", "reflexo", "esporos", "pretoriano"]
+
+static func _has_atlas(fname: String) -> bool:
+	return ResourceLoader.exists("res://assets/painted/derived/" + fname + "_frames.json") 		or FileAccess.file_exists("res://assets/painted/derived/" + fname + "_frames.json")
+
+## `ctx` (opcional): {"type": id do Bestiary, "champion": bool} do Enemy dono.
+static func character(p: ArtProfile, ctx: Dictionary = {}) -> Dictionary:
 	if p.has("hero"):
 		return {"sheet": "sophia", "hero": true, "flip": false}
+	var own_type: String = String(ctx.get("type", ""))
+	# arte própria por tipo / Campeão do Éon (folha champ_<n>_<bot>): só quando o atlas existe
+	var own_frames: String = ""
+	if bool(ctx.get("champion", false)) and own_type in EON_BOT_IDS and _has_atlas("creatures/champ_" + own_type):
+		own_frames = "creatures/champ_" + own_type
+	elif OWN_ART.has(own_type) and _has_atlas("creatures/" + OWN_ART[own_type]):
+		own_frames = "creatures/" + OWN_ART[own_type]
+	if own_frames != "":
+		return {"sheet": "inhabitants", "rect": Rect2(425, 0, 425, 400), "flip": false, "frames": own_frames, "own_art": true}
 	var id: String = p.painted_id.trim_prefix("eco_")
 	if p.has("soter"): id = "soter"
 	if p.has("velkar"): id = "velkar"

@@ -56,7 +56,11 @@ const GLINT_LEAD := 0.18          # R5: brilho de aviso 180 ms antes do golpe (=
 const GLINT_BOOST := 0.35         # o brilho clareia o tingimento por um instante
 const GLINT_TIME := 0.12          # duração do brilho no corpo (s de jogo)
 const FLASH_FADE := 0.11          # R1: o flash some em 110 ms REAIS depois do hitstop
-const FLASH_ADD := 0.55           # Onda 6: brilho somado no pico do flash aditivo (× força do Juice)
+## brilho somado no pico do flash aditivo (× força do Juice × fator de brilho do
+## atlas, EnemyFlashLayer.luma_k). Polimento 7 (R10 do Guardião): 0,55 → 0,40 na
+## pintura média (L 0,35: pico 0,72, 10 % do corpo em branco; antes 0,83 e 19 %);
+## o fator tira dos atlas claros (Astaphaios 0,23, branco 68 % → ~30 %).
+const FLASH_ADD := 0.40
 const TELEGRAPH_RIM_A := 0.9      # contorno do telegrafo nos chefes por quadros (Pedido 2 da Arte)
 const DEATH_POSE_TIME := 0.4      # chefe: segura o quadro "death" antes de se partir (s REAIS; Pedido 4 da Arte)
 const VIB_LIGHT := 1.5            # R1: vibração da vítima (px), golpe leve
@@ -250,8 +254,9 @@ func _ready() -> void:
 	# Campeão do Éon: o bot temático crescido — o "mini-chefe" do meio do Éon.
 	if is_champion:
 		display_name = "Campeão %s" % _eon_title(GameManager.current_screen)
-		base_health = int(base_health * 1.7)
-		attack_damage = int(attack_damage * 1.15)
+		# Progressão 7 (decisão do chefe, 28/10): Campeão mais CURTO — a dificuldade vem
+		# do repertório de elite e do letreiro, não da barra (vida ×1,7 → ×1,35, dano ×1,15 → ×1,0)
+		base_health = int(base_health * 1.35)
 		spark_reward *= 2
 		scale = Vector2(1.35, 1.35)
 		# Onda 6: repertório de elite (o do bot + brado e onda dupla), lê e
@@ -273,7 +278,9 @@ func _ready() -> void:
 	var diff := GameManager.difficulty_multiplier()
 	var hp_mult := Bestiary.screen_multiplier(GameManager.current_screen) * diff
 	var dmg_mult := Bestiary.damage_multiplier(GameManager.current_screen) * diff
-	_reward_mult = hp_mult
+	# Progressão 7 (Guardião §3): a renda de faíscas é IGUAL em todas as dificuldades —
+	# a dificuldade fica no combate (antes o Difícil rendia 1,5× e o Muito Difícil 2,2×)
+	_reward_mult = Bestiary.screen_multiplier(GameManager.current_screen)
 
 	health = HealthComponent.new()
 	add_child(health)
@@ -301,7 +308,7 @@ func _ready() -> void:
 	if visual and profile != null:
 		visual.set_profile(profile)
 		_fit_body(profile.height / 44.0)
-		if def.has("tint"):
+		if def.has("tint") and not _own_art():
 			visual.self_modulate = def.tint               # Onda 6: tinta própria do tipo
 		if type_id.begins_with("eco_"):
 			visual.self_modulate = Color(1, 1, 1, 0.72)   # eco: translúcido
@@ -330,7 +337,7 @@ func _ready() -> void:
 func _boss_intro_fx() -> void:
 	if not is_inside_tree():
 		return
-	Audio.play_sfx("boss_appear")
+	Audio.play_sfx("champion_enter" if is_champion and not is_boss_enemy else "boss_appear")   # Áudio7: o stinger de chefe não toca para Campeão (R9)
 	VfxLibrary.boss_appear(get_parent(), global_position + Vector2(0, -20.0 * _art_scale), eye_color)
 
 
@@ -396,9 +403,26 @@ func _setup_readability() -> void:
 
 const GRADE_SHADER := "res://scripts/entities/enemies/enemy_grade.gdshader"
 
+## Arte própria (Fila 9: voadores, cornudo, fantasma, acólito, campeões) já vem
+## com a cor certa: sem tinta do tipo nem graduação do interino (pedido do VFX7).
+## Polimento 7 (R3, auditoria do Guardião): tremor de golpe de ROTINA de inimigo
+## comum (pancada, explosão, pouso, agarrão, fúria) fica em ≤ COMMON_SHAKE — é o
+## evento mais frequente do jogo e cansava (0,35–0,45). O tremor forte fica para o
+## que importa: a Sophia tomando dano (Juice.TRAUMA_HURT 0,35), o golpe pesado
+## dela, a quebra de guarda e os chefes (que seguem com o valor pedido). A câmera já
+## fica com o MAIOR pedido do quadro (camera_shake `_frame_trauma`): sem soma.
+const COMMON_SHAKE := 0.12
+
+func _shake_routine(trauma: float) -> void:
+	Juice.shake(trauma if is_boss_enemy else minf(trauma, COMMON_SHAKE))
+
+
+func _own_art() -> bool:
+	return visual != null and visual.has_method("has_own_art") and visual.has_own_art()
+
 ## Graduação de cor do corpo: Campeão (por Éon) > a do tipo (bots, alado…) > nada.
 func _body_grade(eon: int) -> Array:
-	if is_boss_enemy:
+	if is_boss_enemy or _own_art():
 		return []
 	if is_champion:
 		var bot := Bestiary.EON_BOTS.find(type_id)
@@ -579,6 +603,15 @@ func _process_chase(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, 300.0 * delta)
 		return
 
+	# Invocador ESGOTADO (teto de invocações): PARADO e sem golpe nenhum (nem tiro,
+	# nem recuo a pé) — a janela de punição fica clara (Guardião, 0ba25d8).
+	if _summon_exhausted:
+		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
+		var fdx := player.global_position.x - global_position.x
+		if visual and fdx != 0.0:
+			visual.scale.x = absf(visual.scale.x) * signf(fdx)
+		return
+
 	if not moves.is_empty():
 		_chase_moves(delta)
 		return
@@ -599,8 +632,8 @@ func _process_chase(delta: float) -> void:
 			if _special_timer <= 0.0:
 				_special_timer = 6.0
 				_prune_minions()
-				if _minions.size() < 3:
-					_summon("larva", 2)
+				if _minions.size() < 3 and not _summon_spent():
+					_summon_larvae()
 		"dodger":
 			# Reflexo: no instante em que a Sophia golpeia perto, ele recua num salto.
 			if _special_timer <= 0.0 and absf(dx) < 80.0 and player is Player and player.state == Player.State.ATTACK:
@@ -623,7 +656,8 @@ func _process_chase(delta: float) -> void:
 
 	var dir := signf(dx)
 	# Atirador/invocador mantém distância: recua se o player chegar perto demais.
-	if (attack_style == "ranged" or behavior == "summoner") and absf(dx) < 130.0:
+	# (o invocador ESGOTADO não recua mais: fica ao alcance do cajado)
+	if (attack_style == "ranged" or behavior == "summoner") and absf(dx) < 130.0 and not _summon_exhausted:
 		dir = -dir
 	var spd := move_speed * (0.5 if slow_timer > 0.0 else 1.0)
 	velocity.x = dir * spd + _separation()
@@ -758,6 +792,7 @@ func _begin_strike() -> void:
 			var offs: Array = [-16.0, 0.0, 16.0] if is_boss_enemy else [0.0]
 			if kit == "rei" and type_id == "rei":
 				offs = [0.0]                       # o Rei-tutorial atira 1 orbe lento
+			Audio.play_sfx_at("atk_shot", global_position)   # Guardião/Áudio7 (R4): 1 som por salva
 			for oy in offs:
 				var p := Projectile.new()
 				p.direction = atk_dir
@@ -799,7 +834,7 @@ func _begin_strike() -> void:
 			# Pancada no chão. CHEFE: onda MUITO maior e golpe mais largo.
 			var rad: float = 120.0 if is_boss_enemy else 70.0
 			AoeNova.spawn(get_parent(), global_position + Vector2(0, 14), 0, rad, eye_color)
-			Juice.shake(0.5 if is_boss_enemy else 0.35)
+			_shake_routine(0.5 if is_boss_enemy else 0.35)
 			attack_hitbox.position.x = 0.0
 			attack_hitbox.scale = Vector2(3.8 if is_boss_enemy else 2.6, 1.0)
 			attack_hitbox.activate()
@@ -816,6 +851,10 @@ func _begin_strike() -> void:
 func _kit_strike() -> void:
 	if player == null or not is_instance_valid(player):
 		return
+	# Guardião/Áudio7 (R4): os disparos que restaram no kit legado soavam mudos —
+	# 1 som por salva (corrente, ondas rasteiras)
+	if kit == "corrente" or kit == "colosso" or (kit in ["coroa", "rei"] and phase == 2):
+		Audio.play_sfx_at("atk_shot", global_position)
 	match kit:
 		"torpor":
 			# Névoa do sono cai onde a Sophia está: dentro dela, ela anda devagar.
@@ -871,7 +910,7 @@ func _explode() -> void:
 	var pos := global_position + Vector2(0, -8)
 	AoeNova.spawn(get_parent(), pos, 0, r, Color(1.0, 0.55, 0.25))
 	ImpactBurst.spawn(get_parent(), pos, Color(1.0, 0.6, 0.3))
-	Juice.shake(0.45)
+	_shake_routine(0.45)
 	if player != null and is_instance_valid(player) and player.global_position.distance_to(pos) <= r:
 		player._on_hit_received(attack_hitbox.damage, pos, 260.0, true, self)
 	health.take_damage(health.max_health)
@@ -938,6 +977,66 @@ func _summon(id: String, count: int) -> void:
 		minion_spawned.emit(m)
 
 
+## Polimento 7 (decisão do chefe, 28/10 — QA7 #10): teto TOTAL de invocações por
+## invocador. Antes ele repunha larvas sem fim (só o teto de 3 vivas) e a zona não
+## acabava. Agora: 3 chamadas (até 6 larvas). Na 3ª ele fica ESGOTADO — à vista
+## (cinza claro + fumaça contínua + um sopro na hora) e PARADO sem golpe nenhum
+## (`_process_chase`): não anda, não recua, não atira. Nenhum multiplicador escondido.
+const SUMMON_MAX_CALLS := 3
+const SUMMON_SPENT_SAT := 0.08         # corpo quase sem cor (a graduação do contorno)
+const SUMMON_SPENT_LIFT := Color(2.0, 2.0, 2.1, 1.0)   # e mais CLARO: cinza claro (lê no fundo escuro)
+var _summon_calls: int = 0
+var _summon_exhausted: bool = false
+
+func _summon_spent() -> bool:
+	return _summon_calls >= SUMMON_MAX_CALLS
+
+
+func _summon_larvae() -> void:
+	_summon("larva", 2)
+	_summon_calls += 1
+	if _summon_spent() and not _summon_exhausted:
+		_summon_exhausted = true
+		# leitura: o corpo DESBOTA para cinza CLARO (graduação do CanvasGroup do contorno)
+		if _rim_mat != null:
+			if _rim_mat.shader == null or _rim_mat.shader.resource_path != GRADE_SHADER:
+				var rc: Color = _rim_mat.get_shader_parameter("rim_color")
+				_rim_mat.shader = load(GRADE_SHADER)
+				_rim_mat.set_shader_parameter("rim_color", rc)
+				_rim_mat.set_shader_parameter("rim_px", 1.0)
+			_rim_mat.set_shader_parameter("grade_sat", SUMMON_SPENT_SAT)
+			_rim_mat.set_shader_parameter("grade_tint", SUMMON_SPENT_LIFT)
+		_spent_smoke()
+		if is_inside_tree():
+			ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), Color(0.6, 0.6, 0.65))
+
+
+## Fumaça cinza leve e CONTÍNUA saindo do corpo enquanto ele estiver esgotado.
+func _spent_smoke() -> void:
+	if not is_inside_tree():
+		return
+	var sm := CPUParticles2D.new()
+	sm.name = "SpentSmoke"
+	sm.texture = VfxLibrary.tex("smoke")
+	sm.amount = 10
+	sm.lifetime = 1.3
+	sm.local_coords = false
+	sm.position = Vector2(0, -26.0 * _art_scale)
+	sm.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	sm.emission_rect_extents = Vector2(9.0, 16.0) * _art_scale
+	sm.direction = Vector2(0, -1)
+	sm.spread = 25.0
+	sm.gravity = Vector2(0, -12.0)
+	sm.initial_velocity_min = 6.0
+	sm.initial_velocity_max = 16.0
+	sm.scale_amount_min = 0.16
+	sm.scale_amount_max = 0.3
+	sm.color = Color(0.88, 0.88, 0.92, 0.5)
+	sm.z_index = 1
+	add_child(sm)
+	sm.emitting = true
+
+
 func _prune_minions() -> void:
 	var alive: Array = []
 	for m in _minions:
@@ -976,7 +1075,17 @@ func _boss_setup() -> void:
 	brain = b
 	add_child(brain)
 	brain.setup(self)
+	# R18: a Sophia sempre na frente do corpo enorme do chefe (o chefe vai para
+	# antes dela na árvore — mesma z, desenhado atrás).
+	_draw_behind_player.call_deferred()
 	phase_marks = brain.marks.duplicate()
+
+
+func _draw_behind_player() -> void:
+	if player == null or not is_instance_valid(player) or get_parent() == null:
+		return
+	if player.get_parent() == get_parent() and get_index() > player.get_index():
+		get_parent().move_child(self, player.get_index())
 
 
 ## Confere se o dano levou o chefe à próxima fase. true = mudou de fase.
@@ -1006,7 +1115,7 @@ func _enter_phase(n: int) -> void:
 	_tint_base = Color(1, 1, 1, 1)
 	Juice.shake(0.7 + 0.15 * float(n - 2))
 	Juice.hit_stop(0.15)
-	Audio.play_sfx("boss_phase2")
+	Audio.play_sfx("boss_phase3" if n >= 3 else "boss_phase2")
 	Audio.duck_music(0.8, -8.0)
 	AoeNova.spawn(get_parent(), global_position, 0, 140.0 + 40.0 * float(n - 2), eye_color)
 	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
@@ -1202,7 +1311,9 @@ func _on_hit_received(damage: int, source_position: Vector2, knockback: float, _
 	if attacker == null:
 		# magia/nova (sem Hitbox): o impacto grande nasce aqui; golpe do Hitbox
 		# já ganhou o seu VFX no ponto de contato (R4: um só por acerto).
-		VfxLibrary.hit(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), true, eye_color)
+		# R15: as fagulhas saem no sentido do golpe (da origem para o inimigo)
+		var hdir := Vector2(signf(global_position.x - source_position.x), 0.0)
+		VfxLibrary.hit(get_parent(), global_position + Vector2(0, -12.0 * _art_scale), true, eye_color, hdir)
 	DamageNumber.spawn(get_parent(), global_position, damage, Color(1.0, 0.92, 0.6))
 	if visual:
 		visual.damage_ratio = 1.0 - float(health.current_health) / maxf(1.0, float(health.max_health))
@@ -1274,7 +1385,8 @@ func _is_screen_end() -> bool:
 func stagger() -> void:
 	if estate == EState.DEAD:
 		return
-	attack_hitbox.deactivate()
+	# chamado dentro do sinal de acerto (aparo): monitoring só pode mudar adiado
+	attack_hitbox.set_deferred("monitoring", false)
 	_interrupt_move()
 	if fly_height > 0.0:
 		_downed = maxf(_downed, 1.6)     # aparar um voador o derruba
@@ -1305,8 +1417,9 @@ func _on_died() -> void:
 	_set_rim(0.0)
 	EnemyAggro.release(self)
 	tele_target = Vector2.INF
-	contact_hitbox.monitoring = false
-	attack_hitbox.monitoring = false
+	# Polimento 7 (QA7 #1): a morte vem dentro do sinal de acerto — desligar adiado
+	contact_hitbox.set_deferred("monitoring", false)
+	attack_hitbox.deactivate()
 	# som e explosão de morte por porte
 	var death_pos := global_position + Vector2(0, -12.0 * _art_scale)
 	if is_boss_enemy:
@@ -1333,6 +1446,12 @@ func _on_died() -> void:
 	defeated.emit(self)
 
 	if visual == null:
+		queue_free()
+		return
+	# chefes6: a morte desenhada (play_boss_death) já estilhaçou o corpo — sem
+	# segundo final (_death_pose_then_burst), só libera o nó.
+	if brain != null and not revivable and visual.has_method("is_dying") and visual.is_dying():
+		visual.visible = false
 		queue_free()
 		return
 	# Batalha final: a forma cai mas fica (pode se refazer).
@@ -1436,7 +1555,7 @@ func _flash(color: Color, vibrate: float = 0.0) -> void:
 	# (como o da Sophia) — o corpo não vira mais silhueta branca chapada.
 	if peak > 1.0 and _flash_layer != null and is_instance_valid(_flash_layer) and _flash_layer.usable():
 		var hue := Color(color.r / peak, color.g / peak, color.b / peak, 1.0)
-		_flash_layer.fire(hue, FLASH_ADD * k * clampf((peak - 1.0) / 2.0, 0.35, 1.0))
+		_flash_layer.fire(hue, FLASH_ADD * k * _flash_layer.luma_k() * clampf((peak - 1.0) / 2.0, 0.35, 1.0))
 	else:
 		if peak > 1.0:
 			# sem malha pintada (procedural/boneco): clareia pouco, não estoura
@@ -1630,6 +1749,7 @@ func _chase_moves(delta: float) -> void:
 	# atirador com a Sophia colada: quase não espera — empurra/explode e foge
 	if role == "shooter" and adx < 70.0:
 		cooldown_timer = minf(cooldown_timer, 0.15)
+		_intent = {}   # QA7 #15: a intenção de longe (orbe) não cabe colado → reação na hora
 	if cooldown_timer <= 0.0 or _counter:
 		# INTENÇÃO: decide o golpe primeiro e só então chega na distância dele
 		# (antes ele soltava sempre o que coubesse onde estava — o de meia
@@ -1665,13 +1785,14 @@ func _desired_x(dx: float, adx: float) -> float:
 		"flyer":
 			if fmod(_orbit_t, 5.5) < get_physics_process_delta_time():
 				_orbit_side = -_orbit_side          # troca de lado: passa por cima dela
-			return px + _orbit_side * (100.0 + 25.0 * sin(_orbit_t * 0.8))
+			# QA7 #10 (R21): coleira — não foge para fora da arena (a Arena fecha)
+			return EnemyAggro.leash_x(self, px + _orbit_side * (100.0 + 25.0 * sin(_orbit_t * 0.8)))
 		"shooter":
 			if adx < 120.0:
-				return px + side * 175.0
+				return EnemyAggro.leash_x(self, px + side * 175.0)
 			if adx > 240.0:
-				return px + side * 200.0
-			return global_position.x
+				return EnemyAggro.leash_x(self, px + side * 200.0)
+			return EnemyAggro.leash_x(self, global_position.x)
 	var waiting: bool = cooldown_timer > 0.0 or (EnemyAggro.count() >= EnemyAggro.MAX_ATTACKERS and not EnemyAggro.holds(self))
 	var ring := 34.0 if role == "tank" else 40.0
 	if not _intent.is_empty():
@@ -1720,8 +1841,10 @@ func _pick_move(adx: float, dyv: float, as_intent: bool = false) -> Dictionary:
 			return m                      # golpe de reação que já cabe: é ele
 		if kind == "summon":
 			_prune_minions()
-			if _minions.size() >= 3:
+			if _minions.size() >= 3 or _summon_spent():
 				continue
+		if kind == "retreat" and _summon_exhausted:
+			continue                      # esgotado: não foge mais
 		pool.append(m)
 		total += _move_weight(m)
 	if pool.is_empty():
@@ -1757,7 +1880,8 @@ func _start_move(mv: Dictionary) -> void:
 	_mv_cd[mv.id] = float(mv.cd)
 	_combo_left = int(mv.hits) - 1
 	var fast: bool = elite_mod == "furia" or _champ_fury
-	wind_up = float(mv.wind) * (0.85 if fast else 1.0)
+	# QA7 #19 (R5): a fúria acelera, mas o aviso nunca fica abaixo de ~0,4 s
+	wind_up = maxf(float(mv.wind) * 0.85, minf(float(mv.wind), 0.42)) if fast else float(mv.wind)
 	attack_hitbox.unblockable = is_elite or bool(mv.unb) or behavior == "exploder"
 	tele_target = Vector2.INF
 	var kind := String(mv.kind)
@@ -1767,6 +1891,7 @@ func _start_move(mv: Dictionary) -> void:
 		var away := -1.0
 		if player != null and is_instance_valid(player):
 			away = -signf(player.global_position.x - global_position.x)
+		away = EnemyAggro.retreat_dir(self, away)   # QA7 #10: não recua para fora da arena
 		velocity.x = away * 310.0
 		if is_on_floor():
 			velocity.y = -170.0
@@ -1843,7 +1968,7 @@ func _strike_move() -> void:
 		"slam":
 			var rad := 70.0 * maxf(1.0, hs * 0.8)
 			AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, rad, eye_color)
-			Juice.shake(0.35)
+			_shake_routine(0.35)
 			attack_hitbox.scale = Vector2(2.6, 1.0)
 			attack_hitbox.activate()
 			if bool(_mv.get("waves", false)):
@@ -1853,7 +1978,7 @@ func _strike_move() -> void:
 			var nr := float(_mv.get("radius", 64.0)) * maxf(1.0, hs * 0.7)
 			var np := global_position + Vector2(0, -8.0 * _art_scale)
 			AoeNova.spawn(get_parent(), np, 0, nr, eye_color)
-			Juice.shake(0.3)
+			_shake_routine(0.3)
 			if player != null and is_instance_valid(player) and absf(player.global_position.x - np.x) <= nr and absf(player.global_position.y - global_position.y) < 70.0:
 				player._on_hit_received(attack_hitbox.damage, np, 260.0, attack_hitbox.unblockable, self)
 			strike_time = 0.2
@@ -1889,7 +2014,8 @@ func _strike_move() -> void:
 			velocity.x = atk_dir * 330.0
 			strike_time = 0.8
 		"summon":
-			_summon("larva", 2)
+			if not _summon_spent():
+				_summon_larvae()
 			strike_time = 0.25
 		"explode":
 			_explode()
@@ -1920,14 +2046,14 @@ func _strike_tick(delta: float) -> void:
 				# POUSO: poeira de choque e fica no chão (janela de castigo)
 				_perched = 1.0
 				AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, 44.0, eye_color)
-				Juice.shake(0.25)
+				_shake_routine(0.25)
 				_finish_strike(1.0)
 				return
 		"leap":
 			if attack_timer < strike_time - 0.12 and is_on_floor():
 				if bool(_mv.get("slam", false)):
 					AoeNova.spawn(get_parent(), global_position + Vector2(0, 14.0 * _art_scale), 0, 56.0, eye_color)
-					Juice.shake(0.3)
+					_shake_routine(0.3)
 					if player != null and is_instance_valid(player) and absf(player.global_position.x - global_position.x) < 56.0 and absf(player.global_position.y - global_position.y) < 50.0:
 						player._on_hit_received(attack_hitbox.damage, global_position, 220.0, attack_hitbox.unblockable, self)
 				_finish_strike(0.45)
@@ -2077,7 +2203,7 @@ func _champion_fury_check() -> void:
 	_champ_fury = true
 	elite_mod = "furia"
 	move_speed *= 1.2
-	Juice.shake(0.4)
+	_shake_routine(0.4)
 	VfxLibrary.boss_phase2(get_parent(), global_position + Vector2(0, -24.0 * _art_scale), eye_color)
 	_flash(Color(3.0, 2.0, 1.5, 1))
 
@@ -2263,7 +2389,7 @@ func _grab_throw() -> void:
 		return                     # ela escapou (esquiva)
 	var dmg := int(_hit_dmg * 0.9)
 	player._on_hit_received(dmg, global_position, 340.0, true, self)
-	Juice.shake(0.35)
+	_shake_routine(0.35)
 	if behavior == "leech":
 		health.heal(int(dmg * 0.6))
 
@@ -2278,10 +2404,38 @@ func _grab_throw() -> void:
 ## API usada (leitura) do CharacterArt: _boss_db.meta, _shown_key, _body_xform —
 ## pedido à Arte uma função oficial `body_rect()` (docs/pedidos/onda6_inimigos6.md).
 var hurt_rect: Rect2 = Rect2()        # última caixa (local do inimigo) — sonda/depuração
+## Polimento 7: fração do corpo DESENHADO (frame_geometry().body) que a hurtbox
+## cobre. 80 % da largura: o cajado que encosta na borda do desenho ainda acerta
+## (a caixa do cajado tem folga de ~4 px), sem a hurtbox virar ímã fora do corpo.
+const HURT_W_FRAC := 0.8
+const HURT_H_FRAC := 0.92            # altura a partir dos pés (corta a ponta de chifres/cabelo)
+const HURT_LERP := 0.5               # suavização por quadro (vira-lado sem tremer)
+
+## Polimento 7 (João, 19/10: "a Sophia atravessa o manto do Rei; só o centro acerta"):
+## nos CHEFES a hurtbox é o CONTORNO do corpo desenhado (`frame_geometry().body_poly`,
+## convexo, sem cajado/fios soltos) e não um retângulo — o manto que se abre na barra
+## é acertável, o ar entre o braço e a barra não. Encolhe HURT_POLY_W na largura
+## (rumo ao centro) e corta a ponta de cima (HURT_H_FRAC), como a dos comuns.
+const HURT_POLY_W := 0.9
+var _hurt_box_shape: Shape2D = null           # retângulo original da cena (comuns/reserva)
+var _hurt_poly_shape: ConvexPolygonShape2D = null
 
 func _fit_hurtbox() -> void:
-	if visual == null or estate == EState.DEAD or not visual.has_boss_frames():
+	if visual == null or estate == EState.DEAD:
 		return
+	# Chefes6 (BossBodyBox, Rei e Rei-Mentira): o chefe com caixa PRÓPRIA por faixas
+	# desliga a HurtShape genérica — aqui não se mexe nela (nem forma, nem `disabled`),
+	# senão o golpe conta 2× ou a caixa dele é desfeita.
+	if has_node("BodyBox"):
+		return
+	if not visual.has_boss_frames():
+		# chefe sem atlas → boneco articulado (reserva): contorno da malha pintada
+		if is_boss_enemy and is_instance_valid(visual.boss_puppet) and visual.boss_puppet.visible 				and visual.boss_puppet.has_method("body_polygon"):
+			_fit_hurt_poly(visual.boss_puppet.body_polygon())
+		return
+	if _fit_hurtbox_geometry():
+		return
+	_use_hurt_box()
 	var key: String = visual._shown_key
 	var cut := key.rfind(":")
 	if cut <= 0:
@@ -2314,3 +2468,89 @@ func _fit_hurtbox() -> void:
 	var want_s := Vector2(r.size.x / base.x, r.size.y / base.y)
 	shp.position = shp.position.lerp(r.get_center(), 0.35)
 	shp.scale = shp.scale.lerp(want_s, 0.35)
+
+
+## Polimento 7: hurtbox pela API oficial da Arte (`frame_geometry(true).body`,
+## silhueta do corpo medida por quadro, sem arma/pano solto): HURT_W_FRAC da
+## largura, centrada no corpo, dos pés até HURT_H_FRAC da altura. Devolve false
+## se o quadro não tem geometria (aí vale a conta antiga pelo JSON do quadro).
+func _fit_hurtbox_geometry() -> bool:
+	if not visual.has_method("frame_geometry"):
+		return false
+	var g: Dictionary = visual.frame_geometry(true)
+	if not g.has("body"):
+		return false
+	if is_boss_enemy and g.has("body_poly"):
+		# contorno + os dois cantos de baixo da caixa do corpo: a BARRA do manto que se
+		# abre no chão (o contorno de ≤ 10 pontos corta a ponta da barra)
+		var pts: PackedVector2Array = PackedVector2Array(g.body_poly)
+		var bb: Rect2 = g.body
+		pts.append(Vector2(bb.position.x, bb.end.y))
+		pts.append(bb.end)
+		if _fit_hurt_poly(pts):
+			return true
+	_use_hurt_box()
+	var body: Rect2 = g.body
+	var hb: Node2D = $Hurtbox
+	var inv: Transform2D = hb.get_global_transform().affine_inverse()
+	var lb: Rect2 = Rect2(inv * body.position, Vector2.ZERO).expand(inv * body.end)
+	if lb.size.x < 4.0 or lb.size.y < 4.0:
+		return false
+	var w: float = lb.size.x * HURT_W_FRAC
+	var h: float = lb.size.y * HURT_H_FRAC
+	var r := Rect2(Vector2(lb.get_center().x - w * 0.5, lb.end.y - h), Vector2(w, h))
+	hurt_rect = r
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	var base: Vector2 = (shp.shape as RectangleShape2D).size
+	var want_s := Vector2(r.size.x / base.x, r.size.y / base.y)
+	shp.position = shp.position.lerp(r.get_center(), HURT_LERP)
+	shp.scale = shp.scale.lerp(want_s, HURT_LERP)
+	return true
+
+
+## Volta ao retângulo da cena (comuns; chefe num quadro sem contorno).
+func _use_hurt_box() -> void:
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	if _hurt_box_shape != null and shp.shape != _hurt_box_shape:
+		shp.shape = _hurt_box_shape
+
+
+## Hurtbox = polígono convexo (pontos GLOBAIS do contorno desenhado), encolhido
+## HURT_POLY_W na largura em torno do centro e cortado no topo (HURT_H_FRAC a partir
+## dos pés). Sem suavização: segue o quadro como ele é desenhado (no hitstop o quadro
+## não troca → a caixa fica parada, R1). Devolve false se o contorno é inválido.
+func _fit_hurt_poly(pts: PackedVector2Array) -> bool:
+	if pts.size() < 3:
+		return false
+	var hb: Node2D = $Hurtbox
+	var inv: Transform2D = hb.get_global_transform().affine_inverse()
+	var local := PackedVector2Array()
+	var lb := Rect2(inv * pts[0], Vector2.ZERO)
+	for p in pts:
+		var q: Vector2 = inv * p
+		local.append(q)
+		lb = lb.expand(q)
+	if lb.size.x < 4.0 or lb.size.y < 4.0:
+		return false
+	var cx: float = lb.get_center().x
+	var foot: float = lb.end.y
+	var top: float = foot - lb.size.y * HURT_H_FRAC
+	for i in local.size():
+		var q: Vector2 = local[i]
+		local[i] = Vector2(cx + (q.x - cx) * HURT_POLY_W, maxf(q.y, top))
+	var shp: CollisionShape2D = $Hurtbox/HurtShape
+	if _hurt_box_shape == null:
+		_hurt_box_shape = shp.shape
+	if _hurt_poly_shape == null:
+		_hurt_poly_shape = ConvexPolygonShape2D.new()
+	_hurt_poly_shape.set_point_cloud(local)     # casco convexo (ordem dos pontos não importa)
+	if shp.shape != _hurt_poly_shape:
+		shp.shape = _hurt_poly_shape
+	shp.position = Vector2.ZERO
+	shp.scale = Vector2.ONE
+	shp.rotation = 0.0
+	var r := Rect2(_hurt_poly_shape.points[0], Vector2.ZERO)
+	for q in _hurt_poly_shape.points:
+		r = r.expand(q)
+	hurt_rect = r
+	return true

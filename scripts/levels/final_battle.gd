@@ -8,15 +8,20 @@ class_name FinalBattle
 
 signal won
 
-const REVIVE_AFTER := 14.0
-const RING_SPAWN_EVERY := 6.0
-const MAX_LARVAS := 3
+## 28/10 (curva da Progressão: Sophia chega com arma Nv.5): 14 → 9 s — derrubar as
+## duas JUNTAS virou a leitura da luta (baixar as duas, depois fechar), não martelar uma.
+const REVIVE_AFTER := 11.0     # 29/10: 9 → 11 s (na integração 34a55dd o médio dava 187–278 s, presa em ciclos de refazer)
+## Últimos s antes de a forma caída se refazer: brilho crescente nela + som (aviso).
+const REVIVE_WARN := 2.5
+var _warned: Dictionary = {}
+const RING_SPAWN_EVERY := 9.0
+const MAX_LARVAS := 2
 # Onde as formas nascem (px a partir da parede esquerda da arena trancada da
 # Mente — Level._lock_final_arena). A vista (zoom 1,2) cobre ~533 px de mundo:
 # Sophia a 70, Rei (~85 px de largura) a 215, Colosso (~160 px) a 420.
 const ARENA_LEFT := Level.ZONE_FIRST_X - Level.ZONE_HALF
-const REI_DX := 215.0
-const COL_DX := 420.0
+const REI_DX := 290.0
+const COL_DX := 440.0
 # Na luta, as duas formas não se EMPILHAM (o Colosso por cima do Rei virava um
 # borrão dourado): se ficam a menos de APART_MIN px por STACK_TIME s, o Rei
 # (a mentira, que luta à distância) pisca para o outro lado da Sophia.
@@ -110,8 +115,9 @@ func _keep_apart(delta: float) -> void:
 	var pl := get_tree().get_first_node_in_group("player") as Node2D
 	if pl == null:
 		return
-	var lo := ARENA_LEFT + 50.0
-	var hi := ARENA_LEFT + Level.ZONE_HALF * 2.0 - 50.0
+	# margem larga: o manto do Rei não pode ficar cortado na borda (QA7 #3)
+	var lo := ARENA_LEFT + 120.0
+	var hi := ARENA_LEFT + Level.ZONE_HALF * 2.0 - 120.0
 	var side := -signf(col.global_position.x - pl.global_position.x)
 	if side == 0.0:
 		side = -1.0
@@ -213,9 +219,18 @@ func _process(delta: float) -> void:
 		if not is_instance_valid(e):
 			continue
 		down_since[e] += delta
-		if down_since[e] >= REVIVE_AFTER:
+		var left: float = REVIVE_AFTER + 3.0 * float(_revives) - float(down_since[e])
+		if left <= REVIVE_WARN and not _warned.has(e):
+			# aviso de que ela VAI se refazer (Guardião, R5): brilho crescente + som
+			_warned[e] = true
+			var cat = Audio.get("CATALOG")
+			if cat is Dictionary and (cat.get("sfx", []) as Array).has("charge_king"):
+				Audio.play_sfx_at("charge_king", e.global_position)
+		if down_since[e] >= REVIVE_AFTER + 3.0 * float(_revives):
+			_warned.erase(e)
 			down_since.erase(e)
-			e.revive(0.45)
+			# cada vez que se refaz, volta mais fraca (a luta converge; R21)
+			e.revive(maxf(0.2, 0.45 - 0.1 * float(_revives)))
 			# chefes6: a 1ª forma que se refaz leva as DUAS à fase 3
 			_revives += 1
 			for f in forms:
@@ -238,13 +253,51 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
+## Área do medalhão/vida do HUD na tela base 640×360 (QA7 #24): os Anéis
+## descem quando passariam por trás dela.
+const HUD_ZONE := Vector2(230.0, 70.0)
+
+
 func _ring_pos(k: int) -> Vector2:
 	var a := _t * 0.35 + TAU * float(k) / 7.0
-	return arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0)
+	return _hud_safe(arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0))
+
+
+## Desvio do HUD (QA7 #24, 3.2.1): na faixa do medalhão o Anel (halo de 16 px)
+## passa por BAIXO dele com folga — centro em y ≥ 104 (borda ≥ 88, o HUD acaba em
+## 70). Antes descia só até 88 e o halo encostava em "Névoa do Sono". O desvio
+## entra suave entre x 290 e 250 (sem pulo) e vale também para a linha da órbita.
+func _hud_safe(p: Vector2) -> Vector2:
+	if not is_inside_tree():
+		return p
+	var ct := get_viewport().get_canvas_transform()
+	var sp: Vector2 = ct * p
+	var lim := HUD_ZONE.y + 34.0
+	if sp.y >= lim:
+		return p
+	var kx: float = clampf((HUD_ZONE.x + 60.0 - sp.x) / 40.0, 0.0, 1.0)
+	if kx <= 0.0:
+		return p
+	p.y += (lim - sp.y) * kx / maxf(0.01, ct.get_scale().y)
+	return p
 
 
 ## Os 7 Anéis girando em volta da arena (glifo por Arconte, brilho pulsante).
 func _draw() -> void:
+	# forma caída prestes a se refazer: luz que cresce e se fecha nela (lê o tempo)
+	for e in down_since.keys():
+		if not is_instance_valid(e):
+			continue
+		var left: float = REVIVE_AFTER + 3.0 * float(_revives) - float(down_since[e])
+		if left > REVIVE_WARN:
+			continue
+		var k: float = clampf(1.0 - left / REVIVE_WARN, 0.0, 1.0)
+		var c: Vector2 = to_local(e.global_position + Vector2(0, -40.0))
+		var col: Color = e.eye_color
+		var pulse: float = 0.75 + 0.25 * sin(_t * (10.0 + 14.0 * k))
+		draw_circle(c, 18.0 + 46.0 * k, Color(col.r, col.g, col.b, 0.10 + 0.25 * k * pulse))
+		draw_arc(c, 70.0 - 40.0 * k, 0, TAU, 32, Color(1, 1, 1, 0.35 + 0.5 * k), 2.0, true)
+		draw_circle(c, 6.0 + 10.0 * k, Color(1, 1, 1, 0.3 + 0.6 * k * pulse))
 	if _rings_free:
 		return
 	for k in 7:
@@ -260,6 +313,6 @@ func _draw() -> void:
 	var pts := PackedVector2Array()
 	for i in 48:
 		var a := TAU * float(i) / 48.0
-		pts.append(to_local(arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0)))
+		pts.append(to_local(_hud_safe(arena_center + Vector2(cos(a) * 360.0, -140.0 + sin(a) * 40.0))))
 	pts.append(pts[0])
 	draw_polyline(pts, Color(1, 0.9, 0.6, 0.12), 1.0)

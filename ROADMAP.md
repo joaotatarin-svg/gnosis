@@ -4,6 +4,15 @@
 > 1.0 em ondas de agentes (comprimento + Gnose · cinema/UX/áudio/visual ·
 > fechamento). Este arquivo guarda o histórico; o estado vivo está lá.
 
+## Onda 7 — prévias 3.1 / 3.2 (28-29/10/2026; estado em BIBLIA.md §6 e docs/handoff/INTEGRADOR.md)
+
+- [x] Integração em lote por script (`tools/integrar.ps1`), validate -Repeat 2 verde a cada lote.
+- [x] 3.1: chefes recalibrados (sem TIMEOUT no BossProbe), VFX/sons novos, hurtbox pelo desenho, renda de faíscas igual.
+- [x] 3.2: Rei com BodyBox e Raio em orbe, Coroa/Praga/Réplica refeitos, mapa/UI/perigos/progressão 7, fundos novos por Éon (cenario7),
+  fio de contorno da Sophia, Campeão com um só stinger.
+- [ ] Playtest humano das prévias 3.1/3.2 (chefes mais duros: Coroa 192 s, Rei+Colosso 140 s no bot).
+- [ ] Pendências: Lab3D (estudo do 3D dos personagens), dublagem, áudio final, build 1.x de lançamento.
+
 ## Sessão 18/09/2026 — rumo à 1.1.0 (detalhe em BIBLIA.md §6)
 
 - [x] Branches órfãs integradas: 68 telas com travessias, ganchos de áudio, poses da Sophia.

@@ -21,6 +21,7 @@ const GROUND_Y := 24.0            # linha do chão em unidades do corpo (pés)
 
 var anim_state: String = "idle"
 var anim_time: float = 0.0
+var _interim_checked: bool = false
 var drawn_gait: bool = true       # Sophia: largada/freada desenhadas (S18) ao começar/parar de correr
 var damage_ratio: float = 0.0     # 0 = inteiro · 1 = quase morto (rachaduras)
 var _rig_draws: Array = []        # buffer de desenho do rig (tinta em 2 passes)
@@ -54,7 +55,7 @@ var _dead := 0.0         # 0..1 corpo caindo
 
 func set_profile(p: ArtProfile) -> void:
 	profile = p
-	painted = PaintedLibrary.character(p)
+	painted = PaintedLibrary.character(p, _host_ctx())
 	material = _flex_material()
 	# Pinturas grandes exibidas a ~1/4: mipmap evita cintilar a borda (o
 	# BossPuppet, filho deste nó, herda o filtro).
@@ -129,6 +130,43 @@ func set_rig(json_path: String, disp_height: float) -> bool:
 	return not rig.is_empty()
 
 
+## Contexto do Enemy dono deste desenho (tipo do Bestiary e Campeão) para o
+## PaintedLibrary escolher a arte própria. Sobe até 2 níveis (o Rim do Enemy
+## põe o desenho dentro de um CanvasGroup).
+func _host_ctx() -> Dictionary:
+	var n: Node = get_parent()
+	for _i in 2:
+		if n == null:
+			break
+		var t = n.get("type_id")
+		if t != null:
+			var champ = n.get("is_champion")
+			return {"type": String(t), "champion": champ == true}
+		n = n.get_parent()
+	return {}
+
+
+## Tem ARTE PRÓPRIA (Fila 9: voadores, cornudo, fantasma, acólito, campeões)?
+## Quem tinge o interino (tinta do tipo, graduação do Campeão) deve pular.
+func has_own_art() -> bool:
+	return painted.get("own_art", false) and has_boss_frames()
+
+
+## A arte própria já vem com a cor certa: desfaz a tinta e a graduação de cor
+## que o Enemy aplicou para disfarçar o interino (mantém só a transparência).
+func _clear_interim_tint() -> void:
+	if not has_own_art():
+		return
+	self_modulate = Color(1, 1, 1, self_modulate.a)
+	var g: Node = get_parent()
+	if g is CanvasGroup and (g as CanvasGroup).material is ShaderMaterial:
+		var m: ShaderMaterial = (g as CanvasGroup).material
+		if m.get_shader_parameter("grade_sat") != null:
+			m.set_shader_parameter("grade_hue", 0.0)
+			m.set_shader_parameter("grade_sat", 1.0)
+			m.set_shader_parameter("grade_tint", Color(1, 1, 1, 1))
+
+
 func has_rig() -> bool:
 	return not rig.is_empty()
 
@@ -172,6 +210,9 @@ func set_anim(state: String) -> void:
 
 
 func _process(delta: float) -> void:
+	if not _interim_checked:
+		_interim_checked = true
+		_clear_interim_tint()      # depois do _ready do Enemy (tinta + Rim já postos)
 	anim_time += delta
 	_tick_visual(delta)
 	if is_instance_valid(boss_puppet):
@@ -1364,6 +1405,7 @@ const MESH_ROWS := 10
 static var _frame_dbs: Dictionary = {}     # personagem → {meta, atlas, flex} (ou {} se não houver)
 static var _mesh_cache: Dictionary = {}    # chave do quadro+âncora → grade {pts, uvs, idx}
 
+var _hero_no_flex: bool = false     # a sequência mostrada já traz o vento nos quadros (estado com no_flex)
 var motion_distance: float = 0.0   # distância horizontal percorrida (fase da corrida/passo)
 var dodge_back: bool = false        # esquiva pra trás (o player liga; usa o quadro de recuo)
 var combo_step: int = 0             # golpe leve 1/2/3 do combo (o player liga; 0 = genérico)
@@ -1546,6 +1588,7 @@ func _draw_painted(s: float) -> void:
 		var meta: Dictionary = db.meta
 		var seq_name: String = _hero_seq(meta.states)
 		var seq: Dictionary = meta.states[seq_name]
+		_hero_no_flex = bool(seq.get("no_flex", false))   # vento já está nos quadros (parada r4)
 		var i: int = _seq_index(seq, seq_name)
 		var e: Dictionary = seq.frames[i]
 		var fr: Dictionary = meta.frames[e.f]
@@ -1573,6 +1616,7 @@ func _draw_painted(s: float) -> void:
 		# o mesmo espaço do boneco (colisões/_fit_body coerentes).
 		var meta: Dictionary = _boss_db.meta
 		var seq_name: String = _boss_seq(meta.states)
+		_boss_seq_shown = seq_name
 		var seq: Dictionary = meta.states[seq_name]
 		var i: int = _boss_index(seq)
 		var e: Dictionary = seq.frames[i]
@@ -1644,6 +1688,8 @@ func _draw_painted(s: float) -> void:
 	if framed_boss:
 		# chefe: só o pano/trapos de baixo (G da máscara); onda da barra por receita
 		var ca: float = float(_boss_db.meta.get("cloth_amp", 0.0))
+		if _boss_seq_shown in _boss_db.meta.get("flex_off_states", []):
+			ca = 0.0                       # a folha já ondula o manto (Rei v11: parada/andar em camadas)
 		mat.set_shader_parameter("hair_amp", 0.0)
 		mat.set_shader_parameter("cloth_amp", (ca * 1.5 if running else ca) if flex_tex != null else 0.0)
 		mat.set_shader_parameter("hem_wave", float(_boss_db.meta.get("hem_wave", 0.0)) * (1.4 if running else 1.0))
@@ -1663,9 +1709,17 @@ func _draw_painted(s: float) -> void:
 		if family:
 			tint = Color.WHITE.lerp(profile.primary.lightened(0.35), 0.5)
 	else:
-		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if flex_tex != null else 0.0)
-		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if flex_tex != null else 0.0)
+		var use_flex: bool = flex_tex != null and not (hero and _hero_no_flex)
+		mat.set_shader_parameter("hair_amp", (5.0 if running else 2.4) if use_flex else 0.0)
+		mat.set_shader_parameter("cloth_amp", (4.0 if running else 1.8) if use_flex else 0.0)
 		mat.set_shader_parameter("hem_wave", 2.0 if profile.body == ArtProfile.Body.WRAITH else 0.0)
+		# R18: a Sophia salta do fundo cheio — luz de recorte + halo fino na cor do Éon
+		var hero_rim: bool = hero and rim_enabled
+		mat.set_shader_parameter("rim_amt", HERO_RIM if hero_rim else 0.0)
+		mat.set_shader_parameter("halo_amt", HERO_HALO if hero_rim else 0.0)
+		mat.set_shader_parameter("rim_px", HERO_RIM_PX)
+		mat.set_shader_parameter("halo_px", HERO_HALO_PX)
+		mat.set_shader_parameter("rim_color", eon_light().lerp(Color(1, 0.96, 0.88), 0.35))
 	mat.set_shader_parameter("texel", Vector2(1.0 / tex.get_width(), 1.0 / tex.get_height()))
 	mat.set_shader_parameter("dissolve", _dissolve_amount())
 	mat.set_shader_parameter("glow_color", profile.eye)
@@ -1947,6 +2001,65 @@ func play_action(action_name: String) -> void:
 	_action = action_name
 	_action_t = 0.0
 	anim_time = 0.0
+	queue_redraw()             # troca a pose mesmo com o mundo pausado (cena com caixa de diálogo)
+
+
+## Encerra a ação avulsa (as poses `hold` da cena do Soter ficam até aqui).
+func stop_action() -> void:
+	_action = ""
+	queue_redraw()
+
+
+## COLUNA DE LUZ da bênção do Soter (Fila 9: a luz pintada na folha não se
+## separa do corpo — é refeita aqui): feixe morno aditivo descendo sobre ela,
+## mais forte no meio, com o miolo pulsando. Anima com o jogo pausado.
+## `on = false` apaga em `fade` s.
+func bless_light(on: bool = true, fade: float = 0.6) -> void:
+	var old: Node2D = get_node_or_null("BlessLight") as Node2D
+	if not on:
+		if old != null:
+			var t := old.create_tween()
+			t.tween_property(old, "modulate:a", 0.0, fade)
+			t.tween_callback(old.queue_free)
+		return
+	if old != null:
+		return
+	var root := Node2D.new()
+	root.name = "BlessLight"
+	root.process_mode = Node.PROCESS_MODE_ALWAYS
+	root.z_index = 1
+	var add := CanvasItemMaterial.new()
+	add.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	var h: float = profile.height * 1.19 * 2.4
+	var foot: float = GROUND_Y * profile.height / 44.0
+	# faixas verticais com alfa caindo para as bordas (feixe macio, sem quina);
+	# a camada 1 é o miolo estreito que pulsa
+	for layer in 2:
+		var half: float = profile.height * (0.6 if layer == 0 else 0.24)
+		var peak: float = 0.26 if layer == 0 else 0.3
+		var band := Node2D.new()
+		root.add_child(band)
+		var n: int = 10
+		for k in n:
+			var x0: float = -half + 2.0 * half * float(k) / n
+			var x1: float = -half + 2.0 * half * float(k + 1) / n
+			var xm: float = (x0 + x1) * 0.5 / half
+			var a: float = peak * pow(maxf(0.0, 1.0 - xm * xm), 1.5)
+			var poly := Polygon2D.new()
+			poly.material = add
+			poly.polygon = PackedVector2Array([Vector2(x0, foot - h), Vector2(x1, foot - h), Vector2(x1 * 0.85, foot + 2.0), Vector2(x0 * 0.85, foot + 2.0)])
+			var top := Color(1.0, 0.92, 0.62, 0.0)
+			var low := Color(1.0, 0.86, 0.52, a)
+			poly.vertex_colors = PackedColorArray([top, top, low, low])
+			band.add_child(poly)
+	add_child(root)
+	root.modulate.a = 0.0
+	var t2 := root.create_tween()
+	t2.tween_property(root, "modulate:a", 1.0, 0.7).set_trans(Tween.TRANS_SINE)
+	# miolo respirando (luz viva, não um retângulo parado)
+	var pulse := root.create_tween().set_loops()
+	pulse.tween_property(root.get_child(1), "modulate:a", 0.55, 0.9).set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(root.get_child(1), "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE)
 
 
 func _tick_action(delta: float) -> void:
@@ -1961,6 +2074,11 @@ func _tick_action(delta: float) -> void:
 	var total: float = 0.0
 	for d in seq.get("dur", []):
 		total += float(d)
+	# pose de cena (`hold`, S19 do Soter): fica até stop_action() ou ela se mexer
+	if seq.get("hold", false):
+		if anim_state != "idle":
+			_action = ""
+		return
 	# o aparo acaba junto com a guarda; o contra-ataque vai até o fim
 	if _action_t > total + 0.12 or (_action == "parry" and anim_state != "block"):
 		_action = ""
@@ -2156,6 +2274,7 @@ func _painted_motion() -> Array:
 # dos quadros, sem girar o cartão. O BossPuppet fica de reserva (sem atlas).
 
 var _boss_db: Dictionary = {}                     # {meta, atlas, flex, sil} ou {} (= boneco)
+var _boss_seq_shown: String = ""        # sequência do chefe mostrada neste quadro (flex_off_states)
 var _boss_m: Array = [0.0, 0.0, 1.0, 1.0, 0.0, 0.0]   # [ox, rot, sx, sy, oy, bend] da mola
 var _bsp := Vector2.ZERO                          # mola: (avanço x, curvatura) atuais
 var _bsv := Vector2.ZERO
@@ -2170,6 +2289,10 @@ const _TELEGRAPH_TINTS := [Color(1.0, 0.85, 0.2, 1.0), Color(1.0, 0.25, 0.25, 1.
 
 
 const RIM_BASE := 0.32              # contorno de luz dos inimigos (≈0,3; ×2 na preparação)
+const HERO_RIM := 1.6               # Sophia: luz de recorte (R18) — só no fio externo da silhueta; cai ao meio do raio (shader), o interior da pintura fica intacto
+const HERO_RIM_PX := 3.0            # raio da luz de recorte (texels da folha; ≈ 1 px de tela a 1280×720)
+const HERO_HALO_PX := 1.6           # raio do halo de fora (inalterado)
+const HERO_HALO := 0.25             # Sophia: halo de ~1 px por fora (R18)
 static var rim_override: int = -1   # QA: força o Éon da cor do contorno (-1 = tela atual)
 var rim_enabled: bool = true        # QA/cenas: desliga o contorno deste personagem
 var weapon_level_override: int = -1 # QA: força o nível da arma da Sophia (-1 = Progression)
@@ -2227,6 +2350,16 @@ func _boss_index(seq: Dictionary) -> int:
 	var n: int = seq.frames.size()
 	if n <= 1:
 		return 0
+	if _death_t >= 0.0 and seq.has("dur") and n > 2:
+		# morte em etapas: cada quadro dura dur[i] no relógio da morte; o último segura
+		var t: float = _death_t
+		var durs: Array = seq.dur
+		for i in n - 1:
+			var d: float = float(durs[i]) if i < durs.size() else 0.2
+			if t < d:
+				return i
+			t -= d
+		return n - 1
 	if _death_t >= DEATH_STAGGER:
 		return n - 1                          # morte encenada: o quadro de queda
 	if _death_t >= 0.0:
@@ -2259,8 +2392,21 @@ func _boss_index(seq: Dictionary) -> int:
 func _on_boss_frame_changed(seq: Dictionary, i: int) -> void:
 	if anim_state == "dead" and i == seq.frames.size() - 1 and seq.frames.size() > 1:
 		_impact = 1.0
+	# efeito que a folha trazia PINTADO e foi apagado no recorte (pó do sono da
+	# mariposa): refeito por partícula na frente do corpo ao entrar na sequência
+	if i == 0 and seq.has("puff") and is_visible_in_tree() and not _boss_shown.is_empty():
+		var pc: Array = seq.puff
+		var r: Rect2 = _boss_shown.rect
+		var front: Vector2 = _body_xform * (Vector2(r.size.x * 0.88, r.size.y * 0.42) - _boss_shown.anchor)
+		call_deferred("_puff_at", to_global(front), Color(float(pc[0]), float(pc[1]), float(pc[2]), 0.85))
 	if i in _int_list(seq.get("impact_at", [])) and i > 0:
 		spawn_afterimage(Color(profile.eye, 0.5), 0.09)
+
+
+func _puff_at(pos: Vector2, col: Color) -> void:
+	var host: Node = get_tree().current_scene if is_inside_tree() else null
+	if host != null:
+		VfxLibrary.cast(host, pos, col)
 
 
 func _silhouette_tex(tex: Texture2D) -> Texture2D:
@@ -2336,7 +2482,9 @@ func _tick_boss(delta: float) -> void:
 	for _j in steps:
 		_bsv += (-2.0 * damp * w * _bsv - w * w * (_bsp - goal)) * h
 		_bsp += _bsv * h
-	_boss_m = [_bsp.x + tremor, 0.0, sx, sy, oy, _bsp.y]
+	# Rei v11: a pintura já se mexe; a mola inteira (sx/sy/curvatura) lia como "cartão de borracha"
+	var smul: float = float(_boss_db.meta.get("spring_mul", 1.0))
+	_boss_m = [_bsp.x + tremor, 0.0, 1.0 + (sx - 1.0) * smul, 1.0 + (sy - 1.0) * smul, oy, _bsp.y * smul]
 	# Telegrafo: o tom chapado que o Enemy põe na preparação vira CONTORNO
 	# pulsante (a pintura do quadro de preparação continua legível).
 	if anim_state.begins_with("windup"):
@@ -2394,8 +2542,9 @@ func _tick_death(delta: float) -> void:
 	_death_t += delta
 	if before < DEATH_STAGGER and _death_t >= DEATH_STAGGER:
 		_impact = 1.0                       # cai de joelhos
+		# micro-tremor: o tremor GRANDE é um só, no golpe final (combate/chefes6)
 		if is_inside_tree():
-			Juice.shake(0.7)
+			Juice.shake(0.15)
 	if before < DEATH_BREAK and _death_t >= DEATH_BREAK:
 		_shatter()
 	if before < DEATH_END and _death_t >= DEATH_END:
@@ -2404,6 +2553,9 @@ func _tick_death(delta: float) -> void:
 
 ## Sequência e quadro durante a morte encenada.
 func _death_seq(states: Dictionary) -> String:
+	# FILA 10: morte DESENHADA em 4 etapas (tranco, cambaleio, joelhos, tombado)
+	if states.has("dying"):
+		return "dying"
 	if _death_t < DEATH_STAGGER and states.has("hurt"):
 		return "hurt"
 	return "dead" if states.has("dead") else "hurt"

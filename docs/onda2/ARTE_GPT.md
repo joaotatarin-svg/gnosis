@@ -312,8 +312,169 @@ Folha `rei_revelado_a` (fundo rosa 252,2,186; chave pela moldura) entrou como `e
 `tools/anim/geometry.py` mede em cada quadro de TODO atlas: caixa e contorno do corpo e, na Sophia, o eixo visível do cajado (cabo→ponta; estimado quando cruza o corpo). `CharacterArt.frame_geometry(global)` devolve isso no transform do corpo. HeroQA confere que todo quadro tem corpo, todo quadro com ponta tem cajado e que, na estocada, a ponta cai no cristal e fora do corpo; PuppetQA confere a caixa do corpo de todos os chefes. Prova: `gifs/geometria_quadros.png`. Pedidos ao combate6/inimigos6/chefes6 em `docs/pedidos/onda6_*.md`.
 
 
-## BILHETE PARA O SUCESSOR (18/10/2026, integrador de arte, branch `dir2/arte-gpt`)
+## FILA 9 (Onda 6) — integrada
+- **Sophia S17/S18** (b618400): ação desenhada `double_jump` (o player do combate6 já chama `play_action("double_jump")`
+  e pula o giro do cartão quando `has_action`); `start_run`/`stop_run` automáticos no `set_anim` (parado→corre;
+  corre >0,3 s→parado), desligáveis com `drawn_gait = false`. Nome de estado NÃO pode começar com "run" (índice
+  pela distância). Virada (s18 q6-7) fora. Escala s18 = 1.03 com `frame_fix` na freada (igual ao run/idle).
+  Prova: `_caps/arte-gpt/fila9/s17_s18_antes_depois.png`, `dj_detail.png` (AnimQA `film_gait x [old]`).
+- **Inimigos com arte própria**: `PaintedLibrary.character(p, ctx)`; o `CharacterArt._host_ctx()` lê `type_id` e
+  `is_champion` do Enemy (pai/avô). `OWN_ART`: espectro=mariposa, alado=sentinela-olho (voa e atira de cima),
+  acolito=en_alado_a (andarilho com besta), cornudo, fantasma (fundo verde). Campeão → `creatures/champ_<bot>`.
+  `has_own_art()`; o interino (tinta do tipo + graduação do Rim) é desfeito no 1º `_process` (`_clear_interim_tint`)
+  até o inimigos6 pular por conta própria (pedido em `docs/pedidos/onda6_inimigos6.md`).
+- **Pipeline**: `key_array` detecta fundo VERDE pela moldura (despill: g ≤ média(r,b) na borda e onde g > r);
+  `slice_sheet(grid_only, erase)`: `grid_only` separa quadros que se tocam por inundação geodésica a partir do corpo
+  de cada célula (champ_2, champ_7); `erase` apaga retângulos (pó do sono da mariposa; névoa do champ_6 via
+  `mk_champ_recipes.haze_rects`). Estado com `puff: [r,g,b]` solta `VfxLibrary.cast` na frente do corpo ao entrar.
+  Andar SEM meios do RIFE (a PuppetQA proíbe: lê como fantasma).
+- Prova: `_caps/arte-gpt/fila9/own_board.png`, `own_board_champ.png` (AnimQA `own_board x [champ]`).
+- Ressalvas (revistas): champ_3 e champ_6 com `despill_full` (o rosado pintado nos panos virou ferrugem/vinho);
+  o brilho amarelado no leque do champ_6 ficou (lê como esporos acesos); champ_5 morre estilhaçando EM PÉ de
+  propósito (cavaleiro de vidro — R17 morte distinta), com o monte de cacos no chão (âncora `lying` = base no chão).
 
+## Mortes de chefe em 4 etapas (FILA 10) e cor real
+- Folhas `boss_<n>_<nome>_death_a.png` (2×2: tranco, cambaleio, joelhos, tombado) entram por
+  `tools/anim_bosses/add_death.py` como `extra_sheets` (escala auto contra o `hurt`) e estado `dying`
+  (dur 0,17/0,17/0,28; o tombado segura até o estilhaço em 1,08 s). `_death_seq` prefere `dying`; `_boss_index`
+  indexa pelo relógio da morte. O fundo rosa do Rei (≈248,2,192) passou na chave magenta normal (K estimado da
+  moldura; r e b ≫ g) — sem chave própria. Galila: usada a `_a`. Prova: `_caps/arte-gpt/fila9/death_board.png`
+  (AnimQA `death_board`: 1ª linha = antes).
+- Cor ao quadrado corrigida no `painted_flex` (60a8cf7): Sophia e criaturas sem quadros na cor real da pintura.
+
+## CHECAGEM DE SATISFAÇÃO (docs/handoff/NEURO_SATISFACAO.md)
+- **R17 morte distinta**: chefe morre em 4 poses desenhadas (tranco → cambaleio → joelhos → tombado) + lampejos
+  brancos no tranco, tremor e contorno crescendo antes do estilhaço — lê como "acabou" sem olhar a barra.
+  Criaturas novas têm quadro de morte próprio (deitado/desfazendo); o contorno branco de 1 quadro no golpe que
+  mata é do combate/juice.
+- **R18 legibilidade (19/10, auditoria do Guardião)**: Sophia ganhou luz de recorte (por dentro, só onde a borda é
+  escura) + halo de ~1 px (por fora) na cor do Éon no `painted_flex` (`HERO_RIM` 0,6, `HERO_HALO` 0,25 só junto das partes ESCURAS —
+  sem piso: o cajado dourado ficou sem a faixa pálida que o Guardião apontou —, raio 1,6 texel).
+  Medido em jogo (ContrastProbe + contrast_r18.py): tela 3 1,76→2,06:1 · tela 30 2,02→2,37:1 · tela 57 1,45→1,71:1.
+  Mais forte lava a pintura; o resto até 3:1 é do fundo (pedido em `docs/pedidos/cenario7.md`). Prancha:
+  `_caps/arte-gpt/r18/r18_antes_depois.png`. Chefes/criaturas por quadros já tinham o rim do `painted_boss`.
+- **R18 fechamento com os fundos HD (29/10, Cenário7 1b1c69f na base) — REFEITO como fio de contorno**: o contraste
+  borda×fundo da Sophia estava em 2,6–2,9:1. 1ª tentativa (`HERO_RIM` 0,9, raio 6 texels) bateu 3,0 mas lavou pernas/botas
+  (creme em vez de marrom/azul-petróleo) — REPROVADA pelo chefe: a pintura vale mais que o número. Versão final: o
+  `painted_flex.gdshader` pondera a luz em dois raios (70% no meio raio, 30% no raio cheio: cai rápido para dentro) e
+  `HERO_RIM` 1,6 com `HERO_RIM_PX` 3,0 (~1 px de tela a 1280×720); halo de FORA inalterado (`HERO_HALO` 0,25, `halo_px` 1,6).
+  Interior de botas/calça/manto idêntico ao "antes" (zoom 2× nas botas). Medido (ProbeBg, rim off→on): 3 Torpor 2,76→3,16 ·
+  13 Fome 2,87→3,11 · 22 Corrente 2,86→3,15 · 31 Silêncio 2,77→3,11 · 40 Espelho 2,74→3,01 · 49 Praga 2,76→3,10 ·
+  57 Coroa 2,76→2,85 · 58 Coroa 2,62→2,67 · 66 Centro 2,85→3,19 · 68 Mente 2,08→2,33. Coroa e Mente NÃO chegam a 3:1 (fundo
+  dourado/roxo claro atrás, borda média baixa) — aceito pelo chefe até ~2,8 se a pintura ficar íntegra; 58 e 68 ficam um
+  pouco abaixo (o resto é do fundo/Cenário). `contrast_probe.gd` pula diálogo (tela 68).
+  Capturas: `C:\gnosis-wt\_caps\arte\r18\` (`r18_antes_depois_v2.png` = 58_x450, 58_x180 (Sophia diante dos
+  pedestais/estátuas dourados da Coroa), 40 Espelho, 3 Torpor; `r18_botas_2x_v2.png`; probes `fin2_*`).
+  CHECAGEM: R18 atendida em 7 de 10 telas (≥3:1), Coroa 2,7–2,85 e Mente 2,3 pendentes e sinalizadas; R16 ok (fio
+  discreto, sem pulso/flash); §4 conferido (sem truque, sem aviso por cor); cor REAL da pintura preservada.
+- **R17 tremor**: o `Juice.shake` da queda de joelhos na morte desenhada caiu de 0,7 para 0,15 (micro) — o tremor
+  grande é UM, no golpe final (combate/chefes6).
+- **QA7 #18 pés**: `tools/FeetProbe.tscn` mede pé desenhado × base da colisão nas 7 telas de Arconte: todos ≤ 3 px,
+  exceto Belias 6,7 px (foot_gap do boneco antigo → zerado). Os 40–55 px da captura do QA7 não se reproduzem no
+  idle/andar — devem ser de pose/encenação (entrada do chefe), não da âncora do PNG.
+- **R18 (antes)**: cor REAL da pintura (sem o quadrado, a Sophia ficou mais clara e salta do fundo escuro);
+  inimigos com arte própria mantêm o contorno do Rim (cor do Éon); o interino tingido/dessaturado sai quando
+  há arte própria. Fantasma: fumaça despill p/ cinza-violeta (não some no fundo azul). Pendente: teste em
+  escala de cinza ≥ 3:1 por tela (dono: cenário/QA).
+- **R19 smear/segurar pose**: nada mudou no golpe da Sophia; as ações novas (pulo duplo, freada) são quadros
+  desenhados — sem "foto cortada" girando (o giro do cartão do pulo duplo saiu quando há quadros).
+- **R20 squash**: pulo duplo/arrancada/freada desenhados não usam squash extra do CharacterArt (o `_hero_motion`
+  segue moderado: jump 0,95/1,06). O squash do player.gd é do combate6.
+
+## PARADA r4 DO LAB3D (29/10/2026; substitui a parada 3D l28 do commit 8916611)
+O João aprovou a r4: a parada é a PRÓPRIA pintura `s16.breath_0` animada por deformação em camadas (respiração + vento no
+cabelo e nas abas do pano). Corrida, pulo, golpes, `ready` etc. seguem pintados; o `walk3d` saiu (decisão do chefe: o estilo 3D
+não combina com a parada pintada).
+- **Folha:** `assets/painted/src/sophia_s20_loco3d.png` trocada pela de `lab3d/loco/r4/jogo` (mesma grade 8×7 e nomes; só as 12
+  `idle_*` mudaram). Receita: `idle` = `s20.idle_00..11` (6 qps, âncora `front`) com `no_flex`; `idle_pintado` (s16) fica de
+  reserva; `walk3d` REMOVIDO da receita e do HeroQA. Só os quadros usados entram no atlas (106 quadros; 2048×4096).
+- **Vento não dobra:** novo `no_flex` por estado (`build_frames.py` copia a chave; `character_art.gd` zera `hair_amp`/`cloth_amp`
+  do shader quando a sequência mostrada tem `no_flex`). O ramo `advance` do `build_frames.py` continua (genérico, sem uso agora);
+  o código do `walk3d` no `character_art.gd` foi revertido.
+- **Prova (Shot 1280×720, `--audio-driver Dummy --position 4000,4000`):** `C:\gnosis-wt\_caps\arte\loco_r4\` — `p_idle.png`
+  (sequência da parada, antes=pintada × depois=r4), `p_idle_golpe.png`, `p_idle_corrida.png`, `zoom2x_parada.png` (8 quadros da
+  parada a 2×). Pose, altura, pé e cor iguais à pintada; no zoom a deformação não vira "borracha" (rosto, braços, botas e
+  cajado estáveis; só cabelo e abas se mexem). Emenda parada→golpe e parada→corrida sem salto (a pose é a da pintura).
+- **R18 (contraste borda×fundo, rim off→on, telas 3/13/22/31/40/49/57/58/66):** 2,79→3,06 · 2,81→2,94 · 2,71→2,85 · 2,81→3,07 ·
+  2,62→2,85 · 2,70→2,95 · 2,67→2,73 · 2,73→2,68 · 2,88→3,00. Voltou ao nível da pintura (o 3D dava 3,2–3,8): ≥2,85 em 7 das 9;
+  as duas da Coroa (57/58) ficam em 2,7 — o limite é o fundo dourado. Aceito pelo chefe até ~2,8 com a pintura íntegra; Coroa pendente.
+- **CHECAGEM DE SATISFAÇÃO:** R18 como acima (sem recorte brilhante); R19/R20 não se aplicam (nada de golpe/squash novo);
+  R16 ok (parada legível, silhueta igual); §4 conferido (arte apenas). Sem salto de estilo entre parada e golpe/corrida.
+
+## (SUBSTITUÍDA pela r4 abaixo) SOPHIA 3D NA PARADA (29/10/2026, Lab3D l25; commit 8916611)
+Decisão do João (caminho MISTO): só a PARADA (`idle`) vira 3D pré-renderizado; corrida, pulo, queda, pouso, golpes, `ready`,
+esquiva etc. seguem PINTADOS. O andar 3D entra só como pose de encenação (`walk3d`), sem mudar a jogabilidade.
+- **Fonte/receita:** `assets/painted/src/sophia_s20_loco3d.png` (grade 8×7, alfa real) + fonte `s20` em
+  `tools/anim/sophia_recipe.json` (escala `auto:idle_00`, o mesmo critério das outras folhas). `idle` = `s20.idle_00..11`
+  (6 qps, âncora `front`); a parada pintada antiga ficou em `idle_pintado` (para comparar/voltar: trocar o nome).
+  `walk3d` = `s20.walk_00..15` (âncora `pelvis`, `persist`, avanço exato do Lab). Só os quadros usados entram no atlas
+  (28 quadros 3D novos): o atlas segue 2048×4096 (≈3107 px de altura usados) — sem 2048×8192.
+- **`build_frames.py`:** ramo novo `advance` já medido (pé plantado por IK no Blender) em vez do `cycle_bodies: auto`
+  (que erra com pés na mesma altura) + chave `persist` copiada para o estado.
+- **`character_art.gd`:** `walk3d` troca de quadro pela DISTÂNCIA andada (como a `rund`) e `persist` mantém a ação até
+  `stop_action()` (o `_tick_action` não a expira nem a corta quando ela anda). Uso na encenação:
+  `art.play_action("walk3d")` e mover o nó (o `motion_distance` acumula sozinho); ~28,7 px de mundo por ciclo de 16 quadros.
+  Nada no `player.gd`; `_hero_seq` intocado (andar/correr do jogo continuam `rund`).
+- **Emenda parada→golpe / parada→corrida:** os estados batem por construção e foram conferidos: altura pé→topo 256,0–256,8
+  (pintada 256,0–256,5), pé sobre a âncora (0,0), `front_x` na âncora igual (28,4 px de atlas, o mesmo de ready/windup),
+  luminância média dos pixels opacos 131,3 nos dois (RGB médio 146/130/105 × 150/128/104). A luz de recorte `HERO_RIM` vale nos
+  quadros 3D (é do shader, não do quadro): contraste borda×fundo com a parada 3D, rim off→on, telas 3/13/22/31/40/49/57/58/66 =
+  2,71–3,09 → 3,23–3,79:1 (as 9 passam de 3:1, inclusive as duas da Coroa, que com a parada pintada ficavam em 2,7–2,85).
+- **Prova (Shot, 1280×720, `--audio-driver Dummy --position 4000,4000`):** `C:\gnosis-wt\_caps\arte\loco3d\` — `p_idle.png`
+  (parada, antes×depois), `p_idle_golpe.png` (parada→1º quadro do golpe), `p_idle_corrida.png` (parada→corrida), `z_idle.png` e
+  `z_zoom.png` (zoom). Linha de cima = antes (A), de baixo = depois (D). Pés no mesmo y e mesma altura nas três; a 3D é mais
+  frontal/musculosa e tem cabelo estático (o vento do shader mexe); o contorno fino do HERO_RIM aparece igual.
+- **Fica a dizer:** a troca visual de estilo existe (pintura→3D) e o João deve julgar jogando; `ready` (até 1,8 s após lutar)
+  segue pintado, então o 3D só aparece depois disso. HeroQA ganhou checagens (parada 3D com 12 quadros, `idle_pintado`,
+  `walk3d` persiste/anda por distância/`stop_action`). Corrida/pulo/queda/pouso 3D do Lab NÃO foram ligados.
+- **CHECAGEM DE SATISFAÇÃO:** R18 atendida (contraste maior, ver acima; sem recorte brilhante); R19/R20 não se aplicam à
+  parada (nada de golpe/squash novo — `_hero_motion` respira ±0,6% como antes); R16 ok (parada legível, silhueta e altura
+  iguais); §4 conferido: nenhuma recompensa/escassez, só arte. Risco aceito: mudança de estilo parada(3D)×golpe(pintado).
+
+## REI v11 DO LAB3D (29/10/2026; base integracao/onda1 3993fb5)
+Parada e andar do Rei = a pintura `idle_0` animada em camadas (mesma técnica da parada r4 da Sophia). Golpes, preparo, dano,
+morte e cenas seguem com as pinturas atuais (os quadros intermediários de braço virão do GPT — `PEDIDO_GPT.md` do Lab).
+- **Material:** `artes/gpt/boss_9_rei_idle_camadas.png` (grade 6×5, 28 células) e `tools/anim_bosses/recipes/rei.json` = a receita
+  completa do Lab (mais 1 `extra_sheets`, `anchor_fix` medido, `inbetween` vazio, `idle`/`walk` novos). Atlas regerado com
+  `boss_frames.py rei --no-rife`: 44 quadros, 2048×2048 (igual), ajuste `fit` idêntico (`body_frac` 0,9707). `idle` = 16 quadros a
+  6 fps (sem vaivém/RIFE); `walk` = 12 quadros "deslizar", trocados pela distância (`cycle_bodies` 0,9).
+- **`rei_body_data.gd` NÃO foi tocado** (BodyBox é do Chefes6, que aplica o dado novo em paralelo).
+- **Mola do cartão a 30% (recomendação do plano):** chave de receita `spring_mul` (padrão 1,0; Rei 0,3) vai para o meta e o
+  `character_art.gd` aplica a (sx−1), (sy−1) e à curvatura `bend` da mola amortecida do chefe — só o Rei muda; os outros chefes
+  seguem 1,0. A pintura já se mexe; a mola inteira lia como "cartão de borracha".
+- **Sem vento do shader na parada/andar:** chave `flex_off_states` (Rei: idle, walk) zera o `cloth_amp` do shader enquanto a
+  sequência mostrada é uma delas (o manto já ondula na folha); nos golpes o vento do shader continua (pinturas paradas).
+- **Prova** (`C:\gnosis-wt\_caps\arte\rei_v11\`, 1280×720, `--audio-driver Dummy --position 4000,4000`, A = antes em cima, D = depois
+  embaixo): luta real do Rei no Limiar por Shot — `luta_andar_golpe.png` (CHASE→preparo→golpe→recuperação, mesmos estados nos
+  mesmos quadros); quadro a quadro limpo (AnimQA film_boss) — `p_parada.png`, `p_andar.png`, `p_golpe.png`; zoom 2× —
+  `zoom2x_capuz.png`, `zoom2x_barra.png`, `zoom2x_andar_capuz.png`. Parada e andar movem como pano, sem fervura nem borrão dos
+  meios; no golpe a pintura é a mesma e o esticar/achatar sumiu quase todo.
+- **Ressalvas:** a transição parada/andar → preparo (braço sobe) segue troca seca (já era; precisa dos intermediários do GPT);
+  a folha de origem é macia (~450 px, limite da pintura); feel só na mão do João.
+- **CHECAGEM DE SATISFAÇÃO:** R16/R18 (legibilidade do chefe: silhueta e altura iguais, contorno do telégrafo intacto; o preparo
+  continua legível com o brilho/rim); R19 (golpe sem "peça girando": menos mola); R4/R5 não se aplicam (nenhum dado de combate
+  mudou, hitbox só pelo `rei_body_data` do Chefes6); §4 conferido (arte apenas, sem recompensa/escassez).
+
+## BILHETE PARA O SUCESSOR (19/10/2026, 2º integrador de arte, branch `dir2/arte-gpt`)
+
+**Estado:** TUDO da lista do chefe feito, validado (validate -Repeat 2 verde) e com push; último commit e114a52.
+- Fila 9: bloco 1 Sophia S17/S18 (b618400) · blocos 2+3 inimigos/campeões (7163c12) · bloco 4 Soter (62f3ed0).
+- Cor ao quadrado do `painted_flex` corrigida (60a8cf7) — polimento7 recalibra o FLASH_ADD.
+- Mortes de chefe em 4 etapas (4038d12, `add_death.py`, estado `dying`). Ressalvas dos campeões (e114a52).
+**Pedidos abertos (de outros):** inimigos6 pular a tinta/graduação do interino com `visual.has_own_art()`
+(hoje o CharacterArt desfaz sozinho); narrativa6 usar Soter `lift/offer/rest`, Sophia `soter_look/land/bow`
+e `visual.bless_light()` na cena da leveza (`docs/pedidos/onda6_narrativa6.md`).
+**Possíveis próximos:** virada da Sophia (s18 q6-7 fraca — pedir refação ao GPT se o João quiser); `fx_floor_crack_a`
+já está em `assets/cinematic/` (integrado por outro); acólito usa a arte do alado de besta (en_alado_a) — se o
+João quiser o monge da lanterna, pedir folha nova; quadros de morte das criaturas comuns são 1 só (hurt→death).
+**Ferramentas novas:** `slice_sheet(grid_only, erase, strip_glow, min_part, despill_full)`; chave VERDE automática no
+`key_array`; AnimQA `film_gait x [old]`, `own_board x [champ]`, `soter_board`, `death_board`.
+**Armadilhas:** estado da Sophia não pode começar com "run"; andar de criatura SEM meios do RIFE (PuppetQA);
+depois de atlas novo, `--editor --quit` e conferir `mipmaps/generate=true`; AnimQA com erro de script trava
+(Start-Process + WaitForExit e matar pelo PID); escreva caminhos Windows em Python com r'' (barra-b vira backspace).
+Pranchas: `C:\gnosis-wt\_caps\arte-gpt\fila9\`.
+
+### Bilhete anterior (1º integrador)
 **Estado:** tudo abaixo está commitado e com push; `tools/validate.ps1 -Repeat 2` VERDE (11 etapas) no último commit.
 Feito na Onda 6: Rei revelado + retratos (Pedidos 8/9), morte de chefe com peso (`play_boss_death`, pedido ao chefes6),
 cabeça por quadro (`head_point`, pedidos ao inimigos6/narrativa6 sobre o orbe solto e a máscara do `_King`),

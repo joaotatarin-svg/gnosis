@@ -49,7 +49,7 @@ class Runner extends Node:
 				else:
 					c._finish()
 		for e in get_tree().get_nodes_in_group("enemy"):
-			if is_instance_valid(e) and not e.is_queued_for_deletion():
+			if is_instance_valid(e) and not e.has_meta("probe") and not e.is_queued_for_deletion():
 				e.queue_free()
 
 	# --- passos de física com Input simulado ---
@@ -99,6 +99,7 @@ class Runner extends Node:
 		await _mash("attack_heavy", "forte")
 		await _aerial()
 		await _double()
+		await _shakes()
 		_damage_table()
 		_run_frames()
 		if fails.is_empty():
@@ -107,6 +108,56 @@ class Runner extends Node:
 			for f in fails:
 				push_error("QA FAIL: FeelProbe — " + f)
 		get_tree().quit()
+
+	# --- tremor de câmera (R3, Polimento 7): maior pedido por situação ---
+	var _shake_max: float = 0.0
+
+	func _on_shake(t: float) -> void:
+		_shake_max = maxf(_shake_max, t)
+
+	func _shakes() -> void:
+		await _settle()
+		Juice.shake_requested.connect(_on_shake)
+		var en = load(Enemy.ENEMY_SCENE).instantiate()
+		en.type_id = "servo"
+		en.set_meta("probe", true)
+		pl.get_parent().add_child(en)
+		en.global_position = pl.global_position + Vector2(26.0 * pl.facing, 0.0)
+		await _step(2)
+		en.set_physics_process(false)
+		en.health.max_health = 99999
+		en.health.current_health = 99999
+		var res := {}
+		# leve: string de 3 leves
+		_shake_max = 0.0
+		for i in 3:
+			_tap("attack_light")
+			await _step(22)
+		await _settle()
+		res["leve"] = _shake_max
+		_shake_max = 0.0
+		_tap("attack_heavy")
+		await _step(40)
+		await _settle()
+		res["pesado"] = _shake_max
+		_shake_max = 0.0
+		en._shake_routine(0.45)        # pancada/explosão de inimigo COMUM
+		await _step(2)
+		res["inimigo_comum"] = _shake_max
+		_shake_max = 0.0
+		pl.invuln_timer = 0.0
+		pl._on_hit_received(5, en.global_position, 120.0, false, en)
+		await _step(2)
+		res["sophia_ferida"] = _shake_max
+		Juice.shake_requested.disconnect(_on_shake)
+		en.queue_free()
+		await _settle()
+		print("FEEL|tremor leve=%.2f pesado=%.2f inimigo_comum=%.2f sophia_ferida=%.2f (Juice.shake_mult=%.2f)" % [res.leve, res.pesado, res.inimigo_comum, res.sophia_ferida, Juice.shake_mult])
+		if Juice.shake_mult > 0.0:
+			if res.inimigo_comum > 0.15 * Juice.shake_mult + 0.001:
+				fails.append("tremor de golpe de rotina de inimigo comum > 0,15 (R3)")
+			if res.leve > res.pesado:
+				fails.append("leve treme mais que o pesado (R3)")
 
 	# --- andar: arrancada, freio, giro ---
 	func _walk() -> void:

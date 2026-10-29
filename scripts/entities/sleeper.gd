@@ -40,8 +40,11 @@ func _on_body_entered(body: Node) -> void:
 	awake = true
 	Audio.play_sfx("sleeper_wake")
 	queue_redraw()
-	Progression.sleepers_freed += 1
-	Progression.add_orbs(10 + screen)
+	# Guardião §3: cada Adormecido conta e paga UMA vez por run (morrer e
+	# despertá-lo de novo contava 2× para o final "Semente").
+	if Progression.claim_once_or_notice("adormecido:%d" % screen):
+		Progression.sleepers_freed += 1
+		Progression.add_orbs(10 + screen)
 
 	# A faísca acende: olho ganha luz, brilho de despertar.
 	var p: ArtProfile = _art.profile.duplicate()

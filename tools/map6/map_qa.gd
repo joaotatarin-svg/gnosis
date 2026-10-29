@@ -90,9 +90,25 @@ func _graph_checks() -> void:
 		var kinds := {}
 		for id in EonMap.graph(eon).nodes:
 			kinds[String(EonMap.find(String(id)).kind)] = true
-		if kinds.size() < 8 or not kinds.has("challenge") or not kinds.has("secret"):
+		if kinds.size() < 8 or not kinds.has("challenge") or not (kinds.has("secret") or kinds.has("hidden")):
 			poor.append("e%d=%s" % [eon, str(kinds.keys())])
 	check(poor.is_empty(), "todo Éon tem combate/perigo/escalada/santuário/Arena/segredo %s" % str(poor))
+	# mapa7 (decisão do chefe): nenhum nó que exige pulo duplo até a tela do 1º
+	# Soter (RunManager.double_jump_screen(), hoje 17) — antes dele o segredo é a câmara oculta, livre e com o mesmo prêmio.
+	var early: Array = []
+	for eon in 7:
+		for id in EonMap.graph(eon).nodes:
+			var n := EonMap.find(String(id))
+			if String(n.requires) == "double_jump" and int(n.screen) <= RunManager.double_jump_screen():
+				early.append(id)
+	var h0 := EonMap.find("e0.6a")
+	var h1 := EonMap.find("e1.3a")
+	check(RunManager.double_jump_screen() == 17 and RunManager.soter_meeting_at(17) == 0 and RunManager.soter_meeting_at(35) == 1
+		and RunManager.soter_meeting_at(53) == 2 and RunManager.velkar_at(61) and RunManager.soter_meeting_at(16) == -1,
+		"lugar do Soter lido de RunManager.SOTER_SLOTS (17/35/53, Velkar 61)")
+	check(early.is_empty() and String(h0.kind) == "hidden" and String(h1.kind) == "hidden"
+		and String(h0.requires) == "" and str(EonMap.REWARDS["hidden"]) == str(EonMap.REWARDS["secret"]),
+		"nenhum cadeado antes do Soter (tela %d): e0.6a/e1.3a são câmaras ocultas livres, mesmo prêmio %s" % [RunManager.double_jump_screen(), str(early)])
 	# Compatibilidade dos beats: slot ↔ tela legada.
 	var bad_slot: Array = []
 	for s in range(1, RunManager.MAX_SCREEN + 1):
@@ -136,7 +152,7 @@ func _plan_checks() -> void:
 			if plan.is_empty():
 				bad.append("%s sem plano" % id)
 				continue
-			if kind in ["hazard", "platform", "sanctuary", "challenge", "secret"] and plan.size() != 2:
+			if kind in ["hazard", "platform", "sanctuary", "challenge", "secret", "hidden"] and plan.size() != 2:
 				bad.append("%s %d zonas" % [id, plan.size()])
 			for zone in plan:
 				if (zone as Array).is_empty():
@@ -147,6 +163,14 @@ func _plan_checks() -> void:
 					for t in wave:
 						if String(Bestiary.get_type(String(t)).get("id", "")) != String(t):
 							bad.append("%s tipo %s" % [id, t])
+			# mapa7: antes do Soter (telas 2–16) nenhuma estrutura de pulo duplo
+			# no layout (saliência com baú ou sala) — nada prometido fora de alcance.
+			if int(n.screen) < RunManager.double_jump_screen():
+				var lay: Dictionary = ScreenLayouts.plan(int(n.screen), plan.size())
+				for ps in lay.get("passages", []):
+					for it in ps.get("items", []):
+						if String(it.get("t", "")) in ["dj_cache", "vault"]:
+							bad.append("%s pulo duplo no layout (%s)" % [id, it.t])
 			# O papel legado não muda (narrativa/HUD/regras por papel seguem).
 			var legacy := String(EonMap.KINDS[String(n.kind)].role)
 			if RunManager.screen_role(int(n.screen)) != legacy:
@@ -253,16 +277,17 @@ class Flow extends Node:
 		await scene_is("Level01.tscn")
 		check(RunManager.current_screen == 2 and RunManager.current_node == "e0.0b" and RunManager.path[RunManager.path.size() - 1] == "e0.0b"
 			and not RunManager.path.has("e0.2a"), "morte volta à chegada com a rota cortada (%s)" % str(RunManager.path))
-		# Segredo trancado sem pulo duplo (Éon 0, camada 6).
+		# Éon 0, camada 6: a câmara oculta (sem pulo duplo) e o caminho comum.
 		RunManager.current_screen = 7     # camada 5, trilha alta
 		RunManager.current_node = "e0.5a"
 		RunManager.last_node = "e0.5a"
 		RunManager.current_screen = 8
 		RunManager.choosing = true
 		var o6 := RunManager.options_after("e0.5a", 8)
-		check(o6.has("e0.6a") and not RunManager.node_available("e0.6a") and not RunManager.choose_node("e0.6a"),
-			"sala secreta trancada sem o pulo duplo (%s)" % str(o6))
+		check(o6.has("e0.6a") and not RunManager.node_available("e2.2a") and RunManager.available_options("e0.5a", 8).size() == o6.size(),
+			"sem pulo duplo: a sala de asas (e2.2a) fica fechada, mas nada antes do Soter fica (%s)" % str(o6))
 		check(RunManager.available_options("e0.5a", 8).size() >= 1, "sempre há uma saída livre")
+		await _seal_checks()
 		# Snapshot / continuar (rota até o checkpoint).
 		RunManager.choose_node("e0.6b")
 		await scene_is("Level01.tscn")
@@ -298,6 +323,59 @@ class Flow extends Node:
 		var secret := r1.filter(func(id): return String(EonMap.find(String(id)).kind) == "secret")
 		check(secret.is_empty(), "o bot sem pulo duplo nunca entra em segredo")
 		RunManager.map_route_seed = -1
+
+	## Onda 7 (decisão do chefe): o segredo antes do Soter aparece SELADO e diz
+	## por quê ("precisa de asas", prêmio escondido); com o pulo duplo o selo
+	## vira "aberto" e o prêmio aparece. A tela de mapa roda num SubViewport
+	## (sem trocar a cena da QA), no estado "escolhendo a camada 6 vindo de e0.5a".
+	func _seal_checks() -> void:
+		# Antes do Soter (Éon 0, camada 6): a câmara oculta não tem selo e está livre.
+		check(RunManager.node_available("e0.6a") and RunManager.options_after("e0.5a", 8).has("e0.6a"),
+			"câmara oculta (e0.6a) escolhível sem pulo duplo")
+		# O selo de asas: na sala secreta do Éon 2 (depois do Soter), vindo de e2.1a.
+		var keep_screen := RunManager.current_screen
+		var keep_last := RunManager.last_node
+		RunManager.current_screen = 22
+		RunManager.last_node = "e2.1a"
+		var vp := SubViewport.new()
+		vp.size = Vector2i(640, 360)
+		add_child(vp)
+		var m: Node = (load("res://scenes/ui/WorldMap.tscn") as PackedScene).instantiate()
+		vp.add_child(m)
+		await frames(3)
+		var badge_locked := String(m.call("secret_badge", "e2.2a"))
+		# Seleciona o segredo (trilha alta = 1º da lista ordenada).
+		m.set("_sel", 0)
+		m.call("_refresh_info")
+		var req_l := String((m.get("_sel_req") as Label).text)
+		var rew_l := String((m.get("_sel_reward") as Label).text)
+		check(badge_locked == "locked" and req_l.begins_with("Precisa de asas") and rew_l.contains("escondida"),
+			"sala de asas sem pulo duplo: selo fechado, 'precisa de asas', prêmio escondido (%s | %s | %s)" % [badge_locked, req_l, rew_l])
+		check(String(m.call("secret_badge", "e2.2b")) == "" and String(m.call("secret_badge", "e0.6a")) == "", "nó comum e câmara oculta não têm selo")
+		m.queue_free()
+		# Com as asas: o selo abre e a 1ª tela avisa uma vez.
+		Progression.grant_double_jump()
+		var m2: Node = (load("res://scenes/ui/WorldMap.tscn") as PackedScene).instantiate()
+		vp.add_child(m2)
+		await frames(3)
+		m2.set("_sel", 0)
+		m2.call("_refresh_info")
+		var req_o := String((m2.get("_sel_req") as Label).text)
+		var rew_o := String((m2.get("_sel_reward") as Label).text)
+		var news := float(m2.get("_wings_news")) > 0.0 and String((m2.get("_sub") as Label).text).contains("asas")
+		check(String(m2.call("secret_badge", "e2.2a")) == "open" and req_o.begins_with("Aberta") and rew_o.contains("faíscas") and news,
+			"com o pulo duplo: selo aberto, prêmio à vista, aviso único (%s | %s | aviso=%s)" % [req_o, rew_o, str(news)])
+		m2.queue_free()
+		var m3: Node = (load("res://scenes/ui/WorldMap.tscn") as PackedScene).instantiate()
+		vp.add_child(m3)
+		await frames(2)
+		check(float(m3.get("_wings_news")) == 0.0, "o aviso das asas não se repete")
+		m3.queue_free()
+		vp.queue_free()
+		# Volta ao estado sem asas para o resto da QA (rota do bot sem segredo).
+		Progression.reset_run()
+		RunManager.current_screen = keep_screen
+		RunManager.last_node = keep_last
 
 	## Percorre o Éon 0 inteiro com a rota automática (sem jogar: avança direto).
 	func _auto_route(seed: int) -> Array:

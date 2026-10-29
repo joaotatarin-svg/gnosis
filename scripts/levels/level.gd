@@ -13,6 +13,8 @@ class_name Level
 @export var screen: int = 1
 
 # Geometria da travessia (px de mundo). Zona i tem centro em ZONE_FIRST_X + i*ZONE_STEP.
+## R21 (Guardião, Onda 7): respiro entre ondas da mesma zona (era 0,8 s).
+const WAVE_BREATH := 2.0
 const ZONE_FIRST_X := 620.0
 const ZONE_STEP := 1500.0
 const ZONE_TRIGGER := 430.0       # cruzou centro-430 → tranca
@@ -463,9 +465,7 @@ func reserved_spans() -> Array:
 		var px: float = _seal_x()
 		out.append([px - 125.0, px + 125.0])
 	if RunManager.run_active:
-		var eon := RunManager.eon_index(screen)
-		var off := RunManager.eon_offset(screen)
-		if (off == 6 and eon in [1, 3, 5]) or (off == 5 and eon == 6):
+		if RunManager.soter_meeting_at(screen) >= 0 or RunManager.velkar_at(screen):
 			var mx: float = rest_points[rest_points.size() / 2].x
 			out.append([mx - 60.0, mx + 60.0])
 	return out
@@ -556,20 +556,19 @@ func _spawn_extras() -> void:
 		puz.screen = screen
 		add_child(puz)
 		puz.global_position = Vector2(_seal_x(), rest_points[last].y)
-	# Encontros da história: Soter nos Éons 1, 3 e 5 (offset 6, no descanso do
-	# meio) e Velkar no Éon 6 (offset 5), perto do fim.
+	# Encontros da história (Soter e Velkar, no descanso do meio). Os lugares
+	# vêm de RunManager.SOTER_SLOTS/VELKAR_SLOT (mapa7: fonte única).
 	if not RunManager.run_active:
 		return
-	var eon := RunManager.eon_index(screen)
-	var off := RunManager.eon_offset(screen)
 	var mid: Vector2 = rest_points[rest_points.size() / 2]
-	if off == 6 and eon in [1, 3, 5]:
+	var meet := RunManager.soter_meeting_at(screen)
+	if meet >= 0:
 		var soter := NpcEncounter.new()
 		soter.kind = "soter"
-		soter.meeting = [1, 3, 5].find(eon)
+		soter.meeting = meet
 		add_child(soter)
 		soter.global_position = mid + Vector2(0.0, -10.0)
-	elif off == 5 and eon == 6:
+	elif RunManager.velkar_at(screen):
 		var velkar := NpcEncounter.new()
 		velkar.kind = "velkar"
 		add_child(velkar)
@@ -721,6 +720,7 @@ func _start_wave() -> void:
 	# Da 2ª wave em diante os inimigos ENTRAM pela borda direita da zona.
 	var from_edge := zone_active and wave_index >= 1
 	var c := zone_center(maxi(0, zone_index))
+	var champion: Node2D = null
 	alive = 0
 	# Em tela normal, o último inimigo da última wave da ÚLTIMA zona é um Elite —
 	# menos o Invocador (Balance P4): Invocador Elite (×2,2 de vida, recua e chama
@@ -747,7 +747,12 @@ func _start_wave() -> void:
 		if is_trial and is_last_wave and wave[i] == eon_bot:
 			e.is_champion = true
 		add_child(e)
-		if _is_flyer(e):
+		if e.is_champion:
+			# QA7 #12: o CAMPEÃO nasce DENTRO do quadro, no chão, à frente da Sophia
+			# (mesmo voador) — antes vinha da borda/do alto e levava > 4 s para entrar.
+			e.global_position = Vector2(_champion_x(c), 250.0)
+			champion = e as Node2D
+		elif _is_flyer(e):
 			# voadores nascem NO ALTO da arena (verticalidade: use as plataformas)
 			e.global_position = Vector2(c + (float(i % 3) - 1.0) * 200.0, AIR_SPAWN_Y)
 		elif from_edge:
@@ -764,7 +769,40 @@ func _start_wave() -> void:
 		if is_boss and wave_index == 0:
 			Gnosis.boss_card(RunManager.boss_id_for(screen), screen)
 		elif is_trial and is_last_wave and wave.has(eon_bot):
-			_champion_card()
+			_champion_card_when_visible(champion)
+
+
+## Onde o Campeão nasce: 150 px à frente da Sophia, para o lado da zona com mais
+## espaço, dentro da zona e do quadro (a câmera mostra ±266 px dela).
+func _champion_x(c: float) -> float:
+	if player == null:
+		return _spawn_x(c + 120.0, c)
+	var dir := 1.0 if player.global_position.x <= c else -1.0
+	return _spawn_x(player.global_position.x + dir * 150.0, c)
+
+
+## QA7 #12: o letreiro do Campeão só sai quando ele JÁ está na tela — ele surge
+## (o brilho de aparição é do Enemy) e, ~0,6 s depois (ou quando entra no quadro,
+## até 2 s), vem o card.
+func _champion_card_when_visible(champ: Node2D) -> void:
+	# (O brilho de aparição é do próprio Enemy._boss_intro_fx — aqui não repete: R4.)
+	var t := 0.0
+	while t < 2.0:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return
+		if get_tree().paused:
+			continue
+		t += get_process_delta_time()
+		if champ == null or not is_instance_valid(champ):
+			break
+		var sp: Vector2 = champ.get_global_transform_with_canvas().origin
+		var vr := get_viewport().get_visible_rect()
+		if t >= 0.6 and vr.grow(-20.0).has_point(sp):
+			break
+	if champ != null and is_instance_valid(champ) and "estate" in champ and int(champ.get("estate")) == Enemy.EState.DEAD:
+		return
+	_champion_card()
 
 
 ## Card do Campeão com o NOME do bot do Éon (#20): "O GLUTÃO · Guardião do
@@ -773,11 +811,15 @@ func _start_wave() -> void:
 func _champion_card() -> void:
 	if CodexSession.active:
 		return
+	# Polimento7 (delegação do chefe, QA7 N1): card do Campeão SEM o stinger de chefe —
+	# o `champion_enter` do enemy.gd é o único som (R4) e a música de chefe não sai (R9).
 	var c: Dictionary = Narrative.champion_card(RunManager.eon_index(screen))
 	if c.is_empty():
-		Gnosis.boss_card("campeao", screen)
+		var n := RunManager.eon_name(screen)
+		var fem := n in ["Fome", "Corrente", "Praga", "Coroa"]
+		Cinematic.boss_card("O CAMPEÃO", "Guardião do santuário %s %s" % ["da" if fem else "do", n], false)
 		return
-	Cinematic.boss_card(String(c.name), String(c.title))
+	Cinematic.boss_card(String(c.name), String(c.title), false)
 
 
 ## Invocações (invocador, Coroa, Espelho) contam na wave: precisam morrer também.
@@ -800,7 +842,8 @@ func _on_enemy_defeated(e) -> void:
 	if wave_index >= waves.size():
 		_on_zone_cleared()
 	else:
-		await get_tree().create_timer(0.8, false).timeout
+		# R21 (Guardião): respiro entre ondas — era 0,8 s.
+		await get_tree().create_timer(WAVE_BREATH, false).timeout
 		if is_inside_tree():
 			_start_wave()
 
@@ -1006,7 +1049,9 @@ func _commit_death() -> void:
 		return
 	_resolved = true
 	RunManager.deaths_this_run += 1
-	var lost := int(Progression.orbs * 0.2)
+	# Decisão do chefe (29/10, delegada à Progressão): a morte leva SÓ as
+	# faíscas ganhas nesta tela (era 20% da carteira) — a tela recomeça.
+	var lost := Progression.death_loss()
 	if lost > 0:
 		Progression.add_orbs(-lost)
 	SaveManager.save_game()

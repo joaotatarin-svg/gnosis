@@ -179,7 +179,11 @@ func _show(i: int) -> void:
 		return
 	_name.text = String(e.n)
 	_cat.text = BestiaryLore.category(id).to_upper()
-	_lore.text = "\n".join(BestiaryLore.lore(id))
+	# i18n: traduz LINHA a LINHA — a tabela tem as linhas soltas, não o bloco junto (QA7 #4)
+	var lore_lines := PackedStringArray()
+	for ln in BestiaryLore.lore(id):
+		lore_lines.append(I18n.t(String(ln)))
+	_lore.text = "\n".join(lore_lines)
 	var tip := BestiaryLore.tip(id)
 	_tip_head.visible = tip != ""
 	_tip.text = tip

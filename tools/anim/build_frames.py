@@ -120,9 +120,21 @@ def scale_meas(m: dict, s: float, ox: float = 0.0, oy: float = 0.0) -> dict:
 
 
 # ---------------------------------------------------------------- fatiar
-def slice_sheet(path: str, grid, names, raw_alpha_cells=()):
+def slice_sheet(path: str, grid, names, raw_alpha_cells=(), grid_only=False, erase=(), strip_glow=False, min_part=0, despill_full=False):
 	"""`raw_alpha_cells`: células cujo alfa da folha é mantido como veio
-	(translúcido DE PROPÓSITO, ex.: o "fade" do Soter)."""
+	(translúcido DE PROPÓSITO, ex.: o "fade" do Soter).
+	`grid_only`: cada célula é recortada SÓ dentro da sua caixa da grade (folhas
+	em que um quadro encosta no outro: o cutelo/alabarda dos campeões 2 e 7).
+	`erase`: retângulos [x0, y0, x1, y1] (px da folha) apagados antes do recorte
+	(efeito translúcido pintado junto — pó do sono, coluna de luz — vira FX).
+	`strip_glow`: apaga a LUZ DOURADA translúcida pintada (coluna/halo do Soter):
+	pixel semitransparente (α < 0,85) amarelado (b < 0,8·r) some; o corpo opaco
+	e o cabelo prateado (b ≈ r) ficam. A luz é refeita por FX no jogo.
+	`min_part`: pedaço solto menor que isso (px da folha) fica de fora mesmo perto
+	do corpo (faíscas pintadas em volta).
+	`despill_full`: em todo pixel, tira TODO o excesso comum de r e b sobre
+	g (o "rosado" que o GPT pinta nos panos finos sobre o magenta). Só para folhas
+	SEM violeta/rosa legítimo (o violeta vira azul)."""
 	img = Image.open(path)
 	a_raw = None
 	if img.mode == "RGBA" and np.asarray(img)[..., 3].min() < 250:
@@ -138,10 +150,60 @@ def slice_sheet(path: str, grid, names, raw_alpha_cells=()):
 		a[a < 0.05] = 0.0
 	else:
 		F, a, _ = key_array(np.asarray(img.convert("RGB")).astype(np.float32))
+		if despill_full:
+			# em TODO pixel: o rosado está pintado no pano (reflexo do fundo), não só na borda
+			m = np.clip(np.minimum(F[..., 0], F[..., 2]) - F[..., 1], 0.0, None)
+			F = F.copy()
+			F[..., 0] -= m
+			F[..., 2] -= m
+	if strip_glow:
+		yel = (F[..., 2] < 0.8 * F[..., 0]) & (F[..., 0] > 120.0)
+		a = np.where((a < 0.85) & yel, 0.0, a)
+		# brilho opaco solto (faíscas, espirais) longe do corpo também some:
+		# o recorte por componente descarta o que ficou pequeno e isolado
+	for x0e, y0e, x1e, y1e in erase:
+		a[int(y0e):int(y1e), int(x0e):int(x1e)] = 0.0
+		if a_raw is not None:
+			a_raw[int(y0e):int(y1e), int(x0e):int(x1e)] = 0.0
 	H, W = a.shape
 	cols, rows = grid
 	cw, ch = W / cols, H / rows
 	lab, n = ndimage.label(a > 0.05, structure=np.ones((3, 3), bool))
+	if grid_only:
+		# quadros que se TOCAM: semente = maior pedaço de cada célula (cortado
+		# na linha da grade); cada pixel do bloco fundido vai para a semente mais
+		# próxima POR DENTRO da silhueta (inundação geodésica) — o cutelo
+		# erguido fica com quem o segura, não com o pé que ele encosta
+		from skimage.segmentation import watershed
+		mask = a > 0.05
+		cut = mask.copy()
+		for i in range(1, cols):
+			cut[:, int(round(i * cw)) - 1:int(round(i * cw)) + 1] = False
+		for j in range(1, rows):
+			cut[int(round(j * ch)) - 1:int(round(j * ch)) + 1, :] = False
+		lc, nc = ndimage.label(cut, structure=np.ones((3, 3), bool))
+		sizes = ndimage.sum(np.ones_like(a), lc, range(1, nc + 1))
+		cms = ndimage.center_of_mass(np.ones_like(a), lc, range(1, nc + 1))
+		markers = np.zeros(a.shape, np.int32)
+		best = {}
+		for k in range(nc):
+			cy, cx = cms[k]
+			c = int(min(cols - 1, cx // cw)) + cols * int(min(rows - 1, cy // ch))
+			if c not in best or sizes[k] > sizes[best[c]]:
+				best[c] = k
+		for c, k in best.items():
+			markers[ndimage.binary_erosion(lc == k + 1, iterations=2)] = c + 1
+		ws = watershed(np.zeros(a.shape, np.float32), markers, mask=mask, connectivity=2)
+		free, nf = ndimage.label(mask & (ws == 0), structure=np.ones((3, 3), bool))
+		lab = free.astype(np.int32)
+		for c in best:
+			lab[ws == c + 1] = nf + c + 1
+		ids = np.unique(lab)
+		ids = ids[ids > 0]
+		remap = np.zeros(lab.max() + 1, np.int32)
+		remap[ids] = np.arange(1, ids.size + 1)
+		lab = remap[lab]
+		n = int(ids.size)
 	objs = ndimage.find_objects(lab)
 	cell_of = {}
 	for i in range(n):
@@ -168,7 +230,7 @@ def slice_sheet(path: str, grid, names, raw_alpha_cells=()):
 		for i in ids:
 			sl = objs[i - 1]
 			near = sl[0].start < ms[0].stop + 40 and sl[0].stop > ms[0].start - 40 and sl[1].start < ms[1].stop + 40 and sl[1].stop > ms[1].start - 40
-			if i == main or areas[i] > 1500 or near:
+			if i == main or areas[i] > 1500 or (near and areas[i] >= min_part):
 				keep.append(i)
 		m = np.isin(lab, keep)
 		yy, xx = np.nonzero(m)
@@ -255,7 +317,7 @@ def main() -> None:
 		side_path = path.replace(".png", ".json")
 		if os.path.exists(side_path):
 			side = json.load(open(side_path, encoding="utf-8")).get("anchors", {})
-		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"]).items():
+		for name, (rgba, origin) in slice_sheet(path, src["grid"], src["cells"], (), src.get("grid_only", False), src.get("erase", []), src.get("strip_glow", False), src.get("min_part", 0)).items():
 			raw[sid + "." + name] = [rgba, src.get("scale", 1.0)]
 			if name in side:
 				# âncora fixa (px da folha) → px locais do recorte
@@ -365,6 +427,10 @@ def main() -> None:
 				adv += [round(v / 2.0, 2), round(v / 2.0, 2)]
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
+		elif "advance" in st:
+			# avanço já medido (locomoção 3D: pé plantado por IK na cena) — px do atlas
+			entry["advance"] = st["advance"]
+			entry["cycle_bodies"] = round(sum(st["advance"]) / body_px, 4)
 		elif st.get("cycle_bodies") == "auto":
 			# CORRIDA: quanto o corpo avança em cada quadro = quanto o pé
 			# apoiado recua em relação à pélvis até o quadro seguinte. Trocando
@@ -387,7 +453,7 @@ def main() -> None:
 			entry["advance"] = adv
 			entry["cycle_bodies"] = round(sum(adv) / body_px, 4)
 			print("  %s: avanço por quadro %s -> ciclo %.2f alturas" % (sname, adv, sum(adv) / body_px))
-		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support"]:
+		for key in ["cycle_bodies", "steps", "smear_at", "fps", "flash_at", "support_change", "support", "hold", "no_flex"]:
 			if key in st and key not in entry:
 				entry[key] = st[key]
 		out_states[sname] = entry

@@ -32,6 +32,7 @@ var _close_button: Button
 
 
 func _ready() -> void:
+	layer = 45                       # acima do HUD (20) — ver hud.gd HUD_LAYER
 	CodexStyle.apply_existing(self)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	PauseStack.push(self)
@@ -106,7 +107,7 @@ func _rebuild() -> void:
 		if ch0 != null:
 			for c in ch0.combos:
 				if c.required_weapon_level == Progression.weapon_level + 1:
-					opens.append(c.display_name)
+					opens.append(I18n.t(c.display_name))   # i18n: cada nome sozinho (QA7 #16)
 		var sub := ("abre: " + ", ".join(opens)) if not opens.is_empty() else ""
 		var title := "Arma Nv. %d → %d" % [Progression.weapon_level, Progression.weapon_level + 1]
 		if Progression.weapon_sealed():
@@ -139,7 +140,7 @@ func _rebuild() -> void:
 	if n >= HP_MAX_BUYS:
 		_add(hp_title, "no máximo", -1, false, Callable(), CodexStyle.LIFE_HI)
 	elif n >= Progression.hp_buy_cap():
-		_add_sealed(hp_title, n - Progression.HP_FREE_BUYS + 1, hp_cost_for(n), CodexStyle.LIFE_HI)
+		_add_sealed(hp_title, Progression.hp_buy_tier(n), hp_cost_for(n), CodexStyle.LIFE_HI)
 	else:
 		var hp_cost := hp_cost_for(n)
 		_add(hp_title, "", hp_cost, Progression.orbs >= hp_cost, _buy_hp, CodexStyle.LIFE_HI)
@@ -148,20 +149,21 @@ func _rebuild() -> void:
 	if m >= Progression.MP_MAX_BUYS:
 		_add(mp_title, "no máximo", -1, false, Callable(), CodexStyle.ETHER_HI)
 	elif m >= Progression.mp_buy_cap():
-		_add_sealed(mp_title, m - Progression.MP_FREE_BUYS + 1, Progression.mp_cost_for(m), CodexStyle.ETHER_HI)
+		_add_sealed(mp_title, Progression.mp_buy_tier(m), Progression.mp_cost_for(m), CodexStyle.ETHER_HI)
 	else:
 		var mp_cost := Progression.mp_cost_for(m)
 		_add(mp_title, "", mp_cost, Progression.orbs >= mp_cost, _buy_mp, CodexStyle.ETHER_HI)
 
-	# Relíquias: compra = já põe em uso; as compradas trocam de graça.
-	var worn := Progression.equipped_relic()
+	# Relíquias: compra = já põe em uso; as compradas trocam de graça (com os
+	# engastes cheios, sai a que está em uso há mais tempo).
+	var worn := Progression.equipped_relics()
 	for r in GameContent.relics:
 		var rid: String = r.get("id", "")
 		var rname: String = r.get("name", "")
 		var rcol: Color = r.get("color", CodexStyle.GOLD)
 		var rdesc: String = r.get("desc", "")
 		if Progression.has_relic(rid):
-			if rid == worn:
+			if worn.has(rid):
 				_add("%s  ·  em uso" % rname, rdesc, -1, false, Callable(), rcol)
 			else:
 				_add("%s  ·  usar" % rname, rdesc, -1, true, _equip_relic.bind(rid), rcol)
@@ -170,6 +172,15 @@ func _rebuild() -> void:
 		else:
 			var rcost: int = int(r.get("cost", 0))
 			_add("Relíquia  ·  %s" % rname, rdesc, rcost, Progression.orbs >= rcost, _buy_relic.bind(rid), rcol)
+
+	# Segundo engaste: duas relíquias em uso (preço fixo; some depois de comprado).
+	if Progression.relic_slots() < 2:
+		var slot_title := "Segundo engaste  ·  duas relíquias em uso"
+		var slot_cost: int = Progression.RELIC_SLOT_COST
+		if Progression.relic_slot_sealed():
+			_add_sealed(slot_title, Progression.RELIC_SLOT_TIER, slot_cost)
+		else:
+			_add(slot_title, "", slot_cost, Progression.orbs >= slot_cost, _buy_relic_slot)
 
 	var pl := get_tree().get_first_node_in_group("player")
 	var hurt: bool = pl != null and pl.health != null and pl.health.current_health < pl.health.max_health
@@ -316,9 +327,14 @@ func _buy_relic(id: String) -> void:
 	_rebuild()
 
 
+func _buy_relic_slot() -> void:
+	_buy_sfx(Progression.buy_relic_slot())
+	_rebuild()
+
+
 func _equip_relic(id: String) -> void:
 	Progression.equip_relic(id)
-	Audio.play_sfx("shop_buy")
+	# som: "relic_equip" toca pelo sinal relics_changed (Áudio7) — sem "shop_buy" por cima
 	_rebuild()
 
 

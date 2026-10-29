@@ -9,11 +9,13 @@ extends "res://scripts/entities/bosses/boss_rei.gd"
 func _on_setup() -> void:
 	super._on_setup()
 	marks = []
-	dmg_scale = 0.45
+	dmg_scale = 0.48          # 28/10: curva da Progressão (~390 de vida)
 	keep_dist = Vector2(130.0, 230.0)
 	gap_by_phase = [1.1, 0.95, 0.8]
 	escape_hits = 3
 	escape_id = "teleporte"
+	# guarda alta (QA7 3.1: caía em ~40 s com quem só martela) — ver BossBrain.guard_up
+	guard_up(0.55, 0.35, 1.5)
 
 
 func _build_moves() -> Dictionary:

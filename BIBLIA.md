@@ -115,6 +115,21 @@ sinais entre nós. Balanceamento **determinístico por tela**. Mantém exportáv
 (`res://`). Sem dependências externas.
 
 ## 6. Estado atual (FEITO / FALTA) — atualize sempre
+**ONDA 7 — PRÉVIAS 3.1 e 3.2 (28-29/10/2026, integração `integracao/onda1`, detalhe em `docs/handoff/INTEGRADOR.md`):**
+- Integração por script: `tools/integrar.ps1 "branch sha" ... [-Repeat N] [-Push]` (merge em lote, i18n regenerado quando só ele
+  conflita, reimport 2x, `validate.ps1`, imprime VERDE/VERMELHO). Todos os lotes fecharam com `-Repeat 2` verde.
+- **3.1** (vfx7 a63c40b, chefes6 b0b52f0, polimento7 2d54867 sobre encenacao5/chefes6/audio7): chefes recalibrados (BossProbe: nenhuma
+  luta estoura 420 s; Armupiel e batalha final deixaram de dar TIMEOUT), VFX/sons novos (tiro hostil = atk_*, proj_fire só da Sophia,
+  confirmação de morte), hurtbox pelo desenho, renda de faíscas igual em todas as dificuldades, contra-ataque que mira o aparado.
+- **3.2** (arte-gpt de546f8/50f807a/118cb99 com fio de contorno da Sophia, mapa7 4e4b9cc com lugar do Soter numa fonte só
+  `RunManager.SOTER_SLOTS`, encenacao5 0561f28/9e1d21a, ui7 12c6643, perigos7 04afd65, progressao6 54141ed com selos 7, cenario7 1b1c69f,
+  chefes6 8d00636/61645f7/82454b2/213d292, polimento7 2854fc0/28d8df7): Rei com BodyBox (ReiProbe: atravessa 0, apelão 0, cobre 96 %),
+  Raio do Rei virou orbe, Coroa/Praga com padrões novos, Réplica do Juízo só arma com a postura acesa, Campeão com UM stinger
+  (`champion_enter`; card sem `boss_appear`), invocador esgotado, fim do jogo pela curva da Progressão.
+- BossProbe em 944ec41 (s): Rei 74, Athoth 97, Harmas 83, Galila 123, Yabel 158, Astaphaios 91, Belias 149, Coroa 192 (4 quase-mortes),
+  Rei+Colosso 140 (6). Sem TIMEOUT. Coroa e a batalha final são as lutas mais duras; falta playtest humano para dizer se cansam.
+- Build interna 3.1: `_build\preview3_1`; 3.2: `_build\preview3_2` (branches `preview/3.1`, `preview/3.2`, sem atalho no Desktop).
+
 **SESSÃO CLAUDE — 18/09/2026 (rumo à 1.1.0 "comercializável"):** João reportou
 "tela 3 → chefe → volta ao começo", "curto", "sem história", "não ensina
 gnosticismo". Diagnóstico: ele jogou o **Desafio** (demo de 3 encontros, botão

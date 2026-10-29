@@ -7,7 +7,7 @@ class_name RunLabels
 ## Tudo devolve texto JÁ no idioma ativo quando monta frases (I18n.t por peça).
 
 ## Tipos de nó que ganham nome próprio no título (o resto segue GameManager).
-const NODE_KINDS := ["hazard", "platform", "sanctuary", "challenge", "secret"]
+const NODE_KINDS := ["hazard", "platform", "sanctuary", "challenge", "secret", "hidden"]   # "hidden": mapa7
 
 
 ## Título da tela: "Torpor · Escalada", "Fome · Travessia II", "Limiar — O Rei".

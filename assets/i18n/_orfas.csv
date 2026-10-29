@@ -1,5 +1,3 @@
 id,pt,en,kind,speaker,limit,where,note
-narrative.archon_phase2.dc31ad,(os pontos da boca dele esticam; alguma coisa lá dentro quer sair),(the stitches of his mouth stretch; something inside wants out),legenda,Yabel,95,scripts/autoload/narrative.gd:344,
-narrative.archon_phase2.006494,"(O vidro racha. No lugar do rio, por um instante: uma nuvem branca. Alguém pequeno chorando.)","(The glass cracks. Where the river was, for an instant: a white cloud. Someone small, crying.)",legenda,Sophia,95,scripts/autoload/narrative.gd:346,
-narrative.ring_gained.03d385,Sonhos do Torpor. Passam. Sobe.,Dreams of Torpor. They pass. Climb.,dialogo,A Voz,115,scripts/autoload/narrative.gd:384,
-cinematic._build_cards.c7f240,qualquer tecla avança  ·  Esc pula,any key continues  ·  Esc skips,card_cinema,,240,scripts/fx/cinematic.gd:289,
+narrative.death_revive.efe9f1,(A luz te costura de volta. %s da tua mão aberta.),(The light stitches you back together. %s from your open hand.),dialogo,(narrador),115,scripts/autoload/narrative.gd:190,format string: manter os %
+chest._give_reward.872913,bau:%d,bau:%d,ui,,,scripts/entities/chest.gd:101,format string: manter os %

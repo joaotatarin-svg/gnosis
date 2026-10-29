@@ -25,6 +25,9 @@ uniform vec4 glow : source_color = vec4(0.8, 0.9, 1.0, 1.0);
 uniform float has_tex = 1.0;
 uniform vec4 base_col : source_color = vec4(0.14, 0.13, 0.17, 1.0);
 
+uniform float lane_amt = 0.07;      // luz na faixa de luta
+uniform float calm = 0.35;          // quanto a textura acalma na faixa de luta (R18)
+uniform float lane_dim = 0.0;       // Éons claros (Espelho/Coroa): escurece o chão atrás dos pés (R18)
 uniform float life = 1.0;          // vida da faixa de baixo (P2): luz nas fendas + manchas de luz
 uniform float crack_amt = 1.1;    // brilho do Éon vazando pelas rachaduras (a faísca presa na matéria)
 
@@ -76,9 +79,12 @@ void fragment() {
 	// névoa colada no horizonte
 	float hz = 1.0 - smoothstep(0.0, 0.2, vt);
 	c = mix(c, haze.rgb * 0.6, hz * 0.3);
-	// poça de luz na faixa de luta
-	float lane = exp(-pow((y - feet_y) / 16.0, 2.0));
-	c += glow.rgb * lane * 0.07;
+	// poça de luz na faixa de luta. Cenário 7 (R18): a textura do chão HD (mais
+	// detalhada) se ACALMA ali — menos contraste interno e saturação atrás dos pés.
+	float lane = exp(-pow((y - feet_y) / 22.0, 2.0));
+	c = mix(c, vec3(dot(c, vec3(0.3, 0.59, 0.11))) * 0.9 + haze.rgb * 0.1, lane * calm);
+	c *= 1.0 - lane * lane_dim;
+	c += glow.rgb * lane * lane_amt;
 	// escurece em direção à câmera (o primeiro plano é sombra)
 	c *= mix(1.0, mix(0.42, 0.52, life), smoothstep(0.3, 1.0, vt));
 	if (life > 0.0) {

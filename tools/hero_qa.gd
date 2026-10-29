@@ -126,6 +126,12 @@ func _ready() -> void:
 		for f in 60:
 			pa._tick_visual(1.0 / 60.0)
 		check(pa._hero_seq(db.meta.states) != "riposte", "Contra-ataque não termina")
+		# PARADA r4 (Lab3D): a parada de jogo é a pintura animada em camadas (s20, 12 quadros, sem vento do
+		# shader: no_flex); a pintada antiga fica em idle_pintado
+		check(db.meta.states.has("idle_pintado"), "Atlas sem o estado: idle_pintado")
+		check(String(db.meta.states.idle.frames[0].f).begins_with("s20."), "Parada não é a r4 (s20)")
+		check(db.meta.states.idle.frames.size() >= 12, "Parada sem os 12 quadros")
+		check(bool(db.meta.states.idle.get("no_flex", false)), "Parada sem no_flex (o vento dobraria)")
 		pa.visible = false
 		# FLUIDEZ (S15/S16): parado = respiração de 8 quadros; voltando do 3º
 		# golpe leve pro parado toca a recuperação desenhada e ela termina

@@ -31,8 +31,7 @@ func _ready() -> void:
 ## entende o que são ("que porra é essa?").
 func _build_hint() -> void:
 	_hint = Label.new()
-	_hint.text = "OS TRÊS SELOS
-golpeie na ordem em que brilham"
+	_hint.text = "OS TRÊS SELOS" + "\n" + "golpeie na ordem em que brilham"  # i18n: cada linha é uma chave (QA7 #6)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.add_theme_font_size_override("font_size", 9)
 	_hint.add_theme_color_override("font_color", Color(1.0, 0.9, 0.55, 0.9))
@@ -84,7 +83,9 @@ func _solve() -> void:
 	var gold := Color(1.0, 0.9, 0.5)
 	AoeNova.spawn(get_parent(), global_position + Vector2(0, -10), 0, 90.0, gold)
 	ImpactBurst.spawn(get_parent(), global_position + Vector2(0, -30), gold)
-	Progression.add_orbs(30 + screen * 3)
+	# Guardião §3: os Selos pagam UMA vez por run.
+	if Progression.claim_once_or_notice("selo:%d" % screen):
+		Progression.add_orbs(30 + screen * 3)
 	Juice.shake(0.4)
 
 
