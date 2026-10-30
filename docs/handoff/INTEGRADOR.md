@@ -7,6 +7,21 @@ godot/gnosis_text.csv para LF + extract + build --strict = 0 faltando) → reimp
 Atenção: `core.autocrlf=true` faz o strings.csv voltar em CRLF e o extract perder traduções com quebra
 de linha (viram órfãs) — sempre normalizar para LF antes do extract.
 
+## BILHETE PARA O SUCESSOR - ATUALIZAÇÃO FINAL (30/10/2026, prévia 3.3)
+- **Estado:** `origin/integracao/onda1` = 47bc853 (+ commit deste bilhete). VERDE -Repeat 2 (VoiceProbe e HeroQA inclusos). Esta seção substitui o estado da
+  seção abaixo ("fim da rodada build final", 37a1257).
+- **Integrado nesta rodada:** encenacao5 b415c40 -> 4b31dd9; encenacao5 f6ede32 (Dicas) -> 5f6fed9; chefes6 068225d (contém arte-gpt f74e03c: Rei AJOELHADO +
+  kneel_cracked + BodyBox) + dublagem-lote 1353529 (lote limiar-2: tira as 11 falas PT-PT antigas, entram 48 PT-BR) -> cbf9d78; LICENSES.md (créditos das vozes:
+  Qwen3-TTS Apache-2.0, Kokoro Apache-2.0, Chatterbox/OpenVoice MIT; frase "sem IA" corrigida: vozes sintetizadas por IA, nenhuma pessoa real clonada) -> 47bc853.
+  **A pendência do crédito Apache-2.0 do Qwen3-TTS está FECHADA** (assets/LICENSES.md; a tela de Créditos lê esse arquivo).
+- **Prévia:** `preview/3.3` = e1fb1cf (47bc853 + cherry-pick f9e3557 do save GNOSIS-Previa). Build `C:\gnosis-wt\_build\preview3_3\GNOSIS.exe` (+ .pck, LEIA-ME.txt).
+  Jogo não aberto por mim; atalho é do chefe.
+- **Sondas em 47bc853:** ReiProbe tela 1: atravessa=0, apelão=0, BodyBox cobre 97-99 % (inclui quadro kneel:3 a 97 %); tela 68: atravessa=0, apelão=0.
+  BossProbe sem TIMEOUT (s, q.-m.): Rei 83 (0), Athoth 111 (1), Harmas 84 (1), Galila 123 (2), Yabel 92 (1), Astaphaios 57 (1), **Praga 193 (5)**, Coroa 141 (3),
+  Rei+Colosso 135 (5). A Praga é o outlier novo (era 103 s em 37a1257): candidata a ajuste do Chefes6 se o João achar longa.
+- **Fila:** lotes de voz seguintes da Dublagem em `dir7/dublagem-lote` (`integrar.ps1 "dir7/dublagem-lote <sha>" -Repeat 2`); pose de joelho da Arte (verificar se o
+  kneel do Rei basta); mais correções do Guardião/QA7. Não integrar sem veredito do Guardião.
+
 ## BILHETE PARA O SUCESSOR (atualizado 30/10/2026, fim da rodada "build final")
 - **Estado:** `origin/integracao/onda1` = 37a1257 (+ commit deste bilhete). Tudo VERDE -Repeat 2 (15 etapas, VoiceProbe e HeroQA inclusos).
   Última integração: chefes6 1c4b0c7 (contém arte-gpt 64e92cf: Rei HD + BodyBox) -> 37a1257.
