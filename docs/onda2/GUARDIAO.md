@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 5b076cb + dir5/encenacao5 b415c40 | Mentira do Rei + texto do Limiar v3 | APROVADO COM RESSALVAS (enigma justo mesmo sem a pose; os 5 ajustes da amostra entraram; edições nos testes de voice_probe e gnose_qa corretas; falta a opção Dicas na UI e um "dong" próprio) | REGRAS_GUARDIAO_TEXTO §1-6, §4 |
 | (texto) | AMOSTRA_LIMIAR.md (Narrativa, sem código) | APROVADO COM RESSALVAS (Mentira do Rei justa e solúvel; combate ≤6 palavras; a cena seguida da tela 2 vira legenda atrasada 10 s; 5 ajustes) | REGRAS_GUARDIAO_TEXTO §1-6 |
 | (prévia) | Reescrita do texto (Narrativa) | REGRAS ESCRITAS em `C:\gnosis-wt\_caps\narrativa\REGRAS_GUARDIAO_TEXTO.md` (29 regras: ritmo, humor, gancho, enigma justo, ensinar mecânica, interrupção) | §0, §3, §4, R5, R9, R21 |
 | dir6/chefes6 (+ arte-gpt 64e92cf) | 1c4b0c7 | APROVADO COM RESSALVAS (Rei HD: parada/andar estáveis, telégrafo amarelo e glint legíveis, pés pregados; 4 de 8 trocas secas já conhecidas; +190 MB de VRAM; ReiProbe só pelos números do dono) | R5, justiça, build |
@@ -1077,6 +1078,19 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## Mentira do Rei — chefes6 5b076cb e Limiar v3 — encenacao5 b415c40
+
+**Medido:** li o diff próprio do 5b076cb (`boss_rei.gd`, `boss_brain.gd`, `gnosis.gd`, `boss_probe.gd`), os commits 76ff840 e b415c40 do encenacao5 (`narrative.gd`, `gnosis.gd`, `cinematic.gd`, QAs) e confrontei com a minha AMOSTRA. NÃO rodei a sonda do Rei nem o ReiDuelProbe (o dono dá 6/6 e 29 checagens, 0 falhas; validate 15/15).
+- **(1) A Mentira sem a pose do joelho: JUSTA, pode entrar.** Pistas reais hoje: o olho desce `ORB_LOW` 132 px (posição/forma) e o "dong" (som; hoje reaproveita `king_step`), além do card escrito ("Um rei jamais se curva.") e de uma pista nova na fala da Voz ("Muita pose, joelho fraco."). A ação do Desmentido (bater no olho enquanto ele está baixo) é a que a luta já ensinava (ponto fraco 1,5x), então ninguém depende de entender a metáfora para vencer; errar não custa nada (`lie_was_exposed` só liga o bônus), o bônus é fixo e dito (toast "Mentira exposta · o Rei fica 8 s sem guarda"; 8 s PARADO, sem escolher golpe nem fase, 1x), e a mentira cai na queda. Ficam
+  menos "aha": sem a pose o jogador vê "o olho desceu", não "ele se curvou". **A pose é melhoria, não bloqueio**; e como a pista de som é emprestada, vale um "dong" próprio (Áudio) para não se confundir com o passo.
+- **Meus 5 ajustes da amostra: ATENDIDOS.** (2) degrau 2 agora é pergunta ("Ele se curvou? Jamais, né?", 5 palavras); (3) os 8 s: `chase()` devolve true, velocidade 0, `check_phase()` bloqueada e sem telégrafo; (4) orçamento de 6 respeitado (C2 virou "Nossa luz rasteja. Pule." e C5 "Sempre atrás de você."); (5) C1 só toca se não houve aparo e C2/C3 saem na recuperação ou com >= 1 s de folga (`move_will_start`). A regra 3 também: o Torpor virou legenda após 10 s.
+- **Texto do Limiar v3 (encenacao5):** igual à amostra (você, Sophia seca, Voz "a gente", Rei "nós"), falas de combate de 4-5 palavras, Estela só quando para (>= 0,6 s) ou lê, sem corte da Cena A (teto 8 s). Mantém a regra 3 (nenhuma cena pausada colada na outra).
+- **Edições em arquivos de outros donos: CORRETAS E MÍNIMAS.** `tools/audio/voice_probe.gd`: troca o texto fixado e os dois ids (`9c8e9fd7cd28`, `7bce0dcd8a25`) pelos da reescrita, sem mudar nenhuma checagem. `tools/gnose_qa.gd`: o "você" deixa de ser proibido no diegético (decisão do chefe), mas a aspa simples e a lista de nomes proibidos continuam checadas: a exigência de respeito (nomes canônicos) está intacta.
+- **Ressalvas:** (a) falta a OPÇÃO "Dicas" nas Opções: o código já lê `GameManager.lie_hints` (padrão ligado), mas nada no menu a liga/desliga, então a regra 17 ("desligável") só vale quando a UI entregar o botão; (b) ids novos: as 11 falas dubladas do 1º lote voltam ao blip até serem regravadas (a Dublagem tem de gravar o v3 final); (c) o en_table do chefes6 isolado perdeu "Vozes"/"Desligadas"; no tip do encenacao5 eles voltaram: o integrador deve conferir EN após o merge; (d) o "dong" é som emprestado.
+**Veredito: APROVADO COM RESSALVAS** (entra; as ressalvas (a) e (d) são pedidos de UI e Áudio).
 
 ---
 
