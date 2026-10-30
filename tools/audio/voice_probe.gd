@@ -87,9 +87,9 @@ func _run() -> void:
 	var has_saved_voice: bool = saved is Dictionary and (saved as Dictionary).has("vol_voice")
 	check(has_saved_voice or is_equal_approx(Audio.voice_vol, 0.8),
 		"Vozes no boot = %d %% (save %s vol_voice; padrão 80 %%)" % [int(round(Audio.voice_vol * 100.0)), "COM" if has_saved_voice else "sem"])
-	var voz: Dictionary = _find(Narrative.intro(), "Acorda. ...Isso.")
-	var rei: Dictionary = _find(Narrative.king_intro(), "Faísca perdida")
-	var cap: Dictionary = _find(Narrative.walk_arrival(1), "Uma pedra escrita")
+	var voz: Dictionary = _find(Narrative.intro(), "Acorda. ...Isso, devagar.")
+	var rei: Dictionary = _find(Narrative.king_intro(), "Nós estávamos esperando")
+	var cap: Dictionary = _find(Narrative.walk_arrival(1), "Uma pergunta por vez")
 	var card_text := String((Cinematic.prologue().cards[0] as Dictionary).get("text", ""))
 	# o prologue() acima já entrou na árvore (deferred): some antes de começar
 	await get_tree().process_frame
@@ -100,10 +100,11 @@ func _run() -> void:
 	check(not voz.is_empty() and not rei.is_empty() and not cap.is_empty() and card_text != "",
 		"falas reais achadas no Narrative/Cinematic (intro, king_intro, walk_arrival(1), prólogo)")
 
-	# (v1) ids iguais aos do pipeline (tools/voice/extract_lines.py → roteiro.json)
-	check(Audio.voice_id("A Voz", "Acorda. ...Isso. Devagar. Eu estou aqui.") == "d6059a40ad2f",
-		"id da fala = sha1(falante|texto)[:12] (A Voz/intro = d6059a40ad2f do roteiro)")
-	check(Audio.voice_id("card", card_text) == "a4f2a4baab4a", "id do card do prólogo = a4f2a4baab4a do roteiro")
+	# (v1) ids iguais aos do pipeline (tools/voice/extract_lines.py → roteiro.json).
+	# Reescrita do Limiar (29/10, Narrativa): textos novos da AMOSTRA_LIMIAR v3.
+	check(Audio.voice_id("A Voz", "Ei. Ei! Acorda. ...Isso, devagar. Eu tô aqui.") == "9c8e9fd7cd28",
+		"id da fala = sha1(falante|texto)[:12] (A Voz/intro = 9c8e9fd7cd28)")
+	check(Audio.voice_id("card", card_text) == "7bce0dcd8a25", "id do card do prólogo = 7bce0dcd8a25")
 
 	# manifesto de TESTE (formato do contrato) apontando para as amostras
 	var files := {"voz": _dir + "a_voz_pt_1.ogg", "rei": _dir + "o_rei_pt_1.ogg",

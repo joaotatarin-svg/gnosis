@@ -1,0 +1,65 @@
+# REESCRITA DO LIMIAR (29/10/2026, AMOSTRA_LIMIAR v3): prólogo, despertar, Cena A, duelo do Rei (C1–C6), queda,
+# morte na tela 1 e chegada ao Torpor. Registro: Sophia seca e irônica (contrações); a Voz calorosa; o Rei com
+# "nós" majestático, sem contração ("we", "us", formal). Ids C1..C6b do duelo são internos (tradução idêntica).
+narrative.death_revive.3ff31a	Shh. It's over. He hits hard for someone who talks so pretty.
+narrative.death_revive.1d8bd4	Get up. And watch that king who never bows.
+narrative.intro.779de3	(Darkness. A heart beating. Then, the taste of ash.)
+narrative.intro.7e9d42	Hey. Hey! Wake up. ...That's it, easy. I'm here.
+narrative.limiar_stela.f8bd51	A stone with writing. Read it, if you like. Just don't believe all of it.
+narrative.limiar_stela_read.8c462a	"Before everything, there was the One." One what? One someone?
+narrative.king_intro.07515d	The fog is getting thicker. Stay close to me.
+narrative.king_intro.b8b663	You're a voice. Close how?
+narrative.king_intro.f36256	...Close to my voice, then.
+narrative.king_intro.9e886a	Someone's coming. Relax, I know this one. All pose, weak knees.
+narrative.king_intro.672250	Ah. You are awake. We have been waiting.
+narrative.king_intro.53e519	We who? It's just you there.
+narrative.king_intro.efc0a2	A king speaks in the plural. We are too important for the singular.
+narrative.king_intro.634172	The law of the Threshold: none pass who do not touch us with their own light.
+narrative.king_intro.a461ea	Touch. Does the staff count?
+narrative.king_intro.6f7849	Try. And fear not: a king never bows.
+narrative.king_fall.04da92	That bow from before? It was deliberate.
+narrative.king_fall.fc6539	Sure. Super deliberate.
+narrative.king_fall.80b25a	We are not kneeling. We are... resting.
+narrative.king_fall.8fabd4	On your knees. In front of me. Never, huh?
+narrative.king_fall.f38d87	(the mask cracks) Your light... is greater than we remembered.
+narrative.king_fall.3428a1	Remembered? I just woke up.
+narrative.king_fall.83f8c8	Ask the seven. They remember for us.
+narrative.king_fall.3465dd	Felt that? His seal cracked. Seven thrones just woke up.
+narrative.king_fall.9b5671	Is that good or very bad?
+narrative.king_fall.90861d	Seven Archons, one per floor. Each one guards a Ring.
+narrative.king_fall.4b406b	And if I gather all seven?
+narrative.king_fall.039ebf	We break this prison. You and me.
+narrative.king_fall.7ae79a	(Remembered. Who remembers someone who just woke up?)
+narrative._rei_line.e622cc	Yellow... next time, I parry.
+narrative._rei_line.83309b	Our light crawls. Jump.
+narrative._rei_line.d84dc7	This hand, not even you can parry.
+narrative._rei_line.494de7	Enough courtesy. Watch the floor.
+narrative._rei_line.81cb6e	Always behind you.
+narrative._rei_line.2a01cd	Did he just bow? Never, huh?
+narrative._rei_line.720ca5	Never, huh?
+narrative.rei_duel.28c270	C1
+narrative.rei_duel.cb7d29	C2
+narrative.rei_duel.037143	C3
+narrative.rei_duel.f022ae	C6a
+narrative.rei_duel.c3cf07	C6b
+narrative.rei_duel.aaa025	C4
+narrative.rei_duel.fbeff7	C5
+narrative.eon_intro.bc759b	The Torpor. Here the dead still don't know they died.
+narrative.eon_intro.f3937c	Don't hate the sleepers. Until a moment ago, you were sleeping.
+narrative.eon_intro.9311e5	I admit it: lying down sounds great. ...I won't.
+narrative.eon_intro.4b6b5d	(Sleeping is forgetting where you came from. Waking hurts because it's remembering.)
+narrative.walk_arrival.df4d2f	Where am I? ...Worse: who am I?
+narrative.walk_arrival.f9a930	One question at a time. First, walk. To the right, preferably.
+narrative.walk_arrival.0021b6	These ashes were people. Your people.
+narrative.walk_arrival.8576c2	I don't remember a single face. Shouldn't that hurt more?
+narrative.epilogue_cards.ae35e6	One day, in a city of ashes, someone woke and heard a gentle voice: “Hey. Wake up. These ashes were your people.”
+cinematic.prologue.a58cc0	In the beginning there was a Light so full it overflowed.\nEvery drop that fell became someone.
+cinematic.prologue.8ce70c	One of the drops wanted to see the Source alone, without asking.\nFrom what she did, a son was born.\nShe was ashamed. And she hid him.
+cinematic.prologue.74fecb	The son grew up in the dark, certain he was the only one.\nHe made a world and put a king on every floor.\nAll of them lie.\n\nDeep in the ashes, someone has just felt pain.
+# De outros donos, faltando na base d059df8 (só tradução; nada mudou no código deles):
+enemy._spent_smoke.e1b7f6	SpentSmoke
+options_menu._ready.cd40ff	Voices
+options_menu._ready.9cbbd3	Off
+# Opção "Dicas" (29/10, Guardião): desliga os degraus 2 e 3 da dica da Mentira.
+options_menu._ready.a719cd	Hints
+options_menu._refresh_toggle.10704c	On

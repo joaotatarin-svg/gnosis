@@ -64,6 +64,9 @@ const KING_SPAWN_X := -470.0
 const FINAL_SOPHIA_DX := 70.0
 var _king_scene_pending: bool = false   # Cena A ainda não tocou (abre no gatilho)
 var _king_scene_running: bool = false
+# Teto da espera pela fala da Estela (keep) antes da Cena A (segurança).
+const KING_KEEP_MAX := 8.0
+var _king_keep_wait: float = 0.0
 # TENTAÇÃO EM CENA (#18): o Arconte já está no palco durante a conversa (parado,
 # sem IA); ao cruzar o gatilho, ESSE corpo entra na luta, com o card de chefe.
 var _staged_boss: Enemy = null
@@ -140,6 +143,10 @@ func _process(_delta: float) -> void:
 		return
 	if player.global_position.x >= zone_center(next) - ZONE_TRIGGER:
 		if _king_scene_pending:
+			# A fala da Estela (keep) termina antes: a Cena A não a corta no meio.
+			if Gnosis.has_method("caption_keeping") and Gnosis.caption_keeping() and _king_keep_wait < KING_KEEP_MAX:
+				_king_keep_wait += _delta
+				return
 			_play_king_scene()      # a Cena A abre no gatilho; o duelo vem depois
 			return
 		_start_zone(next)
@@ -325,7 +332,12 @@ func _play_narrative_beats() -> void:
 			# Cena A: o Rei sai da névoa quando ela chega ao duelo (_process).
 			_king_scene_pending = Narrative.once("rei")
 		return
-	if RunManager.is_eon_start(screen) and Narrative.once("eon_%d" % RunManager.eon_index(screen)):
+	if RunManager.is_eon_start(screen) and RunManager.eon_index(screen) == 0 \
+			and Narrative.once("eon_0"):
+		# Torpor (tela 2): LEGENDA depois de ≥ 10 s de JOGO na tela — a queda do Rei
+		# acabou de pausar o mundo (regra 3 do Guardião: nada de 2 cenas seguidas).
+		_eon0_caption_later()
+	elif RunManager.is_eon_start(screen) and Narrative.once("eon_%d" % RunManager.eon_index(screen)):
 		await DialogueBox.play(Narrative.eon_intro(RunManager.eon_index(screen))).finished
 	elif screen == RunManager.CENTER_FIRST and Narrative.once("centro"):
 		# Cena C: a descida ao Centro, depois o "Voz?" (ROTEIRO §2).
@@ -366,6 +378,17 @@ func _play_narrative_beats() -> void:
 		# Até ela cruzar o gatilho, o Arconte espera parado (sem IA, sem golpe).
 		if _staged_boss != null and is_instance_valid(_staged_boss):
 			_staged_boss.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+## Chegada ao Torpor em legenda: o relógio é de JOGO (para com a pausa, a loja
+## e as caixas), então são ≥ 10 s jogados na tela 2 antes da 1ª fala.
+const EON0_CAPTION_DELAY := 10.0
+
+
+func _eon0_caption_later() -> void:
+	await get_tree().create_timer(EON0_CAPTION_DELAY, false).timeout
+	if is_inside_tree():
+		Gnosis.captions(Narrative.eon_intro(0))
 
 
 ## A fala de chegada da tela (walk_arrival) sai da LEGENDA e vai para a caixa:

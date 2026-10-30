@@ -25,6 +25,10 @@ de linha (viram órfãs) — sempre normalizar para LF antes do extract.
 - **Fila:** (1) lotes de voz 2–7 da Dublagem, encadeados em `dir7/dublagem-lote` (um commit por lote só com `assets/audio/voice/**` + manifest;
   `integrar.ps1 "dir7/dublagem-lote <sha>"`, VoiceProbe no validate); (2) **créditos: atribuição Apache-2.0 do Qwen3-TTS ANTES de qualquer build
   pública** (pendência do Guardião); (3) mais correções do Guardião/QA7 que o chefe mandar. Não integrar sem veredito do Guardião.
+- **ATUALIZAÇÃO 30/10:** encenacao5 b415c40 (texto do Limiar em PT-BR com "você"; contém chefes6 5b076cb "Mentira do Rei") -> 4b31dd9 e encenacao5 f6ede32
+  (opção "Dicas") -> 5f6fed9; VERDE -Repeat 2 em cada. Push: origin/integracao/onda1 = 5f6fed9. EN conferido: "Vozes"=Voices, "Desligadas"=Off, "Dicas"=Hints
+  presentes no en_table.gd; _relatorio.txt: alertas 0, faltando 0. As 11 falas do lote 4920893 ficam sem voz (blip) até o lote limiar-2.
+  Sem build: faltam pose de joelho da Arte e o lote de voz limiar-2.
 - **Armadilhas:** `core.autocrlf=true`; `git checkout -- .` limpa o ruído .import antes de merge (o script faz); `override.cfg` nunca vai pro git;
   não reescrever histórico de `integracao/onda1` (QA7 lê o integ).
 

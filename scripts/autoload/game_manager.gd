@@ -65,11 +65,18 @@ const SETTINGS_DEFAULT := {
 	# Acessibilidade: corta clarões/flashes de tela cheia (fotossensibilidade).
 	# Quem desenha flash lê `Juice.reduce_flashes` (espelhado em apply_settings).
 	"reduce_flashes": false,
+	# Dicas da MENTIRA dos chefes (Narrativa, por delegação 29/10): desliga os
+	# degraus 2 (a pergunta da Sophia no duelo) e 3 (Bestiário/Voz). O degrau 1
+	# é a própria cena (card + fala) e não desliga. Espelhado em `lie_hints`.
+	"lie_hints": true,
 	# Idioma (Onda 4 — i18n): "" = automático pelo sistema na 1ª vez e até o
 	# jogador escolher nas Opções; "pt_BR" / "en" = escolha salva.
 	"locale": "",
 }
 var settings: Dictionary = SETTINGS_DEFAULT.duplicate()
+## Espelho de settings["lie_hints"] (o Chefes6 e a Narrativa leem por
+## `GameManager.get("lie_hints")`). Atualizado em apply_settings().
+var lie_hints: bool = true
 
 ## Revisão atual das opções. 1 = VSync passou a desligado por padrão (saves
 ## anteriores com `vsync: true` são migrados UMA vez para false no load).
@@ -99,6 +106,7 @@ func apply_settings() -> void:
 	settings["shake"] = clampf(float(settings["shake"]), 0.0, 1.0)
 	settings["caption_size"] = clampi(int(settings["caption_size"]), 0, 2)
 	settings["text_speed"] = clampf(float(settings["text_speed"]), 0.0, 4.0)
+	lie_hints = SaveCoerce.as_bool(settings.get("lie_hints", true), true)
 	I18n.apply(String(settings["locale"]))
 	_sync_window_mode()
 	_apply_bindings()

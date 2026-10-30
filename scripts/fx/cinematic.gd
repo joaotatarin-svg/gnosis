@@ -148,10 +148,13 @@ static func prologue() -> Cinematic:
 	# Onda 3: as 6 ilustrações do prólogo, duas por card, trocando no meio dele
 	# (a Mônada → os Éons; Sophia e a nuvem → o Cego; o Kenoma → a faísca).
 	# `bg` fica de reserva (sem a ilustração, volta a pintura do Éon).
+	# Reescrita do Limiar (29/10, AMOSTRA_LIMIAR v3): sem nomes nem jargão no 1º
+	# minuto; o 3º card dá o contrato do jogo ("Todos eles mentem"). A gota não
+	# tem nome (a resposta vem na tela 68). 3 × 0,75 + 17,5 s ≈ 19,8 s.
 	c.cards = [
-		{"title": "", "text": "No princípio havia o Um. Dele emanaram os Éons, aos pares,\ncomo luz que transborda. Ali nada dormia. Nada esquecia.", "bg": 8, "art": [1, 2], "time": 5.4, "fade_in": 0.45, "fade_out": 0.3},
-		{"title": "", "text": "A mais jovem, Sophia, quis alcançar a Fonte sozinha.\nDo desejo sem par nasceu um filho sem forma,\ne ela o escondeu numa nuvem.", "bg": 4, "art": [3, 4], "time": 5.8, "fade_in": 0.45, "fade_out": 0.3},
-		{"title": "", "text": "Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.\nNo barro dormem as faíscas que ele levou da mãe.\n\nUma delas acaba de sentir dor.", "bg": 0, "art": [5, 6], "time": 6.4, "fade_in": 0.45, "fade_out": 0.3},
+		{"title": "", "text": "No começo havia uma Luz tão cheia que transbordava.\nCada gota que caía virava alguém.", "bg": 8, "art": [1, 2], "time": 4.8, "fade_in": 0.45, "fade_out": 0.3},
+		{"title": "", "text": "Uma das gotas quis ver a Fonte sozinha, sem pedir licença.\nDo que ela fez, nasceu um filho.\nEla teve vergonha. E o escondeu.", "bg": 4, "art": [3, 4], "time": 5.9, "fade_in": 0.45, "fade_out": 0.3},
+		{"title": "", "text": "O filho cresceu no escuro, certo de que era o único.\nFez um mundo e pôs um rei em cada andar.\nTodos eles mentem.\n\nNo fundo das cinzas, alguém acaba de sentir dor.", "bg": 0, "art": [5, 6], "time": 6.8, "fade_in": 0.45, "fade_out": 0.3},
 	]
 	return c
 
