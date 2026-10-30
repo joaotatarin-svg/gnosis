@@ -38,3 +38,14 @@ que existir no `BossBrain` do Rei (`rei.brain`), por nome, sem depender de você
 
 ## estab5 / QA
 - `tools/gnose_qa.gd`: a regra "sem 'você' no diegético" caiu (decisão do chefe). Segue proibida a aspa simples.
+
+## REGISTRO DE DELEGAÇÃO (30/10, pedido do Guardião via chefe) — opção "Dicas"
+Mexi, com mudança mínima, em arquivos de outros donos (avisem se quiserem outro formato):
+- `scripts/autoload/game_manager.gd` (Técnico): `SETTINGS_DEFAULT.lie_hints = true` + espelho `var lie_hints`
+  (atualizado em `apply_settings`). O SaveManager já grava/lê toda chave de `SETTINGS_DEFAULT` (sem mudança nele).
+- `scripts/ui/options_menu.gd` (UI): linha "Dicas: Ligadas/Desligadas" na coluna JOGO (`_toggle` com meta
+  `plural`); separação das colunas 4 → 2 e amostra da legenda 26 → 20 px para caber (captura
+  `_caps\narrativa\dicas\opcoes_antes.png` × `opcoes_depois.png`).
+- Efeito: desliga o degrau 2 (a pergunta da Sophia, que o Chefes6 já gateia por `lie_hints`) e o degrau 3 que já
+  existe no jogo (a pista da Voz na 1ª morte, M2). **UI/Bestiário:** quando a linha "Repare nele depois da Mão"
+  entrar no Bestiário (degrau 3, `lie_hint_step(3)`), ela deve respeitar `GameManager.lie_hints`.

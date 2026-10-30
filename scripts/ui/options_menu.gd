@@ -59,8 +59,9 @@ func _ready() -> void:
 	var title: Label = $Center/VBox/Title
 	title.add_theme_font_size_override("font_size", 20)
 	$Center/VBox.add_theme_constant_override("separation", 7)
-	_left.add_theme_constant_override("separation", 4)
-	_right.add_theme_constant_override("separation", 4)
+	# 4 → 2 (29/10): a linha "Dicas" entrou na coluna JOGO e a tela transbordava.
+	_left.add_theme_constant_override("separation", 2)
+	_right.add_theme_constant_override("separation", 2)
 	var rule := CodexStyle.Rule.new()
 	rule.custom_minimum_size = Vector2(0, 7)
 	rule.color = Color(CodexStyle.GOLD, 0.85)
@@ -98,12 +99,17 @@ func _ready() -> void:
 	_sample.add_theme_font_override("font", CodexStyle.italic())
 	_sample.add_theme_color_override("font_color", Color(CodexStyle.PAPER, 0.85))
 	_sample.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_sample.custom_minimum_size = Vector2(COL_W, 26)
+	_sample.custom_minimum_size = Vector2(COL_W, 20)
 	_sample.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_right.add_child(_sample)
 	_refresh_caption()
 	_toggle(_right, "Números de dano", "damage_numbers", true)
 	_rumble = _toggle(_right, "Vibração do controle", "rumble")
+	# Dicas da MENTIRA (Narrativa, por delegação 29/10 — Guardião): Ligadas/
+	# Desligadas, salva em settings.lie_hints; desliga os degraus 2 e 3 da dica.
+	var hints := _toggle(_right, "Dicas", "lie_hints", true)
+	hints.set_meta("plural", true)
+	_refresh_toggle(hints)
 	# Dublagem (Onda 7 — linha do Áudio por delegação do chefe): volume das vozes
 	# gravadas; 0 = desligadas (as falas voltam ao "gromelô" de blips). Fica na
 	# coluna JOGO, junto do texto/legendas: na coluna de Áudio a tela transbordava.
@@ -177,7 +183,10 @@ func _toggle(parent: Node, text: String, key: String, default: bool = false) -> 
 func _refresh_toggle(b: Button) -> void:
 	var on := bool(GameManager.settings.get(b.get_meta("key"), b.get_meta("default", false)))
 	var v: Label = b.get_node("Value")
-	v.text = "Ligada" if on else "Desligada"
+	if bool(b.get_meta("plural", false)):
+		v.text = "Ligadas" if on else "Desligadas"
+	else:
+		v.text = "Ligada" if on else "Desligada"
 	v.add_theme_color_override("font_color", CodexStyle.GOLD_HI if on else CodexStyle.MUTED)
 
 
