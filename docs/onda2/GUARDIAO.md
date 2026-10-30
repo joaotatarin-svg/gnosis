@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir7/dublagem-lote | 1353529 (limiar-2: 48 falas v3) | APROVADO COM RESSALVAS (ética e licenças ok; combate <= 2,29 s, LUFS -20,5 a -21,0, TP <= -1,9; 8 falas com cauda > 250 ms; créditos das vozes escritos, falta colar em `assets/LICENSES.md`) | REGRAS_GUARDIAO §3, §6, §21; ética |
 | dir6/chefes6 (+ arte-gpt f74e03c) | 068225d | APROVADO (Rei ajoelhado fecha o "aha" fraco da Mentira) | §4, regra 11 |
 | dir6/chefes6 5b076cb + dir5/encenacao5 b415c40 | Mentira do Rei + texto do Limiar v3 | APROVADO COM RESSALVAS (enigma justo mesmo sem a pose; os 5 ajustes da amostra entraram; edições nos testes de voice_probe e gnose_qa corretas; falta a opção Dicas na UI e um "dong" próprio) | REGRAS_GUARDIAO_TEXTO §1-6, §4 |
 | (texto) | AMOSTRA_LIMIAR.md (Narrativa, sem código) | APROVADO COM RESSALVAS (Mentira do Rei justa e solúvel; combate ≤6 palavras; a cena seguida da tela 2 vira legenda atrasada 10 s; 5 ajustes) | REGRAS_GUARDIAO_TEXTO §1-6 |
@@ -1079,6 +1080,18 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## dir7/dublagem-lote — 1353529 (limiar-2: Limiar inteiro, 48 falas PT-BR)
+
+**Medido OFFLINE** nos .ogg do commit (`_caps\guardiao\lote2`, ffmpeg ebur128 + silêncios; nada tocado): 48 falas = 24 cena, 14 legenda, 7 combate, 3 cards. Duração máx. 10,6 s (<= 12); integrada -20,5 a -21,0 LUFS; true peak <= -1,9 dBTP; início <= 68 ms; Rei só em nível 1 (tela 1 pede 1-2).
+- **Combate (REGRAS §3): ATENDE.** As 7 falas de luta têm 1,13 a 2,29 s (<= 2,5): Rei 1,96 / 1,97 / 2,0 / 2,08 s e Sophia 1,13 / 1,78 / 2,29 s. São 7 gravadas e a guarda do jogo deixa tocar 6 (a C6b sem voz se a C6a já tocou).
+- **Ética: OK.** Todo "alvo" de timbre é uma referência SINTÉTICA (`refs_br/*_s43/s44.wav` e `r2/refs/*_ref_24.wav`, todas do Qwen3-TTS VoiceDesign por descrição de texto); o Kokoro é só o gerador-base, e as vozes de voluntários reais (Piper) seguem descartadas. Nenhuma pessoa real é clonada.
+- **Licenças: OK.** Kokoro-82M apache-2.0 e Qwen3-TTS apache-2.0 (README local), Chatterbox pt-br mit (README local; o base é MIT publicado, README fora do cache), OpenVoice v2 MIT (fonte local), wav2vec2/whisper só como ferramenta de QA. espeak-ng (GPL) só no gerador de fonemas; o áudio gerado não herda a licença.
+- **Créditos: escritos** em `C:\gnosis-wt\_caps\dublagem\CREDITOS_VOZ.md` (4 linhas para o bloco CRÉDITOS de `assets/LICENSES.md` + a frase do topo "sem IA", que passa a ser falsa e precisa de ajuste). Eu não escrevo no repositório do jogo: a UI/Polimento ou o Integrador cola.
+- **Ressalvas:** (a) 8 de 48 falas têm cauda > 250 ms (até 463 ms) até -45 dB, acima do contrato; (b) sotaque: 5 falas abaixo de 0,45 na medida do próprio dono (P2, A2, F2b, F8, T2) e a F2b sai "frente chi": a decisão final é do ouvido do João; (c) a IA não ouve: atuação, grito e legião cheia ficam para o playtest.
+**Veredito: APROVADO COM RESSALVAS** (entra; antes de qualquer build pública colar os créditos).
 
 ---
 
