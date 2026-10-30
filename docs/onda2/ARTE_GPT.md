@@ -513,6 +513,35 @@ já no TAMANHO DE JOGO (corpo 449 px, escala 1:1, sem reamostrar no `boss_frames
   contínuo e mola do cartão a 30% — sem "cartão de borracha"; R16: poses de preparo/golpe distintas (orbe alto → varrida →
   baixa); §4 conferido (arte apenas). Risco aceito: trocas secas em 4 pontos do golpe e dano/morte ainda na pintura antiga.
 
+## REI AJOELHADO (30/10/2026; base dir6/chefes6 5b076cb, que já pede `set_anim("kneel")` e tem o Desmentido)
+Duas poses HD novas do Lab3D (`artes/gpt/rei_pose_kneel.png` e `rei_pose_kneel_cracked.png`, 1024×1536 sobre magenta, mesma escala
+de tela da pintura base HD) viram os estados **`kneel`** (antes do desmentido) e **`kneel_cracked`** (máscara rachada, após `lie_exposed`).
+- **Receita:** `tools/anim_bosses/rei_kneel.py` (versionado) corta, tira o orbe, anima em camadas e reduz como o Rei HD (Lanczos com alfa
+  pré-multiplicado + nitidez 0,25; borda sem magenta; escala 449/450 = 1:1, body_px 450). Folha `artes/gpt/boss_9_rei_kneel_camadas.png`
+  (6×4, 24 quadros) + `recipes/rei_kneel_trecho.json`; `--aplicar` mexe em `rei.json` (extra_sheet, `anchor_fix`, estados com
+  `fps` 5 e `loop`, `flex_off_states` += kneel/kneel_cracked: o pano já ondula na folha). Atlas do Rei segue 2048×8192 (80 quadros;
+  usa 6623 das 8192 linhas); o resto dos 56 quadros ficou idêntico (conferido quadro a quadro).
+- **Animação leve (12 quadros, 2,4 s):** capuz e ombros respiram, capuz balança, o manto ondula e a barra levanta com as pontas no chão
+  PREGADAS; a mão fica pregada; a fenda da máscara solta uma brasa (kneel) e a luz dourada da rachada pulsa (cracked). Nada gira
+  como peça e o cartão não é esticado.
+- **Âncora:** a ESTOLA (faixa dourada da frente) cai no mesmo x do mundo da estola do Rei de pé (a mesma `OFF` da parada HD) e o pé
+  na barra; o chão da rachada (~32 px mais alto na pintura) sai pelo pé. Sem pulo na troca.
+- **Orbe-olho FORA da pintura:** o orbe é sprite do jogo (ponto fraco); pintado na mão apareceria em dobro. O script apaga esfera,
+  espetos e a hastezinha (inpaint do pano atrás) e mede onde ela fica: `orbe_rel_ancora_atlas` (+100,9 / −64,5 px) — pedido ao Chefes6
+  para pairar o orbe aí.
+- **Pedidos ao Chefes6 (`docs/pedidos/chefes6.md`):** (1) `kneel_cracked` no lugar do `mask_crack` de pé durante os 8 s (1 linha em
+  `boss_rei.gd`; provado com remendo local não commitado); (2) posição do orbe na mão; (3) BodyBox: `docs/pedidos/rei_body_kneel.gd.txt`
+  (16 faixas, fill 0,30, gerado pelo `body_slabs` do repo; `rei_body_data.gd` NÃO foi tocado).
+- **Prova (BossProbe com captura, 1280×720, `--audio-driver Dummy`, bot médio, tela 1 = Limiar):** `C:\gnosis-wt\_caps\arte\rei_kneel\` —
+  `rei_antes_depois.png`/`rei_kneel_antes_depois.png` (em cima: ajoelhar; embaixo: mentira exposta; esquerda = antes, de pé; direita =
+  depois), `zoom2x_ajoelhado.png`, `zoom2x_rachada.png`, sequências brutas em `antes\` e `depois\`. Ajoelha → bate no olho → máscara
+  rachada (fenda dourada visível) conferidos; troca de/para o Rei de pé sem salto de pé/barra.
+- **Fica a dizer:** hoje o orbe do jogo paira ~50 px acima/à direita da mão até o Chefes6 aplicar o pedido 2; sem o pedido 1 a
+  rachada segue a pintura de pé. A pose é uma pintura só (laço leve): sem transição de se curvar/levantar.
+- **CHECAGEM DE SATISFAÇÃO:** R4 (um acerto = um evento) e a Mentira do Rei (Chefes6) intactas — arte só mostra o que o jogo já faz;
+  R6/R18 (legibilidade): o Rei ajoelhado fica baixo e legível, com a fenda dourada como pista do desmentido (luz que pulsa devagar,
+  sem flash); R16/R17 ok; §4 conferido (nenhum truque, nada de recompensa/escassez, só arte e dado).
+
 ## BILHETE PARA O SUCESSOR (19/10/2026, 2º integrador de arte, branch `dir2/arte-gpt`)
 
 **Estado:** TUDO da lista do chefe feito, validado (validate -Repeat 2 verde) e com push; último commit e114a52.

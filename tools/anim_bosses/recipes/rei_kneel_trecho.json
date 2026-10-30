@@ -1,0 +1,209 @@
+{
+ "extra_sheet": {
+  "sheet": "artes/gpt/boss_9_rei_kneel_camadas.png",
+  "grid": [
+   6,
+   4
+  ],
+  "cells": [
+   "kneel_a00",
+   "kneel_a01",
+   "kneel_a02",
+   "kneel_a03",
+   "kneel_a04",
+   "kneel_a05",
+   "kneel_a06",
+   "kneel_a07",
+   "kneel_a08",
+   "kneel_a09",
+   "kneel_a10",
+   "kneel_a11",
+   "crack_a00",
+   "crack_a01",
+   "crack_a02",
+   "crack_a03",
+   "crack_a04",
+   "crack_a05",
+   "crack_a06",
+   "crack_a07",
+   "crack_a08",
+   "crack_a09",
+   "crack_a10",
+   "crack_a11"
+  ],
+  "scale": 0.9977777777777778
+ },
+ "anchor_fix": {
+  "kneel_a00": [
+   -11.35,
+   1.11
+  ],
+  "kneel_a01": [
+   -11.35,
+   1.11
+  ],
+  "kneel_a02": [
+   -11.85,
+   1.11
+  ],
+  "kneel_a03": [
+   -11.85,
+   1.11
+  ],
+  "kneel_a04": [
+   -11.85,
+   1.11
+  ],
+  "kneel_a05": [
+   -12.35,
+   1.11
+  ],
+  "kneel_a06": [
+   -12.35,
+   1.11
+  ],
+  "kneel_a07": [
+   -11.85,
+   1.11
+  ],
+  "kneel_a08": [
+   -11.85,
+   1.11
+  ],
+  "kneel_a09": [
+   -11.85,
+   1.11
+  ],
+  "kneel_a10": [
+   -11.35,
+   1.11
+  ],
+  "kneel_a11": [
+   -11.35,
+   1.11
+  ],
+  "crack_a00": [
+   -11.15,
+   1.01
+  ],
+  "crack_a01": [
+   -11.15,
+   1.01
+  ],
+  "crack_a02": [
+   -11.65,
+   1.01
+  ],
+  "crack_a03": [
+   -11.65,
+   1.01
+  ],
+  "crack_a04": [
+   -11.65,
+   1.01
+  ],
+  "crack_a05": [
+   -12.15,
+   1.01
+  ],
+  "crack_a06": [
+   -12.15,
+   1.01
+  ],
+  "crack_a07": [
+   -11.65,
+   1.01
+  ],
+  "crack_a08": [
+   -11.65,
+   1.01
+  ],
+  "crack_a09": [
+   -11.65,
+   1.01
+  ],
+  "crack_a10": [
+   -11.15,
+   1.01
+  ],
+  "crack_a11": [
+   -11.15,
+   1.01
+  ]
+ },
+ "states": {
+  "kneel": {
+   "frames": [
+    "kneel_a00",
+    "kneel_a01",
+    "kneel_a02",
+    "kneel_a03",
+    "kneel_a04",
+    "kneel_a05",
+    "kneel_a06",
+    "kneel_a07",
+    "kneel_a08",
+    "kneel_a09",
+    "kneel_a10",
+    "kneel_a11"
+   ],
+   "loop": true,
+   "fps": 5.0
+  },
+  "kneel_cracked": {
+   "frames": [
+    "crack_a00",
+    "crack_a01",
+    "crack_a02",
+    "crack_a03",
+    "crack_a04",
+    "crack_a05",
+    "crack_a06",
+    "crack_a07",
+    "crack_a08",
+    "crack_a09",
+    "crack_a10",
+    "crack_a11"
+   ],
+   "loop": true,
+   "fps": 5.0
+  }
+ },
+ "medidas": {
+  "kneel": {
+   "estola": 693.0,
+   "foot": 783.0,
+   "top": 4.0,
+   "orbe_crop": [
+    888.3,
+    580.0
+   ],
+   "orbe_rel_ancora_atlas": [
+    100.9,
+    -64.5
+   ],
+   "org": [
+    13,
+    707
+   ]
+  },
+  "crack": {
+   "estola": 691.0,
+   "foot": 789.0,
+   "top": 3.0,
+   "orbe_crop": [
+    886.8,
+    584.7
+   ],
+   "orbe_rel_ancora_atlas": [
+    101.1,
+    -64.9
+   ],
+   "org": [
+    15,
+    669
+   ]
+  }
+ },
+ "_doc": "Rei ajoelhado (Arte 29/10): poses HD kneel / kneel_cracked animadas em camadas (tools/anim_bosses/rei_kneel.py), já no tamanho de jogo (body_px 450, escala da parada HD). Âncora pela estola; o chão da rachada sai pelo pé."
+}
