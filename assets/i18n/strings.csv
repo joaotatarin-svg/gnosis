@@ -130,7 +130,7 @@ gnosis.STELAS.431fb0,"Os valentinianos contavam que, caída, ela chorou: das lá
 gnosis.STELAS.c29f9f,Todo torpor começa assim: alguém amou tanto que esqueceu de si.,Every torpor begins like this: someone loved so much they forgot themselves.,estela,,170,scripts/autoload/gnosis.gd:59,
 gnosis.STELAS.9180f6,"Apócrifo de João (NHC II,1, 9–10); Irineu I,2–4; Hipólito, Refutação VI,29–36.","Apocryphon of John (NHC II,1, 9–10); Irenaeus I,2–4; Hippolytus, Refutation of All Heresies VI,29–36.",estela_fonte,,170,scripts/autoload/gnosis.gd:61,
 gnosis.STELAS.38dd9b,"Torpor · Travessia V, antes da antessala de Athoth.","Torpor · Crossing V, before Athoth's antechamber.",estela_dica,,90,scripts/autoload/gnosis.gd:62,
-gnosis.STELAS.32af4c,Fome,Hunger,eon_nome,,18,scripts/autoload/gnosis.gd:63 scripts/autoload/gnosis.gd:74 scripts/autoload/gnosis.gd:85 scripts/autoload/gnosis.gd:413 scripts/autoload/run_manager.gd:34 scripts/entities/enemy.gd:347,
+gnosis.STELAS.32af4c,Fome,Hunger,eon_nome,,18,scripts/autoload/gnosis.gd:63 scripts/autoload/gnosis.gd:74 scripts/autoload/gnosis.gd:85 scripts/autoload/gnosis.gd:413 scripts/autoload/run_manager.gd:34 scripts/entities/enemy.gd:347 scripts/levels/level.gd:819,
 gnosis.STELAS.04497e,O Aborto Cego,The Blind Abortion,estela_titulo,,60,scripts/autoload/gnosis.gd:63,
 gnosis.STELAS.89ecad,"O filho de Sophia nasceu disforme: aparência de serpente e de leão, olhos como relâmpagos de fogo.","Sophia's son was born misshapen: the look of a serpent and a lion, eyes like flashes of fire.",estela,,170,scripts/autoload/gnosis.gd:65,
 gnosis.STELAS.827bb2,"Ela o chamou Yaldabaoth. Os textos o chamam também Saklas, o Tolo, e Samael, “o deus dos cegos”.","She named him Yaldabaoth. The texts also call him Saklas, the Fool, and Samael, “the god of the blind.”",estela,,170,scripts/autoload/gnosis.gd:66,
@@ -158,7 +158,7 @@ gnosis.STELAS.720c29,"No Poimandres hermético, a alma que sobe devolve um víci
 gnosis.STELAS.34cc06,Não são demônios. São funcionários de um engano — e todo funcionário sonha com o cargo do chefe.,They are not demons. They are officials of a deception — and every official dreams of the boss's seat.,estela,,170,scripts/autoload/gnosis.gd:92,
 gnosis.STELAS.32d79a,"Apócrifo de João (NHC II,1, 10–12; BG 8502,2); Orígenes, Contra Celso VI,31; Poimandres (Corpus Hermeticum I,25–26).","Apocryphon of John (NHC II,1, 10–12; BG 8502,2); Origen, Against Celsus VI,31; Poimandres (Corpus Hermeticum I,25–26).",estela_fonte,,170,scripts/autoload/gnosis.gd:94,
 gnosis.STELAS.3a7559,"Fome · Travessia V, depois do santuário.","Hunger · Crossing V, past the shrine.",estela_dica,,90,scripts/autoload/gnosis.gd:95,
-gnosis.STELAS.20daf0,Corrente,Chain,eon_nome,,18,scripts/autoload/gnosis.gd:96 scripts/autoload/gnosis.gd:107 scripts/autoload/gnosis.gd:413 scripts/autoload/run_manager.gd:34 scripts/entities/enemy.gd:347,
+gnosis.STELAS.20daf0,Corrente,Chain,eon_nome,,18,scripts/autoload/gnosis.gd:96 scripts/autoload/gnosis.gd:107 scripts/autoload/gnosis.gd:413 scripts/autoload/run_manager.gd:34 scripts/entities/enemy.gd:347 scripts/levels/level.gd:819,
 gnosis.STELAS.fea5c0,"Heimarmene, o Destino em Corrente","Heimarmene, Fate in Chains",estela_titulo,,60,scripts/autoload/gnosis.gd:96,
 gnosis.STELAS.a70efe,Os arcontes geraram o Destino — Heimarmene — e o amarraram aos astros.,The Archons begot Fate — Heimarmene — and bound it to the stars.,estela,,170,scripts/autoload/gnosis.gd:98,
 gnosis.STELAS.f3a2b1,Cada nascimento sob um signo; cada vida numa órbita; cada morte no dia marcado.,Every birth under a sign; every life in an orbit; every death on the appointed day.,estela,,170,scripts/autoload/gnosis.gd:99,
@@ -223,7 +223,7 @@ gnosis.STELAS.578c5e,"Escreveram comentários, salmos, cartas e homilias — qua
 gnosis.STELAS.9e6275,"O que sabemos deles é um reflexo nas palavras de quem os combateu. Mesmo assim, brilha.","What we know of them is a reflection in the words of those who fought them. Even so, it shines.",estela,,170,scripts/autoload/gnosis.gd:168,
 gnosis.STELAS.15fc13,"Irineu I,1–8 e I,24; Hipólito, Refutação VII,20–27; Clemente, Stromata; Tertuliano, Contra os Valentinianos 4.","Irenaeus I,1–8 and I,24; Hippolytus, Refutation of All Heresies VII,20–27; Clement, Stromata; Tertullian, Against the Valentinians 4.",estela_fonte,,170,scripts/autoload/gnosis.gd:170,
 gnosis.STELAS.d75374,"Espelho · Travessia IV, depois do santuário.","Mirror · Crossing IV, past the shrine.",estela_dica,,90,scripts/autoload/gnosis.gd:171,
-gnosis.STELAS.4a9ba9,Praga,Blight,eon_nome,,18,scripts/autoload/gnosis.gd:172 scripts/autoload/gnosis.gd:183 scripts/autoload/gnosis.gd:413 scripts/autoload/run_manager.gd:34 scripts/entities/enemy.gd:347,
+gnosis.STELAS.4a9ba9,Praga,Blight,eon_nome,,18,scripts/autoload/gnosis.gd:172 scripts/autoload/gnosis.gd:183 scripts/autoload/gnosis.gd:413 scripts/autoload/run_manager.gd:34 scripts/entities/enemy.gd:347 scripts/levels/level.gd:819,
 gnosis.STELAS.797bd2,O Evangelho de Tomé,The Gospel of Thomas,estela_titulo,,60,scripts/autoload/gnosis.gd:172,
 gnosis.STELAS.4e4a57,"“Estas são as palavras secretas que Jesus, o vivo, disse, e que Dídimo Judas Tomé escreveu.”","“These are the hidden words that Jesus, the living one, spoke, and that Didymus Judas Thomas set down.”",estela,,170,scripts/autoload/gnosis.gd:174,
 gnosis.STELAS.c2944f,"Cento e catorze ditos. Sem nascimento, sem milagres, sem paixão: só a voz, e o ouvido de quem entende. Se é gnóstico, os estudiosos discutem.","One hundred and fourteen sayings. No birth, no miracles, no passion: only the voice, and the ear of whoever understands. Whether it is Gnostic, scholars debate.",estela,,170,scripts/autoload/gnosis.gd:175,
@@ -242,7 +242,7 @@ gnosis.STELAS.3a0a8d,"Ele acorda, encanta a serpente com o nome do pai, toma a p
 gnosis.STELAS.9ad668,O veneno deste pântano é a comida do Egito. A carta é qualquer coisa que te faça lembrar.,The poison of this swamp is the food of Egypt. The letter is anything that makes you remember.,estela,,170,scripts/autoload/gnosis.gd:190,
 gnosis.STELAS.124142,"Atos de Tomé 108–113 (o “Hino da Pérola”, em siríaco, séc. II–III).","Acts of Thomas 108–113 (the “Hymn of the Pearl,” in Syriac, 2nd–3rd c.).",estela_fonte,,170,scripts/autoload/gnosis.gd:192,
 gnosis.STELAS.062957,"Praga · Travessia IV, depois do santuário.","Blight · Crossing IV, past the shrine.",estela_dica,,90,scripts/autoload/gnosis.gd:193,
-gnosis.STELAS.c61bf7,Coroa,Crown,eon_nome,,18,scripts/autoload/gnosis.gd:194 scripts/autoload/gnosis.gd:205 scripts/autoload/gnosis.gd:413 scripts/autoload/run_manager.gd:34 scripts/entities/enemy.gd:347,
+gnosis.STELAS.c61bf7,Coroa,Crown,eon_nome,,18,scripts/autoload/gnosis.gd:194 scripts/autoload/gnosis.gd:205 scripts/autoload/gnosis.gd:413 scripts/autoload/run_manager.gd:34 scripts/entities/enemy.gd:347 scripts/levels/level.gd:819,
 gnosis.STELAS.e7b458,O Chamado e o Despertar,The Call and the Awakening,estela_titulo,,60,scripts/autoload/gnosis.gd:194,
 gnosis.STELAS.6ca589,Os textos concordam num ponto: a faísca não acorda sozinha. Algo a chama.,The texts agree on one point: the spark does not wake on its own. Something calls it.,estela,,170,scripts/autoload/gnosis.gd:196,
 gnosis.STELAS.a68736,"“Levanta-te e lembra-te”, diz o hino do Apócrifo de João. “Desperta”, diz a carta da Pérola. O chamado ecoa também entre mandeus e maniqueus.","“Rise, and remember,” says the hymn of the Apocryphon of John. “Wake,” says the letter of the Pearl. The call echoes among Mandaeans and Manichaeans too.",estela,,170,scripts/autoload/gnosis.gd:197,
@@ -272,7 +272,7 @@ gnosis.STELAS.de012a,"Escolher como voltar — subir, sentar ou plantar — nunc
 gnosis.STELAS.aa1c16,"Evangelho de Tomé 18; Irineu I,7,1; Sobre a Origem do Mundo (NHC II,5, 126–127); Tratado Tripartite (NHC I,5).","Gospel of Thomas 18; Irenaeus I,7,1; On the Origin of the World (NHC II,5, 126–127); Tripartite Tractate (NHC I,5).",estela_fonte,,170,scripts/autoload/gnosis.gd:225,
 gnosis.STELAS.025455,"O Centro II, na segunda câmara de ecos.","The Center II, in the second chamber of echoes.",estela_dica,,90,scripts/autoload/gnosis.gd:226,
 gnosis.BOSS_TITLES.d2c8a4,O REI,THE KING,card_chefe_nome,,18,scripts/autoload/gnosis.gd:231,
-gnosis.BOSS_TITLES.2012c9,Guardião do Limiar,Guardian of the Threshold,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:231,
+gnosis.BOSS_TITLES.c359f8,“Um rei jamais se curva.”,“A king never bows.”,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:231,
 gnosis.BOSS_TITLES.b32681,ATHOTH,ATHOTH,card_chefe_nome,,18,scripts/autoload/gnosis.gd:232,
 gnosis.BOSS_TITLES.d28e50,Arconte do Torpor  ·  Primeira Esfera,Archon of Torpor  ·  First Sphere,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:232,
 gnosis.BOSS_TITLES.3d9412,HARMAS,HARMAS,card_chefe_nome,,18,scripts/autoload/gnosis.gd:233,
@@ -293,8 +293,8 @@ gnosis.BOSS_TITLES.fb6748,O COLOSSO OCO,HOLLOW COLOSSUS,card_chefe_nome,,18,scri
 gnosis.BOSS_TITLES.7a1f27,A Verdade  ·  Yaldabaoth,The Truth  ·  Yaldabaoth,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:240,
 gnosis.BOSS_TITLES.91c428,YALDABAOTH,YALDABAOTH,card_chefe_nome,,18,scripts/autoload/gnosis.gd:241,
 gnosis.BOSS_TITLES.b6df70,O Rei enfraquecido e o Colosso Oco  ·  as duas faces,Weakened King and Hollow Colossus  ·  two faces,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:241,
-gnosis.boss_card.86ab62,O CAMPEÃO,THE CHAMPION,card_chefe_nome,,18,scripts/autoload/gnosis.gd:414,
-gnosis.boss_card.ea8185,Guardião do santuário %s %s,Guardian of the shrine %s %s,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:414,format string: manter os %
+gnosis.boss_card.86ab62,O CAMPEÃO,THE CHAMPION,card_chefe_nome,,18,scripts/autoload/gnosis.gd:416 scripts/levels/level.gd:820,
+gnosis.boss_card.ea8185,Guardião do santuário %s %s,Guardian of the shrine %s %s,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:416 scripts/levels/level.gd:820,format string: manter os %
 narrative.VOZ.1031fa,A Voz,The Voice,falante,,24,scripts/autoload/narrative.gd:17,
 narrative.CEGO.ad0549,O Cego,The Blind One,narrativa,,115,scripts/autoload/narrative.gd:22,
 narrative.ORDINAIS.26d0c6,primeiro,first,ordinal,,,scripts/autoload/narrative.gd:41,
@@ -801,11 +801,11 @@ narrative.epilogue_cards.e04b2f,"Na cidade das cinzas aprendeu os nomes. Ina, qu
 narrative.epilogue_cards.245d54,"Não eram a gente dela. Agora são. E dentro dela, pequeno, alguém aprendia a ver.","They were not her people. Now they are. And inside her, small, someone was learning to see.",card_cinema,,240,scripts/autoload/narrative.gd:1087,
 narrative.epilogue_cards.e1f163,A faísca lembrou. O resto é silêncio.,The spark remembered. The rest is silence.,card_cinema,,240,scripts/autoload/narrative.gd:1089,
 progression_manager.notice_claimed.32fc7d,Recompensa já recolhida neste run,Reward already collected this run,toast,,60,scripts/autoload/progression_manager.gd:247,
-run_manager._grant_reward.2d0bd4,no:%d.%d,no:%d.%d,ui,,,scripts/autoload/run_manager.gd:625,format string: manter os %
-save_manager.load_game.bd4bd0,O arquivo de save estava ilegível e foi ignorado.,The save file was unreadable and has been ignored.,ui,,,scripts/autoload/save_manager.gd:101,
-save_manager.load_game.17684a,O save principal estava danificado; o progresso foi recuperado da cópia de segurança.,The main save was damaged; your progress was recovered from the backup copy.,ui,,,scripts/autoload/save_manager.gd:107,
-save_manager.load_game.a99a60,"Um progresso de versão anterior foi descartado (o mapa mudou). Faíscas totais, finais e opções foram preservados.","Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept.",ui,,,scripts/autoload/save_manager.gd:126,
-save_manager.load_game.e9b25b,"O checkpoint salvo não existe neste mapa e foi descartado. Faíscas, finais e opções foram preservados.","The saved checkpoint does not exist on this map and was discarded. Sparks, endings and options were kept.",ui,,,scripts/autoload/save_manager.gd:129,
+run_manager._grant_reward.2d0bd4,no:%d.%d,no:%d.%d,ui,,,scripts/autoload/run_manager.gd:654,format string: manter os %
+save_manager.load_game.bd4bd0,O arquivo de save estava ilegível e foi ignorado.,The save file was unreadable and has been ignored.,ui,,,scripts/autoload/save_manager.gd:103,
+save_manager.load_game.17684a,O save principal estava danificado; o progresso foi recuperado da cópia de segurança.,The main save was damaged; your progress was recovered from the backup copy.,ui,,,scripts/autoload/save_manager.gd:109,
+save_manager.load_game.a99a60,"Um progresso de versão anterior foi descartado (o mapa mudou). Faíscas totais, finais e opções foram preservados.","Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept.",ui,,,scripts/autoload/save_manager.gd:128,
+save_manager.load_game.e9b25b,"O checkpoint salvo não existe neste mapa e foi descartado. Faíscas, finais e opções foram preservados.","The saved checkpoint does not exist on this map and was discarded. Sparks, endings and options were kept.",ui,,,scripts/autoload/save_manager.gd:131,
 eon_rule._ready.acfccc,A névoa engrossa: só se vê o que está perto.,The fog thickens: only what is near can be seen.,ui,,,scripts/combat/eon_rule.gd:110,
 eon_rule._ready.b0f357,Correntes pendem do teto. Atraia os inimigos para a varredura.,Chains hang from the ceiling. Lure the enemies into the sweep.,ui,,,scripts/combat/eon_rule.gd:110,
 achievement_data.LIST.e62075,O primeiro grilhão,The First Shackle,ui,,,scripts/data/achievement_data.gd:16,
@@ -970,10 +970,11 @@ bestiary_lore.category.6dffc1,Arconte  ·  ,Archon  ·  ,ui,,,scripts/data/besti
 bestiary_lore.category.187bde,Guardião  ·  ,Guardian  ·  ,ui,,,scripts/data/bestiary_lore.gd:230,
 bestiary_lore.category.d8f090,Arconte  ·  Espelho,Archon  ·  Mirror,ui,,,scripts/data/bestiary_lore.gd:232,
 bestiary_lore.category.de87bb,Criatura do Kenoma,Creature of the Kenoma,ui,,,scripts/data/bestiary_lore.gd:233,
-boss_athoth._draw.395df8,z,z,ui,,,scripts/entities/bosses/boss_athoth.gd:264,
-boss_brain.setup.392d87,BossBrain,BossBrain,ui,,,scripts/entities/bosses/boss_brain.gd:102,
-boss_rei._setup_eye.185f11,OrbRig,OrbRig,ui,,,scripts/entities/bosses/boss_rei.gd:96,
-boss_rei._setup_eye.38fe31,HudPush,HudPush,ui,,,scripts/entities/bosses/boss_rei.gd:99,
+boss_athoth._draw.395df8,z,z,ui,,,scripts/entities/bosses/boss_athoth.gd:271,
+boss_brain.setup.392d87,BossBrain,BossBrain,ui,,,scripts/entities/bosses/boss_brain.gd:127,
+boss_rei._setup_eye.185f11,OrbRig,OrbRig,ui,,,scripts/entities/bosses/boss_rei.gd:118,
+boss_rei._setup_eye.38fe31,HudPush,HudPush,ui,,,scripts/entities/bosses/boss_rei.gd:121,
+boss_rei._expose_lie.ac115d,Mentira exposta · o Rei fica 8 s sem guarda,Lie exposed · the King is open for 8 s,toast,,60,scripts/entities/bosses/boss_rei.gd:225,
 chest._give_reward.3faeaa,bau:%d%s,bau:%d%s,ui,,,scripts/entities/chest.gd:102,format string: manter os %
 chest._give_reward.0518b3,:s,:s,ui,,,scripts/entities/chest.gd:102,
 chest._give_reward.0b11f5,Segredo encontrado,Secret found,toast,,60,scripts/entities/chest.gd:110,
@@ -982,6 +983,7 @@ enemy._ready.93c65e,%s (Elite),%s (Elite),ui,,,scripts/entities/enemy.gd:247,for
 enemy._ready.5fbd7f,Campeão %s,Champion %s,ui,,,scripts/entities/enemy.gd:256,format string: manter os %
 enemy._eon_title.5101be,da ,of ,ui,,,scripts/entities/enemy.gd:348,
 enemy._eon_title.ce4410,do ,of ,ui,,,scripts/entities/enemy.gd:348,
+enemy._spent_smoke.e1b7f6,SpentSmoke,,ui,,,scripts/entities/enemy.gd:1019,
 sanctuary_altar._physics_process.4adce9,O altar te acalma.,The altar soothes you.,toast,,60,scripts/entities/hazards/sanctuary_altar.gd:42,
 summon_totem._crumble.e73a89,Totem quebrado: os reforços cessam.,Totem shattered: no more reinforcements.,toast,,60,scripts/entities/hazards/summon_totem.gd:92,
 ward_light.finish.72dceb,A luz resistiu: o Adormecido te devolve forças.,The light held: the Sleeper restores your strength.,toast,,60,scripts/entities/hazards/ward_light.gd:46,
@@ -1014,10 +1016,10 @@ Uma delas acaba de sentir dor.","Blind to the Light, he believed himself the onl
 In the clay sleep the sparks he took from his mother.
 
 One of them has just felt pain.",card_cinema,,240,scripts/fx/cinematic.gd:154,
-cinematic.epilogue.4ab9df,Todas as pedras foram lidas. A faísca lembra por inteiro.,Every stone has been read. The spark remembers in full.,card_cinema,,240,scripts/fx/cinematic.gd:186,
-cinematic.epilogue.8e89d7,Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas.,%d Stelae were left unread in the Kenoma. The Chronicles keep the ones that were read.,card_cinema,,240,scripts/fx/cinematic.gd:187,format string: manter os %
-cinematic.epilogue.2f5ff6,CRÔNICAS  %d / %d,CHRONICLES  %d / %d,card_cinema,,240,scripts/fx/cinematic.gd:188,format string: manter os %
-cinematic.epilogue.863da2,GNOSIS,GNOSIS,card_cinema,,240,scripts/fx/cinematic.gd:189 scripts/ui/codex_menu.gd:132 scripts/ui/credits.gd:101 scripts/ui/end_screen.gd:39,
+cinematic.epilogue.4ab9df,Todas as pedras foram lidas. A faísca lembra por inteiro.,Every stone has been read. The spark remembers in full.,card_cinema,,240,scripts/fx/cinematic.gd:188,
+cinematic.epilogue.8e89d7,Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas.,%d Stelae were left unread in the Kenoma. The Chronicles keep the ones that were read.,card_cinema,,240,scripts/fx/cinematic.gd:189,format string: manter os %
+cinematic.epilogue.2f5ff6,CRÔNICAS  %d / %d,CHRONICLES  %d / %d,card_cinema,,240,scripts/fx/cinematic.gd:190,format string: manter os %
+cinematic.epilogue.863da2,GNOSIS,GNOSIS,card_cinema,,240,scripts/fx/cinematic.gd:191 scripts/ui/codex_menu.gd:132 scripts/ui/credits.gd:101 scripts/ui/end_screen.gd:39,
 cinematic.epilogue.622c86,"João Tatarin — direção, produção e escolhas
 Arte ilustrada gerada por IA sob direção do autor
 Código escrito com Claude (Anthropic) e Codex (OpenAI)
@@ -1030,8 +1032,8 @@ Code written with Claude (Anthropic) and Codex (OpenAI)
 Sounds and effects CC0/CC-BY — see assets/LICENSES.md
 
 Inspired by the Nag Hammadi texts, the Pistis Sophia
-and the accounts of Irenaeus, Hippolytus and Clement.",card_cinema,,240,scripts/fx/cinematic.gd:189,
-cinematic.epilogue.17a290,...mãe?,...mother?,card_cinema,,240,scripts/fx/cinematic.gd:192,
+and the accounts of Irenaeus, Hippolytus and Clement.",card_cinema,,240,scripts/fx/cinematic.gd:191,
+cinematic.epilogue.17a290,...mãe?,...mother?,card_cinema,,240,scripts/fx/cinematic.gd:194,
 hazard_art.back_layer.5786e2,ArtBack,ArtBack,ui,,,scripts/fx/hazard_art.gd:194,
 codex_trial._ready.7dcce7,I  ·  A FAÍSCA DESPERTA,I  ·  THE SPARK AWAKENS,toast,,60,scripts/levels/codex_trial.gd:79,
 codex_trial._ready.1e3e14,II  ·  QUEBRE A GUARDA,II  ·  BREAK THE GUARD,toast,,60,scripts/levels/codex_trial.gd:79,
@@ -1050,7 +1052,7 @@ codex_trial._show_result.788c52,Repetir a Provação,Repeat the Trial,ui,,,scrip
 codex_trial._show_result.dce1a6,Próximo encontro  →,Next encounter  →,ui,,,scripts/levels/codex_trial.gd:157,
 codex_trial._show_result.04fc24,Tentar novamente,Try again,ui,,,scripts/levels/codex_trial.gd:157,
 codex_trial._show_result.509aa0,Voltar ao menu,Back to menu,ui,,,scripts/levels/codex_trial.gd:162,
-final_battle.start.abc7e4,As duas formas precisam cair juntas.,Both forms must fall together.,toast,,60,scripts/levels/final_battle.gd:64,
+final_battle.start.abc7e4,As duas formas precisam cair juntas.,Both forms must fall together.,toast,,60,scripts/levels/final_battle.gd:69,
 level._tutor_watch.8b7973,brilho vermelho não se apara:,a red glow can't be parried:,ui,,,scripts/levels/level.gd:220,
 level._tutor_watch.b8d004,Vermelho não se apara: esquive.,Red can't be parried: dodge.,ui,,,scripts/levels/level.gd:221,
 level._tutor_watch.bcb21e,brilho amarelo:,yellow glow:,ui,,,scripts/levels/level.gd:226,
@@ -1058,12 +1060,12 @@ level._tutor_watch.99b506,apare no tempo,parry on time,ui,,,scripts/levels/level
 level._tutor_watch.9ce9ae,Brilho amarelo: bloqueie no tempo e apare.,Yellow glow: block on time to parry.,ui,,,scripts/levels/level.gd:227,
 level._play_narrative_beats.34d9f2,Recusar,Refuse,ui,,,scripts/levels/level.gd:359,
 level._play_narrative_beats.8eb3bb,Ceder,Yield,ui,,,scripts/levels/level.gd:359,
-level._arm_objective.42e14a,Um totem chama reforços: quebre-o.,A totem calls reinforcements: break it.,ui,,,scripts/levels/level.gd:616,
-level._arm_objective.84d7c0,Proteja a luz do Adormecido: lute longe dela.,Protect the Sleeper's light: fight away from it.,ui,,,scripts/levels/level.gd:617,
-level._on_zone_cleared.5e6b69,Siga em frente  →,Keep going  →,toast,,60,scripts/levels/level.gd:698 scripts/ui/hud.gd:57,
-level._open_exit.141467,A fenda abriu no alto: suba.,The rift opened up high: climb.,toast,,60,scripts/levels/level.gd:924,
-level._on_player_died.f920d1,Você caiu no Kenoma,You fell in the Kenoma,ui,,,scripts/levels/level.gd:1024,
-level._on_player_died.ba60d8,Chegou até a Tela %d.,Reached Screen %d.,ui,,,scripts/levels/level.gd:1025,format string: manter os %
+level._arm_objective.42e14a,Um totem chama reforços: quebre-o.,A totem calls reinforcements: break it.,ui,,,scripts/levels/level.gd:613,
+level._arm_objective.84d7c0,Proteja a luz do Adormecido: lute longe dela.,Protect the Sleeper's light: fight away from it.,ui,,,scripts/levels/level.gd:614,
+level._on_zone_cleared.5e6b69,Siga em frente  →,Keep going  →,toast,,60,scripts/levels/level.gd:695 scripts/ui/hud.gd:57,
+level._open_exit.141467,A fenda abriu no alto: suba.,The rift opened up high: climb.,toast,,60,scripts/levels/level.gd:925,
+level._on_player_died.f920d1,Você caiu no Kenoma,You fell in the Kenoma,ui,,,scripts/levels/level.gd:1025,
+level._on_player_died.ba60d8,Chegou até a Tela %d.,Reached Screen %d.,ui,,,scripts/levels/level.gd:1026,format string: manter os %
 eon_map.KINDS.d144c4,Chegada,Arrival,ui,,,scripts/levels/map/eon_map.gd:91,
 eon_map.KINDS.5ddace,A porta do Éon. Checkpoint.,The gate of the Aeon. Checkpoint.,ui,,,scripts/levels/map/eon_map.gd:91,
 eon_map.KINDS.c51361,Travessia,Crossing,ui,,,scripts/levels/map/eon_map.gd:92,
@@ -1091,9 +1093,9 @@ eon_map.reward_text.dcf4ab,+%d vida máx.,+%d max life,ui,,,scripts/levels/map/e
 eon_map.reward_text.2d5b9d,+%d Éter máx.,+%d max Aether,ui,,,scripts/levels/map/eon_map.gd:178,format string: manter os %
 eon_map.reward_text.cf629f,cura inteira,full healing,ui,,,scripts/levels/map/eon_map.gd:180,
 eon_map.slot.ad28c6,e%d.L%d,e%d.L%d,ui,,,scripts/levels/map/eon_map.gd:286,format string: manter os %
-scenery.build_foreground.f7745e,Foreground,Foreground,ui,,,scripts/levels/scenery.gd:879,
-scenery._add_column.cce016,FgColumn%d,FgColumn%d,ui,,,scripts/levels/scenery.gd:1094,format string: manter os %
-scenery._crop_x.90b7b7,%s:%d,%s:%d,ui,,,scripts/levels/scenery.gd:1104,format string: manter os %
+scenery.build_foreground.f7745e,Foreground,Foreground,ui,,,scripts/levels/scenery.gd:1088,
+scenery._add_column.cce016,FgColumn%d,FgColumn%d,ui,,,scripts/levels/scenery.gd:1303,format string: manter os %
+scenery._crop_x.90b7b7,%s:%d,%s:%d,ui,,,scripts/levels/scenery.gd:1313,format string: manter os %
 character_atelier.POSE_NAMES.ab1389,Repouso,Idle,ui,,,scripts/ui/character_atelier.gd:10 scripts/ui/character_atelier.gd:86,
 character_atelier.POSE_NAMES.9d9e20,Caminhar,Walk,ui,,,scripts/ui/character_atelier.gd:10,
 character_atelier.POSE_NAMES.c5210f,Golpe leve,Light strike,ui,,,scripts/ui/character_atelier.gd:10 scripts/ui/input_rebind.gd:19 scripts/ui/moves_screen.gd:147,
@@ -1219,7 +1221,7 @@ codex_menu._on_new_campaign.2c92c9,Apagar e começar,Erase and start,ui,,,script
 codex_menu._open_trial.c63558,Provação,Trial,ui,,,scripts/ui/codex_menu.gd:247 scripts/ui/run_labels.gd:16,
 codex_menu._open_trial.d37464,Escolha o Arconte do 3º encontro,Choose the Archon for the 3rd encounter,ui,,,scripts/ui/codex_menu.gd:249,
 codex_menu._open_trial.d1a79e,%s  ·  %s,%s  ·  %s,ui,,,scripts/ui/codex_menu.gd:256 scripts/ui/hud.gd:920 scripts/ui/moves_screen.gd:122,format string: manter os %
-controls_menu._ready.0ba15d,Controles,Controls,ui,,,scripts/ui/controls_menu.gd:49 scripts/ui/options_menu.gd:107,
+controls_menu._ready.0ba15d,Controles,Controls,ui,,,scripts/ui/controls_menu.gd:49 scripts/ui/options_menu.gd:112,
 controls_menu._ready.69339d,AÇÃO,ACTION,ui,,,scripts/ui/controls_menu.gd:52,
 controls_menu._ready.dfc9b4,TECLADO,KEYBOARD,ui,,,scripts/ui/controls_menu.gd:53,
 controls_menu._ready.93248f,Restaurar padrão,Restore defaults,ui,,,scripts/ui/controls_menu.gd:77,
@@ -1266,7 +1268,7 @@ credits._fill.ceaed7,Motor,Engine,ui,,,scripts/ui/credits.gd:135,
 credits._fill.2ea63c,"Godot Engine  —  © Juan Linietsky, Ariel Manzur e colaboradores (licença MIT)","Godot Engine  —  © Juan Linietsky, Ariel Manzur and contributors (MIT license)",ui,,,scripts/ui/credits.gd:136,
 credits._fill.2a9b2b,Obrigado por despertar.,Thank you for waking.,ui,,,scripts/ui/credits.gd:139,
 credits._read_licenses.0f74a4,%s  —  %s  (%s),%s  —  %s  (%s),ui,,,scripts/ui/credits.gd:163,format string: manter os %
-dialogue_box._reason_text.d9cd37,%s: %s,%s: %s,ui,,,scripts/ui/dialogue_box.gd:652,format string: manter os %
+dialogue_box._reason_text.d9cd37,%s: %s,%s: %s,ui,,,scripts/ui/dialogue_box.gd:722,format string: manter os %
 end_screen._ready.69ebf6,A TRAVESSIA TERMINOU,THE CROSSING IS OVER,ui,,,scripts/ui/end_screen.gd:34,
 end_screen._ready.5f3e04,A FAÍSCA SE APAGOU,THE SPARK WENT OUT,ui,,,scripts/ui/end_screen.gd:34,
 end_screen._ready.1b0369,Fim,The End,ui,,,scripts/ui/end_screen.gd:39 scenes/ui/EndScreen.tscn:56,
@@ -1456,9 +1458,11 @@ options_menu._ready.3f163c,Legendas,Subtitles,ui,,,scripts/ui/options_menu.gd:93
 options_menu._ready.30bf10,“Lembre-se do que arde.”,“Remember what burns.”,ui,,,scripts/ui/options_menu.gd:97,
 options_menu._ready.a33fe8,Números de dano,Damage numbers,ui,,,scripts/ui/options_menu.gd:105,
 options_menu._ready.36a9db,Vibração do controle,Controller vibration,ui,,,scripts/ui/options_menu.gd:106,
-options_menu._ready.0d64f3,Teclas e botões,Keys and buttons,ui,,,scripts/ui/options_menu.gd:108,
-options_menu._refresh_toggle.31d43c,Ligada,On,ui,,,scripts/ui/options_menu.gd:175,
-options_menu._refresh_toggle.164bf4,Desligada,Off,ui,,,scripts/ui/options_menu.gd:175,
+options_menu._ready.cd40ff,Vozes,,ui,,,scripts/ui/options_menu.gd:110,
+options_menu._ready.9cbbd3,Desligadas,,ui,,,scripts/ui/options_menu.gd:111,
+options_menu._ready.0d64f3,Teclas e botões,Keys and buttons,ui,,,scripts/ui/options_menu.gd:113,
+options_menu._refresh_toggle.31d43c,Ligada,On,ui,,,scripts/ui/options_menu.gd:180,
+options_menu._refresh_toggle.164bf4,Desligada,Off,ui,,,scripts/ui/options_menu.gd:180,
 pause_menu._ready.6867e6,Relic,Relic,ui,,,scripts/ui/pause_menu.gd:45,
 pause_menu._role_text.352f78,Provação  ·  encontro %d / 3,Trial  ·  encounter %d / 3,ui,,,scripts/ui/pause_menu.gd:75,format string: manter os %
 pause_menu._open_map.412f13,O caminho do Éon até aqui. Só para olhar.,The Aeon's path so far. Just for looking.,ui,,,scripts/ui/pause_menu.gd:121,

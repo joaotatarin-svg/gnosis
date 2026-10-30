@@ -21,6 +21,14 @@ class_name BossBrain
 ##   no alto), chain (Array de ids: golpes que vêm colados, sem respiro)
 ##   + parâmetros do tipo (off, sx, sy, waves, speed, count, …).
 
+## A MENTIRA DO CHEFE (29/10, desenho da Narrativa — `_caps/narrativa/AMOSTRA_LIMIAR.md` §3):
+## o jogador PROVOU com o corpo que a frase do card é falsa (1 vez por luta).
+## A Narrativa (falas), a UI (aviso/Bestiário) e as Crônicas escutam. O cérebro
+## fica no grupo "boss_brain" para quem precisar achar.
+signal lie_exposed(id: String)
+## Degrau da dica da mentira (1 = card · 2 = pergunta da Sophia · 3 = Bestiário).
+signal lie_hint_step(n: int)
+
 var e: Enemy = null
 var phase: int = 1
 var marks: Array = BossTuning.PHASE_MARKS
@@ -117,6 +125,7 @@ static func script_for(type_id: String, kit: String) -> String:
 func setup(enemy: Enemy) -> void:
 	e = enemy
 	name = "BossBrain"
+	add_to_group("boss_brain")
 	screen = GameManager.current_screen
 	rng.seed = hash("%s-%d" % [e.type_id, screen])
 	var hp := BossTuning.boss_health(e.type_id, screen)

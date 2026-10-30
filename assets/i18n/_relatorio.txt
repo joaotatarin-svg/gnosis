@@ -1,5 +1,5 @@
-strings: 1456   traduzidas: 1456   faltando: 0
-caracteres pt: 59408   en: 62117
+strings: 1460   traduzidas: 1457   faltando: 3
+caracteres pt: 59483   en: 62150
 alertas: 0   problemas nos lotes: 0
 
 ## problemas nos lotes
@@ -7,3 +7,6 @@ alertas: 0   problemas nos lotes: 0
 ## alertas
 
 ## faltando
+enemy._spent_smoke.e1b7f6
+options_menu._ready.cd40ff
+options_menu._ready.9cbbd3

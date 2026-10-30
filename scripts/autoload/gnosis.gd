@@ -228,7 +228,7 @@ const STELAS: Array = [
 
 ## Cards de chefe: nome grande + título (letterbox), por type_id.
 const BOSS_TITLES: Dictionary = {
-	"rei": {"name": "O REI", "title": "Guardião do Limiar"},
+	"rei": {"name": "O REI", "title": "“Um rei jamais se curva.”"},   # a MENTIRA do Rei (Narrativa §3.2; chefes6 por delegação 29/10)
 	"arconte_sono": {"name": "ATHOTH", "title": "Arconte do Torpor  ·  Primeira Esfera"},
 	"arconte_fome": {"name": "HARMAS", "title": "Arconte da Fome  ·  Segunda Esfera"},
 	"arconte_corrente": {"name": "GALILA", "title": "Arconte da Corrente  ·  Terceira Esfera"},

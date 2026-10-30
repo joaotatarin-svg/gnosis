@@ -1370,10 +1370,10 @@ msgstr "The Center II, in the second chamber of echoes."
 msgid "O REI"
 msgstr "THE KING"
 
-#. gnosis.BOSS_TITLES.2012c9  [card_chefe_titulo]
+#. gnosis.BOSS_TITLES.c359f8  [card_chefe_titulo]
 #: scripts/autoload/gnosis.gd:231
-msgid "Guardião do Limiar"
-msgstr "Guardian of the Threshold"
+msgid "“Um rei jamais se curva.”"
+msgstr "“A king never bows.”"
 
 #. gnosis.BOSS_TITLES.b32681  [card_chefe_nome]
 #: scripts/autoload/gnosis.gd:232
@@ -1476,12 +1476,12 @@ msgid "O Rei enfraquecido e o Colosso Oco  ·  as duas faces"
 msgstr "Weakened King and Hollow Colossus  ·  two faces"
 
 #. gnosis.boss_card.86ab62  [card_chefe_nome]
-#: scripts/autoload/gnosis.gd:414
+#: scripts/autoload/gnosis.gd:416
 msgid "O CAMPEÃO"
 msgstr "THE CHAMPION"
 
 #. gnosis.boss_card.ea8185  [card_chefe_titulo]
-#: scripts/autoload/gnosis.gd:414
+#: scripts/autoload/gnosis.gd:416
 msgid "Guardião do santuário %s %s"
 msgstr "Guardian of the shrine %s %s"
 
@@ -3986,27 +3986,27 @@ msgid "Recompensa já recolhida neste run"
 msgstr "Reward already collected this run"
 
 #. run_manager._grant_reward.2d0bd4  [ui]
-#: scripts/autoload/run_manager.gd:625
+#: scripts/autoload/run_manager.gd:654
 msgid "no:%d.%d"
 msgstr "no:%d.%d"
 
 #. save_manager.load_game.bd4bd0  [ui]
-#: scripts/autoload/save_manager.gd:101
+#: scripts/autoload/save_manager.gd:103
 msgid "O arquivo de save estava ilegível e foi ignorado."
 msgstr "The save file was unreadable and has been ignored."
 
 #. save_manager.load_game.17684a  [ui]
-#: scripts/autoload/save_manager.gd:107
+#: scripts/autoload/save_manager.gd:109
 msgid "O save principal estava danificado; o progresso foi recuperado da cópia de segurança."
 msgstr "The main save was damaged; your progress was recovered from the backup copy."
 
 #. save_manager.load_game.a99a60  [ui]
-#: scripts/autoload/save_manager.gd:126
+#: scripts/autoload/save_manager.gd:128
 msgid "Um progresso de versão anterior foi descartado (o mapa mudou). Faíscas totais, finais e opções foram preservados."
 msgstr "Progress from an older version was discarded (the map changed). Total sparks, endings and options were kept."
 
 #. save_manager.load_game.e9b25b  [ui]
-#: scripts/autoload/save_manager.gd:129
+#: scripts/autoload/save_manager.gd:131
 msgid "O checkpoint salvo não existe neste mapa e foi descartado. Faíscas, finais e opções foram preservados."
 msgstr "The saved checkpoint does not exist on this map and was discarded. Sparks, endings and options were kept."
 
@@ -4831,24 +4831,29 @@ msgid "Criatura do Kenoma"
 msgstr "Creature of the Kenoma"
 
 #. boss_athoth._draw.395df8  [ui]
-#: scripts/entities/bosses/boss_athoth.gd:264
+#: scripts/entities/bosses/boss_athoth.gd:271
 msgid "z"
 msgstr "z"
 
 #. boss_brain.setup.392d87  [ui]
-#: scripts/entities/bosses/boss_brain.gd:102
+#: scripts/entities/bosses/boss_brain.gd:127
 msgid "BossBrain"
 msgstr "BossBrain"
 
 #. boss_rei._setup_eye.185f11  [ui]
-#: scripts/entities/bosses/boss_rei.gd:96
+#: scripts/entities/bosses/boss_rei.gd:118
 msgid "OrbRig"
 msgstr "OrbRig"
 
 #. boss_rei._setup_eye.38fe31  [ui]
-#: scripts/entities/bosses/boss_rei.gd:99
+#: scripts/entities/bosses/boss_rei.gd:121
 msgid "HudPush"
 msgstr "HudPush"
+
+#. boss_rei._expose_lie.ac115d  [toast]
+#: scripts/entities/bosses/boss_rei.gd:225
+msgid "Mentira exposta · o Rei fica 8 s sem guarda"
+msgstr "Lie exposed · the King is open for 8 s"
 
 #. chest._give_reward.3faeaa  [ui]
 #: scripts/entities/chest.gd:102
@@ -4991,32 +4996,32 @@ msgid "Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.\nNo barro
 msgstr "Blind to the Light, he believed himself the only god and made the Kenoma.\nIn the clay sleep the sparks he took from his mother.\n\nOne of them has just felt pain."
 
 #. cinematic.epilogue.4ab9df  [card_cinema]
-#: scripts/fx/cinematic.gd:186
+#: scripts/fx/cinematic.gd:188
 msgid "Todas as pedras foram lidas. A faísca lembra por inteiro."
 msgstr "Every stone has been read. The spark remembers in full."
 
 #. cinematic.epilogue.8e89d7  [card_cinema]
-#: scripts/fx/cinematic.gd:187
+#: scripts/fx/cinematic.gd:189
 msgid "Ficaram %d Estelas por ler no Kenoma. As Crônicas guardam as que foram lidas."
 msgstr "%d Stelae were left unread in the Kenoma. The Chronicles keep the ones that were read."
 
 #. cinematic.epilogue.2f5ff6  [card_cinema]
-#: scripts/fx/cinematic.gd:188
+#: scripts/fx/cinematic.gd:190
 msgid "CRÔNICAS  %d / %d"
 msgstr "CHRONICLES  %d / %d"
 
 #. cinematic.epilogue.863da2  [card_cinema]
-#: scripts/fx/cinematic.gd:189
+#: scripts/fx/cinematic.gd:191
 msgid "GNOSIS"
 msgstr "GNOSIS"
 
 #. cinematic.epilogue.622c86  [card_cinema]
-#: scripts/fx/cinematic.gd:189
+#: scripts/fx/cinematic.gd:191
 msgid "João Tatarin — direção, produção e escolhas\nArte ilustrada gerada por IA sob direção do autor\nCódigo escrito com Claude (Anthropic) e Codex (OpenAI)\nSons e efeitos CC0/CC-BY — ver assets/LICENSES.md\n\nInspirado nos textos de Nag Hammadi, na Pistis Sophia\ne nos relatos de Irineu, Hipólito e Clemente."
 msgstr "João Tatarin — direction, production and choices\nIllustrated art generated by AI under the author's direction\nCode written with Claude (Anthropic) and Codex (OpenAI)\nSounds and effects CC0/CC-BY — see assets/LICENSES.md\n\nInspired by the Nag Hammadi texts, the Pistis Sophia\nand the accounts of Irenaeus, Hippolytus and Clement."
 
 #. cinematic.epilogue.17a290  [card_cinema]
-#: scripts/fx/cinematic.gd:192
+#: scripts/fx/cinematic.gd:194
 msgid "...mãe?"
 msgstr "...mother?"
 
@@ -5111,7 +5116,7 @@ msgid "Voltar ao menu"
 msgstr "Back to menu"
 
 #. final_battle.start.abc7e4  [toast]
-#: scripts/levels/final_battle.gd:64
+#: scripts/levels/final_battle.gd:69
 msgid "As duas formas precisam cair juntas."
 msgstr "Both forms must fall together."
 
@@ -5151,32 +5156,32 @@ msgid "Ceder"
 msgstr "Yield"
 
 #. level._arm_objective.42e14a  [ui]
-#: scripts/levels/level.gd:616
+#: scripts/levels/level.gd:613
 msgid "Um totem chama reforços: quebre-o."
 msgstr "A totem calls reinforcements: break it."
 
 #. level._arm_objective.84d7c0  [ui]
-#: scripts/levels/level.gd:617
+#: scripts/levels/level.gd:614
 msgid "Proteja a luz do Adormecido: lute longe dela."
 msgstr "Protect the Sleeper's light: fight away from it."
 
 #. level._on_zone_cleared.5e6b69  [toast]
-#: scripts/levels/level.gd:698
+#: scripts/levels/level.gd:695
 msgid "Siga em frente  →"
 msgstr "Keep going  →"
 
 #. level._open_exit.141467  [toast]
-#: scripts/levels/level.gd:924
+#: scripts/levels/level.gd:925
 msgid "A fenda abriu no alto: suba."
 msgstr "The rift opened up high: climb."
 
 #. level._on_player_died.f920d1  [ui]
-#: scripts/levels/level.gd:1024
+#: scripts/levels/level.gd:1025
 msgid "Você caiu no Kenoma"
 msgstr "You fell in the Kenoma"
 
 #. level._on_player_died.ba60d8  [ui]
-#: scripts/levels/level.gd:1025
+#: scripts/levels/level.gd:1026
 msgid "Chegou até a Tela %d."
 msgstr "Reached Screen %d."
 
@@ -5316,17 +5321,17 @@ msgid "e%d.L%d"
 msgstr "e%d.L%d"
 
 #. scenery.build_foreground.f7745e  [ui]
-#: scripts/levels/scenery.gd:879
+#: scripts/levels/scenery.gd:1088
 msgid "Foreground"
 msgstr "Foreground"
 
 #. scenery._add_column.cce016  [ui]
-#: scripts/levels/scenery.gd:1094
+#: scripts/levels/scenery.gd:1303
 msgid "FgColumn%d"
 msgstr "FgColumn%d"
 
 #. scenery._crop_x.90b7b7  [ui]
-#: scripts/levels/scenery.gd:1104
+#: scripts/levels/scenery.gd:1313
 msgid "%s:%d"
 msgstr "%s:%d"
 
@@ -6001,7 +6006,7 @@ msgid "%s  —  %s  (%s)"
 msgstr "%s  —  %s  (%s)"
 
 #. dialogue_box._reason_text.d9cd37  [ui]
-#: scripts/ui/dialogue_box.gd:652
+#: scripts/ui/dialogue_box.gd:722
 msgid "%s: %s"
 msgstr "%s: %s"
 
@@ -6941,17 +6946,17 @@ msgid "Vibração do controle"
 msgstr "Controller vibration"
 
 #. options_menu._ready.0d64f3  [ui]
-#: scripts/ui/options_menu.gd:108
+#: scripts/ui/options_menu.gd:113
 msgid "Teclas e botões"
 msgstr "Keys and buttons"
 
 #. options_menu._refresh_toggle.31d43c  [ui]
-#: scripts/ui/options_menu.gd:175
+#: scripts/ui/options_menu.gd:180
 msgid "Ligada"
 msgstr "On"
 
 #. options_menu._refresh_toggle.164bf4  [ui]
-#: scripts/ui/options_menu.gd:175
+#: scripts/ui/options_menu.gd:180
 msgid "Desligada"
 msgstr "Off"
 
