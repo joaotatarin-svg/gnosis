@@ -343,3 +343,33 @@ juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o
   (opção `--faixas` portada da cópia do Lab3D; a minha `--folga` ficou), 56 quadros, idêntica à entrega do Lab3D.
   Testei folga 3 e 4: as duas com atravessa=0/apelão=0; fiquei com 3 (o pedido; cobre 97–99 %, fora 2–8 %).
   `body_cover` (`_caps\chefes6\reihd_quadros_f3.*`): metade de baixo média 98 % / pior 97 %, faixa do cajado 2,2 px fora.
+
+## A MENTIRA DO REI (tela 1) — 29/10 (pedido do João; desenho da Narrativa, auditado pelo Guardião)
+- Card do Rei: "“Um rei jamais se curva.”" (gnosis.gd, por delegação; EN "“A king never bows.”").
+- O AJOELHAR (já existia: depois da Mão, do Raio, dos combos e no atordoado o olho desce 132 px) agora soa um "dong"
+  (`king_step` até o Áudio entregar `king_kneel`) e emite `king_kneel_start/end`.
+- DESMENTIDO = 1º golpe no OLHO com ele ajoelhado: `lie_exposed("rei")`, a pintura `mask_crack` (máscara rachada) por
+  8 s, aviso no HUD, e o Rei PARADO: não escolhe golpe (sem telégrafo), não foge ("sai de cima" desligado), não anda
+  nem é empurrado, não troca de fase no meio (a troca vem depois); corpo ×1,35 e olho ×1,3 (as janelas que já
+  existiam). Depois levanta com 0,9 s de respiro. 1× por luta. Só no Rei da tela 1 (o Rei-Mentira da final não tem).
+- Dica em 3 degraus por sinal (`lie_hint_step` 1/3 no início, 2 durante um ajoelhar com ≥ 45 s ou 2 ajoelhares sem o
+  Desmentido; desligável por `GameManager.lie_hints`). Errar (bater no olho fora do ajoelhar) não faz nada.
+- Sonda (BossProbe tela 1, bot MÉDIO, 6 sementes; `_caps\chefes6\lie_m*.log`): Desmentido em 6/6 lutas, aos 8–36 s;
+  **0 golpes começados nos 8 s** em todas; luta 42–62 s (antes 55–84 s: os 8 s pagam, como a Narrativa quer —
+  "o Rei é fácil de propósito"). Quem IGNORA (`sem_olho=1`, olho nunca atingível; `lie_n*.log` × código antigo
+  `lie_old*.log`): sementes 0, 1, 3, 5 com tempo, golpes, dano e fases IDÊNTICOS (72/78/66/61 s); 2 e 4 dentro da
+  variação da sonda (124→128, 95→112); mentira "nao", degrau 2 emitido. A sonda ganhou `sem_olho=1` e imprime
+  `mentira=`, `ajoelhares=`, `golpes_nos_8s=`, `dicas=`, e filma os eventos (`cap=`: ajoelha / mentira).
+- Capturas: `_caps\chefes6\mentira2\s1_ajoelha_sheet.png` (o olho desce; o corpo HD segue de pé — falta o estado
+  "kneel" da Arte, já ligado) e `s1_mentira_sheet.png` (máscara rachada + aviso, ele parado, Sophia batendo).
+
+### CHECAGEM DE SATISFAÇÃO (Mentira do Rei)
+| Decisão | R atendidas | R violadas / risco | Como ficou |
+|---|---|---|---|
+| Desmentido pelo corpo (golpe no olho ajoelhado) | R5 (pista por forma: olho desce + pose; som "dong"), R18, §3 (recompensa fixa e dita no HUD) | pose de joelho HD ainda não existe (pedido à Arte) — a pista de forma hoje é o olho descendo | nada de sorteio; 1×/luta, declarado |
+| 8 s sem guarda | R21 (respiro), R17 (confirmação: máscara racha + aviso) | luta do tutorial ~15 s mais curta para quem acha | não troca de fase no meio (o rugido roubaria a janela) |
+| Errar não pune / ignorar não muda | Guardião G18 (sem perda, sem tentativas), §4.12 | — | provado na sonda (sem_olho × código antigo) |
+| Dica em degraus, a 2ª desligável e só no ajoelhar | Guardião G17, R5 (nunca por cima de telégrafo) | opção "Dicas" ainda não existe (UI) — padrão ligado | 1× por luta |
+| Sons emprestados (`king_step`, `mask_light`) | R4 (1 evento = 1 som) | R11 parcial até o Áudio entregar os próprios | pedido registrado |
+§4 conferido: sem tremor novo, sem câmera lenta, sem hitstop novo; 1 flash no Desmentido e 1 leve ao levantar; nada de
+cassino (recompensa fixa, dita, sem aleatório).

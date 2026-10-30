@@ -228,7 +228,7 @@ const STELAS: Array = [
 
 ## Cards de chefe: nome grande + título (letterbox), por type_id.
 const BOSS_TITLES: Dictionary = {
-	"rei": {"name": "O REI", "title": "Guardião do Limiar"},
+	"rei": {"name": "O REI", "title": "“Um rei jamais se curva.”"},   # a MENTIRA do Rei (Narrativa §3.2; chefes6 por delegação 29/10)
 	"arconte_sono": {"name": "ATHOTH", "title": "Arconte do Torpor  ·  Primeira Esfera"},
 	"arconte_fome": {"name": "HARMAS", "title": "Arconte da Fome  ·  Segunda Esfera"},
 	"arconte_corrente": {"name": "GALILA", "title": "Arconte da Corrente  ·  Terceira Esfera"},
@@ -251,7 +251,10 @@ var _by_screen: Dictionary = {}   # tela -> Estela
 # LIMIAR (tela 1, reescrita 29/10): a Voz fala da Estela quando a Sophia chega
 # perto (D7) e a Sophia comenta a Mônada depois de LER a pedra nesta run (D8).
 const LIMIAR_STELA_NEAR := 140.0
+const LIMIAR_STOP_TIME := 0.6        # s parada perto da pedra
+const LIMIAR_STILL_SPEED := 12.0     # px/s: abaixo disto ela está "parada"
 var _limiar_stela: Node2D = null
+var _limiar_still: float = 0.0
 var _read_this_run: Dictionary = {}   # ids de Estelas abertas desde o início da run
 
 
@@ -408,11 +411,11 @@ func captions(lines: Array) -> void:
 	_caption.say_lines(lines)
 
 
-## Card de chefe ao nascer: id do Bestiário ("rei", "arconte_sono", ...,
-## "demiurgo" na batalha dupla) ou "campeao" (Desafio do Éon).
-## Tela 1: perto da Estela, a Voz ensina a ler (D7, entra logo depois da fala
-## no ar); depois de ler (painel fechado), a Sophia comenta a Mônada (D8).
-func _process(_delta: float) -> void:
+## Tela 1: a fala da Estela (D7) só toca quando a Sophia PARA perto da pedra
+## (≥ 0,6 s quase sem andar) ou quando ela LÊ (D7 + D8 ao fechar o painel) — quem
+## passa correndo não ouve. As duas levam `keep`: a Cena A espera elas acabarem
+## (nunca cortadas no meio; ver `caption_keeping`).
+func _process(delta: float) -> void:
 	if _limiar_stela == null:
 		return
 	if not is_instance_valid(_limiar_stela) or not _limiar_stela.is_inside_tree():
@@ -423,14 +426,30 @@ func _process(_delta: float) -> void:
 	var pl := get_tree().get_first_node_in_group("player") as Node2D
 	if pl == null:
 		return
-	if not Narrative.seen.has("lim_d7") and absf(pl.global_position.x - _limiar_stela.global_position.x) < LIMIAR_STELA_NEAR:
+	var near: bool = absf(pl.global_position.x - _limiar_stela.global_position.x) < LIMIAR_STELA_NEAR
+	var vx: float = absf((pl as CharacterBody2D).velocity.x) if pl is CharacterBody2D else 0.0
+	_limiar_still = _limiar_still + delta if near and vx < LIMIAR_STILL_SPEED else 0.0
+	var read: bool = _read_this_run.has("monada")
+	var lines: Array = []
+	if not Narrative.seen.has("lim_d7") and (read or _limiar_still >= LIMIAR_STOP_TIME):
 		Narrative.once("lim_d7")
-		_caption.say_next(Narrative.limiar_stela())
-	if _read_this_run.has("monada") and Narrative.once("lim_d8"):
-		_caption.say_next(Narrative.limiar_stela_read())
+		lines.append_array(Narrative.limiar_stela())
+	if read and Narrative.once("lim_d8"):
+		lines.append_array(Narrative.limiar_stela_read())
 		_limiar_stela = null
+	if not lines.is_empty():
+		for l in lines:
+			l["keep"] = true
+		_caption.say_next(lines)
 
 
+## Há fala `keep` no ar ou na fila (a Estela da tela 1)? A Cena A espera.
+func caption_keeping() -> bool:
+	return _caption != null and _caption.has_keep()
+
+
+## Card de chefe ao nascer: id do Bestiário ("rei", "arconte_sono", ...,
+## "demiurgo" na batalha dupla) ou "campeao" (Desafio do Éon).
 func boss_card(id: String, screen: int) -> void:
 	if _sandbox():
 		return

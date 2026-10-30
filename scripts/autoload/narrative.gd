@@ -282,11 +282,15 @@ func king_fall(exposed: int = -1) -> Array:
 ## Chefes6, se existir) ou na RECUPERAÇÃO do golpe (padrão, sem atrasar nada).
 ## Liga: `rei_duel_attach(rei)` (Gnosis.boss_card("rei")). API para o Chefes6 e
 ## as sondas: `rei_duel(evento, dados)` com "parried" · "recovered" {id} ·
-## "will_start" {id, lead} · "knelt" · "lie_exposed" · "phase" {n}.
+## "will_start" {id, lead} · "knelt" · "hint" {n} · "lie_exposed" · "phase" {n}.
+## SINAIS DO CHEFES6 (boss_rei.gd, 5b076cb): `king_kneel_start` (o ajoelhar),
+## `lie_hint_step(n)` (o degrau 2 já vem decidido por ele: 2º ajoelhar ou ≥ 45 s,
+## respeitando a opção de dicas) e `lie_exposed("rei")` (o Desmentido). Sem os
+## sinais (outro chefe/sonda), cai no polling e na regra local.
 ## C1 só se ela ainda não aparou nada · C2 Raio · C3 Mão · C4 fase 2 · C5 fase 3
-## · C6a dica-pergunta (degrau 2: 2º ajoelhar ou ≥ 45 s; desligável por
-## GameManager.hints_enabled, se existir) · C6b a acusação (muda se a C6a já
-## tocou ou se não houver vaga — o carimbo/HUD do Chefes6 basta).
+## · C6a dica-pergunta (no degrau 2; se o intervalo de 12 s não deixar, espera o
+## próximo ajoelhar) · C6b a acusação (muda se a C6a já tocou ou se não houver
+## vaga — o carimbo/aviso do Chefes6 basta).
 const REI_BUDGET := 6
 const REI_GAP := 12.0
 const REI_HINT_AFTER := 45.0
@@ -302,7 +306,9 @@ var _rei_kneels: int = 0
 var _rei_lead_api: bool = false
 var _rei_prev_state: int = -1
 var _rei_prev_low: bool = false
-var _rei_eye: Node = null
+var _rei_kneel_api: bool = false   # o Rei avisa o ajoelhar (king_kneel_start)
+var _rei_hint_api: bool = false    # o Rei decide o degrau 2 (lie_hint_step)
+var _rei_hint_pending: bool = false
 
 
 func _rei_line(id: String) -> Dictionary:
@@ -333,38 +339,38 @@ func rei_duel_attach(rei: Node) -> void:
 	_rei_prev_low = false
 	_rei_brain = rei.get("brain")
 	_rei_lead_api = false
+	_rei_kneel_api = false
+	_rei_hint_api = false
+	_rei_hint_pending = false
 	if _rei_brain != null:
-		if _rei_brain.has_signal("lie_exposed"):
-			_rei_brain.connect("lie_exposed", _on_rei_lie)
-		else:
-			# PROVISÓRIO até o Chefes6 expor `lie_exposed`: o 1º golpe no olho
-			# enquanto ele está ajoelhado (o olho só recebe golpe embaixo).
-			_rei_eye = _rei_brain.get("_eye_box")
-			if _rei_eye != null and _rei_eye.has_signal("hit_received"):
-				_rei_eye.connect("hit_received", _on_rei_eye_hit)
-		if _rei_brain.has_signal("move_will_start"):
-			_rei_brain.connect("move_will_start", _on_rei_will_start)
-			_rei_lead_api = true
+		for pair in _rei_signals():
+			if _rei_brain.has_signal(pair[0]):
+				_rei_brain.connect(pair[0], pair[1])
+		_rei_lead_api = _rei_brain.has_signal("move_will_start")
+		_rei_kneel_api = _rei_brain.has_signal("king_kneel_start")
+		_rei_hint_api = _rei_brain.has_signal("lie_hint_step")
 	var pl := get_tree().get_first_node_in_group("player")
 	if pl != null and pl.has_signal("riposte_window_opened"):
 		pl.connect("riposte_window_opened", _on_rei_parried)
 
 
+## Sinais do BossBrain do Rei que o duelo escuta (nome → método).
+func _rei_signals() -> Array:
+	return [["lie_exposed", _on_rei_lie], ["lie_hint_step", _on_rei_hint],
+		["king_kneel_start", _on_rei_kneel], ["move_will_start", _on_rei_will_start]]
+
+
 func rei_duel_detach() -> void:
 	if _rei_brain != null and is_instance_valid(_rei_brain):
-		if _rei_brain.has_signal("lie_exposed") and _rei_brain.is_connected("lie_exposed", _on_rei_lie):
-			_rei_brain.disconnect("lie_exposed", _on_rei_lie)
-		if _rei_brain.has_signal("move_will_start") and _rei_brain.is_connected("move_will_start", _on_rei_will_start):
-			_rei_brain.disconnect("move_will_start", _on_rei_will_start)
-	if _rei_eye != null and is_instance_valid(_rei_eye) and _rei_eye.is_connected("hit_received", _on_rei_eye_hit):
-		_rei_eye.disconnect("hit_received", _on_rei_eye_hit)
+		for pair in _rei_signals():
+			if _rei_brain.has_signal(pair[0]) and _rei_brain.is_connected(pair[0], pair[1]):
+				_rei_brain.disconnect(pair[0], pair[1])
 	if is_inside_tree():
 		var pl := get_tree().get_first_node_in_group("player")
 		if pl != null and pl.has_signal("riposte_window_opened") and pl.is_connected("riposte_window_opened", _on_rei_parried):
 			pl.disconnect("riposte_window_opened", _on_rei_parried)
 	_rei = null
 	_rei_brain = null
-	_rei_eye = null
 
 
 ## A luta do Rei está ligada? (sondas)
@@ -381,9 +387,12 @@ func _on_rei_lie(_id: String = "rei") -> void:
 	rei_duel("lie_exposed")
 
 
-func _on_rei_eye_hit(_dmg: int, _src: Vector2, _kb: float, _unb: bool, _attacker: Node) -> void:
-	if _rei_brain != null and is_instance_valid(_rei_brain) and bool(_rei_brain.get("_low")):
-		rei_duel("lie_exposed")
+func _on_rei_hint(n: int) -> void:
+	rei_duel("hint", {"n": n})
+
+
+func _on_rei_kneel() -> void:
+	rei_duel("knelt")
 
 
 func _on_rei_will_start(id: String, lead: float) -> void:
@@ -413,10 +422,11 @@ func _process(delta: float) -> void:
 		if st == Enemy.EState.RECOVER and _rei_prev_state != -1:
 			rei_duel("recovered", {"id": String(mv.get("id", ""))})
 		_rei_prev_state = st
-	var low: bool = st == Enemy.EState.RECOVER and bool(mv.get("expose", false))
-	if low and not _rei_prev_low:
-		rei_duel("knelt")
-	_rei_prev_low = low
+	if not _rei_kneel_api:
+		var low: bool = st == Enemy.EState.RECOVER and bool(mv.get("expose", false))
+		if low and not _rei_prev_low:
+			rei_duel("knelt")
+		_rei_prev_low = low
 
 
 ## Evento do duelo (do próprio polling, dos sinais ou de uma sonda).
@@ -444,12 +454,23 @@ func rei_duel(ev: String, data: Dictionary = {}) -> void:
 				_rei_try("C3")
 		"knelt":
 			_rei_kneels += 1
-			if not rei_exposed and _hints_on() and (_rei_kneels >= 2 or _rei_clock >= REI_HINT_AFTER):
+			if rei_exposed:
+				return
+			if _rei_hint_api:
+				# o degrau 2 já veio do Rei mas o intervalo não deixou: tenta neste ajoelhar
+				if _rei_hint_pending and _rei_try("C6a"):
+					_rei_hint_pending = false
+			elif _hints_on() and (_rei_kneels >= 2 or _rei_clock >= REI_HINT_AFTER):
 				_rei_try("C6a")
+		"hint":
+			# degrau 2 = a pergunta da Sophia (o Rei só manda DURANTE um ajoelhar)
+			if int(data.get("n", 0)) == 2 and not rei_exposed and not seen.has("rei_C6a"):
+				_rei_hint_pending = not _rei_try("C6a")
 		"lie_exposed":
 			if rei_exposed:
 				return
 			rei_exposed = true
+			_rei_hint_pending = false
 			if not seen.has("rei_C6a"):
 				_rei_try("C6b")
 		"phase":
@@ -486,9 +507,10 @@ func _rei_emit(id: String) -> void:
 	Gnosis.captions([_rei_line(id)])
 
 
-## Degrau 2 das dicas (opt-in): desligável por uma opção "Dicas" (UI), se existir.
+## Degrau 2 das dicas (opt-in) SEM os sinais do Rei: a mesma opção que o Chefes6
+## lê (`GameManager.lie_hints`, da UI, se existir).
 func _hints_on() -> bool:
-	var v = GameManager.get("hints_enabled")
+	var v = GameManager.get("lie_hints")
 	return true if v == null else bool(v)
 
 

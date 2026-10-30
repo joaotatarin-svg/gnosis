@@ -64,6 +64,9 @@ const KING_SPAWN_X := -470.0
 const FINAL_SOPHIA_DX := 70.0
 var _king_scene_pending: bool = false   # Cena A ainda não tocou (abre no gatilho)
 var _king_scene_running: bool = false
+# Teto da espera pela fala da Estela (keep) antes da Cena A (segurança).
+const KING_KEEP_MAX := 8.0
+var _king_keep_wait: float = 0.0
 # TENTAÇÃO EM CENA (#18): o Arconte já está no palco durante a conversa (parado,
 # sem IA); ao cruzar o gatilho, ESSE corpo entra na luta, com o card de chefe.
 var _staged_boss: Enemy = null
@@ -140,6 +143,10 @@ func _process(_delta: float) -> void:
 		return
 	if player.global_position.x >= zone_center(next) - ZONE_TRIGGER:
 		if _king_scene_pending:
+			# A fala da Estela (keep) termina antes: a Cena A não a corta no meio.
+			if Gnosis.has_method("caption_keeping") and Gnosis.caption_keeping() and _king_keep_wait < KING_KEEP_MAX:
+				_king_keep_wait += _delta
+				return
 			_play_king_scene()      # a Cena A abre no gatilho; o duelo vem depois
 			return
 		_start_zone(next)

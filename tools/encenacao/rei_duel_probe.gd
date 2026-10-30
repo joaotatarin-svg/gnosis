@@ -9,6 +9,15 @@ extends Node
 var fails: int = 0
 
 
+## Cérebro falso com os SINAIS reais do Chefes6 (boss_rei.gd 5b076cb).
+class FakeBrain extends Node:
+	signal lie_exposed(id: String)
+	signal lie_hint_step(n: int)
+	signal king_kneel_start
+	signal king_kneel_end
+	var mv: Dictionary = {}
+
+
 class FakeRei extends Node:
 	var estate: int = 0
 	var brain = null
@@ -96,6 +105,38 @@ func _ready() -> void:
 	_at(20.0)
 	Narrative.rei_duel("lie_exposed")
 	check(_said("C6b"), "C6b (a acusação) quando a dica não tocou")
+
+	# Caminho REAL: os sinais do Chefes6 (degrau 2 pelo Rei, ajoelhar, Desmentido).
+	Narrative.reset()
+	var rei2 := FakeRei.new()
+	var br := FakeBrain.new()
+	rei2.add_child(br)
+	rei2.brain = br
+	add_child(rei2)
+	Narrative.rei_duel_attach(rei2)
+	_at(1.0)
+	Narrative.rei_duel("recovered", {"id": "leque"})       # C1 @1
+	_at(5.0)
+	br.king_kneel_start.emit()
+	br.lie_hint_step.emit(2)                                # intervalo < 12 s: fica pendente
+	check(not _said("C6a"), "sinal: degrau 2 dentro do intervalo fica pendente")
+	_at(9.0)
+	br.king_kneel_start.emit()
+	check(not _said("C6a"), "sinal: ajoelhar sem o degrau 2 do Rei não fala sozinho")
+	_at(14.0)
+	br.king_kneel_start.emit()
+	check(_said("C6a"), "sinal: C6a no ajoelhar seguinte (degrau 2 pendente)")
+	_at(20.0)
+	br.lie_exposed.emit("rei")
+	check(Narrative.rei_exposed and not _said("C6b"), "sinal: lie_exposed marca a mentira (C6b muda depois da C6a)")
+	check(String(Narrative.king_fall()[0].text) == "Aquela reverência de antes? Foi proposital.", "sinal: queda F1a pelo lie_exposed")
+	# Sem desmentido: a queda vem na versão F1b.
+	Narrative.rei_duel_attach(rei2)
+	check(String(Narrative.king_fall()[0].text) == "Nós não estamos ajoelhados. Estamos... descansando.", "sinal: queda F1b sem lie_exposed")
+	br.lie_exposed.emit("rei")
+	check(_said("C6b") == false or Narrative.rei_exposed, "sinal: lie_exposed reconectado após novo attach")
+	Narrative.rei_duel_detach()
+	check(br.get_signal_connection_list("lie_exposed").is_empty(), "detach solta os sinais do Rei")
 
 	# Textos de cena (contagem da amostra).
 	check(Narrative.king_intro().size() == 10, "Cena A: 10 falas (névoa + Rei)")

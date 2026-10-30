@@ -1,47 +1,31 @@
 id,pt,en,kind,speaker,limit,where,note
-narrative.intro.0178c1,"(Escuro. Um coração batendo. Depois, cinza na boca.)","(Darkness. A heart beating. Then, ash in the mouth.)",dialogo,(narrador),115,scripts/autoload/narrative.gd:203,
-narrative.intro.b35d30,Acorda. ...Isso. Devagar. Eu estou aqui.,Wake. ...That is it. Slowly. I am here.,dialogo,A Voz,115,scripts/autoload/narrative.gd:204,
-narrative.king_intro.d2dbd2,"Olha: alguém vem da névoa. Não temas, eu o conheço. É um rei antigo, e gentil. Não te quer mal.","Look: someone comes out of the mist. Do not fear, I know him. An ancient king, and kind. He means you no harm.",dialogo,A Voz,115,scripts/autoload/narrative.gd:214,
-narrative.king_intro.95edb4,Faísca perdida... que bom que acordaste. O limiar tem uma lei: só passa quem me toca com a própria luz.,Lost spark... how good that you woke. The threshold has one law: none pass but those who touch me with their light.,dialogo,O Rei,115,scripts/autoload/narrative.gd:215,
-narrative.king_intro.d4fc93,(ergue o orbe; a máscara se acende) Mostra-me a tua. Vem.,(raises the orb; the mask lights up) Show me yours. Come.,dialogo,O Rei,115,scripts/autoload/narrative.gd:216,
-narrative.king_fall.ec258a,(a máscara racha) ...Ah. A tua luz é maior do que eu lembrava.,(the mask cracks) ...Ah. Your light is greater than I remembered.,dialogo,O Rei,115,scripts/autoload/narrative.gd:223,
-narrative.king_fall.203263,"Sentiste? O selo dele se partiu. Lá em cima, sete tronos acabam de acordar.","Did you feel it? His seal has broken. Up above, seven thrones have just awoken.",dialogo,A Voz,115,scripts/autoload/narrative.gd:224,
-narrative.king_fall.6c70d0,"Sete Arcontes, sete Anéis. Reúne-os todos, e mostro-te como desfazer este mundo de mentira.","Seven Archons, seven Rings. Gather them all, and I will show you how to undo this world of lies.",dialogo,A Voz,115,scripts/autoload/narrative.gd:225,
-narrative.eon_intro.903814,O Éon do Torpor. Aqui os mortos não sabem que morreram; a cidade sonha por eles.,The Aeon of Torpor. Here the dead do not know they have died; the city dreams for them.,dialogo,A Voz,115,scripts/autoload/narrative.gd:236,
-narrative.eon_intro.0d82fc,Não odeies os que dormem. Ontem tu dormias.,"Do not hate those who sleep. Yesterday, you slept.",dialogo,A Voz,115,scripts/autoload/narrative.gd:237,
-narrative.eon_intro.a2c9fb,Eu também queria deitar. ...Não vou.,I wanted to lie down too. ...I won't.,dialogo,Sophia,115,scripts/autoload/narrative.gd:238,
-narrative.eon_intro.39cef8,(Dormir é esquecer de onde se veio. Acordar dói: é lembrar.),(To sleep is to forget where you came from. Waking hurts: it is remembering.),dialogo,Sophia,115,scripts/autoload/narrative.gd:239,
+gnosis.BOSS_TITLES.2012c9,Guardião do Limiar,Guardian of the Threshold,card_chefe_titulo,,52,scripts/autoload/gnosis.gd:231,
 narrative.apply_ending.48b169,"Toda faísca voltou à Fonte. O Kenoma se desfez como um sonho ao acordar.
 Verdade inteira. Mundo nenhum.","Each spark returned to the Source. The Kenoma faded like dreams at dawn.
-The whole truth. No world at all.",card_cinema,,240,scripts/autoload/narrative.gd:735,
+The whole truth. No world at all.",card_cinema,,240,scripts/autoload/narrative.gd:1010,
 narrative.apply_ending.994a4b,"Sophia sentou-se no trono ainda morno. A coroa serviu.
 Ninguém mais seria abandonado. Ninguém mais sairia.","Sophia sat on the still-warm throne. The crown fit.
-No one would be abandoned again. No one would ever leave.",card_cinema,,240,scripts/autoload/narrative.gd:739,
+No one would be abandoned again. No one would ever leave.",card_cinema,,240,scripts/autoload/narrative.gd:1014,
 narrative.apply_ending.5cccea,"Sophia recusou o trono e a porta. Desceu de volta, de faísca em faísca.
 Sem apocalipse e sem prisão: liberdade lenta, a única que dura.","Sophia refused throne and door. She went back down, spark by spark.
-No apocalypse and no prison: a slow freedom, the only kind that lasts.",card_cinema,,240,scripts/autoload/narrative.gd:743,
-narrative.walk_arrival.5254fb,Onde...? Quem...?,Where...? Who...?,legenda,Sophia,95,scripts/autoload/narrative.gd:794,
-narrative.walk_arrival.d7f30b,Uma pergunta de cada vez. Primeiro: as cinzas sob os teus pés eram a tua gente.,One question at a time. First: the ashes beneath your feet were your people.,legenda,A Voz,95,scripts/autoload/narrative.gd:795,
-narrative.walk_arrival.33da73,"(Uma pedra escrita, logo adiante. Alguém deixou palavras para quem acordasse.)","(A stone with writing, just ahead. Someone left words for whoever woke.)",legenda,Sophia,95,scripts/autoload/narrative.gd:796,
-narrative.walk_arrival.1ddde1,A dor que sentes é a única coisa verdadeira que este mundo te deu. Foi ela que quebrou o feitiço.,The pain you feel is the only true thing this world has given you. It is what broke the spell.,legenda,A Voz,95,scripts/autoload/narrative.gd:797,
-narrative.walk_arrival.632b4d,Chama-me Voz. Sobe comigo: cada faísca que libertares vai lembrar o que tu és.,Call me Voice. Climb with me: every spark you set free will remember what you are.,legenda,A Voz,95,scripts/autoload/narrative.gd:798,
-narrative.walk_arrival.d048a8,As cinzas ainda estão quentes. Anda: a névoa não espera ninguém.,The ashes are still warm. Walk: the mist waits for no one.,legenda,A Voz,95,scripts/autoload/narrative.gd:799,
-narrative.epilogue_cards.97cf55,"Um dia, numa cidade de cinzas, alguém acordou e ouviu uma voz gentil: “Acorda. As cinzas sob os teus pés eram a tua gente.”","One day, in a city of ash, someone woke and heard a gentle voice: “Wake. The ashes beneath your feet were your people.”",card_cinema,,240,scripts/autoload/narrative.gd:1082,
-cinematic.prologue.56bd6b,"No princípio havia o Um. Dele emanaram os Éons, aos pares,
-como luz que transborda. Ali nada dormia. Nada esquecia.","In the beginning there was the One. From it the Aeons emanated, in pairs,
-like overflowing light. There nothing slept. Nothing forgot.",card_cinema,,240,scripts/fx/cinematic.gd:152,
-cinematic.prologue.c37f5c,"A mais jovem, Sophia, quis alcançar a Fonte sozinha.
-Do desejo sem par nasceu um filho sem forma,
-e ela o escondeu numa nuvem.","The youngest, Sophia, sought to reach the Source alone.
-From that unpartnered desire a formless son was born,
-and she hid him in a cloud.",card_cinema,,240,scripts/fx/cinematic.gd:153,
-cinematic.prologue.c1bdfa,"Cego para a Luz, ele se acreditou o único deus e fez o Kenoma.
-No barro dormem as faíscas que ele levou da mãe.
+No apocalypse and no prison: a slow freedom, the only kind that lasts.",card_cinema,,240,scripts/autoload/narrative.gd:1018,
+cinematic.prologue.a58cc0,"No começo havia uma Luz tão cheia que transbordava.
+Cada gota que caía virava alguém.","In the beginning there was a Light so full it overflowed.
+Every drop that fell became someone.",card_cinema,,240,scripts/fx/cinematic.gd:155,
+cinematic.prologue.8ce70c,"Uma das gotas quis ver a Fonte sozinha, sem pedir licença.
+Do que ela fez, nasceu um filho.
+Ela teve vergonha. E o escondeu.","One of the drops wanted to see the Source alone, without asking.
+From what she did, a son was born.
+She was ashamed. And she hid him.",card_cinema,,240,scripts/fx/cinematic.gd:156,
+cinematic.prologue.74fecb,"O filho cresceu no escuro, certo de que era o único.
+Fez um mundo e pôs um rei em cada andar.
+Todos eles mentem.
 
-Uma delas acaba de sentir dor.","Blind to the Light, he believed himself the only god and made the Kenoma.
-In the clay sleep the sparks he took from his mother.
+No fundo das cinzas, alguém acaba de sentir dor.","The son grew up in the dark, certain he was the only one.
+He made a world and put a king on every floor.
+All of them lie.
 
-One of them has just felt pain.",card_cinema,,240,scripts/fx/cinematic.gd:154,
+Deep in the ashes, someone has just felt pain.",card_cinema,,240,scripts/fx/cinematic.gd:157,
 cinematic.epilogue.622c86,"João Tatarin — direção, produção e escolhas
 Arte ilustrada gerada por IA sob direção do autor
 Código escrito com Claude (Anthropic) e Codex (OpenAI)
@@ -54,7 +38,7 @@ Code written with Claude (Anthropic) and Codex (OpenAI)
 Sounds and effects CC0/CC-BY — see assets/LICENSES.md
 
 Inspired by the Nag Hammadi texts, the Pistis Sophia
-and the accounts of Irenaeus, Hippolytus and Clement.",card_cinema,,240,scripts/fx/cinematic.gd:189,
+and the accounts of Irenaeus, Hippolytus and Clement.",card_cinema,,240,scripts/fx/cinematic.gd:194,
 character_atelier.NOTES.a674f1,"A memória da luz tomou forma.
 Seis poses ilustradas, túnica bipartida
 e bracelete da Mônada.","The memory of light took shape.

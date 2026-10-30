@@ -141,6 +141,16 @@ func say_next(lines: Array) -> void:
 			k += 1
 
 
+## Fala `keep` no ar ou na fila? (a Cena A da tela 1 espera — não corta no meio)
+func has_keep() -> bool:
+	if _showing and bool(_current.get("keep", false)):
+		return true
+	for l in _queue:
+		if l is Dictionary and bool((l as Dictionary).get("keep", false)):
+			return true
+	return false
+
+
 func say(speaker: String, text: String) -> void:
 	_queue.append({"speaker": speaker, "text": text})
 

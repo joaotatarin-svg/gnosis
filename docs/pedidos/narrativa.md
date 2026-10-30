@@ -3,7 +3,7 @@
 Texto fechado: `C:\gnosis-wt\_caps\narrativa\AMOSTRA_LIMIAR.md` (v3). Já no jogo: prólogo, despertar, Cena A,
 falas do duelo C1–C6, queda do Rei (F1a/b…F11), morte na tela 1, Torpor em legenda depois de 10 s.
 
-## chefes6 — a mecânica da Mentira do Rei (as falas já estão prontas e testadas)
+## chefes6 — a mecânica da Mentira do Rei — ATENDIDO em 5b076cb (sinais ligados; provisório removido)
 O duelo liga sozinho: `Gnosis.boss_card("rei")` → `Narrative.rei_duel_attach(rei)`. A Narrativa escuta o
 que existir no `BossBrain` do Rei (`rei.brain`), por nome, sem depender de vocês:
 - **`signal lie_exposed(id: String)`** — o Desmentido: 1º golpe no olho com `_low == true`, 1 vez por luta.

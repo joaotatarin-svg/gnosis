@@ -29,3 +29,21 @@
   `BossBrain.sfx` (só toca se estiver no CATALOG; trocar o nome numa linha de `boss_armupiel.gd`).
 - Pústulas (Belias): hoje mudas. Pedido: `pus_grow` (bolha brotando, curto, grave baixo, máx. 1 a cada 0,25 s) e
   `pus_burst` (estouro úmido) — o Estouro hoje soa só pelo `tell_unblock` do contorno.
+
+## A MENTIRA DO REI (29/10) — o que o chefes6 expõe e o que falta de cada um
+Sinais (em `scripts/entities/bosses/boss_rei.gd` / `boss_brain.gd`; o cérebro está no grupo `"boss_brain"`):
+`king_kneel_start` / `king_kneel_end` (cada ajoelhar), `lie_exposed(id)` ("rei"; 1×/luta), `lie_hint_step(n)`
+(1 e 3 no início da luta; 2 durante um ajoelhar se ≥ 45 s de luta ou 2 ajoelhares sem o Desmentido, 1×, só se
+`GameManager.lie_hints` não existir ou for true). Estado: `brain.lie_was_exposed` e `enemy.get_meta("lie_exposed")`.
+- **Narrativa:** C6a "Ele se curvou? Jamais, né?" no `lie_hint_step(2)`; C6b "Jamais, né?" no `lie_exposed` (sem voz se a
+  C6a já tocou); `king_fall(exposed)` lê `lie_was_exposed`/a meta (se false, a mentira cai na queda: F1b/F2b).
+- **UI:** (a) a barrinha de 8 s junto do aviso (hoje só o toast "Mentira exposta · o Rei fica 8 s sem guarda", que pus
+  por delegação); (b) Opções → "Dicas" = `GameManager.lie_hints` (padrão true); (c) Bestiário "O que ele diz" + degrau 3
+  ("Repare nele depois da Mão.") e Crônicas "Mentiras desvendadas N/8".
+- **Arte:** estado `"kneel"` na receita do Rei (o `d_kneel` antigo ou uma pose HD de joelho): o cérebro já pede
+  `set_anim("kneel")` enquanto ele está ajoelhado SE o estado existir. Hoje a curva lê pelo olho que desce 132 px + o
+  "dong"; o corpo HD fica de pé (ver `_caps\chefes6\mentira2\s1_ajoelha_sheet.png`). Carimbo sobre o `mask_crack`.
+- **Áudio:** `king_kneel` (joelho na pedra, grave; hoje uso `king_step`) e `mask_crack` (máscara rachando; hoje
+  `mask_light`).
+- **Por delegação (registro):** título do card do Rei em `scripts/autoload/gnosis.gd` → "“Um rei jamais se curva.”";
+  linha órfã do título antigo tirada de `assets/i18n/en/06_estelas_b.tsv`; lote novo `assets/i18n/en/17_chefes6_mentira.tsv`.

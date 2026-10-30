@@ -132,3 +132,12 @@ tirar o provisório `_on_rei_eye_hit`; (2) primeira faísca do run (fala 1.7 da 
 `spark_orb.gd` (não é meu); (3) reescrita completa para "você" (lotes por Éon, cada um com i18n e Dublagem);
 (4) roubo (tela 64): a Voz troca "a gente" por "nós". Armadilhas: o texto PT precisa ser IDÊNTICO ao gravado
 (qualquer vírgula muda o id da voz); `strings.csv` volta em CRLF do checkout (normalizar antes do extract).
+
+### Integração com a Mentira do Chefes6 (29/10, merge de origin/dir6/chefes6 5b076cb)
+- O duelo agora escuta os sinais reais do `boss_rei.gd`: `king_kneel_start` (ajoelhar), `lie_hint_step(2)` (o Rei
+  decide o degrau 2; se o intervalo de 12 s barrar a C6a, ela espera o próximo ajoelhar), `lie_exposed("rei")`
+  (C6b e as falas F1a/F2a da queda). O gatilho provisório (`_eye_box`/`_low`) saiu. Sem os sinais (sonda/outro
+  chefe), vale o polling e a regra local (opção `GameManager.lie_hints`, a mesma do Chefes6).
+- Estela da tela 1: D7 só toca se a Sophia PARA perto da pedra (≥ 0,6 s) ou LÊ (D7+D8 ao fechar); as duas levam
+  `keep` e a Cena A espera elas acabarem (teto 8 s) — nunca cortadas no meio.
+- ReiDuelProbe: 29 checagens (8 novas pelo caminho dos sinais), 0 falhas. Filme `_caps\narrativa\limiar\v2\`.

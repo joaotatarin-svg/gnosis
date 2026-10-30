@@ -47,6 +47,7 @@ func _ready() -> void:
 			"curva": w.curve = true
 			"semente": w.seed_k = int(v)
 			"capmv": w.cap_moves = Array(v.split(","))
+			"sem_olho": w.no_eye = true
 	get_tree().root.add_child.call_deferred(w)
 
 
@@ -61,6 +62,13 @@ class ProbeWorker extends Node:
 	var seed_k: int = 0
 	## capmv=id1,id2: com cap=, filma ~2,6 s na 1ª vez que o chefe começa cada um desses golpes
 	var cap_moves: Array = []
+	## sem_olho=1: o olho do Rei nunca é atingível (simula quem IGNORA a mentira)
+	var no_eye: bool = false
+	# MENTIRA (Rei): quando foi exposta, ajoelhares, golpes começados nos 8 s, degraus de dica
+	var _lie_at: float = -1.0
+	var _kneels: int = 0
+	var _lie_moves: int = 0
+	var _hints: Array = []
 	const CURVE := {1: [1, 120], 10: [2, 140], 19: [3, 186], 28: [3, 242], 37: [3, 276], 46: [4, 302], 55: [4, 332], 64: [5, 372], 68: [5, 392]}
 	var out_base: String = "user://boss_probe"
 	var skill: float = 0.65            # chance de rolar do vermelho (o resto escala daqui)
@@ -147,6 +155,10 @@ class ProbeWorker extends Node:
 		_rng.seed = hash("probe-%d" % s) if seed_k == 0 else hash("probe-%d-%d" % [s, seed_k])
 		seed(hash("probe-g-%d" % s) if seed_k == 0 else hash("probe-g-%d-%d" % [s, seed_k]))
 		_by_state = {}
+		_lie_at = -1.0
+		_kneels = 0
+		_lie_moves = 0
+		_hints = []
 		_moves_n = {}
 		_state_t = {}
 		_prev_st = {}
@@ -233,11 +245,15 @@ class ProbeWorker extends Node:
 				if b.estate == Enemy.EState.WINDUP and int(_prev_st.get(bid, -1)) != Enemy.EState.WINDUP:
 					var mid: String = str(b.brain.mv.get("id", "?"))
 					_moves_n[mid] = int(_moves_n.get(mid, 0)) + 1
+					if _lie_at >= 0.0 and _t - _lie_at < 8.0:
+						_lie_moves += 1
 					if cap_moves.has(mid) and not _phase_seen.has(mid) and _cap_left <= 0.0:
 						_start_capture(mid)
 						_cap_left = 2.6
 						_cap_name = "s%d_%s" % [screens[_idx], mid]
 						_cap_n = 0
+				if no_eye and b.brain.get("_eye_box") != null:
+					b.brain._eye_box.monitorable = false
 				_prev_st[bid] = b.estate
 		# fases
 		for b in _bosses:
@@ -269,6 +285,25 @@ class ProbeWorker extends Node:
 				_bosses.append(e)
 				e.health.health_changed.connect(_on_boss_hp.bind(e))
 				e.set_meta("probe_hp", e.health.current_health)
+				var br = e.get("brain")
+				if br != null and br.has_signal("lie_exposed"):
+					br.lie_exposed.connect(func(_id):
+						_lie_at = _t
+						_cap_event("mentira", 4.5, true))
+					br.lie_hint_step.connect(func(n): _hints.append(n))
+					if br.has_signal("king_kneel_start"):
+						br.king_kneel_start.connect(func():
+							_kneels += 1
+							_cap_event("ajoelha", 2.5, false))
+
+	## Filma um EVENTO da luta (ajoelhar, mentira exposta) com cap= (1ª vez de cada).
+	func _cap_event(tag: String, secs: float, force: bool) -> void:
+		if cap_dir == "" or _phase_seen.has(tag) or (_cap_left > 0.0 and not force):
+			return
+		_start_capture(tag)
+		_cap_left = secs
+		_cap_name = "s%d_%s" % [screens[_idx], tag]
+		_cap_n = 0
 
 	func _all_down() -> bool:
 		if _bosses.is_empty():
@@ -342,7 +377,7 @@ class ProbeWorker extends Node:
 		var row := {"screen": s, "boss": "+".join(names), "time": _t, "hits": _hits, "dealt": _dmg_dealt,
 			"taken": _dmg_taken, "near": _near, "why": why, "phases": " ".join(ph), "wl": Progression.weapon_level, "src": str(_src)}
 		_rows.append(row)
-		print("PROBE tela=%d %s t=%.0fs golpes=%d dano_dado=%d dano_tomado=%d quase_mortes=%d arma=%d [%s] %s fontes=%s estados=%s golpes_chefe=%s tempo_estado=%s" % [s, row.boss, _t, _hits, _dmg_dealt, _dmg_taken, _near, row.wl, why, row.phases, row.src, str(_by_state), str(_moves_n), _fmt_t()])
+		print("PROBE tela=%d %s t=%.0fs golpes=%d dano_dado=%d dano_tomado=%d quase_mortes=%d arma=%d [%s] %s fontes=%s estados=%s golpes_chefe=%s tempo_estado=%s mentira=%s ajoelhares=%d golpes_nos_8s=%d dicas=%s" % [s, row.boss, _t, _hits, _dmg_dealt, _dmg_taken, _near, row.wl, why, row.phases, row.src, str(_by_state), str(_moves_n), _fmt_t(), ("exposta@%.0fs" % _lie_at) if _lie_at >= 0.0 else "nao", _kneels, _lie_moves, str(_hints)])
 		_flush_caps()
 		_next_screen.call_deferred()
 

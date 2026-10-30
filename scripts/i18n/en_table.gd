@@ -667,7 +667,6 @@ const EXACT := {
 	"Guardião  ·  %s": "Guardian  ·  %s",
 	"Guardião Espinhoso": "Thorned Guardian",
 	"Guardião de casca espinhosa, posto nas portas dos Éons.": "A thorn-shelled guardian, posted at the gates of the Aeons.",
-	"Guardião do Limiar": "Guardian of the Threshold",
 	"Guardião do santuário %s %s": "Guardian of the shrine %s %s",
 	"Guardião do santuário da Coroa": "Guardian of the Shrine of the Crown",
 	"Guardião do santuário da Corrente": "Guardian of the Shrine of the Chain",
@@ -756,6 +755,7 @@ const EXACT := {
 	"Melhorias": "Upgrades",
 	"Memória inteira": "Whole Memory",
 	"Menos inimigos, chão traiçoeiro. Fortalece a vida.": "Fewer enemies, treacherous ground. Strengthens life.",
+	"Mentira exposta · o Rei fica 8 s sem guarda": "Lie exposed · the King is open for 8 s",
 	"Merou, que tirava água do poço para quem não podia. Tasso, que dormia no telhado para ver os astros.": "Merou, who drew water from the well for those who could not. Tasso, who slept on the roof to see the stars.",
 	"Meu filho dorme duas ruas para lá. Vais lá também? Por favor?": "My son is sleeping two streets over. Will you go there too? Please?",
 	"Modo de janela": "Window mode",
@@ -1441,6 +1441,7 @@ const EXACT := {
 	"“Quem tem a gnose, quando é chamado, ouve, responde e se volta para quem o chama”, diz o Evangelho da Verdade.": "“Whoever has gnosis, when called, hears, answers, and turns toward the one who calls,” says the Gospel of Truth.",
 	"“Quem éramos, o que nos tornamos; onde estávamos, para onde fomos lançados; para onde nos apressamos, de que somos libertos.” (Teódoto)": "“Who we were, what we have become; where we were, where we have been thrown; where we are hurrying, what we are freed from.” (Theodotus)",
 	"“Se trouxerdes à luz o que está dentro de vós, isso vos salvará. Se não o tiverdes, isso vos matará.”": "“If you bring to light what is within you, it will save you. If you lack it, its lack will kill you.”",
+	"“Um rei jamais se curva.”": "“A king never bows.”",
 	"• nova Crônica  %d/%d": "• new Chronicle  %d/%d",
 	"• nova Crônica  %d/%d      %s fechar": "• new Chronicle  %d/%d      %s close",
 }
