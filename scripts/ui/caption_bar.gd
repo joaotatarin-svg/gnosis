@@ -131,6 +131,16 @@ func say_lines(lines: Array) -> void:
 			_queue.append(l)
 
 
+## Fura a fila: as falas entram logo DEPOIS da que está no ar (a da Estela da
+## tela 1, que é por proximidade e perderia o momento atrás das outras).
+func say_next(lines: Array) -> void:
+	var k := 0
+	for l in lines:
+		if l is Dictionary and String(l.get("text", "")) != "":
+			_queue.insert(k, l)
+			k += 1
+
+
 func say(speaker: String, text: String) -> void:
 	_queue.append({"speaker": speaker, "text": text})
 

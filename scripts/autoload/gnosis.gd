@@ -248,6 +248,11 @@ var _last_card_id: String = ""
 var _last_card_screen: int = -1
 var _last_card_ms: int = -100000
 var _by_screen: Dictionary = {}   # tela -> Estela
+# LIMIAR (tela 1, reescrita 29/10): a Voz fala da Estela quando a Sophia chega
+# perto (D7) e a Sophia comenta a Mônada depois de LER a pedra nesta run (D8).
+const LIMIAR_STELA_NEAR := 140.0
+var _limiar_stela: Node2D = null
+var _read_this_run: Dictionary = {}   # ids de Estelas abertas desde o início da run
 
 
 func _ready() -> void:
@@ -276,6 +281,8 @@ func is_unlocked(id: String) -> bool:
 
 ## Desbloqueia e salva. Retorna true se era inédita.
 func unlock(id: String) -> bool:
+	if id != "":
+		_read_this_run[id] = true     # a Estela foi ABERTA agora (inédita ou não)
 	if id == "" or unlocked.has(id):
 		return false
 	unlocked.append(id)
@@ -338,14 +345,20 @@ func _sandbox() -> bool:
 
 func setup_screen(level: Node2D, screen: int, rest_points: Array) -> void:
 	_caption.clear()
+	_limiar_stela = null
 	if _sandbox():
 		return
+	if RunManager.is_king_screen(screen) and not Narrative.seen.has("prologue_read_reset"):
+		Narrative.seen["prologue_read_reset"] = true
+		_read_this_run.clear()            # nova run: "leu nesta run" recomeça
 	var e := stela_for_screen(screen)
 	if not e.is_empty() and not rest_points.is_empty() and level != null:
 		var s := Stela.new()
 		s.entry = e
 		level.add_child(s)
 		s.global_position = _stela_pos(screen, rest_points)
+		if RunManager.is_king_screen(screen):
+			_limiar_stela = s
 		# A pedra é cenário do chão: ATRÁS dos lutadores (como os props, z -1).
 		# Com z 1 ela cobria a Sophia nas cenas das telas 64 e 68 (QA da Encenação 5).
 		s.z_index = -1
@@ -397,9 +410,33 @@ func captions(lines: Array) -> void:
 
 ## Card de chefe ao nascer: id do Bestiário ("rei", "arconte_sono", ...,
 ## "demiurgo" na batalha dupla) ou "campeao" (Desafio do Éon).
+## Tela 1: perto da Estela, a Voz ensina a ler (D7, entra logo depois da fala
+## no ar); depois de ler (painel fechado), a Sophia comenta a Mônada (D8).
+func _process(_delta: float) -> void:
+	if _limiar_stela == null:
+		return
+	if not is_instance_valid(_limiar_stela) or not _limiar_stela.is_inside_tree():
+		_limiar_stela = null
+		return
+	if get_tree().paused:
+		return
+	var pl := get_tree().get_first_node_in_group("player") as Node2D
+	if pl == null:
+		return
+	if not Narrative.seen.has("lim_d7") and absf(pl.global_position.x - _limiar_stela.global_position.x) < LIMIAR_STELA_NEAR:
+		Narrative.once("lim_d7")
+		_caption.say_next(Narrative.limiar_stela())
+	if _read_this_run.has("monada") and Narrative.once("lim_d8"):
+		_caption.say_next(Narrative.limiar_stela_read())
+		_limiar_stela = null
+
+
 func boss_card(id: String, screen: int) -> void:
 	if _sandbox():
 		return
+	# Duelo do Rei (tela 1): liga as falas de combate C1–C6 a ESTE Rei.
+	if id == "rei":
+		_attach_rei.call_deferred()
 	# O mesmo card não repete na mesma tela em seguida (QA7 #17: "YALDABAOTH" 2×
 	# na luta final — a batalha dupla e a wave pediam o card juntas).
 	var now := Time.get_ticks_msec()
@@ -419,3 +456,11 @@ func boss_card(id: String, screen: int) -> void:
 	if t.is_empty():
 		return
 	Cinematic.boss_card(String(t.name), String(t.title))
+
+
+## Acha o Rei vivo da tela (type_id "rei") e liga o duelo do Narrative a ele.
+func _attach_rei() -> void:
+	for en in get_tree().get_nodes_in_group("enemy"):
+		if is_instance_valid(en) and String(en.get("type_id")) == "rei" and bool(en.get("is_boss_enemy")):
+			Narrative.rei_duel_attach(en)
+			return

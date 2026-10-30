@@ -7,6 +7,12 @@
 
 ## 1. Dois registros, nunca misturados
 
+> **MUDOU (29/10/2026, decisão do chefe/João: "texto de bíblia"):** o diegético passa a ser **PT-BR com
+> "você"** (contrações na boca da Sophia e da Voz: "tô", "né", "pra", "a gente"; o Rei fala sem contração e
+> com "nós" majestático). Já valem as telas 1–2 (prólogo, despertar, Cena A, duelo e queda do Rei, chegada ao
+> Torpor). O resto do jogo ainda está em "tu" até a reescrita completa: a tabela abaixo é a regra ANTIGA.
+> Texto e tom de referência: `_caps/narrativa/AMOSTRA_LIMIAR.md` (fora do git).
+
 | Registro | Onde | Pessoa | Exemplo |
 |---|---|---|---|
 | **Diegético** (o mundo falando) | falas, legendas, Estelas, cards de prólogo/epílogo | **tu / vós** com conjugação correta | "Não pares. Sobe." |

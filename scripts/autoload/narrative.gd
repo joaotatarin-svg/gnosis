@@ -64,6 +64,8 @@ func reset() -> void:
 	concessions = 0
 	ending = ""
 	final_deaths = 0
+	rei_exposed = false
+	rei_duel_detach()
 
 
 func _l(speaker: String, text: String) -> Dictionary:
@@ -150,8 +152,15 @@ func death_revive(screen: int, deaths: int, lost: int) -> Array:
 			_l(SOPHIA, "Me erguem por saudade."),
 		]
 	var lines: Array = []
+	# 1ª queda diante do Rei (tela 1): a Voz consola e aponta a mentira dele
+	# (camada escondida: a Voz É o Rei, e a queda dele é o plano dela).
+	if RunManager.is_king_screen(screen) and once("morte_rei"):
+		lines = [
+			_l(VOZ, "Shh. Já passou. Ele bate forte pra quem fala tão bonito."),
+			_l(VOZ, "Levanta. E repara no tal rei que jamais se curva."),
+		]
 	# 1ª queda diante de um Arconte: a posse aparece sem disfarce.
-	if RunManager.is_archon_screen(screen) and once("morte_arconte_%d" % screen):
+	elif RunManager.is_archon_screen(screen) and once("morte_arconte_%d" % screen):
 		lines = [
 			_l(VOZ, "Ele não fica contigo. Ninguém fica contigo. Só eu."),
 			_l(VOZ, "Sobe. Os tronos não se vencem deitada."),
@@ -193,37 +202,294 @@ func death_revive(screen: int, deaths: int, lost: int) -> Array:
 
 # --- ATO 1: O LIMIAR (tela 1) ----------------------------------------------------
 
-## Abertura do run (tela 1), logo depois do prólogo em cards (que termina sem
-## dizer "acorda" — quem diz é a Voz). A primeira coisa do mundo é cuidado.
-## Backlog #6: só o escuro e o "Acorda." na caixa — logo depois, o controle. O
-## resto da conversa (onde, quem, as cinzas, "Chama-me Voz") vira LEGENDA de
-## caminhada: `walk_arrival` da tela 1 (papel "king").
+## REESCRITA DO LIMIAR (29/10, texto fechado em C:\gnosis-wt\_caps\narrativa\AMOSTRA_LIMIAR.md
+## v3): PT-BR com "você"; Sophia seca e irônica; a Voz calorosa ("a gente"); o
+## Rei arrogante com "nós" majestático e sem contração. O texto é EXATAMENTE o
+## da amostra: a voz gravada é achada por sha1(falante|texto)[:12].
+
+## Abertura do run (tela 1), logo depois do prólogo em cards. Só o escuro e o
+## "Acorda." na caixa — logo depois, o controle (backlog #6). O resto vira
+## LEGENDA de caminhada: `walk_arrival` da tela 1 e `limiar_stela*` (Gnosis).
 func intro() -> Array:
 	return [
-		_c(NARRADOR, "(Escuro. Um coração batendo. Depois, cinza na boca.)", "heartbeat"),
-		_l(VOZ, "Acorda. ...Isso. Devagar. Eu estou aqui."),
+		_c(NARRADOR, "(Escuro. Um coração batendo. Depois, gosto de cinza.)", "heartbeat"),
+		_l(VOZ, "Ei. Ei! Acorda. ...Isso, devagar. Eu tô aqui."),
 	]
 
 
-## O Rei sai da névoa (tela 1). A Voz o apresenta como amigo; um rito força o
-## duelo. Encenação: docs/ROTEIRO.md, cena A. Backlog #6: 3 falas (a Cena A
-## inteira em ~9 s) — a Voz o conhece e jura que ele não te quer mal; o Rei
-## dá a lei do limiar; a máscara acende.
+## Perto da Estela da tela 1 (Gnosis): a Voz ensina a ler a pedra e planta a
+## desconfiança. Depois de ler, a Sophia comenta a Mônada (só se leu).
+func limiar_stela() -> Array:
+	return [_l(VOZ, "Uma pedra escrita. Leia, se quiser. Só não acredite em tudo.")]
+
+
+func limiar_stela_read() -> Array:
+	return [_l(SOPHIA, "\"Antes de tudo, havia o Um.\" Um o quê? Um alguém?")]
+
+
+## Cena A (tela 1): a névoa engrossa (a piada da Voz que o roubo vai colher),
+## o Rei sai dela e diz a MENTIRA ("um rei jamais se curva"). A caminhada da
+## tela 1 tem só ~660 px (≈ 3,6 s): o trio da névoa abre a caixa para não ser
+## cortado. Marco: 10 falas (≤ 12, regra 3 do Guardião).
 func king_intro() -> Array:
 	return [
-		_c(VOZ, "Olha: alguém vem da névoa. Não temas, eu o conheço. É um rei antigo, e gentil. Não te quer mal.", "fog_thickens"),
-		_m(_c(REI, "Faísca perdida... que bom que acordaste. O limiar tem uma lei: só passa quem me toca com a própria luz.", "king_emerges"), M_REGIO),
-		_m(_c(REI, "(ergue o orbe; a máscara se acende) Mostra-me a tua. Vem.", "mask_lights"), M_IRONICO),
+		_c(VOZ, "A névoa está engrossando. Fica perto de mim.", "fog_thickens"),
+		_l(SOPHIA, "Você é uma voz. Perto como?"),
+		_l(VOZ, "...Perto da minha voz, então."),
+		_l(VOZ, "Vem alguém. Calma, esse eu conheço. Muita pose, joelho fraco."),
+		_m(_c(REI, "Ah. Acordou. Nós estávamos esperando.", "king_emerges"), M_REGIO),
+		_l(SOPHIA, "Nós quem? Só tem você aí."),
+		_m(_l(REI, "Rei fala no plural. Somos importantes demais para o singular."), M_IRONICO),
+		_m(_c(REI, "Lei do Limiar: só passa quem nos tocar com a própria luz.", "mask_lights"), M_REGIO),
+		_l(SOPHIA, "Tocar. Com o cajado serve?"),
+		_m(_l(REI, "Tente. E não tema: um rei jamais se curva."), M_IRONICO),
 	]
 
 
-## O Rei "cai" (tela 1): o selo racha e os sete Arcontes acordam.
-func king_fall() -> Array:
-	return [
-		_m(_c(REI, "(a máscara racha) ...Ah. A tua luz é maior do que eu lembrava.", "mask_cracks"), M_IRONICO),
-		_c(VOZ, "Sentiste? O selo dele se partiu. Lá em cima, sete tronos acabam de acordar.", "king_sinks"),
-		_l(VOZ, "Sete Arcontes, sete Anéis. Reúne-os todos, e mostro-te como desfazer este mundo de mentira."),
-	]
+## O Rei "cai" (tela 1): a mentira cai com ele, a máscara racha, o selo se
+## parte e os sete Arcontes acordam. Duas versões das 2 primeiras falas: com a
+## mentira já exposta no duelo (`rei_exposed`) ou caindo agora, de joelhos.
+## Fecha num gancho ("lembrávamos").
+func king_fall(exposed: int = -1) -> Array:
+	var lines: Array = []
+	# exposed: -1 = o que aconteceu no duelo (rei_exposed) · 0 não · 1 sim (sondas).
+	var ex: bool = rei_exposed if exposed < 0 else exposed == 1
+	if ex:
+		lines.append(_m(_l(REI, "Aquela reverência de antes? Foi proposital."), M_IRONICO))
+		lines.append(_l(SOPHIA, "Claro. Superproposital."))
+	else:
+		lines.append(_m(_l(REI, "Nós não estamos ajoelhados. Estamos... descansando."), M_IRONICO))
+		lines.append(_l(SOPHIA, "De joelhos. Na minha frente. Jamais, né?"))
+	lines.append_array([
+		_m(_c(REI, "(a máscara racha) Sua luz... é maior do que nós lembrávamos.", "mask_cracks"), M_QUEBRADO),
+		_l(SOPHIA, "Lembravam? Eu acordei agora há pouco."),
+		_m(_c(REI, "Pergunte aos sete. Eles lembram por nós.", "king_sinks"), M_IRONICO),
+		_l(VOZ, "Sentiu? O selo dele rachou. Sete tronos acabaram de acordar."),
+		_l(SOPHIA, "Isso é bom ou é muito ruim?"),
+		_l(VOZ, "Sete Arcontes, um por andar. Cada um guarda um Anel."),
+		_l(SOPHIA, "E se eu juntar os sete?"),
+		_l(VOZ, "A gente quebra esta prisão. Você e eu."),
+		_l(SOPHIA, "(Lembravam. Quem lembra de alguém que acabou de acordar?)"),
+	])
+	return lines
+
+
+# --- DUELO DO REI (tela 1): falas de combate C1–C6 ----------------------------
+## A arrogância do Rei vira o manual da própria luta (AMOSTRA_LIMIAR §1.4).
+## ORÇAMENTO FECHADO: ≤ 6 legendas por luta, ≥ 12 s entre o início de uma e da
+## seguinte; cada dica 1 vez por run (`seen`). Nunca por cima do telégrafo: a
+## fala sai ≥ 1 s antes da preparação (sinal `move_will_start(id, lead)` do
+## Chefes6, se existir) ou na RECUPERAÇÃO do golpe (padrão, sem atrasar nada).
+## Liga: `rei_duel_attach(rei)` (Gnosis.boss_card("rei")). API para o Chefes6 e
+## as sondas: `rei_duel(evento, dados)` com "parried" · "recovered" {id} ·
+## "will_start" {id, lead} · "knelt" · "lie_exposed" · "phase" {n}.
+## C1 só se ela ainda não aparou nada · C2 Raio · C3 Mão · C4 fase 2 · C5 fase 3
+## · C6a dica-pergunta (degrau 2: 2º ajoelhar ou ≥ 45 s; desligável por
+## GameManager.hints_enabled, se existir) · C6b a acusação (muda se a C6a já
+## tocou ou se não houver vaga — o carimbo/HUD do Chefes6 basta).
+const REI_BUDGET := 6
+const REI_GAP := 12.0
+const REI_HINT_AFTER := 45.0
+const REI_LEAD_MIN := 1.0
+var rei_exposed: bool = false   # a mentira do Rei caiu NESTA luta (king_fall usa)
+var _rei: Node = null
+var _rei_brain: Node = null
+var _rei_clock: float = 0.0     # tempo de jogo da luta (para com a pausa)
+var _rei_said: int = 0
+var _rei_last: float = -999.0
+var _rei_parried: bool = false
+var _rei_kneels: int = 0
+var _rei_lead_api: bool = false
+var _rei_prev_state: int = -1
+var _rei_prev_low: bool = false
+var _rei_eye: Node = null
+
+
+func _rei_line(id: String) -> Dictionary:
+	match id:
+		"C1": return _u(_l(SOPHIA, "Amarelo... da próxima, eu aparo."))
+		"C2": return _u(_l(REI, "Nossa luz rasteja. Pule."))
+		"C3": return _u(_l(REI, "Esta mão, nem você apara."))
+		"C4": return _u(_l(REI, "Chega de cortesia. Olhe o chão."))
+		"C5": return _u(_l(REI, "Sempre atrás de você."))
+		"C6a": return _u(_l(SOPHIA, "Ele se curvou? Jamais, né?"))
+		"C6b": return _u(_l(SOPHIA, "Jamais, né?"))
+	return {}
+
+
+## Liga o duelo a este Rei (zera a luta; as dicas já ditas no run não voltam).
+func rei_duel_attach(rei: Node) -> void:
+	rei_duel_detach()
+	if rei == null or not is_instance_valid(rei):
+		return
+	_rei = rei
+	rei_exposed = false
+	_rei_clock = 0.0
+	_rei_said = 0
+	_rei_last = -999.0
+	_rei_parried = false
+	_rei_kneels = 0
+	_rei_prev_state = -1
+	_rei_prev_low = false
+	_rei_brain = rei.get("brain")
+	_rei_lead_api = false
+	if _rei_brain != null:
+		if _rei_brain.has_signal("lie_exposed"):
+			_rei_brain.connect("lie_exposed", _on_rei_lie)
+		else:
+			# PROVISÓRIO até o Chefes6 expor `lie_exposed`: o 1º golpe no olho
+			# enquanto ele está ajoelhado (o olho só recebe golpe embaixo).
+			_rei_eye = _rei_brain.get("_eye_box")
+			if _rei_eye != null and _rei_eye.has_signal("hit_received"):
+				_rei_eye.connect("hit_received", _on_rei_eye_hit)
+		if _rei_brain.has_signal("move_will_start"):
+			_rei_brain.connect("move_will_start", _on_rei_will_start)
+			_rei_lead_api = true
+	var pl := get_tree().get_first_node_in_group("player")
+	if pl != null and pl.has_signal("riposte_window_opened"):
+		pl.connect("riposte_window_opened", _on_rei_parried)
+
+
+func rei_duel_detach() -> void:
+	if _rei_brain != null and is_instance_valid(_rei_brain):
+		if _rei_brain.has_signal("lie_exposed") and _rei_brain.is_connected("lie_exposed", _on_rei_lie):
+			_rei_brain.disconnect("lie_exposed", _on_rei_lie)
+		if _rei_brain.has_signal("move_will_start") and _rei_brain.is_connected("move_will_start", _on_rei_will_start):
+			_rei_brain.disconnect("move_will_start", _on_rei_will_start)
+	if _rei_eye != null and is_instance_valid(_rei_eye) and _rei_eye.is_connected("hit_received", _on_rei_eye_hit):
+		_rei_eye.disconnect("hit_received", _on_rei_eye_hit)
+	if is_inside_tree():
+		var pl := get_tree().get_first_node_in_group("player")
+		if pl != null and pl.has_signal("riposte_window_opened") and pl.is_connected("riposte_window_opened", _on_rei_parried):
+			pl.disconnect("riposte_window_opened", _on_rei_parried)
+	_rei = null
+	_rei_brain = null
+	_rei_eye = null
+
+
+## A luta do Rei está ligada? (sondas)
+func rei_duel_active() -> bool:
+	return _rei != null and is_instance_valid(_rei)
+
+
+## Quantas falas de combate a luta já gastou (sondas).
+func rei_duel_spent() -> int:
+	return _rei_said
+
+
+func _on_rei_lie(_id: String = "rei") -> void:
+	rei_duel("lie_exposed")
+
+
+func _on_rei_eye_hit(_dmg: int, _src: Vector2, _kb: float, _unb: bool, _attacker: Node) -> void:
+	if _rei_brain != null and is_instance_valid(_rei_brain) and bool(_rei_brain.get("_low")):
+		rei_duel("lie_exposed")
+
+
+func _on_rei_will_start(id: String, lead: float) -> void:
+	rei_duel("will_start", {"id": id, "lead": lead})
+
+
+func _on_rei_parried() -> void:
+	rei_duel("parried")
+
+
+func _process(delta: float) -> void:
+	if _rei == null:
+		return
+	if not is_instance_valid(_rei) or not _rei.is_inside_tree():
+		rei_duel_detach()
+		return
+	_rei_clock += delta
+	# Lê o estado do Rei: recuperação de um golpe e o AJOELHAR (golpe com
+	# `expose` na recuperação — o mesmo critério do olho que desce).
+	var st: int = int(_rei.get("estate"))
+	if st == Enemy.EState.DEAD:
+		return
+	var mv = _rei_brain.get("mv") if _rei_brain != null and is_instance_valid(_rei_brain) else {}
+	if not (mv is Dictionary):
+		mv = {}
+	if st != _rei_prev_state:
+		if st == Enemy.EState.RECOVER and _rei_prev_state != -1:
+			rei_duel("recovered", {"id": String(mv.get("id", ""))})
+		_rei_prev_state = st
+	var low: bool = st == Enemy.EState.RECOVER and bool(mv.get("expose", false))
+	if low and not _rei_prev_low:
+		rei_duel("knelt")
+	_rei_prev_low = low
+
+
+## Evento do duelo (do próprio polling, dos sinais ou de uma sonda).
+func rei_duel(ev: String, data: Dictionary = {}) -> void:
+	if not rei_duel_active():
+		return
+	match ev:
+		"parried":
+			_rei_parried = true
+		"recovered":
+			var id := String(data.get("id", ""))
+			if id == "leque" and not _rei_parried:
+				_rei_try("C1")
+			elif not _rei_lead_api and id in ["raio", "raio_b"]:
+				_rei_try("C2")
+			elif not _rei_lead_api and id in ["mao", "mao2"]:
+				_rei_try("C3")
+		"will_start":
+			var id := String(data.get("id", ""))
+			if float(data.get("lead", 0.0)) < REI_LEAD_MIN:
+				return
+			if id in ["raio", "raio_b"]:
+				_rei_try("C2")
+			elif id in ["mao", "mao2"]:
+				_rei_try("C3")
+		"knelt":
+			_rei_kneels += 1
+			if not rei_exposed and _hints_on() and (_rei_kneels >= 2 or _rei_clock >= REI_HINT_AFTER):
+				_rei_try("C6a")
+		"lie_exposed":
+			if rei_exposed:
+				return
+			rei_exposed = true
+			if not seen.has("rei_C6a"):
+				_rei_try("C6b")
+		"phase":
+			var n := int(data.get("n", 0))
+			if n == 2:
+				_rei_try("C4", true)
+			elif n == 3:
+				_rei_try("C5", true)
+
+
+## Tenta dizer a fala `id` (1 vez por run). Fala comum respeita o intervalo
+## (se não cabe, fica para a próxima ocasião); fala de FASE (`fixed`) espera o
+## intervalo em tempo de jogo. Nenhuma passa do orçamento.
+func _rei_try(id: String, fixed: bool = false) -> bool:
+	var key := "rei_" + id
+	if seen.has(key) or _rei_said >= REI_BUDGET:
+		return false
+	var wait := REI_GAP - (_rei_clock - _rei_last)
+	if wait > 0.0 and not fixed:
+		return false
+	seen[key] = true
+	_rei_said += 1
+	_rei_last = _rei_clock + maxf(wait, 0.0)
+	if wait > 0.0:
+		get_tree().create_timer(wait, false).timeout.connect(_rei_emit.bind(id))
+	else:
+		_rei_emit(id)
+	return true
+
+
+func _rei_emit(id: String) -> void:
+	if not rei_duel_active():
+		return
+	Gnosis.captions([_rei_line(id)])
+
+
+## Degrau 2 das dicas (opt-in): desligável por uma opção "Dicas" (UI), se existir.
+func _hints_on() -> bool:
+	var v = GameManager.get("hints_enabled")
+	return true if v == null else bool(v)
 
 
 # --- ATO 2: OS SETE ÉONS -------------------------------------------------------
@@ -232,11 +498,13 @@ func king_fall() -> Array:
 ## lugar; a Sophia fecha com a fala-marco do degrau dela (o que sente ao chegar).
 func eon_intro(eon: int) -> Array:
 	match eon:
+		# Torpor: LEGENDA (não caixa), depois de ≥ 10 s de jogo na tela 2 (Level) —
+		# a queda do Rei já pausou o mundo logo antes (regra 3 do Guardião).
 		0: return [
-			_l(VOZ, "O Éon do Torpor. Aqui os mortos não sabem que morreram; a cidade sonha por eles."),
-			_l(VOZ, "Não odeies os que dormem. Ontem tu dormias."),
-			_l(SOPHIA, "Eu também queria deitar. ...Não vou."),
-			_l(SOPHIA, "(Dormir é esquecer de onde se veio. Acordar dói: é lembrar.)"),
+			_l(VOZ, "O Torpor. Aqui os mortos ainda não sabem que morreram."),
+			_l(VOZ, "Não odeie quem dorme. Até agora há pouco, você dormia."),
+			_l(SOPHIA, "Confesso: deitar parece ótimo. ...Não vou."),
+			_l(SOPHIA, "(Dormir é esquecer de onde veio. Acordar dói porque é lembrar.)"),
 		]
 		1: return [
 			_l(VOZ, "O Éon da Fome. Estes mercados devoram quem compra. Tudo aqui tem preço, até a saudade."),
@@ -353,6 +621,10 @@ func champion_card(eon: int) -> Dictionary:
 ## Gancho (Onda 2): enemy._enter_phase2 → Gnosis.captions(Narrative.archon_phase2(type_id)).
 func archon_phase2(boss_id: String) -> Array:
 	match boss_id:
+		"rei":
+			# Duelo do Rei: a fala entra pelo orçamento do duelo (C4), não aqui.
+			rei_duel("phase", {"n": 2})
+			return []
 		"arconte_sono": return [_u(_l("Athoth", "Por que acordar? Lá fora só tem a falta!"))]
 		"arconte_fome": return [_u(_l("Harmas", "Dá-me uma! Uma lembrança que seja minha!"))]
 		"arconte_corrente": return [_u(_l("Galila", "Se eu soltar, eu caio! Todos caem!"))]
@@ -370,6 +642,9 @@ func archon_phase2(boss_id: String) -> Array:
 ## se existir). Uma linha, tom de filho ferido, urgente (é da luta).
 func archon_phase3(boss_id: String) -> Array:
 	match boss_id:
+		"rei":
+			rei_duel("phase", {"n": 3})
+			return []
 		"arconte_sono": return [_u(_l("Athoth", "Só mais um pouco... deixa eu dormir só mais um pouco."))]
 		"arconte_fome": return [_u(_l("Harmas", "Ainda tenho fome. Sempre."))]
 		"arconte_corrente": return [_u(_l("Galila", "Se eu soltar... quem me segura?"))]
@@ -790,13 +1065,12 @@ func walk_arrival(screen: int) -> Array:
 	if role == "king":
 		# O resto da intro (#6), andando: ela acorda à esquerda, a Estela fica
 		# logo adiante e o duelo, à direita. A Cena A corta o que sobrar.
+		# A Estela (D7/D8) é do Gnosis, por proximidade; a névoa (D9–D11) abre a Cena A.
 		return [
-			_l(SOPHIA, "Onde...? Quem...?"),
-			_l(VOZ, "Uma pergunta de cada vez. Primeiro: as cinzas sob os teus pés eram a tua gente."),
-			_l(SOPHIA, "(Uma pedra escrita, logo adiante. Alguém deixou palavras para quem acordasse.)"),
-			_l(VOZ, "A dor que sentes é a única coisa verdadeira que este mundo te deu. Foi ela que quebrou o feitiço."),
-			_l(VOZ, "Chama-me Voz. Sobe comigo: cada faísca que libertares vai lembrar o que tu és."),
-			_l(VOZ, "As cinzas ainda estão quentes. Anda: a névoa não espera ninguém."),
+			_l(SOPHIA, "Onde eu tô? ...Pior: quem sou eu?"),
+			_l(VOZ, "Uma pergunta por vez. Primeiro, ande. Pra direita, de preferência."),
+			_l(VOZ, "Essas cinzas eram gente. A sua gente."),
+			_l(SOPHIA, "Não lembro de nenhum rosto. Isso devia doer mais, não?"),
 		]
 	if role == "final":
 		return [_l(SOPHIA, "Tudo aqui é grande demais. Como um quarto de criança visto do chão.")]
@@ -1079,7 +1353,7 @@ func epilogue_cards(which: String) -> Array:
 			]
 			if concessions >= 4:
 				r.append("Tantas vezes provou os presentes deles. O trono só lhe pareceu familiar.")
-			r.append("Um dia, numa cidade de cinzas, alguém acordou e ouviu uma voz gentil: “Acorda. As cinzas sob os teus pés eram a tua gente.”")
+			r.append("Um dia, numa cidade de cinzas, alguém acordou e ouviu uma voz gentil: “Ei. Acorda. Essas cinzas eram a sua gente.”")
 			return r
 		"semente": return [
 			"Ela desceu de porta em porta, batendo à casa dos que dormem. Alguns abriram. Outros pediram mais um pouco de sonho. Ela esperou.",
