@@ -47,3 +47,20 @@ Sinais (em `scripts/entities/bosses/boss_rei.gd` / `boss_brain.gd`; o cérebro e
   `mask_light`).
 - **Por delegação (registro):** título do card do Rei em `scripts/autoload/gnosis.gd` → "“Um rei jamais se curva.”";
   linha órfã do título antigo tirada de `assets/i18n/en/06_estelas_b.tsv`; lote novo `assets/i18n/en/17_chefes6_mentira.tsv`.
+
+## REI AJOELHADO (Arte, 29/10) — estados `kneel` e `kneel_cracked` publicados (atlas `rei_frames`)
+- **Já funciona sem mexer em nada:** o `boss_rei.gd` pede `set_anim("kneel")` quando está `_low` e o estado existe → agora existe
+  (12 quadros, laço a 5 qps, respiração/manto/capuz em camadas; a pintura vem **SEM o orbe-olho**, que é o sprite do jogo).
+- **Pedido 1 — a máscara rachada (1 linha em `boss_rei.gd`, na linha do `_lie_t > 0.0`):**
+  `e.visual.set_anim("kneel_cracked" if _has_state("kneel_cracked") else "mask_crack")`
+  (hoje toca o `mask_crack` DE PÉ durante os 8 s; o `kneel_cracked` é a pose ajoelhada com a fenda dourada pulsando.
+  O `mask_crack` de pé segue para a cena da queda/Staging.) Provado com esse remendo local (não commitado por ser seu arquivo).
+- **Pedido 2 — o orbe-olho na mão:** na pintura a mão fica aberta, sem orbe; o orbe do jogo deve pairar onde a mão o seguraria.
+  Ponto em px do ATLAS relativo à âncora do quadro (x para a DIREITA da pose desenhada, y para CIMA da âncora do pé):
+  `kneel` (+100,9 ; −64,5 acima) · `kneel_cracked` (+101,1 ; −64,9). Em mundo: multiplique por `k = hw·body_frac/body_px`
+  (a mesma escala do corpo; o Rei de pé usa o mesmo `k`) e espelhe em x se o visual estiver `flip`. Hoje `ORB_LOW` deixa o orbe ~50 px
+  acima/à direita desse ponto (ver `_caps\arte\rei_kneel\rei_kneel_antes_depois.png`); o `_eye_box` deve ir junto.
+- **Pedido 3 — BodyBox dos quadros novos:** `docs/pedidos/rei_body_kneel.gd.txt` (24 linhas `kneel_a00..11` e `crack_a00..11`,
+  16 faixas, fill 0,30, geradas por `body_slabs` do repo) para colar em `rei_body_data.gd` (ou regenerar o arquivo todo com o
+  comando do cabeçalho do .txt). A Arte NÃO mexeu em `rei_body_data.gd`.
+- Âncora: pela estola (faixa dourada da frente) no mesmo x do Rei de pé; o chão da rachada (~32 px mais alto na pintura) sai pelo pé.
