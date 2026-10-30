@@ -4,7 +4,24 @@
 > Status: **PESQUISA + MOTOR + ELENCO DE AMOSTRA + PIPELINE**. O jogo inteiro
 > NÃO foi dublado — espera o João aprovar o elenco.
 
-## 0. BILHETE PARA O SUCESSOR — R3 PT-BR (29/10/2026 noite; PARADO, nada rodando)
+## 0. BILHETE — A/B DE SOTAQUE (29/10/2026, sucessor; PARADO, nada rodando)
+
+- O João ouviu a R3 (Qwen + grafia BR) e disse "Portugal". **O Qwen3-TTS foi DESCARTADO como base.**
+- Entreguei o A/B: `C:\gnosis-wt\_caps\dublagem\ab_sotaque\` (`AB.md` e `ab_sotaque_todas.ogg`). São 5 opções comerciais e a régua Piper. **Esperando o João escolher.**
+  - 1 = Kokoro pt-BR;
+  - 2 = Kokoro + ChatterboxVC;
+  - 3 = Kokoro + OpenVoice v2;
+  - 4 = Chatterbox pt-BR;
+  - 5 = Chatterbox pt-BR + ChatterboxVC.
+- **Piper pt_BR NÃO é comercial.** O dataset é CC0, mas os pesos foram ajustados do `lessac` (Blizzard, só pesquisa) ou do `ryan` (CC-BY-NC-SA). A tabela §1 abaixo está errada nisso.
+- **O medidor de fonemas da R3 (`fonemas.py`/`sotaque_br.py`) falhou na calibração:** deu Piper BR = 0,06 e Piper PT = 0,44, e a nota muda com o timbre. Não use a nota como critério.
+- Ferramentas novas:
+  - `C:\Users\jmtat\gnosis-tools\voice\venv-piper` (piper-tts 1.8, GPL; só régua);
+  - `piper_voices\`;
+  - `openvoice\` (src + converter v2, MIT; roda no venv principal com stubs; veja `ab_sotaque\_scripts\gen_ov.py`).
+- **Próximo passo:** com a opção escolhida, refazer as vozes-base e a amostra Limiar v2 nesse motor.
+
+## 0z. BILHETE R3 PT-BR (histórico, 29/10/2026 noite)
 
 - **Problema:** o João ouviu sotaque de PORTUGAL.
   - Medido com fonemas: Kokoro PT = europeu (nota 0,12) e Qwen com descrição "brasileira" = leitura neutra (0,1–0,5).
