@@ -2,158 +2,772 @@
 	"version": 1,
 	"lufs": -21.0,
 	"lines": {
-		"0619bb873132": {
-			"speaker": "Narrador",
-			"source": "cinematic.prologue",
-			"lote": "limiar-1",
+		"0991ae3795cf": {
+			"speaker": "",
+			"source": "narrative.intro",
+			"lote": "limiar-2",
+			"key": "D1",
+			"texto_pt": "(Escuro. Um coração batendo. Depois, gosto de cinza.)",
 			"nivel": null,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/0619bb873132.ogg",
-				"dur": 8.98,
+				"file": "res://assets/audio/voice/pt/0991ae3795cf.ogg",
+				"dur": 4.2,
 				"cer": 0.0,
-				"tp": -2.52,
-				"lufs_s": -20.1
+				"tp": -2.87,
+				"lufs_s": -20.2
 			}
 		},
-		"1dbe2dd77839": {
+		"0d9f70b4495f": {
+			"speaker": "A Voz",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "A1",
+			"texto_pt": "Vem alguém. Calma, esse eu conheço. Muita pose, joelho fraco.",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/0d9f70b4495f.ogg",
+				"dur": 4.01,
+				"cer": 0.0,
+				"tp": -4.28,
+				"lufs_s": -20.5
+			}
+		},
+		"1497fff71450": {
 			"speaker": "A Voz",
 			"source": "narrative.king_fall",
-			"lote": "limiar-1",
+			"lote": "limiar-2",
+			"key": "F10",
+			"texto_pt": "A gente quebra esta prisão. Você e eu.",
 			"nivel": null,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/1dbe2dd77839.ogg",
-				"dur": 6.69,
-				"cer": 0.103,
-				"tp": -2.46,
-				"lufs_s": -19.7
-			}
-		},
-		"2f9b136846b9": {
-			"speaker": "O Rei",
-			"source": "narrative.king_intro",
-			"lote": "limiar-1",
-			"nivel": 2,
-			"onde": "cena",
-			"pt": {
-				"file": "res://assets/audio/voice/pt/2f9b136846b9.ogg",
-				"dur": 3.12,
+				"file": "res://assets/audio/voice/pt/1497fff71450.ogg",
+				"dur": 3.05,
 				"cer": 0.0,
-				"tp": -2.51,
+				"tp": -3.21,
 				"lufs_s": -21.0
 			}
 		},
-		"74cef0c0db9c": {
+		"242fea8873e6": {
+			"speaker": "Sophia",
+			"source": "narrative.walk_arrival",
+			"lote": "limiar-2",
+			"key": "D6",
+			"texto_pt": "Não lembro de nenhum rosto. Isso devia doer mais, não?",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/242fea8873e6.ogg",
+				"dur": 3.65,
+				"cer": 0.0,
+				"tp": -6.41,
+				"lufs_s": -20.6
+			}
+		},
+		"2b8773262170": {
+			"speaker": "O Rei",
+			"source": "narrative._rei_line",
+			"lote": "limiar-2",
+			"key": "C3",
+			"texto_pt": "Esta mão, nem você apara.",
+			"nivel": 1,
+			"onde": "combate",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/2b8773262170.ogg",
+				"dur": 1.96,
+				"cer": 0.0,
+				"tp": -3.6,
+				"lufs_s": -21.0
+			}
+		},
+		"2d130bc477a8": {
 			"speaker": "A Voz",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "D9",
+			"texto_pt": "A névoa está engrossando. Fica perto de mim.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/2d130bc477a8.ogg",
+				"dur": 3.41,
+				"cer": 0.0,
+				"tp": -3.29,
+				"lufs_s": -20.7
+			}
+		},
+		"313dcd247747": {
+			"speaker": "A Voz",
+			"source": "narrative.walk_arrival",
+			"lote": "limiar-2",
+			"key": "D5",
+			"texto_pt": "Essas cinzas eram gente. A sua gente.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/313dcd247747.ogg",
+				"dur": 2.91,
+				"cer": 0.0,
+				"tp": -3.83,
+				"lufs_s": -21.0
+			}
+		},
+		"3b2679de913f": {
+			"speaker": "Sophia",
+			"source": "narrative.eon_intro",
+			"lote": "limiar-2",
+			"key": "T4",
+			"texto_pt": "(Dormir é esquecer de onde veio. Acordar dói porque é lembrar.)",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/3b2679de913f.ogg",
+				"dur": 3.71,
+				"cer": 0.102,
+				"tp": -4.56,
+				"lufs_s": -20.5
+			}
+		},
+		"3b7166fb0c24": {
+			"speaker": "A Voz",
+			"source": "narrative.eon_intro",
+			"lote": "limiar-2",
+			"key": "T2",
+			"texto_pt": "Não odeie quem dorme. Até agora há pouco, você dormia.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/3b7166fb0c24.ogg",
+				"dur": 4.14,
+				"cer": 0.0,
+				"tp": -3.98,
+				"lufs_s": -20.5
+			}
+		},
+		"3c5df2a99cc9": {
+			"speaker": "A Voz",
+			"source": "narrative.eon_intro",
+			"lote": "limiar-2",
+			"key": "T1",
+			"texto_pt": "O Torpor. Aqui os mortos ainda não sabem que morreram.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/3c5df2a99cc9.ogg",
+				"dur": 3.83,
+				"cer": 0.0,
+				"tp": -2.02,
+				"lufs_s": -20.3
+			}
+		},
+		"41aabf7b4bfc": {
+			"speaker": "Sophia",
+			"source": "narrative._rei_line",
+			"lote": "limiar-2",
+			"key": "C6b",
+			"texto_pt": "Jamais, né?",
+			"nivel": null,
+			"onde": "combate",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/41aabf7b4bfc.ogg",
+				"dur": 1.13,
+				"cer": 0.111,
+				"tp": -4.33,
+				"lufs_s": -21.0
+			}
+		},
+		"421e57ab320a": {
+			"speaker": "O Rei",
 			"source": "narrative.king_fall",
-			"lote": "limiar-1",
+			"lote": "limiar-2",
+			"key": "F1a",
+			"texto_pt": "Aquela reverência de antes? Foi proposital.",
+			"nivel": 1,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/421e57ab320a.ogg",
+				"dur": 3.64,
+				"cer": 0.0,
+				"tp": -2.02,
+				"lufs_s": -20.8
+			}
+		},
+		"43528647d0ae": {
+			"speaker": "Sophia",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "A6",
+			"texto_pt": "Tocar. Com o cajado serve?",
 			"nivel": null,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/74cef0c0db9c.ogg",
-				"dur": 6.34,
-				"cer": 0.014,
-				"tp": -2.02,
+				"file": "res://assets/audio/voice/pt/43528647d0ae.ogg",
+				"dur": 1.83,
+				"cer": 0.0,
+				"tp": -3.44,
+				"lufs_s": -21.0
+			}
+		},
+		"48edc845dc25": {
+			"speaker": "Sophia",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F2b",
+			"texto_pt": "De joelhos. Na minha frente. Jamais, né?",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/48edc845dc25.ogg",
+				"dur": 2.65,
+				"cer": 0.0,
+				"tp": -6.79,
+				"lufs_s": -20.9
+			}
+		},
+		"4b2f5c5da684": {
+			"speaker": "O Rei",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "A5",
+			"texto_pt": "Lei do Limiar: só passa quem nos tocar com a própria luz.",
+			"nivel": 1,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/4b2f5c5da684.ogg",
+				"dur": 4.16,
+				"cer": 0.018,
+				"tp": -3.51,
+				"lufs_s": -20.6
+			}
+		},
+		"502a76acbbe4": {
+			"speaker": "A Voz",
+			"source": "narrative.first_spark",
+			"lote": "limiar-2",
+			"key": "G1",
+			"texto_pt": "Isso é uma faísca. Luz presa no barro. Agora é sua.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/502a76acbbe4.ogg",
+				"dur": 3.76,
+				"cer": 0.0,
+				"tp": -3.76,
 				"lufs_s": -20.4
 			}
 		},
-		"7fa70621d46a": {
-			"speaker": "O Rei",
-			"source": "narrative.king_intro",
-			"lote": "limiar-1",
-			"nivel": 2,
+		"50980cdff986": {
+			"speaker": "Sophia",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F11",
+			"texto_pt": "(Lembravam. Quem lembra de alguém que acabou de acordar?)",
+			"nivel": null,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/7fa70621d46a.ogg",
-				"dur": 7.28,
-				"cer": 0.01,
-				"tp": -1.58,
+				"file": "res://assets/audio/voice/pt/50980cdff986.ogg",
+				"dur": 3.37,
+				"cer": 0.0,
+				"tp": -2.54,
+				"lufs_s": -20.8
+			}
+		},
+		"55b6cf9881b2": {
+			"speaker": "A Voz",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F6",
+			"texto_pt": "Sentiu? O selo dele rachou. Sete tronos acabaram de acordar.",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/55b6cf9881b2.ogg",
+				"dur": 4.31,
+				"cer": 0.0,
+				"tp": -2.88,
+				"lufs_s": -20.6
+			}
+		},
+		"55fdd3a97f3f": {
+			"speaker": "Sophia",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "D10",
+			"texto_pt": "Você é uma voz. Perto como?",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/55fdd3a97f3f.ogg",
+				"dur": 1.75,
+				"cer": 0.08,
+				"tp": -5.36,
+				"lufs_s": -20.9
+			}
+		},
+		"57f396914203": {
+			"speaker": "O Rei",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F5",
+			"texto_pt": "Pergunte aos sete. Eles lembram por nós.",
+			"nivel": 1,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/57f396914203.ogg",
+				"dur": 3.43,
+				"cer": 0.105,
+				"tp": -5.01,
+				"lufs_s": -21.0
+			}
+		},
+		"5c1e798c6962": {
+			"speaker": "Sophia",
+			"source": "narrative.walk_arrival",
+			"lote": "limiar-2",
+			"key": "D3",
+			"texto_pt": "Onde eu tô? ...Pior: quem sou eu?",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/5c1e798c6962.ogg",
+				"dur": 3.24,
+				"cer": 0.037,
+				"tp": -3.76,
+				"lufs_s": -20.7
+			}
+		},
+		"64f1b469ee3f": {
+			"speaker": "O Rei",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "A7",
+			"texto_pt": "Tente. E não tema: um rei jamais se curva.",
+			"nivel": 1,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/64f1b469ee3f.ogg",
+				"dur": 3.14,
+				"cer": 0.0,
+				"tp": -1.95,
+				"lufs_s": -21.0
+			}
+		},
+		"65acfb91b0eb": {
+			"speaker": "Sophia",
+			"source": "narrative._rei_line",
+			"lote": "limiar-2",
+			"key": "C1",
+			"texto_pt": "Amarelo... da próxima, eu aparo.",
+			"nivel": null,
+			"onde": "combate",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/65acfb91b0eb.ogg",
+				"dur": 2.29,
+				"cer": 0.111,
+				"tp": -4.77,
+				"lufs_s": -21.0
+			}
+		},
+		"779089c42267": {
+			"speaker": "A Voz",
+			"source": "narrative.limiar_stela",
+			"lote": "limiar-2",
+			"key": "D7",
+			"texto_pt": "Uma pedra escrita. Leia, se quiser. Só não acredite em tudo.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/779089c42267.ogg",
+				"dur": 4.26,
+				"cer": 0.0,
+				"tp": -2.82,
+				"lufs_s": -20.3
+			}
+		},
+		"7a5bf47231cb": {
+			"speaker": "Sophia",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F4",
+			"texto_pt": "Lembravam? Eu acordei agora há pouco.",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/7a5bf47231cb.ogg",
+				"dur": 2.28,
+				"cer": 0.086,
+				"tp": -1.96,
+				"lufs_s": -21.1
+			}
+		},
+		"7bce0dcd8a25": {
+			"speaker": "card",
+			"source": "cinematic.prologue",
+			"lote": "limiar-2",
+			"key": "P1",
+			"texto_pt": "No começo havia uma Luz tão cheia que transbordava.\nCada gota que caía virava alguém.",
+			"nivel": null,
+			"onde": "card",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/7bce0dcd8a25.ogg",
+				"dur": 6.01,
+				"cer": 0.0,
+				"tp": -3.89,
 				"lufs_s": -19.6
 			}
 		},
-		"84cd59c6303b": {
-			"speaker": "Narrador",
-			"source": "cinematic.prologue",
-			"lote": "limiar-1",
-			"nivel": null,
-			"onde": "cena",
+		"7c5c3a038aa9": {
+			"speaker": "O Rei",
+			"source": "narrative._rei_line",
+			"lote": "limiar-2",
+			"key": "C5",
+			"texto_pt": "Sempre atrás de você.",
+			"nivel": 1,
+			"onde": "combate",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/84cd59c6303b.ogg",
-				"dur": 10.37,
+				"file": "res://assets/audio/voice/pt/7c5c3a038aa9.ogg",
+				"dur": 1.97,
 				"cer": 0.0,
-				"tp": -1.76,
-				"lufs_s": -19.2
+				"tp": -2.8,
+				"lufs_s": -21.0
 			}
 		},
-		"a4f2a4baab4a": {
-			"speaker": "Narrador",
-			"source": "cinematic.prologue",
-			"lote": "limiar-1",
+		"88473109b640": {
+			"speaker": "O Rei",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "A2",
+			"texto_pt": "Ah. Acordou. Nós estávamos esperando.",
+			"nivel": 1,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/88473109b640.ogg",
+				"dur": 3.07,
+				"cer": 0.0,
+				"tp": -4.02,
+				"lufs_s": -21.0
+			}
+		},
+		"8963d50cd7e7": {
+			"speaker": "Sophia",
+			"source": "narrative.limiar_stela_read",
+			"lote": "limiar-2",
+			"key": "D8",
+			"texto_pt": "\"Antes de tudo, havia o Um.\" Um o quê? Um alguém?",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/8963d50cd7e7.ogg",
+				"dur": 2.89,
+				"cer": 0.093,
+				"tp": -3.76,
+				"lufs_s": -21.0
+			}
+		},
+		"966f278ce659": {
+			"speaker": "Sophia",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "A3",
+			"texto_pt": "Nós quem? Só tem você aí.",
 			"nivel": null,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/a4f2a4baab4a.ogg",
-				"dur": 9.36,
-				"cer": 0.018,
-				"tp": -2.59,
-				"lufs_s": -19.4
+				"file": "res://assets/audio/voice/pt/966f278ce659.ogg",
+				"dur": 1.65,
+				"cer": 0.13,
+				"tp": -6.41,
+				"lufs_s": -20.9
 			}
 		},
-		"b11e212a6e27": {
-			"speaker": "Narrador",
+		"9c8e9fd7cd28": {
+			"speaker": "A Voz",
 			"source": "narrative.intro",
-			"lote": "limiar-1",
+			"lote": "limiar-2",
+			"key": "D2",
+			"texto_pt": "Ei. Ei! Acorda. ...Isso, devagar. Eu tô aqui.",
 			"nivel": null,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/b11e212a6e27.ogg",
-				"dur": 6.31,
-				"cer": 0.0,
-				"tp": -2.89,
-				"lufs_s": -19.9
+				"file": "res://assets/audio/voice/pt/9c8e9fd7cd28.ogg",
+				"dur": 4.17,
+				"cer": 0.028,
+				"tp": -3.73,
+				"lufs_s": -20.4
 			}
 		},
-		"d1fabecf95f1": {
+		"aaf2fb10b152": {
+			"speaker": "O Rei",
+			"source": "narrative._rei_line",
+			"lote": "limiar-2",
+			"key": "C4",
+			"texto_pt": "Chega de cortesia. Olhe o chão.",
+			"nivel": 1,
+			"onde": "combate",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/aaf2fb10b152.ogg",
+				"dur": 2.0,
+				"cer": 0.0,
+				"tp": -3.36,
+				"lufs_s": -21.0
+			}
+		},
+		"ad66d43e1a9e": {
+			"speaker": "A Voz",
+			"source": "narrative.walk_arrival",
+			"lote": "limiar-2",
+			"key": "D4",
+			"texto_pt": "Uma pergunta por vez. Primeiro, ande. Pra direita, de preferência.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/ad66d43e1a9e.ogg",
+				"dur": 4.31,
+				"cer": 0.0,
+				"tp": -1.96,
+				"lufs_s": -20.3
+			}
+		},
+		"b6741dd92b70": {
+			"speaker": "A Voz",
+			"source": "narrative.death_revive",
+			"lote": "limiar-2",
+			"key": "M2",
+			"texto_pt": "Levanta. E repara no tal rei que jamais se curva.",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/b6741dd92b70.ogg",
+				"dur": 3.4,
+				"cer": 0.021,
+				"tp": -3.53,
+				"lufs_s": -20.7
+			}
+		},
+		"c17755a1a421": {
 			"speaker": "A Voz",
 			"source": "narrative.king_intro",
-			"lote": "limiar-1",
+			"lote": "limiar-2",
+			"key": "D11",
+			"texto_pt": "...Perto da minha voz, então.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/c17755a1a421.ogg",
+				"dur": 2.08,
+				"cer": 0.0,
+				"tp": -4.68,
+				"lufs_s": -20.9
+			}
+		},
+		"c643564a7823": {
+			"speaker": "Sophia",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F2a",
+			"texto_pt": "Claro. Superproposital.",
 			"nivel": null,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/d1fabecf95f1.ogg",
-				"dur": 9.73,
+				"file": "res://assets/audio/voice/pt/c643564a7823.ogg",
+				"dur": 1.66,
 				"cer": 0.0,
-				"tp": -3.71,
+				"tp": -2.35,
+				"lufs_s": -20.9
+			}
+		},
+		"c6839f40c2d6": {
+			"speaker": "A Voz",
+			"source": "narrative.death_revive",
+			"lote": "limiar-2",
+			"key": "M1",
+			"texto_pt": "Shh. Já passou. Ele bate forte pra quem fala tão bonito.",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/c6839f40c2d6.ogg",
+				"dur": 4.88,
+				"cer": 0.057,
+				"tp": -1.88,
+				"lufs_s": -20.6
+			}
+		},
+		"cf68e3b21581": {
+			"speaker": "O Rei",
+			"source": "narrative.king_intro",
+			"lote": "limiar-2",
+			"key": "A4",
+			"texto_pt": "Rei fala no plural. Somos importantes demais para o singular.",
+			"nivel": 1,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/cf68e3b21581.ogg",
+				"dur": 4.61,
+				"cer": 0.0,
+				"tp": -3.74,
+				"lufs_s": -20.7
+			}
+		},
+		"d3a78319dddd": {
+			"speaker": "card",
+			"source": "cinematic.prologue",
+			"lote": "limiar-2",
+			"key": "P3",
+			"texto_pt": "O filho cresceu no escuro, certo de que era o único.\nFez um mundo e pôs um rei em cada andar.\nTodos eles mentem.\n\nNo fundo das cinzas, alguém acaba de sentir dor.",
+			"nivel": null,
+			"onde": "card",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/d3a78319dddd.ogg",
+				"dur": 10.58,
+				"cer": 0.013,
+				"tp": -4.29,
 				"lufs_s": -19.4
 			}
 		},
-		"d6059a40ad2f": {
-			"speaker": "A Voz",
-			"source": "narrative.intro",
-			"lote": "limiar-1",
+		"d3d00999b413": {
+			"speaker": "card",
+			"source": "cinematic.prologue",
+			"lote": "limiar-2",
+			"key": "P2",
+			"texto_pt": "Uma das gotas quis ver a Fonte sozinha, sem pedir licença.\nDo que ela fez, nasceu um filho.\nEla teve vergonha. E o escondeu.",
+			"nivel": null,
+			"onde": "card",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/d3d00999b413.ogg",
+				"dur": 8.38,
+				"cer": 0.042,
+				"tp": -1.9,
+				"lufs_s": -20.2
+			}
+		},
+		"df6edb6ec2e8": {
+			"speaker": "Sophia",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F7",
+			"texto_pt": "Isso é bom ou é muito ruim?",
 			"nivel": null,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/d6059a40ad2f.ogg",
-				"dur": 5.6,
-				"cer": 0.0,
-				"tp": -2.21,
-				"lufs_s": -19.1
+				"file": "res://assets/audio/voice/pt/df6edb6ec2e8.ogg",
+				"dur": 2.11,
+				"cer": 0.038,
+				"tp": -6.02,
+				"lufs_s": -20.9
 			}
 		},
-		"dfd612dc0c7e": {
+		"e04e722ca66f": {
+			"speaker": "O Rei",
+			"source": "narrative._rei_line",
+			"lote": "limiar-2",
+			"key": "C2",
+			"texto_pt": "Nossa luz rasteja. Pule.",
+			"nivel": 1,
+			"onde": "combate",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/e04e722ca66f.ogg",
+				"dur": 2.08,
+				"cer": 0.045,
+				"tp": -3.35,
+				"lufs_s": -20.9
+			}
+		},
+		"e1cac4295286": {
+			"speaker": "Sophia",
+			"source": "narrative.eon_intro",
+			"lote": "limiar-2",
+			"key": "T3",
+			"texto_pt": "Confesso: deitar parece ótimo. ...Não vou.",
+			"nivel": null,
+			"onde": "leg",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/e1cac4295286.ogg",
+				"dur": 3.38,
+				"cer": 0.0,
+				"tp": -5.08,
+				"lufs_s": -20.8
+			}
+		},
+		"ea9e884555f6": {
+			"speaker": "Sophia",
+			"source": "narrative._rei_line",
+			"lote": "limiar-2",
+			"key": "C6a",
+			"texto_pt": "Ele se curvou? Jamais, né?",
+			"nivel": null,
+			"onde": "combate",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/ea9e884555f6.ogg",
+				"dur": 1.78,
+				"cer": 0.0,
+				"tp": -5.49,
+				"lufs_s": -21.0
+			}
+		},
+		"ebefd4eb72e5": {
 			"speaker": "O Rei",
 			"source": "narrative.king_fall",
-			"lote": "limiar-1",
-			"nivel": 2,
+			"lote": "limiar-2",
+			"key": "F3",
+			"texto_pt": "(a máscara racha) Sua luz... é maior do que nós lembrávamos.",
+			"nivel": 1,
 			"onde": "cena",
 			"pt": {
-				"file": "res://assets/audio/voice/pt/dfd612dc0c7e.ogg",
-				"dur": 4.47,
+				"file": "res://assets/audio/voice/pt/ebefd4eb72e5.ogg",
+				"dur": 4.26,
 				"cer": 0.0,
-				"tp": -5.14,
+				"tp": -2.59,
 				"lufs_s": -20.1
+			}
+		},
+		"fa0dbd2ca8d2": {
+			"speaker": "Sophia",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F9",
+			"texto_pt": "E se eu juntar os sete?",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/fa0dbd2ca8d2.ogg",
+				"dur": 1.6,
+				"cer": 0.045,
+				"tp": -6.38,
+				"lufs_s": -20.9
+			}
+		},
+		"fab3c120ba2a": {
+			"speaker": "O Rei",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F1b",
+			"texto_pt": "Nós não estamos ajoelhados. Estamos... descansando.",
+			"nivel": 1,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/fab3c120ba2a.ogg",
+				"dur": 5.56,
+				"cer": 0.0,
+				"tp": -3.81,
+				"lufs_s": -20.8
+			}
+		},
+		"ff84a4387161": {
+			"speaker": "A Voz",
+			"source": "narrative.king_fall",
+			"lote": "limiar-2",
+			"key": "F8",
+			"texto_pt": "Sete Arcontes, um por andar. Cada um guarda um Anel.",
+			"nivel": null,
+			"onde": "cena",
+			"pt": {
+				"file": "res://assets/audio/voice/pt/ff84a4387161.ogg",
+				"dur": 3.69,
+				"cer": 0.0,
+				"tp": -2.33,
+				"lufs_s": -20.6
 			}
 		}
 	}
