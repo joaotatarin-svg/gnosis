@@ -82,6 +82,7 @@ Bônus de acessibilidade: tremor 0 e "Reduzir flashes" existem, e o telegrafo co
 
 | Branch | Commit auditado | Veredito | R |
 |---|---|---|---|
+| dir6/chefes6 (+ arte-gpt f74e03c) | 068225d | APROVADO (Rei ajoelhado fecha o "aha" fraco da Mentira) | §4, regra 11 |
 | dir6/chefes6 5b076cb + dir5/encenacao5 b415c40 | Mentira do Rei + texto do Limiar v3 | APROVADO COM RESSALVAS (enigma justo mesmo sem a pose; os 5 ajustes da amostra entraram; edições nos testes de voice_probe e gnose_qa corretas; falta a opção Dicas na UI e um "dong" próprio) | REGRAS_GUARDIAO_TEXTO §1-6, §4 |
 | (texto) | AMOSTRA_LIMIAR.md (Narrativa, sem código) | APROVADO COM RESSALVAS (Mentira do Rei justa e solúvel; combate ≤6 palavras; a cena seguida da tela 2 vira legenda atrasada 10 s; 5 ajustes) | REGRAS_GUARDIAO_TEXTO §1-6 |
 | (prévia) | Reescrita do texto (Narrativa) | REGRAS ESCRITAS em `C:\gnosis-wt\_caps\narrativa\REGRAS_GUARDIAO_TEXTO.md` (29 regras: ritmo, humor, gancho, enigma justo, ensinar mecânica, interrupção) | §0, §3, §4, R5, R9, R21 |
@@ -1078,6 +1079,12 @@ faíscas) ou só sobre as faíscas ganhas NA tela, e dizer na própria fala de m
 a perda e deixar o custo da morte no tempo de refazer a tela. Não bloqueia.
 
 **Veredito: APROVADO COM RESSALVAS** — entra. Ressalvas: chave do baú secreto (`bau:<tela>`), aviso quando `claim_once` nega.
+
+---
+
+## Rei ajoelhado — chefes6 068225d (contém arte-gpt f74e03c)
+Vi a sequência `_caps\chefes6\rei_ajoelha_olho_mascara.png` (8 quadros): o Rei se curva sobre um joelho com o olho-orbe na mão, a cabeça baixa, ao alcance do cajado; ao acertar o olho aparece o toast "Mentira exposta · o Rei fica 8 s sem guarda" e a pose rachada (`kneel_cracked`) fica parada. A contradição com o card ("Um rei jamais se curva") agora é VISÍVEL, em forma e posição, sem depender só do "dong": **fecha o meu "aha" fraco** (pista 1 por forma; pista 2 por posição/som). Li o log de commit (ReiProbe 0/0, 97-99 %, sonda da mentira 9/9, luta de 67-99 s); não rodei de novo. Resta só o "dong" próprio (Áudio).
+**Veredito: APROVADO.**
 
 ---
 
