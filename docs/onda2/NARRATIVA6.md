@@ -89,3 +89,55 @@ Nenhum truque de cassino: nada aleatório, nada com prazo ou perda; o degrau fic
 | Fenda + som sincronizados no roubo | **R9** (silêncio da música parando antes da fenda), R4 (um som por evento: o tremor usa o passo baixo, não um som novo por pulso) | 6 pulsos de tremor: momento único do run (§4.1 permite no raro) | 1, 3 |
 | Hush antes do dom do Soter | **R9** (o som importante entra no vazio) | — | — |
 | Campeão no quadro, card depois | R5/R18 (o jogador vê quem é anunciado), R9 (o brilho de aparição antecede o card) | — | 13 |
+
+## REESCRITA DO LIMIAR (29/10/2026 — "texto de bíblia, não prende, não ensina")
+Texto fechado na amostra `C:\gnosis-wt\_caps\narrativa\AMOSTRA_LIMIAR.md` (v3, aprovada pelo Guardião; a Dublagem
+grava os mesmos textos — os ids de voz são sha1(falante|texto)). PT-BR com "você" (decisão do chefe; nota em
+`docs/ESTILO_TEXTO.md` §1). Base: `origin/integracao/onda1` d059df8 (fast-forward).
+- `cinematic.gd`: prólogo em 3 cards novos (a gota sem nome; "Todos eles mentem"), 19,8 s.
+- `narrative.gd`: `intro`, `walk_arrival(1)` (D3–D6), `limiar_stela`/`limiar_stela_read` (D7/D8), `king_intro`
+  (10 falas: o trio da névoa abre a Cena A porque a caminhada da tela 1 dura ~3,6 s), `king_fall(exposed)` (F1a/b,
+  F2a/b, F3–F11), 1ª morte na tela 1 (M1/M2), `eon_intro(0)` (T1–T4), epílogo Ruptura (cita a nova 1ª fala).
+  **Duelo do Rei** (`rei_duel_attach`/`rei_duel`): C1–C6 com as condições da amostra, orçamento de 6, 12 s entre
+  falas, 1 vez por run; lê o ajoelhar por polling; ouve `lie_exposed`/`move_will_start` do BossBrain se existirem
+  (provisório: `_eye_box.hit_received` + `_low`). Fases 2/3 do Rei entram pelo orçamento (`archon_phase2/3("rei")`).
+- `gnosis.gd`: D7 por proximidade da Estela da tela 1, D8 só se ela foi ABERTA nesta run; liga o duelo no card do Rei.
+- `caption_bar.gd`: `say_next()` (fura a fila logo depois da fala no ar).
+- `level.gd` (só gancho de fala): Torpor vira LEGENDA após 10 s de jogo na tela 2 (antes: caixa logo após a queda).
+- i18n: lote `18_limiar.tsv` (55 textos + 3 de outros donos que faltavam na base), ids velhos tirados dos lotes;
+  `build --strict` 1492/1492. QAs com texto fixo atualizadas: `voice_probe.gd` (ids novos) e `gnose_qa.gd` ("você").
+- Sonda nova `tools/encenacao/ReiDuelProbe.tscn`: 21 checagens, 0 falhas. Filme da abertura:
+  `C:\gnosis-wt\_caps\narrativa\limiar\` (AberturaShot; `folha_limiar.png`): cards → caixa → legendas → Cena A →
+  card → duelo com C2 (62,9 s), C6a (76,9 s) e C1 (94,8 s).
+
+### Limites honestos
+- A mecânica da Mentira (8 s sem guarda, card com a frase, HUD) é do Chefes6: sem ela, o Desmentido só muda a fala
+  (C6b) e a queda (F1a/F2a). O gatilho provisório lê campos privados do `boss_rei.gd` (pedido em `docs/pedidos/narrativa.md`).
+- Correndo direto, a fala da Estela (D7) e parte de D3–D6 são cortadas pela Cena A (a tela 1 é curta). D8 só foi
+  provado pela lógica (a sonda não abre a Estela).
+- A queda tem 11 falas por partida (a amostra dizia 9 por erro de conta); ≤ 12 do marco.
+- Não joguei com controle; o ritmo (Cena A ~25 s lendo) precisa do João.
+
+### CHECAGEM DE SATISFAÇÃO
+| Decisão | R atendidas | R violadas / justificativa | §4 |
+|---|---|---|---|
+| Falas de duelo no orçamento (6, ≥ 12 s, na recuperação ou ≥ 1 s antes) | R5 (nada por cima do telégrafo; HUD/forma continuam), R21 | — | 13 |
+| Torpor em legenda após 10 s | **R21** (nada de 2 cenas pausadas seguidas) | — | 5 |
+| Desmentido: fala + bônus fixo (Chefes6) | §3 (competência, sem sorteio, errar não custa) | — | 12 |
+| Cena A com 10 falas | R21 parcial: marco ≤ 12 (regra 3 do Guardião) | é mais longa que a antiga (~9 s → ~25 s): preço do trio da névoa; o João decide | — |
+
+### BILHETE PARA O SUCESSOR (29/10)
+Estado: commit "Limiar reescrito" neste branch (ver git log). Próximo: (1) quando o Chefes6 expuser `lie_exposed`,
+tirar o provisório `_on_rei_eye_hit`; (2) primeira faísca do run (fala 1.7 da amostra) precisa de um gancho no
+`spark_orb.gd` (não é meu); (3) reescrita completa para "você" (lotes por Éon, cada um com i18n e Dublagem);
+(4) roubo (tela 64): a Voz troca "a gente" por "nós". Armadilhas: o texto PT precisa ser IDÊNTICO ao gravado
+(qualquer vírgula muda o id da voz); `strings.csv` volta em CRLF do checkout (normalizar antes do extract).
+
+### Integração com a Mentira do Chefes6 (29/10, merge de origin/dir6/chefes6 5b076cb)
+- O duelo agora escuta os sinais reais do `boss_rei.gd`: `king_kneel_start` (ajoelhar), `lie_hint_step(2)` (o Rei
+  decide o degrau 2; se o intervalo de 12 s barrar a C6a, ela espera o próximo ajoelhar), `lie_exposed("rei")`
+  (C6b e as falas F1a/F2a da queda). O gatilho provisório (`_eye_box`/`_low`) saiu. Sem os sinais (sonda/outro
+  chefe), vale o polling e a regra local (opção `GameManager.lie_hints`, a mesma do Chefes6).
+- Estela da tela 1: D7 só toca se a Sophia PARA perto da pedra (≥ 0,6 s) ou LÊ (D7+D8 ao fechar); as duas levam
+  `keep` e a Cena A espera elas acabarem (teto 8 s) — nunca cortadas no meio.
+- ReiDuelProbe: 29 checagens (8 novas pelo caminho dos sinais), 0 falhas. Filme `_caps\narrativa\limiar\v2\`.

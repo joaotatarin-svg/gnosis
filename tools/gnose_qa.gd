@@ -350,7 +350,8 @@ class Worker extends Node:
 			for w in forbidden:
 				if t.contains(w):
 					gloss.append("'%s' em: %s" % [w, t.left(60)])
-			if t.contains("você") or t.contains("'"):
+			# "você" vale no diegético desde 29/10 (decisão do chefe: PT-BR); só a aspa simples segue proibida.
+			if t.contains("'"):
 				gloss.append("registro/aspas: " + t.left(60))
 		for e in Gnosis.STELAS:
 			for t in e.lines:
@@ -359,7 +360,7 @@ class Worker extends Node:
 						gloss.append("'%s' na Estela %s" % [w, e.id])
 		for b in gloss.slice(0, 12):
 			print("  GLOSSÁRIO: ", b)
-		check(gloss.is_empty(), "glossário e respeito (sem nomes proibidos, sem 'você' no diegético)")
+		check(gloss.is_empty(), "glossário e respeito (sem nomes proibidos, sem aspa simples no diegético)")
 		var spoil: Array = []
 		for c in caps:
 			if int(c.screen) < RunManager.LAST_ARCHON_SCREEN:

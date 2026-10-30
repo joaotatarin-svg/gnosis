@@ -9,10 +9,6 @@ eon_rule._ready.b0f357	Chains hang from the ceiling. Lure the enemies into the s
 narrative._faiscas.48157b	One spark drains
 narrative.death_revive.3ca876	Shh. It is over. I have you.
 narrative.death_revive.1685c6	You fall, and I remake you. We have done this before, you and I. Long before.
-narrative.king_intro.d2dbd2	Look: someone comes out of the mist. Do not fear, I know him. An ancient king, and kind. He means you no harm.
-narrative.king_intro.95edb4	Lost spark... how good that you woke. The threshold has one law: none pass but those who touch me with their light.
-narrative.king_intro.d4fc93	(raises the orb; the mask lights up) Show me yours. Come.
-narrative.king_fall.6c70d0	Seven Archons, seven Rings. Gather them all, and I will show you how to undo this world of lies.
 narrative.eon_intro.14b66d	The Archon here will offer you what you lost. Remember: a copy is not a return.
 narrative.eon_intro.17d4c7	He will offer you power: the oldest of lies, and the sweetest.
 narrative.temptation.04f293	Everything rots, Bearer. I watched all I planted die. Surrender now, and I will spare you the end.
@@ -197,9 +193,6 @@ bestiary_lore.category.187bde	Guardian  ·
 bestiary_lore.category.d8f090	Archon  ·  Mirror
 bestiary_lore.category.de87bb	Creature of the Kenoma
 stela._prompt_text.b63049	%s · read the Stele
-cinematic.prologue.56bd6b	In the beginning there was the One. From it the Aeons emanated, in pairs,\nlike overflowing light. There nothing slept. Nothing forgot.
-cinematic.prologue.c37f5c	The youngest, Sophia, sought to reach the Source alone.\nFrom that unpartnered desire a formless son was born,\nand she hid him in a cloud.
-cinematic.prologue.c1bdfa	Blind to the Light, he believed himself the only god and made the Kenoma.\nIn the clay sleep the sparks he took from his mother.\n\nOne of them has just felt pain.
 codex_trial._show_result.1464d5	Go to the Campaign  →
 final_battle.start.abc7e4	Both forms must fall together.
 level._tutor_watch.8b7973	a red glow can't be parried:
