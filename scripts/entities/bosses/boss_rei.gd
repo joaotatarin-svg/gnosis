@@ -150,21 +150,48 @@ func _process(d: float) -> void:
 		_push.position.y = move_toward(_push.position.y, need, 220.0 * d)
 	# 8 s da mentira exposta: a pintura da MÁSCARA RACHADA (o Enemy pede "idle"/"recover"
 	# no passo de física; aqui, depois dele, o quadro do desmentido manda)
+	var hand := Vector2.INF
 	if e.visual != null and e.visual.has_method("has_boss_frames") and e.visual.has_boss_frames() and _lie_on():
 		if _lie_t > 0.0:
-			e.visual.set_anim("mask_crack")
+			# ajoelhado com a FENDA dourada (Arte f74e03c); sem ele, a máscara rachada de pé
+			e.visual.set_anim("kneel_cracked" if _has_state("kneel_cracked") else "mask_crack")
 		elif _low and _has_state("kneel") and e.estate != Enemy.EState.DEAD:
-			# AJOELHADO desenhado: entra sozinho quando a Arte publicar o estado "kneel"
-			# (pedido em docs/pedidos/chefes6.md); até lá, a curva é o olho descendo + o "dong"
+			# AJOELHADO desenhado (Arte f74e03c: 12 quadros em camadas, a pintura vem sem o orbe)
 			e.visual.set_anim("kneel")
+		hand = _kneel_hand()
+	# o OLHO desce: na pose de joelho vai para a MÃO aberta da pintura (o alvo do desmentido
+	# fica onde o desenho promete); sem a pose, desce ORB_LOW como antes
+	if _rig != null:
+		var want := Vector2.ZERO
+		if hand != Vector2.INF:
+			want = hand - Enemy.ORB_HOME
+		elif _low:
+			want = Vector2(0.0, ORB_LOW)
+		_rig.position = _rig.position.move_toward(want, (380.0 if _low else 280.0) * d)
+
+
+## Ponto da mão na pose de joelho (Arte: px do atlas a partir da âncora do pé, x para a
+## frente da pose, y para cima), no espaço local do Rei — o mesmo transform da BodyBox
+## (mola, escala e espelho do Visual). INF = não está numa pose de joelho.
+func _kneel_hand() -> Vector2:
+	var v = e.visual
+	var key: String = String(v.get("_shown_key"))
+	var off := Vector2.INF
+	if key.begins_with("kneel_cracked:"):
+		off = Vector2(101.1, -64.9)
+	elif key.begins_with("kneel:"):
+		off = Vector2(100.9, -64.5)
+	if off == Vector2.INF:
+		return off
+	var xf: Transform2D = e.global_transform.affine_inverse() * v.get_global_transform() * v._body_xform
+	return xf * off
 
 
 func _set_low(v: bool) -> void:
 	if _rig == null or v == _low:
 		return
 	_low = v
-	var t := _rig.create_tween()
-	t.tween_property(_rig, "position:y", ORB_LOW if v else 0.0, 0.35 if v else 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT if v else Tween.EASE_IN_OUT)
+	# (o olho anda até o alvo em _process: ORB_LOW, ou a mão da pose de joelho)
 	_eye_box.set_deferred("monitorable", v)
 	if v:
 		ImpactBurst.spawn(e.get_parent(), e._orb.global_position + Vector2(0, ORB_LOW), LIGHT)

@@ -373,3 +373,12 @@ juntos — precisa do playtest do João. Nada de cassino: nenhum sorteio novo (o
 | Sons emprestados (`king_step`, `mask_light`) | R4 (1 evento = 1 som) | R11 parcial até o Áudio entregar os próprios | pedido registrado |
 §4 conferido: sem tremor novo, sem câmera lenta, sem hitstop novo; 1 flash no Desmentido e 1 leve ao levantar; nada de
 cassino (recompensa fixa, dita, sem aleatório).
+- 30/10 (Arte f74e03c, Rei AJOELHADO): (1) nos 8 s toca `kneel_cracked` (fenda dourada) no lugar do `mask_crack` de pé;
+  (2) BodyBox regenerada inteira (`--faixas 16 --fill 0.30`, 80 quadros; os 56 antigos iguais, os 24 de joelho iguais
+  ao `docs/pedidos/rei_body_kneel.gd.txt`); joelho cobre 98 % / fora 4 % (`_caps\chefes6\reikneel_quadros.*`);
+  (3) o OLHO vai para a MÃO aberta da pose (ponto da Arte, pelo mesmo transform da BodyBox — mola, escala, espelho);
+  sem pose de joelho desce `ORB_LOW` como antes (Rei-Mentira da final igual). ReiProbe (`reikneel_probe.txt`):
+  atravessa=0, apelão=0, cobre 97–99 % (o `mao_recupera` agora mede o quadro `kneel:3`). Sonda da mentira
+  (`lk_m*.log`, médio, 6 sementes): Desmentido 6/6 (aos 13–62 s), 0 golpes nos 8 s; luta 67–95 s (o corpo de
+  joelho é menor: menos golpes de raspão no ajoelhar). Sequência ajoelha → olho na mão → bate → fenda:
+  `_caps\chefes6\rei_ajoelha_olho_mascara.png` (quadros em `_caps\chefes6\mentira3\`).
