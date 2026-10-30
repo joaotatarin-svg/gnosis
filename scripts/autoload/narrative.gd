@@ -155,10 +155,10 @@ func death_revive(screen: int, deaths: int, lost: int) -> Array:
 	# 1ª queda diante do Rei (tela 1): a Voz consola e aponta a mentira dele
 	# (camada escondida: a Voz É o Rei, e a queda dele é o plano dela).
 	if RunManager.is_king_screen(screen) and once("morte_rei"):
-		lines = [
-			_l(VOZ, "Shh. Já passou. Ele bate forte pra quem fala tão bonito."),
-			_l(VOZ, "Levanta. E repara no tal rei que jamais se curva."),
-		]
+		lines = [_l(VOZ, "Shh. Já passou. Ele bate forte pra quem fala tão bonito.")]
+		# A pista da Voz é um degrau extra da dica: some com "Dicas: Desligadas".
+		if _hints_on():
+			lines.append(_l(VOZ, "Levanta. E repara no tal rei que jamais se curva."))
 	# 1ª queda diante de um Arconte: a posse aparece sem disfarce.
 	elif RunManager.is_archon_screen(screen) and once("morte_arconte_%d" % screen):
 		lines = [

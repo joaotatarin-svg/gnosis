@@ -60,3 +60,6 @@ cinematic.prologue.74fecb	The son grew up in the dark, certain he was the only o
 enemy._spent_smoke.e1b7f6	SpentSmoke
 options_menu._ready.cd40ff	Voices
 options_menu._ready.9cbbd3	Off
+# Opção "Dicas" (29/10, Guardião): desliga os degraus 2 e 3 da dica da Mentira.
+options_menu._ready.a719cd	Hints
+options_menu._refresh_toggle.10704c	On

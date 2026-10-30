@@ -401,117 +401,117 @@ msgid "A coroa do Arconte se parte em luz: dano enorme em área."
 msgstr "The Archon's crown shatters into light: huge area damage."
 
 #. game_manager.finish_demo.c408cf  [ui]
-#: scripts/autoload/game_manager.gd:249
+#: scripts/autoload/game_manager.gd:257
 msgid "Fim da demo"
 msgstr "End of the demo"
 
 #. game_manager.finish_demo.02a6f8  [ui]
-#: scripts/autoload/game_manager.gd:250
+#: scripts/autoload/game_manager.gd:258
 msgid "Obrigado por jogar. O resto da subida continua no jogo completo."
 msgstr "Thank you for playing. The rest of the climb continues in the full game."
 
 #. game_manager.screen_title.f0f1c5  [ui]
-#: scripts/autoload/game_manager.gd:287
+#: scripts/autoload/game_manager.gd:295
 msgid "Limiar — O Rei"
 msgstr "Threshold — The King"
 
 #. game_manager.screen_title.a0294c  [ui]
-#: scripts/autoload/game_manager.gd:288
+#: scripts/autoload/game_manager.gd:296
 msgid "A Mente"
 msgstr "The Mind"
 
 #. game_manager.screen_title.e9ad2c  [ui]
-#: scripts/autoload/game_manager.gd:289
+#: scripts/autoload/game_manager.gd:297
 msgid "O Centro %s"
 msgstr "The Center %s"
 
 #. game_manager.screen_title.a13df8  [ui]
-#: scripts/autoload/game_manager.gd:290
+#: scripts/autoload/game_manager.gd:298
 msgid "%s · Chegada"
 msgstr "%s · Arrival"
 
 #. game_manager.screen_title.76f65a  [ui]
-#: scripts/autoload/game_manager.gd:291
+#: scripts/autoload/game_manager.gd:299
 msgid "%s · O Desafio"
 msgstr "%s · The Challenge"
 
 #. game_manager.screen_title.bcc8a0  [ui]
-#: scripts/autoload/game_manager.gd:292
+#: scripts/autoload/game_manager.gd:300
 msgid "%s · Antessala"
 msgstr "%s · Antechamber"
 
 #. game_manager.screen_title.4907e4  [ui]
-#: scripts/autoload/game_manager.gd:293
+#: scripts/autoload/game_manager.gd:301
 msgid "%s · O Arconte"
 msgstr "%s · The Archon"
 
 #. game_manager.screen_title.8bca3a  [ui]
-#: scripts/autoload/game_manager.gd:297
+#: scripts/autoload/game_manager.gd:305
 msgid "%s · Travessia %s"
 msgstr "%s · Crossing %s"
 
 #. game_manager._roman.ca73ab  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "I"
 msgstr "I"
 
 #. game_manager._roman.e95267  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "II"
 msgstr "II"
 
 #. game_manager._roman.a6178c  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "III"
 msgstr "III"
 
 #. game_manager._roman.932eaa  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "IV"
 msgstr "IV"
 
 #. game_manager._roman.c9ee56  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "V"
 msgstr "V"
 
 #. game_manager._roman.85ebe3  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "VI"
 msgstr "VI"
 
 #. game_manager._roman.0ea48f  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "VII"
 msgstr "VII"
 
 #. game_manager._roman.8985af  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "VIII"
 msgstr "VIII"
 
 #. game_manager._roman.b04dce  [ui]
-#: scripts/autoload/game_manager.gd:301
+#: scripts/autoload/game_manager.gd:309
 msgid "IX"
 msgstr "IX"
 
 #. game_manager.difficulty_name.45e118  [ui]
-#: scripts/autoload/game_manager.gd:358
+#: scripts/autoload/game_manager.gd:366
 msgid "Normal"
 msgstr "Normal"
 
 #. game_manager.difficulty_name.36dc8f  [ui]
-#: scripts/autoload/game_manager.gd:359
+#: scripts/autoload/game_manager.gd:367
 msgid "Difícil"
 msgstr "Hard"
 
 #. game_manager.difficulty_name.3e6659  [ui]
-#: scripts/autoload/game_manager.gd:360
+#: scripts/autoload/game_manager.gd:368
 msgid "Muito Difícil"
 msgstr "Very Hard"
 
 #. game_manager.difficulty_name.83caa2  [ui]
-#: scripts/autoload/game_manager.gd:361
+#: scripts/autoload/game_manager.gd:369
 msgid "Campeão"
 msgstr "Champion"
 
@@ -1626,12 +1626,12 @@ msgid "Me erguem por saudade."
 msgstr "They raise me out of longing."
 
 #. narrative.death_revive.3ff31a  [dialogo · A Voz]
-#: scripts/autoload/narrative.gd:159
+#: scripts/autoload/narrative.gd:158
 msgid "Shh. Já passou. Ele bate forte pra quem fala tão bonito."
 msgstr "Shh. It's over. He hits hard for someone who talks so pretty."
 
 #. narrative.death_revive.1d8bd4  [dialogo · A Voz]
-#: scripts/autoload/narrative.gd:160
+#: scripts/autoload/narrative.gd:161
 msgid "Levanta. E repara no tal rei que jamais se curva."
 msgstr "Get up. And watch that king who never bows."
 
@@ -7036,107 +7036,117 @@ msgid "Instantâneo"
 msgstr "Instant"
 
 #. options_menu._ready.03e7e1  [ui]
-#: scripts/ui/options_menu.gd:70
+#: scripts/ui/options_menu.gd:71
 msgid "Vídeo"
 msgstr "Video"
 
 #. options_menu._ready.21ed2a  [ui]
-#: scripts/ui/options_menu.gd:71
+#: scripts/ui/options_menu.gd:72
 msgid "Modo de janela"
 msgstr "Window mode"
 
 #. options_menu._ready.04688b  [ui]
-#: scripts/ui/options_menu.gd:75
+#: scripts/ui/options_menu.gd:76
 msgid "VSync"
 msgstr "VSync"
 
 #. options_menu._ready.5095c2  [ui]
-#: scripts/ui/options_menu.gd:76
+#: scripts/ui/options_menu.gd:77
 msgid "Tremor de câmera"
 msgstr "Camera shake"
 
 #. options_menu._ready.2c5c42  [ui]
-#: scripts/ui/options_menu.gd:79
+#: scripts/ui/options_menu.gd:80
 msgid "Reduzir flashes"
 msgstr "Reduce flashes"
 
 #. options_menu._ready.54a83d  [ui]
-#: scripts/ui/options_menu.gd:80
+#: scripts/ui/options_menu.gd:81
 msgid "Áudio"
 msgstr "Audio"
 
 #. options_menu._ready.c80011  [ui]
-#: scripts/ui/options_menu.gd:81
+#: scripts/ui/options_menu.gd:82
 msgid "Volume geral"
 msgstr "Master volume"
 
 #. options_menu._ready.fed262  [ui]
-#: scripts/ui/options_menu.gd:82
+#: scripts/ui/options_menu.gd:83
 msgid "Efeitos"
 msgstr "Effects"
 
 #. options_menu._ready.578afe  [ui]
-#: scripts/ui/options_menu.gd:83
+#: scripts/ui/options_menu.gd:84
 msgid "Música"
 msgstr "Music"
 
 #. options_menu._ready.4cc92d  [ui]
-#: scripts/ui/options_menu.gd:85
+#: scripts/ui/options_menu.gd:86
 msgid "Jogo"
 msgstr "Game"
 
 #. options_menu._ready.0a4f5c  [ui]
-#: scripts/ui/options_menu.gd:87
+#: scripts/ui/options_menu.gd:88
 msgid "Idioma · Language"
 msgstr "Language · Idioma"
 
 #. options_menu._ready.738111  [ui]
-#: scripts/ui/options_menu.gd:90
+#: scripts/ui/options_menu.gd:91
 msgid "Velocidade do texto"
 msgstr "Text speed"
 
 #. options_menu._ready.3f163c  [ui]
-#: scripts/ui/options_menu.gd:93
+#: scripts/ui/options_menu.gd:94
 msgid "Legendas"
 msgstr "Subtitles"
 
 #. options_menu._ready.30bf10  [ui]
-#: scripts/ui/options_menu.gd:97
+#: scripts/ui/options_menu.gd:98
 msgid "“Lembre-se do que arde.”"
 msgstr "“Remember what burns.”"
 
 #. options_menu._ready.a33fe8  [ui]
-#: scripts/ui/options_menu.gd:105
+#: scripts/ui/options_menu.gd:106
 msgid "Números de dano"
 msgstr "Damage numbers"
 
 #. options_menu._ready.36a9db  [ui]
-#: scripts/ui/options_menu.gd:106
+#: scripts/ui/options_menu.gd:107
 msgid "Vibração do controle"
 msgstr "Controller vibration"
 
-#. options_menu._ready.cd40ff  [ui]
+#. options_menu._ready.a719cd  [ui]
 #: scripts/ui/options_menu.gd:110
+msgid "Dicas"
+msgstr "Hints"
+
+#. options_menu._ready.cd40ff  [ui]
+#: scripts/ui/options_menu.gd:116
 msgid "Vozes"
 msgstr "Voices"
 
 #. options_menu._ready.9cbbd3  [ui]
-#: scripts/ui/options_menu.gd:111
+#: scripts/ui/options_menu.gd:117
 msgid "Desligadas"
 msgstr "Off"
 
 #. options_menu._ready.0d64f3  [ui]
-#: scripts/ui/options_menu.gd:113
+#: scripts/ui/options_menu.gd:119
 msgid "Teclas e botões"
 msgstr "Keys and buttons"
 
+#. options_menu._refresh_toggle.10704c  [ui]
+#: scripts/ui/options_menu.gd:187
+msgid "Ligadas"
+msgstr "On"
+
 #. options_menu._refresh_toggle.31d43c  [ui]
-#: scripts/ui/options_menu.gd:180
+#: scripts/ui/options_menu.gd:189
 msgid "Ligada"
 msgstr "On"
 
 #. options_menu._refresh_toggle.164bf4  [ui]
-#: scripts/ui/options_menu.gd:180
+#: scripts/ui/options_menu.gd:189
 msgid "Desligada"
 msgstr "Off"
 
