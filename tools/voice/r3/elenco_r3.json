@@ -1,0 +1,148 @@
+{
+ "_nota": "Elenco R3 PT-BR: mesmas vozes/papéis da R2, descrição com sotaque brasileiro EXPLÍCITO e texto de referência em português do Brasil (você, pra, tô, -de/-te).",
+ "vozes": {
+  "sophia": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A young woman around twenty, low-mid warm voice, speaking Brazilian Portuguese (from Brazil). Quiet, firm and restrained, carrying grief she refuses to show; close-mic, intimate, a little breathy, unhurried. Not a narrator, not a teacher: an actress in a dark fantasy game.",
+   "ref": "Eu não lembro do meu nome. Lembro de cinza na boca... e de alguém chorando. Talvez fosse eu. Tanto faz. Agora eu vou subir, de verdade."
+  },
+  "demiurgo": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A deep, warm, powerful male baritone of an ancient being, speaking Brazilian Portuguese (from Brazil) slowly and intimately; velvet on the surface with quiet menace underneath, rich chest resonance, every word deliberate. A dark epic video game villain who pretends to be kind. Not a narrator, not a teacher.",
+   "ref": "Calma, pequena faísca. Eu tô aqui... sempre estive. Escuta a minha voz: tudo o que você perdeu, eu guardei pra você. Vem comigo. Não precisa ter medo."
+  },
+  "narrador": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A deep, grave, mature male voice, low and intimate, close to the microphone, speaking Brazilian Portuguese (from Brazil) slowly like the opening of an epic dark fantasy game. Mythic gravitas, weary and solemn, with breath between phrases. Not a news reader, not a teacher.",
+   "ref": "Houve um tempo antes do tempo. A luz ainda não tinha nome... e ninguém precisava lembrar de nada. Depois veio a queda. E, com ela, o silêncio da noite."
+  },
+  "athoth": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A drowsy, low, half-whispered voice of an ancient sleep demon, speaking Brazilian Portuguese (from Brazil) very slowly, like a lullaby, heavy-lidded and yawning, gentle and dangerous. Dark fantasy game creature, not a narrator.",
+   "ref": "Shh... devagar. Ninguém precisa de você agora. Fecha os olhos... o mundo pode esperar. Eu fico acordado por você, a noite toda."
+  },
+  "harmas": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A thick, guttural, greedy male voice of a gluttonous demon merchant, speaking Brazilian Portuguese (from Brazil) with wet relish and hunger, low and rumbling, smiling while he talks, slow. Dark fantasy game creature.",
+   "ref": "Ah, que cheiro bom tem a sua saudade. Me dá. Só um pouquinho... eu guardo tudo, bem quentinho, aqui dentro de mim."
+  },
+  "galila": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A dry, cold, precise male voice of an ancient judge and jailer, speaking Brazilian Portuguese (from Brazil) in clipped, legalistic sentences, flat and severe, no warmth at all. Dark fantasy game villain.",
+   "ref": "Consta nos autos. Cada coisa no seu lugar, cada elo na sua corrente. Fora da lei, nada fica de pé. Nada, de verdade."
+  },
+  "yabel": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A dry, cracked whisper of a being who has not spoken in ages, speaking Brazilian Portuguese (from Brazil) with great effort, slow, broken, barely voiced, sad. Dark fantasy game creature.",
+   "ref": "Faz... muito tempo... que eu não escuto... a minha própria voz. Ela dói. Mas eu lembro... de uma resposta."
+  },
+  "belias": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A tired, damp, heavy male voice of a plague demon, speaking Brazilian Portuguese (from Brazil) slowly and fatalistically, sighing, resigned, low and murky. Dark fantasy game villain.",
+   "ref": "Tudo apodrece, sabe? A semente, a raiz, a mão que planta. Eu vi. Não adianta correr... a terra espera por todos nós."
+  },
+  "armupiel": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A grand, pompous, majestic male voice of a lonely tyrant king, deep and booming, speaking Brazilian Portuguese (from Brazil) with ceremonial pride that hides heartbreak, slow and resonant. Dark epic video game.",
+   "ref": "Curvem-se diante da Coroa! Eu sou o fim de todas as escadas... e mesmo assim, ninguém sobe pra me ver."
+  },
+  "soter": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A serene, warm, kind male voice of an old anointed wanderer, speaking Brazilian Portuguese (from Brazil) gently and slowly, with quiet humor and wisdom, like a proverb told by a fire. Dark fantasy game, not a narrator.",
+   "ref": "Senta um pouco, Portadora. O caminho não foge. Quem anda com pressa no escuro... só tropeça mais depressa, sabia?"
+  },
+  "velkar": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. A tired, hoarse, broken male voice of a repentant old warlord, speaking Brazilian Portuguese (from Brazil) in short broken phrases, guilt and exhaustion in every word, low. Dark fantasy game.",
+   "ref": "Eu servi. Por eras. Achei que era lealdade... era só medo. Agora não sobra nada de mim... só isto."
+  },
+  "adormecida": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. An ordinary woman in her thirties waking from a long sleep, speaking Brazilian Portuguese (from Brazil) in a groggy, confused, frightened voice, soft and natural. Dark fantasy game villager.",
+   "ref": "Onde... onde é que eu tô? Eu tava sonhando com a minha casa. Por que tá tão frio aqui?"
+  },
+  "adormecido": {
+   "lang": "pt",
+   "design": "IMPORTANT: native speaker from Brazil, Brazilian Portuguese (português do Brasil) with a neutral São Paulo accent: open, fully pronounced unstressed vowels, 'de' and 'te' sound like 'dji' and 'tchi', final S is a clear hissing S (not 'sh'). NOT European Portuguese, NOT a Portugal accent. An ordinary man in his forties, a worried father, waking from a long sleep, speaking Brazilian Portuguese (from Brazil) in a hoarse, groggy, pleading voice, natural. Dark fantasy game villager.",
+   "ref": "Eu dormi demais, né? A minha cabeça tá pesada. Por favor... alguém viu o meu filho?"
+  }
+ },
+ "personagens": {
+  "Sophia": {
+   "voz": "sophia",
+   "fx": "sophia"
+  },
+  "A Voz": {
+   "voz": "demiurgo",
+   "fx": "a_voz"
+  },
+  "O Rei": {
+   "voz": "demiurgo",
+   "fx": "legiao1"
+  },
+  "Yaldabaoth": {
+   "voz": "demiurgo",
+   "fx": "legiao3"
+  },
+  "Narrador": {
+   "voz": "narrador",
+   "fx": "narrador"
+  },
+  "Estela": {
+   "voz": "narrador",
+   "fx": "estela"
+  },
+  "Athoth": {
+   "voz": "athoth",
+   "fx": "athoth"
+  },
+  "Harmas": {
+   "voz": "harmas",
+   "fx": "harmas"
+  },
+  "Galila": {
+   "voz": "galila",
+   "fx": "galila"
+  },
+  "Yabel": {
+   "voz": "yabel",
+   "fx": "yabel"
+  },
+  "Astaphaios": {
+   "voz": "sophia",
+   "fx": "astaphaios"
+  },
+  "Belias": {
+   "voz": "belias",
+   "fx": "belias"
+  },
+  "Armupiel": {
+   "voz": "armupiel",
+   "fx": "armupiel"
+  },
+  "Soter": {
+   "voz": "soter",
+   "fx": "soter"
+  },
+  "Velkar": {
+   "voz": "velkar",
+   "fx": "velkar"
+  },
+  "Adormecida": {
+   "voz": "adormecida",
+   "fx": "comum"
+  },
+  "Adormecido": {
+   "voz": "adormecido",
+   "fx": "comum"
+  },
+  "Uma voz nos Anéis": {
+   "voz": "sophia",
+   "fx": "aneis"
+  },
+  "O Cego": {
+   "voz": "demiurgo",
+   "fx": "cego"
+  }
+ }
+}
