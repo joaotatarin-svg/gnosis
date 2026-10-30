@@ -4,7 +4,30 @@
 > Status: **PESQUISA + MOTOR + ELENCO DE AMOSTRA + PIPELINE**. O jogo inteiro
 > NÃO foi dublado — espera o João aprovar o elenco.
 
-## 0. BILHETE PARA O SUCESSOR — R2 (29/10/2026, PAUSA a pedido do João; nada rodando)
+## 0. BILHETE PARA O SUCESSOR — R3 PT-BR (29/10/2026 noite; PARADO, nada rodando)
+
+- **Problema:** o João ouviu sotaque de PORTUGAL.
+  - Medido com fonemas: Kokoro PT = europeu (nota 0,12) e Qwen com descrição "brasileira" = leitura neutra (0,1–0,5).
+  - **Correção:** o TTS lê o "texto falado" em GRAFIA BRASILEIRA (`tools/voice/r3/brasil.py`: ti/di → tchi/dji, -e átono → -i, -o átono → -u). A legenda continua com o texto certo.
+  - Resultado: 0,80 de média em 41 falas depois dos efeitos. Doc: `C:\gnosis-wt\_caps\dublagem\r3_ptbr\R3_PTBR.md`.
+- **Checagem de sotaque (obrigatória em todo lote novo):**
+  1. `venv-qwen\python -I fonemas.py @mapa.json --out x_fon.json` (mapa = `{wav: texto}`; roda na GPU em segundos; na CPU travou ~30 min, NÃO use CPU).
+  2. `venv\python -I sotaque_br.py x_fon.json --out x_sotaque.json`.
+  3. Grave a `nota_br` no `.json` de cada tomada (`"br"`): o `r3/post_qa.py` prefere a tomada mais brasileira.
+- **Vozes-base PT-BR novas** (projetadas com o texto em grafia BR):
+  - Sophia/Narradora = `r3/refs/sophia_s43.wav`;
+  - Demiurgo (Voz, Rei, Yaldabaoth) = `r3/refs/demiurgo_sonda_s44.wav`;
+  - texto ICL em `refs_br_escolhidas.json` (já em grafia BR).
+  - As outras 11 vozes (Arcontes etc.) ainda NÃO foram refeitas em grafia BR: repita o passo de `refs_br` (VoiceDesign, 4 sementes, escolher por nota BR + CER + tom) ao gravar o texto novo delas.
+- **Amostra v2 da Narrativa** (`C:\gnosis-wt\_caps\narrativa\AMOSTRA_LIMIAR.md`):
+  - 48 falas + 1 extra do Rei na final, em `C:\gnosis-wt\_caps\dublagem\r3_ptbr\amostra_limiar\`;
+  - faixa única `amostra_limiar_corrida.ogg`;
+  - os jobs e scripts estão em `r3_ptbr\_scripts\` (`job_clone_amostra.json`, `job_post_amostra.json`).
+- **NÃO gerar os lotes 2–7:** o texto do jogo está sendo REESCRITO (decisão: "você" no jogo todo; o Rei usa "nós").
+- **O lote limiar-1 do `dir7/dublagem-lote` (4920893) tem o sotaque ERRADO e o texto ANTIGO:** substituir pelo texto novo quando a Narrativa fechar.
+- **Pendente:** C2/C5 (Rei em luta) duram 3,3–3,7 s, acima do limite de 2,5 s. É preciso texto mais curto ou o Rei mais rápido só na luta.
+
+## 0a. BILHETE R2 (histórico — receita Qwen, pipeline de lotes)
 
 **Mudança de motor (R2):** o João achou as vozes PT da R1 "de professora". A receita nova é
 **Qwen3-TTS (Apache-2.0)**:
