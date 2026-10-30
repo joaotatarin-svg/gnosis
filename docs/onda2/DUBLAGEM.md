@@ -4,7 +4,39 @@
 > Status: **PESQUISA + MOTOR + ELENCO DE AMOSTRA + PIPELINE**. O jogo inteiro
 > NÃO foi dublado — espera o João aprovar o elenco.
 
-## 0. BILHETE — A/B DE SOTAQUE (29/10/2026, sucessor; PARADO, nada rodando)
+## 0. BILHETE — R4 / LOTE limiar-2 (30/10/2026; PARADO, nada rodando)
+
+- **O João aprovou o sotaque** ("tá brasileiro"). O chefe escolheu a opção 2 do A/B: Kokoro pt-BR + conversão de timbre.
+- **Motor R4** (`tools/voice/r4/`; trabalho em `C:\gnosis-wt\_caps\dublagem\r4_limiar2\`):
+  - **Kokoro pt-BR** dá a pronúncia e a melodia (G2P espeak pt-br: dji/tchi, -e = i, sem chiado).
+  - **Conversão de timbre** para a voz fixa de cada personagem. O alvo é a ref projetada no Qwen (R3 para Sophia/Demiurgo; R2 para os outros).
+- **Vozes-base fixas** em `r4/elenco_r4.json` (`base_mede.py`):
+  - são 13 vozes, cada uma com a voz Kokoro, a velocidade, o alvo e o conversor;
+  - o conversor é ChatterboxVC por padrão e OpenVoice v2 quando o ChatterboxVC ESCURECE o "s" (risco de chiado). Isso foi medido nos mesmos quadros da fricativa;
+  - ficaram em OpenVoice: demiurgo (A Voz, O Rei, Yaldabaoth), harmas, belias e velkar. O resto ficou em ChatterboxVC.
+- **Atuação:**
+  - só a reticência corta o texto: pausa de 0,45 s, posta por nós. O Kokoro lê "..." como "as" e erra palavra solta, então ". ? !" ficam com o modelo;
+  - 3 tomadas por fala (ritmo e pausa variados); o `post_qa` da R3 escolhe por ASR;
+  - inspiração sutil (−30 dB) antes de fala longa de cena; C5 com sussurro parcial;
+  - override de leitura em `falas.py` (`TTS`/`SAID`): "Shh" vira fonema cru; "Superproposital" é lido "Super proposital".
+- **Lote limiar-2 = commit `1353529`** em `dir7/dublagem-lote`, sobre `integracao/onda1` 14d7d2e (fast-forward de 4920893):
+  - 48 falas (texto v3); as 11 do limiar-1 foram removidas;
+  - **todas as 47 falas do Limiar que existem no jogo acham o .ogg** pelo próprio `Audio.voice_entry` (`r4/confere_jogo.gd.txt`, rodar com `--script`). G1 ("Isso é uma faísca…") ainda não está no jogo;
+  - VoiceProbe e validate.ps1: TUDO VERDE.
+  - O stash `limiar-2 pre-rebase` no worktree do lote é só ruído de reimport; pode ser descartado.
+- **QA:**
+  - ASR pós 48/48 (CER ≤ 0,11); −21 LUFS; TP ≤ −1,9 dBTP;
+  - combate ≤ 2,3 s (C2 2,1 s, C5 2,0 s);
+  - mesma voz (VoiceEncoder Chatterbox, antes dos efeitos): 0,83–0,94.
+- **Limites honestos:**
+  - o Kokoro tem pouca emoção: não grita (o grito da final ainda NÃO foi gravado);
+  - a "atuação" é ritmo, pausa e respiração, não interpretação de ator;
+  - P2 tem 8,4 s e P3 10,6 s (cena ≤ 12 s, ok).
+- **Próximo:** gravar os próximos lotes quando a Narrativa fechar cada trecho.
+  1. `falas.py` com o texto exato do jogo;
+  2. depois `gen_falas.py` → `conv_cbx`/`conv_ov` → `montagem.py` → `post_qa.py` → `entrega_r4.py` → Godot import → `confere_jogo` → validate.
+
+## 0y. BILHETE — A/B DE SOTAQUE (29/10/2026, histórico)
 
 - O João ouviu a R3 (Qwen + grafia BR) e disse "Portugal". **O Qwen3-TTS foi DESCARTADO como base.**
 - Entreguei o A/B: `C:\gnosis-wt\_caps\dublagem\ab_sotaque\` (`AB.md` e `ab_sotaque_todas.ogg`). São 5 opções comerciais e a régua Piper. **Esperando o João escolher.**
