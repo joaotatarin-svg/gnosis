@@ -1,0 +1,43 @@
+extends SceneTree
+## Confere, com o PRÓPRIO jogo, que cada fala do Limiar acha o seu .ogg (Audio.voice_entry = o caminho do jogo).
+## Uso: godot --headless --audio-driver Dummy --path <wt> --script <este arquivo>
+
+var _n: int = 0
+
+func _process(_d: float) -> bool:
+	_n += 1
+	if _n < 3:
+		return false
+	var N = root.get_node("/root/Narrative")
+	var A = root.get_node("/root/Audio")
+	var grupos: Dictionary = {
+		"intro": N.intro(), "limiar_stela": N.limiar_stela(), "limiar_stela_read": N.limiar_stela_read(),
+		"king_intro": N.king_intro(), "king_fall(0)": N.king_fall(0), "king_fall(1)": N.king_fall(1),
+		"walk_arrival(1)": N.walk_arrival(1), "eon_intro(0)": N.eon_intro(0), "death_revive(1,1,0)": N.death_revive(1, 1, 0),
+	}
+	var rei: Array = []
+	for id in ["C1", "C2", "C3", "C4", "C5", "C6a", "C6b"]:
+		rei.append(N._rei_line(id))
+	grupos["_rei_line"] = rei
+	var cin = load("res://scripts/fx/cinematic.gd")
+	var c = cin.prologue()
+	var cards: Array = []
+	for cd in c.cards:
+		cards.append({"speaker": "card", "text": String(cd["text"])})
+	grupos["prologue"] = cards
+	var ok: int = 0
+	var falta: int = 0
+	for g in grupos:
+		for l in grupos[g]:
+			if not (l is Dictionary) or String(l.get("text", "")).strip_edges() == "":
+				continue
+			var e: Dictionary = A.voice_entry(l)
+			if e.is_empty():
+				falta += 1
+				print("SEM VOZ  [%s] %s | %s" % [g, String(l.get("speaker", "")), String(l["text"]).replace("\n", "\n")])
+			else:
+				ok += 1
+				print("COM VOZ  [%s] %s %s" % [g, e["id"], String(l["text"]).replace("\n", "\n").left(50)])
+	print("CONFERE: %d falas com voz, %d sem voz" % [ok, falta])
+	quit(0)
+	return true

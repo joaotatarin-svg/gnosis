@@ -1,0 +1,301 @@
+{
+ "sophia": {
+  "kokoro": "pf_dora",
+  "vel": 1.0,
+  "alvo": "C:/gnosis-wt/_caps/dublagem/r3_ptbr/refs_br/sophia_s43.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.692,
+   "cbx": 0.928,
+   "ov": 0.91
+  },
+  "s_hz": {
+   "fonte": 7927,
+   "cbx": 8186,
+   "ov": 6586
+  },
+  "s_chiado_pct": {
+   "fonte": 24,
+   "cbx": 9,
+   "ov": 34
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/sophia_cbx_ref.wav",
+  "ref_texto": "Eu não lembro do meu nome. Lembro de cinza na boca, e de alguém chorando. Talvez fosse eu. Tanto faz. Agora eu vou subir, de verdade."
+ },
+ "demiurgo": {
+  "kokoro": "pm_santa",
+  "vel": 0.9,
+  "alvo": "C:/gnosis-wt/_caps/dublagem/r3_ptbr/refs_br/demiurgo_sonda_s44.wav",
+  "conv": "ov",
+  "sim": {
+   "k": 0.705,
+   "cbx": 0.904,
+   "ov": 0.881
+  },
+  "s_hz": {
+   "fonte": 5506,
+   "cbx": 4659,
+   "ov": 5593
+  },
+  "s_chiado_pct": {
+   "fonte": 30,
+   "cbx": 62,
+   "ov": 26
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/demiurgo_ov_ref.wav",
+  "ref_texto": "Calma, pequena faísca. Eu tô aqui, sempre estive. Tudo o que você perdeu, eu guardei pra você. Vem comigo. Não precisa ter medo."
+ },
+ "narrador": {
+  "kokoro": "pm_alex",
+  "vel": 0.9,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/narrador_ref_24.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.726,
+   "cbx": 0.912,
+   "ov": 0.861
+  },
+  "s_hz": {
+   "fonte": 6828,
+   "cbx": 5768,
+   "ov": 5316
+  },
+  "s_chiado_pct": {
+   "fonte": 26,
+   "cbx": 30,
+   "ov": 37
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/narrador_cbx_ref.wav",
+  "ref_texto": "Houve um tempo antes do tempo. A luz ainda não tinha nome, e ninguém precisava lembrar de nada. Depois veio a queda."
+ },
+ "athoth": {
+  "kokoro": "pm_alex",
+  "vel": 0.8,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/athoth_ref_24.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.602,
+   "cbx": 0.855,
+   "ov": 0.907
+  },
+  "s_hz": {
+   "fonte": 6898,
+   "cbx": 6622,
+   "ov": 6455
+  },
+  "s_chiado_pct": {
+   "fonte": 26,
+   "cbx": 29,
+   "ov": 30
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/athoth_cbx_ref.wav",
+  "ref_texto": "Devagar. Ninguém precisa de você agora. Fecha os olhos, o mundo pode esperar. Eu fico acordado por você."
+ },
+ "harmas": {
+  "kokoro": "pm_santa",
+  "vel": 0.88,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/harmas_ref_24.wav",
+  "conv": "ov",
+  "sim": {
+   "k": 0.751,
+   "cbx": 0.872,
+   "ov": 0.84
+  },
+  "s_hz": {
+   "fonte": 5544,
+   "cbx": 4291,
+   "ov": 5749
+  },
+  "s_chiado_pct": {
+   "fonte": 33,
+   "cbx": 76,
+   "ov": 29
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/harmas_ov_ref.wav",
+  "ref_texto": "Ah, que cheiro bom tem a sua saudade. Me dá. Só um pouquinho. Eu guardo tudo, bem quentinho, aqui dentro de mim."
+ },
+ "galila": {
+  "kokoro": "pm_alex",
+  "vel": 0.95,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/galila_ref_24.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.647,
+   "cbx": 0.93,
+   "ov": 0.9
+  },
+  "s_hz": {
+   "fonte": 6812,
+   "cbx": 5653,
+   "ov": 5177
+  },
+  "s_chiado_pct": {
+   "fonte": 26,
+   "cbx": 31,
+   "ov": 34
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/galila_cbx_ref.wav",
+  "ref_texto": "Consta nos autos. Cada coisa no seu lugar, cada elo na sua corrente. Fora da lei, nada fica de pé. Nada, de verdade."
+ },
+ "yabel": {
+  "kokoro": "pm_alex",
+  "vel": 0.8,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/yabel_ref_24.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.649,
+   "cbx": 0.814,
+   "ov": 0.869
+  },
+  "s_hz": {
+   "fonte": 6903,
+   "cbx": 7128,
+   "ov": 7440
+  },
+  "s_chiado_pct": {
+   "fonte": 25,
+   "cbx": 28,
+   "ov": 28
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/yabel_cbx_ref.wav",
+  "ref_texto": "Faz muito tempo que eu não escuto a minha própria voz. Ela dói. Mas eu lembro de uma resposta."
+ },
+ "belias": {
+  "kokoro": "pm_santa",
+  "vel": 0.85,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/belias_ref_24.wav",
+  "conv": "ov",
+  "sim": {
+   "k": 0.746,
+   "cbx": 0.89,
+   "ov": 0.865
+  },
+  "s_hz": {
+   "fonte": 5539,
+   "cbx": 4684,
+   "ov": 5685
+  },
+  "s_chiado_pct": {
+   "fonte": 31,
+   "cbx": 57,
+   "ov": 29
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/belias_ov_ref.wav",
+  "ref_texto": "Tudo apodrece, sabe? A semente, a raiz, a mão que planta. Eu vi. Não adianta correr. A terra espera por todos nós."
+ },
+ "armupiel": {
+  "kokoro": "pm_santa",
+  "vel": 0.85,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/armupiel_ref_24.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.776,
+   "cbx": 0.894,
+   "ov": 0.874
+  },
+  "s_hz": {
+   "fonte": 5591,
+   "cbx": 4999,
+   "ov": 5705
+  },
+  "s_chiado_pct": {
+   "fonte": 29,
+   "cbx": 31,
+   "ov": 22
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/armupiel_cbx_ref.wav",
+  "ref_texto": "Curvem-se diante da Coroa! Eu sou o fim de todas as escadas, e mesmo assim, ninguém sobe pra me ver."
+ },
+ "soter": {
+  "kokoro": "pm_alex",
+  "vel": 0.9,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/soter_ref_24.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.672,
+   "cbx": 0.898,
+   "ov": 0.863
+  },
+  "s_hz": {
+   "fonte": 6842,
+   "cbx": 5625,
+   "ov": 5249
+  },
+  "s_chiado_pct": {
+   "fonte": 26,
+   "cbx": 31,
+   "ov": 31
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/soter_cbx_ref.wav",
+  "ref_texto": "Senta um pouco, Portadora. O caminho não foge. Quem anda com pressa no escuro só tropeça mais depressa, sabia?"
+ },
+ "velkar": {
+  "kokoro": "pm_santa",
+  "vel": 0.9,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/velkar_ref_24.wav",
+  "conv": "ov",
+  "sim": {
+   "k": 0.686,
+   "cbx": 0.872,
+   "ov": 0.896
+  },
+  "s_hz": {
+   "fonte": 5478,
+   "cbx": 4400,
+   "ov": 5633
+  },
+  "s_chiado_pct": {
+   "fonte": 30,
+   "cbx": 76,
+   "ov": 28
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/velkar_ov_ref.wav",
+  "ref_texto": "Eu servi. Por eras. Achei que era lealdade. Era só medo. Agora não sobra nada de mim, só isto."
+ },
+ "adormecida": {
+  "kokoro": "pf_dora",
+  "vel": 0.95,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/adormecida_ref_24.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.652,
+   "cbx": 0.871,
+   "ov": 0.858
+  },
+  "s_hz": {
+   "fonte": 7945,
+   "cbx": 7285,
+   "ov": 5887
+  },
+  "s_chiado_pct": {
+   "fonte": 26,
+   "cbx": 33,
+   "ov": 39
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/adormecida_cbx_ref.wav",
+  "ref_texto": "Onde eu tava? Eu sonhei com uma janela, e com um rio. Parecia de verdade. Você também viu?"
+ },
+ "adormecido": {
+  "kokoro": "pm_alex",
+  "vel": 0.95,
+  "alvo": "C:/gnosis-wt/dublagem/tools/voice/r2/refs/adormecido_ref_24.wav",
+  "conv": "cbx",
+  "sim": {
+   "k": 0.674,
+   "cbx": 0.915,
+   "ov": 0.846
+  },
+  "s_hz": {
+   "fonte": 6820,
+   "cbx": 5654,
+   "ov": 6107
+  },
+  "s_chiado_pct": {
+   "fonte": 25,
+   "cbx": 38,
+   "ov": 30
+  },
+  "ref_wav": "C:/gnosis-wt/_caps/dublagem/r4_limiar2/base/adormecido_cbx_ref.wav",
+  "ref_texto": "Que frio. Faz quanto tempo que eu tô deitado aqui? Ninguém veio me chamar. Ninguém."
+ }
+}

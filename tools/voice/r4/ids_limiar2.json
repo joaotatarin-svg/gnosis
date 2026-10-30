@@ -1,0 +1,290 @@
+[
+ {
+  "num": "P1",
+  "id": "7bce0dcd8a25",
+  "falante": "card",
+  "texto_pt": "No começo havia uma Luz tão cheia que transbordava.\nCada gota que caía virava alguém."
+ },
+ {
+  "num": "P2",
+  "id": "d3d00999b413",
+  "falante": "card",
+  "texto_pt": "Uma das gotas quis ver a Fonte sozinha, sem pedir licença.\nDo que ela fez, nasceu um filho.\nEla teve vergonha. E o escondeu."
+ },
+ {
+  "num": "P3",
+  "id": "d3a78319dddd",
+  "falante": "card",
+  "texto_pt": "O filho cresceu no escuro, certo de que era o único.\nFez um mundo e pôs um rei em cada andar.\nTodos eles mentem.\n\nNo fundo das cinzas, alguém acaba de sentir dor."
+ },
+ {
+  "num": "D1",
+  "id": "0991ae3795cf",
+  "falante": "",
+  "texto_pt": "(Escuro. Um coração batendo. Depois, gosto de cinza.)"
+ },
+ {
+  "num": "D2",
+  "id": "9c8e9fd7cd28",
+  "falante": "A Voz",
+  "texto_pt": "Ei. Ei! Acorda. ...Isso, devagar. Eu tô aqui."
+ },
+ {
+  "num": "D3",
+  "id": "5c1e798c6962",
+  "falante": "Sophia",
+  "texto_pt": "Onde eu tô? ...Pior: quem sou eu?"
+ },
+ {
+  "num": "D4",
+  "id": "ad66d43e1a9e",
+  "falante": "A Voz",
+  "texto_pt": "Uma pergunta por vez. Primeiro, ande. Pra direita, de preferência."
+ },
+ {
+  "num": "D5",
+  "id": "313dcd247747",
+  "falante": "A Voz",
+  "texto_pt": "Essas cinzas eram gente. A sua gente."
+ },
+ {
+  "num": "D6",
+  "id": "242fea8873e6",
+  "falante": "Sophia",
+  "texto_pt": "Não lembro de nenhum rosto. Isso devia doer mais, não?"
+ },
+ {
+  "num": "D7",
+  "id": "779089c42267",
+  "falante": "A Voz",
+  "texto_pt": "Uma pedra escrita. Leia, se quiser. Só não acredite em tudo."
+ },
+ {
+  "num": "D8",
+  "id": "8963d50cd7e7",
+  "falante": "Sophia",
+  "texto_pt": "\"Antes de tudo, havia o Um.\" Um o quê? Um alguém?"
+ },
+ {
+  "num": "D9",
+  "id": "2d130bc477a8",
+  "falante": "A Voz",
+  "texto_pt": "A névoa está engrossando. Fica perto de mim."
+ },
+ {
+  "num": "D10",
+  "id": "55fdd3a97f3f",
+  "falante": "Sophia",
+  "texto_pt": "Você é uma voz. Perto como?"
+ },
+ {
+  "num": "D11",
+  "id": "c17755a1a421",
+  "falante": "A Voz",
+  "texto_pt": "...Perto da minha voz, então."
+ },
+ {
+  "num": "A1",
+  "id": "0d9f70b4495f",
+  "falante": "A Voz",
+  "texto_pt": "Vem alguém. Calma, esse eu conheço. Muita pose, joelho fraco."
+ },
+ {
+  "num": "A2",
+  "id": "88473109b640",
+  "falante": "O Rei",
+  "texto_pt": "Ah. Acordou. Nós estávamos esperando."
+ },
+ {
+  "num": "A3",
+  "id": "966f278ce659",
+  "falante": "Sophia",
+  "texto_pt": "Nós quem? Só tem você aí."
+ },
+ {
+  "num": "A4",
+  "id": "cf68e3b21581",
+  "falante": "O Rei",
+  "texto_pt": "Rei fala no plural. Somos importantes demais para o singular."
+ },
+ {
+  "num": "A5",
+  "id": "4b2f5c5da684",
+  "falante": "O Rei",
+  "texto_pt": "Lei do Limiar: só passa quem nos tocar com a própria luz."
+ },
+ {
+  "num": "A6",
+  "id": "43528647d0ae",
+  "falante": "Sophia",
+  "texto_pt": "Tocar. Com o cajado serve?"
+ },
+ {
+  "num": "A7",
+  "id": "64f1b469ee3f",
+  "falante": "O Rei",
+  "texto_pt": "Tente. E não tema: um rei jamais se curva."
+ },
+ {
+  "num": "C1",
+  "id": "65acfb91b0eb",
+  "falante": "Sophia",
+  "texto_pt": "Amarelo... da próxima, eu aparo."
+ },
+ {
+  "num": "C2",
+  "id": "e04e722ca66f",
+  "falante": "O Rei",
+  "texto_pt": "Nossa luz rasteja. Pule."
+ },
+ {
+  "num": "C3",
+  "id": "2b8773262170",
+  "falante": "O Rei",
+  "texto_pt": "Esta mão, nem você apara."
+ },
+ {
+  "num": "C4",
+  "id": "aaf2fb10b152",
+  "falante": "O Rei",
+  "texto_pt": "Chega de cortesia. Olhe o chão."
+ },
+ {
+  "num": "C5",
+  "id": "7c5c3a038aa9",
+  "falante": "O Rei",
+  "texto_pt": "Sempre atrás de você."
+ },
+ {
+  "num": "C6a",
+  "id": "ea9e884555f6",
+  "falante": "Sophia",
+  "texto_pt": "Ele se curvou? Jamais, né?"
+ },
+ {
+  "num": "C6b",
+  "id": "41aabf7b4bfc",
+  "falante": "Sophia",
+  "texto_pt": "Jamais, né?"
+ },
+ {
+  "num": "F1a",
+  "id": "421e57ab320a",
+  "falante": "O Rei",
+  "texto_pt": "Aquela reverência de antes? Foi proposital."
+ },
+ {
+  "num": "F2a",
+  "id": "c643564a7823",
+  "falante": "Sophia",
+  "texto_pt": "Claro. Superproposital."
+ },
+ {
+  "num": "F1b",
+  "id": "fab3c120ba2a",
+  "falante": "O Rei",
+  "texto_pt": "Nós não estamos ajoelhados. Estamos... descansando."
+ },
+ {
+  "num": "F2b",
+  "id": "48edc845dc25",
+  "falante": "Sophia",
+  "texto_pt": "De joelhos. Na minha frente. Jamais, né?"
+ },
+ {
+  "num": "F3",
+  "id": "ebefd4eb72e5",
+  "falante": "O Rei",
+  "texto_pt": "(a máscara racha) Sua luz... é maior do que nós lembrávamos."
+ },
+ {
+  "num": "F4",
+  "id": "7a5bf47231cb",
+  "falante": "Sophia",
+  "texto_pt": "Lembravam? Eu acordei agora há pouco."
+ },
+ {
+  "num": "F5",
+  "id": "57f396914203",
+  "falante": "O Rei",
+  "texto_pt": "Pergunte aos sete. Eles lembram por nós."
+ },
+ {
+  "num": "F6",
+  "id": "55b6cf9881b2",
+  "falante": "A Voz",
+  "texto_pt": "Sentiu? O selo dele rachou. Sete tronos acabaram de acordar."
+ },
+ {
+  "num": "F7",
+  "id": "df6edb6ec2e8",
+  "falante": "Sophia",
+  "texto_pt": "Isso é bom ou é muito ruim?"
+ },
+ {
+  "num": "F8",
+  "id": "ff84a4387161",
+  "falante": "A Voz",
+  "texto_pt": "Sete Arcontes, um por andar. Cada um guarda um Anel."
+ },
+ {
+  "num": "F9",
+  "id": "fa0dbd2ca8d2",
+  "falante": "Sophia",
+  "texto_pt": "E se eu juntar os sete?"
+ },
+ {
+  "num": "F10",
+  "id": "1497fff71450",
+  "falante": "A Voz",
+  "texto_pt": "A gente quebra esta prisão. Você e eu."
+ },
+ {
+  "num": "F11",
+  "id": "50980cdff986",
+  "falante": "Sophia",
+  "texto_pt": "(Lembravam. Quem lembra de alguém que acabou de acordar?)"
+ },
+ {
+  "num": "T1",
+  "id": "3c5df2a99cc9",
+  "falante": "A Voz",
+  "texto_pt": "O Torpor. Aqui os mortos ainda não sabem que morreram."
+ },
+ {
+  "num": "T2",
+  "id": "3b7166fb0c24",
+  "falante": "A Voz",
+  "texto_pt": "Não odeie quem dorme. Até agora há pouco, você dormia."
+ },
+ {
+  "num": "T3",
+  "id": "e1cac4295286",
+  "falante": "Sophia",
+  "texto_pt": "Confesso: deitar parece ótimo. ...Não vou."
+ },
+ {
+  "num": "T4",
+  "id": "3b2679de913f",
+  "falante": "Sophia",
+  "texto_pt": "(Dormir é esquecer de onde veio. Acordar dói porque é lembrar.)"
+ },
+ {
+  "num": "M1",
+  "id": "c6839f40c2d6",
+  "falante": "A Voz",
+  "texto_pt": "Shh. Já passou. Ele bate forte pra quem fala tão bonito."
+ },
+ {
+  "num": "M2",
+  "id": "b6741dd92b70",
+  "falante": "A Voz",
+  "texto_pt": "Levanta. E repara no tal rei que jamais se curva."
+ },
+ {
+  "num": "G1",
+  "id": "502a76acbbe4",
+  "falante": "A Voz",
+  "texto_pt": "Isso é uma faísca. Luz presa no barro. Agora é sua."
+ }
+]
