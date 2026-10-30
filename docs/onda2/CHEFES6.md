@@ -382,3 +382,4 @@ cassino (recompensa fixa, dita, sem aleatório).
   (`lk_m*.log`, médio, 6 sementes): Desmentido 6/6 (aos 13–62 s), 0 golpes nos 8 s; luta 67–95 s (o corpo de
   joelho é menor: menos golpes de raspão no ajoelhar). Sequência ajoelha → olho na mão → bate → fenda:
   `_caps\chefes6\rei_ajoelha_olho_mascara.png` (quadros em `_caps\chefes6\mentira3\`).
+  Refeito sobre a integração `14d7d2e` (Limiar PT-BR + opção Dicas = `GameManager.lie_hints`, que o cérebro já lê): ReiProbe atravessa=0/apelão=0; mentira 3/3, 0 golpes nos 8 s (`lk2_m*.log`).
