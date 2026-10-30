@@ -2,7 +2,8 @@
 
 Todo som, música e sprite de partícula do jogo é **CC0**, **CC-BY** (atribuição
 abaixo) ou **síntese própria** (código Python em `tools/audio_synth/`, sem
-sample de terceiros e sem IA). Nada NC / SA / ND. MusicGen/AudioCraft NÃO são
+sample de terceiros). As **VOZES dubladas** são sintetizadas por IA com modelos
+de código aberto; nenhuma voz de pessoa real foi clonada ou imitada. Nada NC / SA / ND. MusicGen/AudioCraft NÃO são
 usados. Packs brutos: fora do git (`assets/_packs/` da cópia original).
 
 ## CRÉDITOS (bloco para a tela de Créditos — cada linha "- " é uma linha)
@@ -13,6 +14,10 @@ usados. Packs brutos: fora do git (`assets/_packs/` da cópia original).
 - Efeitos CC0: Kenney (kenney.nl), rubberduck, artisticdude, remaxim, Clint Bellanger, rockseller, nosycat, StarNinjas, qubodup, MedicineStorm, Owlish Media e outros autores CC0 do OpenGameArt.org
 - Ambiências, magias, vozes e camadas sintetizadas: feitas para GNOSIS
 - Partículas: Kenney Particle Pack (CC0)
+- Vozes: sintetizadas por IA com modelos de código aberto; nenhuma voz de pessoa real foi clonada ou imitada
+- Vozes-base: Qwen3-TTS (VoiceDesign e Base) — Qwen Team, Alibaba Cloud — Apache License 2.0 — https://huggingface.co/Qwen
+- Fala em português do Brasil: Kokoro-82M — hexgrad — Apache License 2.0 — https://huggingface.co/hexgrad/Kokoro-82M
+- Conversão de timbre: Chatterbox (Resemble AI, MIT) e OpenVoice v2 (MyShell AI e MIT, MIT) — https://github.com/resemble-ai/chatterbox · https://github.com/myshell-ai/OpenVoice
 
 ## Síntese própria (licença do jogo)
 
